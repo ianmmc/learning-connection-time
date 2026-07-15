@@ -78,7 +78,8 @@ def test_select_prompt_id_prefers_per_model_override():
 
 def test_prompt_registry_has_variants_and_never_computes_minutes():
     assert set(P.SYSTEM_PROMPTS) >= {"stage6.extract.v1", "stage6.extract.vision.v1",
-                                     "stage6.extract.v2", "stage6.extract.vision.v2"}
+                                     "stage6.extract.v2", "stage6.extract.vision.v2",
+                                     "stage6.extract.v3", "stage6.extract.vision.v3"}
     # REQ-054 invariant: deterministic code computes gross = end - start; the council reads TIMES and
     # returns start/end facts, and is NEVER told to compute minutes. v2 (STAGE8 §2a.6) may READ an
     # explicitly-STATED minutes number (path 2 — reading, not computing), but must guard it so the model
@@ -87,6 +88,24 @@ def test_prompt_registry_has_variants_and_never_computes_minutes():
         b = body.lower()
         assert "start_time" in body and "end_time" in body
         assert "calculate" not in b or "never calculate" in b, f"{pid} instructs calculating"
-        if "minutes" in b:   # only v2 mentions minutes, and only for the STATED-number path
+        if "minutes" in b:   # only v2+ mentions minutes, and only for the STATED-number path
             assert "never calculate it from the times" in b, \
                 f"{pid} mentions minutes without the REQ-054 no-compute guard"
+
+
+def test_v3_prompts_forbid_year_inference_from_context():
+    # REQ-141 (2026-07-15 audit sweep): school_year is a READING, never an inference — mirrors the
+    # never-computes-minutes guard above for the #254 v3 fields. A future v4 that dropped or weakened
+    # this clause (e.g. "infer the year from the page's publish date" for convenience) must fail here,
+    # not surface as a silent Santa-Fe-class regression months later.
+    v3_prompts = {pid: body for pid, body in P.SYSTEM_PROMPTS.items() if pid.endswith(".v3")}
+    assert v3_prompts, "no v3 prompts registered — REQ-141 has nothing to guard"
+    for pid, body in v3_prompts.items():
+        b = body.lower()
+        assert "school_year" in b, f"{pid} is a v3 prompt but doesn't mention school_year"
+        assert "do not infer" in b or "do not infer it" in b, \
+            f"{pid} mentions school_year without the no-inference guard"
+        assert "url" in b and "domain" in b and "date" in b, \
+            f"{pid}'s no-inference guard doesn't name all three forbidden inference sources"
+        assert "null is the correct answer" in b or "null" in b, \
+            f"{pid} doesn't say null is the honest answer when no year is stated"

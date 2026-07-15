@@ -6,7 +6,7 @@ the WIRING layer's job; `common/` must not carry app wording (#217 review). Thes
 calibration-record dict; the gate handler calls `calibration.record_calibration(sess, rec)` to persist it
 on the SAME session/transaction as the gate's existing write, so the audit row commits atomically.
 
-The three human-supervision gates each get a hook:
+The four human-supervision gates each get a hook:
   - gate@5 (label): the CALIBRATION-VALUABLE gate — the record's tier is what auto WOULD do to it
     unlabeled (release.decide's tier gate), so `agreed` carries real signal, including the survivorship
     case (tier-D reject that the human labels a target = a false negative auto would have made).
@@ -15,9 +15,12 @@ The three human-supervision gates each get a hook:
   - gate@7 (extract-request review): the human approves/rejects a request-more-evidence DIRECTIVE the
     deterministic detector proposed; the continuous proxy is the district's council agreement ratio
     (n_accepted / (n_accepted + n_unresolved)) — does low council agreement predict the human overriding?
-NOTE (Ian, 2026-07-10): approving the council's extracted TIMES (school_fact.human_determination) is a
-**gate@8 / Stage-8** activity, NOT gate@7 — Stage 8 is not built yet (#88/#89), so that hook is deferred
-to when it lands, and is out of scope for the gate@5/6/7 wiring.
+  - gate@8 (district approval, REQ-126): the human approves/sends-back the WHOLE closing argument; the
+    continuous proxy is the district roll-up min_band_coverage (the weakest band's coverage). WIRED
+    2026-07-14 (closes the seam this docstring used to call deferred — see gate8_decision_record below).
+    auto_recommendation is always None: gate@8 has no auto policy yet (#90/#104 part b), so the record
+    accrues from day one without anything to agree/disagree with (the #108 instrument-before-you-can-
+    measure lesson).
 """
 from infrastructure.acquisition.common import calibration as CAL
 from infrastructure.acquisition.stage5_filter.build_signals import TARGET_LABELS, NONTARGET_PRIMARIES

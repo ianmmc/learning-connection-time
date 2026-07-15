@@ -716,3 +716,66 @@ class TestReviewRoundFixes:
         assert note["stage1_band"] == "middle" and note["live_band"] == "elementary"
         # and the carved-out school no longer #258-flags against its own placement
         assert out["negative_space"]["name_level_mismatches"] == []
+
+
+class TestNeverSilentlyDropsAFact:
+    """Requirements audit sweep (2026-07-15): each of #403/#257/#258/#473-474 is proven non-destructive
+    by its OWN unit tests, but nothing previously asserted the invariant ACROSS all four together in one
+    district — that no combination of a None-gross fact, a band exclusion, a name/level mismatch flag,
+    and a fully-excluded band can make an originally-accepted school_fact vanish without a trace from the
+    closing argument. Today this held 'by four separate local proofs'; this test makes it one contract."""
+
+    def test_every_originally_accepted_school_is_discoverable_somewhere(self):
+        birch = _fact("elementary", "birch", 405)
+        birch["gross_minutes"] = None                               # #403: a None-gross accepted fact
+        acc = [
+            _fact("elementary", "oak", 400),                       # the control: nothing special
+            birch,                                                 # #403: None-gross must not crash
+            _fact("elementary", "maple", 410),                     # #257: will be excluded
+            _fact("elementary", "northside high", 390),            # #258: name/level mismatch flag
+            _fact("middle", "spartan", 405),                       # #257: the district's ONLY middle
+                                                                    # fact — excluding it must vanish
+                                                                    # the whole band, not just the row
+        ]
+        excl = [{"band": "elementary", "school": "maple", "reason": "duplicate building", "actor": "ian",
+                "created_at": "t"},
+               {"band": "middle", "school": "spartan", "reason": "closed mid-year", "actor": "ian",
+                "created_at": "t"}]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=6,
+            nces_by_level={"Elementary": 4, "Middle": 1}, schools_by_band={}, exclusions=excl)
+
+        # #403 — a None-gross fact never crashes the rollup (no raise reaching this line is half the
+        # assertion), and it never disappears from the record even though it can't be the mode
+        assert out["bands"]["elementary"]["gross_minutes"] is not None
+        elem_names = {s["school"] for s in out["bands"]["elementary"]["schools"]}
+        assert "birch" in elem_names   # present, just never the representative (gross=None)
+
+        # #257 — an excluded fact leaves the mode/count but stays visible (struck-through) in schools[]
+        assert "maple" not in {s["school"] for s in out["bands"]["elementary"]["schools"]
+                               if not s.get("excluded")}
+        assert "maple" in {s["school"] for s in out["bands"]["elementary"]["schools"] if s.get("excluded")}
+        assert any(e["school"] == "maple" for e in out["negative_space"]["band_exclusions"])
+
+        # #257 (whole-band case) — excluding the district's ONLY middle fact removes 'middle' from
+        # bands{} entirely, but the exclusion — and therefore the school's name — survives in the
+        # negative space; a reviewer scanning only negative_space.band_exclusions can still find it
+        assert "middle" not in out["bands"]
+        assert any(e["school"] == "spartan" and e["band"] == "middle"
+                  for e in out["negative_space"]["band_exclusions"])
+
+        # #258 — a name/level mismatch flags but never removes; the school stays a normal voting member
+        assert "northside high" in {s["school"] for s in out["bands"]["elementary"]["schools"]
+                                    if not s.get("excluded")}
+        assert any(m["school"] == "northside high" for m in out["negative_space"]["name_level_mismatches"])
+
+        # the exhaustive check: every ORIGINALLY-ACCEPTED (band, school) pair is discoverable somewhere —
+        # in a live band's schools[], OR in negative_space.band_exclusions (the whole-band-excluded case)
+        originally_accepted = {(f["band"], f["school"]) for f in acc}
+        found = set()
+        for band, b in out["bands"].items():
+            for s in b["schools"]:
+                found.add((band, s["school"]))
+        for e in out["negative_space"]["band_exclusions"]:
+            found.add((e["band"], e["school"]))
+        assert originally_accepted <= found, f"vanished without a trace: {originally_accepted - found}"

@@ -605,7 +605,11 @@ requirements:
       - The write path populates enrollment_source_year / staff_source_year / bell_schedule_source_year so trigger trg_lct_temporal_validation auto-validates on INSERT/UPDATE (was inert — issue #11)
       - calculate_all_variants enforces the window at read time (drops an out-of-window bell year to statutory) so invalid blends are prevented, not just flagged
       - SPED baseline (2017-18 IDEA 618/CRDC) exempt from the window as a ratio proxy
-      - The single source of truth for the window math is infrastructure/database/school_year.py (within_blend_window)
+      - The single source of truth for the window math is infrastructure/utilities/school_year.py
+        (within_blend_window) — moved from infrastructure/database/ 2026-07-14 (REQ-136) so the
+        acquisition pipeline can import calendar vocabulary without breaching the
+        acquisition-does-not-import-database layering contract; infrastructure/database/school_year.py
+        is now a re-export shim only
       - v_lct_temporal_validation view provides validation summary
     tests:
       - tests/test_school_year.py::TestBlendWindow
@@ -622,7 +626,12 @@ requirements:
     notes: "v1 (span<=3, admitting four school years) was ambiguous and its DB trigger was inert
       (issue #11: unmapped/unpopulated source-year columns). v2 decided by Ian 2026-07-01 during
       the fable-review lct-core hardening; implemented by migration 018 + school_year.py +
-      the calculate_lct_variants write/read wiring (issues #11/#12)."
+      the calculate_lct_variants write/read wiring (issues #11/#12). 2026-07-14: CURRENT_SCHOOL_YEAR's
+      rollover to 2026-27 (REQ-136) initially put a 2026-27 bell schedule at span 3 from the then-current
+      2023-24 NCES vintage; bumping NCES_PRIMARY_YEAR to 2024-25 (verified via 93,612 lct_calculations
+      rows, CLAUDE.md Rule 6) restored span 2. This coupling recurs every rollover and should be
+      watched, not just fixed once — a future July-1 rollover could silently push a fresh bell schedule
+      out of the window again if the NCES primary vintage hasn't kept pace."
 
   - id: REQ-027
     description: Master crosswalk table for all state NCES-to-SEA mappings
@@ -1042,7 +1051,7 @@ requirements:
       IMPLEMENTED_BY (status bumped accepted→tested 2026-06-26): Stage 2, REQ-058 (cost-ascending waves)
       + REQ-068/069/070/071/072 (tested); ran live on all 12 batch_00001 districts (12/12 found_all).
       Design umbrella; the as-built stage REQs carry the tests. NOTE: Wave-1 execution is moving to
-      headless `claude -p` (REQ-104) — see PIPELINE_GOVERNANCE_AND_STATE_2026-06.md."
+      headless `claude -p` (REQ-104) — see PIPELINE_GOVERNANCE_AND_STATE.md."
 
   - id: REQ-044
     github_issue: "#107 — school-year currency gate/dispatch (doc-migration 2026-07)"
@@ -1062,7 +1071,7 @@ requirements:
       SCOPE (decided 2026-06-27): this is a STAGE 5 (Local filter) enhancement, not a separate stage —
       currency/recency is a relevance concern that belongs with the existing Stage-5 signals + gate@5
       review. Build it into stage5_filter (alongside build_signals / the de-chrome + signal work);
-      see STAGE5_FILTER_DESIGN_2026-06.md. Gates the filtered.json -> dispatch boundary so stale/COVID-era
+      see STAGE5_FILTER_DESIGN.md. Gates the filtered.json -> dispatch boundary so stale/COVID-era
       pages never reach the paid council (Stage 6/7)."
 
   - id: REQ-045
@@ -1242,10 +1251,15 @@ requirements:
       - All minutes arithmetic (gross = end - start) is performed in Python code, not by a model
       - All aggregation (the per-band mode/mean over schools) is performed in Python code, not by a model
       - A prompt that asks a model to return minutes, or to pick the typical/modal schedule, is a violation of this requirement
+      - "Extended to the v2/v3 evidence fields (evidence_quote, source_locus, stated_minutes) and the v3
+        school_year/applies_to fields (REQ-141) — each is a verbatim READING the model copies from the
+        document text, never an inference — a v3 prompt explicitly forbids inferring school_year from
+        the URL, domain, or today's date, and null is the correct answer when the page doesn't state one"
     tests:
       - tests/test_aggregate.py::TestGross::test_gross_is_end_minus_start
       - tests/test_aggregate.py::TestGross::test_no_deduction_applied
       - tests/test_aggregate.py::TestMode::test_exact_mode_not_cluster_mean_380_not_381
+      - tests/test_stage6_requests.py::test_prompt_registry_has_variants_and_never_computes_minutes
     created: "2026-06-21T00:00:00Z"
     updated: "2026-06-26T00:00:00Z"
     notes: "The principle the user locked down 2026-06-21. A prior design let models return pre-aggregated
@@ -1656,7 +1670,7 @@ requirements:
       are evidence pulled from the outside world (same category as the NCES downloads already under
       data/raw/), not our own pipeline process state, so CLAUDE.md's 'never modify files in data/raw/' rule
       applies: discovery.json is write-once (see REQ-071). See ACQUISITION_PIPELINE.md Stage 2 and
-      docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE2_DISCOVER_DESIGN_2026-06.md §6 for the full design-session trail."
+      docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE2_DISCOVER_DESIGN.md §6 for the full design-session trail."
 
   - id: REQ-070
     description: "[SUPERSEDED 2026-07-04 by REQ-104 — describes the retired Wave-1=Claude-WebSearch-subagent / Wave-2=OpenRouter-conditional dispatch model; Stage 2 was re-architected to the deterministic SERP cascade (Bright Data → Serper → Claude WebSearch residual). Mirrors the REQ-058 supersession. CARRIES FORWARD: the billing/auth/rate-limit HARD-STOP invariant (HTTP 401/402/429 → CONTROL FAILURE halt, never silent degrade to manual_flag) is still live — now in the OpenRouter client's BillingAuthError and the SERP cascade; do not lose this thread.] Stage 2 wave dispatch - Wave 1 (Claude WebSearch subagent) with a strict dispatch contract, Wave 2 (OpenRouter) conditional on a residual"
@@ -1699,7 +1713,7 @@ requirements:
       `claude -p` invocation per district (full headless agent, subscription-billed, schedulable) — the
       strict-JSON dispatch contract and all gating/residual/Wave-2 logic are unchanged; only the execution
       mechanism changes. Search providers become a pluggable layer (Claude CLI / OpenRouter / future
-      Bright Data, Brave). Tracked as REQ-104; see PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7a."
+      Bright Data, Brave). Tracked as REQ-104; see PIPELINE_GOVERNANCE_AND_STATE.md §7a."
 
   - id: REQ-071
     description: "Stage 2 output - discovery.json (full per-school audit trail) + candidates.json (capture-ready, deduped), written once and versioned on redo"
@@ -1800,7 +1814,7 @@ requirements:
       - page.pdf() is captured unconditionally for every HTML page, alongside innerText (all frames) and a full-page screenshot - no multi-column-detection trigger, removing the need to ever define the Reader-Routing spec's previously-unsolved Tier 1->2 escalation trigger
       - A URL that is already a PDF (direct fetch branch) never goes through page.pdf() - that would be a lossy, pointless re-render of a PDF viewer's own rendering
     tests:
-      - (verified via local fixture + real-network smoke test during implementation - see docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE3_CAPTURE_DESIGN_2026-06.md §6 decision log; no automated test harness exists yet for capture_discovery.mjs, which has no test framework wired up - REQ-079 watch-item)
+      - (verified via local fixture + real-network smoke test during implementation - see docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE3_CAPTURE_DESIGN.md §6 decision log; no automated test harness exists yet for capture_discovery.mjs, which has no test framework wired up - REQ-079 watch-item)
     created: "2026-06-23T00:00:00Z"
     updated: "2026-06-23T00:00:00Z"
     notes: "infrastructure/scraper/capture_discovery.mjs::dismissModals, setupPageDialogHandler, processTask.
@@ -1820,7 +1834,7 @@ requirements:
       - This path is explicitly intended to catch CDN-hosted materials (Finalsite, BoardDocs, SchoolWires/Blackboard, S3, etc. - discover.py's existing CMS_HOSTS set) that Discovery's domain-scoped search would never surface directly, not only Drive/Docs links - this must be reflected in test coverage, not left as an incidental side effect of Drive/Docs-focused cases
       - A duplicate URL already seen for a district (whether originally discovered or already-emergent) is never re-queued
     tests:
-      - (verified via local fixture during implementation: a 'Bell Schedule' link was correctly captured as emergent with source/found_on populated, while an unrelated 'About Us' link on the same page was correctly NOT picked up - see docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE3_CAPTURE_DESIGN_2026-06.md §6 decision log; no automated test harness exists yet for capture_discovery.mjs - REQ-079 watch-item)
+      - (verified via local fixture during implementation: a 'Bell Schedule' link was correctly captured as emergent with source/found_on populated, while an unrelated 'About Us' link on the same page was correctly NOT picked up - see docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE3_CAPTURE_DESIGN.md §6 decision log; no automated test harness exists yet for capture_discovery.mjs - REQ-079 watch-item)
     created: "2026-06-23T00:00:00Z"
     updated: "2026-06-23T00:00:00Z"
     notes: "infrastructure/scraper/capture_discovery.mjs::findEmergentLinks, processTask. The CDN-hosted-
@@ -1914,7 +1928,7 @@ requirements:
     notes: "Built 2026-06-23; blast-radius tiered 2026-07-02 (fable review issue #78) - a structural
       inconsistency now quarantines only the affected district rather than halting the whole run, and the
       check only runs on about-to-be-processed districts. See
-      STAGE4_PROCESS_DESIGN_2026-06.md §2a. The file-existence check is a deliberate escalation of
+      STAGE4_PROCESS_DESIGN.md §2a. The file-existence check is a deliberate escalation of
       the existing CONTROL FAILURE principle to finer granularity, not a new principle."
 
   - id: REQ-081
@@ -2153,7 +2167,7 @@ requirements:
       approved-set metrics rise exactly when true recall falls, so EVERY measured-pass now also reports the
       pruned-tail signal (harness scorecard + frontier per-config reject_quality + tuning_ledger
       reject_cohort_quality delta/regression flag). Retroactive #108 re-verify: reject-quality 1.0 under the
-      live config. Design: STAGE5_FILTER_DESIGN_2026-06.md §5d."
+      live config. Design: STAGE5_FILTER_DESIGN.md §5d."
 
   - id: REQ-091
     description: Stage 3 DOM segmentation (de-chrome) - header/footer/nav vs main as separate representations
@@ -2320,7 +2334,7 @@ requirements:
       are the wrong layer). Original deferral ('until batch 2 exists') EXPIRED — batches 00002-00007 exist
       (re-triaged 2026-07-02, issue #75): remains accepted/unbuilt by choice, best sequenced after the
       facet-level per-detector scoring pass (its input series — the tuning ledger — gains V2-era episodes
-      there first). Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7a."
+      there first). Authority: PIPELINE_GOVERNANCE_AND_STATE.md §7a."
 
   - id: REQ-098
     description: Package the acquisition tree + code move + wire the dependency/dead-code/architecture tooling baseline
@@ -2335,7 +2349,7 @@ requirements:
       - import-linter contracts encode the architecture - stage layering (1..9), forbidden (no stage imports the production LCT/DB internals), independence among stages, common as a base layer
     created: "2026-06-26T00:00:00Z"
     updated: "2026-06-26T00:00:00Z"
-    notes: "First step of the governance build sequence (PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §9 step 1 + §10).
+    notes: "First step of the governance build sequence (PIPELINE_GOVERNANCE_AND_STATE.md §9 step 1 + §10).
       Packaging is the highest-leverage prerequisite: with the current sys.path pattern, static-analysis coverage of
       inter-stage deps is near zero, so package FIRST, then wire the tools. Tools chosen proven-over-novel for an agent
       driver (import-linter over Tach; dependency-cruiser over madge/skott). Cross-boundary edges (subprocess / shared
@@ -2361,8 +2375,8 @@ requirements:
       - Cloud-ready via the existing DATABASE_URL path
     created: "2026-06-26T00:00:00Z"
     updated: "2026-06-26T00:00:00Z"
-    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §1a/§9 (step 2). Supersedes the SQLite decision in
-      STAGE5_FILTER_DESIGN_2026-06.md. Later governance steps (REQ-100 trigger UI, REQ-101 dispatch, REQ-102 CP-A view,
+    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE.md §1a/§9 (step 2). Supersedes the SQLite decision in
+      STAGE5_FILTER_DESIGN.md. Later governance steps (REQ-100 trigger UI, REQ-101 dispatch, REQ-102 CP-A view,
       REQ-104 Stage 2 headless) are enumerated in §9 and were registered tests-first at build time.
       Migration completed 2026-06-26; docs/DATABASE_SETUP.md and docs/GETTING_STARTED.md were updated for
       the isolated governance DB per the doc obligation.
@@ -2371,7 +2385,7 @@ requirements:
       IN PROGRESS — 103a DONE (commit 3c725f3): governance DB+user created, common/db.py (engine/session/Base,
       no infrastructure.database import), stage5_filter/models.py (precious Label/ClusterSplit), create_all
       verified, contracts 3/0. PAUSED 2026-06-26 for context headroom. RESUME at 103b (ingest sqlite->PG) —
-      full step-by-step resume guide in PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §1b."
+      full step-by-step resume guide in PIPELINE_GOVERNANCE_AND_STATE.md §1b."
 
   - id: REQ-105
     description: Stage 5 labeled-topology derivation from human labels + the NCES school count (replaces REQ-057)
@@ -2442,7 +2456,7 @@ requirements:
       - tests/test_state_event.py
     created: "2026-06-26T00:00:00Z"
     updated: "2026-06-26T00:00:00Z"
-    notes: "Governance/state re-architecture (PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §3). Option B
+    notes: "Governance/state re-architecture (PIPELINE_GOVERNANCE_AND_STATE.md §3). Option B
       event-sourcing + SQL-view current_state (both confirmed 2026-06-26). Follows REQ-103 (governance DB).
       Next: REQ-094 (filtered.json release generator)."
 
@@ -2491,7 +2505,9 @@ requirements:
       (default manual). Tests: test_gate_mode.py + endpoint/backup-guard tests; UI self-verified. STILL
       DEFERRED (keeps status 'accepted', not done): the confidence-escalating AUTO behavior itself — no
       live gate handler branches on the mode yet, so setting a gate 'auto' persists intent without changing
-      behavior. That per-gate auto path + cost-gating are follow-on work (#211 first, for gate@5)."
+      behavior. That per-gate auto path + cost-gating are follow-on work (#211 first, for gate@5).
+      gate@8 itself (the closing-argument manual gate) is now BUILT — see REQ-125; still manual-only,
+      same deferred-AUTO status as every other gate under this umbrella."
 
   - id: REQ-109
     github_issue: "#90 — per-band satisfaction / completion grain (doc-migration 2026-07, CLOSED 2026-07-13)"
@@ -2527,7 +2543,7 @@ requirements:
       - The surface is a projection over the state_event log (current-state), not a static list
     created: "2026-06-27T00:00:00Z"
     updated: "2026-06-27T00:00:00Z"
-    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §6/§7b/§9 (step 5). Scope shrank once filtered.json
+    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE.md §6/§7b/§9 (step 5). Scope shrank once filtered.json
       became event-driven (REQ-094) — the 'Generate trigger' is gone; what remains is the staleness/attention VIEW.
       Console-first build, driven stage-by-stage by batch_00002 as the forcing function (see REQ-102)."
 
@@ -2552,14 +2568,20 @@ requirements:
       - tests/test_stage6_dispatch_bridge.py
       - tests/test_stage6_handoff_api.py
       - tests/test_stage6_requests.py
+      - tests/test_stage6_draft_api.py
+      - tests/test_stage6_draft_store.py
     created: "2026-06-27T00:00:00Z"
-    updated: "2026-07-01T00:00:00Z"
-    notes: "BUILT to the Stage 6->7 seam; merged PR #2 2026-06-30. Authority: STAGE6_DISPATCH_DESIGN_2026-06.md
+    updated: "2026-07-15T00:00:00Z"
+    notes: "BUILT to the Stage 6->7 seam; merged PR #2 2026-06-30. Authority: STAGE6_DISPATCH_DESIGN.md
       §0 (as-built). OPEN #1 (config grain) RESOLVED by the build: per-representation. The cheap-trio/
       accuracy-pair cascade question collapsed into the decided template (2 cross-family voters -> 3rd-family
       judge); the cross-config cascade + composition stay open (council lab). Acceptance criteria updated
       2026-07-01 (fable review) to match the as-built seam; original design-era criteria in git history.
-      Verified-only dispatch mode + per-rep council override added post-merge (330e43b, d50e9a6)."
+      Verified-only dispatch mode + per-rep council override added post-merge (330e43b, d50e9a6).
+      2026-07-15: the gate@6 console preview/approve step is now a PERSISTED, reopenable draft
+      (DispatchDraft/DispatchDraftDistrict) rather than an ephemeral in-page checkbox selection — see
+      REQ-127 (the persisted-draft mechanism itself) and REQ-128 (origin derived from receipts). This
+      REQ's routing/handoff core is unchanged and reused as-is by the draft-freeze path (PR #256)."
 
   - id: REQ-102
     description: Governance console gate@1 queue view + stage selector — review/approve a queued batch as a recorded gate@1 event; create the batch-of-record via a console action, not a direct script run
@@ -2579,14 +2601,14 @@ requirements:
     updated: "2026-07-01T00:00:00Z"
     notes: "BUILT (backend 2026-06-27, frontend 2026-06-28); validated end-to-end — batch_00002 created ->
       edited -> approved through the UI. Status bumped 2026-07-01 (fable review).
-      Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7/§7b/§11h.
+      Authority: PIPELINE_GOVERNANCE_AND_STATE.md §7/§7b/§11h.
       FORCING FUNCTION (decided 2026-06-27): batch_00002 is created and advanced ONLY through the console,
       stage view by stage view, driving the console toward a self-governing/self-sustaining app under the
       ramp-up model (manual gates + high supervision now, easing back later). Hand-run queue_batch.py is for
       dev/test batches only, never the batch-of-record. This is the FIRST console deliverable."
 
   - id: REQ-104
-    description: "Stage 2 discovery goes headless + pluggable-provider — DONE 2026-06-28 as a deterministic SERP cascade (NOT claude -p Wave 1). The pluggable-provider layer was the right call; a measured 5-provider bake-off (data/acquisition/diagnostics/) replaced the provider: Wave 1 = Bright Data SERP (real Google, recurring-free, 98%) + Serper failover on API failure; Wave 2 = Claude WebSearch on the residual (different index). Index predicts recall — own-index Perplexity cratered (43%). Run live on batch_00002/00003 via the console. Authority: STAGE2_DISCOVER_DESIGN_2026-06.md §7."
+    description: "Stage 2 discovery goes headless + pluggable-provider — DONE 2026-06-28 as a deterministic SERP cascade (NOT claude -p Wave 1). The pluggable-provider layer was the right call; a measured 5-provider bake-off (data/acquisition/diagnostics/) replaced the provider: Wave 1 = Bright Data SERP (real Google, recurring-free, 98%) + Serper failover on API failure; Wave 2 = Claude WebSearch on the residual (different index). Index predicts recall — own-index Perplexity cratered (43%). Run live on batch_00002/00003 via the console. Authority: STAGE2_DISCOVER_DESIGN.md §7."
     type: functional
     priority: should
     status: tested
@@ -2597,7 +2619,7 @@ requirements:
       - The existing deterministic gating / flatten / dedup / atomic-write / registry path is unchanged; runnable headless from the console (background job), no chat required
     created: "2026-06-27T00:00:00Z"
     updated: "2026-07-01T00:00:00Z"
-    notes: "Authority: STAGE2_DISCOVER_DESIGN_2026-06.md §7. Acceptance criteria rewritten 2026-07-01 (fable
+    notes: "Authority: STAGE2_DISCOVER_DESIGN.md §7. Acceptance criteria rewritten 2026-07-01 (fable
       review) to the as-built SERP cascade — the original criteria described the claude-p-as-Wave-1 design
       this req's own description records as replaced; originals in git history. The stage2-discover skill is
       retired (see REQ-058 supersession)."
@@ -2614,8 +2636,8 @@ requirements:
       so the failure-reason breakdown is queryable. (2) CONSOLE: the Stage 3 view (ungated → health/emergent
       readout from the DB cache + a per-district Node-Playwright capture run trigger, a background job).
       Stage 2's console repointed to read the discovery_school cache too (self-healing for pre-hook batches).
-      Also lowered the Wave-2 claude -p timeout 420s→75s (STAGE2 §7d-1). Authority: STAGE3_CAPTURE_DESIGN_2026-06.md
-      §3, PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §1/§7a/§11f/§11h."
+      Also lowered the Wave-2 claude -p timeout 420s→75s (STAGE2 §7d-1). Authority: STAGE3_CAPTURE_DESIGN.md
+      §3, PIPELINE_GOVERNANCE_AND_STATE.md §1/§7a/§11f/§11h."
     type: functional
     priority: should
     status: tested
@@ -2644,7 +2666,7 @@ requirements:
       process run that resolves a whole batch triggers _ingest_stage5_if_complete in the app layer →
       ingest_batch + a per-district furthest_stage→5 event, so Stage 5 loads with no lag. Hygiene:
       poppler/tesseract/ghostscript documented (not pip-installable); img2table dropped. Authority:
-      STAGE4_PROCESS_DESIGN_2026-06.md §4a/§4b, PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §12."
+      STAGE4_PROCESS_DESIGN.md §4a/§4b, PIPELINE_GOVERNANCE_AND_STATE.md §12."
     type: functional
     priority: should
     status: tested
@@ -2678,7 +2700,7 @@ requirements:
       (3) PLUMBING: SQLite vestige (paths.REVIEW_DB / review.db) retired; signal tables a never-dropped live
       working store on the incremental path. No per-label state_event (completion-only log; recent-sort reads
       label.updated_at). NCES locale facet descoped (not in our CCD data). Authority:
-      STAGE5_FILTER_DESIGN_2026-06.md §A-D, PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §12c."
+      STAGE5_FILTER_DESIGN.md §A-D, PIPELINE_GOVERNANCE_AND_STATE.md §12c."
     type: functional
     priority: should
     status: tested
@@ -2724,7 +2746,7 @@ requirements:
     created: "2026-07-01T00:00:00Z"
     updated: "2026-07-01T00:00:00Z"
     notes: "MERGED to main (PR #3, cde04e9). Measured over 440 labels: tier-A precision 0.79 / recall 0.88 /
-      tier-D 0-target leak / A+B recall 1.0. Design: STAGE5_FILTER_DESIGN_2026-06.md §2 (detectors/combiner)
+      tier-D 0-target leak / A+B recall 1.0. Design: STAGE5_FILTER_DESIGN.md §2 (detectors/combiner)
       + §5 (harness). Open follow-on: facet-level per-detector scoring (as v2.1 re-tagging fills facets).
       NOTE (fable review 2026-07-01): the V1 remnants (tier_and_category / DEFAULT_TIER_PARAMS / frontier.py)
       are still in-tree but dead on the ingest path — retire or re-point frontier at DEFAULT_DETECTOR_PARAMS;
@@ -2757,7 +2779,7 @@ requirements:
       - UI self-verified with Playwright before shipping (per the standing 'don't ship visuals blind' lesson)
     created: "2026-07-01T00:00:00Z"
     updated: "2026-07-01T00:00:00Z"
-    notes: "Design: STAGE5_FILTER_DESIGN_2026-06.md §4 (three-axis). Tests: test_stage5_scoring.py (migration),
+    notes: "Design: STAGE5_FILTER_DESIGN.md §4 (three-axis). Tests: test_stage5_scoring.py (migration),
       test_stage5_facets_api.py (facets_json). Playwright-verified (3 axes render, migration seeds confounders,
       page-range parses, detail pane text-first). Stage 6 verified clean (STAGE6_DISPATCH_DESIGN §0 ripple check).
       Follow-on: facet-level per-detector scoring once re-tagging fills facets; harvest_slice using human pages."
@@ -2782,7 +2804,7 @@ requirements:
       - infrastructure/scraper/capture_fingerprint.test.mjs (categorizeEmbedHost)
     created: "2026-07-01T00:00:00Z"
     updated: "2026-07-01T00:00:00Z"
-    notes: "Design: STAGE5_FILTER_DESIGN_2026-06.md §6. Additive to Stage 3; applies to future captures
+    notes: "Design: STAGE5_FILTER_DESIGN.md §6. Additive to Stage 3; applies to future captures
       (existing captures backfill cms_hint only, which is already on disk)."
 
   - id: REQ-116
@@ -2794,7 +2816,7 @@ requirements:
     tests:
     created: "2026-07-01T00:00:00Z"
     updated: "2026-07-01T00:00:00Z"
-    notes: "Design: STAGE6_DISPATCH_DESIGN_2026-06.md §4. The rationale here is that the presence of a district hub schedule renders the need for representations of other URLs moot. Sending more would needless add to cost. If more information is needed, the extraction council can request more representations and more URLs. Acceptance criteria + tests + implementation tracked: GitHub #83."
+    notes: "Design: STAGE6_DISPATCH_DESIGN.md §4. The rationale here is that the presence of a district hub schedule renders the need for representations of other URLs moot. Sending more would needless add to cost. If more information is needed, the extraction council can request more representations and more URLs. Acceptance criteria + tests + implementation tracked: GitHub #83."
 
   - id: REQ-117
     description: "Stage 7 (Extract): execute a frozen gate@6 handoff's paid OpenRouter council calls per representation, parse per-school {start_time,end_time,grade_level,school_name} facts (REQ-054 read-times invariant), reach cross-family per-school consensus (±15 min, REQ-056) with a 3rd-family judge on disagreement, and persist per-school facts to a GOVERNANCE-DB working table (school_fact) — NEVER the LCT DB (benchmark batches are walled off; only Stage 9 promotes non-benchmark results). gate@7 reviews extraction results + council requests/recommendations."
@@ -2824,7 +2846,7 @@ requirements:
       - tests/test_stage7_api.py
     created: "2026-07-02T00:00:00Z"
     updated: "2026-07-03T00:00:00Z"
-    notes: "Design/present-state: STAGE7_EXTRACT_DESIGN_2026-06.md §0 (rewritten present-state-first). Council extraction, GT scoring, durability/resume, the request-more-evidence detect/persist/review engine, and the gate@7 console are all built and validated against real batch_00000 data. Reuses stage6_handoff.requests/prompts (assembly) + stage8_aggregate.aggregate (consensus/mode). The two family maps (aggregate.py short-name vs councils.py full-id) were unified into common.model_families keyed on full OpenRouter ids (single source of truth; grimp-verified importers). Remaining work (request-loop execution; Council Lab items) tracked on GitHub: #80 (Council Lab), #81 (spray A/B), #82 (image-council judge not vision-capable)."
+    notes: "Design/present-state: STAGE7_EXTRACT_DESIGN.md §0 (rewritten present-state-first). Council extraction, GT scoring, durability/resume, the request-more-evidence detect/persist/review engine, and the gate@7 console are all built and validated against real batch_00000 data. Reuses stage6_handoff.requests/prompts (assembly) + stage8_aggregate.aggregate (consensus/mode). The two family maps (aggregate.py short-name vs councils.py full-id) were unified into common.model_families keyed on full OpenRouter ids (single source of truth; grimp-verified importers). Remaining work (request-loop execution; Council Lab items) tracked on GitHub: #80 (Council Lab), #81 (spray A/B), #82 (image-council judge not vision-capable)."
 
   - id: REQ-118
     description: "Stage 7 request-more-evidence EXECUTION: an approved gate@7 ExtractionRequest fires the target stage's back-edge. Two mechanisms — (a) 7->6 DIRECT re-dispatch of an already-captured alternate representation (no new capture, bypasses Stage 1); (b) 7->2/7->3/7->1 wrapped in a Stage-1 FOLLOW-UP BATCH (any NEW capture/discovery routes through Stage 1 and stays reviewable at gate@1 — governance §11d), collected into one batch honoring the 12-district cap. Guarded by the REQ-051 budget governor + a per-district×band request-depth guard so the cyclic loop provably terminates."
@@ -2847,7 +2869,7 @@ requirements:
       - tests/test_stage7_api.py::test_execute_endpoint_refused_is_409
     created: "2026-07-03T00:00:00Z"
     updated: "2026-07-03T00:00:00Z"
-    notes: "Closes the request-more-evidence loop left open by REQ-117 (its last acceptance criterion) and STAGE7 §3F. Depends on REQ-051 (budget governor, built first). Design decisions (Ian, 2026-07-03): build BOTH mechanisms + all four routes; collect approved NEW-work requests into ONE follow-up batch; keep gate@7 approve as pure review with a separate compose step; build REQ-051 first as a hard prerequisite. The 'wrap NEW capture/discovery in a Stage-1 batch' rule (Ian) resolves the §3F-vs-§11d tension: only 7->6 (existing reps) is a true direct back-edge; 7->2/7->3/7->1 all converge on a Stage-1 follow-up batch. Authority: STAGE7_EXTRACT_DESIGN_2026-06.md §3F, PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §11b/§11d/§11e."
+    notes: "Closes the request-more-evidence loop left open by REQ-117 (its last acceptance criterion) and STAGE7 §3F. Depends on REQ-051 (budget governor, built first). Design decisions (Ian, 2026-07-03): build BOTH mechanisms + all four routes; collect approved NEW-work requests into ONE follow-up batch; keep gate@7 approve as pure review with a separate compose step; build REQ-051 first as a hard prerequisite. The 'wrap NEW capture/discovery in a Stage-1 batch' rule (Ian) resolves the §3F-vs-§11d tension: only 7->6 (existing reps) is a true direct back-edge; 7->2/7->3/7->1 all converge on a Stage-1 follow-up batch. Authority: STAGE7_EXTRACT_DESIGN.md §3F, PIPELINE_GOVERNANCE_AND_STATE.md §11b/§11d/§11e."
 
   - id: REQ-119
     description: External AI service (LLM) calls MUST stream results (SSE), never a single blocking read — a provider-agnostic contract
@@ -2914,7 +2936,7 @@ requirements:
       NOT a current hole — the operator census-labels every completed district (all tiers, rejects included), so harness
       recall (A+B 0.9961) is already honest; the quota is the instrument that REPLACES census-labeling, switched on before it
       stops (i.e. before gate@5 goes auto). Sibling instrument: REQ-121/#210 (calibration meter, same build-now-while-truth-
-      exists logic). Authority: STAGE5_FILTER_DESIGN_2026-06.md §5a, PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §11b,
+      exists logic). Authority: STAGE5_FILTER_DESIGN.md §5a, PIPELINE_GOVERNANCE_AND_STATE.md §11b,
       production-quality-control-research/FINDINGS-AND-DECISIONS.md §0/§1. Root cause the instrument is mandatory: the gate is
       deterministic (Swaminathan & Joachims — counterfactual correction impossible under deterministic filtering; only
       injected stochasticity recovers the signal)."
@@ -2932,7 +2954,7 @@ requirements:
       - "It logs whether the human SAW the confidence (blinded flag), for an automation-bias-free error subsample"
       - "The schema is sufficient to sweep θ and certify the worst slice post-hoc WITHOUT baking in a θ at log time (rule of three: ~300 clean audited items in a gate's accept region certify a 1% ceiling; the corpus accrues only forward in time)"
       - "WIRED at gate@5 (label → sort_score proxy vs tier-derived auto rec, incl. the tier-D-reject-but-human-target survivorship signal), gate@6 (dispatch → n_send proxy, accept-only), gate@7 (extract-request review → council agreement ratio proxy) — each on the SAME transaction as the gate's existing write"
-      - "gate@8 (approving the council's extracted TIMES, school_fact.human_determination) is the STRONGEST signal but is DEFERRED until Stage 8 is built (#88/#89) — approving times is a Stage-8 activity, not gate@7 (Ian, 2026-07-10)"
+      - "gate@8 (approving the council's extracted TIMES, school_fact.human_determination) is the STRONGEST signal — WIRED as of REQ-126 (gate8_decision_record, proxy=min_band_coverage) once Stage 8 shipped (#88/#89); this REQ's own criteria stay written as they were decided (deferred-until-built), REQ-126 is the as-built record"
       - "NON-GOALS (deferred, governance-blocked): θ selection, the auto-escalation policy, per-gate α/δ targets — this is ONLY the instrument"
     tests:
       - tests/test_calibration.py
@@ -2948,8 +2970,11 @@ requirements:
       translation stays in the wiring layer, not common/. WIRED (2026-07-10): process_governance/gate_calibration.py
       (console→calibration vocab translation — the wiring layer, not common/) + hooks in save_label (gate@5), stage6_dispatch
       _record_dispatched_events (gate@6, beside the dispatched state_event), and extract_request_review (gate@7); the corpus now
-      accrues forward from every gate action. gate@8 (verify extracted TIMES) deferred to Stage 8 (#88/#89) — a documented seam
-      in gate_calibration.py. Decision authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §11b (the 'instrument-now, thresholds-later' decision,
+      accrues forward from every gate action. gate@8 (verify extracted TIMES) — the seam this note called deferred to Stage 8
+      (#88/#89) is now WIRED: gate_calibration.py::gate8_decision_record() + a server.py call on the gate@8 decision endpoint
+      (2026-07-14 session, closes the REQ-121/#210 seam). See REQ-126 for the as-built record; test_gate_calibration.py's own
+      module docstring still says gate@8 is deferred as of this writing — that is stale and should be corrected alongside
+      REQ-126's test build-out. Decision authority: PIPELINE_GOVERNANCE_AND_STATE.md §11b (the 'instrument-now, thresholds-later' decision,
       2026-07-10), production-quality-control-research/FINDINGS-AND-DECISIONS.md §0/§3. Sibling instrument: REQ-120/#211
       (exploration quota), same build-now-while-truth-exists logic. Epic #209 Phase 0."
 
@@ -2977,7 +3002,10 @@ requirements:
       facts persisted; only the view regressed. Fix: pure merge core stage8_aggregate/aggregate.py::merge_fact_runs
       (accepted-beats-unresolved / earliest-accepted-wins / latest-diagnostic-wins) + cross-run queries in
       process_governance/server.py (extract_district, extract_districts). Sibling issue #233 (auto-withdraw directives
-      whose target band is no longer barren per the CUMULATIVE state, now REQ-123) builds on this same merge. Discovered
+      whose target band is no longer barren per the CUMULATIVE state, now REQ-123) builds on this same merge. 2026-07-14:
+      REQ-141 (#254 school-year precedence) layers a year-based supersession rule ON TOP of this merge, strictly between
+      ACCEPTED facts only — the earliest-accepted-wins / never-regress rules here are untouched; a newer-year fact can
+      supersede an older one, but a solid accepted fact is still never displaced by an unresolved one, in either order. Discovered
       because the ramp-up model had a human eyeballing real gate@7 output (governance §11b) — the gate caught what
       review missed."
 
@@ -3038,4 +3066,461 @@ requirements:
     notes: "#205 part 1. Verified by mutation at build time: a wrong-type cap + a deleted required cap key
       in budget.json each turned the suite red. Part 2 (datacontract-cli contracts on the stage receipt
       artifacts) deliberately deferred until #478 stabilizes the Stage 8 artifacts (#253/#254 change them) —
-      split to its own tracker issue."
+      split to its own tracker issue (#484). 2026-07-15: epic #478 is now CLOSED (#253/#254/#257/#258/#473/
+      #474/#91/#498 all shipped) — the blocking condition is satisfied. #484 remains open with no REQ entry
+      of its own yet; its acceptance criteria (datacontract.yaml per receipt artifact — discovery.json/
+      candidates.json/captures.json/processed.json/filtered.json — validated via `datacontract test` in CI)
+      should get the same fitness-function-style REQ this one models once #484 is actually scheduled, rather
+      than being minted here ahead of a design pass."
+
+  # ---------------------------------------------------------------------------
+  # gate@8 (Stage 8 Aggregate) build + editorial primitives, requirements/tests
+  # audit sweep (2026-07-15, retrospective over PRs #250-#500). Cross-referenced
+  # against docs/REQUIREMENTS.yaml + tests/ by 6 parallel review agents; IDs
+  # assigned in PR-merge-chronological order.
+  # ---------------------------------------------------------------------------
+
+  - id: REQ-125
+    github_issue: "#89 — gate@8 closing-argument manual gate"
+    description: "gate@8 (Stage 8 Aggregate) closing-argument review — per-band claim + evidence chain + negative space, human approve/send-back at district grain, with human override of extracted times feeding the band mode"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Council v2/v3 extraction grounds every extracted (start,end) pair in a verbatim evidence_quote (+ optional source_locus), carried through consensus_school_facts into school_fact.evidence_json; v1 output stays byte-identical (no backfill)
+      - The explicit-minutes second path (stated_minutes + stated_minutes_quote) is corroboration only — never computed, only copied from an explicit document statement (REQ-054 boundary)
+      - closing_argument.py assembles, per band, the claim (school_fact), the evidence chain dereferenced via the immutable Stage-6 handoff (url/reps) + capture time, sampling sufficiency (NCES denominator, plurality share), and negative space (unresolved / contamination / unsatisfied bands / coverage gaps)
+      - Approval is all-or-nothing at the DISTRICT (LCT is a district-level metric); each decision freezes the closing argument it acted on (receipt_json) plus a facts_fingerprint so a later re-extraction makes the approval detectably stale; a send-back requires a reason
+      - gate@8 queue excludes batch_type='benchmark' districts — the same wall Stage 9 uses
+      - A human override of a school's extracted times RECOMPUTES that band's modal determination through the canonical aggregate.gross_from_times() + is_plausible() (ONE home for the REQ-055 PLAUSIBLE gate, shared with the council path) — a note-only override annotates without moving the mode; council-original times are preserved per school for the receipt
+      - The override endpoint validates the effective (start,end) pair server-side before storing — unparseable time or implausible gross (outside 240-510 min) is rejected with 400 and nothing is stored; a stored invalid legacy override surfaces a loud override_error instead of silently reverting
+      - override_applied / override_error are computed server-side once, never left to client trust
+    tests:
+      - tests/test_closing_argument.py
+      - tests/test_stage8_approval.py
+      - tests/test_stage8_api.py
+      - tests/test_aggregate.py::TestPlausibility
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "BUILT across PR #252 (v2 evidence, closing_argument.py, approval.py/models.py, stage8.js
+      console) and PR #255 (override feeds the band mode via aggregate.gross_from_times()/is_plausible(),
+      plus a max-effort review round that added the 400-on-invalid validation). Design authority:
+      STAGE8_AGGREGATE_DESIGN.md §2. Supersedes the 'gate@8 = old CP-C' placeholder language in REQ-108's
+      acceptance criteria. Deferred by design (not this REQ's scope): #90 (per-band satisfied signal),
+      the auto path, 8->1/8->6 back-edge EXECUTION (send-back records intent only), Stage 9 (#93)."
+
+  - id: REQ-126
+    github_issue: "#210/#89 — gate@8 calibration wiring (the REQ-121 seam closed)"
+    description: "gate@8 calibration record — a shadow-mode row on every district approve/send-back decision, proxy=min_band_coverage, auto_recommendation=None (gate@8 has no auto path yet)"
+    type: functional
+    priority: should
+    status: implemented
+    acceptance_criteria:
+      - gate_calibration.gate8_decision_record() builds a calibration_event row keyed gate='gate@8', item=district:{district_id}, proxy_name='min_band_coverage', proxy_value=min_coverage, human_decision derived from disposition (approve/send-back), auto_recommendation=None
+      - The record is written via CAL.record_calibration on the SAME transaction as the gate@8 approval/send-back write, mirroring the gate@5/6/7 pattern
+      - A behavioral test drives the real gate@8 decision endpoint and asserts a calibration_event row lands — not just that gate8_decision_record() builds a correctly-shaped dict in isolation
+    tests:
+      - tests/test_gate_calibration.py::test_gate8_decision_record_maps_disposition_to_human_decision
+      - tests/test_gate_calibration.py::test_gate8_approve_writes_calibration_event
+      - tests/test_gate_calibration.py::test_gate8_send_back_writes_calibration_event
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "gate_calibration.py::gate8_decision_record() exists and server.py calls CAL.record_calibration()
+      at the gate@8 decision endpoint — this closes the seam REQ-121's notes explicitly left open
+      ('gate@8 ... DEFERRED until Stage 8 is built (#88/#89)'). Found via code read, NOT via a test:
+      test_gate_calibration.py had zero gate@8 coverage and its module docstring still called gate@8
+      deferred — both fixed by this REQ's test build-out (2026-07-15 audit sweep)."
+
+  - id: REQ-127
+    github_issue: "#256"
+    description: "Stage 6 console: dispatch selection is a PERSISTED, reopenable draft (DispatchDraft/DispatchDraftDistrict), mirroring gate@1's Batch pattern — replaces the prior ephemeral in-page checkbox selection. One unified left-pane list (drafts + frozen dispatches); freeze reuses stage6_dispatch.dispatch_handoff unchanged."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - A draft dispatch (districts, per-district overrides, verified-only flag) is a durable governance-DB row, not page/session state — it survives a page reload / new browser session, and is independently listable, editable, and abandon-able before freeze
+      - Removing a district from a draft never deletes its row (soft-remove, restorable) — edit history is preserved
+      - Freeze is refused (409) on a non-draft-status draft, a zero-included-district draft, or a stale expected-identity precondition; freeze on a valid draft produces an immutable handoff_<hash>_<ts>.json exactly as REQ-101 defines, and flips the draft to frozen
+      - The left-pane list merges drafts and frozen handoffs into one chronological view (drafts sort first); the center pane is populated immediately on selection, never idle-until-Preview
+      - verified-only mode never records the draft's own synthetic id as a district row (regression guard)
+    tests:
+      - tests/test_stage6_draft_api.py
+      - tests/test_stage6_draft_store.py
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "PR #256 (merged, follow-up copy fix 64bb524). Extends/refines REQ-101's console-UX acceptance
+      criterion with the as-built persisted-draft mechanism; REQ-101's routing/handoff core is unchanged
+      and reused as-is. Design: STAGE6_DISPATCH_DESIGN.md (post-#256 revision). TEST GAP (not built in
+      this audit pass): no test asserts persistence survives an actual NEW DB session/connection opened
+      after write (restart-simulation) — current coverage proves durability only via the govdb fixture's
+      single-session read-after-write."
+
+  - id: REQ-128
+    github_issue: "#256"
+    description: "Dispatch origin ('draft' | 'stage7' | 'console') is DERIVED on every read from receipts (extraction_request.executed_ref + route), never stored on the immutable handoff table — no backfill, no drift, re-derivable by any outsider re-reading the same receipts."
+    type: constraint
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - A handoff with no draft row and no back-edge extraction_request receipt classifies as origin='console' (a genuine first-run/batch dispatch) — NOT inferred from absence-of-evidence as 'stage7' (the bug the first cut shipped and PR #256 fixed post-merge)
+      - A handoff produced by a 7->6 back-edge (extraction_request.executed_ref referencing it, route='7->6') classifies as origin='stage7', deterministically, including for historical handoffs predating this feature
+      - A handoff authored via a DispatchDraft classifies as origin='draft' while the draft is open, transitioning per the above rules once frozen
+      - origin is computed by ONE shared function used identically by the list endpoint and the single-handoff detail endpoint — no second, divergent origin-inference path can exist
+    tests:
+      - tests/test_stage6_draft_store.py::TestListDispatchRows
+      - tests/test_stage6_draft_api.py
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "PR #256 second commit, corrects a shipped-then-fixed-pre-merge origin-inference flaw
+      (mislabeled genuine console dispatches as 'from Stage 7'). Relates to the project's standing
+      'derive provenance from receipts, never infer from absence-of-evidence' principle. TEST GAP (not
+      built in this audit pass): no committed regression fixture locks in the historical
+      20-stage7/12-console/0-orphan reclassification count claimed in the PR description."
+
+  - id: REQ-129
+    github_issue: "#477"
+    description: "Cross-family external code-review harness (tools/crossfam_review) applies the pipeline's own REQ-056 cross-family-consensus mechanism to code review: non-Claude OpenRouter finder families read the codebase in file-bounded shards; a rotating 3-family judge cascade adjudicates deduped candidates; survivors file to the GitHub tracker with a stable fingerprint for idempotent re-runs. Deliberately outside infrastructure/ (reviews the pipeline, is not part of it)."
+    type: functional
+    priority: should
+    status: implemented
+    acceptance_criteria:
+      - A candidate confirms only with >=2 non-error votes (no lone-vote confirms at the spend cap)
+      - Spend is reserve-then-settle against a hard USD cap; real cost comes from OpenRouter usage.cost, never an estimate
+      - Re-runs are idempotent — --resume-council judges only previously-un-adjudicated candidates; --live skips any crossfam-fp fingerprint already filed on the tracker
+      - Bare invocation (no flags) makes zero paid calls (free preflight); --run makes paid calls but only prints issues; --live is the only mode that files to the tracker
+      - Each filed issue carries a machine-parseable crossfam-meta marker (finders + judge votes) enabling later effectiveness analysis without re-deriving provenance
+    tests:
+      - tests/test_crossfam_review.py
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "PR #477 (additive, tools/ outside the import-linter's infrastructure root). Campaign results
+      2026-07-13: 2,949 raw -> 1,833 unique -> 459 corroborated -> 214 confirmed, filed as #259-#472,
+      ~$22.4 spend. Effectiveness analysis: docs/technical-notes/CROSSFAM_EXTERNAL_REVIEW_2026-07-13.md.
+      TEST GAP (not built in this audit pass): run.py (CLI entrypoint), analyze.py, client.py, prompts.py,
+      schemas.py have no direct test coverage — test_crossfam_review.py only imports council/dedup/finder/
+      github_sink/roster/shards/findings/spend."
+
+  - id: REQ-130
+    github_issue: "#251 (epic #482)"
+    description: "A PR must structurally fail CI unless its base branch is main, and both CI workflows run on every PR base (not just main) — prevents a stacked PR merging into a stale/orphaned parent branch while showing green everywhere and main receives nothing."
+    type: constraint
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - .github/workflows/pr-base-guard.yml fails (red X, non-zero exit) on any pull_request event where github.base_ref != main
+      - The guard re-evaluates on the edited trigger, so retargeting the base to main turns it green without a new commit
+      - lint.yml and test.yml declare pull_request with no branches filter, so a stacked PR (base = a feature branch) still runs both suites, not zero
+      - delete_branch_on_merge is enabled on the repo so a merged parent's branch deletion auto-retargets open child PRs to main (GitHub-native; documented as a companion control, not a fitness function)
+    tests:
+      - tests/test_ci_workflows.py
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "Implemented PR #483, closes #251. Prior to this audit sweep the mechanism was enforced by CI
+      running, not by an assertion in the pytest suite — a future edit reintroducing a branches:[main]
+      filter or weakening the guard's condition would not have been caught by `pytest -q`. Closed by
+      test_ci_workflows.py (yaml.safe_load-based fitness function, 2026-07-15 audit sweep)."
+
+  - id: REQ-131
+    github_issue: "#481 (epic)"
+    description: "Every test file under tests/ must exercise real production code (import at least one non-test, non-fixture project module) — a standing guard against self-testing theater (a test file whose helpers are all defined in the test class itself, so a 100% pass rate evidences nothing)."
+    type: constraint
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - A fitness-function test statically scans every tests/test_*.py file's imports and asserts at least one import resolves to a module under infrastructure/, tools/, or another declared project root — not stdlib, not pytest/hypothesis, not another tests/ helper
+      - A new test file that imports zero production code fails the suite at CI time, not at the next manual review
+      - The check is allow-listable for genuinely infra-only test files (e.g. a pure config-parses-OK check), so the guard doesn't force awkward imports into legitimately import-light tests
+      - Deliberately scoped to the "zero production import" bright line only — weaker theater (a real import with a trivially-true assertion) stays a review/audit concern, not a static-analysis one
+    tests:
+      - tests/test_suite_hygiene.py
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "PR #486 fixed the KNOWN instances (test_bell_schedule_enrichment.py,
+      infrastructure/quality-assurance/tests/test_utilities.py — both imported zero production code) by
+      hand, driven by an external one-time crossfam review (#477), not by a standing check. Without this
+      REQ, a materially identical file could have been added the next day and passed CI indefinitely.
+      Built as tests/test_suite_hygiene.py, 2026-07-15 audit sweep, closing the exact gap #486 exposed."
+
+  - id: REQ-132
+    github_issue: "#403 (epic #478)"
+    description: "Stage-8 band rollup must never crash on a None-gross accepted fact — a None-gross fact stays visible in schools[] but can never be selected as the band's representative, and an all-None band is omitted (same posture as an empty band), never raised."
+    type: constraint
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - district_bands_from_facts(accepted) does not raise when any accepted fact carries gross=None (mixed or all-None per band)
+      - A None-gross fact is excluded from representative-school selection but IS still present in the returned band's schools[] list — an accepted fact is never silently dropped from the record
+      - A band whose every accepted fact has gross=None is omitted from the output dict entirely (same as an empty band), not raised as an error
+    tests:
+      - tests/test_aggregate.py
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "Root cause: aggregate_band already ignores None values when computing the modal/mean value, but
+      the representative-school selection over ALL facts (including None-gross ones) TypeErrored; an
+      all-None band TypeErrored too. Fixed in aggregate.py::district_bands_from_facts (PR #487)."
+
+  - id: REQ-133
+    github_issue: "#257 (epic #478)"
+    description: "Human exclude-from-band — a district-grain, audit-visible, never-destructive correction for a school whose extracted observation is correct but whose BAND MEMBERSHIP is stale (temporal grade reconfiguration); the band mode recomputes over non-excluded schools."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - BandExclusion is keyed (district_id, band, norm_school) — a district/school-grain judgment, not fact-grain, so it survives a follow-up re-extraction minting new fact rows for the same school
+      - Excluded facts are removed from the band's mode/count computation BEFORE aggregation, but remain visible — struck-through with the reason in the console and in every frozen receipt, never deleted from the underlying record
+      - A fully-excluded band is omitted from bands[] and surfaces instead in negative_space.band_exclusions — the audit trail survives even when a band has zero remaining members
+      - Exclusion matching is on the normalized school name, scoped per (school, band) — a genuine K-12 can be excluded from elementary while staying counted in high
+      - closing_argument fingerprint includes exclusions (an exclusion recorded after gate@8 approval flips the approval stale, symmetric with the override rule)
+      - band_exclusion is a precious table — git-backed to band_exclusions.json via the stage8_approvals backup pattern
+    tests:
+      - tests/test_closing_argument.py
+      - tests/test_stage8_api.py
+      - tests/test_precious_backup_guard.py::test_tracked_backups_cover_all_precious_files
+      - tests/test_precious_backup_guard.py::test_all_exporters_route_through_the_guard
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "PR #488. Live-verified against Coffee County 0100810 (Kinston/Zion Chapel, PK-12 in 2023-24
+      NCES presenting as high schools in 2025-26) — an exact 2-2 tie shape resolving to the true modal
+      435. Human sibling of the automatic detectors #245 (degenerate names) and #237 (single-school-LEA
+      contamination)."
+
+  - id: REQ-134
+    github_issue: "#258 (epic #478)"
+    description: "Name-vs-NCES-level mismatch detector — a pure predicate flagging when a school's NAME carries a level token contradicting its NCES level tag or an assigned band; detect-and-flag ONLY, never auto-reject or auto-exclude."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - name_level_mismatch(school_name, nces_level, bands, gslo=None, gshi=None) is a pure predicate returning None or a conflict record
+      - Whole-word token matching only — a substring like 'Highland'/'Middleton' never triggers; 'junior high' claims its tokens before bare 'high'
+      - K-8/K-12/multi-band names can never mismatch — a multi-band name legitimately sits in any band the name spans
+      - Wired at gate@8 on both surfaces — the roster (Stage-1 NCES-tagged school placement) and the extracted facts (level-token name landing in a contradicting band) — surfaced in negative_space.name_level_mismatches, pointing at the #257 Exclude action; detection never itself drops, excludes, or rejects a fact
+      - Span-aware when gslo/gshi are available (roster surface) — the level side checks the EFFECTIVE band (post #498 carve-out), and an intermediate-span 'middle'-named school implies {elementary, middle} rather than conflicting with a correct elementary placement
+      - Copy states the legitimate case (a 7-12 high school genuinely serves middle) rather than implying contradiction, naming the actual failure case (a stale NCES tag after reconfiguration) explicitly
+    tests:
+      - tests/test_school_sampling_253.py::TestIntermediateCarveOut
+      - tests/test_school_sampling_253.py::TestReviewRoundFixes::test_mismatch_predicate_is_span_aware_both_directions
+      - tests/test_closing_argument.py::TestMismatchFlagCarriesSpanAndDedupes
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "PR #489. Detector half of the Coffee County class; #257 is the correction half. Live Coffee
+      County receipt validated the design: the extracted name came through as 'zion chapel k12' and
+      correctly did NOT flag — the flagging token lives only in the roster name. Copy rephrased 2026-07-14
+      (PR #496) after a live batch_00018 review; hardened for span-awareness 2026-07-15 (PR #500 review
+      round, fixing two false-positive classes on #498-carved-out schools)."
+
+  - id: REQ-135
+    github_issue: "#473, #474 (epic #478)"
+    description: "The TUSD pair — recover-band re-extraction (#473, first resort) and cited-source human-add (#474, last resort) for an under-inclusion gap: a band comes out empty while its data sits in an already-captured artifact."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "#473 detector: negative_space.recoverable_bands flags an unsatisfied band whose sibling bands hold accepted facts from a captured rep, carrying the rep identity — surfaced proactively, not left to the reviewer's eye"
+      - "#473 action: recover_band_dispatch re-dispatches the named, already-sent rep with NO band-targeted prompting — merge_fact_runs is fill-gaps-never-overwrite (REQ-122, property-tested), so a full-rep re-read can only fill the missing band and can never evict accepted sibling facts"
+      - "#473 mints an approved 7->6 ExtractionRequest for lineage, freezes an immutable dispatch, flips it executed; benchmark-walled and depth-guarded like every other 7->6"
+      - "#474 HumanAddedFact is a district-grain precious table, git-backed to human_added_facts.json via the #257 pattern end-to-end"
+      - "#474 requires a cited source AND both start/end times; the pair passes the same canonical gross_from_times computation + REQ-055 plausibility gate as every extracted value"
+      - "#474 hand-added facts vote in the band mode alongside extracted facts, and render visibly tagged with source"
+      - "#257 exclusions and #474 hand-adds cannot silently conflict — hand-adding an excluded (band, school) is rejected (409); an exclusion recorded after a hand-add beats a stale add in the builder"
+    tests:
+      - tests/test_stage8_api.py
+      - tests/test_closing_argument.py
+      - tests/test_property_guardrail_cores.py
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "PR #490. TUSD 3416500: the hub doc that filled middle+high also contains the elementary
+      schedules — the first live gate@8 approval of a #473 round-trip. A prefilled 'adopt' flow from an
+      unresolved fact into #474 is a noted fast-follow, not yet built."
+
+  - id: REQ-136
+    github_issue: "#254 adjacents (2026-07-14 session)"
+    description: "current_school_year() is DERIVED from a July-1 calendar boundary (infrastructure/utilities/school_year.py), never a hand-bumped literal. The pre-2026-07 CURRENT_SCHOOL_YEAR constant went stale exactly one rollover after it was written — this requirement exists to make that bug class structurally impossible to reintroduce."
+    type: constraint
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - current_school_year(date) returns the school year containing that date; July 1 rolls it over (2026-06-30 -> '2025-26', 2026-07-01 -> '2026-27')
+      - Dates in Jan-Jun belong to the school year that STARTED the prior calendar year (e.g. 2027-01-15 -> '2026-27')
+      - Module-level CURRENT_SCHOOL_YEAR == current_school_year() at import time, AND the constant is bound to a call expression, not a string literal (a regression test inspects the source, not just today's value)
+      - ACCEPTABLE_BELL_YEARS is derived from CURRENT_SCHOOL_YEAR down to a fixed 2023-24 post-COVID floor, newest first — it self-rolls with the current year rather than being separately hand-maintained
+      - infrastructure/database/school_year.py is a re-export shim only (no duplicated logic) so acquisition code can import calendar vocabulary without breaching the acquisition-does-not-import-database layering contract
+    tests:
+      - tests/test_school_year.py::TestCurrentSchoolYearDerivation
+      - tests/test_school_year.py::TestConstants
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "Implemented PR #491. Interacts with REQ-026 (blend window) and REQ-007 (COVID exclusion) — see
+      REQ-026's notes for the rollover/NCES-vintage coupling this exposed. The source-inspection
+      anti-regression test (constant bound to a call, not a literal) was added 2026-07-15 (audit sweep) —
+      prior coverage only proved today's value matched, which would not have failed until the NEXT
+      rollover in production."
+
+  - id: REQ-137
+    github_issue: "#91"
+    description: "The Stage-5 harness scorecard calibrates the deterministic tier decision against the actual paid Stage-7 extraction outcome (any-accepted/mixed/all-unresolved), joined via school_fact.rec_key -> record.rec_key. This is READ-ONLY measurement — it must never itself mutate scoring config, tier logic, or the recall-floor computation; scoring changes remain human-authored ledger episodes."
+    type: constraint
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - extract_outcome_calibration() only reads DB rows (production runs) and returns a report dict — no writes
+      - Report includes any-accepted/mixed/all-unresolved counts, P(any_accepted | tier) per tier, the per-detector grid recomputed against the outcome, disagreement cells (labeled-target-but-all-unresolved; rejected-but-accepted) carrying rec_key lists, and an unjoined count
+      - unjoined reps (record row gone) are REPORTED, never silently dropped from the denominator
+      - A fresh DB with no Stage-7 tables yields a zeros report, not a poisoned ingest transaction — assert_floor still runs inside that transaction
+      - A 4th fingerprint ('outcome') is stamped so the scorecard stays a re-derivable (config x labels x data x outcome) tuple; tuning_ledger episode diffs surface deltas as None on legacy scorecards, not a crash or a false zero
+      - stage5 does not import stage7_extract (raw SQL on the shared governance session only) — no new arch-manifest edge
+    tests:
+      - tests/test_harness.py
+      - tests/test_tuning_ledger.py
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "Implemented PR #492, closes #91. STAGE5_FILTER_DESIGN.md §5.2 flipped to as-built, §8 row
+      DEFERRED->BUILT. TEST GAP (not built in this audit pass): no test directly asserts the
+      'measurement-only, no scoring mutation' invariant by exercising a real DB and asserting no rows
+      changed — it is true by code inspection (no write statements) but not enforced."
+
+  - id: REQ-138
+    github_issue: "#229"
+    description: "gate@1's per-batch no-usable-domain refusal receipt renders as a collapsed count instead of an inline wall of district names, without losing the 'the draw is never silently short' guarantee. A Settings -> Exclusions view surfaces the standing pre-queue exclusion corpus (no-domain + grade-span-gap), derived LIVE per NCES vintage via the same eligible_pool/is_scoping_domain path Stage 1 uses — not a frozen snapshot."
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - "GET /api/exclusions returns {available:false, reason} when the NCES CSVs are absent (honest degradation, no crash)"
+      - "GET /api/exclusions returns no_domain{count,by_state,districts} and grade_span_gap{count,districts}, self-consistent and cached per vintage"
+      - school_criteria text is a single shared constant (SS.SCHOOL_CRITERIA_TEXT) reused by both the Exclusions view and the gate@8 denominator disclaimer
+      - "gate1.js's per-batch domain_excluded receipt is collapsed (wrapped in <details>) but the raw receipt markup still renders — collapsed, not removed"
+    tests:
+      - tests/test_settings_data_years.py::TestExclusionsView
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "Implemented PR #495, from a live UX surprise (a fresh batch drew 1,456 no-domain districts,
+      rendering as a wall of names). Live figures: 1,462 no-domain districts, 1,668 grade-span-gap."
+
+  - id: REQ-139
+    github_issue: "#253 (epic #478)"
+    description: "The gate@8 band-serving denominator (sampling-sufficiency stats) is derived LIVE from the current NCES ccd_sch vintage on disk, never frozen at an earlier point in time."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - band_rosters_for_district() re-derives from the current latest_nces_year() CCD files on every call, not a cached/stored snapshot
+      - A school SERVES a band when its effective LEVEL maps there OR its grade span reaches it via bands_for_rescue's conservative overlap (not school_index's anti-dilution selection placement)
+      - The ONLY frozen point is the gate@8 approval receipt itself, captured at sign-off (for reproducibility of what a human actually approved)
+      - When CCD files are unavailable, the caller falls back to the clean-LEVEL denominator (school_level_counts), explicitly marked as a fallback, never silently substituted
+      - Denominator provenance (by-source split, NCES vintage, the criteria disclaimer) is surfaced alongside every count
+    tests:
+      - tests/test_school_sampling_253.py::TestBandRostersForDistrict
+      - tests/test_closing_argument.py::TestBandRosterDenominator
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "Decided 2026-07-14 (#253). The Santa Fe motivating case: a frozen denominator drifts as the
+      corpus/vintage changes, producing a stale lie ('Sampled 4 of 2 · 200%'); the live roster fixed it
+      to 4 of 9 (44%). infrastructure/acquisition/common/school_sampling.py::band_rosters_for_district."
+
+  - id: REQ-140
+    github_issue: "#253 (epic #478)"
+    description: "An extracted school name that denotes a group of campuses (grade-band collective or multi-campus conjunction) is FLAGGED for gate@8 review, never auto-dropped or auto-excluded from the modal vote."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - combined_scope_name() detects two kinds — group_descriptor (a band token or all/both quantifier beside a collective plural, e.g. 'K-8 Schools') and conjunction (joiner-split segments resolving to >=2 distinct roster schools)
+      - A legitimate single-campus name carrying an 'and'/plural token (e.g. 'Lewis and Clark Elementary', 'Kearny Elementary Schools') must NOT flag (false-positive guard)
+      - A flagged fact remains ACCEPTED and continues to contribute to the band's modal vote until a human disposes of it (exclude via #257, or a future roster-template slot-projection, #499)
+      - The flag surfaces on the school row and in negative_space.combined_scope_facts
+      - Flagging never changes the gate@8 fingerprint (observations, not determinations)
+    tests:
+      - tests/test_school_sampling_253.py::TestCombinedScopeName
+      - tests/test_closing_argument.py::TestCombinedScopeFlags
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "Decided 2026-07-14 (#253), same detect-and-flag posture as #257/#258. The Santa Fe signature:
+      'k8 schools' and 'milagro and ortiz schools' each landed as a pseudo-school row, inflating
+      n_schools. infrastructure/acquisition/common/school_sampling.py::combined_scope_name."
+
+  - id: REQ-141
+    github_issue: "#254 (epic #478)"
+    description: "INVARIANT — the v3 school_year and applies_to extraction fields are READINGS of what the page states, never inferences; in the Stage-8 fact merge, an unknown year COEXISTS with a known year and is never treated as older."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - The v3 prompt instructs the model to read school_year/applies_to ONLY from the document's own text — explicitly forbidding inference from the URL, domain, or today's date
+      - When the page does not state a year, null is the correct (and expected) model answer, not a guess
+      - Deterministic code (parse_school_year) NEVER trusts the model's formatting — it re-parses defensively, requires a consecutive YYYY-YY pair, rejects COVID years and out-of-window years
+      - Between two ACCEPTED facts for the same (band, school), a KNOWN more-recent year supersedes a KNOWN older one; this precedence applies ONLY between two known years
+      - An unknown-year fact is NEVER treated as older than a known-year fact and is never auto-superseded on that basis alone — absence of a printed year is never evidence of staleness
+      - Superseded facts are kept (not dropped) and surfaced via negative_space.superseded_facts / detect_year_conflicts, with source_file as a human-facing format hint only, never an automatic rule
+      - Year/scope selection is set-wise and order-independent (not a pairwise fold over run order) — a known/unknown/extraction-order triangle cannot make the outcome depend on row order
+    tests:
+      - tests/test_aggregate.py::TestParseSchoolYear
+      - tests/test_aggregate.py::TestMergeYearPrecedence
+      - tests/test_aggregate.py::TestDetectYearConflicts
+      - tests/test_aggregate.py::TestConsensusYearAndScope
+      - tests/test_closing_argument.py::TestSchoolYearSurfaces
+      - tests/test_stage6_requests.py::test_v3_prompts_forbid_year_inference_from_context
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "Decided 2026-07-14 (#254), closes the Santa Fe stale-page class. DELIBERATELY tied to REQ-054 —
+      school_year/applies_to are the same 'models read, code computes/decides' invariant applied to a new
+      field, and are exactly the kind of addition a future v4 prompt could silently violate. The
+      no-inference-guard prompt-text test was added 2026-07-15 (audit sweep), mirroring the existing
+      never-computes-minutes guard test. infrastructure/acquisition/stage6_handoff/prompts.py
+      (_EXTRACT_V3), infrastructure/acquisition/stage8_aggregate/aggregate.py (parse_school_year,
+      merge_fact_runs, detect_year_conflicts)."
+
+  - id: REQ-142
+    github_issue: "#498"
+    description: "NCES LEVEL remains the primary band signal, with exactly ONE corpus-profiled override (intermediate span -> elementary) and a settled ruling for the 5-5/5-6/6-6 orphans (-> middle)."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "effective_level_band(): LEVEL='Middle' on a span starting at grade <=4 AND topping at grade <=6 (the intermediate/upper-elementary span) reclassifies to elementary; every other LEVEL value is unaffected"
+      - "This is the ONLY override applied — corpus-measured against the full 2024-25 ccd_sch (85,024 clean-LEVEL schools): LEVEL falls outside the span's plausible band 0.97% of the time, and every instance is this one shape; the reverse edge (Elementary starting >=5) is zero"
+      - "A span starting at grade 5+ is middle-family and is NEVER counted as elementary (5-5, 5-6, 6-6 all RULED middle, 2026-07-15) — bands_for_rescue and recursive_band_groups's elementary prefix both require starting <=grade 4"
+      - Every override application is surfaced as a gate@8 negative-space note (school name, NCES tag, span) — never a silent reclassification
+      - The 'intermediate' name token implies {elementary, middle} (real Intermediate-named schools sit on both sides of the boundary), unlike a bare 'middle' token
+      - The single boundary definition (INTERMEDIATE_MAX_START=4, INTERMEDIATE_MAX_TOP=6) lives in exactly one place, shared by is_intermediate_span, bands_for_rescue, and recursive_band_groups
+    tests:
+      - tests/test_school_sampling_253.py::TestIntermediateCarveOut
+      - tests/test_school_sampling_253.py::TestOrphanRulingMiddleFamily
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "Decided 2026-07-15 (#498), after corpus measurement. Southern Lehigh (Joseph P. Liberati
+      Intermediate, 04-06) is the pinned live-verified specimen; Hammarskjold Upper Elementary NJ
+      (LEVEL=Middle, 05-06) is the pinned orphan specimen. See REQ-143 for the review-round phantom-band
+      fix PR #500 also shipped. TEST GAP (not built in this audit pass): no golden-count regression pins
+      the corpus-measured blast radius (~330 schools overridden, 129 schools/123 districts affected by
+      the grade-5+ rule) against the live 2024-25 CCD, so a future NCES refresh or code change touching
+      these functions would not be caught."
+
+  - id: REQ-143
+    github_issue: "#498, PR #500 review round"
+    description: "INVARIANT — real_bands_for_district (the Stage-7 spend-gate's 'real bands' signal) must never claim a band that, after the #498 carve-out, no real school actually serves."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - When the caller supplies the LIVE serving roster (band_rosters_for_district, span-aware by construction), it REPLACES signal 1's raw aggregate LEVEL counts — the carve-out-blind aggregate must never independently claim a band
+      - Signal 1's raw aggregate form survives ONLY as the fallback when CCD files are unavailable, and is documented as such at every call site
+      - A stale Stage-1 placement (pre-#498 batch data) may still claim a band via signal 2, but that disagreement between the stale placement and the live roster MUST be surfaced (negative_space.stale_roster_bands), never silently dropped
+      - Every consumer of the per-school loader (_district_schools) reads the loader's own effective_band/level_overridden stamp rather than re-deriving LEVEL_BAND directly — a future consumer cannot silently reintroduce the pre-#498 aggregate-only behavior
+      - All three call sites (closing_argument, stage7_run x2, stage7_execute) pass band_rosters through to real_bands_for_district
+    tests:
+      - tests/test_school_sampling_253.py::TestReviewRoundFixes::test_roster_replaces_carveout_blind_signal1
+      - tests/test_school_sampling_253.py::TestReviewRoundFixes::test_stale_stage1_placement_still_claims_via_signal2
+      - tests/test_closing_argument.py::TestReviewRoundFixes::test_phantom_middle_not_claimed_with_live_roster
+      - tests/test_closing_argument.py::TestReviewRoundFixes::test_stale_stage1_placement_is_noted
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "CONFIRMED correctness bug, found and fixed in PR #500's second commit (b0da7f2) — via a
+      max-effort multi-angle review, NOT caught by the first commit's own test suite. A multi-signal-
+      divergence class (signal 1 aggregate vs signal 3 per-school span-aware) exactly the shape likely to
+      regress silently if a future change touches real_bands_for_district or adds a fourth signal without
+      re-checking this invariant. Blast radius: 56 corpus districts (e.g. 0604650) whose ONLY
+      'Middle'-tagged school is a 04-06 intermediate would otherwise have Stage 7 keep SPENDING against a
+      middle band no real school serves. Kept as its own REQ (not folded into REQ-142) because it is a
+      regression class about real_bands_for_district's SIGNAL COMPOSITION, independent of whether the
+      carve-out threshold itself is ever revised again."
