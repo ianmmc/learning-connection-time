@@ -133,16 +133,23 @@ CLAUDE.md had two failing commands), normalized `REQUIREMENTS.yaml` (152 reqs, b
 #509), curated memory 23→19 with a **no-`type:project`-status-memories** rule, and filed 4 code-side defects
 as issues (#523/#524 Stage-2 docstrings, #525 `gate_mode.py:35`, #526 Stage-2 reads receipt-not-DB).
 
-**Next (RESUME HERE — 2026-07-16): BUILD epic #106, starting with #519 (the measured money lever).** The full
-slate, all filed as #106 sub-issues:
-- **#519** tune existing confounder detectors (news/calendar/board/sports) via the built #108 harness — **the
-  highest-leverage build**: ~40 of the 115 false-sends, existing facets, NO new labels/vetoes, no human
-  decision needed to start. **Re-measured 2026-07-16 (see the #519 comment): the old "0.13–0.18 precision"
-  premise does NOT reproduce at the current 798-facet-tagged corpus — live is `news_feed` 0.89 / `board` 0.52
-  / `calendar` 0.46 / `sports` 0.32.** So `news_feed` is a combiner-WEIGHT problem (high precision, still
-  loses the vote), the others have precision headroom too. FIRST STEP: re-run `harness.build_scorecard()` +
-  re-derive the per-facet false-send attribution, THEN tune. Stay SOFT (hard veto kills 49 real co-occurring
-  targets — that structural fact holds); `lf_nonstandard_day` 0.09 is out of scope (frozen grab-bag = #207).
+**Next (RESUME HERE — 2026-07-16): epic #106. #519 was the presumed first build, but the 2026-07-16 recompute
+showed it needs an Ian SCOPE CALL first (the "tune the weights" premise mostly doesn't work — see #519
+below).** So the buildable-without-a-decision work is the recency signal (**#241/#107's `content_school_year`
+extractor** — reuses `school_year.py`, no vocabulary call, per obs. 6) or a #519 fork pick. The full slate,
+all filed as #106 sub-issues:
+- **#519** tune existing confounder detectors — **RE-MEASURED 2026-07-16, and as-written it mostly doesn't
+  work; needs an Ian scope call before building (see the two #519 comments).** The review's "~40 false-sends,
+  tune the weights" broke into three mechanisms on recompute: (1) **`board`/`sports` fire on ~0 tier-A
+  false-sends** — a firing-condition problem (they need neg-class *dominance*, which a tier-A page can't
+  meet), unreachable by any weight; (2) **`news_feed` fires on MORE real targets (30) than false-sends
+  (21)** — a blanket weight-up is net-negative (pushes 30 real targets to review to pull 21 false-sends);
+  the real lever is `news_feed × no-strong-positive-structure`, a combiner INTERACTION, not a scalar; (3)
+  **`calendar` (5 gain / 0 cost) is the one clean scalar win**, but small. Actionable ceiling = 26, not ~40.
+  Fork: (a) narrow to the calendar-class scalar win, (b) re-scope to the news_feed interaction term, or (c)
+  board/sports need a structural (URL/embed) detector = a new issue. Facet precision (live #108): `news_feed`
+  0.89 / `board` 0.52 / `calendar` 0.46 / `sports` 0.32 — the old "0.13–0.18" doesn't reproduce.
+  `lf_nonstandard_day` 0.09 stays out of scope (frozen grab-bag = #207).
 - **#515** Stage-6 confounder eligibility vetoes — **the "24.5%→~15% money lever" headline is WRONG** (§3a
   obs. 6, measured 2026-07-16: stale contributes **0** — it removes 1 false-send for 17 target-vetoes and
   *raises* the rate 24.1%→24.8%; staleness and target-absence are near-independent). #515 now rests solely on
