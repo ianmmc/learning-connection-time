@@ -1049,25 +1049,31 @@ requirements:
       headless `claude -p` (REQ-104) — see PIPELINE_GOVERNANCE_AND_STATE.md."
 
   - id: REQ-044
-    github_issue: "#107 — school-year currency gate/dispatch (doc-migration 2026-07)"
-    description: Classify each captured candidate as a current bell schedule before extraction (relevance + recency gate)
+    github_issue: "#107 / #241 — school-year currency (validity floor + prefer-recent dispatch)"
+    description: Read each record's content school year and apply recency as a HOLD/ranking (never a veto) before extraction
     type: functional
     priority: must
-    status: accepted
+    status: tested
     acceptance_criteria:
-      - Distinguishes a real bell/daily schedule from look-alikes (board-meeting times, bus/athletics schedules, event calendars, lunch menus)
-      - Confirms school-year currency; accepts post-COVID years (2023-24 or later) and rejects/flags COVID-era and clearly stale content
-      - Candidates failing the gate are not sent to extraction and never count as enriched
-      - Records the classification decision and reason for audit
+      - Distinguishes a real bell/daily schedule from look-alikes (the V2 combiner/detectors — board-meeting times, bus/athletics schedules, event calendars, lunch menus)
+      - Reads a per-record content school year DETERMINISTICALLY from the URL/filename, never inferred from today's date or capture time (REQ-054); guards URL-decode / GUID+asset-id / upload-path / date-vs-year / consecutive-pair per STAGE5_FILTER_DESIGN §3a obs. 6
+      - "#241 validity floor: pre-2017-18 content (breaks REQ-026's blend window against the CRDC 2017-18 baseline) is HELD for review on the auto path (suppress-to-review, reversible), NOT rejected — an explicit human target label overrides"
+      - "#107 prefer-recent (Stage-6 dispatch): among send-eligible siblings covering the same school, the most recent is dispatched and the stale ones HELD (available for a cheap 7->6 re-dispatch); ZERO recall cost by construction"
+      - Records the decision + reason for audit
     created: "2026-06-13T00:00:00Z"
-    updated: "2026-06-27T00:00:00Z"
-    notes: "Probe showed time-pattern signals are dominated by false positives; a relevance gate is
-      required before spending extraction calls.
-      SCOPE (decided 2026-06-27): this is a STAGE 5 (Local filter) enhancement, not a separate stage —
-      currency/recency is a relevance concern that belongs with the existing Stage-5 signals + gate@5
-      review. Build it into stage5_filter (alongside build_signals / the de-chrome + signal work);
-      see STAGE5_FILTER_DESIGN.md. Gates the filtered.json -> dispatch boundary so stale/COVID-era
-      pages never reach the paid council (Stage 6/7)."
+    updated: "2026-07-16T00:00:00Z"
+    notes: "Probe showed time-pattern signals are dominated by false positives; the relevance half is the
+      V2 combiner (REQ-113). RECENCY RE-SCOPED 2026-07-16 (measured — STAGE5_FILTER_DESIGN §3a obs. 6):
+      the original 'reject/flag COVID-era and stale' VETO framing is REFUTED — at the acceptable-bell floor
+      a recency veto removes ~0 waste while vetoing real targets and RAISES the false-send rate (staleness
+      and target-absence are near-independent; a stale handbook usually still contains a real schedule). The
+      built design is therefore two rules, never a hard gate: a pre-2017-18 validity-floor HOLD (#241, a
+      REQ-026 correctness guarantee that pays ~0 money) + prefer-recent dispatch RANKING (#107, the money
+      half, zero recall cost by construction). Enabling signal `content_school_year`
+      (infrastructure.utilities.school_year) did not exist and was built this pass. Built + tested on branch
+      feat/epic106-recency-content-school-year: tests/test_school_year.py::TestContentSchoolYear,
+      tests/test_release.py (validity floor), tests/test_stage6_dispatch_bridge.py (_prefer_recent_holds);
+      live-validated (7.5% fire, 0 phantom-year FPs, 8 correct prefer-recent holds, A+B recall held 0.9928)."
 
   - id: REQ-045
     description: Capture schedule content across all delivery formats and persist the raw artifact for audit and re-verification
