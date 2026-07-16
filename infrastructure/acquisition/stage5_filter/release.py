@@ -28,6 +28,7 @@ from sqlalchemy import text
 
 from infrastructure.acquisition.common import paths  # noqa: E402
 from infrastructure.acquisition.common import db as gdb  # noqa: E402  (governance Postgres — REQ-103)
+from infrastructure.utilities import school_year as SY  # noqa: E402  (calendar-vocabulary SSOT; the #241 validity floor — NOT the LCT DB)
 from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402  (TARGET_LABELS)
 from infrastructure.acquisition.common.timeutil import utcnow as _now
 
@@ -129,6 +130,23 @@ def alternates(reps: list, exclude: set) -> list:
     return out
 
 
+# #241 pre-2017-18 VALIDITY FLOOR — a REQ-026 correctness guarantee, NOT a money lever (obs. 6). A doc
+# whose content school year predates the CRDC 2017-18 federal input we blend against breaks REQ-026's
+# ≤3-year span no matter how good its times look. Semantics = HOLD (suppress-to-review), never reject:
+# reversible, preserves a district whose ONLY evidence is old (Brashear's 2012-13 Timetracker). Applies
+# to the AUTO path only — an explicit human target label is the override.
+_VALIDITY_FLOOR_START = SY.start_year(SY.SPED_BASELINE_YEAR)   # 2017
+
+
+def _pre_validity_floor(content_school_year) -> bool:
+    """True iff a KNOWN content school year is older than the 2017-18 CRDC baseline. Unknown/absent/
+    malformed ⇒ False (coexists; never treated as oldest — the #254 unknown-year rule)."""
+    try:
+        return SY.start_year(content_school_year) < _VALIDITY_FLOOR_START
+    except (ValueError, TypeError):
+        return False
+
+
 def decide(rec: dict) -> dict:
     """The release decision for one canonical record. Returns {decision, reason, send, alternates}."""
     label = rec.get("label")
@@ -151,6 +169,13 @@ def decide(rec: dict) -> dict:
     if tier == "A":
         send = best_send(reps, sig, facets)
         if send:
+            # #241 validity floor: a pre-2017-18 content school year HOLDS the auto-send for review
+            # (a REQ-026 correctness guard; ~0 money — obs. 6). The human overrides by labeling it a
+            # target (the branch above), which is what preserves a district whose only evidence is old.
+            csy = sig.get("content_school_year")
+            if _pre_validity_floor(csy):
+                return {"decision": "hold", "reason": f"stale:pre-{SY.SPED_BASELINE_YEAR}-validity-floor:{csy}",
+                        "send": [], "alternates": []}
             return {"decision": "send", "reason": "auto:tier-A", "send": send,
                     "alternates": alternates(reps, {s["file"] for s in send})}
         return {"decision": "reject", "reason": "auto:tier-A;no-usable-rep", "send": [], "alternates": []}

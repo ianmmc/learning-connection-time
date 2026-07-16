@@ -110,6 +110,41 @@ def test_decide_labeled_non_target_rejects():
     assert d["decision"] == "reject" and d["reason"] == "non-target:board_schedule" and d["send"] == []
 
 
+def test_stale_pre_2017_tier_a_is_held_by_validity_floor():
+    # #241: a doc whose content school year predates the CRDC 2017-18 federal baseline breaks REQ-026's
+    # blend window against it — HOLD (suppress-to-review) on the auto path; never sent, never lost.
+    # ~0 money (obs. 6: 4 tier-A pre-floor records, all real targets). Human re-affirms via a label.
+    d = R.decide(_rec(label=None, tier="A", reps=[_text_rep("p.txt", n_times=5)],
+                      signals={"content_school_year": "2012-13"}))
+    assert d["decision"] == "hold"
+    assert "stale" in d["reason"] and "2012-13" in d["reason"]
+    assert d["send"] == []
+
+
+def test_validity_floor_admits_the_2017_18_baseline_and_newer():
+    # the floor is PRE-2017-18; the 2017-18 baseline itself (and anything newer) is acceptable
+    for csy in ("2017-18", "2018-19", "2025-26"):
+        d = R.decide(_rec(tier="A", reps=[_text_rep("p.txt", n_times=5)],
+                          signals={"content_school_year": csy}))
+        assert d["decision"] == "send" and d["reason"] == "auto:tier-A", csy
+
+
+def test_validity_floor_is_inert_without_a_content_year():
+    # the floor only fires on a KNOWN pre-floor year; unknown/absent coexists (never auto-oldest)
+    for csy in (None, ""):
+        d = R.decide(_rec(tier="A", reps=[_text_rep("p.txt", n_times=5)],
+                          signals={"content_school_year": csy}))
+        assert d["decision"] == "send", repr(csy)
+
+
+def test_human_target_label_overrides_the_stale_floor():
+    # the floor guards the AUTO path only — an explicit human target label IS the override (Brashear:
+    # a district whose only evidence is old still gets sent once a human affirms it)
+    d = R.decide(_rec(label="school_bell_table", tier="A", reps=[_text_rep("p.txt", n_times=5)],
+                      signals={"content_school_year": "2012-13"}))
+    assert d["decision"] == "send"
+
+
 def test_decide_target_with_no_usable_rep_flags_it():
     d = R.decide(_rec(label="school_bell_table", reps=[]))
     assert d["decision"] == "send" and d["reason"].endswith(";no-usable-rep") and d["send"] == []
