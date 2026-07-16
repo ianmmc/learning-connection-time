@@ -51,6 +51,13 @@ def assemble_record(rec: dict, councils: dict, cost_model: dict, overrides: dict
         # handoff + the Stage-7 request plan — it's what scopes the paid read (issue #38).
         if se.get("pages"):
             rep["pages"] = se["pages"]
+        # `n_times`/`n_chars` are the cost model's output-token scaler inputs (cost.py `_n_schools` /
+        # `estimate_call_cost`). They reach `se` via the bridge's `_enrich_send` but used to be dropped
+        # here, so the measured scaler always fell to the floor (issue #192). Carry them when present —
+        # they are size signals, kept OUT of the price-independent content identity (like est_usd).
+        for _f in ("n_times", "n_chars"):
+            if se.get(_f) is not None:
+                rep[_f] = se[_f]
         out["reps"].append(rep)
     return out
 

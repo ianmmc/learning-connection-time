@@ -106,6 +106,29 @@ def test_unknown_override_council_refuses():
         package.assemble_record(rec, COUNCILS, COST_MODEL, {"a::t.txt": "no-such"})
 
 
+def test_n_times_n_chars_survive_to_rep_for_cost_scaling():
+    # issue #192: the cost model's output-token scaler reads rep["n_times"]/["n_chars"], but
+    # assemble_record used to DROP them, so the scaler always fell to the floor (0/275 reps carried them).
+    rec = _rec("a", "send", [{"file": "t.txt", "kind": "text", "n_chars": 4200, "n_times": 40}],
+               signals={"visual_text_gap": False})
+    rep = package.assemble_record(rec, COUNCILS, COST_MODEL)["reps"][0]
+    assert rep["n_times"] == 40
+    assert rep["n_chars"] == 4200
+
+    # they survive the freeze into the handoff doc (so a re-pricer sees them) ...
+    pkg = package.assemble_package([({"district_id": "0100810"}, [rec])], COUNCILS, COST_MODEL)
+    doc = handoff.freeze(pkg, COUNCILS, {"0100810": {"config": "c", "labels": "l", "data": "d"}})
+    frozen_rep = doc["districts"][0]["records"][0]["reps"][0]
+    assert frozen_rep["n_times"] == 40 and frozen_rep["n_chars"] == 4200
+
+    # ... but they are NOT part of the price-independent content identity (kin to est_usd): the same
+    # content without the counts hashes identically, so a signal add never re-identifies a dispatch.
+    rec_nc = _rec("a", "send", [{"file": "t.txt", "kind": "text"}], signals={"visual_text_gap": False})
+    pkg_nc = package.assemble_package([({"district_id": "0100810"}, [rec_nc])], COUNCILS, COST_MODEL)
+    doc_nc = handoff.freeze(pkg_nc, COUNCILS, {"0100810": {"config": "c", "labels": "l", "data": "d"}})
+    assert doc_nc["handoff_hash"] == doc["handoff_hash"]
+
+
 def test_pages_survive_assemble_freeze_and_plan():
     # issue #38: the harvest-pages hint on a handbook send must reach Stage 7 —
     # assemble_record -> the frozen handoff doc (incl. identity) -> plan_requests
