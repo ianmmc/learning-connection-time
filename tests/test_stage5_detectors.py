@@ -103,6 +103,37 @@ def test_feed_page_with_a_real_footer_block_still_sends():
     assert r["decision"] == "send" and r["tier"] == "A"
 
 
+# ---- #528: a lone times-TABLE is undermined by a feed/calendar (its own events/agenda table) ----
+def test_feed_page_with_only_a_times_table_is_reviewed():
+    # measured (14 tier-A false-sends, 0 real targets): a schedule-shaped table on a feed page with no
+    # intentional hours block/heading is probably the feed's OWN table -> review, not auto-send.
+    r = decide(table_time_density=10, positive_kw=["bell schedule"], url_feed_pattern=True)
+    assert r["decision"] == "review" and r["tier"] == "B"
+    assert "lf_time_table" in r["fired"] and "lf_news_feed" in r["fired"]
+
+
+def test_calendar_page_with_only_a_times_table_is_reviewed():
+    # the same rule covers the calendar-widget false-sends (#528's 3 calendar cases)
+    r = decide(table_time_density=10, positive_kw=["bell schedule"], embed_hosts=["calendar"])
+    assert r["decision"] == "review" and r["tier"] == "B"
+    assert "lf_time_table" in r["fired"] and "lf_calendar_widget" in r["fired"]
+
+
+def test_feed_page_with_a_times_table_AND_hours_heading_still_sends():
+    # a REAL schedule delivered in a feed carries an hours heading (strong-structural) -> still sends (0 cost)
+    r = decide(table_time_density=10, positive_kw=["bell schedule"], url_feed_pattern=True,
+               heading_hours_hits=1, heading_hours_labels=["school hours"])
+    assert r["decision"] == "send" and r["tier"] == "A"
+    assert "lf_heading_hours" in r["fired"] and "lf_time_table" in r["fired"]
+
+
+def test_clean_times_table_without_a_feed_still_sends():
+    # no feed/calendar undermining -> a schedule table auto-sends as before (guard against over-demotion)
+    r = decide(table_time_density=10, positive_kw=["bell schedule"])
+    assert r["decision"] == "send" and r["tier"] == "A"
+    assert "lf_time_table" in r["fired"]
+
+
 # ---- the core targets still send ----
 def test_schedule_table_sends():
     r = decide(proximity_pairs=4, positive_kw=["bell schedule"], table_time_density=10,
