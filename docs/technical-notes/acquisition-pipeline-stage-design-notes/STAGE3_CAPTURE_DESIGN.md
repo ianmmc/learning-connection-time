@@ -131,8 +131,10 @@ the iframe's content, so it remains recoverable via the vision/OCR tier even whe
 CMS chrome (a footer "Building Hours", a school-switcher nav, footer board/athletics links) injects false
 signal. The fix lives at Stage 3, at render time — only `innerText` is persisted, so by Stage 4 the DOM
 structure that identifies a footer is gone. **Segment, don't strip:** `segmentChrome()` captures
-`innerText` of structural landmarks (`<header>`/`<footer>`/`<nav>` + ARIA equivalents) as separate
-**additive** representations (`page.main/header/footer/nav.txt`) alongside the untouched full `page.txt`.
+`innerText` of structural landmarks (`<header>`/`<footer>`/`<nav>` + ARIA equivalents — the landmark set
+is **config-as-data**: `DE_CHROME_LANDMARKS` = `loadConfigValues('de_chrome_landmarks')`, threaded as the
+`landmarks` param, so it widens by config edit not code) as separate **additive** representations
+(`page.main/header/footer/nav.txt`) alongside the untouched full `page.txt`.
 Header/footer are kept because real *school hours* sometimes live there, not only confounding building
 hours. `backfill-segments` applies it to already-captured data. Measured: category-guess 0.43→0.60,
 topology 0.6→0.8 — a strong win (detail in `STAGE5_FILTER_DESIGN.md`). Stage 5's V2 scoring

@@ -31,10 +31,16 @@ CSVs **and** the LCT Postgres DB (§1), and writes the **governance** DB batch w
 NCES CCD files on disk and the LCT production database (read-only; the one sanctioned Stage-1 read across
 the acquisition→LCT layering boundary, alongside Stage 9's write).
 
-**Handoff to next stage:** an **approved** batch (`batch.status == "approved"`) is Stage 2's input.
-Stage 2 reads the batch directly from the governance DB working store (never re-derives band membership
-from NCES CSVs — that would discard every gate@1 edit). A batch stays in `draft` until approved; Stage 2
-has nothing to consume until then.
+**Handoff to next stage:** an **approved** batch (`batch.status == "approved"`) is Stage 2's input. It
+never re-derives band membership from NCES CSVs — that would discard every gate@1 edit. A batch stays in
+`draft` until approved; Stage 2 has nothing to consume until then. **Mechanism caveat (2026-07-16 audit,
+tracked #526):** Stage 2 actually reads the batch from the **on-disk receipt** (`load_batch_any` →
+`QUEUE_DIR/<batch_id>.json`), NOT from the DB — unlike Stages 3/4, which read the DB via `_batch_from_db`.
+The data is still correct because the receipt is a DB projection regenerated (included-rows-only) on every
+gate@1 edit (`batch_store.write_receipt` / `to_receipt_doc`, called after each edit op), so gate@1 edits do
+reach Stage 2. But it means Stage 2 is a live exception to the "JSON is never the transport between stages"
+invariant (CLAUDE.md), and its correctness rests on an unenforced discipline (every mutation must call
+`write_receipt`). #526 tracks moving it onto `_batch_from_db`.
 
 ---
 
@@ -177,8 +183,8 @@ discovery, no fetching. Created + approved in one step (`create_and_inject()`), 
 normal draft→edit→approve flow. **The wall:** `batch_type == "benchmark"` marks the batch permanently;
 benchmark districts must never be Stage-9-written or counted in funnel/enrichment statistics — they are
 an accuracy yardstick (per-school times hand-verified against these exact files), not coverage, and
-several source documents are deliberately older school years. See `STAGE6_DISPATCH_DESIGN.md`
-§3C C.6.
+several source documents are deliberately older school years. See `COUNCIL_LAB_DESIGN.md` §3
+(the cost-benchmark harness design C.1–C.6 migrated there from `STAGE6_DISPATCH_DESIGN.md` §3C).
 
 `create_and_inject()` never calls `reserve_next_batch()` — it goes straight `create_batch()` +
 `approve_batch()` back-to-back, so the batch is created and approved in one step rather than passing
@@ -244,8 +250,8 @@ data-transmission vehicle to an auditable receipt).
 Created by `gdb.init_precious_schema()`, **never** in the Stage-5 ingest's `REBUILD_DDL` drop list, so a
 re-ingest can't wipe a queued/approved batch. Normalized (not a JSON blob) so edits are real row ops and
 the cross-batch queries the user stories need (a district in multiple batches; per-batch yields) fall out.
-- **`batch`** — lifecycle: `batch_id` (PK), `batch_type` (`first-run`|`follow-up`|`benchmark` — §2h; the
-  `models.py` column comment still only says `first-run | follow-up` and should be updated to match), `status`
+- **`batch`** — lifecycle: `batch_id` (PK), `batch_type` (`first-run`|`follow-up`|`benchmark` — §2h;
+  `models.py:30`'s column comment matches), `status`
   (`draft`|`approved`|`abandoned`|`reserving` — `reserving` is the id-reservation placeholder, §6b;
   `abandoned` is a TERMINAL, never-approved-only status, #168, below), `nces_year`, `created_at`/`_by`,
   `approved_at`/`_by` (CURRENT approval — cleared by `reopen_batch`), `first_approved_at`/`_by` (the
@@ -464,7 +470,8 @@ fixed district list, injecting each district's frozen curation files directly at
 freezing the batch as created+approved in one step. `batch_type` is the enforcement key for the wall
 (never Stage-9-written, never counted in enrichment stats) that Stages 7–9 must respect. See §2h.
 
-**2026-07-11 — two findings logged from the batch_00013 shakedown, neither yet fixed.**
+**2026-07-11 — two findings logged from the batch_00013 shakedown.** (#229 FIXED — PR #242, 2026-07-12;
+the guard is live at `queue_batch.py`, as §2h now describes. #222 still open.)
 - **#222 — juvenile-justice / alternative-facility "schools" can enter a district's draw and get
   matched to the wrong conventional school.** Surfaced when Jackson County Juvenile Ctr (MO) appeared
   matched to DeLaSalle Charter School — a juvenile-justice facility's day is a fundamentally different

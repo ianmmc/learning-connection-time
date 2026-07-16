@@ -35,9 +35,13 @@ the gate — the retired `openrouter_search`/`perplexity_search` were deleted 20
 
 ## 0. Receipt from prior stage / Handoff to next stage
 
-**Receipt from prior stage:** Stage 1's `gate@1`-approved batch, read directly from the governance DB
-working store (never the NCES CSVs — `build_roster()` reads only `domain` and `schools_by_band` from the
-batch; re-deriving band membership would silently discard every Stage 1 gate@1 fix).
+**Receipt from prior stage:** Stage 1's `gate@1`-approved batch (never the NCES CSVs — `build_roster()`
+reads only `domain` and `schools_by_band` from the batch; re-deriving band membership would silently
+discard every Stage 1 gate@1 fix). **Mechanism caveat (2026-07-16 audit, tracked #526):** the batch is read
+from the **on-disk receipt** (`headless.load_batch_any` → `QUEUE_DIR/<batch_id>.json`), NOT from the DB —
+Stage 2 is the one stage that does this (Stages 3/4 use `_batch_from_db`). The receipt is a DB projection
+regenerated on every gate@1 edit, so the data is current; but it makes Stage 2 an exception to the
+"JSON is never the transport" invariant. #526 tracks aligning it with 3/4.
 
 **Handoff to next stage:** `candidates.json` per district (the deduped, capture-ready URL list, each
 candidate carrying its `schools[]` map and `tools[]` provenance) is Stage 3's input, read via
@@ -319,7 +323,7 @@ architecture, superseded 2026-06-28 by the deterministic SERP cascade above. `ga
 own-index providers crater — Perplexity's 30 misses ALL had `raw_urls=0` (no index entry for small
 district domains). Google's own Custom Search API was ruled out separately (shutting down Jan 2027,
 50-domain cap). Provider survey + two Perplexity Deep Research reports:
-`docs/technical-notes/SERP_API_PROVIDER_COMPARISON.md`. Live result: batch_00002's Bright Data Wave-1
+`docs/technical-notes/SERP_API_PROVIDER_COMPARISON_2026-06.md`. Live result: batch_00002's Bright Data Wave-1
 found 28/30 schools; the 2 residuals invoked Claude Wave-2 and recovered 0 (both genuine no-page cases).
 Wave-2 timeout lowered 420s → 75s (the diagnostic harness keeps 420s; only the live sequential path was
 over-budgeted).

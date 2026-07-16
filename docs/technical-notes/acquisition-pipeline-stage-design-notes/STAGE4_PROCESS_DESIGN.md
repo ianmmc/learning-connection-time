@@ -214,8 +214,9 @@ timeouts). What landed (code is authoritative — this records the shape + the d
 - **`server.py`** — `GET /api/process/{batch_id}` (status) + `POST /api/process/{batch_id}/run`
   (background job, `_PROCESS_JOBS`); the batch is resolved from the **DB working store** via the shared
   **`_batch_from_db`** (renamed from `_capture_batch_from_db`; now used by capture + process).
-  `process_run` also calls **`_acquire_batch_run(batch_id)`** (server.py:1078, issue #47) before starting
-  the job — the same cross-stage per-batch mutex `capture_run` uses (server.py:1006), preventing e.g. a
+  `process_run` also calls **`_acquire_batch_run(batch_id)`** (`server.py:1325`; the helper is defined at
+  `:134`, issue #47) before starting the job — the same cross-stage per-batch mutex `capture_run` uses
+  (`server.py:1253`), preventing e.g. a
   concurrent capture-run and process-run from both operating on the same `batch_id`. Unlike `capture_run`,
   `process_run`'s `_work()` closure has no `_run=_tracked_run` injection — there's no Node child process to
   track (Stage 4 has no subprocess worker to babysit, consistent with headless.py's "no injectable `_run`"
