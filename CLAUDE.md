@@ -115,35 +115,39 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-15):** **Epic #119 is CLOSED** (Stage 7 extraction quality & validation) —
-the standing epic sequence's first pick after #499. Landed as PRs #508–#511: parse-robustness fixes
-(#362/#276, `parse.py` salvage now uses `json.JSONDecoder.raw_decode` instead of a brace-blind regex),
-the gate@7 single-school-LEA contamination banner (#246), the extraction-time mode-stability
-early-exit (#120, REQ-151 — district-grain auto-skip once every fillable band's running mode is
-stable, config-as-data params + a Settings kill-switch), and the #121 snake-topology re-test (Broward/
-Orange column-snake hub docs verified RESOLVED by REQ-054's per-school extraction — known-failure
-table row 4 updated with measured numbers, no code change needed). Three crossfam bug reports
-(#259/#361/#363) triage-closed as by-design/invalid/won't-fix with rationale on each issue. Follow-on
-work spun out rather than done inline: **#512** (Stage 5 snake-detector + labeling mechanism — sits
-with #233/#241) and `MODEL_FIELD_NOTES.md` (**PR #513, OPEN** — per-model field evidence ahead of the
-Council Lab; merge when reviewed, it's docs-only/no code dependency). Full story: this session's
-transcript; no PROJECT_HISTORY entry yet (queue one at the next natural stopping point — the
-per-PR commit messages + REQ-151 carry the detail for now).
+**Current status (2026-07-16):** **Epic #119 CLOSED** (Stage 7 quality, PRs #508–#511). **Epic #106
+(Stage 5/6) is IN A DESIGN-COMPLETE STATE — fully scoped, ready to build.** This session ran a
+**comprehensive Stage-5 review** (the "getting better at getting better" pass) that measured the
+learning loop and produced the whole build slate. Headline findings (durably recorded in
+`STAGE5_FILTER_DESIGN.md` §3a obs. 5, PR #520): the money leak is entirely on the SEND side —
+**auto-send (tier A) false-send = 24.3%**, auto-suppress miss = 0.5% (already safe); Stage-6
+eligibility is a UNION (`tier==A OR human_target`) and its rule is the clean lever; **stale** =
+clean unconditional veto (= the temporal-validity rule applied one gate earlier), **irregular** =
+CONDITIONAL veto (37% co-occurrence with real targets, measured from text — veto only absent a
+regular-day structural signal); existing confounders (news/calendar/board/sports) stay SOFT (a hard
+veto kills 49 real targets — #108 tuning, not labels); the un-attributed 23% of absents are mostly
+correctly-suppressed empty pages (not a labeling debt). Crossfam triage for #106 also merged (#514:
+#357/#358/#353 fixed; 14 closed by-design/invalid). The Huntington case (`4824000:af06722adb`) — a
+buried p108/130 handbook target the scorer flagged but the console's 20k text cap hid — was
+human-relabeled `school_start_end_prose`/buried_handbook and drove the console-UX issues.
 
-**Next (RESUME HERE — 2026-07-15):** **#106** (Stage 5/6 filter & dispatch refinements) is next in
-the confirmed sequence, then **#111** (Stages 1-4) → liveness gate → **#479/#480** (LCT foundation
-sweeps) → **#92** (Stage 9 build). #106 is an epic shell (school-year currency, drift detection,
-facet-level scoring, cross-config escalation) — **pull its sub-issues before scoping work**, the way
-#119 and #499 were opened. Also unblocked/pending: **#484** (datacontract Part 2), **#513** (merge
-when reviewed). Parked: #475/#476 (public extractions), #103/#80 (ramp-up/Council Lab — #512 and
-`MODEL_FIELD_NOTES.md` are prep for this). Deferred-by-design from the #499 reviews (documented in
+**Next (RESUME HERE — 2026-07-16): BUILD epic #106, starting with #515 (the money lever).** The full
+slate, all filed as #106 sub-issues:
+- **#515** Stage-6 confounder eligibility vetoes (24.5%→~15% false-send) — **the highest-leverage build**; depends on **#207** (conditional irregular-day facet+veto, term class incl. Early Release/Minimum Day/Inclement; fold in **#223** summer) and **#241** (recency = shared `school_year.py` temporal-validity rule at eligibility).
+- **#519** tune existing confounder detectors via the #108 harness (NOT new labels/vetoes).
+- Console: **#516** (FP/FN error-lanes + rec_key as the searchable left-pane entry-ID + right-pane reorder), **#522** (content-adaptive center-pane default: show what the machine read; PDFs → embedded viewer, rasters demoted to "available"), **#521** (relevance-density bookmarks + heat-strip for long reps — #522's long-doc mechanism; build the FULL version incl. confounder negative-weighting then dial back, per [[feedback-build-best-then-dial-back]]).
+- Recall: **#517** (schedule_link_only affordance), **#518** (capture-fidelity leak: login walls/0-byte PDFs/truncation, Stage 3/4).
+- Older #106 items still open: #107/#109/#110/#75/#83/#192/#226/#512.
+Guardrail across the console work: the default view must NEVER silently contradict the score (surface a pointer to the scored evidence). Then the sequence continues: **#111** (Stages 1-4) → liveness gate → **#479/#480** → **#92**. Parked: #475/#476, #103/#80 (Council Lab — #512 + `MODEL_FIELD_NOTES.md` are prep). Deferred-by-design from the #499 reviews (documented in
 code, revisit on volume): batching `_satisfied_bands_now`'s per-district loads (`ANY(:d)` shape) once
 the approved-request backlog grows.
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
--m "not integration"` (expect **~1540** pass) + `pytest -q -m govdb` (expect **~225**, Postgres up).
-Full detail: `docs/PROJECT_HISTORY.md` (newest entry), `STAGE8_AGGREGATE_DESIGN.md`,
-`PIPELINE_GOVERNANCE_AND_STATE.md`, `docs/REQUIREMENTS.yaml` (REQ-144–150).
+-m "not integration"` (expect **~1559** pass) + `pytest -q -m govdb` (expect **~226**, Postgres up).
+For the #106 build, the measured findings + the exact design decisions live in
+`STAGE5_FILTER_DESIGN.md` §3a obs. 5 (read it first); the per-issue specs are in the #106 sub-issues
+(#515–#522). Full detail: `docs/PROJECT_HISTORY.md`, `STAGE8_AGGREGATE_DESIGN.md`,
+`PIPELINE_GOVERNANCE_AND_STATE.md`, `docs/REQUIREMENTS.yaml`.
 
 ---
 

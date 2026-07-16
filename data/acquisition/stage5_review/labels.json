@@ -10169,11 +10169,11 @@
   },
   {
     "rec_key": "4824000:af06722adb",
-    "primary_label": "target_absent",
-    "facets_json": "{}",
+    "primary_label": "school_start_end_prose",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_pages\": \"108\", \"_pages_list\": [108]}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-07-04T05:20:37Z"
+    "updated_at": "2026-07-16T03:45:04Z"
   },
   {
     "rec_key": "4824000:bab96342a1",
