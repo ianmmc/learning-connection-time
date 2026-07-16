@@ -133,11 +133,18 @@ CLAUDE.md had two failing commands), normalized `REQUIREMENTS.yaml` (152 reqs, b
 #509), curated memory 23→19 with a **no-`type:project`-status-memories** rule, and filed 4 code-side defects
 as issues (#523/#524 Stage-2 docstrings, #525 `gate_mode.py:35`, #526 Stage-2 reads receipt-not-DB).
 
-**Next (RESUME HERE — 2026-07-16): epic #106. The #519 scope call is RESOLVED — #519 closed as
-refuted-premise, replaced by #528** (Ian, this session). The buildable-without-a-decision work is the
-recency signal (**#241/#107's `content_school_year` extractor** — reuses `school_year.py`, no vocabulary
-call, per obs. 6), which is also the shared prerequisite both recency issues consume. The full slate, all
-filed as #106 sub-issues:
+**Next (RESUME HERE — 2026-07-16): epic #106, on branch `feat/epic106-recency-content-school-year`
+(6 commits, unmerged).** Phase 0 + Phase 1 of the agreed plan are BUILT + measured + committed:
+**#525** (stale comment) and **#192** (cost-model `n_times` scaler) closed; **#107 recency** done end to
+end — `content_school_year` deterministic URL/filename read (14 obs.6 tests, live-validated 7.5% fire /
+zero phantom-year FPs, re-ingested → A+B recall held 0.9928), **#241** pre-2017-18 validity floor (HOLD,
+release-layer, fires on 0 today = obs.6's "~0 money" confirmed), and **prefer-recent** dispatch ranking
+(Stage 6, school-grain, 8 correct live holds incl. the Marshall §3G case, zero recall cost by construction).
+Full suite green (1582 DB-free / 226 govdb). **OPEN for sign-off:** close #107 (all pieces built); update
+REQ-044 (its "reject/flag COVID-era" acceptance text predates obs.6's veto-refutation — the built design is
+validity-floor-HOLD + prefer-recent-ranking, no recency veto); band-coverage redundancy across schools was
+deferred to **#83** by design. **Next buildable:** #528 (calendar scalar + the news_feed separating
+analysis), then the console trio **#522→#521→#516**. The remaining slate, all #106 sub-issues:
 - **#528** (successor to closed #519) cut confounder false-auto-sends where the combiner can reach them.
   The recompute broke #519's "~40 false-sends, tune the weights" into three mechanisms: (1) **`board`/
   `sports` fire on ~0 tier-A false-sends** — a firing-condition problem (they need neg-class *dominance*,
