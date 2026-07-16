@@ -228,22 +228,31 @@ grep + a 5-way Haiku subagent clustering of the un-attributed absents. All numbe
 - **Stage-6 eligibility is a UNION and a changeable lever:** `tier==A OR human_label∈target`. The confounder
   detectors are therefore candidate **negative eligibility gates on the auto path**, and the union makes an
   aggressive veto safe (a false veto is recovered by the human path + 7→ loops; a false send is money gone).
-  Simulated vetoes on the auto path: **stale + irregular** removes 53 false sends for 6 target-vetoes →
-  24.5%→15.2%; adding the existing-confounder facets removes 99 but **wrongly vetoes 49 real targets** (they
-  co-occur with real hubs — Las Cruces). So news/calendar/board/sports must stay SOFT (combiner weight), never
-  eligibility gates.
+  Simulated vetoes on the auto path: ~~**stale + irregular** removes 53 false sends for 6 target-vetoes →
+  24.5%→15.2%~~ — **the STALE half of this is REFUTED, see obs. 6**: measured on the real tier-A records, a
+  stale veto removes **1** false-send for **17** target-vetoes (and 0-for-4 at the pre-2017-18 floor), i.e.
+  stale contributes ~nothing to the 24.5%→15.2% and the combined figure never reproduced. The *irregular*
+  half is untested and remains the candidate (#207). Still sound and unaffected: adding the
+  existing-confounder facets removes 99 but **wrongly vetoes 49 real targets** (they co-occur with real
+  hubs — Las Cruces). So news/calendar/board/sports must stay SOFT (combiner weight), never eligibility
+  gates — that is the basis for #519.
 - **The irregular veto MUST be conditional.** Text grep (not notes): **37% of real single-school-bell-schedule
   targets also contain an irregular-day term** (Early Release / Minimum Day / Inclement / Late Start / two-hour
   delay / remote). An unconditional veto would false-negative 37% of targets. Veto only when an irregular
   signal is present AND no regular-day structural signal is — the existing `lf_nonstandard_day` philosophy.
   Term class to add: Early Release, Minimum Day, Inclement (Ian, 2026-07-15) + Late Start, Delayed Opening/
   two-hour delay, Remote/Virtual Learning, Half Day.
-- **The stale veto's "recall cost" is mostly illusory** — of the 6 vetoed targets, 5 are stale schedules the
-  human's own notes say don't-use ("From 2001. Should not use," "COVID-19 years," "more recent handbook at
-  [url]"), i.e. schedules the temporal-validity rule (COVID exclusion, ≤3-yr span) already forbids. So recency
-  should be the SAME temporal rule (`school_year.py`) applied one gate earlier (Stage-6 eligibility) instead of
-  only at LCT-calc — saving the extraction spend on schedules that get temporally rejected anyway. Caveat: a
-  templated handbook/PDF footer date must not be read as the schedule's vintage.
+- ~~**The stale veto's "recall cost" is mostly illusory**~~ — **SUPERSEDED by obs. 6 (2026-07-16): this
+  bullet is WRONG and its projection did not reproduce.** It read: of the 6 vetoed targets, 5 are stale
+  schedules the human's own notes say don't-use ("From 2001. Should not use," "COVID-19 years," "more recent
+  handbook at [url]"), so recency should be the SAME temporal rule (`school_year.py`) applied one gate earlier
+  (Stage-6 eligibility). **Two defects:** (a) the 6/53 figures were mined from *human notes* — records where
+  the human had already written "too dated" — which is judgment, not a signal any detector can reproduce; and
+  (b) "the same temporal rule" is ambiguous across two very different floors, and at the recency floor
+  (`ACCEPTABLE_BELL_YEARS`, 2023-24+) a veto is actively harmful. Measured refutation + the corrected
+  two-floor design: **obs. 6**. Retained (not deleted) because the superseded projection is what a reader
+  would otherwise re-derive. The caveat below still stands: a templated handbook/PDF footer date must not be
+  read as the schedule's vintage.
 - **Ian's footer/densest-zero-times heuristic confirmed:** "if the densest representation shows 0 times, no
   schedule." Only 2 tier-A/B records have max n_times==0 across all reps (both true absents) — the
   `n_times_in_window==0` suppress floor already honors it. A valid cross-check, small lever.
@@ -257,6 +266,72 @@ grep + a 5-way Haiku subagent clustering of the un-attributed absents. All numbe
   surfaced too (login walls, 0-byte PDFs, truncation — a Stage 3/4 problem, not scoring). ~3 records flagged
   as possible human false-negatives / buried-handbook (e.g. `4824000:af06722adb` — tier A, 7 in-window times,
   2025-26 handbook, labeled absent) — pending human re-inspection.
+
+**(6) RECENCY IS TWO RULES AT TWO FLOORS, NOT ONE VETO — obs. 5's stale-veto projection REFUTED by
+measurement (2026-07-16).** Attempting to build the recency veto (#241) surfaced that the enabling signal
+§3G names — a per-record `content_school_year` — **does not exist in the codebase** (zero hits). Built a
+throwaway URL-year extractor to measure what a stale veto would actually do, against the live labeled corpus
+(1,474 records / 1,621 labels; 473 tier-A labeled = the exact auto-send population #515 targets). Method:
+URL-decode → year-pair regex (`2018-2019` / `2025-26` / `25-26`, consecutive-pair validated) → guard out
+GUID/asset-id false years → judge the year with `school_year.py`. **Read this before rebuilding any recency
+veto.**
+
+- **At the recency floor (`ACCEPTABLE_BELL_YEARS`, 2023-24+) a veto is HARMFUL — it makes the metric worse:**
+
+  | tier-A veto @ 2023-24 floor | count |
+  |---|---|
+  | false-sends removed (the point) | **1** |
+  | real targets vetoed (the cost) | **17** |
+  | false-send rate | **24.1% → 24.8%** (it RISES) |
+
+  The rate rises because the veto strips real targets out of the denominator while removing ~no waste.
+  **Root cause — staleness and target-absence are near-INDEPENDENT:** a stale handbook usually still
+  *contains* a real bell schedule, which is exactly why 17 of them are human-labeled targets. Vetoing on
+  age therefore hits targets, not waste. The human notes said so before the measurement did: *"Dated, but
+  **not ruled out**"* (`4220130:458fd47cc7`), *"Not ideal given COVID-19 years, but it certainly looks like
+  the handbook reflects their [day]"* (`762b79b017`), and `5501770:96bba5deeb` [2018-19] carries a clean
+  answer — *"Our school day is from 7:18 a.m. to 2:31 p.m."*
+- **At the validity floor (pre-2017-18) the rule is CORRECT but pays ~0 money.** Ian's actual intent
+  (2026-07-16): "stale" = *before the 2017-18 school year* — floored on the **CRDC 2017-18 federal input**
+  we already use for LCT (`DATA_SOURCES.md`), because a 1999 newsletter breaks the REQ-026 ≤3-year span
+  against it no matter how good its times look. Measured: **12 pre-floor records in the whole corpus** (9 of
+  them one district — Dickinson `3800038` school-board minutes); the tier-A slice is **4 records, all real
+  targets, 0 false-sends**. The 8 absents are already tier-D/B (suppressed or in review) — the veto has
+  nothing to save. **So this is a CORRECTNESS guarantee (don't extract what REQ-026 forbids us to use), not
+  a cost lever — justify it on rule-compliance, never on money.**
+  - **Semantics: HOLD, not hard-reject (Ian, 2026-07-16).** Suppress-to-review + weight it into scoring;
+    human can override. Rationale: preserves options if a non-trivial volume of districts turn out to have
+    *nothing* newer available (`2905790:d953e92385`, Brashear's 2012-13 HS Timetracker, is that district's
+    real bell table — and is also #512's column-snake case). Same risk-asymmetry test as
+    `project-auto-act-when-failure-observable`: a hold is reversible and its failure is visible; a
+    hard-reject silently destroys a district's only evidence. Resolves the "hard-reject vs. hold" question
+    §3G left open.
+- **Prefer-recent (§3G / #107) is the half that saves money, and it is a RANKING, not a gate.** Among
+  siblings ≥ the 2017-18 floor covering the same school/band, dispatch the most recent and **hold** the
+  stale sibling (available for a cheap 7→6 re-dispatch if extraction fails). Zero recall cost *by
+  construction*: no fresher sibling ⇒ the old doc still sends. Marshall WI is the proof — the 2025-26,
+  2021-22 and 2018-19 handbooks are ALL real targets; the recent one makes the others redundant, not wrong
+  (the human's own note on `0a2839a21f`: *"More recent handbook at [url]"*). Misreading a year only
+  reorders siblings instead of discarding evidence, which is why the extractor's FP cost collapses in this
+  role — the same signal is unsafe as a gate and safe as a sort key.
+- **Consequence for the epic: #515's headline number is WRONG.** "24.5%→~15%, the money lever" came from
+  *stale + irregular together*; stale contributes **0**. #515's remaining value rests entirely on #207's
+  irregular-day veto (which is gated on a human facet decision), so **#515 is not the money lever and should
+  not be the resume point**. The measured money lever is **#519** (tune the existing news/calendar/board/
+  sports detectors — ~40 of the 115 false-sends, existing facets, the built #108 harness, no new labels).
+- **Scope (Ian, 2026-07-16):** **#241** = the pre-2017-18 validity floor (hold + scoring weight) — its
+  Brashear origin. **#107** stays the parent and remains whole per §3G ("complementary, not duplicates"):
+  it builds the shared `content_school_year` signal + prefer-recent dispatch; #241 consumes that signal.
+- **Extractor caveats for whoever builds `content_school_year`** (all hit during this measurement):
+  **URL-decode first** — `Bell%20Schedule%2025-26` parses as the year `2025-26` raw (the `20` is an encoded
+  space) and as `25-26` decoded; it lands on the right answer for the wrong reason and won't generalize.
+  **Guard GUIDs/asset-ids** — `live_feed_image/17728374`, `uploaded_file/5125`, and hex UUIDs yield phantom
+  years (10 false hits on targets alone). **A CMS upload path is not a vintage** — `/wp-content/uploads/
+  2021/05/` dates the upload, not the schedule (158 bare-YYYY hits, mostly noise). **A date is not a school
+  year** — `4-20-21-Minutes.pdf` is April 20 2021. **Validate the pair is consecutive** (`2020-2023` is a
+  plan span). And the Brashear newsletters that motivated #241 (`September01.htm`, `October98.htm`) carry
+  their year as a **month-word + 2-digit suffix** — pair-matching cannot see them at all, so the pre-floor
+  population above is *what this regex catches*, not the population #241 is actually about.
 
 ---
 
@@ -734,6 +809,20 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 ---
 
 ## Change log
+
+- **2026-07-16 — §3a obs. 6: the stale-veto projection REFUTED by measurement; obs. 5's stale bullet marked
+  superseded.** Building #241 surfaced that its enabling signal (`content_school_year`, §3G) does not exist.
+  A throwaway URL-year extractor measured what the veto would actually do on the 473 labeled tier-A records:
+  at the recency floor (2023-24+) it removes **1** false-send while vetoing **17** real targets and *raises*
+  the false-send rate 24.1%→24.8% — staleness and target-absence are near-independent, because a stale
+  handbook usually still contains a real schedule. At Ian's actual floor (pre-2017-18, the CRDC federal-input
+  baseline) the rule is correct but pays **0** — 4 tier-A hits, all real targets, no false-sends — so it is a
+  REQ-026 correctness guarantee, not a cost lever. Decisions (Ian): pre-2017-18 = **hold**, not hard-reject
+  (reversible; preserves districts whose only evidence is old); **#241** = that validity floor, **#107** stays
+  the parent (shared signal + prefer-recent ranking, which is the half that saves money). Consequence:
+  **#515's "24.5%→15% money lever" headline is wrong** (stale contributes 0 of it) and it is no longer the
+  resume point; the measured money lever is **#519**. Full tables, the human-note evidence, and the extractor
+  caveats (URL-decode first, guard GUIDs/asset-ids, an upload path is not a vintage) in §3a obs. 6.
 
 - **2026-07-11 (later) — #228 "Reset labels" shipped, alongside #229/#227 (commit 7655277, PR #242).**
   `POST /api/reset-labels` + the shared `build_signals.reset_labels_bulk` helper now let a record or

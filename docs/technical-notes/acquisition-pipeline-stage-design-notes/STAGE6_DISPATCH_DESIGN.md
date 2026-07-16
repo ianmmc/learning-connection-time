@@ -601,9 +601,34 @@ per-record gate (REQ-044 scoped recency there; the two are complementary, not du
   date as a weak floor) — a Stage-5 deterministic signal + candidate Axis-3 facet
   (`content_school_year`), surfaced to the gate@6 preview. Detector/scoring use of it follows the
   measured-pass discipline (§3a of the Stage-5 note; kin to obs. 4's summer-school confounder).
-- **Not decided:** hard-reject vs. hold for stale; whether year-preference lives in
-  `release.decide` (Stage 5) or the routing/package layer (here); how it interacts with the
-  handbook `harvest_slice` (an old handbook's slice may still be the only evidence for a band).
+- **UPDATE 2026-07-16 — measured, and the veto framing is refuted (STAGE5_FILTER_DESIGN §3a obs. 6).**
+  This section's core lean is **CONFIRMED**: recency is a DISPATCH decision, and prefer-recent must be a
+  **ranking, not a gate**. Measurement on the 473 labeled tier-A records killed the competing "stale veto"
+  framing: at the recency floor (2023-24+) it removes **1** false-send while vetoing **17** real targets and
+  *raises* the false-send rate 24.1%→24.8% — because staleness and target-absence are near-independent (a
+  stale handbook usually still *contains* a real schedule). Marshall WI is this section's own case and proves
+  the point: the 2025-26, 2021-22, and 2018-19 handbooks are **all** real targets — the recent one makes the
+  others *redundant, not wrong*. Prefer-recent costs **zero recall by construction** (no fresher sibling ⇒ the
+  old doc still sends), which is exactly why the ranking is safe where a gate is not.
+- **DECIDED 2026-07-16 (Ian) — hard-reject vs. hold: HOLD.** And the "stale" floor is **pre-2017-18** (the
+  CRDC 2017-18 federal input we already use for LCT — `DATA_SOURCES.md`), not the bell-year window: a
+  pre-2017 doc breaks REQ-026's ≤3-year span against CRDC no matter how good its times look. Semantics =
+  suppress-to-review + a scoring weight; the human can override. It is a **correctness guarantee that pays
+  ~0 money** (measured: 4 tier-A pre-floor records, all real targets, 0 false-sends) — never justify it on
+  spend. Hold rather than reject preserves districts whose *only* evidence is old (Brashear's 2012-13 HS
+  Timetracker is that district's real bell table). Same risk-asymmetry test as
+  `project-auto-act-when-failure-observable`: a hold is reversible and visibly fails; a hard-reject silently
+  destroys a district's only evidence. Tracked: **#241** (the floor) — **#107** stays the parent for the
+  shared `content_school_year` signal + the prefer-recent ranking.
+- **Still not decided:** whether year-preference lives in `release.decide` (Stage 5) or the routing/package
+  layer (here); how it interacts with the handbook `harvest_slice` (an old handbook's slice may still be the
+  only evidence for a band — which the HOLD semantics above now make recoverable rather than lost).
+- **The signal is still unbuilt** (verified 2026-07-16: `content_school_year` has zero hits in the codebase).
+  Extractor caveats measured the hard way — URL-**decode first** (`Bell%20Schedule%2025-26` reads as year
+  `2025-26` raw because `%20` is an encoded space: right answer, wrong reason), guard GUIDs/asset-ids
+  (`live_feed_image/17728374`, `uploaded_file/5125` → phantom years), a CMS upload path is not a vintage
+  (`/wp-content/uploads/2021/05/`), a date is not a school year (`4-20-21-Minutes.pdf` = April 20 2021), and
+  validate the pair is consecutive (`2020-2023` is a plan span). Full detail: §3a obs. 6.
 Cross-refs: REQ-044 (recency gate), REQ-007/school_year.py (COVID exclusion), the batch_00008
 observation record (issues #60/#61's deferral note explains the measured-pass rule this follows).
 
