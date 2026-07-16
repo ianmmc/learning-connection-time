@@ -1,11 +1,11 @@
 # Bell Schedule Acquisition Pipeline
 
 > **Authority:** the 9-stage map — what each stage consumes/produces and how they chain. Per-stage
-> implementation detail lives in each `STAGE*_DESIGN_2026-06.md`; cross-stage architecture (DB/state/gate
+> implementation detail lives in each `acquisition-pipeline-stage-design-notes/STAGE*_DESIGN.md`; cross-stage architecture (DB/state/gate
 > model) lives in `PIPELINE_GOVERNANCE_AND_STATE.md` — this doc points to both rather than
 > duplicating them.
 > **Audience:** anyone orienting to the pipeline as a whole, or tracing a district through it end to end.
-> **Companions:** every `STAGE*_DESIGN_2026-06.md` (per-stage present-state + decision log),
+> **Companions:** every `acquisition-pipeline-stage-design-notes/STAGE*_DESIGN.md` (per-stage present-state + decision log),
 > `PIPELINE_GOVERNANCE_AND_STATE.md` (DB/state/gate architecture), `docs/EXTRACTION_BENCHMARK_FINDINGS.md`
 > (model leaderboard + measured costs), `docs/technical-notes/models-and-council-composition/EXTRACTION_AND_DISCOVERY_LEARNINGS_2026-06.md`
 > (full learnings), `docs/INSTRUCTIONAL_TIME_HARVEST.md` (why SEA central data is a dead end),
@@ -19,7 +19,7 @@ queue (`gate@1`, REQ-102), Stage 2 deterministic SERP cascade (REQ-104), Stage 3
 (REQ-110), Stage 4 process + the Stage 4→5 incremental handoff (REQ-111), Stage 5 district-driven
 attention-first filter with the V2 detector/combiner scoring + v2.1 three-axis labeling (REQ-112/113/114/115),
 Stage 6 dispatch/freeze through the Stage 6→7 seam (REQ-101), and Stage 7 council extraction + the gate@7
-review console (REQ-117) — GT-scored 95.2%/99.3% band/per-school on `batch_00000`'s 24 districts. The
+review console (REQ-117) — GT-scored 95.2%/99.3% band/per-school on 24 of `batch_00000`'s 27 districts. The
 request-more-evidence loop's **detect → rank/defer → review → execute** cycle (REQ-118) is **built and
 hardened (epic #163, PR #167, merged 2026-07-05)**: 7→6 bundles a district's approved alternate-rep
 re-dispatches into ONE round and picks the yield-ranked alternate (not image-first); 7→2/7→3/7→1 shape
@@ -513,7 +513,7 @@ District cost = (schools sampled) × (per-call) × (council size). A 3-model non
 ## Open decisions (not yet built or pinned)
 
 1. **Per-school sampling policy — queue-time half resolved 2026-06-22; extraction-time half still open.** Queue-time (cap=12/band, seeded sample, most-constrained-first overlap minimization) is built and validated — see `METHODOLOGY.md` "Bell Schedule Sampling Policy" (the *why*) + `STAGE1_QUEUE_DESIGN.md` §3 (the Stage-1 implementation). Still open: the *extraction-time* mode-stability early-exit (does Stage 7/8 need to process all 12 queued schools, or can it stop once the modal value stabilizes?) — Stage 7's per-school extract→aggregate (Open decision #2) is now built, so this is unblocked but not yet decided (tracked: #120).
-2. **Per-school extract → modal-aggregate — BUILT & VALIDATED (REQ-117, 2026-07-03).** Per-school council extraction (not naive concatenated-page extraction) → cross-family consensus → the per-band exact mode, scored **95.2% band / 99.3% per-school** vs. the 940-time curated GT on `batch_00000`'s 24 districts, at $0.065 total. See `STAGE7_EXTRACT_DESIGN.md` §0.
+2. **Per-school extract → modal-aggregate — BUILT & VALIDATED (REQ-117, 2026-07-03).** Per-school council extraction (not naive concatenated-page extraction) → cross-family consensus → the per-band exact mode, scored **95.2% band / 99.3% per-school** vs. the 940-time curated GT on 24 of `batch_00000`'s 27 districts, at $0.065 total. See `STAGE7_EXTRACT_DESIGN.md` §0.
 3. **Council membership + decision rule — template decided, membership open.** 2-voters-2-families → judge-on-disagreement is built and validated (REQ-056, REQ-117); which specific models fill each slot is still open, pending the Council Lab's clean-data re-benchmark (GitHub #80). See `acquisition-pipeline-stage-design-notes/COUNCIL_LAB_DESIGN.md` (the producer) + `STAGE6_DISPATCH_DESIGN.md` §3A (the runtime consumer).
 4. **Discovery precision filter** — URL-keyword weighting / time-grid detection to close the 71%↔90% gap (deferred until we see scaled yield) (tracked: #113).
 5. **The 4 discovery misses** (Orange FL, Baldwin AL, Springdale AR, Champlain Valley VT) — deferred (tracked: #114).

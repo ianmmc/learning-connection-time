@@ -81,10 +81,13 @@ The repo ships a **tracked** pre-commit hook in `.githooks/`. Git can't auto-ena
 git config core.hooksPath .githooks
 ```
 
-What **pre-commit** does: (1) sweeps the **precious-state JSON backups** — `data/acquisition/stage5_review/labels.json`
-(the `label` table) and `data/acquisition/status/district_status.json` (the `state_event` log) — into
-every commit so they never drift behind the governance DB (both are written automatically on save/ingest;
-this guarantees they reach version control, managed **symmetrically**); (2) verifies any enrichment counts
+What **pre-commit** does: (1) sweeps the **precious-state JSON backups** into every commit so they never
+drift behind the governance DB — currently **nine** twins: `labels.json` (the `label` table),
+`cluster_splits.json`, `followup_flags.json`, `district_status.json` (the `state_event` log), and the
+gate@8 human-judgment set (`stage8_approvals.json`, `band_exclusions.json`, `human_added_facts.json`,
+`slot_assignments.json`, `gate_modes.json`). All are written automatically on save/ingest; the hook
+guarantees they reach version control, managed **symmetrically**. (`.githooks/pre-commit` is the source of
+truth for the live list — it grows as precious tables are added.) (2) verifies any enrichment counts
 in staged docs against the DB (Rule #6 — no hallucinated counts). Editing `.githooks/pre-commit` is the
 single source of truth; a stale local `.git/hooks/pre-commit` is ignored once `core.hooksPath` is set.
 
@@ -201,18 +204,22 @@ with session_scope() as session:
     print(f"Found {len(districts)} California districts")
 ```
 
-### Run Scraper Service
+### The Node capture layer (`infrastructure/scraper`)
+
+**Not a service** — there is no build step, no `npm start`, and nothing listening on a port. The retired
+Crawlee+Ollama scraper *service* was archived 2026-06-25 (`data/archive/crawlee-ollama-era-superseded-20260625/`).
+What lives here now is a flat set of Playwright `.mjs` modules (`capture_discovery.mjs` et al.) that the
+**Python Stage-3 capture code invokes directly** — see `STAGE3_CAPTURE_DESIGN.md`.
 
 ```bash
 cd infrastructure/scraper
-npm install
-npm run build   # compile TypeScript to dist/ (required before npm start)
-npm start
-# Service runs on http://localhost:3000
-
-# Or run in watch mode without a build:
-# npm run dev
+npm install            # playwright is the only dependency
+npm test               # node --test *.test.mjs
+npm run lint:deps      # depcruise over the flat *.mjs (the Node side of the layering check)
 ```
+
+These are the only two scripts `package.json` defines. Playwright also drives self-verification of console
+UI changes (CLAUDE.md: the Python playwright isn't installed — drive this Node one).
 
 ### Check Enrichment Status
 
@@ -260,7 +267,9 @@ git commit -m "feat: Add new bell schedule parser"
 ### Conventions
 
 - **Python:** 3.11+ (3.13 in CI), PEP 8, type hints where they help, `logging` over `print` in library code.
-- **File naming:** scripts `kebab-case.py`; data `name_YYYY_YY.csv`; generated artifacts
+- **File naming:** Python modules/scripts `snake_case.py` (0 of the 28 files under `infrastructure/scripts/`
+  are hyphenated — this line said `kebab-case.py` until 2026-07-16, contradicting the whole codebase);
+  Node capture modules `snake_case.mjs`; data `name_YYYY_YY.csv`; generated artifacts
   `name_YYYY_YY_<UTC-timestamp>.csv`; docs `CAPS_WITH_UNDERSCORES.md`.
 - **Git:** conventional-commit messages, one logical change per commit.
 

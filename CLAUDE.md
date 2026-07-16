@@ -32,7 +32,7 @@ time-as-quality assumption, averaging deception): `docs/METHODOLOGY.md`.
 | The mission, the story, the evolution roadmap | `docs/PROJECT_CONTEXT.md` |
 | Dev setup, fresh-checkout orientation, conventions | `docs/GETTING_STARTED.md` |
 | LCT calculation mechanics, SPED segmentation, QA | `docs/METHODOLOGY.md` |
-| The 9-stage acquisition pipeline, end to end | `docs/ACQUISITION_PIPELINE.md` (the map) → `docs/technical-notes/STAGE*_DESIGN_2026-06.md` (per-stage present state) |
+| The 9-stage acquisition pipeline, end to end | `docs/ACQUISITION_PIPELINE.md` (the map) → `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE*_DESIGN.md` (per-stage present state) |
 | Cross-stage architecture: DB/state/gate model | `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE.md` |
 | Why a decision was made, project history | `docs/PROJECT_HISTORY.md` |
 | Vocabulary | `docs/TERMINOLOGY.md` (read first) |
@@ -88,7 +88,7 @@ minimums / day-counts, not actual daily minutes. Web discovery + extraction is t
 path. See `docs/INSTRUCTIONAL_TIME_HARVEST.md`.
 
 **Notes:** Local Ollama deleted; paid-cloud extraction is cheap (~$0.05–0.30/1M). Keys in gitignored
-`config/secrets.local.json` + `.env`. Requirements are tracked as REQ-001…115+ in `docs/REQUIREMENTS.yaml`
+`config/secrets.local.json` + `.env`. Requirements are tracked as REQ-001…151 in `docs/REQUIREMENTS.yaml`
 (some numbers superseded/retired — see that file's own status column, not a list here).
 
 ---
@@ -237,12 +237,12 @@ python3 infrastructure/scripts/verify_enrichment.py --quick
 These are installed (dev-deps) and are the project's standard way to map dependencies and enforce
 layering — reach for them before writing or verifying any "what depends on what" narrative:
 ```bash
-lint-imports                 # enforce the acquisition layering contracts (.importlinter); expect "3 kept, 0 broken"
+lint-imports                 # enforce the acquisition layering contracts (config: pyproject.toml); expect "4 kept, 0 broken"
 python3 -c "import grimp; g=grimp.build_graph('infrastructure'); \
   print(sorted(g.find_modules_directly_imported_by('infrastructure.acquisition.stage1_queue.queue_batch')))"
                              # grimp: query the real import graph (what a module imports / is imported by)
 vulture infrastructure/acquisition    # dead-code sweep
-cd infrastructure/scraper && npx depcruise --config .dependency-cruiser.cjs lib   # Node (.mjs) side
+cd infrastructure/scraper && npm run lint:deps   # Node (.mjs) side — depcruise over the flat *.mjs (no lib/ dir)
 pytest tests/test_arch_manifest.py    # cross-boundary FITNESS functions vs arch-manifest.json (#124)
 ```
 > **Caveat (the recurring lesson):** the import tools see **Python/Node imports only**. They do NOT see the
@@ -264,7 +264,7 @@ To access current design resources, use the claude_design MCP (https://api.anthr
 | Task | File |
 |------|------|
 | **Acquisition pipeline (canonical map)** | `docs/ACQUISITION_PIPELINE.md` |
-| **Per-stage present-state design notes** | `docs/technical-notes/STAGE*_DESIGN_2026-06.md` |
+| **Per-stage present-state design notes** | `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE*_DESIGN.md` |
 | **Live pipeline code** | `infrastructure/acquisition/` (stage1_queue/ … stage9, process_governance/ console) |
 | Extraction leaderboard + costs | `docs/EXTRACTION_BENCHMARK_FINDINGS.md` |
 | Council design research | `docs/technical-notes/models-and-council-composition/LLM_COUNCIL_RESEARCH_2026-06.md` |
@@ -289,7 +289,7 @@ This is the core briefing. Load the right doc for the task:
 | Database setup + schema | `docs/DATABASE_SETUP.md` (schema authority = `infrastructure/database/models.py`) |
 | Data sources, SEA integrations, ID crosswalks, complex districts | `docs/DATA_SOURCES.md` · `docs/SEA_INTEGRATION_GUIDE.md` |
 | Data methodology (LCT, sampling, exclusions, temporal) | `docs/METHODOLOGY.md` |
-| The acquisition pipeline + per-stage design notes | `docs/ACQUISITION_PIPELINE.md` (map) → `docs/technical-notes/STAGE*_DESIGN_2026-06.md` |
+| The acquisition pipeline + per-stage design notes | `docs/ACQUISITION_PIPELINE.md` (map) → `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE*_DESIGN.md` |
 | Governance / state model / gate model / console | `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE.md` |
 
 **Token Efficiency:** load only what the task needs.

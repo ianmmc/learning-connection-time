@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-07-01T00:00:00Z"
+last_updated: "2026-07-16T00:00:00Z"
 
 requirements:
   - id: REQ-001
