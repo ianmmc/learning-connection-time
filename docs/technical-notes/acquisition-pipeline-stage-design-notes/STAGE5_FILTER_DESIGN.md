@@ -173,6 +173,17 @@ before the human sees it; a borderline page reaching gate@5 costs only review ti
 > A running log of patterns Ian spots during gate@5 review that should sharpen the detectors/signals later.
 > **Written down, not implemented** (per `feedback-explore-before-scoring-changes`): fold in deliberately and
 > measure against the labels, never tune by eye. New observations append here.
+>
+> **GOVERNING PRINCIPLE (Ian, 2026-07-16): the approach to labeling in Stage 5 is defined by what helps the
+> automated system LEARN and improve** — not by cataloging the real-world categories a page could be. A
+> facet/axis/shape earns its place in the label object **only if a detector can measurably learn from it**
+> (improve auto-send precision at held recall when it accrues); prefer the **coarsest learnable distinction**
+> over granular categories that fragment the ground truth and starve each detector's denominator; and
+> **disagreement (FP/FN) is the primary product** of labeling — the training signal, not a page description.
+> Consequence: the per-confounder "add one checkbox + one `lf_X` detector" pattern is retired — **obs. 3 and
+> obs. 4 below are SUPERSEDED in place** on this basis (issues #207/#223/#512 closed 2026-07-16; the
+> event-content / wrong-schedule facet **vocabulary** is now a single holistic decision folded into the
+> console/labeling rework, #522). Memory: `project-stage5-labeling-serves-learning`.
 
 **(1) A footer time-range on a DISTRICT page leans building/office hours**; on a SCHOOL page it leans the
 student day (2026-07-01). An unlabeled footer range (the `school_start_end_list` shape) is more likely
@@ -198,16 +209,25 @@ School** carried the real instructional start/stop — disambiguated by page foc
 minutes (obs. 2). This is exactly the office-vs-school-hours confusable (the research's #1 danger) and where
 both observations would pay off.
 
-**(3) Registration, open house, back-to-school, and last day of school information may merit facets.** Content about these sorts of events seem to come up a lot. There may be associated keywords to look at for downweighting. They may merit adding facet checkboxes to the console view for Stage 5.
+**(3) Registration, open house, back-to-school, and last day of school information may merit facets.**
+~~Content about these sorts of events seem to come up a lot. There may be associated keywords to look at
+for downweighting. They may merit adding facet checkboxes to the console view for Stage 5.~~ **SUPERSEDED
+2026-07-16** (governing principle above): these are the event-content confounder class, not N separate
+facets — resolved as ONE coarse "wrong-schedule / not-the-regular-day" vocabulary decision folded into #522,
+kept only if a detector measurably learns from it. Retained (not deleted) so a reader doesn't re-propose the
+per-event checkboxes.
 
 **(4) SUMMER SCHOOL pages are a confounder shape the detectors don't distinguish (2026-07-02).** Marshall
 WI (5508790, batch_00008): `…/students-families/summer-school.cfm` auto-sent as **tier-A** — it carries a
 genuine-looking start/end pair and schedule keywords, but summer hours are NOT the regular instructional
 day (shorter day, subset of students, different calendar). Same family as `lf_nonstandard_day`'s
-weather/delay cases: real bell-shape, wrong schedule. Candidate signal: a `summer` keyword class
+weather/delay cases: real bell-shape, wrong schedule. ~~Candidate signal: a `summer` keyword class
 (summer school / summer session / ESY / extended school year) as a soft negative and/or a `summer_school`
-confounder facet on Axis 2 (pairs naturally with obs. 3's event-content facets). Also relates to the
-recency/dispatch question — see `STAGE6_DISPATCH_DESIGN` §3G.
+confounder facet on Axis 2 (pairs naturally with obs. 3's event-content facets).~~ **The confounder
+OBSERVATION stands; the standalone-facet PROPOSAL is SUPERSEDED 2026-07-16** (governing principle above;
+#223 closed): summer folds into the single coarse wrong-schedule facet-vocabulary decision (#522), not its
+own checkbox + `lf_summer_school`. Also relates to the recency/dispatch question — see
+`STAGE6_DISPATCH_DESIGN` §3G.
 
 **(5) Comprehensive review 2026-07-15 (epic #106) — measured the money leak, re-specified the vetoes,
 and mined the un-attributed absents.** A full pass over the 1,473 labels × the live scorer. The findings
