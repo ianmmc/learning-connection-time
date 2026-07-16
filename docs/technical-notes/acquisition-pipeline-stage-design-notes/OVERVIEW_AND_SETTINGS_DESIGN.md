@@ -58,8 +58,9 @@ a control law that actually reads it (below); every other gate stays manual-only
 approve/reject action regardless of the stored toggle, until that gate earns its own auto path.
 
 **Backing store** (`infrastructure/acquisition/common/gate_mode.py`, REQ-108): a precious `gate_mode` table,
-one row per key — `'default'` (the global default) + `'gate@1'..'gate@8'` overrides (`gate@8` is
-forward-looking; the stage doesn't exist yet, #89). Two fields per row: `configured_mode` (the human's
+one row per key — `'default'` (the global default) + `'gate@1'..'gate@8'` overrides (`gate@8` is BUILT —
+the standalone stage/gate shipped #89, 2026-07-14; the `gate_mode.py:35` inline comment still says
+"not built yet", tracked #525). Two fields per row: `configured_mode` (the human's
 toggle) and `license_state` (the live deadband state a gate's control law demotes/re-promotes, §1b).
 `configured_mode` is **NULLABLE — NULL means "inherit the global default"**, not "manual." This is load-
 bearing: a license-only write (§1b, from the demote-hook's first transition) must never materialize a
@@ -147,13 +148,15 @@ handoffs, so a hard district that keeps failing and re-requesting can't rack up 
 handoff at a time. All four are wired into Stage 7's `run_council_streaming` and `stage7_execute`. It's the
 Overview's auto-advance UI itself that is not built — the per-gate toggle it would drive (§1a) already is.
 
-Stage 8 (aggregation) itself is not yet a standalone console/gate, but its algorithm is live TODAY, inline
-inside gate@7's endpoint — `stage8_aggregate/aggregate.py` (`district_bands_from_facts`, `merge_fact_runs`
-for REQ-122's cumulative-facts fix, and `detect_single_school_over_extraction` for #237's cross-LEA
-contamination flag) is imported directly by `server.py`'s gate@7 route and its output ships in that
-endpoint's response. `gate@8` is already reserved in `gate_mode.py`'s `GATES` key-space (forward-looking,
-no stage/console behind it yet). The next build is the standalone Stage 8 stage/gate@8/console around this
-already-live algorithm — see `docs/ACQUISITION_PIPELINE.md`'s current-status section.
+Stage 8 (aggregation) is now a **standalone console/gate — BUILT #89, 2026-07-14** (`static/stage8.js` +
+`server.py`'s `/api/aggregate/*` block; see `STAGE8_AGGREGATE_DESIGN.md` §0a). Its algorithm had been live
+inline inside gate@7's endpoint since early July — `stage8_aggregate/aggregate.py`
+(`district_bands_from_facts`, `merge_fact_runs` for REQ-122's cumulative-facts fix, and
+`detect_single_school_over_extraction` for #237's cross-LEA contamination flag) — and the standalone gate@8
+was then built around it: the review queue, per-school override, the four human-judgment tables
+(`band_exclusion`/`human_added_fact`/`slot_assignment` + `gate_mode`), the approve/send-back verdict with a
+frozen fingerprinted receipt, and the gate@8 calibration hook. Still unbuilt downstream: the Stage-9 write
+(#93) and the 8→1/8→6 back-edges.
 
 User stories this would satisfy:
 - See, across the nine stages, what just happened and what needs human attention — which
@@ -167,8 +170,10 @@ User stories this would satisfy:
 gate@1/6/7/8 each need their OWN calibrated auto path (governance §11b: **confidence-escalating** —
 auto-accept high confidence, auto-escalate/flag low confidence) before their toggle means anything beyond
 persisted intent. This is explicitly gated on the calibration log (§1, above) accruing enough decisions per
-gate to certify a threshold (rule of three — see `PIPELINE_GOVERNANCE_AND_STATE.md` §11b), and on
-gate@8 existing at all before gates 6/7 can safely relax (epic #209's ordering constraint).
+gate to certify a threshold (rule of three — see `PIPELINE_GOVERNANCE_AND_STATE.md` §11b). The ordering
+constraint that gate@8 must EXIST before gates 6/7 relax is now satisfied — gate@8 shipped (#89), and its
+calibration hook logs from day one, so the decisions needed to certify its own threshold are already
+accruing. (The runtime-guardrail epic that framed this, #209, is CLOSED.)
 
 ### 2c. Open questions (unresolved, not yet worth a decision)
 - Which stages get a *read* view vs an *action* surface once Overview exists (governance §7b).

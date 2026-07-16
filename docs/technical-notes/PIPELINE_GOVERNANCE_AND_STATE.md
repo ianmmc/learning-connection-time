@@ -1,10 +1,10 @@
 # Pipeline Governance, State Model & the Stage 5→6 Release
 
 > **Authority:** the cross-stage architecture — DB-vs-disk split, state-event log, gate/console model,
-> the Stage 5→6 release mechanics. Per-stage present-state detail lives in each `STAGE*_DESIGN_2026-06.md`;
+> the Stage 5→6 release mechanics. Per-stage present-state detail lives in each `acquisition-pipeline-stage-design-notes/STAGE*_DESIGN.md`;
 > this doc is what ties them together.
 > **Audience:** anyone building or reasoning about a pipeline stage, the console, or the DB schema.
-> **Companions:** `ACQUISITION_PIPELINE.md` (the 9-stage map + flow diagram), every `STAGE*_DESIGN_2026-06.md`
+> **Companions:** `ACQUISITION_PIPELINE.md` (the 9-stage map + flow diagram), every `acquisition-pipeline-stage-design-notes/STAGE*_DESIGN.md`
 > (per-stage detail — each links back here for its gate/console/DB contract), `PROJECT_HISTORY.md`
 > (high-level ADR log; §8/§9/§9a below are the detailed build history behind those entries).
 > **Update this when:** a cross-stage architectural decision changes (DB schema, gate model, the
@@ -20,9 +20,10 @@ This note is the architecture for three coupled decisions that span every stage:
 3. **The app's scope** — a single **stage-selectable governance console** at
    `infrastructure/acquisition/process_governance/`, the human-in-the-loop surface for every gate (§7, §11).
 
-**Current build state (2026-07-09):** REQ-098/099/103/094 (packaging, state-event log, Postgres governance
+**Current build state (2026-07-16):** REQ-098/099/103/094 (packaging, state-event log, Postgres governance
 DB, event-driven `filtered.json`) are all COMPLETE — see §1b, §3, §6. The console is built and run live
-through **`gate@7`**: gate@1 (REQ-102), Stage 2 (REQ-104), Stage 3 (REQ-110), Stage 4 + the Stage 4→5
+**through `gate@8`** (the standalone Stage 8 / gate@8 shipped #89, 2026-07-14 — see below and
+`STAGE8_AGGREGATE_DESIGN.md` §0a). Through **`gate@7`**: gate@1 (REQ-102), Stage 2 (REQ-104), Stage 3 (REQ-110), Stage 4 + the Stage 4→5
 incremental handoff (REQ-111, §12), the Stage 5 district-driven console (REQ-112), Stage 6 dispatch/freeze
 through the Stage 6→7 seam (REQ-101), and Stage 7 council extraction + the gate@7 review console (REQ-117:
 extraction results + the request-more-evidence **detect/rank/defer/review** loop — see
@@ -41,7 +42,9 @@ efficiency sweep (#147/#148) that promoted the fragile `handoff_hash NOT LIKE '%
 a first-class `run_kind` column (STAGE7 §0/§6) so a second vision-council probe can never shadow a
 district's production run. Dead code + test drift (#125/#87/#126/#166) also retired. Full mechanism/
 measurement detail: `STAGE7_EXTRACT_DESIGN.md` §6 (decision log).
-**Not yet built: Stage 8/9.** (tracked: #89, #93) **Gates are stage-numbered (§11):**
+**Stage 8 gate@8 BUILT (#89, 2026-07-14; console + approve/send-back + the 4 human-judgment tables + frozen
+receipt — `STAGE8_AGGREGATE_DESIGN.md` §0a/§0b). Still unbuilt: the Stage-9 write (#93), the 8→1/8→6
+back-edges, and gate@8 auto mode.** **Gates are stage-numbered (§11):**
 `gate@1` (queue) · `gate@5` (per-URL review) · `gate@6` (dispatch) · `gate@7` (council requests) · `gate@8`
 (results) — **1/5/8 structural (permanent), 6/7 supervision (first to relax) — §11i.** §8, §9, and §9a
 below are **historical** — fully executed planning/sequencing docs kept in place because their section
@@ -157,13 +160,14 @@ rather than silently skip if Chromium is unavailable.
   follow-ups, still open). #237 spun off a structure-aware charter track: #243/#244/#245/#246, the current
   backlog in this area. Full detail: `STAGE7_EXTRACT_DESIGN.md` §6 (decision log).
 
-Next: **Stage 8** (the standalone stage/gate@8/console — tracked: #89/#90; the aggregation ALGORITHM
-already runs live inline inside gate@7 via `stage8_aggregate/aggregate.py`, per `STAGE8_AGGREGATE_DESIGN_
-2026-06.md` §1a — what's missing is the standalone surface, and epic #209's own ordering constraint
-requires gate@8's calibrated-confidence gate to exist before gates 6/7 can relax supervision) or the
-Council Lab's remaining backlog (`cost_benchmark`, prompt A/B, tracked: #80/#81); the remaining Stage-5
-aggregation-quality fixes (#223/#224/#226); the charter-segmentation track (#243/#244/#245/#246); #238
-(deferred efficiency follow-ups). The live gate-mode (manual/auto) persistence + console toggle (#104 part
+Next (as of 2026-07-16): **Stage 8 gate@8 has SHIPPED** (#89; the standalone console + approve/send-back +
+the 4 human-judgment tables + frozen receipt — `STAGE8_AGGREGATE_DESIGN.md` §0a), and the #499 slot program
+(REQ-144…150) + epic #478's overrides with it. Epic #119 (Stage 7 extraction quality, PRs #508–#511) also
+CLOSED. **The live work is epic #106** (Stage 5/6 filter & dispatch refinements — the console + scoring
+slate #515–#522, plus recency #241/#107; see `STAGE5_FILTER_DESIGN.md` §3a and CLAUDE.md's RESUME block).
+Still genuinely unbuilt downstream: the **Stage-9 write** (#93), the **8→1/8→6 back-edges**, and gate@8
+**auto** mode. Other open tracks: the Council Lab backlog (`cost_benchmark`, prompt A/B, #80/#81); the
+charter-segmentation track (#243/#244/#245); #238 (deferred efficiency follow-ups). The live gate-mode (manual/auto) persistence + console toggle (#104 part
 a) and **#211/#214 are now all SHIPPED** (epic #209's Phase 0/1/2 build-complete, merged 2026-07-13 via PR
 #250 — see above); #104 part b (per-gate confidence-escalating auto beyond gate@5) remains open, future
 work. Still open: REQ-100 (staleness, tracked: #100), the gate@7 inline PNG/PDF viewer (tracked: #151).
@@ -1181,9 +1185,14 @@ The immutable Stage-6 dispatch freeze is what keeps "what we sent" recoverable a
   (add/remove districts, council overrides, verified-only) → **freeze** → the immutable dispatch + a
   precious `handoff` index row + a per-district `dispatched` state_event; manual approve today (auto mode
   deferred) (tracked: #104). See `STAGE6_DISPATCH_DESIGN.md` §0/§0b.
-- **Stage 7** — council extraction; **BUILT (REQ-117, 2026-07-03)**: the gate@7 console (district-first —
-  band rollup, accepted/unresolved facts, request-more-evidence cards with Approve/Reject/Reopen); read +
+- **Stage 7** — council extraction; **BUILT (REQ-117, 2026-07-03; extraction quality epic #119 CLOSED
+  2026-07-15)**: the gate@7 console (district-first — band rollup, accepted/unresolved facts,
+  request-more-evidence cards with Approve/Reject/Reopen, the #237 contamination banner); read +
   review only, no fact/band editing (that's gate@8). See `STAGE7_EXTRACT_DESIGN.md` §0.
+- **Stage 8** — aggregation + the "closing argument"; **BUILT (#89, 2026-07-14)**: the gate@8 console
+  (review queue, per-school override, band-exclusion / human-add / slot-assignment, the approve/send-back
+  verdict with a frozen fingerprinted receipt). This is where fact/band editing lives. Still unbuilt: the
+  Stage-9 write (#93) and the 8→1/8→6 back-edges. See `STAGE8_AGGREGATE_DESIGN.md` §0a/§0b.
 
 ### 11g. Implications for what's built
 - `state_event.checkpoint` vocabulary: **`gate@1` | `gate@5` | `gate@6` | `gate@7` | `gate@8`** (was
