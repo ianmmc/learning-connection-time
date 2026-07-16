@@ -65,6 +65,40 @@ def test_candidates_and_handoffs_lists():
     assert h.status_code == 200 and isinstance(h.json(), list)
 
 
+@pytest.mark.integration
+def test_candidates_badge_holds_pre_2017_tier_a_via_the_241_floor(gov_session, monkeypatch):
+    """#241 (code-review fix): the n_send badge must NOT count an unlabeled tier-A record whose
+    content_school_year is pre-2017-18 — decide() HOLDs it, so it belongs in n_hold. Seeds three
+    unlabeled tier-A records (rolled back) and checks the SQL mirrors the floor."""
+    import contextlib
+    import json as _json
+
+    from sqlalchemy import text as _text
+    from infrastructure.acquisition.stage5_filter import build_signals as BS
+    did = "CAND241"
+    gov_session.execute(_text(
+        "INSERT INTO district (district_id, name, district_dir, labeled_topology, nces_school_count, n_records)"
+        " VALUES (:d, 'T', 'cand241_dir', 'per_school', 3, 3)"), {"d": did})
+    for h, csy in [("stale", "2012-13"), ("recent", "2025-26"), ("noyear", None)]:
+        sig = {"n_times": 4, **({"content_school_year": csy} if csy else {})}
+        gov_session.execute(BS.INSERT_RECORD, {
+            "rec_key": f"{did}:{h}", "district_id": did, "district_dir": "cand241_dir", "url": f"http://x/{h}",
+            "hash": h, "kind": "html", "final_url": None, "content_hash": h, "duplicate_of": None,
+            "tier": "A", "sort_score": 50.0, "category_hypothesis": "school_bell_table",
+            "signals_json": _json.dumps(sig), "intended_schools_json": "[]",
+            "candidate_tools_json": "[]", "is_emergent": 0})
+    # no labels -> all three are unlabeled tier-A
+
+    @contextlib.contextmanager
+    def _scope():
+        yield gov_session                      # same (uncommitted) txn, so the endpoint sees the seed
+    monkeypatch.setattr(SRV.gdb, "session_scope", _scope)
+    row = {r["district_id"]: r for r in SRV.handoff_candidates()}[did]
+    assert row["n_send"] == 2                   # recent + unknown-year send; the pre-2017 one does NOT
+    assert row["n_hold"] == 1                   # the pre-2017-18 stale record is floor-held
+    gov_session.rollback()
+
+
 # ----------------------------- preview→freeze staleness gate (issue #37) -----------------------------
 from infrastructure.acquisition.stage6_handoff import handoff as HND
 

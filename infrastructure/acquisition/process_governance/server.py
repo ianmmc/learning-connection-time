@@ -262,7 +262,8 @@ def cascade_facets(facets: dict | None) -> dict | None:
 async def save_label(rec_key: str, payload: dict):
     with gdb.session_scope() as con:
         rec = con.execute(text(
-            """SELECT r.district_id, r.cluster_id, r.is_cluster_rep, r.tier, r.sort_score, d.state
+            """SELECT r.district_id, r.cluster_id, r.is_cluster_rep, r.tier, r.sort_score, d.state,
+                      r.signals_json::jsonb->>'content_school_year' AS content_school_year
                FROM record r LEFT JOIN district d ON d.district_id = r.district_id
                WHERE r.rec_key = :rk"""), {"rk": rec_key}).mappings().first()
         if not rec:
@@ -295,7 +296,8 @@ async def save_label(rec_key: str, payload: dict):
         # None when there's no terminal decision (unlabeled / off-axis label). The corpus accrues forward.
         cal = GCAL.gate5_label_record(
             rec_key=rec_key, district_id=rec["district_id"], tier=rec["tier"], sort_score=rec["sort_score"],
-            primary_label=vals["primary_label"], status=vals["status"], state=rec["state"], created_at=ts)
+            primary_label=vals["primary_label"], status=vals["status"], state=rec["state"], created_at=ts,
+            content_school_year=rec["content_school_year"])
         if cal:
             CAL.record_calibration(con, cal)
         # gate@5 exploration-audit demote-hook (#211/REQ-120): labeling a reject re-evaluates the revocable
@@ -1428,11 +1430,14 @@ def _ingest_stage5_if_complete(batch: dict, on_event) -> None:
 @app.get("/api/handoff/candidates")
 def handoff_candidates():
     """Stage-5 districts available to dispatch, each with `n_send` (canonical records `release.decide`
-    will SEND — labeled targets + unlabeled tier-A), `n_verified` (the human-labeled-target subset of
-    n_send — what a `verified_only` dispatch sends), and `n_hold` (unlabeled tier-B/C awaiting a gate@5
-    label). Matches the tier-gated release rule, so the badge reflects what dispatch actually sends, not
-    the whole recall-biased funnel. Reuses release.CANONICAL_RECORD_WHERE. Preview stays authoritative
-    for the exact representation count + cost.
+    will SEND — labeled targets + unlabeled tier-A, MINUS the #241 pre-2017-18 validity-floor holds),
+    `n_verified` (the human-labeled-target subset of n_send — what a `verified_only` dispatch sends), and
+    `n_hold` (unlabeled tier-B/C awaiting a gate@5 label, PLUS the floor-held tier-A records). Mirrors
+    decide()'s tier gate + #241 floor (the `:floor` bind is release.SPED_BASELINE_YEAR — the single source
+    of truth), so the badge reflects what dispatch actually sends, not the whole recall-biased funnel. It is
+    a per-record UPPER BOUND: #107 prefer-recent may HOLD a further stale same-school sibling at dispatch
+    time (a cross-record decision this per-record count can't show). Reuses release.CANONICAL_RECORD_WHERE.
+    Preview stays authoritative for the exact representation count + cost.
 
     Also carries a per-district DISPATCH-HISTORY signal (#171) so the console can distinguish fresh
     from already-sent districts (re-selecting a dispatched one is wasted spend): `n_dispatched` /
@@ -1456,9 +1461,15 @@ def handoff_candidates():
                 LEFT JOIN (
                     SELECT r.district_id,
                       COUNT(*) FILTER (WHERE l.primary_label = ANY(:targets)
-                                          OR (l.primary_label IS NULL AND r.tier = 'A')) AS n_send,
+                                          OR (l.primary_label IS NULL AND r.tier = 'A'
+                                              AND NOT (COALESCE(r.signals_json::jsonb->>'content_school_year',
+                                                                '9999-99') < :floor))) AS n_send,
                       COUNT(*) FILTER (WHERE l.primary_label = ANY(:targets)) AS n_verified,
-                      COUNT(*) FILTER (WHERE l.primary_label IS NULL AND r.tier IN ('B', 'C')) AS n_hold
+                      COUNT(*) FILTER (WHERE l.primary_label IS NULL
+                                          AND (r.tier IN ('B', 'C')
+                                               OR (r.tier = 'A'
+                                                   AND COALESCE(r.signals_json::jsonb->>'content_school_year',
+                                                                '9999-99') < :floor))) AS n_hold
                     FROM record r LEFT JOIN label l ON l.rec_key = r.rec_key
                     WHERE {REL.CANONICAL_RECORD_WHERE}
                     GROUP BY r.district_id
@@ -1475,7 +1486,7 @@ def handoff_candidates():
                     GROUP BY district_id
                 ) ext ON ext.district_id = d.district_id
                 ORDER BY n_send DESC, n_hold DESC, d.district_id"""),
-            {"targets": targets}).mappings().all()
+            {"targets": targets, "floor": SY.SPED_BASELINE_YEAR}).mappings().all()
         return [dict(r) for r in rows]
 
 

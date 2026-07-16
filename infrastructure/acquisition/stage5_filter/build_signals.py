@@ -30,6 +30,7 @@ from infrastructure.acquisition.common import cache_ingest as CI  # noqa: E402  
 from infrastructure.acquisition.stage5_filter import models  # noqa: F401,E402  (registers PRECIOUS Label/ClusterSplit on gdb.Base)
 from infrastructure.acquisition.stage5_filter import attention as AT  # noqa: E402  (the district-driven attention score)
 from infrastructure.acquisition.stage5_filter import combiner as COMB  # noqa: E402  (V2 labeling-function combiner — REQ-113)
+from infrastructure.utilities import school_year as SY  # noqa: E402  (calendar-vocabulary SSOT; the content_school_year read — #107, NOT the LCT DB)
 
 RAW_DIR = paths.RAW_CAPTURES
 QUEUE_DIR = paths.QUEUE_DIR                   # Stage 1 batch_*.json (targeting + NCES denominator)
@@ -972,6 +973,9 @@ def ingest_district(sess, ddir: Path, *, splits: set, batches: dict, nces: dict)
         sig["cms_hint"] = cms_hint_of(cap)
         sig["url_feed_pattern"] = feed_url(prec["url"]) or feed_url(cap.get("final_url") or "")
         sig["embed_hosts"] = embed_hosts_of(cap)
+        # Deterministic content school-year read from the URL/final-URL (#107; never inferred — REQ-054).
+        # Rides signals_json for #107's prefer-recent dispatch ranking + #241's pre-2017-18 validity floor.
+        sig["content_school_year"] = SY.content_school_year(prec["url"], cap.get("final_url") or "")
         scored = COMB.score_record(sig)
         sig["detectors"] = scored["votes"]            # the fired votes, persisted for harness + UI pre-fill
         sig["decision"] = scored["decision"]          # send | suppress | review (the routing decision)

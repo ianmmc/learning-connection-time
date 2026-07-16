@@ -127,50 +127,70 @@ things. (1) **Measured the recency question and refuted a written projection** (
 false-send rate — obs. 5's "stale = clean unconditional veto / 53-for-6" was mined from human notes, not a
 reproducible signal, and never held. Recency is now two rules: a pre-2017-18 **validity floor** (HOLD,
 REQ-026 correctness, ~0 money — #241) + **prefer-recent dispatch ranking** (the money half — #107). The
-measured money lever is **#519**, NOT #515. (2) **Ran a full code-grounded doc-tower audit** (7 commits):
+measured money lever is **#519** (re-measured, then closed→**#528** this session), NOT #515. (2) **Ran a full code-grounded doc-tower audit** (7 commits):
 corrected the tower to present-state (gate@8 was documented as "unbuilt" in 3 docs; STAGE7 predated #119;
 CLAUDE.md had two failing commands), normalized `REQUIREMENTS.yaml` (152 reqs, backfilled REQ-152 for PR
 #509), curated memory 23→19 with a **no-`type:project`-status-memories** rule, and filed 4 code-side defects
 as issues (#523/#524 Stage-2 docstrings, #525 `gate_mode.py:35`, #526 Stage-2 reads receipt-not-DB).
 
-**Next (RESUME HERE — 2026-07-16): epic #106. #519 was the presumed first build, but the 2026-07-16 recompute
-showed it needs an Ian SCOPE CALL first (the "tune the weights" premise mostly doesn't work — see #519
-below).** So the buildable-without-a-decision work is the recency signal (**#241/#107's `content_school_year`
-extractor** — reuses `school_year.py`, no vocabulary call, per obs. 6) or a #519 fork pick. The full slate,
-all filed as #106 sub-issues:
-- **#519** tune existing confounder detectors — **RE-MEASURED 2026-07-16, and as-written it mostly doesn't
-  work; needs an Ian scope call before building (see the two #519 comments).** The review's "~40 false-sends,
-  tune the weights" broke into three mechanisms on recompute: (1) **`board`/`sports` fire on ~0 tier-A
-  false-sends** — a firing-condition problem (they need neg-class *dominance*, which a tier-A page can't
-  meet), unreachable by any weight; (2) **`news_feed` fires on MORE real targets (30) than false-sends
-  (21)** — a blanket weight-up is net-negative (pushes 30 real targets to review to pull 21 false-sends);
-  the real lever is `news_feed × no-strong-positive-structure`, a combiner INTERACTION, not a scalar; (3)
-  **`calendar` (5 gain / 0 cost) is the one clean scalar win**, but small. Actionable ceiling = 26, not ~40.
-  Fork: (a) narrow to the calendar-class scalar win, (b) re-scope to the news_feed interaction term, or (c)
-  board/sports need a structural (URL/embed) detector = a new issue. Facet precision (live #108): `news_feed`
-  0.89 / `board` 0.52 / `calendar` 0.46 / `sports` 0.32 — the old "0.13–0.18" doesn't reproduce.
-  `lf_nonstandard_day` 0.09 stays out of scope (frozen grab-bag = #207).
+**Next (RESUME HERE — 2026-07-16): epic #106, on branch `feat/epic106-recency-content-school-year`
+(6 commits, unmerged).** Phase 0 + Phase 1 of the agreed plan are BUILT + measured + committed:
+**#525** (stale comment) and **#192** (cost-model `n_times` scaler) closed; **#107 recency** done end to
+end — `content_school_year` deterministic URL/filename read (14 obs.6 tests, live-validated 7.5% fire /
+zero phantom-year FPs, re-ingested → A+B recall held 0.9928), **#241** pre-2017-18 validity floor (HOLD,
+release-layer, fires on 0 today = obs.6's "~0 money" confirmed), and **prefer-recent** dispatch ranking
+(Stage 6, school-grain, 8 correct live holds incl. the Marshall §3G case, zero recall cost by construction).
+Full suite green (1582 DB-free / 226 govdb). **OPEN for sign-off:** close #107 (all pieces built); update
+REQ-044 (its "reject/flag COVID-era" acceptance text predates obs.6's veto-refutation — the built design is
+validity-floor-HOLD + prefer-recent-ranking, no recency veto); band-coverage redundancy across schools was
+deferred to **#83** by design. **Next buildable:** #528 (calendar scalar + the news_feed separating
+analysis), then the console trio **#522→#521→#516**. The remaining slate, all #106 sub-issues:
+- **#528** (successor to closed #519) cut confounder false-auto-sends where the combiner can reach them.
+  The recompute broke #519's "~40 false-sends, tune the weights" into three mechanisms: (1) **`board`/
+  `sports` fire on ~0 tier-A false-sends** — a firing-condition problem (they need neg-class *dominance*,
+  which a tier-A page can't meet), unreachable by any weight → **forked OUT** of #528 (own issue or #226);
+  (2) **`news_feed` fires on MORE real targets (30) than false-sends (21)** — a blanket weight-up is
+  net-negative; the lever is `news_feed × no-strong-positive-structure`, a combiner INTERACTION gated on a
+  "what separates the 21 from the 30" separating analysis (explore-first) — **IN #528**; (3) **`calendar`
+  (5 gain / 0 cost) is the one clean scalar win** — **IN #528**, ships now. Actionable ceiling = 26, not ~40.
+  Facet precision (live #108): `news_feed` 0.89 / `board` 0.52 / `calendar` 0.46 / `sports` 0.32 — the old
+  "0.13–0.18" doesn't reproduce. `lf_nonstandard_day` 0.09 stays out of scope (frozen grab-bag = #207).
 - **#515** Stage-6 confounder eligibility vetoes — **the "24.5%→~15% money lever" headline is WRONG** (§3a
   obs. 6, measured 2026-07-16: stale contributes **0** — it removes 1 false-send for 17 target-vetoes and
-  *raises* the rate 24.1%→24.8%; staleness and target-absence are near-independent). #515 now rests solely on
-  **#207** (conditional irregular-day facet+veto — **blocked on Ian's facet-vocabulary call**; term class incl.
-  Early Release/Minimum Day/Inclement; fold in **#223** summer). Sequence it behind #519/#207, and note it
-  shares the eligibility seam with **#83** (narrow-to-hub) — they collide in the same file.
+  *raises* the rate 24.1%→24.8%; staleness and target-absence are near-independent). #515's remaining
+  basis was the conditional irregular-day veto, but **#207 (its enabling facet) was closed superseded
+  2026-07-16** — the irregular-day/wrong-schedule distinction now lives as a coarse facet+detector folded
+  into **#522** (per [[project-stage5-labeling-serves-learning]]). So #515 = the *eligibility-gate* question
+  only, sequenced **behind #522** (the facet must exist and be learnable before it can gate); news/calendar/
+  board/sports stay SOFT (never gates — §3a obs. 5). Shares the eligibility seam with **#83** (narrow-to-hub)
+  — they collide in the same file.
 - Recency (**#241**/**#107**, re-scoped 2026-07-16): **#241** = a pre-2017-18 validity floor, semantics =
   **HOLD** not hard-reject (Ian) — a **REQ-026 correctness guarantee floored on the CRDC 2017-18 federal
   input, which pays ~0 money**; never justify it on spend. **#107 stays the parent** (§3G: "complementary,
   not duplicates") — it builds the shared `content_school_year` signal (which **does not exist yet**) +
   **prefer-recent** dispatch *ranking*, the half that actually saves money (rank siblings ≥ floor, send the
   newest, hold the rest — zero recall cost by construction).
-- Console: **#516** (FP/FN error-lanes + rec_key as the searchable left-pane entry-ID + right-pane reorder), **#522** (content-adaptive center-pane default: show what the machine read; PDFs → embedded viewer, rasters demoted to "available"), **#521** (relevance-density bookmarks + heat-strip for long reps — #522's long-doc mechanism; build the FULL version incl. confounder negative-weighting then dial back, per [[feedback-build-best-then-dial-back]]).
+- Console (the labeling-that-drives-learning surface, per [[project-stage5-labeling-serves-learning]] —
+  build order **#522 → #521 → #516**): **#522** (content-adaptive center-pane default: show what the machine
+  read; PDFs → embedded viewer, rasters demoted to "available"; **now also carries the folded-in confounder
+  facet-vocabulary decision** — one coarse "wrong-schedule / not-the-regular-day" negative, not 6–7 facets),
+  **#521** (relevance-density bookmarks + heat-strip for long reps — #522's long-doc mechanism; build the FULL
+  version incl. confounder negative-weighting then dial back, per [[feedback-build-best-then-dial-back]]),
+  **#516** (FP/FN error-lanes — disagreement is the primary product of labeling — + rec_key as the searchable
+  left-pane entry-ID + right-pane reorder).
 - Recall: **#517** (schedule_link_only affordance), **#518** (capture-fidelity leak: login walls/0-byte PDFs/truncation, Stage 3/4).
-- Older #106 items still open: #107/#109/#110/#75/#83/#192/#226/#512. Triage from the 2026-07-16 epic
+- Older #106 items still open: #107/#109/#110/#75/#83/#192/#226. Triage from the 2026-07-16 epic
   read-through: **#192** is a cheap measured win (0/275 handoff reps carry `n_times` → the gate@6 cost preview
-  mis-estimates; #512 needs that same signal). **#226** is really an instance of #519 (extends `lf_news_feed`,
-  reuses the `news_feed` facet — no new label). **#110** is blocked behind the parked Council Lab (#103/#80),
-  not merely deferred. **#75** is an underspecified triage note — re-scope before building. New-vocabulary
-  decisions gated on Ian: **#207**, **#223**, **#512**, and #107's Axis-3 facet.
-Guardrail across the console work: the default view must NEVER silently contradict the score (surface a pointer to the scored evidence). Then the sequence continues: **#111** (Stages 1-4) → liveness gate → **#479/#480** → **#92**. Parked: #475/#476, #103/#80 (Council Lab — #512 + `MODEL_FIELD_NOTES.md` are prep). Deferred-by-design from the #499 reviews (documented in
+  mis-estimates). **#226** (URL-level `feed`/`live-feed` negative, extends `lf_news_feed`, no new label) is the
+  structural signal #528's news_feed interaction — and its forked-out board/sports mechanism — would consume;
+  fold the board/sports fork into #226 or spin its own issue. **#110** is blocked behind the parked Council
+  Lab (#103/#80), not merely deferred. **#75** is an underspecified triage note — re-scope before building.
+  **Closed superseded 2026-07-16** by [[project-stage5-labeling-serves-learning]] (per-confounder detector-build
+  issues fail the "a detector must measurably learn from it" test): **#207** (nonstandard-day), **#223** (summer)
+  — both folded into #522's facet-vocabulary; **#512** (snake) — its reader-routing/small-voter context-ceiling
+  remnant re-homed to Council Lab **#80**, not dropped. Remaining vocabulary call gated on Ian: #107's Axis-3
+  `content_school_year` facet (the signal/extractor itself is unblocked).
+Guardrail across the console work: the default view must NEVER silently contradict the score (surface a pointer to the scored evidence). Then the sequence continues: **#111** (Stages 1-4) → liveness gate → **#479/#480** → **#92**. Parked: #475/#476, #103/#80 (Council Lab — `MODEL_FIELD_NOTES.md` + the #512 snake context-ceiling finding, re-homed as an #80 comment, are prep). Deferred-by-design from the #499 reviews (documented in
 code, revisit on volume): batching `_satisfied_bands_now`'s per-district loads (`ANY(:d)` shape) once
 the approved-request backlog grows.
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config

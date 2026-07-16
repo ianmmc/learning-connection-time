@@ -23,16 +23,19 @@ The four human-supervision gates each get a hook:
     measure lesson).
 """
 from infrastructure.acquisition.common import calibration as CAL
+from infrastructure.acquisition.stage5_filter import release as REL
 from infrastructure.acquisition.stage5_filter.build_signals import TARGET_LABELS, NONTARGET_PRIMARIES
 
 # The record's tier IS auto's recommendation for an unlabeled record (release.decide's tier gate,
 # release.py): A → send (accept), B/C → hold (escalate → agreed=None, the human-in-the-loop region),
-# D → reject. This is what the human's label is being compared against.
+# D → reject. This is what the human's label is being compared against. EXCEPTION (#241): a tier-A record
+# whose content_school_year is pre-2017-18 is auto-HELD by decide()'s validity floor, so auto = escalate
+# there, not accept — see gate5_label_record (a code review caught this table drifting from decide()).
 _TIER_TO_AUTO = {"A": "accept", "B": "escalate", "C": "escalate", "D": "reject"}
 
 
 def gate5_label_record(*, rec_key, district_id, tier, sort_score, primary_label, status,
-                       state=None, batch_type=None, created_at):
+                       state=None, batch_type=None, created_at, content_school_year=None):
     """A calibration record for a gate@5 human label — or None when there is no CONFIDENT terminal
     decision to log: any status other than "labeled" (WHITELIST, #218 review — the console's "unsure"
     status means 'reviewed but couldn't decide' and can arrive with a stale primary_label still checked;
@@ -52,9 +55,14 @@ def gate5_label_record(*, rec_key, district_id, tier, sort_score, primary_label,
         human = "reject"
     else:
         return None                      # an off-axis label is not a clean accept/reject data point
+    # #241: a tier-A record auto-HELD by the validity floor is escalate (human-in-the-loop), not accept —
+    # mirror decide()'s floor via its single source of truth so this signal never records a false disagreement.
+    auto = _TIER_TO_AUTO.get(tier)
+    if tier == "A" and REL.pre_validity_floor(content_school_year):
+        auto = "escalate"
     return CAL.build_record(
         "gate@5", rec_key, district_id=district_id, proxy_name="sort_score", proxy_value=sort_score,
-        human_decision=human, auto_recommendation=_TIER_TO_AUTO.get(tier),
+        human_decision=human, auto_recommendation=auto,
         slices={"state": state, "batch_type": batch_type}, created_at=created_at)
 
 

@@ -11,6 +11,7 @@ the YYYY-YY format, but code should compare via start_year(), never lexicographi
 from __future__ import annotations
 
 import re
+import urllib.parse
 from datetime import date
 
 
@@ -117,3 +118,84 @@ def plausible_gross_minutes(minutes) -> bool:
     except (TypeError, ValueError):
         return False
     return GROSS_MINUTES_MIN <= m <= GROSS_MINUTES_MAX
+
+
+# --- Content school-year extraction from URLs/filenames (REQ-044 / #107 / #241) ----------------
+# A DETERMINISTIC read of a document's school year from its URL / filename — never today's date,
+# never inferred (REQ-054). Feeds the Stage-5 `content_school_year` signal that #107's prefer-recent
+# dispatch ranking and #241's pre-2017-18 validity floor consume. Caveats measured the hard way
+# (STAGE5_FILTER_DESIGN §3a obs. 6): URL-DECODE first; require a CONSECUTIVE pair (a bare YYYY is an
+# upload path, not a vintage; a plan span 2020-2023 is not a year); guard GUID/asset-id digit runs and
+# M-DD-YY dates. The range is DELIBERATELY WIDE (unlike ACCEPTABLE_BELL_YEARS) — #241 must SEE old
+# years (2001) to flag them; validity/COVID judgments belong to the CONSUMERS, not this reader.
+_CONTENT_YEAR_FLOOR = 1990
+# 4-digit-anchored consecutive pair: 2018-2019 / 2018-19 / 2025/26 (separator required — a contiguous
+# digit run like an asset id has none, so it never matches):
+_CY_FULL = re.compile(r"(?<!\d)((?:19|20)\d{2})[-–—/](\d{4}|\d{2})(?!\d)")
+# 2-digit-only pair: 25-26 (needs the bad-prefix guard below — a bare 2-digit pair is ambiguous):
+_CY_SHORT = re.compile(r"(?<!\d)(\d{2})[-–—/](\d{2})(?!\d)")
+# A bare "NN-NN" pair is a school year ONLY when nothing identifies it as something else. Reject it
+# when the token immediately before it marks it as a numeric date tail (4-20-21), a month-name date
+# (March-20-21), or a labelled range/index (grades-06-07, page-12-13, v12-13, room-22-23) — the
+# false-positive classes a code review surfaced. The month/label word must be a WHOLE token (bounded),
+# else it over-rejects (e.g. "marshall-25-26" must NOT match "mar"); the separator is optional so a
+# glued form ("v12-13") is caught too.
+_CY_MONTHS = (r"january|february|march|april|may|june|july|august|september|october|november|december"
+              r"|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec")
+_CY_NONYEAR_LABELS = (r"grades?|pages?|pg|ver|version|vol|volume|room|rm|bldg|building|section|sec"
+                      r"|num|chapter|lesson|unit|part|step|figure|table|tbl|v|no|ch|fig")
+_CY_BAD_SHORT_PREFIX = re.compile(
+    rf"(?i)(?:\d{{1,2}}[-–—/]|(?<![a-z])(?:{_CY_MONTHS}|{_CY_NONYEAR_LABELS})(?![a-z])[-–—/_ ]?)$")
+
+
+def _cy_consecutive(y1: int, y2: int) -> int | None:
+    """y1 if (y1, y2) is a consecutive, in-range school-year pair, else None."""
+    if y2 != y1 + 1:
+        return None
+    if not (_CONTENT_YEAR_FLOOR <= y1 <= date.today().year + 1):
+        return None
+    return y1
+
+
+def _cy_short_year(a: int, b: int) -> int | None:
+    """A 2-digit pair (a, b) → a full consecutive in-range start year, or None. Picks the century that
+    lands in range so a turn-of-century year reads correctly ('99-00' → 1999-00, not 2099)."""
+    if b != (a + 1) % 100:                     # consecutive on the 2-digit values (handles 99→00)
+        return None
+    for century in (2000, 1900):
+        if _CONTENT_YEAR_FLOOR <= century + a <= date.today().year + 1:
+            return century + a
+    return None
+
+
+def _cy_candidates(text: str):
+    for m in _CY_FULL.finditer(text):
+        y1 = int(m.group(1))
+        g2 = m.group(2)
+        y2 = int(g2) if len(g2) == 4 else (y1 // 100) * 100 + int(g2)
+        y = _cy_consecutive(y1, y2)
+        if y is not None:
+            yield y
+    for m in _CY_SHORT.finditer(text):
+        if _CY_BAD_SHORT_PREFIX.search(text[:m.start()]):   # a date tail / month date / labelled index
+            continue
+        y = _cy_short_year(int(m.group(1)), int(m.group(2)))
+        if y is not None:
+            yield y
+
+
+def content_school_year(*sources: str) -> str | None:
+    """The school year read from the FIRST of `sources` (a URL, final URL, or filename) that yields any
+    year, as canonical 'YYYY-YY', or None. Deterministic — never inferred from today's date or the capture
+    time (REQ-054). Source order matters: the primary URL wins over a redirect/CDN `final_url` whose
+    upload-date path segment (e.g. `/files/2025-26/`) is unrelated to the document's actual vintage —
+    otherwise a spurious recent year there could clear #241's validity floor for a genuinely stale doc.
+    Within one source, multiple distinct years ⇒ the MOST RECENT (prefer-recent ranks on it; #241 flags a
+    doc stale only when even its newest referenced year is pre-floor). Caveats: STAGE5_FILTER_DESIGN §3a obs. 6."""
+    for s in sources:
+        if not s:
+            continue
+        years = list(_cy_candidates(urllib.parse.unquote(str(s))))
+        if years:
+            return _format_year(max(years))
+    return None

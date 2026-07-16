@@ -42,6 +42,24 @@ def test_gate5_tierA_target_agrees_and_BC_escalates_to_none():
                                    created_at="t")["agreed"] is None
 
 
+def test_gate5_tierA_pre_2017_floor_calibrates_as_escalate_not_accept():
+    # #241: a tier-A record whose content_school_year is pre-2017-18 is auto-HELD by decide()'s validity
+    # floor, so auto = escalate (not accept) — mirror decide() so a correct human label never records a
+    # false disagreement. A recent/absent content year is unaffected (still accept).
+    stale = GCAL.gate5_label_record(rec_key="d:8", district_id="d", tier="A", sort_score=0.9,
+                                    primary_label="school_bell_table", status="labeled",
+                                    created_at="t", content_school_year="2012-13")
+    assert stale["auto_recommendation"] == "escalate" and stale["agreed"] is None
+    recent = GCAL.gate5_label_record(rec_key="d:9", district_id="d", tier="A", sort_score=0.9,
+                                     primary_label="school_bell_table", status="labeled",
+                                     created_at="t", content_school_year="2024-25")
+    assert recent["auto_recommendation"] == "accept" and recent["agreed"] is True
+    # unknown/absent year: floor is inert, still accept (the default path, backward compatible)
+    assert GCAL.gate5_label_record(rec_key="d:10", district_id="d", tier="A", sort_score=0.9,
+                                   primary_label="school_bell_table", status="labeled",
+                                   created_at="t")["auto_recommendation"] == "accept"
+
+
 def test_gate5_returns_none_when_there_is_no_terminal_decision():
     # unlabeled status, missing label, and an off-axis label are all "no calibration data point".
     assert GCAL.gate5_label_record(rec_key="d:4", district_id="d", tier="B", sort_score=0.5,
