@@ -120,21 +120,18 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-16):** **Epic #119 CLOSED** (Stage 7 quality, PRs #508–#511). **Epic #106
-(Stage 5/6) is IN A DESIGN-COMPLETE STATE — fully scoped, ready to build.** This session ran a
-**comprehensive Stage-5 review** (the "getting better at getting better" pass) that measured the
-learning loop and produced the whole build slate. Headline findings (durably recorded in
-`STAGE5_FILTER_DESIGN.md` §3a obs. 5, PR #520): the money leak is entirely on the SEND side —
-**auto-send (tier A) false-send = 24.3%**, auto-suppress miss = 0.5% (already safe); Stage-6
-eligibility is a UNION (`tier==A OR human_target`) and its rule is the clean lever; **stale** =
-clean unconditional veto (= the temporal-validity rule applied one gate earlier), **irregular** =
-CONDITIONAL veto (37% co-occurrence with real targets, measured from text — veto only absent a
-regular-day structural signal); existing confounders (news/calendar/board/sports) stay SOFT (a hard
-veto kills 49 real targets — #108 tuning, not labels); the un-attributed 23% of absents are mostly
-correctly-suppressed empty pages (not a labeling debt). Crossfam triage for #106 also merged (#514:
-#357/#358/#353 fixed; 14 closed by-design/invalid). The Huntington case (`4824000:af06722adb`) — a
-buried p108/130 handbook target the scorer flagged but the console's 20k text cap hid — was
-human-relabeled `school_start_end_prose`/buried_handbook and drove the console-UX issues.
+**Current status (2026-07-16):** **Epic #119 CLOSED** (Stage 7 quality) and **Stage 8 / gate@8 BUILT**
+(#89). **Epic #106 (Stage 5/6) is the live work — design-complete, ready to build.** This session did two
+things. (1) **Measured the recency question and refuted a written projection** (`STAGE5_FILTER_DESIGN.md`
+§3a **obs. 6**): a stale eligibility veto removes ~0 false-sends for a 17-target cost and *raises* the
+false-send rate — obs. 5's "stale = clean unconditional veto / 53-for-6" was mined from human notes, not a
+reproducible signal, and never held. Recency is now two rules: a pre-2017-18 **validity floor** (HOLD,
+REQ-026 correctness, ~0 money — #241) + **prefer-recent dispatch ranking** (the money half — #107). The
+measured money lever is **#519**, NOT #515. (2) **Ran a full code-grounded doc-tower audit** (7 commits):
+corrected the tower to present-state (gate@8 was documented as "unbuilt" in 3 docs; STAGE7 predated #119;
+CLAUDE.md had two failing commands), normalized `REQUIREMENTS.yaml` (152 reqs, backfilled REQ-152 for PR
+#509), curated memory 23→19 with a **no-`type:project`-status-memories** rule, and filed 4 code-side defects
+as issues (#523/#524 Stage-2 docstrings, #525 `gate_mode.py:35`, #526 Stage-2 reads receipt-not-DB).
 
 **Next (RESUME HERE — 2026-07-16): BUILD epic #106, starting with #519 (the measured money lever).** The full
 slate, all filed as #106 sub-issues:

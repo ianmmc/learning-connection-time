@@ -359,6 +359,57 @@ CSV (it slipped past every best-effort `except Exception`). Authority: `docs/REQ
 REQ-144–150, `STAGE8_AGGREGATE_DESIGN.md`, `infrastructure/acquisition/common/slot_spine.py`'s module
 docstring, issues #499/#502–#507.
 
+### A measured refutation and a second doc-tower audit: two written numbers that didn't survive contact with the code (2026-07-16)
+
+Two threads, one lesson. **First**, building the epic-#106 recency veto (#241) surfaced that its enabling
+signal — a per-record `content_school_year` — *does not exist in the codebase*. Rather than build blind, a
+throwaway URL-year extractor measured what the veto would actually do on the 473 labeled tier-A records, and
+the result **refuted the comprehensive review's own projection** (`STAGE5_FILTER_DESIGN.md` §3a obs. 5, which
+had it as "53 false sends removed for 6 target-vetoes → 24.5%→15.2%"): at the recency floor a stale veto
+removes **1** false-send while vetoing **17** real targets and *raises* the false-send rate 24.1%→24.8%; at
+the intended pre-2017-18 floor it removes **0** for 4 real-target hits. Root cause: staleness and
+target-absence are near-**independent** — a stale handbook usually still *contains* a real schedule (which is
+why the targets were labeled). The projection never reproduced because its 53/6 figures were **mined from
+human notes** (records where Ian had already written "too dated") — that is judgment, not a signal a detector
+can reproduce. The design turned on this: recency splits into a pre-2017-18 **validity floor** (a REQ-026
+correctness guarantee floored on the CRDC federal input, HOLD-not-reject, ~0 money — #241) and **prefer-recent
+dispatch ranking** (the half that saves money, zero recall cost by construction — #107, kept whole per
+STAGE6 §3G's "complementary, not duplicates"). Consequence: **#515's "money lever" headline was wrong** —
+stale contributes 0; the measured lever is #519 (tune existing confounders). Recorded as obs. 6, with obs. 5's
+superseded bullets marked in place rather than deleted (a reader would otherwise re-derive them).
+
+**Second**, a full code-grounded audit of the documentation tower (all 17 docs + the 23 auto-memories),
+the successor to the 2026-07-15 pass. Its largest find: the **standalone Stage 8 / gate@8 — shipped #89 on
+2026-07-14 — was documented as "unbuilt / doesn't exist yet" across three docs** (STAGE8's own title,
+governance, OVERVIEW), and four of its five precious tables (`band_exclusion`/`human_added_fact`/
+`slot_assignment`/`gate_mode`) had no design coverage at all. Also: CLAUDE.md carried two commands that
+*fail when run* (`lint-imports` "3 kept" — it's 4, and pointed at a nonexistent `.importlinter`; a
+`depcruise ... lib` with no `lib/`), GETTING_STARTED's entire scraper-service block was dead Crawlee-era
+text, STAGE7 predated epic #119 and still showed the v1 four-field schema (missing the built `stated_minutes`
+path 2), and REQUIREMENTS.yaml's status vocabulary had drifted (`in-progress` was exactly where two stale
+statuses hid). All fixed against code, with four code-side defects that can't be fixed by editing docs filed
+as issues (#523/#524 lying Stage-2 docstrings, #525 the `gate_mode.py:35` comment, #526 Stage 2 reading its
+batch from the on-disk receipt while Stages 3/4 read the DB — a live exception to the "JSON is never the
+transport" invariant). The memory store was curated 23→19 and given a standing rule: **stop writing
+`type: project` status memories** — the audit found the rot correlated *exactly* with type (every stale
+memory was a status memory; every clean one a working-style principle or a measured decision), because the
+repo refreshes its own status and memory does not.
+
+*Lessons: (a) **a written number is a claim, not a fact — verify it against the code that produced it before
+building on it.** Three times in one session a durable figure failed on contact: the obs. 5 projection (mined
+from notes, not measured), the #519 "0.13–0.18 precision" (the corpus had tripled — `news_feed` measured
+0.90), and the "Stage 8 unbuilt" status. This is the same lesson the 2026-07-15 entry names, now with a
+frequency that makes it structural, not incidental. (b) **the fix for status-rot is architectural, not
+diligence** — status decays wherever a human has to hand-refresh it, so the durable move was deleting the
+category (project-status memories) and pointing at the self-refreshing surface (CLAUDE.md + issues), not
+resolving to update memory more often. (c) **subagents are subject to the same rule** — the memory-audit
+agent claimed path 2 was missing (its grep guessed wrong field names), and a doc-draft invented a test class
+that didn't exist; both were caught by verifying against code before committing, exactly the discipline the
+audit was enforcing on the docs.* Authority: `STAGE5_FILTER_DESIGN.md` §3a obs. 6 + change log;
+`STAGE6_DISPATCH_DESIGN.md` §3G; the seven `docs(...)` / `docs(tower)` / `docs(stageN)` commits of 2026-07-16;
+`docs/REQUIREMENTS.yaml` (REQ-152, the status normalization); issues #523–#526; the curated
+`memory/MEMORY.md`.
+
 ---
 
 ## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)
