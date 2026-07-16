@@ -137,8 +137,12 @@ as issues (#523/#524 Stage-2 docstrings, #525 `gate_mode.py:35`, #526 Stage-2 re
 slate, all filed as #106 sub-issues:
 - **#519** tune existing confounder detectors (news/calendar/board/sports) via the built #108 harness — **the
   highest-leverage build**: ~40 of the 115 false-sends, existing facets, NO new labels/vetoes, no human
-  decision needed to start. (Basis: those detectors measure 0.13–0.18 precision and LOSE the vote; a *hard*
-  veto there wrongly kills 49 real targets, so tune weights — never gate.)
+  decision needed to start. **Re-measured 2026-07-16 (see the #519 comment): the old "0.13–0.18 precision"
+  premise does NOT reproduce at the current 798-facet-tagged corpus — live is `news_feed` 0.89 / `board` 0.52
+  / `calendar` 0.46 / `sports` 0.32.** So `news_feed` is a combiner-WEIGHT problem (high precision, still
+  loses the vote), the others have precision headroom too. FIRST STEP: re-run `harness.build_scorecard()` +
+  re-derive the per-facet false-send attribution, THEN tune. Stay SOFT (hard veto kills 49 real co-occurring
+  targets — that structural fact holds); `lf_nonstandard_day` 0.09 is out of scope (frozen grab-bag = #207).
 - **#515** Stage-6 confounder eligibility vetoes — **the "24.5%→~15% money lever" headline is WRONG** (§3a
   obs. 6, measured 2026-07-16: stale contributes **0** — it removes 1 false-send for 17 target-vetoes and
   *raises* the rate 24.1%→24.8%; staleness and target-absence are near-independent). #515 now rests solely on
