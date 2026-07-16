@@ -14,6 +14,7 @@ from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.process_governance import gate_calibration as GCAL
 from infrastructure.acquisition.stage5_filter import release as REL
+from infrastructure.utilities import school_year as SY  # calendar SSOT; prefer-recent read (#107) — NOT the LCT DB
 from infrastructure.acquisition.stage6_handoff import councils as C6
 from infrastructure.acquisition.stage6_handoff import cost as COST6
 from infrastructure.acquisition.stage6_handoff import handoff as HND
@@ -48,6 +49,40 @@ def _enrich_send(decision_send: list, reps: list, rec: dict = None, district_dir
     return out
 
 
+def _content_start_year(signals: dict):
+    """The record's content school year as a start-year int, or None (unknown/absent/malformed)."""
+    try:
+        return SY.start_year((signals or {}).get("content_school_year"))
+    except (ValueError, TypeError):
+        return None
+
+
+def _prefer_recent_holds(sendables: list) -> set:
+    """#107 prefer-recent (a DISPATCH decision — STAGE6 §3G): among send-eligible siblings covering the
+    SAME intended school, keep the most recent and HOLD the stale ones. `sendables` = list of
+    {rec_key, year:int|None, schools:list[str]} for records currently deciding `send`. Returns the set
+    of rec_keys to HOLD.
+
+    ZERO recall cost by construction: a record is held ONLY when, for EVERY intended school it covers,
+    some sibling for that school has a strictly-newer year — so a record that is newest for any school
+    it covers (or has no intended school, or no known year) is always kept. Cross-school band-coverage
+    redundancy (a district hub superseding school docs) is deliberately NOT done here — that needs
+    coverage logic and is #83's job; grouping by shared school is the safe subset."""
+    max_by_school = {}
+    for r in sendables:
+        if r["year"] is None:
+            continue
+        for sc in r["schools"]:
+            max_by_school[sc] = max(max_by_school.get(sc, r["year"]), r["year"])
+    holds = set()
+    for r in sendables:
+        if r["year"] is None or not r["schools"]:
+            continue
+        if all(max_by_school[sc] > r["year"] for sc in r["schools"]):
+            holds.add(r["rec_key"])
+    return holds
+
+
 def district_release_input(session, district_id: str, verified_only: bool = False):
     """Read one district's release decision from the DB, shaped for stage6 assembly:
     `(district_meta, [records])`. Returns None if the district isn't present.
@@ -60,17 +95,31 @@ def district_release_input(session, district_id: str, verified_only: bool = Fals
     if not district:
         return None
     records = []
+    sendables = []   # currently-`send` records, for the prefer-recent pass below
     for rec in REL.load_district_records(session, district_id):
         d = REL.decide(rec)
         decision, reason, send = d["decision"], d["reason"], d["send"]
         if verified_only and decision == "send" and rec.get("label") not in REL.TARGET_LABELS:
             decision, reason, send = "hold", f"verified-only:held({reason})", []
-        records.append({
+        rd = {
             "rec_key": rec["rec_key"], "url": rec.get("url"),
             "decision": decision, "reason": reason,
             "signals": rec.get("signals") or {},
             "send": _enrich_send(send, rec.get("reps"), rec, district.get("district_dir")),
-        })
+        }
+        records.append(rd)
+        if decision == "send":
+            sendables.append({"rec_key": rec["rec_key"],
+                              "year": _content_start_year(rec.get("signals")),
+                              "schools": rec.get("intended_schools") or []})
+    # #107 prefer-recent (dispatch-time): HOLD a stale same-school sibling — the newest still sends, the
+    # older is available for a cheap 7->6 re-dispatch if extraction fails. Composes after verified_only.
+    for rk in _prefer_recent_holds(sendables):
+        for rd in records:
+            if rd["rec_key"] == rk and rd["decision"] == "send":
+                csy = (rd["signals"] or {}).get("content_school_year")
+                rd["decision"], rd["send"] = "hold", []
+                rd["reason"] = f"stale-sibling:{csy}:newer-same-school-sends"
     return district, records
 
 

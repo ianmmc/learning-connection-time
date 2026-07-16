@@ -20,6 +20,42 @@ def _fake_record(rec_key, label, reps):
             "label": label, "flags": [], "reps": reps}
 
 
+# ---------------------- #107 prefer-recent (pure, DB-free) ----------------------
+def _s(rec_key, year, schools):
+    return {"rec_key": rec_key, "year": year, "schools": schools}
+
+
+def test_prefer_recent_holds_stale_same_school_siblings():
+    # Redbank Valley HS shape: newest sends, the three older HOLD
+    holds = BR._prefer_recent_holds([
+        _s("d:2025", 2025, ["HS"]), _s("d:2021", 2021, ["HS"]),
+        _s("d:2020", 2020, ["HS"]), _s("d:2018", 2018, ["HS"])])
+    assert holds == {"d:2021", "d:2020", "d:2018"}
+
+
+def test_prefer_recent_keeps_sole_doc_unknown_year_and_no_school():
+    # zero recall cost: a sole doc for its school, an unknown year, and a no-intended-school record
+    # can never be proven superseded → all kept
+    holds = BR._prefer_recent_holds([
+        _s("d:solo", 2019, ["ES"]),           # only doc for ES
+        _s("d:noyear", None, ["HS"]),         # unknown year coexists (never auto-oldest)
+        _s("d:noschool", 2015, [])])          # no school → can't establish supersession
+    assert holds == set()
+
+
+def test_prefer_recent_multi_school_held_only_when_superseded_everywhere():
+    # a record covering HS+ES, superseded on HS but NEWEST on ES → KEPT (still ES's best evidence)
+    base = [_s("d:hsnew", 2025, ["HS"]), _s("d:multi", 2019, ["HS", "ES"])]
+    assert BR._prefer_recent_holds(base) == set()
+    # add a newer ES doc → multi is now superseded on BOTH schools → held
+    assert BR._prefer_recent_holds(base + [_s("d:esnew", 2024, ["ES"])]) == {"d:multi"}
+
+
+def test_prefer_recent_co_newest_year_both_kept():
+    holds = BR._prefer_recent_holds([_s("d:a", 2025, ["HS"]), _s("d:b", 2025, ["HS"])])
+    assert holds == set()
+
+
 def test_bridge_reads_decides_enriches_and_assembles(monkeypatch):
     reps = [{"source": "extracted", "filename": "extracted.txt", "file_kind": "text",
              "n_chars": 1500, "n_times": 6, "usable": 1}]
