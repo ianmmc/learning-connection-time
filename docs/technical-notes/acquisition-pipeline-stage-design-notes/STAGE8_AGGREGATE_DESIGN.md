@@ -1,28 +1,97 @@
-# Stage 8 — Aggregate: design (algorithm LIVE in gate@7; standalone stage DESIGNED 2026-07-13, unbuilt)
+# Stage 8 — Aggregate: present state & design (algorithm LIVE; standalone gate@8 BUILT #89, 2026-07-14)
 
-> **Authority:** `stage8_aggregate/aggregate.py`'s fact-based aggregation API is **live production
-> code**, not a prototype awaiting a future consumer — it runs directly inside `gate@7`'s read path
-> today. `process_governance/stage7_run.py` calls `AGG.consensus_school_facts` and
-> `AGG.district_bands_from_facts` during the actual production extraction/aggregation flow
-> (`stage7_run.py:172,179,224`); `process_governance/server.py`'s gate@7 district-detail endpoint
-> calls `AGG.merge_fact_runs` then `AGG.district_bands_from_facts` on every read
-> (`server.py:1542,1547`), and its left-pane cumulative counts re-implement the same merge rule as
-> hand-maintained SQL, checked against `merge_fact_runs` on shared fixtures so the two can't drift
-> (`server.py:1416-1437`, comment: "the SQL twin of AGG.merge_fact_runs"); `council_lab.py` calls the
-> same two functions for offline council-composition comparisons (`council_lab.py:99,108,125,127`).
-> What's still unbuilt is the **standalone Stage 8**: its own `gate@8`, console, dedicated
-> aggregation-record schema/migration, and the `8→1`/`8→6` back-edges (tracked: #89). Don't conflate
-> the two — the algorithm has shipped; the stage-as-a-gated-checkpoint hasn't.
-> **REQ-122** (`merge_fact_runs`'s cumulative-merge rule, status: implemented) is the clearest example:
-> it was built to fix a gate@7 bug (#232 — a scoped retry could make an earlier run's solid facts
-> disappear from the view) and is now gate@7's canonical merge logic, not a stopgap. The eventual
-> standalone Stage 8 should keep consuming this function (or its direct descendant) rather than
-> re-solve "which run's facts win" independently.
+> **Authority:** what the code does today. Two things are built and load-bearing: (1) the **aggregation
+> ALGORITHM** (`stage8_aggregate/aggregate.py`) — live in `gate@7`'s read path since early July; and (2)
+> the **standalone gate@8 console + approval write** (`#89`, shipped 2026-07-14), plus the `#499` slot
+> program (PRs A–F, REQ-144…150) and epic `#478`'s human-judgment overrides. What is **still genuinely
+> unbuilt: the Stage-9 write (#93) and the `8→1`/`8→6` back-edges** (`sent_back` is recorded but no
+> downstream executor consumes it yet), and gate@8 **auto** mode.
+>
+> The algorithm is not a prototype awaiting a consumer. `stage7_run.py` calls `AGG.consensus_school_facts`
+> and `AGG.district_bands_from_facts` in the production extraction flow (`stage7_run.py:172,179,224`);
+> gate@7's district-detail endpoint calls `AGG.merge_fact_runs` then `AGG.district_bands_from_facts` on
+> every read, and its left-pane counts re-implement the same merge rule as hand-maintained SQL checked
+> against `merge_fact_runs` on shared fixtures so the two can't drift (comment: "the SQL twin of
+> AGG.merge_fact_runs"); `council_lab.py` uses the same two functions for offline comparisons.
+> **REQ-122** (`merge_fact_runs`'s cumulative-merge rule, status: tested): built to fix a gate@7 bug (#232 —
+> a scoped retry could make an earlier run's solid facts disappear) and now gate@7's canonical merge logic.
+>
+> **The standalone gate@8** (§0a, §2 below) is BUILT: the review-queue + district-detail endpoints, the
+> per-school override, the four human-judgment tables, the approve/send-back verdict with a frozen
+> fingerprinted receipt, and the gate@8 calibration hook. It is the effective old "CP-C" — a human signs
+> off the district's picture before the (still-unbuilt) mechanical Stage-9 write.
 > **Companions:** `ACQUISITION_PIPELINE.md` §8 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE.md`
 > §11 (gates/console; §11e cyclic back-edges), `METHODOLOGY.md` (the metric: gross bell-to-bell, the mode).
 > Upstream: `STAGE7_EXTRACT_DESIGN.md`. Downstream: `STAGE9_INCORPORATE_DESIGN.md`.
-> **Update this when:** the standalone Stage 8 design decisions are made (append below) or the stage
-> is built end-to-end.
+> **Update this when:** Stage 8's code behavior changes (the back-edges or the Stage-9 write land, a
+> precious table changes). Design turns belong in the change log at the bottom.
+
+---
+
+## 0a. As-built: the standalone gate@8 (BUILT #89, 2026-07-14)
+
+**Console:** `static/stage8.js` ("gate@8, the 'closing argument'") + the `# Stage 8 / gate@8 — Aggregate`
+endpoint block in `process_governance/server.py:2083-2462`. The pure closing-argument assembler is
+`stage8_aggregate/closing_argument.py`; the approval write is `stage8_aggregate/approval.py`.
+
+**Endpoints (all live):** `GET /api/aggregate/districts` (the review queue — production-fact districts whose
+gate@7 loop is quiesced, benchmark-walled, badged with the latest gate@8 disposition via a LATERAL join on
+`stage8_approval`) · `GET /api/aggregate/district/{id}` (detail: `closing_argument` + `fingerprint` as the
+review token) · `POST /api/aggregate/override` (per-school times override, reason required, validated through
+`gross_from_times`) · `POST /api/aggregate/exclude` (+ `/restore`) · `POST /api/aggregate/human-add`
+(+ `/remove`) · `POST /api/aggregate/slot-assign` (+ `/remove`) · `POST /api/aggregate/recover-band` (#473 —
+stages a re-extraction of a named captured rep as a 7→6 request; spends nothing) · **`POST
+/api/aggregate/decision/{id}`** — the verdict.
+
+**The verdict flow (approve / send-back) is BUILT.** `aggregate_decision` → `approval.record_decision`:
+dispositions `approved | sent_back` (`sent_back` requires a reason); it re-loads the closing argument
+server-side and enforces `expected_fingerprint` (409 on a TOCTOU mismatch), freezes the receipt +
+fingerprint, fires the gate@8 calibration hook (`gate8_decision_record`), and backs up the tracked JSON.
+
+## 0b. The five precious gate@8 tables
+
+Four are in `stage8_aggregate/models.py`; `gate_mode` is in `common/gate_mode.py`. All are registered for
+`init_precious_schema()` and each has a JSON-backup writer swept into commits by `.githooks/pre-commit`.
+(They arrive via `init_precious_schema()`, NOT a migration — see §3.)
+
+| table | what it stores / why precious | key columns | written by |
+|---|---|---|---|
+| **`stage8_approval`** | one human gate@8 verdict per district; **authorizes the Stage-9 write and freezes the exact picture signed off** (auditability) | `disposition` (approved\|sent_back), `actor`, `reason`, `facts_fingerprint`, `receipt_json` | `approval.record_decision` |
+| **`band_exclusion`** (#257) | a standing "exclude this school from this band" call; **district-grain so the knowledge survives a follow-up minting new fact rows** | `band`, `norm_school`, `reason` (req.) | `POST /api/aggregate/exclude` |
+| **`human_added_fact`** (#474) | a hand-entered (school, band, start, end) — **last-resort when re-extraction can't recover a visible band**; requires a cited source | `band`, `norm_school`, `start_time`, `end_time`, `source_url` (req.) | `POST /api/aggregate/human-add` |
+| **`slot_assignment`** (#499) | a standing human slot disposition (`assign\|reject\|confirm_extra`) the auto projection won't make; **moves which slot a vote lands on / the denominator** | `band`, `roster_school_id`, `norm_school_fact`, `disposition`, `reason` (req.) | `POST /api/aggregate/slot-assign` |
+| **`gate_mode`** | per-gate manual/auto control; **upsert-only settings, never dropped** | `gate` (PK), `configured_mode` (null=inherit), `license_state` (#211) | `set_configured_mode` / `set_license_state` |
+
+**band_exclusion** and **human_added_fact** are the human-judgment overrides: at gate@8 a reviewer can strike
+a school out of a band whose membership is stale (correct observation, wrong band — the #257 grade-reconfig
+case; the fact stays visible, struck-through, out of the mode) or hand-enter a fact with a required source
+when re-extraction can't recover a band they can see (#474). Both are district-grain (survive re-extraction),
+reversible-before-freeze via hard DELETE (history lives in the frozen receipts), and both enter the staleness
+fingerprint.
+
+**The frozen receipt (auditability north-star):** `stage8_approval.receipt_json` is the closing argument
+frozen at decision time; `facts_fingerprint` is `closing_argument.fingerprint()` then. The fingerprint hashes
+the *determination* (per band: the gross value + the sorted accepted schools, each carrying override /
+exclusion / human-add markers, plus the band-exclusion and slot-assignment sets), deliberately excluding
+volatile provenance. Staleness (REQ-147, the 2026-07-14 incident) re-hashes the **frozen receipt** under the
+**current** `fingerprint()` and compares to the live hash — both sides one code vintage — so a
+fingerprint-basis evolution can never fake staleness on an unchanged picture. A re-decision after a back-edge
+is a new append-only row, never a rewrite.
+
+## 0c. The #499 slot program (BUILT, REQ-144…150 all tested)
+
+"Slots" (`common/slot_spine.py`, PURE — no DB/disk): each band's **live NCES roster** (never frozen) is
+projected as slots, crossed with the band's included facts, so a coverage gap becomes an *identified school*
+(an unfilled slot), not count arithmetic. Slot states: `filled` · `unfilled` · `ambiguous` (a fact key
+collides with ≥2 slots — fills none, waits for a human) · `unmatched-extra` (a fact matches no slot — the
+`confirm_extra` escape hatch) · `projected` (a band-grain statement covers an unfilled slot, REQ-146).
+Resolution *weights, never overrides*: human disposition > exact 1:1 name match > intent-tie-broken
+ambiguity; the Stage-2 discovery-intent prior tie-breaks but **never creates** a match. Consumed in
+`closing_argument.build_closing_argument` (`SP.project_slots`), rendered by `stage8.js:renderSlots`. REQ
+map: REQ-144 spine v1 + roster-drift (PR-A) · REQ-145 attribution + dispositions in the fingerprint (PR-B) ·
+REQ-146 band-grain facts + conflict ladder as advice (PR-C) · REQ-147 staleness-from-receipt (PR-C review) ·
+REQ-148 v4 `campus_names` (PR-E) · REQ-149 per-band SATISFIED signal, supersedes #90 (PR-D) · REQ-150 full
+roster spine from gate@1, slot-grain pursuit, closes #499 (PR-F).
 
 ---
 
@@ -36,16 +105,16 @@ verified by `tests/test_aggregate.py::TestGross`/`TestMode`/`TestConsensus`). Th
 `stage8_aggregate/aggregate.py` and is load-bearing for `gate@7` today (§0 above) — it is not waiting
 on Stage 8 to matter.
 
-The **standalone Stage 8** is the still-unbuilt gate downstream of gate@7 (its design is now settled —
-§2 below, decided 2026-07-13): its job is to let a human
-review/approve the council's extracted TIMES (`school_fact.human_determination`) before the
-mechanical Stage-9 DB write — the effective old "CP-C." This scope was narrowed by a 2026-07-10
+The **standalone Stage 8** is the gate downstream of gate@7 (**BUILT #89, 2026-07-14 — see §0a/§0b**):
+a human reviews/approves the council's extracted TIMES (`school_fact.human_determination`) before the
+mechanical Stage-9 DB write — the effective old "CP-C." This scope was set by a 2026-07-10
 decision (REQUIREMENTS.yaml REQ-120/REQ-121 notes): approving extracted times is explicitly a
 **Stage-8** activity, deferred from gate@7, which only reviews/dispatches *requests* for extraction,
-not the times themselves. `district_bands_from_facts` already seeds the field this gate will act on:
-each school entry in its output carries a `human_determination` stub (empty string) for the reviewer
-to fill in (see §1a below) — gate@8's console is expected to render and write back through that field.
-Completion grain = district × **band** (schools are instrumental; governance §11d).
+not the times themselves. `district_bands_from_facts` seeds the field this gate acts on:
+each school entry carries a `human_determination` stub the reviewer fills in via `POST
+/api/aggregate/override` (§1a). Completion grain = district × **band** (schools are instrumental;
+governance §11d). What remains unbuilt downstream: the mechanical Stage-9 write (#93) and the
+`8→1`/`8→6` back-edges — `sent_back` is recorded but nothing consumes it yet.
 
 ## 1a. The live functions (aggregate.py)
 
@@ -104,16 +173,24 @@ place (with tests) rather than deleted; treat them as legacy unless/until they'r
 - **`merge_fact_runs(facts)`** — the cumulative cross-run merge (REQ-122, #232), live at
   `server.py:1542` and mirrored as hand-checked SQL at `server.py:1416-1437`. Input is `school_fact`
   rows from ANY number of a district's production Stage-7 runs, each carrying `extraction_id` (run
-  order), `band`, `school`, `status`. Per `(band, school)`, the merge rule is:
+  order), `band`, `school`, `status` (+ the v3 `school_year` reading). Per `(band, school)`, the merge
+  rule, in precedence order:
   - an **accepted** fact beats an **unresolved** fact for the same school, **regardless of run
     order** — a later thin retry can never make an earlier solid extraction disappear;
-  - among multiple **accepted** facts, the **earliest** run wins — follow-up rounds fill gaps, they
-    never silently overwrite a solid prior fact (correcting one is a gate@8 human determination, not
-    an automatic later-run override);
+  - **school-year precedence (#254/REQ-146):** among multiple **accepted** facts, a fact whose
+    `school_year` parses to a *known newer* year supersedes one with a known *older* year, regardless of
+    run order (a genuinely more-recent schedule wins over a stale one). Unknown-year facts don't compete
+    on this axis. **Year-superseded facts are KEPT, not dropped** — returned in a third list when called
+    `with_superseded=True` — so the closing argument can still show them; year precedence only ever
+    compares accepted-vs-accepted;
+  - when the year axis doesn't decide (both unknown, or equal), among multiple **accepted** facts the
+    **earliest** run wins — follow-up rounds fill gaps, they never silently overwrite a solid prior fact
+    (correcting one is a gate@8 human determination, not an automatic later-run override);
   - among **unresolved-only** facts, the **latest** run wins (the freshest disagreement diagnostic).
 
-  Output is `(accepted, unresolved)`, each deterministically sorted by `(band, school)`. Pure, no I/O;
-  the caller is responsible for filtering to `run_kind='production'` rows.
+  Output is `(accepted, unresolved)` — or `(accepted, unresolved, superseded)` with `with_superseded=True`
+  — each deterministically sorted by `(band, school)`. Pure, no I/O; the caller filters to
+  `run_kind='production'` rows.
 
   **The dedup key RE-NORMALIZES `school` through the CURRENT `norm_school` at read time** (PR #247
   review), not the raw persisted string: `school_fact.school` is written at extraction time, so a run
@@ -157,7 +234,11 @@ for already-captured school documents. Don't confuse its `aggregate_district` wi
 different functions in two different modules with overlapping names and similar-but-not-identical
 purposes.
 
-## 2. The standalone Stage 8 — design (DECIDED 2026-07-13)
+## 2. The standalone Stage 8 — design rationale (DECIDED 2026-07-13, BUILT #89 2026-07-14)
+
+> This section is the *design rationale* the built gate@8 (§0a/§0b/§0c) realizes — kept because the "why"
+> is still the reference for the parts not yet built (Stage-9 write, back-edges, auto mode). Where it reads
+> in the future tense, read §0a/§0b for what actually shipped.
 
 Design settled with Ian in a 2026-07-13 session. The guiding metaphor: **gate@8 is an attorney's closing
 argument.** A closing argument states the claim, marshals the evidence, confronts the gaps honestly, and
@@ -300,26 +381,27 @@ challenge any published number OFFLINE, without a live DB. Per district × band 
    showing only what we found reads as "we covered everything"; **log what was dropped** (the no-silent-caps rule);
 5. **the decision record** — actor, timestamp, the confidence value auto WOULD have acted on, any override +
    reason, and the frozen `(facts,config)` fingerprint;
-6. **the auto-vs-human agreement datum** — the **gate@8 calibration hook, deferred today** (governance §11b
-   explicitly excludes gate@8 from the calibration wiring until Stage 8 lands). Per the #108 lesson ("you
-   cannot measure a threshold you never instrumented"), it should start logging the moment the MANUAL gate
-   ships — long before auto — into the existing `calibration_event` table (`common/calibration.py`, ITEM
-   grain), the same substrate gate@5/6/7 already feed.
+6. **the auto-vs-human agreement datum** — the **gate@8 calibration hook, now BUILT** (`gate8_decision_record`,
+   fired inside `aggregate_decision` at `server.py:2454`, logging from day one — as the #108 lesson demanded,
+   "you cannot measure a threshold you never instrumented"). It writes to the existing `calibration_event`
+   table (`common/calibration.py`, ITEM grain), the same substrate gate@5/6/7 feed. (This section is the
+   design target; §0a/§0b above record what actually shipped — most of this receipt is realized in
+   `stage8_approval.receipt_json` + `closing_argument.fingerprint()`.)
 
 The through-line: the receipt must also carry **the provenance of the denominator itself** (the NCES
 per-band count + any contamination disposition) — if the denominator is wrong (the #237 single-school-LEA
 class), every downstream sufficiency statistic lies.
 
-### 2d. Sequencing — manual-first; #90 ("satisfied") deferred and LEARNED through the manual gate (DECIDED)
-The per-band **"satisfied" signal (#90) is the keystone**: simultaneously the confidence threshold that
-gates the write, the target for the 8→1 re-queue, and the input to the survivorship check (2b). It is
-**undesigned, and deliberately stays so** — the decision (Ian, 2026-07-13) is to **build the MANUAL gate
-first and learn the shape of "satisfied" from watching real districts pass through it**, rather than guess
-the threshold up front (the ramp-up model, governance §11b; the #108 accrual lesson). The manual gate does
-NOT need #90 — a human eyeballs sufficiency — so Stage 8 ships manual-first with "satisfied" as a human
-judgment, the calibration hook (2c.6) logging from day one, and the auto path (confidence-escalating,
-governance §11b) blocked on #90 + gate-mode part b (#104). This is the same high-supervision-first posture
-every other gate shipped under.
+### 2d. Sequencing — manual-first (SHIPPED); "satisfied" learned through the manual gate, then built as the slot vocabulary
+The plan (Ian, 2026-07-13) was to **build the MANUAL gate first and learn the shape of "satisfied" from
+watching real districts pass through it**, rather than guess the threshold up front (the ramp-up model,
+governance §11b; the #108 accrual lesson). **That is what happened.** The manual gate shipped (#89), and the
+per-band "satisfied" signal — originally #90, the keystone that gates the write / targets the 8→1 re-queue /
+feeds the survivorship check — was then **built as REQ-149's per-band SATISFIED signal in the #499 slot
+vocabulary** (`band_satisfied` over the slot spine; REQ-149 supersedes #90). So "satisfied" is no longer
+undesigned: it is a slot-grain computation a human still signs off. What remains blocked on the auto path
+(confidence-escalating, governance §11b) is gate@8 **auto mode** — gate-mode part b (#104) — but the
+calibration hook (2c.6) has logged from day one, exactly as the high-supervision-first posture intended.
 
 ### 2e. Approval commit grain — PER-DISTRICT, all-or-nothing (DECIDED 2026-07-13)
 The completion grain is district × band (governance §11d), but the **approval/write commit grain is the
@@ -367,17 +449,23 @@ A max-effort multi-angle review of the manual-gate build confirmed and fixed, be
   guard-wiring test extended to `_backup_stage8_approvals`, a dead ternary removed.)
 
 ## 3. Still open (post-2026-07-13 design)
-- **#90 — the per-band "satisfied" signal** (confidence/coverage threshold): deferred by decision (§2d),
-  to be characterized from manual-gate experience. REQ-118's follow-up compose machinery is partial adjacent
-  groundwork (it does not define "satisfied").
-- **The aggregation-record / approval-receipt schema + migration** (§2c) — the precious approval table +
-  its JSON backup, and how a required-reason override is stored and audited (§2a.3). *(First build step.)*
-- **The 8→1 / 8→6 back-edges** (§2a.5, governance §11e) — designed as stubs first, built after the
-  read/approve path.
+
+**Genuinely still open:**
+- **The 8→1 / 8→6 back-edges** (§2a.5, governance §11e) — `sent_back` is recorded (disposition + reason +
+  `state_event`), but no downstream re-queue/dispatch executor consumes it yet. (The `/api/aggregate/
+  recover-band` #473 path mints a 7→6 request, but that is the gate@7-lineage recover, not the designed
+  8→1/8→6 back-edges.)
 - **`gate@8` manual/auto** — auto = confidence-escalating, never writes minutes without confidence
-  (governance §11b); blocked on #90 and #104 part b.
+  (governance §11b); blocked on #104 part b. Manual shipped; the calibration hook logs from day one (§2c.6).
 - **Stage 9 write** (#93) — the mechanical upsert into the LCT DB downstream of an approval (its own stage;
-  `STAGE9_INCORPORATE_DESIGN.md`).
+  `STAGE9_INCORPORATE_DESIGN.md`). No writer exists yet; only the DB landing zone (migration
+  `019_bell_schedules_stage9_landing.sql`).
+
+**Since CLOSED (were open in the 2026-07-13 list):**
+- ~~#90 — the per-band "satisfied" signal~~ → **BUILT as REQ-149** (per-band SATISFIED over the #499 slot
+  spine; REQ-149 supersedes #90). See §2d/§0c.
+- ~~The approval-receipt schema + migration~~ → **BUILT** (`stage8_approval` + the frozen `receipt_json` /
+  `facts_fingerprint`; arrives via `init_precious_schema()`, not a migration — §0b, §3 note below).
 - **Modal-aggregation quality (from the live Santa Fe review, 2026-07-13)** — two distortions that made a
   human override necessary where automation should have handled it: **#253** combined-scope facts
   (`k8 schools`, `milagro and ortiz schools`) counting as distinct schools + the K-8-topology-blind
