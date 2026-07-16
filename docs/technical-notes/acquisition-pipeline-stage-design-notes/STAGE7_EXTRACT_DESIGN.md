@@ -14,9 +14,18 @@
 > **Update this when:** Stage 7's code behavior changes. Design turns and superseded approaches
 > belong in §6 (Provenance / decision log), not here.
 
-**Status: BUILT through gate@7 review + request EXECUTION + console maturation (epic #163).** Council
-extraction, per-school persistence, GT scoring, the request-more-evidence **detection → routing → review
-→ execution** loop, and the gate@7 console are all built. Request **execution** fires the target stage's
+**Status: BUILT through gate@7 review + request EXECUTION + console maturation (epic #163) + extraction
+quality (epic #119, CLOSED 2026-07-15).** Council extraction, per-school persistence, GT scoring, the
+request-more-evidence **detection → routing → review → execution** loop, and the gate@7 console are all
+built. **Epic #119 added** (PRs #508–#511): a `json.JSONDecoder().raw_decode` salvage rewrite that no
+longer truncates on braces-in-strings (#508/#276) + a non-list `schedules` guard (#362); the gate@7
+**cross-LEA contamination banner** rendering the #237 single-school-LEA flag (#509/#246, REQ-152); and
+**mode-stability early-exit** — Stage 7 stops paying for council calls on a district once every fillable
+band's running mode is stable (#510/#120, REQ-151; `Extraction.n_reps_skipped`). The extraction **schema is
+now v4**, not the v1 four-field shape (§0/§1 below): the council also returns `evidence_quote`,
+`source_locus`, **`stated_minutes`/`stated_minutes_quote` (path 2 — an explicitly-published daily-minutes
+number)**, `school_year` (#254), `applies_to` (#253), and `campus_names` (#499). Eight prompt ids are
+registered (four text + four vision), production runs **v4**. Request **execution** fires the target stage's
 back-edge (REQ-118): **7→6 bundles a district's approved alternate-rep re-dispatches into ONE round**
 (#153) and picks the **yield-ranked** alternate, not image-first (#155); **7→2/7→3/7→1** collect into a
 Stage-1 follow-up batch that now **shapes** its own discovery (untried-schools-first, else a widened SERP
@@ -99,7 +108,13 @@ exercise against the #200/#209-hardened pipeline, not a distinct issue awaiting 
   a fresh TLS handshake each call (was ~30-60s/batch of pure handshake); an autouse conftest fixture
   clears the cache per test. Raises `BillingAuthError` on 401/402 (halts the run rather than burning
   further calls on a dead key).
-- `parse.py` — tolerant JSON parser: markdown-fence stripping, salvage-on-truncation, and a
+- `parse.py` — tolerant JSON parser: markdown-fence stripping, **salvage-on-truncation via
+  `json.JSONDecoder().raw_decode`** (#508/#276 — the real tokenizer scans from each `{`, so braces inside
+  string values (school names/notes) and nested objects no longer truncate the salvage; the old `[^{}]*`
+  regex silently dropped valid schedules on the very path meant to rescue them; `_salvage` at `parse.py:74`,
+  `_sched_items` at `:59` also harvests a `{"schedules":[…]}` wrapper stranded in prose), a **non-list
+  `schedules` guard** (#362 — a valid reply with `schedules: null`/scalar/dict returns `[]`, not a
+  TypeError; `parse.py:113`), a v4 `_scrub_campus_names` (#499), and a
   prompt-example-leak guard (`_is_prompt_leak`) that drops any row whose `school_name` matches a
   **self-evident bracketed placeholder** (e.g. `"[school name]"`) in both the clean-parse and
   salvage paths. `"fivay high"` was REMOVED from this set (#144) — it is a real Pasco County FL
@@ -334,9 +349,16 @@ batch_00000 text results correctly flagged exactly the **4 genuine coverage gaps
 ## 1. Purpose & boundary
 
 Stage 7 is the **council extraction**: the assigned OpenRouter model council reads the handed-off
-representations and returns per-school `{start_time, end_time, grade_level, school_name}` facts (the
-INVARIANT — models read TIMES, deterministic code computes minutes + the mode; REQ-054). Consensus is
-the cross-family per-school (start,end) pair, ±15 min (REQ-056). When evidence is insufficient, the
+representations and returns per-school facts. The v4 schema (`stage6_handoff/prompts.py`) is
+`{start_time, end_time, grade_level, school_name, confidence, evidence_quote, source_locus,
+stated_minutes, stated_minutes_quote, school_year, applies_to, campus_names}` — but the **INVARIANT holds
+across all of it: models read TIMES (and copy explicitly-stated facts verbatim), deterministic code computes
+minutes + the mode; REQ-054.** Note `stated_minutes`/`stated_minutes_quote` are **path 2** — a daily
+instructional-minutes number *only if the document states one outright* ("instructional day: 435 minutes"),
+never computed from the times (the "golden nugget"/Dunseith case; Stage 5's `lf_explicit_minutes` is its
+upstream detector). Persisted in `SchoolFact.evidence_json` (`stage7_extract/models.py:75-78`), aggregated
+by `stated_minutes_agree` in `closing_argument.py`. Consensus is the cross-family per-school (start,end)
+pair, ±15 min (REQ-056). When evidence is insufficient, the
 pipeline **gets more** via the **request-more-evidence loop** — detection + routing are deterministic
 scripts, not the model (§4). The gate is **`gate@7`**: review the routed requests + the extraction
 results, approve/reject.
@@ -390,8 +412,8 @@ approve/reject/reopen/execute, lineage/blocked/deferred visibility, the compose 
 (7→6/3/2/1).** Detection + routing are **built and validated** (§0); **execution is built and hardened**
 (REQ-118, §3F, epic #163). The whole loop — detect → rank/defer → gate@7 review (with lineage) → bundled
 execute / previewed compose → auto-flow to gate@5 — is code, and has been exercised repeatedly against
-real districts during the epic #163 shakedown; what remains is a single clean end-to-end pass on a fresh
-live batch with the now-corrected code (#122).
+real districts during the epic #163 shakedown. The clean end-to-end pass ran (#122, **closed 2026-07-06** —
+23 fresh districts, 37 runs, both back-edges proven).
 
 **(a) Routing = deterministic scripts, not the model — the REQ-054 read-vs-decide split, extended.** The
 council reads/assesses; deterministic local code decides what to do about insufficiency. Rationale
@@ -582,8 +604,9 @@ trigger (§0) — all surfaces call the same underlying functions.
   #158 (release cluster-drop, HIGH), #165 (current_state null-state), #160 (query-template config),
   #155/#159 (detector ranking + defer), #153/#161/#162 (bundle + seed-URL/eligible-schools shaping),
   #152/#156/#157 (console run-extraction, gate@1 refresh, follow-up auto-flow), #154 (lineage + compose
-  modal). Follow-on, still open: #151 (inline PNG/PDF viewer), #122 (the live end-to-end run), #164
-  (geo-scoped rediscover queries, future).
+  modal). Follow-on, still open: #151 (inline PNG/PDF viewer), #164 (geo-scoped rediscover queries,
+  future). (#122 the live end-to-end run — CLOSED 2026-07-06. Epic #119 quality work later closed
+  #121/#276/#362/#120/#246 — see the status banner + change log.)
 - **Hygiene batches 2–3B** (PRs #179, #191, #193, #196, #197 — commit range `4d31b77~1..d44ab24`), all
   merged: #173 (run-abort robustness) + #169 (truncation retry), PR #179; #176/#170/#175 (coverage-aware
   request loop), PR #191; #180/#187 (token-sizing + retry-ceiling unification), PR #193; #148 parts
@@ -594,6 +617,19 @@ trigger (§0) — all surfaces call the same underlying functions.
 ---
 
 ## 6. Provenance / decision log
+
+**2026-07-15 — epic #119 (Stage 7 extraction quality), CLOSED (PRs #508–#511).** Four changes, folded
+into §0/§1 above: **#508** rewrote the truncation salvage in `parse.py` to `json.JSONDecoder().raw_decode`
+(#276 — braces-in-strings and nested objects no longer truncate valid schedules) and guarded a non-list
+`schedules` reply (#362 → `[]`); **#509** rendered the #237 single-school-LEA contamination flag as the
+gate@7 warning banner (#246, backfilled as REQ-152) — a detect-and-flag signal the reviewer previously
+couldn't see; **#510** added district-grain **mode-stability early-exit** (#120, REQ-151 — stop paying for
+council calls once every fillable band's mode is stable; `Extraction.n_reps_skipped`); **#511** re-tested
+the snake/column-hub class and CLOSED #121 (per-school extraction recovers all three Broward bands). Note:
+#122 (the first clean end-to-end pass) had already closed 2026-07-06, predating this epic. Also confirmed
+current in this pass: the extraction schema is **v4** (adds `evidence_quote`/`source_locus`/`stated_minutes`
+(+`_quote`, path 2)/`school_year`/`applies_to`/`campus_names`), **8** prompt ids registered, production runs
+v4 — the note previously described the v1 four-field schema.
 
 **2026-07-02/03 — the full Stage 7 build (REQ-117).** Built in vertical slices against real
 `batch_00000` data: plumbing → council run → persistence → GT scoring → durability/resume →
@@ -698,7 +734,8 @@ image-vs-text comparison → the request-detection engine → gate@7 console. Ke
   reps DeepSeek V3.2 had 404'd on: **32/33 calls succeeded**, resolving **21/145** prior disagreements and
   improving image-council accuracy to **89.1% band / 98.2% school** (from 88.5%/98.1%) without regressing
   it. Two follow-on reads, both already tracked: resolution concentrates on small disagreements — dense
-  hub-table pages still mostly unresolved (#85, #121) — and the image council still trails the text
+  hub-table pages still mostly unresolved (#85; the snake/column-hub class re-tested and CLOSED as #121 via
+PR #511, per-school extraction recovering all three Broward bands) — and the image council still trails the text
   council on native-digital reps, reinforcing the route-by-modality experiment (#132). Full scorecard:
   `COUNCIL_LAB_DESIGN.md` §0; persisted record at
   `data/acquisition/council_lab/judge_replay_a2bc80c004ca-image_partial.json`.
