@@ -132,9 +132,20 @@ _CONTENT_YEAR_FLOOR = 1990
 # 4-digit-anchored consecutive pair: 2018-2019 / 2018-19 / 2025/26 (separator required — a contiguous
 # digit run like an asset id has none, so it never matches):
 _CY_FULL = re.compile(r"(?<!\d)((?:19|20)\d{2})[-–—/](\d{4}|\d{2})(?!\d)")
-# 2-digit-only pair: 25-26 (needs the date-context guard below to reject a 4-20-21 date tail):
+# 2-digit-only pair: 25-26 (needs the bad-prefix guard below — a bare 2-digit pair is ambiguous):
 _CY_SHORT = re.compile(r"(?<!\d)(\d{2})[-–—/](\d{2})(?!\d)")
-_CY_DATE_PREFIX = re.compile(r"\d{1,2}[-/]$")   # a "4-" before "20-21" ⇒ a date, not a school year
+# A bare "NN-NN" pair is a school year ONLY when nothing identifies it as something else. Reject it
+# when the token immediately before it marks it as a numeric date tail (4-20-21), a month-name date
+# (March-20-21), or a labelled range/index (grades-06-07, page-12-13, v12-13, room-22-23) — the
+# false-positive classes a code review surfaced. The month/label word must be a WHOLE token (bounded),
+# else it over-rejects (e.g. "marshall-25-26" must NOT match "mar"); the separator is optional so a
+# glued form ("v12-13") is caught too.
+_CY_MONTHS = (r"january|february|march|april|may|june|july|august|september|october|november|december"
+              r"|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec")
+_CY_NONYEAR_LABELS = (r"grades?|pages?|pg|ver|version|vol|volume|room|rm|bldg|building|section|sec"
+                      r"|num|chapter|lesson|unit|part|step|figure|table|tbl|v|no|ch|fig")
+_CY_BAD_SHORT_PREFIX = re.compile(
+    rf"(?i)(?:\d{{1,2}}[-–—/]|(?<![a-z])(?:{_CY_MONTHS}|{_CY_NONYEAR_LABELS})(?![a-z])[-–—/_ ]?)$")
 
 
 def _cy_consecutive(y1: int, y2: int) -> int | None:
@@ -146,6 +157,17 @@ def _cy_consecutive(y1: int, y2: int) -> int | None:
     return y1
 
 
+def _cy_short_year(a: int, b: int) -> int | None:
+    """A 2-digit pair (a, b) → a full consecutive in-range start year, or None. Picks the century that
+    lands in range so a turn-of-century year reads correctly ('99-00' → 1999-00, not 2099)."""
+    if b != (a + 1) % 100:                     # consecutive on the 2-digit values (handles 99→00)
+        return None
+    for century in (2000, 1900):
+        if _CONTENT_YEAR_FLOOR <= century + a <= date.today().year + 1:
+            return century + a
+    return None
+
+
 def _cy_candidates(text: str):
     for m in _CY_FULL.finditer(text):
         y1 = int(m.group(1))
@@ -155,22 +177,25 @@ def _cy_candidates(text: str):
         if y is not None:
             yield y
     for m in _CY_SHORT.finditer(text):
-        if _CY_DATE_PREFIX.search(text[:m.start()]):   # the tail of a numeric date (4-20-21)
+        if _CY_BAD_SHORT_PREFIX.search(text[:m.start()]):   # a date tail / month date / labelled index
             continue
-        y = _cy_consecutive(2000 + int(m.group(1)), 2000 + int(m.group(2)))
+        y = _cy_short_year(int(m.group(1)), int(m.group(2)))
         if y is not None:
             yield y
 
 
 def content_school_year(*sources: str) -> str | None:
-    """The most-recent school year confidently read from any of `sources` (a URL, final URL, or
-    filename), as canonical 'YYYY-YY', or None if none is found. Deterministic — never inferred from
-    today's date or the capture time (REQ-054). Multiple distinct years ⇒ the MOST RECENT, the
-    conservative choice for both consumers: prefer-recent ranks on it, and #241 flags a doc stale only
-    when even its newest referenced year is pre-floor. Measured caveats: STAGE5_FILTER_DESIGN §3a obs. 6."""
-    years = []
+    """The school year read from the FIRST of `sources` (a URL, final URL, or filename) that yields any
+    year, as canonical 'YYYY-YY', or None. Deterministic — never inferred from today's date or the capture
+    time (REQ-054). Source order matters: the primary URL wins over a redirect/CDN `final_url` whose
+    upload-date path segment (e.g. `/files/2025-26/`) is unrelated to the document's actual vintage —
+    otherwise a spurious recent year there could clear #241's validity floor for a genuinely stale doc.
+    Within one source, multiple distinct years ⇒ the MOST RECENT (prefer-recent ranks on it; #241 flags a
+    doc stale only when even its newest referenced year is pre-floor). Caveats: STAGE5_FILTER_DESIGN §3a obs. 6."""
     for s in sources:
         if not s:
             continue
-        years.extend(_cy_candidates(urllib.parse.unquote(str(s))))
-    return _format_year(max(years)) if years else None
+        years = list(_cy_candidates(urllib.parse.unquote(str(s))))
+        if years:
+            return _format_year(max(years))
+    return None

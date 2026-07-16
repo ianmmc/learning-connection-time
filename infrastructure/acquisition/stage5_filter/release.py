@@ -138,9 +138,13 @@ def alternates(reps: list, exclude: set) -> list:
 _VALIDITY_FLOOR_START = SY.start_year(SY.SPED_BASELINE_YEAR)   # 2017
 
 
-def _pre_validity_floor(content_school_year) -> bool:
+def pre_validity_floor(content_school_year) -> bool:
     """True iff a KNOWN content school year is older than the 2017-18 CRDC baseline. Unknown/absent/
-    malformed ⇒ False (coexists; never treated as oldest — the #254 unknown-year rule)."""
+    malformed ⇒ False (coexists; never treated as oldest — the #254 unknown-year rule). Public because
+    the gate@6 candidate badge (server.handoff_candidates) and the gate@5 calibration hook
+    (gate_calibration) must mirror this same auto-HOLD to stay consistent with decide() — the SINGLE
+    source of truth for the floor (a code review flagged those two call sites reading tier as a stale
+    proxy for decide())."""
     try:
         return SY.start_year(content_school_year) < _VALIDITY_FLOOR_START
     except (ValueError, TypeError):
@@ -173,7 +177,7 @@ def decide(rec: dict) -> dict:
             # (a REQ-026 correctness guard; ~0 money — obs. 6). The human overrides by labeling it a
             # target (the branch above), which is what preserves a district whose only evidence is old.
             csy = sig.get("content_school_year")
-            if _pre_validity_floor(csy):
+            if pre_validity_floor(csy):
                 return {"decision": "hold", "reason": f"stale:pre-{SY.SPED_BASELINE_YEAR}-validity-floor:{csy}",
                         "send": [], "alternates": []}
             return {"decision": "send", "reason": "auto:tier-A", "send": send,

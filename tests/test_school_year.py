@@ -39,6 +39,37 @@ class TestContentSchoolYear:
         # 4-20-21-Minutes.pdf is April 20 2021 — the "20-21" tail must not read as a school year
         assert SY.content_school_year("https://x.org/minutes/4-20-21-Minutes.pdf") is None
 
+    def test_word_month_date_is_not_a_school_year(self):
+        # a month-name + DD-YY date (board-meeting-March-20-21.pdf) must not read as school year 2020-21
+        assert SY.content_school_year("https://x.org/board-meeting-March-20-21.pdf") is None
+        assert SY.content_school_year("https://x.org/agenda/may-20-21.htm") is None
+
+    def test_labelled_range_or_index_is_not_a_school_year(self):
+        # grade ranges / page / section / version numbers are 2-digit pairs but not school years
+        assert SY.content_school_year("https://x.org/grades-06-07-bell-times.pdf") is None
+        assert SY.content_school_year("https://x.org/handbook/page-12-13.pdf") is None
+        assert SY.content_school_year("https://x.org/docs/handbook-v12-13.pdf") is None
+        assert SY.content_school_year("https://x.org/maps/bldg-22-23-annex.pdf") is None
+
+    def test_two_digit_guard_does_not_over_reject_a_real_year(self):
+        # the month/label guard must fire only on a WHOLE bounded token — 'mar' inside 'marshall' must not
+        # block a genuine SY-25-26, and an 'SY'/'Bell Schedule' cue keeps a bare pair valid
+        assert SY.content_school_year("https://marshallschools.org/marshall-25-26-calendar.pdf") == "2025-26"
+        assert SY.content_school_year("https://x.org/SY25-26-bell.pdf") == "2025-26"
+
+    def test_century_rollover_short_pair(self):
+        # a turn-of-century 2-digit pair reads as the in-range century, not 2099
+        assert SY.content_school_year("http://x.org/newsletters/bell-99-00.pdf") == "1999-00"
+
+    def test_source_precedence_primary_url_wins_over_final_url_noise(self):
+        # the FIRST source with a year wins — a CDN/CMS upload-date path in final_url must NOT override a
+        # real older year in the primary url (else it silently clears #241's validity floor)
+        assert SY.content_school_year("https://x.org/timetracker-2012-13.pdf",
+                                      "https://x.org/system/files/2025-26/handler.pdf") == "2012-13"
+        # ... but final_url is still a fallback when the primary url carries no year
+        assert SY.content_school_year("https://x.org/document/view",
+                                      "https://x.org/files/Handbook-2024-2025.pdf") == "2024-25"
+
     def test_sees_old_years_the_241_floor_needs(self):
         # UNLIKE the bell-year floor, the content read must SEE pre-2017-18 years so #241 can flag them
         assert SY.content_school_year("https://x.org/bell-2001-2002.pdf") == "2001-02"

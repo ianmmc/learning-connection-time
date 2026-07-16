@@ -114,12 +114,13 @@ def district_release_input(session, district_id: str, verified_only: bool = Fals
                               "schools": rec.get("intended_schools") or []})
     # #107 prefer-recent (dispatch-time): HOLD a stale same-school sibling — the newest still sends, the
     # older is available for a cheap 7->6 re-dispatch if extraction fails. Composes after verified_only.
+    by_key = {rd["rec_key"]: rd for rd in records}   # O(1) lookup instead of rescanning `records` per hold
     for rk in _prefer_recent_holds(sendables):
-        for rd in records:
-            if rd["rec_key"] == rk and rd["decision"] == "send":
-                csy = (rd["signals"] or {}).get("content_school_year")
-                rd["decision"], rd["send"] = "hold", []
-                rd["reason"] = f"stale-sibling:{csy}:newer-same-school-sends"
+        rd = by_key.get(rk)
+        if rd is not None and rd["decision"] == "send":
+            csy = (rd["signals"] or {}).get("content_school_year")
+            rd["decision"], rd["send"] = "hold", []
+            rd["reason"] = f"stale-sibling:{csy}:newer-same-school-sends"
     return district, records
 
 
