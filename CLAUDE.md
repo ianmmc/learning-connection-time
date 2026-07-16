@@ -77,7 +77,12 @@ injected as `batch_00000` — permanently walled off from Stage-9 writes and fun
 `STAGE1_QUEUE_DESIGN.md` §2h).
 
 **Ground truth, hand-verified (gross, per-school):** `data/benchmark/gt_curation_*/gt_proposals.json` —
-940/943 schools human-verified. Process: council *proposes*, human *verifies* (REQ-059).
+940/943 schools human-verified across `batch_00000`'s 27 districts. Process: council *proposes*, human
+*verifies* (REQ-059). **This set is FIXED — gate@8 approvals do NOT append to it** (no such code path;
+Stage 9, the writer, is unbuilt — #93). What grows is the **confirmed-fact base**: every district approved
+at gate@8 accrues a `stage8_approval` row + a frozen closing-argument receipt, and the more confirmed facts
+we hold, the more we have to *learn from and improve with* — realized as pipeline-improvement work (epics
+#478/#119, continuing in #106), not as a write into the GT corpus (Ian, 2026-07-16).
 
 **Reader-routing (format-route the reader, outcome-based):** Tier 1 plain text → Tier 2 `page.pdf()` +
 `pdftotext -layout` (multi-column) → Tier 2.5 OCR a clean image → Tier 3 vision (reads JS/image/scan pages

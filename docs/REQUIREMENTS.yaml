@@ -2,6 +2,19 @@ project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
 last_updated: "2026-07-16T00:00:00Z"
 
+# STATUS VOCABULARY — normalized 2026-07-16 (Ian). These SIX values are the whole set; do not invent
+# more (the pre-normalization file carried ad-hoc `in-progress` / `not_started` / `draft` one-offs, and
+# `in-progress` was exactly where two stale statuses hid).
+#   proposed   — written down, not yet agreed
+#   accepted   — agreed, not yet built (or built in part: use notes to say which part)
+#   implemented— built, tests not yet written/passing  (transitional; prefer moving straight to tested)
+#   tested     — built AND its cited tests pass. A `tested` claim should be CITEABLE: fill `tests:`.
+#   superseded — replaced by another REQ. MUST carry `superseded_by: [REQ-xxx]` — a forwarding address.
+#   retired    — the need went away; NO successor exists. MUST carry `retired_reason:`.
+#                (Distinct from superseded on purpose: superseded means "go read that one instead",
+#                 retired means "this whole idea is gone" — e.g. the Crawlee/Ollama scraper-service era.)
+# Cross-refs: use the `github_issue:` KEY, not prose in `notes:` — a mechanical sweep can only see the key.
+
 requirements:
   - id: REQ-001
     description: Calculate LCT using formula (Daily Instructional Minutes × Staff) / Enrollment
@@ -666,20 +679,18 @@ requirements:
     description: Scraper service requires API key authentication for /scrape endpoint
     type: non-functional
     priority: must
-    status: superseded
+    status: retired
+    retired_reason: "Crawlee+Express scraper-service era; the whole stack was archived 2026-06-25 to
+      data/archive/crawlee-ollama-era-superseded-20260625/ (PROJECT_HISTORY.md). NO successor REQ — the architecture was abandoned, not replaced,
+      so `superseded_by` is deliberately absent. The cited tests were deleted with the archive."
     acceptance_criteria:
       - /scrape endpoint requires X-API-Key header
       - Returns 401 Unauthorized if key missing or invalid
       - /health and /status endpoints remain public
       - API key read from SCRAPER_API_KEY environment variable
       - Python client sends X-API-Key header with requests
-    tests:
-      - tests/test_scraper_security.py::TestAPIKeyAuth::test_scrape_requires_api_key
-      - tests/test_scraper_security.py::TestAPIKeyAuth::test_returns_401_without_key
-      - tests/test_scraper_security.py::TestAPIKeyAuth::test_returns_401_with_invalid_key
-      - tests/test_scraper_security.py::TestAPIKeyAuth::test_health_endpoint_public
-      - tests/test_scraper_security.py::TestAPIKeyAuth::test_status_endpoint_public
-      - tests/test_scraper_security.py::TestAPIKeyAuth::test_python_client_sends_api_key_header
+
+    tests: null   # deleted with the 2026-06-25 archive (see retired_reason)
     created: "2026-01-22T07:30:00Z"
     updated: "2026-01-23T16:45:00Z"
     notes: "SUPERSEDED 2026-06-26 — secured the archived Crawlee+Express scraper /scrape endpoint, retired 2026-06-25 to data/archive/crawlee-ollama-era-superseded-20260625/ (PROJECT_HISTORY: 'Retired Crawlee+Ollama era'). Tests self-skip ('Scraper service not running'); the live pipeline uses Stage 3 Playwright capture, no /scrape service. Original: Gemini code review - implemented in server.ts with requireApiKey middleware."
@@ -688,19 +699,18 @@ requirements:
     description: HTML to Markdown conversion uses proper sanitization library
     type: non-functional
     priority: must
-    status: superseded
+    status: retired
+    retired_reason: "Crawlee+Express scraper-service era; the whole stack was archived 2026-06-25 to
+      data/archive/crawlee-ollama-era-superseded-20260625/ (PROJECT_HISTORY.md). NO successor REQ — the architecture was abandoned, not replaced,
+      so `superseded_by` is deliberately absent. The cited tests were deleted with the archive."
     acceptance_criteria:
       - Uses DOMPurify for HTML sanitization (not regex)
       - Uses Turndown for HTML to Markdown conversion
       - Removes script, style, and event handler attributes
       - Prevents XSS attacks from scraped content
       - Preserves semantic HTML elements (headings, links, lists)
-    tests:
-      - tests/test_scraper_security.py::TestHTMLSanitization::test_removes_script_tags
-      - tests/test_scraper_security.py::TestHTMLSanitization::test_removes_event_handlers
-      - tests/test_scraper_security.py::TestHTMLSanitization::test_preserves_headings
-      - tests/test_scraper_security.py::TestHTMLSanitization::test_preserves_links
-      - tests/test_scraper_security.py::TestHTMLSanitization::test_prevents_xss_attack
+
+    tests: null   # deleted with the 2026-06-25 archive (see retired_reason)
     created: "2026-01-22T07:30:00Z"
     updated: "2026-01-23T16:45:00Z"
     notes: "SUPERSEDED 2026-06-26 — HTML→Markdown sanitization for the archived Crawlee scraper (retired 2026-06-25). The live pipeline persists innerText at Stage 3 (de-chromed at REQ-091), not scraper HTML→MD. Original: Gemini code review - implemented in scraper.ts using DOMPurify + Turndown."
@@ -709,7 +719,10 @@ requirements:
     description: Scrape requests use retry logic with exponential backoff
     type: non-functional
     priority: should
-    status: superseded
+    status: retired
+    retired_reason: "Crawlee+Express scraper-service era; the whole stack was archived 2026-06-25 to
+      data/archive/crawlee-ollama-era-superseded-20260625/ (PROJECT_HISTORY.md). NO successor REQ — the architecture was abandoned, not replaced,
+      so `superseded_by` is deliberately absent. The cited tests were deleted with the archive."
     acceptance_criteria:
       - Retries transient failures (network errors, timeouts) up to 3 times
       - Uses exponential backoff with jitter (base 1s, max 8s)
@@ -717,13 +730,8 @@ requirements:
       - Does not retry 403 errors
       - Does not retry 404 errors (let 404 tracker handle)
       - Logs retry attempts for debugging
-    tests:
-      - tests/test_scraper_resilience.py::TestRetryLogic::test_retries_network_errors
-      - tests/test_scraper_resilience.py::TestRetryLogic::test_retries_timeouts
-      - tests/test_scraper_resilience.py::TestRetryLogic::test_does_not_retry_blocks
-      - tests/test_scraper_resilience.py::TestRetryLogic::test_does_not_retry_404s
-      - tests/test_scraper_resilience.py::TestRetryLogic::test_exponential_backoff_timing
-      - tests/test_scraper_resilience.py::TestRetryLogic::test_max_3_retries
+
+    tests: null   # deleted with the 2026-06-25 archive (see retired_reason)
     created: "2026-01-22T07:30:00Z"
     updated: "2026-01-23T21:45:00Z"
     notes: "SUPERSEDED 2026-06-26 — retry/backoff for the archived Crawlee scraper queue (retired 2026-06-25). Live stages handle failure their own way (Stage 2 billing/auth hard-stop REQ-070; Stage 3 per-item flag REQ-074). Original: Implemented in scraper/src/queue.ts with RETRY_CONFIG constants. Non-retryable: BLOCKED, NOT_FOUND. Retryable: TIMEOUT, NETWORK_ERROR."
@@ -732,18 +740,17 @@ requirements:
     description: Request ID correlation for scraper requests
     type: non-functional
     priority: should
-    status: superseded
+    status: retired
+    retired_reason: "Crawlee+Express scraper-service era; the whole stack was archived 2026-06-25 to
+      data/archive/crawlee-ollama-era-superseded-20260625/ (PROJECT_HISTORY.md). NO successor REQ — the architecture was abandoned, not replaced,
+      so `superseded_by` is deliberately absent. The cited tests were deleted with the archive."
     acceptance_criteria:
       - Each scrape request assigned unique request ID (UUID)
       - Request ID included in all log messages for request
       - Request ID returned in response for client correlation
       - Python client logs request ID when available
-    tests:
-      - tests/test_scraper_resilience.py::TestRequestCorrelation::test_response_includes_request_id
-      - tests/test_scraper_resilience.py::TestRequestCorrelation::test_request_id_is_uuid_format
-      - tests/test_scraper_resilience.py::TestRequestCorrelation::test_unique_request_ids
-      - tests/test_scraper_resilience.py::TestRequestCorrelation::test_logs_include_request_id
-      - tests/test_scraper_resilience.py::TestRequestCorrelation::test_python_client_logs_request_id
+
+    tests: null   # deleted with the 2026-06-25 archive (see retired_reason)
     created: "2026-01-22T07:30:00Z"
     updated: "2026-01-23T16:45:00Z"
     notes: "SUPERSEDED 2026-06-26 — request-ID correlation for the archived Crawlee scraper service (retired 2026-06-25). Cross-stage traceability in the live pipeline is the district_status registry / per-stage JSON (and, going forward, the governance event log). Original: Gemini code review - implemented in server.ts with randomUUID middleware."
@@ -782,7 +789,10 @@ requirements:
     description: End-to-end pipeline orchestration testing with cross-stage data contracts
     type: non-functional
     priority: must
-    status: superseded
+    status: retired
+    retired_reason: "Crawlee+Express scraper-service era; the whole stack was archived 2026-06-25 to
+      data/archive/crawlee-ollama-era-superseded-20260625/ (PROJECT_HISTORY.md). NO successor REQ — the architecture was abandoned, not replaced,
+      so `superseded_by` is deliberately absent. The cited tests were deleted with the archive."
     acceptance_criteria:
       - Test data contracts between scraper output and parser input
       - Test data contracts between parser output and database input
@@ -791,23 +801,8 @@ requirements:
       - Verify partial failure recovery (some stages fail, others continue)
       - Verify batch processing handles mixed success/failure results
       - Test complete E2E flow from URL to LCT calculation
-    tests:
-      - tests/test_pipeline_orchestration.py::TestScraperToParserContract::test_scraper_response_has_required_fields
-      - tests/test_pipeline_orchestration.py::TestScraperToParserContract::test_scraper_response_has_timing
-      - tests/test_pipeline_orchestration.py::TestScraperToParserContract::test_parser_accepts_scraper_response
-      - tests/test_pipeline_orchestration.py::TestParserToDatabaseContract::test_parser_output_matches_bell_schedule_data
-      - tests/test_pipeline_orchestration.py::TestParserToDatabaseContract::test_bell_schedule_data_has_required_fields
-      - tests/test_pipeline_orchestration.py::TestParserToDatabaseContract::test_confidence_level_valid
-      - tests/test_pipeline_orchestration.py::TestDatabaseToLCTContract::test_database_provides_instructional_minutes
-      - tests/test_pipeline_orchestration.py::TestDatabaseToLCTContract::test_database_provides_enrollment
-      - tests/test_pipeline_orchestration.py::TestDatabaseToLCTContract::test_database_provides_staff_counts
-      - tests/test_pipeline_orchestration.py::TestLCTToExportContract::test_lct_output_has_required_fields
-      - tests/test_pipeline_orchestration.py::TestLCTToExportContract::test_lct_values_are_valid
-      - tests/test_pipeline_orchestration.py::TestPartialFailureRecovery::test_scraper_failure_doesnt_break_other_stages
-      - tests/test_pipeline_orchestration.py::TestPartialFailureRecovery::test_parser_failure_doesnt_break_database
-      - tests/test_pipeline_orchestration.py::TestBatchProcessing::test_batch_handles_mixed_results
-      - tests/test_pipeline_orchestration.py::TestBatchProcessing::test_batch_continues_after_individual_failure
-      - tests/test_pipeline_orchestration.py::TestEndToEndFlow::test_url_to_lct_calculation
+
+    tests: null   # deleted with the 2026-06-25 archive (see retired_reason)
     created: "2026-01-23T21:30:00Z"
     updated: "2026-01-23T21:30:00Z"
     notes: "SUPERSEDED 2026-06-26 — tests the OLD scraper→parser→DB→LCT contract (markdown/html scraper_response, ContentParser), i.e. the Crawlee-era architecture, not the 9-stage acquisition pipeline. The intent (cross-stage data contracts) now lives in the as-built stage REQs (068–083) and, going forward, the governance event log. CORRECTION 2026-06-26: an earlier draft of this note called content_parser.py 'likely dead code' — that is WRONG. content_parser.py is LIVE via the LCT-cluster manual-import path (rebuild_database.py phase 6 → import_manual_bell_schedules.py → ContentParser), tested by tests/test_content_parser.py (REQ-032). It is NOT retired. Only this orchestration test models the dead scraper contract. Original: E2E pipeline testing ensures data contracts maintained across all stages."
@@ -1178,7 +1173,7 @@ requirements:
     description: Bound API spend and effort per district and globally, with a resumable batch (budget governor)
     type: constraint
     priority: must
-    status: in-progress
+    status: accepted
     acceptance_criteria:
       - Enforces per-district caps on API spend and/or search+extraction attempts, stopping once enough bands are confidently found
       - Enforces a global run budget cap; the run halts or degrades to fallback when exceeded
@@ -1834,7 +1829,7 @@ requirements:
       - This path is explicitly intended to catch CDN-hosted materials (Finalsite, BoardDocs, SchoolWires/Blackboard, S3, etc. - discover.py's existing CMS_HOSTS set) that Discovery's domain-scoped search would never surface directly, not only Drive/Docs links - this must be reflected in test coverage, not left as an incidental side effect of Drive/Docs-focused cases
       - A duplicate URL already seen for a district (whether originally discovered or already-emergent) is never re-queued
     tests:
-      - (verified via local fixture during implementation: a 'Bell Schedule' link was correctly captured as emergent with source/found_on populated, while an unrelated 'About Us' link on the same page was correctly NOT picked up - see docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE3_CAPTURE_DESIGN.md §6 decision log; no automated test harness exists yet for capture_discovery.mjs - REQ-079 watch-item)
+      - "(verified via local fixture during implementation: a 'Bell Schedule' link was correctly captured as emergent with source/found_on populated, while an unrelated 'About Us' link on the same page was correctly NOT picked up - see docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE3_CAPTURE_DESIGN.md §6 decision log; no automated test harness exists yet for capture_discovery.mjs - REQ-079 watch-item)"
     created: "2026-06-23T00:00:00Z"
     updated: "2026-06-23T00:00:00Z"
     notes: "infrastructure/scraper/capture_discovery.mjs::findEmergentLinks, processTask. The CDN-hosted-
@@ -1867,7 +1862,7 @@ requirements:
     description: "Stage 3 Google Drive Tier 2 - OAuth Drive API for folder enumeration and Tier-1 fallback (DELIBERATELY DEFERRED, not just blocked)"
     type: functional
     priority: should
-    status: not_started
+    status: proposed
     acceptance_criteria:
       - files.list (folder enumeration, bounded recursion) and files.get/files.export (content retrieval) are called only via an OAuth-authenticated client - confirmed via research there is no API-key-only path for folder listing, even for fully public folders
       - A one-time human setup (GCP project, OAuth installed-app client, consent screen explicitly moved OUT of Testing publishing status) is a documented prerequisite, not automated - the refresh token this produces is intended to remain valid indefinitely until revoked, making routine human-present operation the exception rather than the rule
@@ -1898,7 +1893,7 @@ requirements:
       - infrastructure/scraper/capture_drive.test.mjs
       - infrastructure/scraper/capture_dispatch.test.mjs (branch-dispatch + withTimeout cores, node:test)
       - infrastructure/scraper/capture_emergent.test.mjs (emergent match + one-hop selection cores, node:test)
-      - infrastructure/scraper/capture_browser.test.mjs (real-Chromium harness: modal dismissal, emergent DOM read, page.pdf(), domFingerprint, segmentChrome)
+      - "infrastructure/scraper/capture_browser.test.mjs (real-Chromium harness: modal dismissal, emergent DOM read, page.pdf(), domFingerprint, segmentChrome)"
     created: "2026-06-23T00:00:00Z"
     updated: "2026-07-11T00:00:00Z"
     notes: "Originally a deliberate, named watch-item gap (browser-driving logic smoke-tested only). Closed by
@@ -2029,7 +2024,7 @@ requirements:
     description: "WATCH-ITEM: whether Stage 4 should ever produce a standardized, always-wanted SYNTHESIZED file (e.g. a deterministic merge across agreeing representations) is explicitly NOT decided - deferred pending real Stage 5 experience"
     type: functional
     priority: should
-    status: not_started
+    status: proposed
     acceptance_criteria:
       - "Stage 4 currently produces only the raw list of per-tool representations + cheap per-representation attributes (n_chars, n_times) in processed.json (REQ-082) - no cross-representation comparison, ranking, or synthesis happens in Stage 4 today"
       - "The Stage 4/Stage 5 boundary is: Stage 4 = production, Stage 5 = decisions. A synthesized file is still Stage 4's job ONLY IF it turns out to be something every downstream consumer always wants in the same standardized, operationalized shape - that is a production fact, not a decision, if and when it exists"
@@ -2811,12 +2806,15 @@ requirements:
     description: "In preparation of dispatches during Stage 6, If a district has a URL with either a labeled or A-scoring district hub schedule (either by school or by band) that covers all bands, then the best representation of that URL is the only URL that needs to be sent for the district on the first dispatch."
     type: functional
     priority: must
-    status: draft
-    acceptance_criteria:
-    tests:
+    status: proposed
+    github_issue: "#83 — author acceptance criteria + tests for district-hub-priority dispatch (epic #106)"
+    acceptance_criteria: null   # DELIBERATELY EMPTY — authoring them IS issue #83. See notes.
+    tests: null                 # ditto
     created: "2026-07-01T00:00:00Z"
-    updated: "2026-07-01T00:00:00Z"
-    notes: "Design: STAGE6_DISPATCH_DESIGN.md §4. The rationale here is that the presence of a district hub schedule renders the need for representations of other URLs moot. Sending more would needless add to cost. If more information is needed, the extraction council can request more representations and more URLs. Acceptance criteria + tests + implementation tracked: GitHub #83."
+    updated: "2026-07-16T00:00:00Z"
+    notes: "Design: STAGE6_DISPATCH_DESIGN.md §4. The rationale here is that the presence of a district hub schedule renders the need for representations of other URLs moot. Sending more would needless add to cost. If more information is needed, the extraction council can request more representations and more URLs. Acceptance criteria + tests + implementation tracked: GitHub #83.
+      PROVENANCE (Ian, 2026-07-16): written by hand against a session limit to capture the idea before it was lost — hence the empty AC/tests. It is the only `must` in this file with no acceptance criteria, and that is a known, tracked gap (#83), not an oversight to be silently filled in.
+      CAVEAT for whoever authors the AC (2026-07-16 doc-tower audit): this REQ predates the finding that Stage-6 eligibility is a UNION (`tier==A OR human_label in target-shapes`) — see STAGE5_FILTER_DESIGN.md §3a obs. 5. Author the AC against that current rule, not the older tier-only framing. Also note #83 shares the Stage-6 eligibility seam with #515 (confounder vetoes): #83 NARROWS eligibility to one hub rep; #515 VETOES confounders out of it. Same file, different intent — sequence them."
 
   - id: REQ-117
     description: "Stage 7 (Extract): execute a frozen gate@6 handoff's paid OpenRouter council calls per representation, parse per-school {start_time,end_time,grade_level,school_name} facts (REQ-054 read-times invariant), reach cross-family per-school consensus (±15 min, REQ-056) with a 3rd-family judge on disagreement, and persist per-school facts to a GOVERNANCE-DB working table (school_fact) — NEVER the LCT DB (benchmark batches are walled off; only Stage 9 promotes non-benchmark results). gate@7 reviews extraction results + council requests/recommendations."
@@ -2852,7 +2850,7 @@ requirements:
     description: "Stage 7 request-more-evidence EXECUTION: an approved gate@7 ExtractionRequest fires the target stage's back-edge. Two mechanisms — (a) 7->6 DIRECT re-dispatch of an already-captured alternate representation (no new capture, bypasses Stage 1); (b) 7->2/7->3/7->1 wrapped in a Stage-1 FOLLOW-UP BATCH (any NEW capture/discovery routes through Stage 1 and stays reviewable at gate@1 — governance §11d), collected into one batch honoring the 12-district cap. Guarded by the REQ-051 budget governor + a per-district×band request-depth guard so the cyclic loop provably terminates."
     type: functional
     priority: must
-    status: in-progress
+    status: tested
     acceptance_criteria:
       - "Approving a request at gate@7 stays PURE review (status->approved); a SEPARATE compose step materializes work — gate@7 is not coupled to batch/dispatch creation"
       - "compose_followup_batch sweeps APPROVED 7->2/7->3/7->1 requests into ONE draft Stage-1 batch (batch_type='follow-up') targeting the union of districts + unsatisfied bands (+ school/URL seeds), 12-district hard cap with spillover, flips those requests to 'executed', and links batch<->request for lineage; the batch is a DRAFT reviewable at gate@1 (never auto-approved)"
@@ -2945,7 +2943,7 @@ requirements:
     description: "Gate-decision calibration log — a certifiable shadow-mode record per human gate action (the instrument that makes a later auto threshold defensible)"
     type: functional
     priority: should
-    status: in-progress
+    status: tested
     acceptance_criteria:
       - "Every human gate action (gate@5/6/7) records an ITEM-grained shadow-mode row alongside the existing state_event write: gate, item id, district, timestamp"
       - "The record logs the CONTINUOUS confidence proxy VALUE (not a bucket) — gate@5 combiner sort_score/tier · gate@6 n_send/n_verified · gate@7 council agreement/n_unresolved — so any θ can be swept post-hoc"
@@ -2982,7 +2980,7 @@ requirements:
     description: "Stage-7 follow-up rounds fill gaps, never regress solid signal — a district's review/aggregation truth is the cumulative merge of accepted facts across ALL production extraction runs"
     type: functional
     priority: must
-    status: implemented
+    status: tested
     acceptance_criteria:
       - "The extraction history is append-only (a run never deletes/updates a prior run's school_fact rows); the CUMULATIVE view is a pure, deterministic merge over that history — never a latest-run-only read"
       - "Merge rule, per (band, school): an ACCEPTED fact beats any unresolved in either run order (a scoped 7->6 retry that yields nothing cannot make an earlier solid extraction disappear from gate@7 or the band rollup)"
@@ -3099,7 +3097,7 @@ requirements:
       - tests/test_closing_argument.py
       - tests/test_stage8_approval.py
       - tests/test_stage8_api.py
-      - tests/test_aggregate.py::TestPlausibility
+      - tests/test_school_year.py::TestPlausibility
     created: "2026-07-15T00:00:00Z"
     updated: "2026-07-15T00:00:00Z"
     notes: "BUILT across PR #252 (v2 evidence, closing_argument.py, approval.py/models.py, stage8.js
@@ -3114,7 +3112,7 @@ requirements:
     description: "gate@8 calibration record — a shadow-mode row on every district approve/send-back decision, proxy=min_band_coverage, auto_recommendation=None (gate@8 has no auto path yet)"
     type: functional
     priority: should
-    status: implemented
+    status: tested
     acceptance_criteria:
       - gate_calibration.gate8_decision_record() builds a calibration_event row keyed gate='gate@8', item=district:{district_id}, proxy_name='min_band_coverage', proxy_value=min_coverage, human_decision derived from disposition (approve/send-back), auto_recommendation=None
       - The record is written via CAL.record_calibration on the SAME transaction as the gate@8 approval/send-back write, mirroring the gate@5/6/7 pattern
@@ -3182,7 +3180,7 @@ requirements:
     description: "Cross-family external code-review harness (tools/crossfam_review) applies the pipeline's own REQ-056 cross-family-consensus mechanism to code review: non-Claude OpenRouter finder families read the codebase in file-bounded shards; a rotating 3-family judge cascade adjudicates deduped candidates; survivors file to the GitHub tracker with a stable fingerprint for idempotent re-runs. Deliberately outside infrastructure/ (reviews the pipeline, is not part of it)."
     type: functional
     priority: should
-    status: implemented
+    status: tested
     acceptance_criteria:
       - A candidate confirms only with >=2 non-error votes (no lone-vote confirms at the spend cap)
       - Spend is reserve-then-settle against a hard USD cap; real cost comes from OpenRouter usage.cost, never an estimate
@@ -3736,3 +3734,31 @@ requirements:
       auto-act test (Ian, 2026-07-15): spend-conservative direction, failure observable at gate@8,
       reversible via 7->6 re-dispatch of the skipped reps. Decision grain A (district: ALL fillable
       target bands stable) — band-grain skip deferred until run data shows band-skew waste."
+
+  - id: REQ-152
+    github_issue: "#246 (epic #119; renders the #237 detector)"
+    description: "Cross-LEA contamination is VISIBLE at gate@7: the single-school-LEA over-extraction flag (#237) — a detect-and-flag-only signal wired to the district-detail API — is rendered as a warning banner in the console, with the distinct-school count, the school list, and the roster-matched keeper hint. Display-only; keeper selection stays human."
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - "When the gate@7 district-detail payload carries `x.contamination` (a single-school LEA whose extraction produced facts for multiple distinct schools — the #237 charter-network/blank-domain case), stage7.js renders a warning banner ABOVE the band rollup — MET (stage7.js contaminationBanner)"
+      - "The banner shows n_distinct_schools, the full school-chip list, and — when non-empty — the roster_matched keeper hint, labelled as the one reliable signal (the LEA's own roster) — MET (data-feat contamination-banner / contamination-schools / contamination-keeper)"
+      - "Styled on the existing amber warn tokens (.s7-contam in app.css) — MET"
+      - "DISPLAY-ONLY: stored school_fact status is untouched and nothing is auto-rejected; keeper selection stays a human decision (#246 scope) — MET"
+      - "gate@7 and gate@8 cannot disagree about the same contamination signal — the gate@7 detector sees the full LIVE roster, same as closing_argument — MET (test_contamination_sees_the_full_live_roster_at_gate7)"
+      - "A UI-visibility regression test guards the banner markers + the warning style, so the signal cannot silently disappear (the memory rule: a detect-and-flag signal the reviewer can't see is a signal that doesn't exist) — MET"
+    tests:
+      - tests/test_stage7_api.py::test_gate7_console_renders_the_contamination_banner
+      - tests/test_stage7_api.py::test_contamination_sees_the_full_live_roster_at_gate7
+      - tests/test_closing_argument.py::TestNegativeSpace::test_contamination_flag_passes_through
+      - tests/test_aggregate.py::TestDetectSingleSchoolOverExtraction::test_degenerate_named_fact_does_not_trigger_a_false_contamination_flag
+    created: "2026-07-16T00:00:00Z"
+    updated: "2026-07-16T00:00:00Z"
+    notes: "BACKFILLED 2026-07-16 by the doc-tower audit. PR #509 (epic #119) shipped this with a
+      regression test but no requirement — the only epic-#119 PR with a REQ gap, and notable because
+      the thing it shipped IS the UI-visibility rule (a flagged signal the reviewer cannot see does
+      not exist). Verified at backfill time, not assumed: the banner, the .s7-contam style, and all
+      four tests are present and passing (16 contamination-selected tests green). The underlying #237
+      detector (labeled_topology hard-override on NCES count=1) had no REQ of its own either; this
+      entry covers the detect->render chain at gate@7. Design: STAGE7_EXTRACT_DESIGN.md."
