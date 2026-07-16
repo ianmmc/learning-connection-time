@@ -209,6 +209,55 @@ weather/delay cases: real bell-shape, wrong schedule. Candidate signal: a `summe
 confounder facet on Axis 2 (pairs naturally with obs. 3's event-content facets). Also relates to the
 recency/dispatch question — see `STAGE6_DISPATCH_DESIGN` §3G.
 
+**(5) Comprehensive review 2026-07-15 (epic #106) — measured the money leak, re-specified the vetoes,
+and mined the un-attributed absents.** A full pass over the 1,473 labels × the live scorer. The findings
+are the ground for the epic-#106 slate (issues filed 2026-07-15); recorded here because several are
+candidate refinements, not-yet-built. Method: DB confusion matrix + note/facet mining + text-representation
+grep + a 5-way Haiku subagent clustering of the un-attributed absents. All numbers are on the labeled corpus.
+
+- **The leak is on the SEND side, not suppress.** Decision-level confusion (tier A auto-sends, B/C→review,
+  D→suppress): auto-suppress miss = **3/659 = 0.5%** (already safe; recoverable via 7→ loops), auto-send
+  false-send = **115/473 = 24.3%** (the money leak). Review (B/C) is 84% absent — the human-time sink. So
+  "how close are we to auto" is asymmetric: suppress is ready, send is not.
+- **The false auto-sends decompose into two DIFFERENT problems.** (a) ~60 driven by detectors that don't
+  exist or can't be measured — irregular-day (`lf_nonstandard_day` frozen at 0.17 precision because its
+  facet has no checkbox, #207) + recency (**no temporal signal at all** — real schedules from 2001/2015/
+  COVID-era auto-send) + summer (#223). (b) ~40 carry existing confounder facets (news_feed/calendar/board/
+  sports) that LOSE the vote — #108 measured those detectors at 0.13–0.18 precision. (a) is "build a
+  detector"; (b) is "tune weights against the facets we already have," NOT new labels.
+- **Stage-6 eligibility is a UNION and a changeable lever:** `tier==A OR human_label∈target`. The confounder
+  detectors are therefore candidate **negative eligibility gates on the auto path**, and the union makes an
+  aggressive veto safe (a false veto is recovered by the human path + 7→ loops; a false send is money gone).
+  Simulated vetoes on the auto path: **stale + irregular** removes 53 false sends for 6 target-vetoes →
+  24.5%→15.2%; adding the existing-confounder facets removes 99 but **wrongly vetoes 49 real targets** (they
+  co-occur with real hubs — Las Cruces). So news/calendar/board/sports must stay SOFT (combiner weight), never
+  eligibility gates.
+- **The irregular veto MUST be conditional.** Text grep (not notes): **37% of real single-school-bell-schedule
+  targets also contain an irregular-day term** (Early Release / Minimum Day / Inclement / Late Start / two-hour
+  delay / remote). An unconditional veto would false-negative 37% of targets. Veto only when an irregular
+  signal is present AND no regular-day structural signal is — the existing `lf_nonstandard_day` philosophy.
+  Term class to add: Early Release, Minimum Day, Inclement (Ian, 2026-07-15) + Late Start, Delayed Opening/
+  two-hour delay, Remote/Virtual Learning, Half Day.
+- **The stale veto's "recall cost" is mostly illusory** — of the 6 vetoed targets, 5 are stale schedules the
+  human's own notes say don't-use ("From 2001. Should not use," "COVID-19 years," "more recent handbook at
+  [url]"), i.e. schedules the temporal-validity rule (COVID exclusion, ≤3-yr span) already forbids. So recency
+  should be the SAME temporal rule (`school_year.py`) applied one gate earlier (Stage-6 eligibility) instead of
+  only at LCT-calc — saving the extraction spend on schedules that get temporally rejected anyway. Caveat: a
+  templated handbook/PDF footer date must not be read as the schedule's vintage.
+- **Ian's footer/densest-zero-times heuristic confirmed:** "if the densest representation shows 0 times, no
+  schedule." Only 2 tier-A/B records have max n_times==0 across all reps (both true absents) — the
+  `n_times_in_window==0` suppress floor already honors it. A valid cross-check, small lever.
+- **The 228 un-attributed absents (target_absent, no facet, no note = 23% of absents) are NOT a labeling
+  debt.** 218/228 are already tier-D-suppressed; the Haiku cluster: ~76% structurally EMPTY pages (generic
+  nav 31%, policy/handbook 12%, staff/HR 7%, staff directory 5%, registration 7%) with no times — correctly
+  suppressed, no rich facet warranted. **Don't census-label easy negatives**; grade the suppress detectors on
+  the 783 absents that DO carry facets/notes. The one pattern worth formalizing is **`schedule_link_only`
+  (~14%)** — a page that names a bell schedule whose times aren't in the capture; a RECALL affordance
+  (follow-the-link / capture-retry), not a confounder facet. A distinct **capture-fidelity recall leak**
+  surfaced too (login walls, 0-byte PDFs, truncation — a Stage 3/4 problem, not scoring). ~3 records flagged
+  as possible human false-negatives / buried-handbook (e.g. `4824000:af06722adb` — tier A, 7 in-window times,
+  2025-26 handbook, labeled absent) — pending human re-inspection.
+
 ---
 
 ## 4. Labeling — a THREE-AXIS object (v2.1, REQ-114)
