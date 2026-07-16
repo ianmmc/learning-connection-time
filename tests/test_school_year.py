@@ -6,6 +6,65 @@ import pytest
 from infrastructure.database import school_year as SY
 
 
+class TestContentSchoolYear:
+    """The deterministic URL/filename year read feeding the Stage-5 `content_school_year` signal
+    (#107/#241, STAGE5_FILTER_DESIGN §3a obs. 6). Never infers from today's date (REQ-054)."""
+
+    def test_four_digit_full_pair(self):
+        assert SY.content_school_year("https://x.org/Bell-Schedule-2018-2019.pdf") == "2018-19"
+
+    def test_four_digit_short_pair(self):
+        assert SY.content_school_year("https://x.org/files/bell-2025-26.pdf") == "2025-26"
+
+    def test_slash_separator_is_a_school_year(self):
+        assert SY.content_school_year("https://x.org/schedule-2024/25") == "2024-25"
+
+    def test_url_decode_first(self):
+        # obs. 6: %20 is an encoded space, not a stray "20" — decode BEFORE matching so "25-26"
+        # is read for the right reason (and it generalizes).
+        assert SY.content_school_year("https://x.org/Bell%20Schedule%2025-26") == "2025-26"
+
+    def test_consecutive_pair_required_rejects_plan_span(self):
+        assert SY.content_school_year("https://x.org/strategic-plan-2020-2023.pdf") is None
+
+    def test_bare_upload_path_year_is_not_a_vintage(self):
+        # a CMS upload path dates the upload, not the schedule — and it carries no consecutive pair
+        assert SY.content_school_year("https://x.org/wp-content/uploads/2021/05/handbook.pdf") is None
+
+    def test_guards_guids_and_asset_ids(self):
+        assert SY.content_school_year("https://x.org/live_feed_image/17728374") is None
+        assert SY.content_school_year("https://x.org/uploaded_file/5125") is None
+
+    def test_a_date_is_not_a_school_year(self):
+        # 4-20-21-Minutes.pdf is April 20 2021 — the "20-21" tail must not read as a school year
+        assert SY.content_school_year("https://x.org/minutes/4-20-21-Minutes.pdf") is None
+
+    def test_sees_old_years_the_241_floor_needs(self):
+        # UNLIKE the bell-year floor, the content read must SEE pre-2017-18 years so #241 can flag them
+        assert SY.content_school_year("https://x.org/bell-2001-2002.pdf") == "2001-02"
+
+    def test_brashear_month_word_is_a_known_blind_spot(self):
+        # month-word + 2-digit suffix (September01.htm) is not a pair — documented obs. 6 limitation
+        assert SY.content_school_year("http://brashear.k12.mo.us/newsletters/September01.htm") is None
+
+    def test_multiple_years_returns_most_recent(self):
+        # conservative for both consumers: prefer-recent ranks on it; #241 only flags a doc stale when
+        # even its NEWEST referenced year is pre-floor
+        assert SY.content_school_year("https://x.org/archive-2015-16-and-2019-20.pdf") == "2019-20"
+
+    def test_covid_year_is_still_reported(self):
+        # the signal is "what year is this doc", not "is it acceptable" — COVID handling is downstream
+        assert SY.content_school_year("https://x.org/bell-2021-22.pdf") == "2021-22"
+
+    def test_scans_multiple_sources(self):
+        assert SY.content_school_year("https://x.org/page", "", "Handbook-2023-2024.pdf") == "2023-24"
+
+    def test_no_year_and_empty_inputs(self):
+        assert SY.content_school_year("https://x.org/schedules/bell.html") is None
+        assert SY.content_school_year("", None) is None
+        assert SY.content_school_year() is None
+
+
 class TestStartYearAndSpan:
     def test_start_year(self):
         assert SY.start_year("2025-26") == 2025

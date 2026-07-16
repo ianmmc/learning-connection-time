@@ -11,6 +11,7 @@ the YYYY-YY format, but code should compare via start_year(), never lexicographi
 from __future__ import annotations
 
 import re
+import urllib.parse
 from datetime import date
 
 
@@ -117,3 +118,59 @@ def plausible_gross_minutes(minutes) -> bool:
     except (TypeError, ValueError):
         return False
     return GROSS_MINUTES_MIN <= m <= GROSS_MINUTES_MAX
+
+
+# --- Content school-year extraction from URLs/filenames (REQ-044 / #107 / #241) ----------------
+# A DETERMINISTIC read of a document's school year from its URL / filename — never today's date,
+# never inferred (REQ-054). Feeds the Stage-5 `content_school_year` signal that #107's prefer-recent
+# dispatch ranking and #241's pre-2017-18 validity floor consume. Caveats measured the hard way
+# (STAGE5_FILTER_DESIGN §3a obs. 6): URL-DECODE first; require a CONSECUTIVE pair (a bare YYYY is an
+# upload path, not a vintage; a plan span 2020-2023 is not a year); guard GUID/asset-id digit runs and
+# M-DD-YY dates. The range is DELIBERATELY WIDE (unlike ACCEPTABLE_BELL_YEARS) — #241 must SEE old
+# years (2001) to flag them; validity/COVID judgments belong to the CONSUMERS, not this reader.
+_CONTENT_YEAR_FLOOR = 1990
+# 4-digit-anchored consecutive pair: 2018-2019 / 2018-19 / 2025/26 (separator required — a contiguous
+# digit run like an asset id has none, so it never matches):
+_CY_FULL = re.compile(r"(?<!\d)((?:19|20)\d{2})[-–—/](\d{4}|\d{2})(?!\d)")
+# 2-digit-only pair: 25-26 (needs the date-context guard below to reject a 4-20-21 date tail):
+_CY_SHORT = re.compile(r"(?<!\d)(\d{2})[-–—/](\d{2})(?!\d)")
+_CY_DATE_PREFIX = re.compile(r"\d{1,2}[-/]$")   # a "4-" before "20-21" ⇒ a date, not a school year
+
+
+def _cy_consecutive(y1: int, y2: int) -> int | None:
+    """y1 if (y1, y2) is a consecutive, in-range school-year pair, else None."""
+    if y2 != y1 + 1:
+        return None
+    if not (_CONTENT_YEAR_FLOOR <= y1 <= date.today().year + 1):
+        return None
+    return y1
+
+
+def _cy_candidates(text: str):
+    for m in _CY_FULL.finditer(text):
+        y1 = int(m.group(1))
+        g2 = m.group(2)
+        y2 = int(g2) if len(g2) == 4 else (y1 // 100) * 100 + int(g2)
+        y = _cy_consecutive(y1, y2)
+        if y is not None:
+            yield y
+    for m in _CY_SHORT.finditer(text):
+        if _CY_DATE_PREFIX.search(text[:m.start()]):   # the tail of a numeric date (4-20-21)
+            continue
+        y = _cy_consecutive(2000 + int(m.group(1)), 2000 + int(m.group(2)))
+        if y is not None:
+            yield y
+
+
+def content_school_year(*sources: str) -> str | None:
+    """The most-recent school year confidently read from any of `sources` (a URL, final URL, or
+    filename), as canonical 'YYYY-YY', or None if none is found. Deterministic — never inferred from
+    today's date or the capture time (REQ-054). Multiple distinct years ⇒ the MOST RECENT, the
+    conservative choice for both consumers: prefer-recent ranks on it, and #241 flags a doc stale only
+    when even its newest referenced year is pre-floor. Measured caveats: STAGE5_FILTER_DESIGN §3a obs. 6."""
+    years = []
+    for s in sources:
+        if not s:
+            continue
+        years.extend(_cy_candidates(urllib.parse.unquote(str(s))))
+    return _format_year(max(years)) if years else None

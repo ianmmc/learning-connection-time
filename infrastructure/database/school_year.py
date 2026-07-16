@@ -16,6 +16,7 @@ from infrastructure.utilities.school_year import (  # noqa: F401
     NCES_PRIMARY_YEAR,
     PRE_COVID_FALLBACK_YEAR,
     SPED_BASELINE_YEAR,
+    content_school_year,
     current_school_year,
     is_acceptable_data_year,
     is_covid_year,
