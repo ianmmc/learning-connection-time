@@ -32,7 +32,7 @@ from infrastructure.acquisition.common.timeutil import utcnow as _now
 MODES = ("manual", "auto")
 DEFAULT_MODE = "manual"            # high-supervision-first: the ramp-up model's starting posture
 GLOBAL = "default"                 # the global-default row key
-GATES = ("gate@1", "gate@5", "gate@6", "gate@7", "gate@8")   # gate@8 is forward-looking (not built yet, #89)
+GATES = ("gate@1", "gate@5", "gate@6", "gate@7", "gate@8")   # gate@8 built 2026-07-14 (#89)
 _VALID_KEYS = frozenset((GLOBAL,) + GATES)
 
 
