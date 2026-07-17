@@ -38,6 +38,14 @@ class TestRecordAttention:
         a = AT.record_attention(CLEAN, "A", "unlabeled", _cfg())
         assert a["reasons"] == ["clean_target"] and a["score"] == 10
 
+    def test_demoted_table_feed_record_reads_ambiguous_not_clean(self):
+        """#528/#530 review: a table+feed record demoted A->B is no longer a swift yes — confirming whether
+        it's the school's schedule or the feed's OWN table is a genuine judgment call, so it reads
+        'ambiguous' (higher attention), not clean_target. Same signals as CLEAN, but tier B."""
+        demoted = AT.record_attention(CLEAN, "B", "unlabeled", _cfg())
+        assert demoted["reasons"] == ["ambiguous"]
+        assert demoted["score"] > AT.record_attention(CLEAN, "A", "unlabeled", _cfg())["score"]
+
     def test_image_only_is_high(self):
         a = AT.record_attention(IMAGE, "C", "unlabeled", _cfg())
         assert a["reasons"] == ["image_only"] and a["score"] == 70

@@ -10,8 +10,12 @@ vote; only graduate to a Snorkel LabelModel once per-detector diagnostics show h
 medium label density" (STAGE5_TUNING_NOTES Part C). PURE: votes in, decision out.
 
 Decision policy (recall-biased — the expensive error is dropping a real schedule before the human sees it):
-  - a STRUCTURAL target (footer hours / schedule table / explicit minutes / heading hours) → SEND (tier A):
-    these are real hours blocks, trustworthy even amid negatives (a feed page with a real footer schedule IS a target)
+  - a STRONG-STRUCTURAL target (footer hours / heading hours / explicit minutes — an intentional hours block
+    or declaration) → SEND (tier A): trustworthy even amid negatives (a feed page with a real footer schedule
+    IS a target)
+  - a schedule TABLE (lf_time_table) → SEND (tier A) UNLESS undermined by a feed/calendar negative, in which
+    case it → REVIEW (tier B): a lone times-table on a feed/calendar page is probably that widget's own
+    events/scores/agenda table, not the student day (#528 — measured 14 tier-A false-sends, 0 real targets)
   - a TIME-PROXIMITY target (prose pair) with NO feed/calendar undermining → SEND (tier A)
   - a time-proximity/weak target UNDERMINED by a feed/calendar negative OR a nonstandard-day soft negative
     (#60) → REVIEW (tier B): the incidental-times case (a news post's times tripped the pair, or the pair is
@@ -24,7 +28,17 @@ Decision policy (recall-biased — the expensive error is dropping a real schedu
 HARD_NEGATIVE = {"lf_no_times", "lf_news_feed", "lf_calendar_widget", "lf_board", "lf_sports", "lf_transport"}
 # Targets grounded in a real hours STRUCTURE (an intentional block/table/declaration) — trustworthy even on a
 # feed page. vs. lf_prose_pair, whose evidence is just two nearby times, which a news post can incidentally trip.
-STRUCTURAL_TARGET = {"lf_footer_hours", "lf_heading_hours", "lf_time_table", "lf_explicit_minutes"}
+# STRONG_STRUCTURAL = an INTENTIONAL hours block/declaration (footer/heading hours block, explicit minutes) —
+# it beats feed/calendar noise UNCONDITIONALLY. TABLE_TARGET (`lf_time_table`) is structural but weaker: a
+# bare times-TABLE can be a feed's or a calendar widget's OWN events/scores/agenda table, so it auto-sends
+# only when NOT undermined by a feed/calendar negative (#528, measured: a lone table undermined by
+# news_feed/calendar with no hours block = 14 tier-A false-sends demoted, 0 real targets — a real schedule
+# delivered in a feed carries an hours heading, which lands in STRONG_STRUCTURAL and still sends).
+STRONG_STRUCTURAL = {"lf_footer_hours", "lf_heading_hours", "lf_explicit_minutes"}
+TABLE_TARGET = {"lf_time_table"}
+# The full structural set — DERIVED so a new structural detector added to one set can't silently miss the
+# other (it's used only to keep a real hours structure OUT of the incidental/prose-pair bucket).
+STRUCTURAL_TARGET = STRONG_STRUCTURAL | TABLE_TARGET
 # Negatives that specifically UNDERMINE incidental-time evidence — the times an lf_prose_pair/lf_weak_times
 # saw are probably NOT the regular student day. Two flavors, ONE mechanism (the next such detector joins a
 # set here instead of growing a new one-off boolean — #199 review):
@@ -46,22 +60,28 @@ def combine(votes: list) -> dict:
     {decision, tier, sort_score, category, reasons[], fired[]}."""
     strong_t = _by(votes, "target", "strong")
     weak_t = _by(votes, "target", "weak")
-    structural = [v for v in strong_t if v["name"] in STRUCTURAL_TARGET]
+    strong_structural = [v for v in strong_t if v["name"] in STRONG_STRUCTURAL]
+    table = [v for v in strong_t if v["name"] in TABLE_TARGET]
     incidental = [v for v in strong_t if v["name"] not in STRUCTURAL_TARGET]
     suppress = [v for v in votes if v["polarity"] == "suppress"]
     hard_neg = [v for v in votes if v["polarity"] == "negative" and v["strength"] == "strong"
                 and v["name"] in HARD_NEGATIVE]
     soft_neg = [v for v in votes if v["polarity"] == "negative" and v["strength"] == "soft"]
-    # ONE undermined flag (see UNDERMINE_TIMES/_SOFT above): the incidental pair's times are probably not
-    # the regular day — a feed/calendar's own times (hard) or a wrong-day schedule's times (#60, soft).
-    undermined = any(v["name"] in UNDERMINE_TIMES for v in hard_neg) \
-        or any(v["name"] in UNDERMINE_TIMES_SOFT for v in soft_neg)
+    # ONE hard-undermine test, reused: a firing feed/calendar negative. `undermined` (feed/calendar OR a soft
+    # #60 wrong-day negative) demotes an incidental/weak pair; a TABLE is undermined by feed/calendar ONLY —
+    # a real schedule TABLE survives a soft wrong-day negative (structure beats soft noise), so it reads
+    # `hard_undermined` directly (#528). Keeping these as ONE expression stops the two from silently desyncing.
+    hard_undermined = any(v["name"] in UNDERMINE_TIMES for v in hard_neg)
+    undermined = hard_undermined or any(v["name"] in UNDERMINE_TIMES_SOFT for v in soft_neg)
 
     tconf = max((v["confidence"] for v in strong_t), default=0.0)
     nconf = max((v["confidence"] for v in hard_neg + suppress), default=0.0)
 
-    if structural:                                     # a real hours structure beats feed/negative/wrong-day noise
-        decision, tier, winner = "send", "A", max(structural, key=lambda v: v["confidence"])
+    if strong_structural:                              # an intentional hours block/declaration beats feed/calendar/wrong-day noise
+        decision, tier, winner = "send", "A", max(strong_structural, key=lambda v: v["confidence"])
+    elif table:                                        # a schedule table sends UNLESS a feed/calendar owns it (#528) -> review
+        decision, tier = ("review", "B") if hard_undermined else ("send", "A")
+        winner = max(table, key=lambda v: v["confidence"])
     elif incidental and not undermined:                # a clean prose start/end pair, standard day
         decision, tier, winner = "send", "A", max(incidental, key=lambda v: v["confidence"])
     elif (incidental or weak_t) and undermined:        # incidental times undermined (feed/calendar/wrong-day) -> human decides
@@ -81,6 +101,10 @@ def combine(votes: list) -> dict:
     sort_score = round(10 * tconf - 6 * nconf - 3 * sum(v["confidence"] for v in soft_neg), 3)
     # category_hypothesis = the winning TARGET shape (v2.1); a non-target winner predicts the primary
     # 'target_absent' (the specific confounder is a facet, scored per-detector, not the primary guess).
+    # NB: a record demoted to REVIEW on an undermined target (a feed-owned table, or an undermined prose
+    # pair) keeps that target SHAPE as its hypothesis — deliberately: the shape is the human's hint at
+    # gate@5 ("looks like a bell table — is it the school's or the feed's own?"), and the feed/calendar
+    # confounder already travels in reasons[]. The decision (review), not the category, gates dispatch.
     category = winner["category"] if (winner and winner["polarity"] == "target") else "target_absent"
     reasons = [v["reason"] for v in sorted(votes, key=lambda v: -v["confidence"])]
     return {"decision": decision, "tier": tier, "sort_score": sort_score, "category": category,

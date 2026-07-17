@@ -830,6 +830,24 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 
 ## Change log
 
+- **2026-07-16 (later) — #528: a lone times-table on a feed/calendar page routes to review (a measured
+  combiner refinement).** The combiner's `structural` branch auto-sent tier-A on ANY structural target, so a
+  bare `lf_time_table` beat a `news_feed`/`calendar` negative unconditionally — the #1 remaining tier-A
+  false-send class (a feed's/calendar widget's own events/scores/agenda table tripping the table detector).
+  The separating analysis **refuted #528's hypothesized `news_feed × no-structure` interaction** (both real
+  targets and false-sends are tier-A ⇒ 100% structural, so "no structure" fires on 0 — the same wall as
+  board/sports), but `table-only (no hours block) × feed/calendar` cleanly separates them. Fix: `STRUCTURAL_TARGET`
+  splits into **`STRONG_STRUCTURAL`** (footer/heading hours + explicit minutes — an intentional hours
+  block/declaration; still beats feed/calendar noise unconditionally) vs. **`lf_time_table`**, which now
+  auto-sends only when NOT undermined by a feed/calendar negative (else → review). A real schedule delivered
+  in a feed carries an hours heading (→ `STRONG_STRUCTURAL`, still sends) — which is why the rule costs ZERO
+  recall. Subsumes the calendar-scalar win (the 3 table-driven calendar false-sends); the 2 remaining calendar
+  false-sends fired STRONG structural and are left sending (structure beats noise; demoting them would risk
+  real targets). Measured pass (before→after `--assert-floor` re-ingest): **tier-A precision 0.7585→0.7817**,
+  tier-A non-targets **114→100** (−14, exactly as measured), tier-A recall **0.8585 held** (0 real targets
+  lost), **A+B recall 0.9928 held** (floor passed), exploration-cohort reject-quality **1.0**. board/sports
+  remain a structural-detector job (#226 / own issue); `lf_nonstandard_day` is #207 (superseded → #522).
+
 - **2026-07-16 — §3a obs. 6: the stale-veto projection REFUTED by measurement; obs. 5's stale bullet marked
   superseded.** Building #241 surfaced that its enabling signal (`content_school_year`, §3G) does not exist.
   A throwaway URL-year extractor measured what the veto would actually do on the 473 labeled tier-A records:

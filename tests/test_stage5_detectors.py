@@ -103,6 +103,68 @@ def test_feed_page_with_a_real_footer_block_still_sends():
     assert r["decision"] == "send" and r["tier"] == "A"
 
 
+# ---- #528: a lone times-TABLE is undermined by a feed/calendar (its own events/agenda table) ----
+def test_feed_page_with_only_a_times_table_is_reviewed():
+    # measured (14 tier-A false-sends, 0 real targets): a schedule-shaped table on a feed page with no
+    # intentional hours block/heading is probably the feed's OWN table -> review, not auto-send.
+    r = decide(table_time_density=10, positive_kw=["bell schedule"], url_feed_pattern=True)
+    assert r["decision"] == "review" and r["tier"] == "B"
+    assert "lf_time_table" in r["fired"] and "lf_news_feed" in r["fired"]
+
+
+def test_calendar_page_with_only_a_times_table_is_reviewed():
+    # the same rule covers the calendar-widget false-sends (#528's 3 calendar cases)
+    r = decide(table_time_density=10, positive_kw=["bell schedule"], embed_hosts=["calendar"])
+    assert r["decision"] == "review" and r["tier"] == "B"
+    assert "lf_time_table" in r["fired"] and "lf_calendar_widget" in r["fired"]
+
+
+def test_feed_page_with_a_times_table_AND_hours_heading_still_sends():
+    # a REAL schedule delivered in a feed carries an hours heading (strong-structural) -> still sends (0 cost)
+    r = decide(table_time_density=10, positive_kw=["bell schedule"], url_feed_pattern=True,
+               heading_hours_hits=1, heading_hours_labels=["school hours"])
+    assert r["decision"] == "send" and r["tier"] == "A"
+    assert "lf_heading_hours" in r["fired"] and "lf_time_table" in r["fired"]
+
+
+def test_clean_times_table_without_a_feed_still_sends():
+    # no feed/calendar undermining -> a schedule table auto-sends as before (guard against over-demotion)
+    r = decide(table_time_density=10, positive_kw=["bell schedule"])
+    assert r["decision"] == "send" and r["tier"] == "A"
+    assert "lf_time_table" in r["fired"]
+
+
+def test_table_plus_prose_pair_plus_feed_is_reviewed():
+    # branch precedence: table+feed routes to review via the TABLE branch before the incidental branch —
+    # both target signals are feed-undermined, so review is right either way (guards an elif reorder).
+    r = decide(table_time_density=10, positive_kw=["bell schedule"], proximity_pairs=5, url_feed_pattern=True)
+    assert r["decision"] == "review" and r["tier"] == "B"
+    assert {"lf_time_table", "lf_prose_pair", "lf_news_feed"} <= set(r["fired"])
+
+
+def test_strong_structural_beats_the_table_undermine_branch():
+    # a footer hours block (STRONG_STRUCTURAL) sends unconditionally even with a table AND a feed present
+    r = decide(table_time_density=10, positive_kw=["bell schedule"], url_feed_pattern=True,
+               footer_hours={"hit": True, "times": 2, "office": False})
+    assert r["decision"] == "send" and r["tier"] == "A"
+    assert {"lf_footer_hours", "lf_time_table", "lf_news_feed"} <= set(r["fired"])
+
+
+def test_table_with_only_a_soft_nonstandard_day_still_sends():
+    # a TABLE is undermined by feed/calendar ONLY, never a soft #60 wrong-day negative (structure beats soft
+    # noise) — guards the deliberate hard-vs-soft asymmetry against a future "unify undermined" change.
+    r = decide(table_time_density=10, positive_kw=["bell schedule"], nonstandard_day=True)
+    assert r["decision"] == "send" and r["tier"] == "A"
+    assert {"lf_time_table", "lf_nonstandard_day"} <= set(r["fired"])
+
+
+def test_demoted_table_keeps_its_bell_table_category_hypothesis():
+    # a demoted-to-review table keeps category=school_bell_table (the human's hint at gate@5), consistent
+    # with the incidental-undermined branch — the decision (review), not the category, gates dispatch.
+    r = decide(table_time_density=10, positive_kw=["bell schedule"], url_feed_pattern=True)
+    assert r["decision"] == "review" and r["category"] == "school_bell_table"
+
+
 # ---- the core targets still send ----
 def test_schedule_table_sends():
     r = decide(proximity_pairs=4, positive_kw=["bell schedule"], table_time_density=10,
