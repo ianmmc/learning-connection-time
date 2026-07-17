@@ -195,3 +195,42 @@ def test_calendar_dominant_no_pair_suppresses():
                negative_kw={"board": [], "sports": [], "calendar": ["school calendar", "holiday"], "transport": []},
                neg_total=2)
     assert r["decision"] == "suppress"
+
+
+# ---- #521 relevance-density event weights: the no-drift SSOT contract ----
+def test_event_weights_match_live_detector_confidence():
+    """Every detector-anchored relevance-density event (EVENT_WEIGHTS) must carry the LIVE Vote confidence
+    of the detector it mirrors — so the console heat-strip/bookmarks can't drift from the score they
+    visualise (#521's anti-second-weight-set discipline). `positive_kw` has no 1:1 detector: excluded here,
+    free to tune. If a detector's confidence or trigger changes, this test fails until EVENT_WEIGHTS follows."""
+    P = D.DEFAULT_DETECTOR_PARAMS
+    # event -> (detector fn, a minimal sig that makes exactly that vote fire)
+    triggers = {
+        "instructional":  (D.lf_explicit_minutes, {"instructional_time": True}),
+        "table_times":    (D.lf_time_table,       {"table_period_rows": 2}),
+        "proximity_pair": (D.lf_prose_pair,       {"proximity_pairs": 1, "positive_kw": ["school"]}),
+        "in_window_time": (D.lf_weak_times,       {"proximity_pairs": 1}),
+        "board":          (D.lf_board,            {"negative_kw": {"board": ["a", "b"]}}),
+        "sports":         (D.lf_sports,           {"negative_kw": {"sports": ["a", "b"]}}),
+        "transport":      (D.lf_transport,        {"negative_kw": {"transport": ["a", "b"]}}),
+        "office_hours":   (D.lf_footer_hours,     {"footer_hours": {"hit": True, "office": True}, "positive_kw": []}),
+        "calendar":       (D.lf_calendar_widget,  {"negative_kw": {"calendar": ["a", "b"]}}),
+    }
+    assert set(triggers) == set(D.EVENT_CONFIDENCE_SOURCE), "trigger set must cover every anchored event"
+    for event, (fn, sig) in triggers.items():
+        vote = fn(sig, P)
+        assert vote is not None, f"{event}: crafted sig no longer fires {fn.__name__}"
+        assert vote.name == D.EVENT_CONFIDENCE_SOURCE[event], \
+            f"{event}: fired {vote.name}, expected {D.EVENT_CONFIDENCE_SOURCE[event]}"
+        assert D.EVENT_WEIGHTS[event][1] == vote.confidence, \
+            f"{event}: EVENT_WEIGHTS weight {D.EVENT_WEIGHTS[event][1]} != live {vote.name} confidence {vote.confidence}"
+
+
+def test_event_weights_shape_and_polarity_signs():
+    """Positive events vote +1 toward a schedule, negatives -1 away; positive_kw is present but unanchored."""
+    pos = {"instructional", "table_times", "proximity_pair", "in_window_time", "positive_kw"}
+    neg = {"board", "sports", "transport", "office_hours", "calendar"}
+    assert set(D.EVENT_WEIGHTS) == pos | neg
+    assert all(D.EVENT_WEIGHTS[e][0] == +1 and D.EVENT_WEIGHTS[e][1] > 0 for e in pos)
+    assert all(D.EVENT_WEIGHTS[e][0] == -1 and D.EVENT_WEIGHTS[e][1] > 0 for e in neg)
+    assert "positive_kw" not in D.EVENT_CONFIDENCE_SOURCE   # the one intentionally free-to-tune event

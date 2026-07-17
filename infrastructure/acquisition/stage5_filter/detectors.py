@@ -173,6 +173,42 @@ DETECTORS = [
 ]
 
 
+# ----------------------------- relevance-density event weights (#521) -----------------------------
+# The console's relevance-density curve places POSITIONAL signal events on a document's character axis and
+# signs each by the SAME polarity/confidence the detectors above vote with — ONE source of truth, so the
+# heat-strip can never contradict the score (the console guardrail). Each event mirrors the confidence of
+# the detector its signal most directly drives (named in the comment); the frontend fetches this map via
+# /api/detector-weights and holds ZERO hardcoded weights (the anti-"second-weight-set" discipline #521
+# insists on). `test_stage5_detectors` pins each detector-anchored event to that detector's LIVE Vote
+# confidence, so this map cannot silently drift from the votes above. `+1` = toward a schedule, `-1` = away.
+EVENT_WEIGHTS = {
+    # positive — evidence FOR a bell schedule, placed at the offset it fires
+    "instructional":  (+1, 0.95),   # lf_explicit_minutes — an explicit instructional-minutes phrase
+    "table_times":    (+1, 0.85),   # lf_time_table       — a schedule-table time row
+    "proximity_pair": (+1, 0.80),   # lf_prose_pair       — an in-window start/end pair (strongest single signal)
+    "in_window_time": (+1, 0.40),   # lf_weak_times       — a lone in-window time (supporting)
+    "positive_kw":    (+1, 0.20),   # (no 1:1 detector — a positive keyword; supporting, DIALED BACK from the
+                                    #  0.40 weak-tier: measured on Huntington ISD's 130-pg handbook, 0.40 let
+                                    #  scattered keyword clusters (dress-code, policy prose) out-rank the real
+                                    #  schedule; 0.20 keeps the times/pairs schedule region #1 and drops the
+                                    #  keyword-only noise peaks. The one free-to-tune event, so tune it HERE.)
+    # negative — confounder context, placed at the offset it fires
+    "board":          (-1, 0.65),   # lf_board
+    "sports":         (-1, 0.65),   # lf_sports
+    "transport":      (-1, 0.65),   # lf_transport
+    "office_hours":   (-1, 0.50),   # lf_office_hours     — "office/staff hours" language
+    "calendar":       (-1, 0.50),   # lf_calendar_widget  — calendar-keyword context (weak variant)
+}
+
+# Which detector's live Vote confidence each event MUST match (the no-drift contract; positive_kw has no
+# 1:1 detector, so it is excluded and free to tune). Used by the test, not at runtime.
+EVENT_CONFIDENCE_SOURCE = {
+    "instructional": "lf_explicit_minutes", "table_times": "lf_time_table", "proximity_pair": "lf_prose_pair",
+    "in_window_time": "lf_weak_times", "board": "lf_board", "sports": "lf_sports", "transport": "lf_transport",
+    "office_hours": "lf_office_hours", "calendar": "lf_calendar_widget",
+}
+
+
 def run_all(sig, params=None):
     """Run every detector; return the list of non-abstain Votes (as dicts, JSON-ready for signals_json)."""
     p = params or DEFAULT_DETECTOR_PARAMS
