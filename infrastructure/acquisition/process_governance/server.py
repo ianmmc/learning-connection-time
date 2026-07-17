@@ -462,11 +462,19 @@ def stage5_districts(
     label: str | None = None,                          # 'labeled' | 'unlabeled' record filter
     tier: list[str] = Query(default=[]),               # record tier filter (repeatable)
     reason: list[str] = Query(default=[]),             # attention-reason record filter (repeatable)
+    lane: str | None = None,                           # 'fp' | 'fn' error-review lane (#516)
+    q: str | None = None,                              # rec_key substring search (#516)
     hide_resolved: bool = False,                       # district toggle: drop pipeline_state='complete'
     limit: int = 500, offset: int = 0,
 ):
     """The faceted district list + each district's (filtered) records. Sort/filter/paginate run in SQL
-    on the stored attention/facet columns; grouping is applied over the returned page."""
+    on the stored attention/facet columns; grouping is applied over the returned page.
+
+    Error-review lanes (#516) — disagreement between the machine tier and the human label is the tuning
+    loop's fuel: `lane='fp'` = the money-leak queue (tier-A the human labeled `target_absent` — machine
+    would auto-send, human said absent); `lane='fn'` = the #211 reject-audit sample (tier-D rejects drawn
+    for a human to check for false negatives). A lane FOCUSES the list to districts that hold a matching
+    record (not "filter URLs, keep districts" — a review queue wants only the districts with work)."""
     gcol = _GROUP_COLS.get(group_by, None)
     scol = _SORT_COLS.get(sort, "d.attention_score")
     order = "ASC" if dir == "asc" else "DESC"
@@ -475,6 +483,21 @@ def stage5_districts(
     if hide_resolved:
         where.append("(d.pipeline_state IS DISTINCT FROM 'complete')")
     with gdb.session_scope() as con:
+        # A lane / rec_key search is a RECORD predicate that also focuses the district list to the
+        # districts holding a match (a review queue, not the keep-districts-visible facet behavior).
+        focus_rec = None       # record-level SQL predicate (over `r`/`l`)
+        if lane == "fp":
+            focus_rec = "r.tier = 'A' AND l.primary_label = 'target_absent'"
+        elif lane == "fn":
+            s = EAL.audit_sample(con)                  # ONE draw: the tier-D reject-audit cohort
+            params["akeys"] = [r["rec_key"] for r in s["audited"]] + [r["rec_key"] for r in s["pending"]] or [""]
+            focus_rec = "r.rec_key = ANY(:akeys)"
+        if q:
+            params["q"] = f"%{q}%"
+            focus_rec = (f"({focus_rec}) AND " if focus_rec else "") + "r.rec_key ILIKE :q"
+        if focus_rec:
+            where.append("d.district_id IN (SELECT r.district_id FROM record r "
+                         "LEFT JOIN label l ON l.rec_key=r.rec_key WHERE " + focus_rec + ")")
         # 1) districts: stored columns + first/last event from the log, filtered + sorted + paginated.
         drows = con.execute(text(f"""
             SELECT d.district_id, d.name, d.state, d.attention_score, d.attention_reasons_json,
@@ -505,6 +528,11 @@ def stage5_districts(
             rwhere.append("r.tier = ANY(:tiers)"); rparams["tiers"] = tier
         if reason:   # the DOMINANT reason (reasons[0]) is element 0 of the JSON array text
             rwhere.append("(r.attention_reasons_json::jsonb ->> 0) = ANY(:reasons)"); rparams["reasons"] = reason
+        if focus_rec:   # #516 lane / search: show ONLY the matching records (same predicate as the district focus)
+            rwhere.append(focus_rec)
+            for k in ("akeys", "q"):
+                if k in params:
+                    rparams[k] = params[k]
         recs_by_did: dict = {}
         for r in con.execute(text(f"""
             SELECT r.rec_key, r.district_id, r.url, r.tier, r.attention_score, r.attention_reasons_json,
@@ -518,7 +546,7 @@ def stage5_districts(
                                      "cluster_id", "cluster_size", "is_emergent", "label_status", "primary_label")},
                 "attention_reasons": json.loads(r["attention_reasons_json"]) if r["attention_reasons_json"] else []})
 
-        total = con.execute(text(f"SELECT COUNT(*) FROM district d WHERE {' AND '.join(where)}")).scalar()
+        total = con.execute(text(f"SELECT COUNT(*) FROM district d WHERE {' AND '.join(where)}"), params).scalar()
 
     # 3) assemble districts, then group over the page (order preserved from the SQL sort).
     districts = []

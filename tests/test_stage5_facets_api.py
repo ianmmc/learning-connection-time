@@ -323,6 +323,64 @@ def test_reset_labels_button_present_in_console():
         "post-reset reselect must re-apply the .active row highlight"
 
 
+# ----------------------------- #516 FP/FN error-review lanes + rec_key search -----------------------------
+def _lane_recs(body):
+    return [x for g in body["groups"] for d in g["districts"] for x in d["records"]]
+
+
+def test_fp_lane_is_tier_a_labeled_absent(client):
+    """The FP lane (money-leak queue) = tier-A records the human labeled `target_absent` — the machine
+    would auto-send but the human said absent. It FOCUSES the list to only those, excluding a tier-A
+    TARGET (a real send) and an unlabeled tier-C record."""
+    with gdb.session_scope() as con:
+        con.execute(text("INSERT INTO record (rec_key,district_id,url,tier,is_cluster_rep) "
+                         "VALUES (:rk,:d,'http://z/fp','A',1)"), {"rk": f"{DH}:fp", "d": DH})
+        con.execute(text("INSERT INTO label (rec_key,status,primary_label) VALUES (:rk,'labeled','target_absent')"),
+                    {"rk": f"{DH}:fp"})
+    recs = _lane_recs(client.get("/api/stage5/districts", params={"lane": "fp", "limit": 3000}).json())
+    keys = {x["rec_key"] for x in recs}
+    assert f"{DH}:fp" in keys                                        # the FP record surfaces
+    assert all(x["tier"] == "A" and x["primary_label"] == "target_absent" for x in recs)
+    assert f"{DL}:r" not in keys                                     # a tier-A TARGET (not absent) is excluded
+
+
+def test_fn_lane_is_the_reject_audit_sample(client):
+    """The FN lane surfaces the #211 tier-D reject-audit draw — the recall instrument, not raw
+    disagreement. The lane's records are exactly the drawn cohort and are all tier-D."""
+    from infrastructure.acquisition.stage5_filter import exploration_live as EAL
+    with gdb.session_scope() as con:
+        s = EAL.audit_sample(con)
+        drawn = {r["rec_key"] for r in s["audited"]} | {r["rec_key"] for r in s["pending"]}
+    recs = _lane_recs(client.get("/api/stage5/districts", params={"lane": "fn", "limit": 3000}).json())
+    assert {x["rec_key"] for x in recs} == drawn                     # the lane == the audit-sample draw
+    assert all(x["tier"] == "D" for x in recs)
+
+
+def test_rec_key_search_focuses_to_matching_records(client):
+    body = client.get("/api/stage5/districts", params={"q": DL, "limit": 3000}).json()
+    dids = {d["district_id"] for g in body["groups"] for d in g["districts"]}
+    assert DL in dids and DH not in dids                            # only the district holding a match
+    assert all(DL in x["rec_key"] for x in _lane_recs(body))
+
+
+def test_fp_fn_lanes_and_search_present_in_console():
+    """UI-visibility regression (#516): the FP/FN lane controls + rec_key search + their wiring must exist,
+    and the right pane must be reordered so the Label controls precede the provenance + Signals reference."""
+    from pathlib import Path
+    repo = Path(__file__).resolve().parent.parent
+    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    assert 'data-lane="${v}"' in js, "lane button template missing"
+    assert '"fp", "FP' in js and '"fn", "FN' in js, "FP/FN lane options missing"
+    assert "VIEW.lane = b.dataset.lane" in js, "lane click handler missing"
+    assert 's5-search' in js and "VIEW.q = search.value" in js, "rec_key search box/handler missing"
+    assert 'p.set("lane"' in js and 'p.set("q"' in js, "lane/q not threaded into the districts query"
+    # right-pane reorder: Label section BEFORE provenance BEFORE the objective Signals block
+    i_label = js.index(">Label <span id=\"savedFlash\"")
+    i_prov = js.index("${provenanceBlock(d)}")
+    i_sig = js.index(">Signals <span")
+    assert i_label < i_prov < i_sig, "Label controls must precede provenance + Signals (reference below)"
+
+
 # ----------------------------- progress counts (issue #51) -----------------------------
 def test_progress_counts_never_report_labeled_over_total(gov_session):
     """After a shrinking re-ingest the precious `label` table keeps rows whose record vanished; the
