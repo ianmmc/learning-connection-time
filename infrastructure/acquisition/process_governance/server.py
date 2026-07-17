@@ -456,6 +456,13 @@ _SORT_COLS = {"attention": "d.attention_score", "name": "d.name", "enrollment": 
               "schools": "d.nces_school_count", "recent": _RECENT, "first_seen": "ev.first_seen"}
 
 
+def _like_escape(s: str) -> str:
+    """Neutralize LIKE/ILIKE wildcards so a substring search matches them literally. Backslash first (else
+    we'd escape our own escapes), then the two metacharacters. Postgres's default LIKE escape is `\\`, so
+    no ESCAPE clause is needed — the escaped value goes in as a bind param, immune to string-literal rules."""
+    return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 @app.get("/api/stage5/districts")
 def stage5_districts(
     group_by: str = "none", sort: str = "attention", dir: str = "desc",
@@ -483,27 +490,49 @@ def stage5_districts(
     if hide_resolved:
         where.append("(d.pipeline_state IS DISTINCT FROM 'complete')")
     with gdb.session_scope() as con:
-        # A lane / rec_key search is a RECORD predicate that also focuses the district list to the
+        # Record-level predicates, built ONCE and shared: the RECORD query filters on them, and — when a
+        # lane/search focuses the list — the district-focus subquery uses the SAME set. That agreement is
+        # the #516 fix: a focus that ignored an active facet could list (and count in `total_districts`) a
+        # district whose only lane-matching record then gets filtered out of its `records` (an empty row).
+        rpred, rparams = [], {}          # shared record predicate fragments + their binds
+        if label == "labeled":
+            rpred.append("l.status IS NOT NULL AND l.status != 'unlabeled'")
+        elif label == "unlabeled":
+            rpred.append("(l.status IS NULL OR l.status = 'unlabeled')")
+        if tier:
+            rpred.append("r.tier = ANY(:tiers)"); rparams["tiers"] = tier
+        if reason:   # the DOMINANT reason (reasons[0]) is element 0 of the JSON array text
+            rpred.append("(r.attention_reasons_json::jsonb ->> 0) = ANY(:reasons)"); rparams["reasons"] = reason
+        # #516 lane / rec_key search — a RECORD predicate that ALSO focuses the district list to the
         # districts holding a match (a review queue, not the keep-districts-visible facet behavior).
-        focus_rec = None       # record-level SQL predicate (over `r`/`l`)
+        focus_rec = None
         if lane == "fp":
-            focus_rec = "r.tier = 'A' AND l.primary_label = 'target_absent'"
+            focus_rec = REL.MONEY_LEAK_WHERE           # the tier-A auto-send-but-human-called-absent rule (one home)
         elif lane == "fn":
-            s = EAL.audit_sample(con)                  # ONE draw: the tier-D reject-audit cohort
-            params["akeys"] = [r["rec_key"] for r in s["audited"]] + [r["rec_key"] for r in s["pending"]] or [""]
+            # ONE reject-audit draw per request, recomputed live (never cached) BY DESIGN — the sample must
+            # reflect the CURRENT tier-D set (a re-tiered reject drops out). Single ix_record_tier-indexed
+            # pass over the bounded reject bucket; see exploration_live.audit_sample.
+            s = EAL.audit_sample(con)
+            rparams["akeys"] = [r["rec_key"] for r in s["audited"]] + [r["rec_key"] for r in s["pending"]] or [""]
             focus_rec = "r.rec_key = ANY(:akeys)"
-        if q:
-            params["q"] = f"%{q}%"
+        if q:   # escape LIKE wildcards so a literal '%'/'_' in the search matches itself, not everything
+            rparams["q"] = f"%{_like_escape(q)}%"
             focus_rec = (f"({focus_rec}) AND " if focus_rec else "") + "r.rec_key ILIKE :q"
         if focus_rec:
+            rpred.append(focus_rec)
+            # Focus the district list to districts holding a record that satisfies the WHOLE record
+            # predicate set (facets + focus), so a focused district always has visible work in `records`.
             where.append("d.district_id IN (SELECT r.district_id FROM record r "
-                         "LEFT JOIN label l ON l.rec_key=r.rec_key WHERE " + focus_rec + ")")
+                         "LEFT JOIN label l ON l.rec_key=r.rec_key WHERE " + " AND ".join(rpred) + ")")
+            params.update(rparams)                     # the subquery's binds ride the district query too
         # 1) districts: stored columns + first/last event from the log, filtered + sorted + paginated.
+        #    COUNT(*) OVER() carries the pre-LIMIT total in the SAME pass — one query, not two, so the focus
+        #    subquery is planned once (the old separate COUNT re-ran the join a second time; #516).
         drows = con.execute(text(f"""
             SELECT d.district_id, d.name, d.state, d.attention_score, d.attention_reasons_json,
                    d.pipeline_state, d.n_unlabeled, d.n_flagged, d.n_records,
                    d.guessed_topology, d.labeled_topology, d.nces_school_count,
-                   dt.enrollment_k12, ev.first_seen, {_RECENT} AS last_event
+                   dt.enrollment_k12, ev.first_seen, {_RECENT} AS last_event, COUNT(*) OVER() AS total_count
             FROM district d
             LEFT JOIN district_target dt ON dt.district_id = d.district_id
             LEFT JOIN (SELECT district_id, MIN(created_at) FILTER (WHERE stage=5) AS first_seen,
@@ -516,23 +545,13 @@ def stage5_districts(
             ORDER BY {scol} {order} {nulls}, d.name ASC
             LIMIT :lim OFFSET :off"""), params).mappings().all()
         dids = [r["district_id"] for r in drows]
+        total = drows[0]["total_count"] if drows else 0
 
-        # 2) records for the returned page, filtered by the record facets (district stays visible even
-        #    if all its records are filtered out — the user's rule: filter URLs, not districts).
-        rwhere, rparams = ["r.district_id = ANY(:ids)"], {"ids": dids or [""]}
-        if label == "labeled":
-            rwhere.append("l.status IS NOT NULL AND l.status != 'unlabeled'")
-        elif label == "unlabeled":
-            rwhere.append("(l.status IS NULL OR l.status = 'unlabeled')")
-        if tier:
-            rwhere.append("r.tier = ANY(:tiers)"); rparams["tiers"] = tier
-        if reason:   # the DOMINANT reason (reasons[0]) is element 0 of the JSON array text
-            rwhere.append("(r.attention_reasons_json::jsonb ->> 0) = ANY(:reasons)"); rparams["reasons"] = reason
-        if focus_rec:   # #516 lane / search: show ONLY the matching records (same predicate as the district focus)
-            rwhere.append(focus_rec)
-            for k in ("akeys", "q"):
-                if k in params:
-                    rparams[k] = params[k]
+        # 2) records for the returned page. Record facets filter URLs, not districts (a district stays
+        #    visible even if all its records are filtered out) — EXCEPT under a lane/search, where the
+        #    district-focus subquery above already guaranteed every listed district holds a full match.
+        rwhere = ["r.district_id = ANY(:ids)"] + rpred
+        rparams["ids"] = dids or [""]
         recs_by_did: dict = {}
         for r in con.execute(text(f"""
             SELECT r.rec_key, r.district_id, r.url, r.tier, r.attention_score, r.attention_reasons_json,
@@ -545,8 +564,6 @@ def stage5_districts(
                 **{k: r[k] for k in ("rec_key", "url", "tier", "attention_score", "is_cluster_rep",
                                      "cluster_id", "cluster_size", "is_emergent", "label_status", "primary_label")},
                 "attention_reasons": json.loads(r["attention_reasons_json"]) if r["attention_reasons_json"] else []})
-
-        total = con.execute(text(f"SELECT COUNT(*) FROM district d WHERE {' AND '.join(where)}"), params).scalar()
 
     # 3) assemble districts, then group over the page (order preserved from the SQL sort).
     districts = []
