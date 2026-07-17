@@ -134,6 +134,37 @@ def test_clean_times_table_without_a_feed_still_sends():
     assert "lf_time_table" in r["fired"]
 
 
+def test_table_plus_prose_pair_plus_feed_is_reviewed():
+    # branch precedence: table+feed routes to review via the TABLE branch before the incidental branch —
+    # both target signals are feed-undermined, so review is right either way (guards an elif reorder).
+    r = decide(table_time_density=10, positive_kw=["bell schedule"], proximity_pairs=5, url_feed_pattern=True)
+    assert r["decision"] == "review" and r["tier"] == "B"
+    assert {"lf_time_table", "lf_prose_pair", "lf_news_feed"} <= set(r["fired"])
+
+
+def test_strong_structural_beats_the_table_undermine_branch():
+    # a footer hours block (STRONG_STRUCTURAL) sends unconditionally even with a table AND a feed present
+    r = decide(table_time_density=10, positive_kw=["bell schedule"], url_feed_pattern=True,
+               footer_hours={"hit": True, "times": 2, "office": False})
+    assert r["decision"] == "send" and r["tier"] == "A"
+    assert {"lf_footer_hours", "lf_time_table", "lf_news_feed"} <= set(r["fired"])
+
+
+def test_table_with_only_a_soft_nonstandard_day_still_sends():
+    # a TABLE is undermined by feed/calendar ONLY, never a soft #60 wrong-day negative (structure beats soft
+    # noise) — guards the deliberate hard-vs-soft asymmetry against a future "unify undermined" change.
+    r = decide(table_time_density=10, positive_kw=["bell schedule"], nonstandard_day=True)
+    assert r["decision"] == "send" and r["tier"] == "A"
+    assert {"lf_time_table", "lf_nonstandard_day"} <= set(r["fired"])
+
+
+def test_demoted_table_keeps_its_bell_table_category_hypothesis():
+    # a demoted-to-review table keeps category=school_bell_table (the human's hint at gate@5), consistent
+    # with the incidental-undermined branch — the decision (review), not the category, gates dispatch.
+    r = decide(table_time_density=10, positive_kw=["bell schedule"], url_feed_pattern=True)
+    assert r["decision"] == "review" and r["category"] == "school_bell_table"
+
+
 # ---- the core targets still send ----
 def test_schedule_table_sends():
     r = decide(proximity_pairs=4, positive_kw=["bell schedule"], table_time_density=10,
