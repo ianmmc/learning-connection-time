@@ -313,6 +313,11 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .s5-filtrow { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
 .s5-secondary { color: var(--text-secondary); }
 .s5-spacer { flex: 1 1 auto; }
+/* #516 error-review lanes + rec_key search */
+.s5-lanes .lane-btn { padding: 3px 8px; }
+.s5-search { flex: 1 1 8rem; min-width: 6rem; font-size: var(--fs-sm); padding: 3px 6px;
+  border-radius: var(--radius-sm); border: var(--border-hair) solid var(--border-subtle);
+  background: var(--surface-page); color: var(--text-primary); }
 
 /* segmented label-status control */
 .seg { display: inline-flex; border: var(--border-hair) solid var(--border-subtle); border-radius: var(--radius-sm); overflow: hidden; }

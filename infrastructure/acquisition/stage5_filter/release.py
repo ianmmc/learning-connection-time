@@ -41,6 +41,14 @@ HONEST_LABEL = "gross_bell_to_bell"   # REQ-055 — what the council's start/end
 # the SAME definition instead of re-inlining it (avoids drift if "canonical" ever changes). `r` = record.
 CANONICAL_RECORD_WHERE = "r.duplicate_of IS NULL AND (r.is_cluster_rep = 1 OR r.cluster_id IS NULL)"
 
+# The "money-leak" review population (#516 FP lane): a tier-A record — which `decide()` would AUTO-SEND on
+# the unlabeled path — that a human labeled `target_absent`. The machine would spend on a page the human
+# already judged to hold no schedule; the disagreement is exactly the false-send the tuning loop chases.
+# One home (like CANONICAL_RECORD_WHERE) so the console's FP-lane SQL can't drift from the tier-A auto-send
+# definition `decide()` encodes — if that definition changes (e.g. a new eligibility gate), update HERE.
+# `r` = record, `l` = its LEFT-JOINed label row.
+MONEY_LEAK_WHERE = "r.tier = 'A' AND l.primary_label = 'target_absent'"
+
 
 
 

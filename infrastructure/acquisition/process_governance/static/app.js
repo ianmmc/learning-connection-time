@@ -85,7 +85,7 @@ const GROUP_LABEL = { none: "No grouping", pipeline_state: "Pipeline state (labe
 const SORT_LABEL = { attention: "Need for attention", name: "Name (A–Z)", enrollment: "Enrollment",
   schools: "# schools (NCES)", recent: "Most recent change", first_seen: "First seen at gate@5" };
 const DEFAULT_VIEW = { group_by: "none", sort: "attention", dir: "desc", label: "",
-  tiers: [], reasons: [], hide_resolved: false };
+  tiers: [], reasons: [], hide_resolved: false, lane: "", q: "" };
 let VIEW = loadView();
 let FACETS = null;
 
@@ -95,7 +95,7 @@ function loadView() {
   catch (_) { v = { ...DEFAULT_VIEW }; }
   // Deep-linkable: ?group_by=…&sort=…&dir=… overrides (bookmarkable/shareable views).
   const q = new URLSearchParams(location.search);
-  ["group_by", "sort", "dir", "label"].forEach((k) => { if (q.has(k)) v[k] = q.get(k); });
+  ["group_by", "sort", "dir", "label", "lane", "q"].forEach((k) => { if (q.has(k)) v[k] = q.get(k); });
   return v;
 }
 function persistView() { localStorage.setItem("s5_view", JSON.stringify(VIEW)); }
@@ -107,6 +107,8 @@ function viewQuery() {
   (VIEW.tiers || []).forEach((t) => p.append("tier", t));
   (VIEW.reasons || []).forEach((r) => p.append("reason", r));
   if (VIEW.hide_resolved) p.set("hide_resolved", "true");
+  if (VIEW.lane) p.set("lane", VIEW.lane);
+  if (VIEW.q) p.set("q", VIEW.q);
   return p.toString();
 }
 
@@ -139,6 +141,10 @@ function renderControls(data) {
     const [lab, tone] = ATTN_REASON[r.value] || [r.value, "r-low"];
     return `<button class="rsn-chip ${tone} ${VIEW.reasons.includes(r.value) ? "on" : ""}" data-reason="${r.value}" title="${r.count} records">${lab}</button>`;
   }).join("");
+  // #516 error-review lanes: disagreement between the machine tier and the human label is the tuning
+  // loop's fuel. FP = tier-A the human labeled absent (the money-leak queue); FN = the #211 reject-audit.
+  const laneSeg = [["", "Off"], ["fp", "FP · money-leak"], ["fn", "FN · reject audit"]].map(([v, t]) =>
+    `<button class="seg-btn lane-btn ${VIEW.lane === v ? "on" : ""}" data-lane="${v}">${t}</button>`).join("");
   const grouped = VIEW.group_by !== "none";
 
   bar.innerHTML = `
@@ -148,6 +154,11 @@ function renderControls(data) {
     <div class="s5-filtrow">
       <div class="seg" role="group" aria-label="label status">${labelSeg}</div>
       <div class="tiers" role="group" aria-label="tier">${tierBtns}</div>
+    </div>
+    <div class="s5-filtrow s5-lanes">
+      <span class="s5-lbl">Lane</span>
+      <div class="seg" role="group" aria-label="error-review lane">${laneSeg}</div>
+      <input id="s5-search" class="s5-search" type="search" placeholder="Find rec_key…" aria-label="search rec_key"/>
     </div>
     <div class="s5-filtrow s5-secondary">
       <label class="s5-toggle"><input type="checkbox" id="s5-hideres" ${VIEW.hide_resolved ? "checked" : ""}/> Hide resolved</label>
@@ -169,6 +180,10 @@ function renderControls(data) {
   bar.querySelectorAll("[data-label]").forEach((b) => b.onclick = () => { VIEW.label = b.dataset.label; commitView(); });
   bar.querySelectorAll("[data-tier]").forEach((b) => b.onclick = () => { toggle(VIEW.tiers, b.dataset.tier); commitView(); });
   bar.querySelectorAll("[data-reason]").forEach((b) => b.onclick = () => { toggle(VIEW.reasons, b.dataset.reason); commitView(); });
+  bar.querySelectorAll("[data-lane]").forEach((b) => b.onclick = () => { VIEW.lane = b.dataset.lane; commitView(); });
+  const search = bar.querySelector("#s5-search");
+  search.value = VIEW.q || "";                            // set as a property (never interpolated into HTML)
+  search.onchange = () => { VIEW.q = search.value.trim(); commitView(); };   // commits on Enter/blur
   bar.querySelector("#s5-viewsave").onclick = saveCurrentView;
   if (grouped) {
     bar.querySelector("#s5-collapse").onclick = () => setAllGroups(true);
@@ -500,10 +515,11 @@ function renderPanel(d) {
   // AXIS 2 — confounders (checkbox multi-select; a fired negative detector HINTS but doesn't check it).
   const confChecks = CONFOUNDERS.map(([id, t, det]) => check(id, t, fired.has(det))).join("");
 
+  // #516 order (Ian 2026-07-15): the LABEL controls (the decision) come first; the cluster banner stays
+  // above them (a cascade warning to see BEFORE labeling); provenance + the objective Signals block (the
+  // in-window-times "windows" readout) drop BELOW — reference, not decision inputs.
   $("#panel").innerHTML = `
-    ${provenanceBlock(d)}
     ${clusterBanner(d)}
-    <div class="panel-section"><h3>Signals <span style="font-weight:400;font-size:var(--fs-xs);color:var(--text-secondary)">(objective)</span></h3>${sig}</div>
     <div class="panel-section"><h3>Label <span id="savedFlash" class="saved-flash"></span></h3>
       <div class="axis-label">Target shape — pick one</div>${radios(TARGET)}
       <div class="loc-cluster">
@@ -518,7 +534,9 @@ function renderPanel(d) {
       <div class="btn-row"><button id="unsureBtn" class="btn btn-secondary">Mark reviewed — unsure</button>
         <button id="resetLabelBtn" class="btn btn-ghost" title="clear this label back to unlabeled (reverses any cluster cascade) — #228">Reset label</button></div>
       <div id="guess" class="guess"></div>
-    </div>`;
+    </div>
+    ${provenanceBlock(d)}
+    <div class="panel-section"><h3>Signals <span style="font-weight:400;font-size:var(--fs-xs);color:var(--text-secondary)">(objective)</span></h3>${sig}</div>`;
 
   $("#panel").querySelectorAll('input[name="primary"]').forEach((el) => el.onchange = () => save("labeled"));
   $("#panel").querySelectorAll('input[name="facet"]').forEach((el) => el.onchange = () => save(currentStatus()));

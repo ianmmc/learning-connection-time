@@ -323,6 +323,106 @@ def test_reset_labels_button_present_in_console():
         "post-reset reselect must re-apply the .active row highlight"
 
 
+# ----------------------------- #516 FP/FN error-review lanes + rec_key search -----------------------------
+def _lane_recs(body):
+    return [x for g in body["groups"] for d in g["districts"] for x in d["records"]]
+
+
+def test_fp_lane_is_tier_a_labeled_absent(client):
+    """The FP lane (money-leak queue) = tier-A records the human labeled `target_absent` — the machine
+    would auto-send but the human said absent. It FOCUSES the list to only those, excluding a tier-A
+    TARGET (a real send) and an unlabeled tier-C record."""
+    with gdb.session_scope() as con:
+        con.execute(text("INSERT INTO record (rec_key,district_id,url,tier,is_cluster_rep) "
+                         "VALUES (:rk,:d,'http://z/fp','A',1)"), {"rk": f"{DH}:fp", "d": DH})
+        con.execute(text("INSERT INTO label (rec_key,status,primary_label) VALUES (:rk,'labeled','target_absent')"),
+                    {"rk": f"{DH}:fp"})
+    recs = _lane_recs(client.get("/api/stage5/districts", params={"lane": "fp", "limit": 3000}).json())
+    keys = {x["rec_key"] for x in recs}
+    assert f"{DH}:fp" in keys                                        # the FP record surfaces
+    assert all(x["tier"] == "A" and x["primary_label"] == "target_absent" for x in recs)
+    assert f"{DL}:r" not in keys                                     # a tier-A TARGET (not absent) is excluded
+
+
+def test_fn_lane_is_the_reject_audit_sample(client):
+    """The FN lane surfaces the #211 tier-D reject-audit draw — the recall instrument, not raw
+    disagreement. It SEEDS its own tier-D rejects (some the fixed-seed sampler draws, some not) so the
+    test has real signal on a fresh CI DB too: a bare read of pre-existing tier-D passes vacuously as
+    set()==set() where the reject bucket is empty (the CI govdb container self-bootstraps empty; #534)."""
+    from infrastructure.acquisition.stage5_filter import exploration_live as EAL
+    from infrastructure.acquisition.stage5_filter import exploration_audit as EA
+    # Deterministic split under the FIXED audit seed: candidate rec_keys the sampler DOES vs DOESN'T draw.
+    cand = [f"{DH}:d{i:03d}" for i in range(200)]
+    drawn_keys = set(EA.select_audit_sample(cand))
+    inc = [k for k in cand if k in drawn_keys][:2]                   # must surface in the FN lane
+    exc = [k for k in cand if k not in drawn_keys][:2]              # tier-D but out of the sample
+    assert inc and exc, "fixed-seed sampler must draw a non-trivial subset of 200 candidates"
+    with gdb.session_scope() as con:
+        for rk in inc + exc:                                        # canonical tier-D rejects under an existing district
+            con.execute(text("INSERT INTO record (rec_key,district_id,url,tier,is_cluster_rep) "
+                             "VALUES (:rk,:d,'http://z/d','D',1)"), {"rk": rk, "d": DH})
+        s = EAL.audit_sample(con)
+        drawn = {r["rec_key"] for r in s["audited"]} | {r["rec_key"] for r in s["pending"]}
+    recs = _lane_recs(client.get("/api/stage5/districts", params={"lane": "fn", "limit": 3000}).json())
+    keys = {x["rec_key"] for x in recs}
+    assert keys == drawn                                            # the lane == the audit-sample draw (the invariant)
+    assert set(inc) <= keys and not (set(exc) & keys)              # ...and genuinely non-vacuous on our seeds
+    assert all(x["tier"] == "D" for x in recs)
+
+
+def test_rec_key_search_focuses_to_matching_records(client):
+    body = client.get("/api/stage5/districts", params={"q": DL, "limit": 3000}).json()
+    dids = {d["district_id"] for g in body["groups"] for d in g["districts"]}
+    assert DL in dids and DH not in dids                            # only the district holding a match
+    assert all(DL in x["rec_key"] for x in _lane_recs(body))
+
+
+def test_rec_key_search_escapes_like_wildcards(client):
+    """A literal '_'/'%' in the search matches itself, not as a LIKE wildcard (#534). The fixture rec_keys
+    ('ZZFACETL:r', 'ZZFACETH:r') contain no underscore, so a search for 'ZZFACET_' must match NEITHER —
+    where an UNescaped '_' would wildcard-match both (the 'L'/'H'). A wildcard-free search still works."""
+    esc = client.get("/api/stage5/districts", params={"q": "ZZFACET_", "limit": 3000}).json()
+    hitkeys = {x["rec_key"] for x in _lane_recs(esc)}
+    assert f"{DL}:r" not in hitkeys and f"{DH}:r" not in hitkeys     # '_' is literal → no wildcard match
+    ctrl = client.get("/api/stage5/districts", params={"q": "ZZFACETL", "limit": 3000}).json()
+    assert any(x["rec_key"] == f"{DL}:r" for x in _lane_recs(ctrl))  # the real substring still matches
+
+
+def test_lane_focus_respects_active_record_filters(client):
+    """#534 review fix: a lane must not surface a district whose only lane-matching record is excluded by
+    an ALSO-active facet filter — otherwise the FP queue lists empty districts and total_districts
+    overcounts. Combining lane=fp (implies a LABELED record) with label=unlabeled must yield nothing."""
+    with gdb.session_scope() as con:
+        con.execute(text("INSERT INTO record (rec_key,district_id,url,tier,is_cluster_rep) "
+                         "VALUES (:rk,:d,'http://z/fp2','A',1)"), {"rk": f"{DH}:fp2", "d": DH})
+        con.execute(text("INSERT INTO label (rec_key,status,primary_label) VALUES (:rk,'labeled','target_absent')"),
+                    {"rk": f"{DH}:fp2"})
+    body = client.get("/api/stage5/districts", params={"lane": "fp", "limit": 3000}).json()
+    dh, _ = _find(body["groups"], DH)
+    assert dh is not None and any(r["rec_key"] == f"{DH}:fp2" for r in dh["records"])   # shows WITH its record
+    body2 = client.get("/api/stage5/districts", params={"lane": "fp", "label": "unlabeled", "limit": 3000}).json()
+    assert _find(body2["groups"], DH)[0] is None                    # focused-out, never shown with zero records
+    assert body2["total_districts"] == 0                            # no record is both target_absent AND unlabeled
+
+
+def test_fp_fn_lanes_and_search_present_in_console():
+    """UI-visibility regression (#516): the FP/FN lane controls + rec_key search + their wiring must exist,
+    and the right pane must be reordered so the Label controls precede the provenance + Signals reference."""
+    from pathlib import Path
+    repo = Path(__file__).resolve().parent.parent
+    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    assert 'data-lane="${v}"' in js, "lane button template missing"
+    assert '"fp", "FP' in js and '"fn", "FN' in js, "FP/FN lane options missing"
+    assert "VIEW.lane = b.dataset.lane" in js, "lane click handler missing"
+    assert 's5-search' in js and "VIEW.q = search.value" in js, "rec_key search box/handler missing"
+    assert 'p.set("lane"' in js and 'p.set("q"' in js, "lane/q not threaded into the districts query"
+    # right-pane reorder: Label section BEFORE provenance BEFORE the objective Signals block
+    i_label = js.index(">Label <span id=\"savedFlash\"")
+    i_prov = js.index("${provenanceBlock(d)}")
+    i_sig = js.index(">Signals <span")
+    assert i_label < i_prov < i_sig, "Label controls must precede provenance + Signals (reference below)"
+
+
 # ----------------------------- progress counts (issue #51) -----------------------------
 def test_progress_counts_never_report_labeled_over_total(gov_session):
     """After a shrinking re-ingest the precious `label` table keeps rows whose record vanished; the
