@@ -74,9 +74,21 @@ class TestContentSchoolYear:
         # UNLIKE the bell-year floor, the content read must SEE pre-2017-18 years so #241 can flag them
         assert SY.content_school_year("https://x.org/bell-2001-2002.pdf") == "2001-02"
 
-    def test_brashear_month_word_is_a_known_blind_spot(self):
-        # month-word + 2-digit suffix (September01.htm) is not a pair — documented obs. 6 limitation
-        assert SY.content_school_year("http://brashear.k12.mo.us/newsletters/September01.htm") is None
+    def test_brashear_month_word_dates_are_read(self):
+        # #531: a month-word + year date (the newsletter/board-minutes shape obs.6 named as a pair-matcher
+        # blind spot) maps to the school year CONTAINING that month (July-1 rollover, current_school_year's rule)
+        assert SY.content_school_year("http://brashear.k12.mo.us/newsletters/September01.htm") == "2001-02"
+        assert SY.content_school_year("http://brashear.k12.mo.us/newsletters/December98.htm") == "1998-99"
+        assert SY.content_school_year("http://brashear.k12.mo.us/newsletters/April00.htm") == "1999-00"  # Apr → prev SY
+        assert SY.content_school_year("http://x.org/newsletters/October%2004.htm") == "2004-05"  # decoded space
+        assert SY.content_school_year("http://x.org/board/January-2024-minutes.pdf") == "2023-24"  # Jan → prev SY
+
+    def test_month_word_guard_does_not_over_read(self):
+        # a FULL calendar date (month-DD-YY) is not a month-year → still None (a third -NN is guarded out);
+        # and a month substring inside a word ('mar' in marshall, 'may' in mayfield) must not trip
+        assert SY.content_school_year("https://x.org/board-meeting-March-20-21.pdf") is None
+        assert SY.content_school_year("https://marshallschools.org/marshall-25-26.pdf") == "2025-26"
+        assert SY.content_school_year("https://x.org/mayfield-elementary-2024-25.pdf") == "2024-25"
 
     def test_multiple_years_returns_most_recent(self):
         # conservative for both consumers: prefer-recent ranks on it; #241 only flags a doc stale when
