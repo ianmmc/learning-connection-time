@@ -349,9 +349,14 @@ veto.**
   years (10 false hits on targets alone). **A CMS upload path is not a vintage** — `/wp-content/uploads/
   2021/05/` dates the upload, not the schedule (158 bare-YYYY hits, mostly noise). **A date is not a school
   year** — `4-20-21-Minutes.pdf` is April 20 2021. **Validate the pair is consecutive** (`2020-2023` is a
-  plan span). And the Brashear newsletters that motivated #241 (`September01.htm`, `October98.htm`) carry
-  their year as a **month-word + 2-digit suffix** — pair-matching cannot see them at all, so the pre-floor
-  population above is *what this regex catches*, not the population #241 is actually about.
+  plan span). ~~And the Brashear newsletters that motivated #241 (`September01.htm`, `October98.htm`) carry
+  their year as a **month-word + 2-digit suffix** — pair-matching cannot see them at all~~ — **CLOSED by #531
+  (2026-07-16):** `content_school_year` now also reads a **month-word + year date** (`December98` → SY
+  1998-99, via the July-1 rollover) and maps it to the school year containing that month. Measured on the
+  corpus: 19 new signals (the stale newsletters), **0 auto-path decision changes** (all census-labeled; the 3
+  real-target hits are labeled, so the #241 floor's human override applies), forward value on fresh batches.
+  This is what surfaced from the #528 board/sports analysis: ~12 of those "board/sports" false-sends were
+  really stale month-word-dated newsletters, a recency-parser gap, not a confounder-detector problem.
 
 ---
 

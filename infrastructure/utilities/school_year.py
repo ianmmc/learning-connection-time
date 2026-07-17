@@ -168,6 +168,30 @@ def _cy_short_year(a: int, b: int) -> int | None:
     return None
 
 
+# A month-word + year date (December98, April 2000, October%2004) → the school year CONTAINING that month
+# (#531): the newsletter/board-minutes shape a consecutive pair can't see (obs. 6). NOT a full M-DD-YY date
+# (a third `-NN` after the year is guarded out — that's a calendar date, handled/rejected by the pair path).
+_CY_MONTH_NUM = {"january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6, "july": 7,
+                 "august": 8, "september": 9, "october": 10, "november": 11, "december": 12,
+                 "jan": 1, "feb": 2, "mar": 3, "apr": 4, "jun": 6, "jul": 7, "aug": 8, "sep": 9,
+                 "sept": 9, "oct": 10, "nov": 11, "dec": 12}
+_CY_MONTH_DATE = re.compile(
+    rf"(?<![a-z])({_CY_MONTHS})(?![a-z])[-_/ ]?(\d{{4}}|\d{{2}})(?![-/]?\d)", re.IGNORECASE)
+
+
+def _cy_month_word_years(text: str):
+    """Yield the start-year of the school year that CONTAINS each month-word date in `text` (July-1
+    rollover, `current_school_year`'s rule): December 1998 → SY 1998-99; April 2000 → SY 1999-00."""
+    for m in _CY_MONTH_DATE.finditer(text):
+        month = _CY_MONTH_NUM[m.group(1).lower()]
+        yr = m.group(2)
+        full = int(yr) if len(yr) == 4 else next(
+            (c + int(yr) for c in (2000, 1900) if _CONTENT_YEAR_FLOOR <= c + int(yr) <= date.today().year + 1), None)
+        if full is None or not (_CONTENT_YEAR_FLOOR <= full <= date.today().year + 1):
+            continue
+        yield full if month >= 7 else full - 1     # Jul–Dec → SY starts this year; Jan–Jun → previous year
+
+
 def _cy_candidates(text: str):
     for m in _CY_FULL.finditer(text):
         y1 = int(m.group(1))
@@ -182,6 +206,7 @@ def _cy_candidates(text: str):
         y = _cy_short_year(int(m.group(1)), int(m.group(2)))
         if y is not None:
             yield y
+    yield from _cy_month_word_years(text)                    # a month-word + year date (#531)
 
 
 def content_school_year(*sources: str) -> str | None:
