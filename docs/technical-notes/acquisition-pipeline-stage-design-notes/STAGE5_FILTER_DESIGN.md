@@ -826,7 +826,7 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 | `migrate_labels_v21` re-run guard (refuses a second real run without `force=True`) | **BUILT 2026-07-02** |
 | Harvest slices relocated out of `data/raw/` to `data/acquisition/harvest_slices/` (read-fallback to legacy location) | **BUILT 2026-07-02** |
 | Stage-3 iframe/embed capture + `cms_hint` promotion + iframe-innerText check | **BUILT (REQ-115)** |
-| **Facet-level per-detector scoring** (negative detectors vs. their Axis-2 confounder facets — `harness.DETECTOR_FACET` + `facet_detector_diagnostics`, scored over the 339/667 labels that carry facets) | **BUILT (#108, 2026-07-09)** — surfaced low confounder-precision the coarse target-accuracy hid (office_hours 0.18, sports 0.13 — provisional; nonstandard_day 0.17 — FROZEN, its facet has no live checkbox, tracked #207) |
+| **Facet-level per-detector scoring** (negative detectors vs. their Axis-2 confounder facets — `harness.DETECTOR_FACET` + `facet_detector_diagnostics`, scored over the labels that carry facets) | **BUILT (#108, 2026-07-09)** — surfaced low confounder-precision the coarse target-accuracy hid (office_hours 0.18, sports 0.13 — provisional). *nonstandard_day's denominator was frozen at the migration rows until the #537 checkbox shipped (2026-07-17; #207 closed as superseded) — it accrues normally now; see the #537 rows below* |
 | **`lf_footer_hours` footer/header evaluated independently** (an office footer no longer downgrades a school header) | **BUILT (#61, 2026-07-09)** — a bug guard; 0 current-corpus triggers, no metric change |
 | **`lf_nonstandard_day` soft-gate** (an incidental prose-pair + a weather/remote/delay soft negative → review, not auto-send; structural targets still send) | **BUILT (#60, 2026-07-09)** — measured pass: tier-A precision 0.8382→0.8444, tier-A + A+B recall held (0.8906 / 0.9961); 6 pages routed to review, 72 structural preserved |
 | **Canonical recall floor** (`harness.RECALL_FLOOR=0.98`/`FLOOR_TIER="A+B"`, `floor_recall`/`floor_satisfied`/`assert_floor`) — one source of truth replacing frontier's/the ledger's prior inconsistent 0.97/0.98-on-tier-A floors | **BUILT (#208, 2026-07-10)** — **enforced INSIDE `build_signals.ingest()`'s transaction** via `--assert-floor`: a violation raises and rolls back the *whole* re-ingest (not a post-hoc report) — see §5b |
@@ -842,13 +842,37 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 | **Relevance-density evidence navigation** for long reps (signed detector events on the char axis → smoothed curve → ranked bookmarks + heat-strip; weights served from `detectors.EVENT_WEIGHTS` via `/api/detector-weights` — display-only mirror of the live Vote confidences, pinned by a no-drift test, NOT a combiner weight surface) | **BUILT (#521, PR #535, 2026-07-17)** — replaces the 20k-char display cap; full text renders with peak anchors |
 | **Content-adaptive center-pane defaults** (evidence classification drives `<details>` open states: densest + unique-adders + instructional/period-phrasing carriers open, ⊆-densest collapsed; rasters demoted to one lazy collapsed gallery; source-PDF iframe = default visual; `\f`-page-mapped bookmarks steer the PDF viewer; hidden-evidence pointer strip + show-all toggle) | **BUILT (#522, PR #536, 2026-07-17)** — guardrail scope is the client-checkable surface (in-window times + instructional/period regexes); per-rep keyword/table attribution needs a server payload change (documented in-code as follow-up) |
 | **"Non-Regular-Day Schedule" Axis-2 checkbox** (key `other_schedule`, hinted by `lf_nonstandard_day`, glossary definition enumerating the class) — the #537 facet-vocabulary decision: ONE coarse checkbox, never per-cause fragments | **BUILT (#537, 2026-07-17)** — un-freezes `lf_nonstandard_day`'s facet denominator (was frozen at the migration rows since #108); UI-visibility pin `test_non_regular_day_confounder_checkbox_present_in_console` |
-| **Positional non-regular-day evidence** (`NONSTANDARD_TERM_RE` full class + `nonstandard_near_times`/`nonstandard_heading`/`regular_day_language` signals; `lf_nonstandard_day` STRONG variant; combiner `wrong_day_strong` undermines a lone table/pair, STRONG_STRUCTURAL still sends; wrong-day-only evidence → review C, never suppress) | **BUILT + MEASURED (#537 follow-on, 2026-07-18)** — tier-A precision **0.7817→0.862**, FP-lane **100→53** (false-send rate 21.8%→**13.8%**), tier-A recall 0.8585→0.7938 (demoted targets reach REVIEW, not suppress), **A+B recall 0.9928 HELD**, reject-quality 1.0; ledger episode recorded |
+| **Positional non-regular-day evidence** (`NONSTANDARD_TERM_RE` full class + `nonstandard_near_times`/`nonstandard_heading`/`regular_day_language` signals; `lf_nonstandard_day` STRONG variant; combiner `wrong_day_strong` undermines a lone table/pair, STRONG_STRUCTURAL still sends; wrong-day evidence **with time content** and no target → review C — the no-times suppress floor and hard negatives still outrank it, a deliberate precedence pinned by test) | **BUILT + MEASURED (#537 follow-on, 2026-07-18)** — after the PR #538 review round: tier-A precision **0.7817→0.8612**, FP-lane **100→54** (false-send rate 21.8%→**13.9%**), tier-A recall 0.8585→**0.8034** (demoted targets reach REVIEW, not suppress), **A+B recall 0.9928 HELD**, reject-quality 1.0; two ledger episodes recorded. **Hardened by the PR #538 max-effort review (17 findings, all fixed)** — see the change-log entry |
 | Learned `LabelModel` combiner · hierarchical/vendor pooling · online-FDR drift | **DEFERRED (scale endgame)** |
 
 ---
 
 ## Change log
 
+- **2026-07-18 (later) — PR #538 max-effort review round: 17 findings, all addressed, measured
+  net-positive.** A 10-angle adversarial review of the #537 PR confirmed 16 + 1 plausible finding; every
+  one fixed same-day. The load-bearing ones: **(1)** over-generic terms — bare `registration`/`substitute`
+  matched ordinary school-site content; both now require an event-time/schedule qualifier ("Registration
+  Hours: 8:00" no longer fires; "school registration times" still does). **(2)** `NONSTANDARD_SCHED_RE`
+  word-bounded (it substring-matched "unscheduled"/"Bellevue"). **(3)** the positional scan now also runs
+  over every TABLE rep against its own offsets — the lf_time_table evidence it undermines can come from a
+  camelot rep that is NOT best_text (the DASD shape could slip the STRONG vote entirely). **(4)** the S3
+  guard vocabulary gained traditional/standard phrasings, and the three vocabularies are now one
+  co-located review surface with a subset-invariant test (`test_nonstandard_term_re_covers_legacy_kw`).
+  **(5)** a **measured dominance override** (`wrong_day_dominance_min=4`, a tunable param): ≥4
+  variant-schedule titles = a variant-dominated page, un-muted by a stray "regular hours" phrase — free
+  at the threshold (+3 facet coverage, 0 extra real-target fires). **(6)** `wrong_day_strong` now rides
+  `nconf` so two equally-undermined review records sort identically regardless of which negative demoted
+  them. **(7)** the suppress-floor precedence question settled and PINNED: a wrong-day HEADING with zero
+  in-window times suppresses (the measured §2a-3 floor outranks wrong-day-only review; the one-hop case
+  is #517's affordance) — the prior "never suppress" claim was over-broad and is corrected here and in
+  the combiner comments, with tests pinning both sides. **(8)** the #521 heat-strip gained the
+  `wrong_day` event (`EVENT_WEIGHTS` −0.70, `DN_NONSTANDARD` verbatim-port pinned by a no-drift test) —
+  the console can now SHOW the evidence that demoted a record. Plus: bisect-based near check (was
+  O(m·t)), the guard computed only when consulted, stale harness/doc claims about the frozen facet
+  denominator corrected. **Measured (before→after `--assert-floor` re-ingest, ledger episode):** tier-A
+  precision held **0.8612**, tier-A recall **0.7938→0.8034** (the tightened vocabulary restored real
+  targets), FP-lane 53→54 (rate 13.9%), **A+B 0.9928 held**, reject-quality 1.0, detector fires 473→416.
 - **2026-07-18 — the #537 follow-on measured pass: positional non-regular-day evidence (the money pass
   the checkbox existed for).** With the facet accrued (61 labels, the worked relabel queue), the
   anywhere-in-text `nonstandard_day` boolean measured **12/44 recall** on the facet ground truth and its

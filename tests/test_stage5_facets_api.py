@@ -604,3 +604,20 @@ def test_progress_counts_never_report_labeled_over_total(gov_session):
     counts = server._progress_counts(gov_session)
     assert counts == {"total": 1, "labeled": 1}       # the orphan label doesn't inflate `labeled`
     assert counts["labeled"] <= counts["total"]
+
+
+def test_density_nav_nonstandard_regex_matches_build_signals_python():
+    """No-drift guard (PR #538 review): DN_NONSTANDARD in app.js is a verbatim port of
+    build_signals.NONSTANDARD_TERM_RE so the heat-strip can show the wrong-day evidence that can demote
+    a lone table to review (#537 follow-on). Pin the pattern strings, same as DN_INSTRUCTIONAL/DN_PERIOD."""
+    from pathlib import Path
+    from infrastructure.acquisition.stage5_filter import build_signals as BS
+    from infrastructure.acquisition.stage5_filter import detectors as DET
+    repo = Path(__file__).resolve().parent.parent
+    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    import re
+    m = re.search(r"const DN_NONSTANDARD = /(.+)/gi;", js)
+    assert m, "DN_NONSTANDARD declaration must be present and in this exact shape"
+    assert m.group(1) == BS.NONSTANDARD_TERM_RE.pattern
+    assert 'push(m.index, "wrong_day")' in js, "wrong-day events must feed the heat-strip"
+    assert "wrong_day" in DET.EVENT_WEIGHTS and DET.EVENT_WEIGHTS["wrong_day"] == (-1, 0.70)

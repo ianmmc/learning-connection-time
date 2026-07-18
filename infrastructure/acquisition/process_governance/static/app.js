@@ -609,6 +609,10 @@ const DN_OFFICE_KW = ["office hours", "office is open", "main office", "front of
   "staff day", "workday", "work day", "teacher hours", "building hours", "administrative"];
 const DN_INSTRUCTIONAL = /(\d{2,4})\s*(?:minutes|mins)\s+(?:of|per)\s+(?:instruction|instructional|class|learning)|(?:instructional\s+minutes|minutes\s+per\s+day|minutes\s+of\s+instruction)/gi;
 const DN_PERIOD = /\bperiod\s*\d|\b\d(?:st|nd|rd|th)\s+period/gi;
+// Verbatim port of build_signals.NONSTANDARD_TERM_RE (#537 follow-on) — pinned by a no-drift test, like
+// DN_INSTRUCTIONAL/DN_PERIOD. Without it the heat-strip could not show the wrong-day evidence that can
+// demote a lone table to review (PR #538 review find).
+const DN_NONSTANDARD = /early dismissal|early release|late start|minimum day|half.day|delayed (?:start|opening)|(?:2|two).hour delay|remote learning|e.?learning|virtual (?:day|learning)|distance learning|snow day|fog(?:gy)? day|inclement weather|weather event|summer (?:school|session|program|hours)|extended school year|\besy\b|jump.?start|open house|(?:student|kindergarten|fall|spring|school) registration|registration (?:day|night|dates?|times|schedule)|back.to.school|exam schedule|final exam|finals schedule|substitute (?:bell )?(?:schedule|day)|act 80/gi;
 // Non-clock-time scorer evidence a rep can carry: explicit instructional-minutes phrasing (the scorer's
 // STRONGEST detector, lf_explicit_minutes 0.95, which needs no colon-times at all) and period-table hits.
 // Same ported regexes the density nav uses; the lastIndex resets are load-bearing (module-level /g).
@@ -659,6 +663,8 @@ function dnEvents(text, sig, W) {
   ["board", "sports", "calendar", "transport"].forEach((cls) =>
     (neg[cls] || []).forEach((k) => dnAllIndexOf(lc, k).forEach((o) => push(o, cls))));
   DN_OFFICE_KW.forEach((k) => dnAllIndexOf(lc, k).forEach((o) => push(o, "office_hours")));
+  DN_NONSTANDARD.lastIndex = 0;
+  while ((m = DN_NONSTANDARD.exec(text))) push(m.index, "wrong_day");
   return ev;
 }
 

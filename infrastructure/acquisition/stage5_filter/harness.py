@@ -302,7 +302,8 @@ def facet_detector_diagnostics(rows):
     predicate), the fraction where its claimed confounder facet (DETECTOR_FACET) is present. This is
     confounder-ID accuracy, orthogonal to whether a target co-occurs. `fires_facet_tagged` is the
     (transparent) denominator — a small one means facets are still accruing (§8), so read the precision as
-    provisional (EXCEPT lf_nonstandard_day, whose facet has no live checkbox — see DETECTOR_FACET).
+    provisional. (lf_nonstandard_day's denominator was frozen at the migration rows until the #537
+    "Non-Regular-Day Schedule" checkbox shipped, 2026-07-17 — it accrues normally now; see DETECTOR_FACET.)
     Records with no facets tagged can't inform it and are excluded, not counted as misses."""
     rows = list(rows)
     out = {}
