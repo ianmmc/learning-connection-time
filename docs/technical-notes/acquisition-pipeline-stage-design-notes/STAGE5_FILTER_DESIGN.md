@@ -849,6 +849,21 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 
 ## Change log
 
+- **2026-07-18 — #226: bounded feed-token URL negative — a measured NULL on current labels, shipped as
+  channel-closure.** `FEED_URL_RE` extended from the `/live-feed`-shape whitelist to the full bounded
+  `feed` token family: `live_feeds/<id>` permalinks, `live_feed_image` S3 rehosts, camelCase query tokens
+  (`pageID=smartSiteFeed`, `psqFeed=true`), and the generic bounded segment (`/feed/`, `/feeds/`,
+  `?feed=`, `news-feed`). Token bounding (separator on the left or a camelCase boundary; no letter on the
+  right) structurally guards **"feeder"** (a real K-12 term — feeder pattern/schools, must never be
+  penalized) and "feedback" — pinned by unit tests using the 10 live offending URLs as fixtures.
+  **Measured pass (ledger episode 7):** exactly 10 of 1,474 records flip `url_feed_pattern` (2 tier-B,
+  8 tier-D; 3 are labeled real targets — the Las Cruces "real hub in a feed" caveat live in this very
+  set), **zero tier/decision movement**, A+B recall 0.9928 held, zero collateral on the full URL sweep.
+  The null is the finding: the #528/#530/#537 combiner passes already hold these shapes out of tier A on
+  the current labels, so #226's value is closing the live-feed URL-pollution channel (the 2026-07 drift
+  root cause) at the *signal* level — robust for future batches where the content shape varies but the
+  URL shape doesn't, and exactly the soft down-weight (not hard suppress) the issue prescribed.
+
 - **2026-07-17/18 — #537 end to end: DECIDED → checkbox BUILT → relabel queue WORKED → positional
   detector MEASURED → max-effort review round hardened, all in one arc.** The facet-vocabulary decision
   (Ian): ONE coarse Axis-2 checkbox, "Non-Regular-Day Schedule" (key `other_schedule`, reusing the

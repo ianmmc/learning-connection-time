@@ -439,3 +439,30 @@ def test_variant_dominated_page_overrides_regular_guard():
     dominated = DET.lf_nonstandard_day(_sig(nonstandard_heading=4, regular_day_language=True),
                                        DET.DEFAULT_DETECTOR_PARAMS)
     assert dominated.strength == "strong"
+
+
+# ---- #226: bounded "feed" tokens in the URL are the feed signal; feeder/feedback are not ----
+def test_feed_url_matches_bounded_feed_tokens():
+    # the live uncovered shapes from batch_00013 / the census labels (regression fixtures)
+    for url in [
+        "https://www.jefcoed.com/o/gardendalees/live_feeds/12479060",       # underscore permalink
+        "https://amybiehl.sfps.info/o/abcs/live_feeds/12068602",
+        "https://core-docs.s3.amazonaws.com/gallup-mckinley_county_schools_ar/live_feed_image/image/17728373/large_x.png",
+        "https://tups.org/index.php?pageID=smartSiteFeed&psqFeed=true&articleID=82782328",  # camelCase query tokens
+        "https://example.org/feed/",                                        # generic bounded segment
+        "https://example.org/feeds/school-news",
+        "https://example.org/?feed=rss2",
+        "https://example.org/news-feed",
+    ]:
+        assert BS.feed_url(url), url
+
+
+def test_feed_url_does_not_match_feeder_or_feedback():
+    # "feeder" is a real K-12 term (feeder pattern/schools) and must never be penalized; "feedback" is unrelated.
+    for url in [
+        "https://example.org/schools/feeder-pattern",
+        "https://example.org/o/hs/feeder-schools",
+        "https://example.org/about/feedback",
+        "https://example.org/community/coffee-with-the-principal",
+    ]:
+        assert not BS.feed_url(url), url

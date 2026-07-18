@@ -188,7 +188,15 @@ HEADING_HOURS_RE = re.compile(
 HEADING_PROX_CHARS = 140   # a time within this many chars AFTER an hours heading = a heading-hours hit
 HANDBOOK_MAX_PAGES = 60    # per-page scan cap (was 15 — targets cited on pp.16-22 were structurally invisible)
 # A CMS news/social-feed URL shape (the #1 tier-A pollutant — incidental post times). A DOWN-WEIGHT signal.
-FEED_URL_RE = re.compile(r"/live-feed|/announcements?\b|/news(?:/|\?|$)|[?&]page_no=|/o/[^/]+/(?:live-feed|article/\d)", re.I)
+# #226: "feed" matches as a BOUNDED token only — bare-substring would hit "feeder" (a real K-12 term:
+# feeder pattern/schools) and "feedback". Left bound = separator (or camelCase for query tokens like
+# smartSiteFeed/psqFeed); right bound = any non-letter.
+FEED_URL_RE = re.compile(
+    r"/live-feed|/announcements?\b|/news(?:/|\?|$)|[?&]page_no=|/o/[^/]+/(?:live-feed|article/\d)"
+    r"|live[-_]feeds?(?![A-Za-z])"           # live_feeds/<id> permalinks, live_feed_image S3 rehosts
+    r"|(?:^|[/?&=_.\-])feeds?(?![A-Za-z])"   # generic bounded token: /feed/, /feeds/, ?feed=, news-feed
+    r"|(?-i:[a-z]Feed(?![A-Za-z]))",         # camelCase query tokens: pageID=smartSiteFeed, psqFeed=true
+    re.I)
 
 
 def feed_url(url: str) -> bool:
