@@ -26,6 +26,10 @@ DEFAULT_DETECTOR_PARAMS = {
     "wrong_day_dominance_min": 4,  # >= this many wrong-day schedule TITLES overrides the S3 regular-day
                                    # guard (a variant-dominated page — DASD/MUSD shape). Measured
                                    # 2026-07-18: at 4, +3 facet coverage for 0 extra real-target fires.
+    "homepage_roster_min": 3,      # a rootish-URL page hitting >= this many distinct roster school names
+                                   # = a many-schools landing page (#532). Measured 2026-07-18: at 3, the
+                                   # 4 live homepage FPs all fire; the school-homepage targets (roster<=2)
+                                   # and the hub-on-homepage targets (protected by structure) do not move.
 }
 
 
@@ -165,6 +169,24 @@ def lf_nonstandard_day(sig, p):
     return None
 
 
+def lf_district_homepage(sig, p):
+    """A district/landing HOMEPAGE — a rootish URL (domain root or bare /o/<slug>) whose text hits MANY
+    distinct roster school names (#532, §3a obs. 1's page-focus gap). A many-topics landing page's times
+    are almost always incidental (news teasers, event strips), not the student day. A DOWN-WEIGHT in the
+    feed/calendar undermine class, never a suppress: a homepage that carries a REAL hours block is a
+    target (lincnet.org is a district_hub_by_school ON the district homepage) — strong-structural
+    precedence still sends it. Measured (2026-07-18): the 4 live tier-A homepage FPs all have
+    heading_hours=0 and fire; every homepage target carries heading/footer hours and does not move.
+    BOTH halves are required: roster breadth alone would hit real hub PAGES (deep URLs listing every
+    school — the obs. 1 warning); the URL shape alone would hit single-school homepages with footer
+    hours. No Axis-2 facet maps to this detector (DETECTOR_FACET) — page focus is not a confounder the
+    human labels; it is decision-level-measured only."""
+    if sig.get("url_rootish") and (sig.get("roster_school_names_hit") or 0) >= p["homepage_roster_min"]:
+        return Vote("lf_district_homepage", "negative", "strong", 0.7,
+                    f"landing page hitting {sig['roster_school_names_hit']} roster school names", "none")
+    return None
+
+
 def _neg_class(cls, cat):
     def lf(sig, p):
         nb = {k: len(v) for k, v in (sig.get("negative_kw") or {}).items()}
@@ -194,7 +216,8 @@ def _neg_dominant(sig, p):
 # The registry — order is documentation only; the combiner treats votes as an unordered set.
 DETECTORS = [
     lf_explicit_minutes, lf_time_table, lf_prose_pair, lf_footer_hours, lf_heading_hours, lf_weak_times,
-    lf_no_times, lf_news_feed, lf_calendar_widget, lf_nonstandard_day, lf_board, lf_sports, lf_transport,
+    lf_no_times, lf_news_feed, lf_calendar_widget, lf_nonstandard_day, lf_district_homepage,
+    lf_board, lf_sports, lf_transport,
 ]
 
 

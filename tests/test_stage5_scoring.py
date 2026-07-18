@@ -466,3 +466,16 @@ def test_feed_url_does_not_match_feeder_or_feedback():
         "https://example.org/community/coffee-with-the-principal",
     ]:
         assert not BS.feed_url(url), url
+
+
+# ---- #532: the rootish-URL signal (the page-focus URL half) ----
+def test_rootish_url_matches_homepage_shapes_only():
+    yes = ["https://www.sfps.info/", "https://www.millard.k12.ut.us", "https://ortiz.sfps.info/?page_no=2",
+           "https://www.midviewk12.org/o/mms", "https://carlosgilbert.sfps.info/o/cge/"]
+    no = ["https://www.midviewk12.org/o/mms/live-feed", "https://ahl.cpsk12.org/about/schedule",
+          "https://x.org/page/bell-schedules", "gt://gt_curation_x/district/file.pdf",
+          "https://x.org/o/mms/article/123"]
+    for u in yes:
+        assert BS.rootish_url(u), u
+    for u in no:
+        assert not BS.rootish_url(u), u

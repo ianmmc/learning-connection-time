@@ -203,6 +203,17 @@ def feed_url(url: str) -> bool:
     return bool(FEED_URL_RE.search(url or ""))
 
 
+# #532: a landing/homepage URL shape — the domain root or a bare CMS org slug (/o/<slug>), nothing deeper.
+# The URL half of the page-focus signal (§3a obs. 1): lf_district_homepage combines it with roster-name
+# breadth to spot a many-schools LANDING page (whose times are incidental news/event teasers), without
+# touching deep pages that legitimately hit many roster names (a real district hub's /schedules/ page).
+ROOTISH_URL_RE = re.compile(r"^https?://[^/?#]+(?:/|/o/[^/?#]+/?)?(?:[?#].*)?$", re.I)
+
+
+def rootish_url(url: str) -> bool:
+    return bool(ROOTISH_URL_RE.match(url or ""))
+
+
 def cms_hint_of(cap: dict) -> str | None:
     """The Stage-3 cms_hint for a capture (REQ-115): promoted from the buried fingerprint into a record signal
     — a GROUPING key for per-detector accuracy, not a score input."""
@@ -1055,6 +1066,7 @@ def ingest_district(sess, ddir: Path, *, splits: set, batches: dict, nces: dict)
         # V2 (REQ-113): record-level signals the text scan can't see, then the labeling-function combiner.
         sig["cms_hint"] = cms_hint_of(cap)
         sig["url_feed_pattern"] = feed_url(prec["url"]) or feed_url(cap.get("final_url") or "")
+        sig["url_rootish"] = rootish_url(prec["url"]) or rootish_url(cap.get("final_url") or "")
         sig["embed_hosts"] = embed_hosts_of(cap)
         # Deterministic content school-year read from the URL/final-URL (#107; never inferred — REQ-054).
         # Rides signals_json for #107's prefer-recent dispatch ranking + #241's pre-2017-18 validity floor.
