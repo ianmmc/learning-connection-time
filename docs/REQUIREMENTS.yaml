@@ -3768,3 +3768,25 @@ requirements:
       four tests are present and passing (16 contamination-selected tests green). The underlying #237
       detector (labeled_topology hard-override on NCES count=1) had no REQ of its own either; this
       entry covers the detect->render chain at gate@7. Design: STAGE7_EXTRACT_DESIGN.md."
+
+  - id: REQ-153
+    github_issue: "#540 (first consumer; epic #106)"
+    description: "The pipeline profiles, learns, and differentiates every CMS it encounters: each CMS observed in captures gets a fingerprint signature (URL-shape and/or DOM markers) in the Stage-3 cms_hint vocabulary, so downstream stages can group, score, and dispatch by CMS template rather than rediscovering each vendor's quirks district by district."
+    type: process
+    priority: should
+    status: approved
+    acceptance_criteria:
+      - "When a capture's CMS is recognizable (URL module shapes like Edlio's /apps/bell_schedules/ + /apps/pages/index.jsp?uREC_ID=, vendor asset hosts, DOM markers) but cms_hint is empty, that is a vocabulary GAP to fill, not noise to ignore — the #540 discovery (52 Edlio records, 4 districts, all cms_hint-empty) is the motivating case"
+      - "Vocabulary additions are propose-with-evidence, human-approved (the CMS_HOSTS discipline): school-district CMS vendors only, never general hosts/CDNs; each addition names the observed signature and the districts it was seen on"
+      - "cms_hint stays a GROUPING key (per-detector accuracy pooling, sibling families, dispatch selection), never a direct score input (REQ-115 unchanged)"
+      - "Approved vendors so far: the REQ-115 launch set + Edlio (Ian, 2026-07-18, from #540's evidence)"
+    tests: []
+    created: "2026-07-18T00:00:00Z"
+    updated: "2026-07-18T00:00:00Z"
+    notes: "Ian (2026-07-18): 'we should be profiling and building up fingerprints for all CMSes we
+      encounter.' Rationale: detector accuracy varies more by CMS template than by geography (the §8
+      hierarchical-pooling insight), and CMS-shaped problems recur across districts (the live-feed
+      pollution and the #540 sibling-variant pages are both single-vendor patterns) — a vendor
+      profiled once is solved for every district that uses it. First consumer: #540's sibling
+      grouping key (Edlio). Implementation home: the Stage-3 fingerprint (capture), read via
+      build_signals.cms_hint_of."
