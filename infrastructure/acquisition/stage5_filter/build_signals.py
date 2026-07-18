@@ -122,6 +122,40 @@ OFFICE_HOURS_KW = ["office hours", "office is open", "main office", "front offic
 NONSTANDARD_DAY_KW = ["remote learning", "e-learning", "elearning", "weather event", "2-hour delay",
                       "2 hour delay", "two hour delay", "early dismissal schedule", "delayed start",
                       "virtual day", "snow day", "inclement weather", "distance learning"]
+# #537 follow-on — POSITIONAL non-regular-day evidence, the full facet term class. The anywhere-in-text
+# boolean above is a weak discriminator both ways (measured 2026-07-18 on the 44-record facet ground
+# truth): it recalled 12/44 (no summer/event/exam/foggy/substitute terms), and 63 of its 123 false
+# claims were bare "inclement weather" POLICY prose nowhere near a schedule. What separates the
+# non-regular-day PAGE (DASD's "Early Dismissal Bell Schedule" table) from a regular-day page that
+# merely mentions delays (37% of real targets do) is WHERE the term sits: titling a schedule, or
+# adjacent to the in-window times themselves. Prototyped at 30/44 coverage.
+NONSTANDARD_TERM_RE = re.compile(
+    r"early dismissal|early release|late start|minimum day|half.day|delayed (?:start|opening)|"
+    r"(?:2|two).hour delay|remote learning|e.?learning|virtual (?:day|learning)|distance learning|"
+    r"snow day|fog(?:gy)? day|inclement weather|summer (?:school|session|program|hours)|"
+    r"extended school year|\besy\b|jump.?start|open house|registration|back.to.school|"
+    r"exam schedule|final exam|finals schedule|substitute|act 80", re.I)
+NONSTANDARD_NEAR_CHARS = 140   # a term within this many chars of an in-window time = the times are that day's
+NONSTANDARD_HEAD_CHARS = 40    # a term this close BEFORE schedule/hours/bell = the term TITLES the schedule
+NONSTANDARD_SCHED_RE = re.compile(r"schedule|hours\b|bell", re.I)
+# The dial-back guard (measured 2026-07-18, rule S3): a page that ALSO declares its regular day is a
+# regular-day page listing its variant sections, not a non-regular-day page — a real bell page routinely
+# carries a "Minimum Day"/"Late Start" row beside the regular rows. On the load-bearing records the guard
+# restored 16/37 wrongly-demoted real targets at a cost of 1/43 regained false-sends.
+NONSTANDARD_REGULAR_RE = re.compile(
+    r"regular (?:bell )?schedule|regular (?:school )?day|daily schedule|normal schedule|regular hours", re.I)
+
+
+def nonstandard_positional(text: str, tpos: list) -> tuple:
+    """(near_times, heading) occurrence counts for the non-regular-day term class (#537).
+    `tpos` = in-window time char offsets in the SAME text (the max-evidence time basis)."""
+    near = heading = 0
+    for m in NONSTANDARD_TERM_RE.finditer(text):
+        if any(m.start() - NONSTANDARD_NEAR_CHARS <= p <= m.end() + NONSTANDARD_NEAR_CHARS for p in tpos):
+            near += 1
+        if NONSTANDARD_SCHED_RE.search(text[m.end():m.end() + NONSTANDARD_HEAD_CHARS]):
+            heading += 1
+    return near, heading
 # A heading-like occurrence of an hours-intent phrase (heading-proximity, research §2.2/§4.3).
 HEADING_HOURS_RE = re.compile(
     r"(office hours|school hours|school day hours|hours of operation|bell schedule|school day|"
@@ -576,6 +610,10 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
     period_hits = len(PERIOD_RE.findall(all_text))
     roster_hits = sum(1 for rn in roster_norm if rn and rn in all_lc)
     nonstandard_day = any(k in all_lc for k in NONSTANDARD_DAY_KW)
+    # positional non-regular-day evidence (#537): computed over the TIME basis (best_text), where the
+    # in-window offsets live — never all_text, whose offsets wouldn't align.
+    ns_near, ns_heading = nonstandard_positional(best_text, [off for off, _ in in_window])
+    regular_day_language = bool(NONSTANDARD_REGULAR_RE.search(best_text))
 
     # visual exists but text is thin -> possible missed content
     has_visual = bool(files.get("png") or (files.get("bin") and not files.get("txt"))) or "pdf" in files
@@ -604,6 +642,8 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
         "heading_hours_hits": headings["count"], "heading_hours_labels": headings["labels"],
         "table_time_density": table_time_density, "table_period_rows": table_period_rows,
         "nonstandard_day": nonstandard_day,
+        "nonstandard_near_times": ns_near, "nonstandard_heading": ns_heading,
+        "regular_day_language": regular_day_language,
     }
     # Clustering dedups by WHOLE-page content, so it uses the full best text, not the de-chromed main.
     return sig, full_best

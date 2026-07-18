@@ -67,11 +67,16 @@ def combine(votes: list) -> dict:
     hard_neg = [v for v in votes if v["polarity"] == "negative" and v["strength"] == "strong"
                 and v["name"] in HARD_NEGATIVE]
     soft_neg = [v for v in votes if v["polarity"] == "negative" and v["strength"] == "soft"]
-    # ONE hard-undermine test, reused: a firing feed/calendar negative. `undermined` (feed/calendar OR a soft
-    # #60 wrong-day negative) demotes an incidental/weak pair; a TABLE is undermined by feed/calendar ONLY —
-    # a real schedule TABLE survives a soft wrong-day negative (structure beats soft noise), so it reads
-    # `hard_undermined` directly (#528). Keeping these as ONE expression stops the two from silently desyncing.
-    hard_undermined = any(v["name"] in UNDERMINE_TIMES for v in hard_neg)
+    # ONE hard-undermine test, reused: a firing feed/calendar negative, OR a STRONG wrong-day negative
+    # (#537 follow-on: the non-regular-day term titles the schedule / sits at the times — the DASD
+    # "Early Dismissal Bell Schedule" table shape, where the table's times ARE the irregular day's).
+    # `undermined` (hard OR a soft #60 wrong-day mention) demotes an incidental/weak pair; a TABLE is
+    # undermined by the HARD test only — a real schedule TABLE still survives a soft wrong-day MENTION
+    # (structure beats a bare mention, #60/#528), but not a positional wrong-day claim. Keeping these as
+    # ONE expression stops the variants from silently desyncing.
+    wrong_day_strong = [v for v in votes if v["polarity"] == "negative" and v["strength"] == "strong"
+                        and v["name"] in UNDERMINE_TIMES_SOFT]
+    hard_undermined = any(v["name"] in UNDERMINE_TIMES for v in hard_neg) or bool(wrong_day_strong)
     undermined = hard_undermined or any(v["name"] in UNDERMINE_TIMES_SOFT for v in soft_neg)
 
     tconf = max((v["confidence"] for v in strong_t), default=0.0)
@@ -92,13 +97,14 @@ def combine(votes: list) -> dict:
         decision, tier, winner = "suppress", "D", max(suppress, key=lambda v: v["confidence"])
     elif hard_neg:
         decision, tier, winner = "suppress", "D", max(hard_neg, key=lambda v: v["confidence"])
-    elif soft_neg:
-        decision, tier, winner = "review", "C", max(soft_neg, key=lambda v: v["confidence"])
+    elif soft_neg or wrong_day_strong:                 # wrong-day-only evidence is review, never suppress
+        decision, tier, winner = "review", "C", max(soft_neg + wrong_day_strong, key=lambda v: v["confidence"])
     else:
         decision, tier, winner = "suppress", "D", None
 
     # a transparent, legible sort score: target confidence up, negatives down (intra-tier ordering only).
-    sort_score = round(10 * tconf - 6 * nconf - 3 * sum(v["confidence"] for v in soft_neg), 3)
+    # wrong_day_strong counts with the soft term (it is a wrong-DAY claim, not a wrong-CONTENT one).
+    sort_score = round(10 * tconf - 6 * nconf - 3 * sum(v["confidence"] for v in soft_neg + wrong_day_strong), 3)
     # category_hypothesis = the winning TARGET shape (v2.1); a non-target winner predicts the primary
     # 'target_absent' (the specific confounder is a facet, scored per-detector, not the primary guess).
     # NB: a record demoted to REVIEW on an undermined target (a feed-owned table, or an undermined prose

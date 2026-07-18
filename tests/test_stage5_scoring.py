@@ -265,3 +265,76 @@ def test_resolve_harvest_slice_prefers_new_location_falls_back_to_legacy(monkeyp
     new.parent.mkdir(parents=True)
     new.write_text("new slice")
     assert BS.resolve_harvest_slice(did, ddir, rk) == new
+
+
+# ---- #537 follow-on: positional non-regular-day evidence (signal + detector + combiner rule) ----
+def test_nonstandard_positional_heading_and_near_times():
+    # the DASD shape: the term TITLES the schedule and the times sit right under it
+    t = "Early Dismissal Bell Schedule\nPeriod 1  8:00 AM - 8:35 AM\nPeriod 2  8:40 AM - 9:15 AM"
+    tpos = [off for off, _ in BS.in_window_positions(t)]
+    near, heading = BS.nonstandard_positional(t, tpos)
+    assert near >= 1 and heading >= 1
+    # summer-program times (no "schedule" word needed — near-times alone fires)
+    t2 = "Summer School runs 8:00 AM to 12:00 PM daily in June."
+    near2, _ = BS.nonstandard_positional(t2, [off for off, _ in BS.in_window_positions(t2)])
+    assert near2 >= 1
+
+
+def test_nonstandard_positional_ignores_policy_prose_far_from_times():
+    # the measured false-claim driver: bare "inclement weather" POLICY prose nowhere near the schedule
+    policy = "In case of inclement weather, please monitor local news for closure information. " * 3
+    sched = "\n" + ("x" * 300) + "\nSchool Hours: 8:00 AM - 3:00 PM"
+    t = policy + sched
+    tpos = [off for off, _ in BS.in_window_positions(t)]
+    near, heading = BS.nonstandard_positional(t, tpos)
+    assert near == 0 and heading == 0
+
+
+def test_lf_nonstandard_day_two_strengths():
+    from infrastructure.acquisition.stage5_filter import detectors as DET
+    strong = DET.lf_nonstandard_day(_sig(nonstandard_near_times=1), DET.DEFAULT_DETECTOR_PARAMS)
+    assert strong.strength == "strong" and strong.confidence == 0.7
+    soft = DET.lf_nonstandard_day(_sig(nonstandard_day=True), DET.DEFAULT_DETECTOR_PARAMS)
+    assert soft.strength == "soft" and soft.confidence == 0.45
+    assert DET.lf_nonstandard_day(_sig(), DET.DEFAULT_DETECTOR_PARAMS) is None
+
+
+def _table_sig(**over):
+    # a lone schedule TABLE (no footer/heading hours, no explicit minutes) — the #528/#530 lone-table shape
+    return _sig(table_time_density=6, table_period_rows=4, has_table=True, n_times=6,
+                n_times_in_window=6, **over)
+
+
+def test_lone_table_with_strong_wrong_day_routes_to_review():
+    # DASD: "Early Dismissal Bell Schedule" as a lone table -> the table's times ARE the irregular day's
+    out = COMB.score_record(_table_sig(nonstandard_heading=1, nonstandard_day=True))
+    assert out["decision"] == "review" and out["tier"] == "B"
+
+
+def test_lone_table_with_soft_wrong_day_mention_still_sends():
+    # #60/#528 held: a real schedule table + a bare weather-policy MENTION elsewhere must still send
+    out = COMB.score_record(_table_sig(nonstandard_day=True))
+    assert out["decision"] == "send" and out["tier"] == "A"
+
+
+def test_strong_structural_beats_strong_wrong_day():
+    # an intentional hours block still sends (structure beats noise — the combiner's core rule)
+    out = COMB.score_record(_sig(instructional_time=True, nonstandard_near_times=2))
+    assert out["decision"] == "send" and out["tier"] == "A"
+
+
+def test_wrong_day_only_evidence_is_review_not_suppress():
+    # positional wrong-day evidence with no target detector: a genuine schedule of the wrong day ->
+    # review (C), never a confident suppress
+    out = COMB.score_record(_sig(n_times_in_window=1, nonstandard_near_times=1))
+    assert out["decision"] == "review" and out["tier"] == "C"
+
+
+def test_regular_day_language_guard_downgrades_strong_to_soft():
+    # rule S3 (measured): a page that declares its regular day is a regular page listing variants —
+    # positional wrong-day evidence downgrades to a mention, so a real bell table still sends
+    from infrastructure.acquisition.stage5_filter import detectors as DET
+    v = DET.lf_nonstandard_day(_sig(nonstandard_heading=1, regular_day_language=True), DET.DEFAULT_DETECTOR_PARAMS)
+    assert v.strength == "soft"
+    out = COMB.score_record(_table_sig(nonstandard_heading=1, regular_day_language=True))
+    assert out["decision"] == "send" and out["tier"] == "A"

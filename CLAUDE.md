@@ -132,19 +132,23 @@ the facet (was 6). Fresh live decomposition of the 100 tier-A false-sends (2026-
 7 homepage multi-confounder (#532) · 4 feed-URLs (#226) · ~20 scattered news/board/sports with NO lever
 (three measurements agree — accept as review-lane cost, don't chase).
 
-**Next (RESUME HERE — 2026-07-18): the `lf_nonstandard_day` term-class + trigger measured pass (#537's
-follow-on, the #515 prerequisite).** The un-frozen baseline is recorded: **facet_prec = 0.1485 (15/101
-facet-tagged firings; 144 total)** — the detector fires far too broadly. Extend the term class (obs.-5
-list + substitute / Act 80 / foggy / exam / summer) and sharpen the trigger (the DASD lesson: the
-discriminator is a *heading-scoped* irregular term — "Early Dismissal Bell Schedule" as the page/table
-title — never anywhere-in-text, since 37% of real targets mention irregular-day terms). Conditional rule
-stands: negative only when irregular signal present AND no regular-day structure. Measure via the #108
-harness (before→after `--assert-floor` re-ingest); the two-weight-tables trap still applies (combiner =
-`DEFAULT_DETECTOR_PARAMS`/Vote confidences, NOT `detectors.EVENT_WEIGHTS`, #521's display-only mirror).
-Then **#515** (conditional eligibility veto on the auto path; news/calendar/board/sports stay SOFT per
-§3a obs. 5). Parallel small wins: **#226** (URL feed negative — guard "feeder") · **#532** (page-focus
-signal, obs. 1). Then recall **#517/#518** · #75 (re-triage) · #83 · #109 · #110 (blocked on Council
-Lab — candidate to re-home out of #106). Then **#111** → liveness gate → **#479/#480** → **#92**.
+**The #537 follow-on measured pass SHIPPED (2026-07-18):** positional non-regular-day evidence
+(`NONSTANDARD_TERM_RE` full class + `nonstandard_near_times`/`nonstandard_heading` + the
+`regular_day_language` S3 guard → a STRONG `lf_nonstandard_day` vote undermining a lone table/pair,
+STRONG_STRUCTURAL still sends). Measured (ledger episode recorded): tier-A precision **0.7817→0.862**,
+FP-lane **100→53**, auto false-send rate **21.8%→13.8%**, tier-A recall 0.8585→0.7938 (demoted targets
+reach REVIEW, not suppress), **A+B 0.9928 held**, reject-quality 1.0. Full derivation:
+`STAGE5_FILTER_DESIGN.md` change log 2026-07-18.
+
+**Next (RESUME HERE — 2026-07-18): the small precision wins, then re-scope #515.** (1) **#226** (URL
+`feed`/`live-feed` negative — guard "feeder", a real K-12 term; 4 live FP-lane records). (2) **#532**
+(page-focus signal, obs. 1 — the 7 multi-confounder homepage false-sends). (3) **#515 re-measure before
+building**: the combiner-level wrong-day demotion now covers much of the eligibility-veto's intended
+ground — measure what an eligibility-layer veto still adds (likely little; news/calendar/board/sports
+stay SOFT per §3a obs. 5). Also pending human review: the ~21 real targets the wrong-day rule now routes
+to review (they surface in the normal gate@5 queue). Then recall **#517/#518** · #75 (re-triage) · #83 ·
+#109 · #110 (blocked on Council Lab — candidate to re-home out of #106). Then **#111** → liveness gate →
+**#479/#480** → **#92**.
 Parked: #475/#476, #103/#80 (Council Lab). Documented-in-code deferrals: `_satisfied_bands_now`
 batching (revisit on volume); the #522 guardrail's per-rep keyword/table attribution (needs a server
 payload change); JS behavioral tests (no JS harness in repo — static-source pins only).

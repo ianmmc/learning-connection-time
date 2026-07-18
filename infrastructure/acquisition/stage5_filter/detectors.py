@@ -133,8 +133,21 @@ def lf_calendar_widget(sig, p):
 
 
 def lf_nonstandard_day(sig, p):
-    """A genuine bell-shaped schedule that is NOT the standard day (weather/remote/delay). Soft negative:
-    real times, wrong schedule (Stroudsburg ?id= variants, TCUSD2 weather articles)."""
+    """A genuine schedule that is NOT the regular school day (the #537 "Non-Regular-Day Schedule" facet:
+    early dismissal / late start / remote / summer / event times). Two strengths (#537 follow-on):
+    STRONG when the term is POSITIONAL — titling a schedule ("Early Dismissal Bell Schedule", the DASD
+    shape) or adjacent to the in-window times themselves — because then the times ARE the irregular
+    day's; SOFT on a bare anywhere-in-text mention (a regular-day page merely mentioning delay policy —
+    37% of real targets do, so a mention alone must never demote structure). GUARD (measured, rule S3):
+    a page that also declares its REGULAR day ("Regular Schedule" / "Daily Schedule") is a regular-day
+    page listing its variants beside the regular rows — positional evidence downgrades to a mention."""
+    if (sig.get("nonstandard_near_times") or sig.get("nonstandard_heading")) \
+            and not sig.get("regular_day_language"):
+        return Vote("lf_nonstandard_day", "negative", "strong", 0.7,
+                    "non-regular-day schedule named at/near the times", "other_schedule")
+    if sig.get("nonstandard_near_times") or sig.get("nonstandard_heading"):
+        return Vote("lf_nonstandard_day", "negative", "soft", 0.45,
+                    "non-regular-day terms near times, but the page declares its regular day", "other_schedule")
     if sig.get("nonstandard_day"):
         return Vote("lf_nonstandard_day", "negative", "soft", 0.45, "non-standard-day (weather/remote) schedule", "other_schedule")
     return None
