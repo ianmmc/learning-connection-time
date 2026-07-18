@@ -120,41 +120,40 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-18): epic #106's precision arc is in its second wave.** First wave SHIPPED
-(2026-07-16/17): school-year currency (#107/#241/#531 → PRs #529/#533), the **#528** combiner refinement
-(→ PR #530, merged `90dae45` — #528 is CLOSED; a lone times-table on a feed/calendar page routes to
-review, −14 tier-A false-sends, remainder split to #531 shipped + #532 open), and the **console trio**
-(#516/#521/#522 → PRs #534–#536). Then **#537 DECIDED + BUILT (2026-07-17/18):** ONE coarse Axis-2
-checkbox **"Non-Regular-Day Schedule"** (key `other_schedule` — continuity un-froze `lf_nonstandard_day`'s
-facet denominator), and the note-guided relabel queue (posted on #537) is **WORKED** — 61 labels now carry
-the facet (was 6). Fresh live decomposition of the 100 tier-A false-sends (2026-07-17, in #537's comments):
-**~36 = the non-regular-day class** (the largest bucket) · 12 already floor-held by shipped #241/#531 ·
-7 homepage multi-confounder (#532) · 4 feed-URLs (#226) · ~20 scattered news/board/sports with NO lever
-(three measurements agree — accept as review-lane cost, don't chase).
-
-**The #537 follow-on measured pass SHIPPED (2026-07-18):** positional non-regular-day evidence
-(`NONSTANDARD_TERM_RE` full class + `nonstandard_near_times`/`nonstandard_heading` + the
-`regular_day_language` S3 guard → a STRONG `lf_nonstandard_day` vote undermining a lone table/pair,
-STRONG_STRUCTURAL still sends). Measured (ledger episode recorded): tier-A precision **0.7817→0.862**,
-FP-lane **100→53**, auto false-send rate **21.8%→13.8%**, tier-A recall 0.8585→0.7938 (demoted targets
-reach REVIEW, not suppress), **A+B 0.9928 held**, reject-quality 1.0. Full derivation:
-`STAGE5_FILTER_DESIGN.md` change log 2026-07-18.
+**Current status (2026-07-18): #537 is DONE — decided, built, measured, review-hardened, and merged
+(PR #538, squash `07ec723`).** Epic #106's precision arc: first wave SHIPPED 2026-07-16/17 (school-year
+currency #107/#241/#531 → PRs #529/#533; **#528** combiner refinement → PR #530, CLOSED, −14 tier-A
+false-sends, remainder split to #531 shipped + #532 open; the **console trio** #516/#521/#522 → PRs
+#534–#536). Then **#537**, end to end in one arc: the facet-vocabulary decision (ONE coarse Axis-2
+checkbox, "Non-Regular-Day Schedule", key `other_schedule`) → the relabel queue worked (61 labels tagged,
+was 6) → the measured positional detector (`NONSTANDARD_TERM_RE` + `nonstandard_near_times`/
+`nonstandard_heading` + the `regular_day_language` S3 guard → a STRONG `lf_nonstandard_day` vote) → a
+PR-level max-effort 10-angle review (33 sub-agents, 17 real findings, all fixed same-day: over-generic
+terms tightened, `NONSTANDARD_SCHED_RE` word-bounded, the positional scan extended to table reps, a
+measured `wrong_day_dominance_min=4` override adopted, `wrong_day_strong` sort-symmetry fixed, the
+suppress-vs-review precedence for wrong-day-only evidence settled + pinned, the #521 heat-strip wired to
+show this evidence). **Final measured state, two ledger episodes:** tier-A precision **0.7817→0.8612**,
+auto false-send rate **21.8%→13.9%**, tier-A recall 0.8585→**0.8034** (demoted targets reach REVIEW, not
+lost — recovered further by the review round's vocabulary fixes), **A+B recall 0.9928 held exactly**
+throughout. Epic-level: the false-send rate has moved **24.3%→13.9%** since the 2026-07-15 review. Full
+derivation: `STAGE5_FILTER_DESIGN.md` change log (2026-07-17/18 entries); `PROJECT_HISTORY.md` (the #537
+entry, incl. the review-round lessons); PR #538.
 
 **Next (RESUME HERE — 2026-07-18): the small precision wins, then re-scope #515.** (1) **#226** (URL
-`feed`/`live-feed` negative — guard "feeder", a real K-12 term; 4 live FP-lane records). (2) **#532**
-(page-focus signal, obs. 1 — the 7 multi-confounder homepage false-sends). (3) **#515 re-measure before
-building**: the combiner-level wrong-day demotion now covers much of the eligibility-veto's intended
-ground — measure what an eligibility-layer veto still adds (likely little; news/calendar/board/sports
-stay SOFT per §3a obs. 5). Also pending human review: the ~21 real targets the wrong-day rule now routes
-to review (they surface in the normal gate@5 queue). Then recall **#517/#518** · #75 (re-triage) · #83 ·
-#109 · #110 (blocked on Council Lab — candidate to re-home out of #106). Then **#111** → liveness gate →
-**#479/#480** → **#92**.
+`feed`/`live-feed` negative — guard "feeder", a real K-12 term; a handful of live FP-lane records).
+(2) **#532** (page-focus signal, obs. 1 — the multi-confounder homepage false-sends). (3) **#515
+re-measure before building**: the combiner-level wrong-day demotion now covers much of the
+eligibility-veto's intended ground — measure what an eligibility-layer veto still adds (likely little;
+news/calendar/board/sports stay SOFT per §3a obs. 5). Also pending human review: the real targets the
+wrong-day rule now routes to review (they surface in the normal gate@5 queue, not a separate backlog).
+Then recall **#517/#518** · #75 (re-triage) · #83 · #109 · #110 (blocked on Council Lab — candidate to
+re-home out of #106). Then **#111** → liveness gate → **#479/#480** → **#92**.
 Parked: #475/#476, #103/#80 (Council Lab). Documented-in-code deferrals: `_satisfied_bands_now`
 batching (revisit on volume); the #522 guardrail's per-rep keyword/table attribution (needs a server
 payload change); JS behavioral tests (no JS harness in repo — static-source pins only).
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
--m "not integration"` (expect **~1602** pass) + `pytest -q -m govdb` (expect **~241**, Postgres up).
+-m "not integration"` (expect **~1618** pass) + `pytest -q -m govdb` (expect **~243**, Postgres up).
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (the
 motivating ones: Huntington `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters).
 Full detail: `docs/PROJECT_HISTORY.md`, `STAGE5_FILTER_DESIGN.md` §8 + Change log,

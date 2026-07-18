@@ -439,6 +439,44 @@ Authority: `STAGE5_FILTER_DESIGN.md` §8 + change log; `STAGE6_DISPATCH_DESIGN.m
 `STAGE4_PROCESS_DESIGN.md` (the now-load-bearing `\f` contract); PRs #529/#533/#534/#535/#536; issues
 #528 (build-session context comment) and #537.
 
+### #537 closes the loop: one coarse facet, a measured positional detector, and a review round that made the fix better than the first cut (2026-07-17/18)
+
+The orphaned facet-vocabulary decision (#537, re-homed the entry above) was decided, built, and then
+carried through to a measured detector pass in one arc. **The decision:** ONE Axis-2 checkbox,
+"Non-Regular-Day Schedule" (key `other_schedule`), covering every not-the-regular-day shape — early
+dismissal, late start, remote, summer, event times — never split into per-cause checkboxes, per
+`project-stage5-labeling-serves-learning`'s coarsest-learnable-distinction principle. Naming was
+deliberately "non-regular," not "wrong": a Late Start schedule isn't incorrect, it's simply not the
+target, and the phrasing matched the labeler's own note vernacular almost verbatim. The relabel queue
+this unlocked (posted as a checklist on the issue, worked directly against the console) took the facet
+from 6 to 61 tagged labels — un-freezing `lf_nonstandard_day`'s facet-precision denominator, frozen at
+0.17 since #108 for lack of a live checkbox.
+
+**The measured detector pass this facet existed for** found the prior anywhere-in-text trigger recalled
+only 12/44 on the newly-accrued ground truth, false-claiming mostly on policy prose nowhere near a
+schedule. The fix was positional (a term must title a schedule or sit beside the actual times), and
+**build-best-then-dial-back** played out exactly as the project's convention predicts: the first
+unguarded cut bought precision by wrongly demoting 57 real targets, because real bell pages routinely
+list their day-variants beside the regular rows. A rule ladder measured on exactly those load-bearing
+records — not guessed — found the guard (a page that also names its regular day downgrades the
+positional evidence to a mention) that recovered most of them at negligible cost.
+
+**Then a PR-level max-effort review (10 angles, 33 sub-agents) found 17 real defects in a diff that had
+already passed its own measured pass** — the clearest evidence yet that a good before/after number is
+necessary but not sufficient. The two worth internalizing: (a) **a design-doc claim ("wrong-day evidence
+routes to review, never suppress") had quietly gone stale the moment a second rule (the no-times suppress
+floor) started outranking it in practice** — the code was arguably right, the comment was wrong, and nothing
+but an adversarial read would have caught the drift between them; both are now pinned by tests asserting
+each side. (b) **the review's own "guard is too coarse" finding was itself measured before being adopted**
+— a dominance-override threshold was picked by sweeping a small parameter space against the same
+load-bearing records, not by intuition, and it shipped only because it was free (zero added cost at the
+chosen threshold). The pattern generalizes: build best, measure, dial back against a review's findings,
+then measure again — the discipline doesn't stop at the first green number.
+
+Net across the two passes: the auto false-send rate that stood at 24.3% in the 2026-07-15 comprehensive
+review is now 13.9%, with the recall floor (A+B) held exactly throughout both measured passes. Authority:
+`STAGE5_FILTER_DESIGN.md` change log (2026-07-17/18 entries); issues #537/#538; PR #538.
+
 ---
 
 ## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)

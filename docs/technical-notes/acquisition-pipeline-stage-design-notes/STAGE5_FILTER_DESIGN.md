@@ -849,65 +849,52 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 
 ## Change log
 
-- **2026-07-18 (later) — PR #538 max-effort review round: 17 findings, all addressed, measured
-  net-positive.** A 10-angle adversarial review of the #537 PR confirmed 16 + 1 plausible finding; every
-  one fixed same-day. The load-bearing ones: **(1)** over-generic terms — bare `registration`/`substitute`
-  matched ordinary school-site content; both now require an event-time/schedule qualifier ("Registration
-  Hours: 8:00" no longer fires; "school registration times" still does). **(2)** `NONSTANDARD_SCHED_RE`
-  word-bounded (it substring-matched "unscheduled"/"Bellevue"). **(3)** the positional scan now also runs
-  over every TABLE rep against its own offsets — the lf_time_table evidence it undermines can come from a
-  camelot rep that is NOT best_text (the DASD shape could slip the STRONG vote entirely). **(4)** the S3
-  guard vocabulary gained traditional/standard phrasings, and the three vocabularies are now one
-  co-located review surface with a subset-invariant test (`test_nonstandard_term_re_covers_legacy_kw`).
-  **(5)** a **measured dominance override** (`wrong_day_dominance_min=4`, a tunable param): ≥4
-  variant-schedule titles = a variant-dominated page, un-muted by a stray "regular hours" phrase — free
-  at the threshold (+3 facet coverage, 0 extra real-target fires). **(6)** `wrong_day_strong` now rides
-  `nconf` so two equally-undermined review records sort identically regardless of which negative demoted
-  them. **(7)** the suppress-floor precedence question settled and PINNED: a wrong-day HEADING with zero
-  in-window times suppresses (the measured §2a-3 floor outranks wrong-day-only review; the one-hop case
-  is #517's affordance) — the prior "never suppress" claim was over-broad and is corrected here and in
-  the combiner comments, with tests pinning both sides. **(8)** the #521 heat-strip gained the
-  `wrong_day` event (`EVENT_WEIGHTS` −0.70, `DN_NONSTANDARD` verbatim-port pinned by a no-drift test) —
-  the console can now SHOW the evidence that demoted a record. Plus: bisect-based near check (was
-  O(m·t)), the guard computed only when consulted, stale harness/doc claims about the frozen facet
-  denominator corrected. **Measured (before→after `--assert-floor` re-ingest, ledger episode):** tier-A
-  precision held **0.8612**, tier-A recall **0.7938→0.8034** (the tightened vocabulary restored real
-  targets), FP-lane 53→54 (rate 13.9%), **A+B 0.9928 held**, reject-quality 1.0, detector fires 473→416.
-- **2026-07-18 — the #537 follow-on measured pass: positional non-regular-day evidence (the money pass
-  the checkbox existed for).** With the facet accrued (61 labels, the worked relabel queue), the
-  anywhere-in-text `nonstandard_day` boolean measured **12/44 recall** on the facet ground truth and its
-  false claims were dominated by bare "inclement weather" POLICY prose (63/123). Built the positional
-  form: `NONSTANDARD_TERM_RE` (the full facet class incl. summer/ESY, event times, exam, foggy,
-  substitute, Act 80) + `nonstandard_near_times` (term ≤140 chars from an in-window time) +
-  `nonstandard_heading` (term titling a schedule — the DASD "Early Dismissal Bell Schedule" shape) → a
-  STRONG `lf_nonstandard_day` vote that undermines a lone table/pair in the combiner (mirror of #530;
-  STRONG_STRUCTURAL still sends; wrong-day-only evidence → review C, never suppress). **Build-best-then-
-  dial-back in action:** the first (unguarded) cut lifted precision 0.7817→0.856 but demoted 57 real
-  targets — real bell pages legitimately list their early-release/minimum-day VARIANTS beside the regular
-  rows. A rule ladder measured on exactly the load-bearing records found **S3**: guard the strong vote
-  with `regular_day_language` ("Regular/Daily/Normal Schedule" present ⇒ regular page listing variants ⇒
-  downgrade to mention) — restores 16/37 targets at 1/43 regained false-sends. **Final measured pass
-  (before→after `--assert-floor` re-ingest, ledger episode recorded):** tier-A precision **0.7817→0.862**,
-  FP-lane **100→53**, auto false-send rate **21.8%→13.8%**, tier-A recall 0.8585→0.7938 (the ~21
-  still-demoted real targets land in REVIEW — human-time cost, not recall; **A+B 0.9928 held exactly**),
-  exploration-cohort reject-quality **1.0**. Residual (accepted, not chased): facet-tagged pages whose
-  only evidence is structural-with-no-term (the Stroudsburg "special subset" bell tables — a possible
-  future URL-sibling signal); STRONG_STRUCTURAL summer pages (structure beats noise stands). Consequence
-  for **#515**: the combiner-level demotion now covers much of the eligibility-veto's intended ground —
-  re-measure what an eligibility-layer veto still adds before building it.
-- **2026-07-17 (later) — #537 DECIDED + the checkbox BUILT: "Non-Regular-Day Schedule" (`other_schedule`).**
-  The facet-vocabulary decision (Ian): ONE coarse Axis-2 checkbox for every not-the-regular-day schedule
-  shape — early dismissal, late start/delay, remote/virtual, inclement, minimum/half day, exam day,
-  summer/ESY, event times (open house/registration/back-to-school) — never per-cause checkboxes (the
-  governing principle: coarsest learnable distinction; one detector = one denominator). Naming: "non-regular,"
-  not "wrong"/"irregular" — a Late Start schedule isn't wrong, it's just not the target; the phrasing matches
-  the labeler's own note vernacular ("not a regular school day schedule", verbatim in ~10 notes). Key stays
-  `other_schedule` so the migration rows seed the denominator and `DETECTOR_FACET` needs no change. Grounds:
-  the 2026-07-17 fresh decomposition of the 100 live tier-A false-sends found **~36 are the wrong-schedule
-  class** (30 note-diagnosed no-facet + 6 `other_schedule`) — the largest remaining bucket by far — heavily
-  concentrated in CMS bell-schedule apps serving day-variants (DASD early-dismissal ×10, MUSD foggy-day ×4).
-  Follow-on (separate, measured): the note-guided relabel queue, then `lf_nonstandard_day`'s term-class
-  extension + measured pass (#515 prep). Verified: Playwright against the live console + a static-source pin.
+- **2026-07-17/18 — #537 end to end: DECIDED → checkbox BUILT → relabel queue WORKED → positional
+  detector MEASURED → max-effort review round hardened, all in one arc.** The facet-vocabulary decision
+  (Ian): ONE coarse Axis-2 checkbox, "Non-Regular-Day Schedule" (key `other_schedule`, reusing the
+  v2.0→v2.1 migration key so `DETECTOR_FACET` needed no change) covering every not-the-regular-day shape
+  — early dismissal, late start/delay, remote/virtual, inclement, minimum/half day, exam day, summer/ESY,
+  event times — never per-cause checkboxes (the governing principle: coarsest learnable distinction, one
+  detector = one denominator). Naming: "non-regular," not "wrong" — matches the labeler's own note
+  vernacular. Grounds: the 2026-07-17 decomposition of the 100 live tier-A false-sends found **~36 in this
+  class** (the largest remaining bucket), concentrated in CMS bell-schedule apps serving day-variants
+  (DASD early-dismissal ×10, MUSD foggy-day ×4). The note-guided relabel queue (posted on #537) was worked
+  (61 labels tagged, was 6), un-freezing `lf_nonstandard_day`'s facet denominator (frozen at 0.17 since
+  #108).
+  **The measured detector pass this facet existed for:** the legacy anywhere-in-text `nonstandard_day`
+  boolean recalled only 12/44 on the accrued ground truth, its false claims dominated by bare "inclement
+  weather" POLICY prose (63/123). Built the POSITIONAL form — `NONSTANDARD_TERM_RE` (the full facet class)
+  + `nonstandard_near_times` (term ≤140 chars from an in-window time) + `nonstandard_heading` (term titling
+  a schedule — the DASD "Early Dismissal Bell Schedule" shape) → a STRONG `lf_nonstandard_day` vote that
+  undermines a lone table/pair in the combiner (mirror of #530). **Build-best-then-dial-back:** the first
+  unguarded cut demoted 57 real targets (real bell pages legitimately list their variant sections beside
+  the regular rows); a rule ladder measured on the load-bearing records found the **S3 guard**
+  (`regular_day_language`: "Regular/Daily/Normal Schedule" present ⇒ downgrade to soft) — restores 16/37
+  targets at 1/43 regained false-sends.
+  **A PR #538 max-effort 10-angle review then found 17 real findings, all fixed same-day** — the
+  load-bearing ones: over-generic terms (bare `registration`/`substitute`) now require an event-time
+  qualifier; `NONSTANDARD_SCHED_RE` word-bounded (was substring-matching "unscheduled"/"Bellevue"); the
+  positional scan extended to cover every TABLE rep, not just `best_text` (the lf_time_table evidence it
+  undermines can live in a disjoint camelot rep — the DASD shape could otherwise slip the vote entirely);
+  a **measured dominance override** adopted (`wrong_day_dominance_min=4`, tunable — ≥4 variant titles
+  un-mutes the S3 guard, free at threshold: +3 facet coverage, 0 extra real-target cost);
+  `wrong_day_strong` now rides `nconf` (was sorting asymmetrically vs. equally-strong hard negatives); the
+  suppress-vs-review precedence for wrong-day-only evidence with zero in-window times was settled and
+  PINNED by test (suppress wins — the measured §2a-3 no-times floor outranks wrong-day-only review; the
+  one-hop case is #517's territory); the #521 heat-strip gained a `wrong_day` event so the console can
+  show the evidence that demoted a record; bisect replaced an O(m·t) linear scan.
+  **Final measured state (before→after `--assert-floor` re-ingest, two ledger episodes):** tier-A
+  precision **0.7817→0.8612**, FP-lane (tier-A∩absent) **100→54** (auto false-send rate **21.8%→13.9%**),
+  tier-A recall 0.8585→**0.8034** (demoted targets reach REVIEW, not suppress — human-time cost, not lost
+  recall; the review round's vocabulary tightening actually recovered some of the initially-demoted
+  targets), **A+B recall 0.9928 HELD exactly** throughout, exploration-cohort reject-quality **1.0**.
+  Epic-level: the auto false-send rate has moved 24.3%→13.9% since the 2026-07-15 comprehensive review.
+  Residual (accepted, not chased): facet-tagged pages whose only evidence is structural-with-no-term (the
+  Stroudsburg "special subset" tables — a possible future URL-sibling signal); STRONG_STRUCTURAL summer
+  pages (structure beats noise stands). **Consequence for #515:** the combiner-level demotion now covers
+  much of the eligibility-veto's intended ground — re-measure what an eligibility layer still adds before
+  building it. Verified throughout: Playwright against the live console, static-source pins, 1618 DB-free
+  + 243 govdb tests, `lint-imports` 4/0. PR: #538.
 - **2026-07-17 — the console trio SHIPPED (#516 → PR #534, #521 → #535, #522 → #536): the
   labeling-that-drives-learning surface.** Three console builds in sequence, each through a max-effort
   multi-agent review with all confirmed findings fixed before merge. **#516** — FP/FN error-review lanes
