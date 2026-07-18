@@ -26,6 +26,7 @@ const CONFOUNDERS = [
   ["transportation", "Bus / transportation", "lf_transport"],
   ["news_feed", "News / social feed", "lf_news_feed"],
   ["office_building_hours", "Building / office hours (not the student day)", "lf_office_hours"],
+  ["other_schedule", "Non-Regular-Day Schedule", "lf_nonstandard_day"],
 ];
 // AXIS 3 (checkboxes): where the target hides / how to read it. `sig` = the signal that hints it.
 const LOCATION = [
@@ -51,6 +52,7 @@ const DEFS = {
   transportation: "Bus / transport times.",
   news_feed: "A news / social-media feed whose post timestamps are spurious time signal.",
   office_building_hours: "Building/office hours (often a footer “Building Hours 7:15–3:15”) that mimic a start/end pair but are NOT the student day.",
+  other_schedule: "Times/schedule for something other than the regular full school day: early dismissal, late start / delay, remote/virtual, inclement (snow/fog), minimum/half day, exam day, summer school/ESY, or special events (open house, registration, back-to-school).",
   // location (Axis 3)
   buried_handbook: "The target is present but inside a long multi-topic document (e.g. a handbook) — record the page(s).",
   needs_vision: "You can see the target in the image/PDF, but NO text extractor captured it — needs vision at Stage 6/7.",

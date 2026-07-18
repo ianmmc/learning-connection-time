@@ -184,7 +184,12 @@ before the human sees it; a borderline page reaching gate@5 costs only review ti
 > obs. 4 below are SUPERSEDED in place** on this basis (issues #207/#223/#512 closed 2026-07-16; the
 > event-content / wrong-schedule facet **vocabulary** is a single holistic decision, originally folded into
 > #522 by comment and **re-homed to #537** when #522 shipped its center-pane scope and closed, 2026-07-17 —
-> the vocabulary call itself stays gated on Ian). Memory: `project-stage5-labeling-serves-learning`.
+> **DECIDED + BUILT 2026-07-17 (Ian):** ONE coarse Axis-2 checkbox, display **"Non-Regular-Day Schedule"**,
+> key **`other_schedule`** (continuity with the v2.0→v2.1 migration rows + `harness.DETECTOR_FACET`'s
+> `lf_nonstandard_day` mapping — reusing the key un-freezes that detector's frozen facet denominator), with
+> a glossary definition enumerating the class (early dismissal · late start/delay · remote · inclement ·
+> minimum/half day · exam day · summer/ESY · event times). "Non-regular," not "wrong" — a Late Start
+> schedule isn't wrong, it's just not the target). Memory: `project-stage5-labeling-serves-learning`.
 
 **(1) A footer time-range on a DISTRICT page leans building/office hours**; on a SCHOOL page it leans the
 student day (2026-07-01). An unlabeled footer range (the `school_start_end_list` shape) is more likely
@@ -375,7 +380,9 @@ human answer scores exactly one detector (§5) and multi-module pages are repres
   Plus terminals **`target_absent`** and **`unusable`** (kept distinct: "no target" vs. "can't read it").
 - **Axis 2 — confounding signals PRESENT (checkbox, multi):** the former non-targets, now non-exclusive —
   `board` · `sports` · `academic_calendar` · `community_calendar` · `transportation` · `news_feed` ·
-  `office_building_hours`. Usable whether or not a target is present (Las Cruces: a real `district_hub_by_school`
+  `office_building_hours` · `other_schedule` ("Non-Regular-Day Schedule", #537 — the ONE coarse
+  not-the-regular-day facet: early dismissal / late start / remote / summer / event times; ground truth for
+  `lf_nonstandard_day`). Usable whether or not a target is present (Las Cruces: a real `district_hub_by_school`
   *delivered in* a news feed). These are the ground truth for the negative detectors.
 - **Axis 3 — where / how it hides (checkbox):** `buried_handbook` (+ a **print-dialog page range** "4, 7-9"
   parsed to `[4,7,8,9]` for the harvester — the guessed `harvest_pages` vs. labeled pattern) · `needs_vision`
@@ -834,12 +841,26 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 | **Console error-review lanes** (FP = tier-A ∩ `target_absent` via `release.MONEY_LEAK_WHERE`, the SSOT shared with `decide()`; FN = the fixed-seed reject-audit sample) + `rec_key` search + right-pane reorder | **BUILT (#516, PR #534, 2026-07-16)** — disagreement as the primary product of labeling, surfaced as first-class lanes |
 | **Relevance-density evidence navigation** for long reps (signed detector events on the char axis → smoothed curve → ranked bookmarks + heat-strip; weights served from `detectors.EVENT_WEIGHTS` via `/api/detector-weights` — display-only mirror of the live Vote confidences, pinned by a no-drift test, NOT a combiner weight surface) | **BUILT (#521, PR #535, 2026-07-17)** — replaces the 20k-char display cap; full text renders with peak anchors |
 | **Content-adaptive center-pane defaults** (evidence classification drives `<details>` open states: densest + unique-adders + instructional/period-phrasing carriers open, ⊆-densest collapsed; rasters demoted to one lazy collapsed gallery; source-PDF iframe = default visual; `\f`-page-mapped bookmarks steer the PDF viewer; hidden-evidence pointer strip + show-all toggle) | **BUILT (#522, PR #536, 2026-07-17)** — guardrail scope is the client-checkable surface (in-window times + instructional/period regexes); per-rep keyword/table attribution needs a server payload change (documented in-code as follow-up) |
+| **"Non-Regular-Day Schedule" Axis-2 checkbox** (key `other_schedule`, hinted by `lf_nonstandard_day`, glossary definition enumerating the class) — the #537 facet-vocabulary decision: ONE coarse checkbox, never per-cause fragments | **BUILT (#537, 2026-07-17)** — un-freezes `lf_nonstandard_day`'s facet denominator (was frozen at the migration rows since #108); UI-visibility pin `test_non_regular_day_confounder_checkbox_present_in_console` |
 | Learned `LabelModel` combiner · hierarchical/vendor pooling · online-FDR drift | **DEFERRED (scale endgame)** |
 
 ---
 
 ## Change log
 
+- **2026-07-17 (later) — #537 DECIDED + the checkbox BUILT: "Non-Regular-Day Schedule" (`other_schedule`).**
+  The facet-vocabulary decision (Ian): ONE coarse Axis-2 checkbox for every not-the-regular-day schedule
+  shape — early dismissal, late start/delay, remote/virtual, inclement, minimum/half day, exam day,
+  summer/ESY, event times (open house/registration/back-to-school) — never per-cause checkboxes (the
+  governing principle: coarsest learnable distinction; one detector = one denominator). Naming: "non-regular,"
+  not "wrong"/"irregular" — a Late Start schedule isn't wrong, it's just not the target; the phrasing matches
+  the labeler's own note vernacular ("not a regular school day schedule", verbatim in ~10 notes). Key stays
+  `other_schedule` so the migration rows seed the denominator and `DETECTOR_FACET` needs no change. Grounds:
+  the 2026-07-17 fresh decomposition of the 100 live tier-A false-sends found **~36 are the wrong-schedule
+  class** (30 note-diagnosed no-facet + 6 `other_schedule`) — the largest remaining bucket by far — heavily
+  concentrated in CMS bell-schedule apps serving day-variants (DASD early-dismissal ×10, MUSD foggy-day ×4).
+  Follow-on (separate, measured): the note-guided relabel queue, then `lf_nonstandard_day`'s term-class
+  extension + measured pass (#515 prep). Verified: Playwright against the live console + a static-source pin.
 - **2026-07-17 — the console trio SHIPPED (#516 → PR #534, #521 → #535, #522 → #536): the
   labeling-that-drives-learning surface.** Three console builds in sequence, each through a max-effort
   multi-agent review with all confirmed findings fixed before merge. **#516** — FP/FN error-review lanes

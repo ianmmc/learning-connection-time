@@ -1858,18 +1858,18 @@
   {
     "rec_key": "0600022:1d963a2acd",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "Not a regular school day schedule",
     "status": "labeled",
-    "updated_at": "2026-07-12T05:07:03Z"
+    "updated_at": "2026-07-18T06:56:37Z"
   },
   {
     "rec_key": "0600022:1f5cbd3e49",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "Special schedule for Foggy Days. Not a Regular School Day schedule.",
     "status": "labeled",
-    "updated_at": "2026-07-12T05:07:50Z"
+    "updated_at": "2026-07-18T06:57:25Z"
   },
   {
     "rec_key": "0600022:24f8eabccf",
@@ -1906,10 +1906,10 @@
   {
     "rec_key": "0600022:5084042fa5",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "Special schedule for Foggy Days. Not a Regular School Day schedule.",
     "status": "labeled",
-    "updated_at": "2026-07-12T05:07:50Z"
+    "updated_at": "2026-07-18T06:57:25Z"
   },
   {
     "rec_key": "0600022:567dd28d85",
@@ -1986,10 +1986,10 @@
   {
     "rec_key": "0600022:9dabfe8ab0",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "Not a regular school day schedule",
     "status": "labeled",
-    "updated_at": "2026-07-12T05:07:03Z"
+    "updated_at": "2026-07-18T06:56:37Z"
   },
   {
     "rec_key": "0600022:a5f5eaba94",
@@ -2066,10 +2066,10 @@
   {
     "rec_key": "0601700:5407a5cc08",
     "primary_label": "target_absent",
-    "facets_json": "{\"academic_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "facets_json": "{\"academic_calendar\": \"yes\", \"news_feed\": \"yes\", \"other_schedule\": \"yes\"}",
     "note": "Summer school information present in feed.",
     "status": "labeled",
-    "updated_at": "2026-07-11T04:02:46Z"
+    "updated_at": "2026-07-18T07:17:47Z"
   },
   {
     "rec_key": "0601869:613b5e4abf",
@@ -2754,10 +2754,10 @@
   {
     "rec_key": "1716950:095e819264",
     "primary_label": "target_absent",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"news_feed\": \"yes\", \"other_schedule\": \"yes\"}",
     "note": "Based on the URL, this information appears to be from February 2021, during the COVID-19 pandemic. Page 10  does have the bell for Remote Learning, but I wouldn't qualify this as a \"Regular School Day\".",
     "status": "labeled",
-    "updated_at": "2026-07-04T06:35:16Z"
+    "updated_at": "2026-07-18T06:59:02Z"
   },
   {
     "rec_key": "1716950:432fc1959f",
@@ -3066,10 +3066,10 @@
   {
     "rec_key": "1737350:4a420ba54f",
     "primary_label": "target_absent",
-    "facets_json": "{\"board\": \"yes\", \"community_calendar\": \"yes\"}",
+    "facets_json": "{\"board\": \"yes\", \"community_calendar\": \"yes\", \"other_schedule\": \"yes\"}",
     "note": "Has schedule for online learning during weather events, but that does not appear to be a regular school day.\n\n\"TMS/THS Remote Learning/Weather Event Bell Schedule (Times are slightly different from the regular schedule, so please pay close attention.\"",
     "status": "labeled",
-    "updated_at": "2026-07-02T07:01:09Z"
+    "updated_at": "2026-07-18T07:18:18Z"
   },
   {
     "rec_key": "1737350:4c8d299160",
@@ -3122,10 +3122,10 @@
   {
     "rec_key": "1737350:7da8c2aa90",
     "primary_label": "target_absent",
-    "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\"}",
+    "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\", \"other_schedule\": \"yes\"}",
     "note": "This is a borderline case. There is an eLearning schedule in the text. It says it's different times and appears short.\n---\nTMS Remote Learning/Weather Event Bell Schedule (Times are slightly different from the\nregular schedule, so please pay close attention.)\n\n\u00a2 Early Bird - 7:20 AM\n\ne Period 1- 8:00 AM\n\ne Period 2 - 8:40 AM\n\ne Period 3 - 9:20 AM\n\ne Period 4 - 10:00 AM\n\ne Period 5 - 10:40 AM\n\n\u00a2 Period 6 - 11:20 AM\n\ne Period 7 - 12:00 PM\n\ne Teacher Office Hours - 12:40-1:00 PM\n---\n\nThere is also prose text with drop off information, but no end-of-day information. Drop-off time is from 7:00 - 7:30. Tardy arrivals begin at\n---\n7:30 a.m. We have been very flexible, but would like to get back\nto our routine and start time. I'm sure many of you would also\nappreciate a shorter drop-off in the morning.\n---\n\nLots of other event information in here too. Very noisy.",
     "status": "labeled",
-    "updated_at": "2026-07-02T06:57:44Z"
+    "updated_at": "2026-07-18T07:20:27Z"
   },
   {
     "rec_key": "1737350:8105414824",
@@ -3938,10 +3938,10 @@
   {
     "rec_key": "2507080:6a9ed83f0e",
     "primary_label": "target_absent",
-    "facets_json": "{\"community_calendar\": \"yes\", \"transportation\": \"yes\", \"news_feed\": \"yes\"}",
+    "facets_json": "{\"community_calendar\": \"yes\", \"transportation\": \"yes\", \"news_feed\": \"yes\", \"other_schedule\": \"yes\"}",
     "note": "Information about summer school hours",
     "status": "labeled",
-    "updated_at": "2026-07-11T05:42:20Z"
+    "updated_at": "2026-07-18T07:22:08Z"
   },
   {
     "rec_key": "2507080:707d096528",
@@ -4394,10 +4394,10 @@
   {
     "rec_key": "2901000:3725f73172",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "Early release schedule, not regular school day.",
     "status": "labeled",
-    "updated_at": "2026-07-12T04:36:07Z"
+    "updated_at": "2026-07-18T07:01:00Z"
   },
   {
     "rec_key": "2901000:3bcff8a609",
@@ -4426,10 +4426,10 @@
   {
     "rec_key": "2901000:4cd156eb08",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "This is an early release day rather than a regular school day.",
     "status": "labeled",
-    "updated_at": "2026-07-12T04:34:00Z"
+    "updated_at": "2026-07-18T07:01:18Z"
   },
   {
     "rec_key": "2901000:4e6f59686b",
@@ -4682,10 +4682,10 @@
   {
     "rec_key": "2901000:ee159ace40",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "This is a late start school day rather than a regular school day schedule.",
     "status": "labeled",
-    "updated_at": "2026-07-12T04:34:28Z"
+    "updated_at": "2026-07-18T07:01:53Z"
   },
   {
     "rec_key": "2901000:ee2805a78c",
@@ -4698,10 +4698,10 @@
   {
     "rec_key": "2901000:f2436de9ed",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "This is a special case \"Jump Start Day\" schedule, not a regular school day.",
     "status": "labeled",
-    "updated_at": "2026-07-12T04:30:22Z"
+    "updated_at": "2026-07-18T07:02:17Z"
   },
   {
     "rec_key": "2901000:f310587139",
@@ -5402,10 +5402,10 @@
   {
     "rec_key": "3501110:04218ec432",
     "primary_label": "target_absent",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"sports\": \"yes\", \"news_feed\": \"yes\", \"other_schedule\": \"yes\"}",
     "note": "Summer school information presented",
     "status": "labeled",
-    "updated_at": "2026-07-11T06:46:12Z"
+    "updated_at": "2026-07-18T07:03:49Z"
   },
   {
     "rec_key": "3501110:04dcb22252",
@@ -5418,10 +5418,10 @@
   {
     "rec_key": "3501110:065e94268b",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "Early release schedule, not regular schedule",
     "status": "labeled",
-    "updated_at": "2026-07-11T06:45:20Z"
+    "updated_at": "2026-07-18T07:04:35Z"
   },
   {
     "rec_key": "3501110:071335d0fe",
@@ -5834,18 +5834,18 @@
   {
     "rec_key": "3501110:a1fa08da35",
     "primary_label": "target_absent",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"sports\": \"yes\", \"news_feed\": \"yes\", \"other_schedule\": \"yes\"}",
     "note": "Summer school information presented",
     "status": "labeled",
-    "updated_at": "2026-07-11T06:46:12Z"
+    "updated_at": "2026-07-18T07:03:49Z"
   },
   {
     "rec_key": "3501110:a6d82161d5",
     "primary_label": "target_absent",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"news_feed\": \"yes\", \"other_schedule\": \"yes\"}",
     "note": "Summer school information visible",
     "status": "labeled",
-    "updated_at": "2026-07-11T06:44:31Z"
+    "updated_at": "2026-07-18T07:05:36Z"
   },
   {
     "rec_key": "3501110:a7b6b39661",
@@ -7002,10 +7002,10 @@
   {
     "rec_key": "3502370:4e07f1dd03",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "List of summer programs with times",
     "status": "labeled",
-    "updated_at": "2026-07-12T05:41:19Z"
+    "updated_at": "2026-07-18T07:06:17Z"
   },
   {
     "rec_key": "3502370:4fffb5b47a",
@@ -8818,26 +8818,26 @@
   {
     "rec_key": "3904817:9e76424b0e",
     "primary_label": "target_absent",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"news_feed\": \"yes\", \"other_schedule\": \"yes\"}",
     "note": "Early release schedule for October 30 noted, but not regular school day.",
     "status": "labeled",
-    "updated_at": "2026-07-11T04:28:43Z"
+    "updated_at": "2026-07-18T07:31:07Z"
   },
   {
     "rec_key": "3904817:adae83e2c8",
     "primary_label": "target_absent",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"news_feed\": \"yes\", \"other_schedule\": \"yes\"}",
     "note": "Early release day noted in feed, but not regular school day",
     "status": "labeled",
-    "updated_at": "2026-07-11T04:28:16Z"
+    "updated_at": "2026-07-18T07:33:28Z"
   },
   {
     "rec_key": "3904817:c1f04cee18",
     "primary_label": "target_absent",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"news_feed\": \"yes\", \"other_schedule\": \"yes\"}",
     "note": "Early release schedule for March 20 and October 30 noted, but not regular school day.",
     "status": "labeled",
-    "updated_at": "2026-07-11T04:30:01Z"
+    "updated_at": "2026-07-18T07:33:59Z"
   },
   {
     "rec_key": "3904817:ed9a79ce54",
@@ -8850,10 +8850,10 @@
   {
     "rec_key": "3904817:ef34251a78",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "Final exam schedule information",
     "status": "labeled",
-    "updated_at": "2026-07-11T04:25:10Z"
+    "updated_at": "2026-07-18T07:07:08Z"
   },
   {
     "rec_key": "4000766:2f764d7fa2",
@@ -9098,10 +9098,10 @@
   {
     "rec_key": "4207560:396fa05c77",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "Early dismissal bell schedule, not regular day schedule.",
     "status": "labeled",
-    "updated_at": "2026-07-12T21:11:01Z"
+    "updated_at": "2026-07-18T07:07:31Z"
   },
   {
     "rec_key": "4207560:3e9e6adc56",
@@ -9122,18 +9122,18 @@
   {
     "rec_key": "4207560:44d3d86b5a",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "Early dismissal bell schedule, not regular day schedule.",
     "status": "labeled",
-    "updated_at": "2026-07-12T21:11:01Z"
+    "updated_at": "2026-07-18T07:07:31Z"
   },
   {
     "rec_key": "4207560:44f05dc35a",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "Early Dismissal Bell Schedule, not regular school day",
     "status": "labeled",
-    "updated_at": "2026-07-12T21:11:41Z"
+    "updated_at": "2026-07-18T07:08:30Z"
   },
   {
     "rec_key": "4207560:466804500a",
@@ -9146,34 +9146,34 @@
   {
     "rec_key": "4207560:498a9ecba3",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "Remote Learning Two Hour Delay schedule, not regular school day.",
     "status": "labeled",
-    "updated_at": "2026-07-12T21:14:45Z"
+    "updated_at": "2026-07-18T07:09:04Z"
   },
   {
     "rec_key": "4207560:6abdffbe9b",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "Early dismissal bell schedule, not regular day schedule.",
     "status": "labeled",
-    "updated_at": "2026-07-12T21:11:01Z"
+    "updated_at": "2026-07-18T07:07:31Z"
   },
   {
     "rec_key": "4207560:896211f393",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "Early dismissal bell schedule, not regular day schedule.",
     "status": "labeled",
-    "updated_at": "2026-07-12T21:11:01Z"
+    "updated_at": "2026-07-18T07:07:31Z"
   },
   {
     "rec_key": "4207560:9473c9324c",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "Early dismissal bell schedule, not regular day schedule.",
     "status": "labeled",
-    "updated_at": "2026-07-12T21:11:01Z"
+    "updated_at": "2026-07-18T07:07:31Z"
   },
   {
     "rec_key": "4207560:958efb07fd",
@@ -9194,10 +9194,10 @@
   {
     "rec_key": "4207560:9eca67c26e",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "Early dismissal bell schedule, not regular day schedule.",
     "status": "labeled",
-    "updated_at": "2026-07-12T21:11:01Z"
+    "updated_at": "2026-07-18T07:07:31Z"
   },
   {
     "rec_key": "4207560:a2c78d80bb",
@@ -9210,10 +9210,10 @@
   {
     "rec_key": "4207560:cfd139452a",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "\"Remote Learning Day\" schedule, not regular school day.",
     "status": "labeled",
-    "updated_at": "2026-07-12T21:13:08Z"
+    "updated_at": "2026-07-18T07:10:55Z"
   },
   {
     "rec_key": "4207560:d065f02d3f",
@@ -9226,10 +9226,10 @@
   {
     "rec_key": "4207560:d0781f0238",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "Early Dismissal Bell Schedule, not regular school day",
     "status": "labeled",
-    "updated_at": "2026-07-12T21:11:41Z"
+    "updated_at": "2026-07-18T07:08:30Z"
   },
   {
     "rec_key": "4207560:d324721316",
@@ -9506,10 +9506,10 @@
   {
     "rec_key": "4222350:4b822e153e",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "This is bell schedule, but it's an irregular \"Act 80\" schedule rather than a regular school day.",
     "status": "labeled",
-    "updated_at": "2026-07-15T01:45:03Z"
+    "updated_at": "2026-07-18T07:11:43Z"
   },
   {
     "rec_key": "4222350:5351d06ffc",
@@ -9522,10 +9522,10 @@
   {
     "rec_key": "4222350:5443052bf4",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "This is a school bell table, but not a regular school day. It's an irregular 2 Hour Delay schedule.",
     "status": "labeled",
-    "updated_at": "2026-07-15T01:45:40Z"
+    "updated_at": "2026-07-18T07:12:04Z"
   },
   {
     "rec_key": "4222350:6d7cb780b4",
@@ -11490,10 +11490,10 @@
   {
     "rec_key": "5508790:435f56ea4c",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "Summer school information",
     "status": "labeled",
-    "updated_at": "2026-07-11T04:06:09Z"
+    "updated_at": "2026-07-18T07:13:19Z"
   },
   {
     "rec_key": "5508790:6806be4b0a",
@@ -11674,10 +11674,10 @@
   {
     "rec_key": "5510620:78177c5eaa",
     "primary_label": "target_absent",
-    "facets_json": "{\"transportation\": \"yes\"}",
+    "facets_json": "{\"transportation\": \"yes\", \"other_schedule\": \"yes\"}",
     "note": "Summer school / extended school year program information",
     "status": "labeled",
-    "updated_at": "2026-07-04T06:18:30Z"
+    "updated_at": "2026-07-18T07:13:46Z"
   },
   {
     "rec_key": "5510620:79ef71bbd3",
@@ -11714,10 +11714,10 @@
   {
     "rec_key": "5510620:aea7130322",
     "primary_label": "target_absent",
-    "facets_json": "{}",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
     "note": "Exam schedule",
     "status": "labeled",
-    "updated_at": "2026-07-04T06:09:07Z"
+    "updated_at": "2026-07-18T07:37:05Z"
   },
   {
     "rec_key": "5510620:d1d6acd8b7",

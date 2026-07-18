@@ -255,6 +255,27 @@ def test_density_nav_js_regexes_match_build_signals_python():
     assert m_period.group(1) == BS.PERIOD_RE.pattern
 
 
+def test_non_regular_day_confounder_checkbox_present_in_console():
+    """UI-visibility regression (#537): the ONE coarse "Non-Regular-Day Schedule" Axis-2 checkbox must
+    exist, keyed `other_schedule` (continuity with the v2.0→v2.1 migration rows + harness.DETECTOR_FACET's
+    lf_nonstandard_day mapping — reusing the key is what un-freezes that detector's facet denominator),
+    hinted by lf_nonstandard_day, with a tooltip enumerating the class (the helper text does the scoping
+    work the deliberately-coarse label can't). Guards the #537 vocabulary decision from silently vanishing
+    or fragmenting back into per-cause checkboxes."""
+    from pathlib import Path
+    repo = Path(__file__).resolve().parent.parent
+    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    assert '["other_schedule", "Non-Regular-Day Schedule", "lf_nonstandard_day"]' in js, \
+        "the coarse other_schedule confounder checkbox must be in CONFOUNDERS, hinted by lf_nonstandard_day"
+    assert "other_schedule: \"Times/schedule for something other than the regular full school day" in js, \
+        "the tooltip must define the class"
+    for term in ("early dismissal", "late start", "remote", "summer school", "open house"):
+        assert term in js, f"the tooltip must enumerate the class members (missing: {term})"
+    from infrastructure.acquisition.stage5_filter.harness import DETECTOR_FACET
+    assert DETECTOR_FACET["lf_nonstandard_day"] == {"other_schedule"}, \
+        "the checkbox key must stay aligned with the harness facet mapping"
+
+
 def test_followup_flag_jumps_attention_then_resolves(client):
     r = client.post("/api/followup", json={"scope": "district", "target_id": DL, "directive": "do X", "actor": "zz-test"})
     assert r.status_code == 200
