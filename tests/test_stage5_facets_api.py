@@ -160,6 +160,48 @@ def test_dn_esc_escapes_quotes():
     assert '"' in charclass or "&quot;" in js.split("dnEsc")[0], "dnEsc must escape the double-quote character"
 
 
+def test_content_adaptive_defaults_present_in_console():
+    """UI-visibility regression (#522): the center pane's DEFAULT view must be the evidence the machine
+    used — classification-driven open states, rasters demoted to one collapsed gallery, the source PDF as
+    the default visual, and the full raw set one click away (show-all). Guards each from silently vanishing."""
+    from pathlib import Path
+    repo = Path(__file__).resolve().parent.parent
+    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    css = (repo / "infrastructure/acquisition/process_governance/static/app.css").read_text()
+    assert "function applyEvidenceDefaults" in js and "applyEvidenceDefaults(c, annotateUniqueTimes(" in js, \
+        "the classification must DRIVE the defaults, not just decorate them"
+    assert "raster-gallery" in js and "what the OCR/vision model saw" in js, \
+        "per-page rasters must be demoted to one collapsed, labeled gallery (machine input, not human)"
+    assert 'data-pdf-view' in js, "the source PDF (embedded viewer) must be the default visual"
+    assert "show-all-reps" in js and "collapse to defaults" in js, \
+        "the full raw set must stay one click away — nothing removed"
+    assert ".evidence-pointer" in css and ".raster-gallery" in css, "the #522 styles must exist"
+
+
+def test_evidence_guardrail_pointer_present_in_console():
+    """#522 guardrail regression (the Huntington class — must not silently recur): whenever a rep carrying
+    in-window-time evidence ends up collapsed by default, the console MUST surface a pointer that names it
+    and click-opens it. The check must be independent of the open rules so a rules change can't regress it."""
+    from pathlib import Path
+    repo = Path(__file__).resolve().parent.parent
+    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    assert "evidence-pointer" in js and "ev-jump" in js, "the pointer strip + jump chips must exist"
+    assert "evidence in collapsed rep(s)" in js, "the pointer must say what it is"
+    assert "const hidden = classes.filter(" in js, \
+        "the guardrail must re-derive hidden evidence from the classification, independent of the open rules"
+
+
+def test_density_bookmarks_carry_pdf_page_and_steer_viewer():
+    """#522 composition with #521: pdftotext output keeps \\f page separators, so a char-offset bookmark
+    maps deterministically to a source-PDF page — chips must carry p.N and steer the embedded viewer."""
+    from pathlib import Path
+    repo = Path(__file__).resolve().parent.parent
+    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    assert 'text.indexOf("\\f")' in js and "const pageOf = (off)" in js, "the \\f page map must exist"
+    assert "data-page" in js and '"#page=" + c.dataset.page' in js, \
+        "bookmark chips must carry the page and steer the PDF iframe to it"
+
+
 def test_density_nav_js_constants_match_build_signals_python():
     """No-drift guard (#521): DN_PROXIMITY/DN_WIN_LO/DN_WIN_HI in app.js are hand-mirrored copies of
     build_signals.py's PROXIMITY_CHARS/WINDOW_LO/WINDOW_HI — nothing else ties them together, so pin the

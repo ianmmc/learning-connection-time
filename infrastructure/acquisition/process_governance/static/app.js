@@ -380,6 +380,8 @@ async function renderCenter(d) {
   if (d.duplicate_of) chips.push(`<span class="chip dup">duplicate — <a href="#" data-go="${d.duplicate_of}">open canonical</a></span>`);
   if (s.visual_text_gap) chips.push(`<span class="chip warn">inspect visually — possible missed content</span>`);
 
+  // #522 boundary: everything Stage 4 generated stays one click away — this opens the full raw set.
+  chips.push(`<button class="chip show-all-reps" type="button">show all reps</button>`);
   let html = `<div class="rec-header"><h2>${d.url.replace(/^https?:\/\//, "").slice(0, 70)}</h2>
     <div class="rec-url">${d.final_url || d.url}</div><div class="chips">${chips.join("")}</div></div>`;
 
@@ -398,10 +400,12 @@ async function renderCenter(d) {
   html += `<p class="text-first-note">Text first — the council reads text, so confirm the target is in at least one
     <b>text</b> rep. Footer/header shown first (the common “Hours:” spot). If the target is <b>only</b> in the image/PDF below,
     tick <b>needs vision</b>.</p>`;
-  ordered.forEach((r, i) => {
+  // #522 content-adaptive default: footer/header segs open (REQ-114's common "Hours:" spot); everything
+  // else starts CLOSED — applyEvidenceDefaults() opens densest + unique-adders once bodies load, so the
+  // default view is the evidence the machine used, with the ⊆-densest redundancy collapsed (never removed).
+  ordered.forEach((r) => {
     const openSeg = r.source.startsWith("segment:footer") || r.source.startsWith("segment:header");
-    const open = (openSeg || (segs.length === 0 && i === 0)) ? "open" : "";
-    html += `<details ${open} data-file="${r.filename}" data-src="${r.source}">
+    html += `<details ${openSeg ? "open" : ""} data-file="${r.filename}" data-src="${r.source}">
       <summary><span class="rep-src">${r.source}</span><span class="rep-uniq" data-uniq="${r.filename}">·</span></summary>
       <pre class="text" data-target="${r.filename}">loading…</pre></details>`;
   });
@@ -418,16 +422,41 @@ async function renderCenter(d) {
   }
 
   // VISUAL LAST — for confirming structure / catching an image-only target (→ needs vision).
-  visual.forEach((r) => {
+  // #522: for a person the embedded PDF viewer is strictly better than its rasters (paginated, zoomable,
+  // in-viewer find) — so the source PDF is the default visual; per-page rasters are a MACHINE artifact
+  // (OCR/vision input) demoted to one collapsed gallery; screenshots collapse unless the record is
+  // visual-only (visual_text_gap, or an image capture where the image IS the content).
+  const pdfs = visual.filter((r) => r.file_kind === "pdf");
+  const rasters = visual.filter((r) => r.file_kind !== "pdf" && r.source === "raster");
+  const shots = visual.filter((r) => r.file_kind !== "pdf" && r.source !== "raster");
+  pdfs.forEach((r) => {
     const url = fileUrl(d, r.filename);
-    const body = r.file_kind === "pdf"
-      ? `<iframe src="${url}" title="${r.filename}"></iframe>`
-      : `<img src="${url}" alt="${r.filename}" loading="lazy" />`;
-    html += card(`${r.source} · ${r.filename}`, "image/PDF — confirm the target also appears in a text rep above", body);
+    html += card(`${r.source} · ${r.filename}`, "source PDF — the default visual (paginated; use the viewer's find)",
+      `<iframe src="${url}" title="${r.filename}" data-pdf-view="${r.filename}"></iframe>`);
   });
+  const shotsOpen = s.visual_text_gap || d.kind === "image";
+  shots.forEach((r) => {
+    const url = fileUrl(d, r.filename);
+    html += `<details ${shotsOpen ? "open" : ""} class="visual-rep"><summary>${r.source} · ${r.filename}${shotsOpen ? " — inspect: possible image-only content" : ""}</summary>
+      <img src="${url}" alt="${r.filename}" loading="lazy" /></details>`;
+  });
+  if (rasters.length) {
+    const imgs = rasters.map((r) => `<img src="${fileUrl(d, r.filename)}" alt="${r.filename}" loading="lazy" />`).join("");
+    html += `<details class="raster-gallery"><summary>what the OCR/vision model saw — ${rasters.length} page raster(s) (machine input, not for human review)</summary>${imgs}</details>`;
+  }
 
   c.innerHTML = html;
   c.querySelectorAll("[data-go]").forEach((a) => a.onclick = (e) => { e.preventDefault(); selectRecord(a.dataset.go); });
+  // Every details carries data-default-open (stamped at render; refined by applyEvidenceDefaults once
+  // bodies load) so "collapse to defaults" restores the computed default, not just closes everything.
+  c.querySelectorAll("details").forEach((el) => { el.dataset.defaultOpen = el.open ? "1" : "0"; });
+  const showAllBtn = c.querySelector(".show-all-reps");
+  if (showAllBtn) showAllBtn.onclick = () => {
+    const all = [...c.querySelectorAll("details")];
+    const anyClosed = all.some((el) => !el.open);
+    all.forEach((el) => { el.open = anyClosed ? true : el.dataset.defaultOpen === "1"; });
+    showAllBtn.textContent = anyClosed ? "collapse to defaults" : "show all reps";
+  };
   // Lazy-load text bodies, then compute the per-rep SIGNAL-LEVEL "unique contribution" (times in this rep
   // that the densest rep lacks) — so you never re-read a rep that adds nothing, but never miss one that does.
   const bodies = {};
@@ -443,7 +472,7 @@ async function renderCenter(d) {
     else pre.textContent = t || "(empty)";
   }));
   if (CURRENT !== myRecKey) return;   // re-check: the Promise.all body-fetches could also have been outrun
-  annotateUniqueTimes(c, bodies, ordered);
+  applyEvidenceDefaults(c, annotateUniqueTimes(c, bodies, ordered));
 }
 
 // In-window (07:00–16:00) clock times in a text, as a set of canonical "h:mm(a/p)" strings.
@@ -463,19 +492,56 @@ function inWindowTimes(text) {
 }
 
 // Annotate each text rep with the in-window times it has that the DENSEST rep lacks (or "⊆ densest").
+// Returns the per-rep classification ({filename, role: densest|adder|subsumed, nTimes, nUniq}) so #522's
+// applyEvidenceDefaults can drive the DEFAULT open states from the same single computation.
 function annotateUniqueTimes(c, bodies, ordered) {
   const timeSets = {};
   ordered.forEach((r) => { timeSets[r.filename] = inWindowTimes(bodies[r.filename] || ""); });
   let best = null, bestN = -1;
   ordered.forEach((r) => { const n = timeSets[r.filename].size; if (n > bestN) { bestN = n; best = r.filename; } });
-  ordered.forEach((r) => {
+  return ordered.map((r) => {
     const el = c.querySelector(`.rep-uniq[data-uniq="${r.filename}"]`);
-    if (!el) return;
     const mine = timeSets[r.filename], bestSet = timeSets[best] || new Set();
     const uniq = [...mine].filter((t) => !bestSet.has(t));
-    if (r.filename === best) el.innerHTML = `<b>densest</b> · ${mine.size} in-window time(s)`;
-    else if (uniq.length) el.innerHTML = `<span class="uniq-hot">+${uniq.length} time(s) not in densest: ${uniq.slice(0, 6).join(", ")}</span>`;
-    else el.innerHTML = `<span class="uniq-sub">⊆ densest (nothing unique)</span>`;
+    const role = r.filename === best ? "densest" : (uniq.length ? "adder" : "subsumed");
+    if (el) {
+      if (role === "densest") el.innerHTML = `<b>densest</b> · ${mine.size} in-window time(s)`;
+      else if (role === "adder") el.innerHTML = `<span class="uniq-hot">+${uniq.length} time(s) not in densest: ${uniq.slice(0, 6).join(", ")}</span>`;
+      else el.innerHTML = `<span class="uniq-sub">⊆ densest (nothing unique)</span>`;
+    }
+    return { filename: r.filename, source: r.source, role, nTimes: mine.size, nUniq: uniq.length };
+  });
+}
+
+// #522 content-adaptive defaults: the reviewer audits the machine's decision, so the DEFAULT view is the
+// evidence the machine used — densest + unique-adders open, ⊆-densest collapsed (footer/header segs stay
+// open per REQ-114). Then the load-bearing GUARDRAIL (the Huntington class, issue #522): the default may
+// hide redundancy but may NEVER hide evidence — if any rep carrying in-window times ends up collapsed,
+// surface a pointer chip that names it and click-opens it. The check is deliberately independent of the
+// open rules above it, so a future rules change cannot silently regress the guarantee.
+function applyEvidenceDefaults(c, classes) {
+  classes.forEach((k) => {
+    const det = c.querySelector(`details[data-file="${k.filename}"]`);
+    if (!det) return;
+    const seg = k.source.startsWith("segment:footer") || k.source.startsWith("segment:header");
+    det.open = seg || k.role === "densest" || k.role === "adder";
+    det.dataset.defaultOpen = det.open ? "1" : "0";
+  });
+  const hidden = classes.filter((k) => {
+    if (k.role === "densest" ? k.nTimes === 0 : k.nUniq === 0) return false;   // carries no non-redundant evidence
+    const det = c.querySelector(`details[data-file="${k.filename}"]`);
+    return det && !det.open;
+  });
+  c.querySelector(".evidence-pointer")?.remove();
+  if (!hidden.length) return;
+  const strip = document.createElement("div");
+  strip.className = "evidence-pointer";
+  strip.innerHTML = `<b>evidence in collapsed rep(s):</b> ` + hidden.map((k) =>
+    `<button type="button" class="chip ev-jump" data-ev="${k.filename}">${k.role === "densest" ? k.nTimes : "+" + k.nUniq} time(s) in ${k.source} → open</button>`).join(" ");
+  c.querySelector(".rec-header").after(strip);
+  strip.querySelectorAll("[data-ev]").forEach((b) => b.onclick = () => {
+    const det = c.querySelector(`details[data-file="${b.dataset.ev}"]`);
+    if (det) { det.open = true; det.scrollIntoView({ behavior: "smooth", block: "start" }); }
   });
 }
 
@@ -610,9 +676,16 @@ function renderDensityNav(pre, text, sig, W) {
   const events = dnEvents(text, sig, W);
   const { sm, peaks, maxAbs } = dnCurve(events, text.length);
   const win = text.length / sm.length * 1.5;
+  // #522 composition: pdftotext output keeps \f page separators, so a char offset maps deterministically
+  // to a source-PDF page — bookmarks get "p.N" and steer the embedded PDF viewer to that page.
+  const isPdftotext = pre.closest("details")?.dataset.src === "pdftotext";
+  const ffOffs = [];
+  if (isPdftotext) for (let i = text.indexOf("\f"); i !== -1; i = text.indexOf("\f", i + 1)) ffOffs.push(i);
+  const pageOf = (off) => { let p = 1; for (const f of ffOffs) { if (f < off) p++; else break; } return p; };
   const top = peaks.slice(0, 8).map((p, rank) => {
     const f = dnPeakFocus(events, p.off, win);
     return { rank, off: f.off, id: `bm-${pre.dataset.target}-${rank}`,
+      page: ffOffs.length ? pageOf(f.off) : null,
       label: DN_TYPE_LABEL[f.type] || "times", snippet: dnSnippet(text, f.off) };
   });
   pre.innerHTML = dnAnchoredHtml(text, [...top].sort((a, b) => a.off - b.off));   // anchors in ascending order for slicing
@@ -623,8 +696,8 @@ function renderDensityNav(pre, text, sig, W) {
     return `<div class="dn-cell" style="background:color-mix(in srgb, var(${varName}) ${Math.round((0.12 + 0.78 * a) * 100)}%, transparent)"></div>`;
   };
   const chips = top.length
-    ? top.map((b) => `<button class="dn-chip" data-bm="${b.id}" title="${dnEsc(b.snippet)}">` +
-        `<span class="dn-rank">${b.rank + 1}</span>${dnEsc(b.snippet) || "(peak)"} <span class="dn-lbl">· ${b.label}</span></button>`).join("")
+    ? top.map((b) => `<button class="dn-chip" data-bm="${b.id}"${b.page ? ` data-page="${b.page}"` : ""} title="${dnEsc(b.snippet)}">` +
+        `<span class="dn-rank">${b.rank + 1}</span>${dnEsc(b.snippet) || "(peak)"} <span class="dn-lbl">· ${b.label}${b.page ? ` · p.${b.page}` : ""}</span></button>`).join("")
     : `<span class="dn-note">no relevance peak stood out — read top-to-bottom</span>`;
   const nav = document.createElement("div");
   nav.className = "dn";
@@ -638,7 +711,13 @@ function renderDensityNav(pre, text, sig, W) {
     pre.scrollTop = Math.max(0, a.offsetTop - pre.clientHeight / 2);
     a.classList.remove("bm-flash"); void a.offsetWidth; a.classList.add("bm-flash");
   };
-  nav.querySelectorAll("[data-bm]").forEach((c) => c.onclick = () => flashTo(c.dataset.bm));
+  nav.querySelectorAll("[data-bm]").forEach((c) => c.onclick = () => {
+    flashTo(c.dataset.bm);
+    if (c.dataset.page) {   // #522: also drive the embedded PDF viewer to the bookmark's page
+      const view = document.querySelector("#center iframe[data-pdf-view]");
+      if (view) view.src = view.src.split("#")[0] + "#page=" + c.dataset.page;
+    }
+  });
   const strip = nav.querySelector(".dn-strip");
   const scrollToFrac = (frac) => {
     frac = Math.min(1, Math.max(0, frac));
