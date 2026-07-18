@@ -400,12 +400,14 @@ async function renderCenter(d) {
   html += `<p class="text-first-note">Text first — the council reads text, so confirm the target is in at least one
     <b>text</b> rep. Footer/header shown first (the common “Hours:” spot). If the target is <b>only</b> in the image/PDF below,
     tick <b>needs vision</b>.</p>`;
-  // #522 content-adaptive default: footer/header segs open (REQ-114's common "Hours:" spot); everything
-  // else starts CLOSED — applyEvidenceDefaults() opens densest + unique-adders once bodies load, so the
-  // default view is the evidence the machine used, with the ⊆-densest redundancy collapsed (never removed).
+  // #522 content-adaptive default: footer/header segs open (REQ-114's common "Hours:" spot) plus a
+  // PROVISIONAL densest (max server-side n_times — synchronously available), so the pane is never
+  // all-collapsed while bodies fetch; applyEvidenceDefaults() then refines to the real evidence-driven
+  // defaults (densest + unique-adders open, ⊆-densest redundancy collapsed — never removed).
+  const provisional = fulls[0] || ordered[0];   // fulls sorted by n_times desc
   ordered.forEach((r) => {
     const openSeg = r.source.startsWith("segment:footer") || r.source.startsWith("segment:header");
-    html += `<details ${openSeg ? "open" : ""} data-file="${r.filename}" data-src="${r.source}">
+    html += `<details ${(openSeg || r === provisional) ? "open" : ""} data-file="${r.filename}" data-src="${r.source}">
       <summary><span class="rep-src">${r.source}</span><span class="rep-uniq" data-uniq="${r.filename}">·</span></summary>
       <pre class="text" data-target="${r.filename}">loading…</pre></details>`;
   });
@@ -441,20 +443,35 @@ async function renderCenter(d) {
       <img src="${url}" alt="${r.filename}" loading="lazy" /></details>`;
   });
   if (rasters.length) {
-    const imgs = rasters.map((r) => `<img src="${fileUrl(d, r.filename)}" alt="${r.filename}" loading="lazy" />`).join("");
-    html += `<details class="raster-gallery"><summary>what the OCR/vision model saw — ${rasters.length} page raster(s) (machine input, not for human review)</summary>${imgs}</details>`;
+    // Auto-open when visual_text_gap fires — the one case where the visuals may be the ONLY evidence.
+    // Body fills lazily on first open (up to 258 rasters measured — no eager DOM/network cost).
+    html += `<details ${s.visual_text_gap ? "open" : ""} class="raster-gallery"><summary>what the OCR/vision model saw — ${rasters.length} page raster(s) (machine input, not for human review)</summary><div class="raster-body"></div></details>`;
   }
 
   c.innerHTML = html;
   c.querySelectorAll("[data-go]").forEach((a) => a.onclick = (e) => { e.preventDefault(); selectRecord(a.dataset.go); });
+  // Raster gallery fills on first open — no DOM/network cost for the ~all reviews that never open it.
+  const gal = c.querySelector(".raster-gallery");
+  if (gal) {
+    const fill = () => {
+      const body = gal.querySelector(".raster-body");
+      if (body && !body.childElementCount)
+        body.innerHTML = rasters.map((r) => `<img src="${fileUrl(d, r.filename)}" alt="${dnEsc(r.filename)}" loading="lazy" />`).join("");
+    };
+    gal.addEventListener("toggle", () => { if (gal.open) fill(); });
+    if (gal.open) fill();
+  }
   // Every details carries data-default-open (stamped at render; refined by applyEvidenceDefaults once
   // bodies load) so "collapse to defaults" restores the computed default, not just closes everything.
+  // c.dataset.showAll records a live "show all reps" so the async classification never fights the user.
   c.querySelectorAll("details").forEach((el) => { el.dataset.defaultOpen = el.open ? "1" : "0"; });
+  delete c.dataset.showAll;
   const showAllBtn = c.querySelector(".show-all-reps");
   if (showAllBtn) showAllBtn.onclick = () => {
     const all = [...c.querySelectorAll("details")];
     const anyClosed = all.some((el) => !el.open);
     all.forEach((el) => { el.open = anyClosed ? true : el.dataset.defaultOpen === "1"; });
+    if (anyClosed) c.dataset.showAll = "1"; else delete c.dataset.showAll;
     showAllBtn.textContent = anyClosed ? "collapse to defaults" : "show all reps";
   };
   // Lazy-load text bodies, then compute the per-rep SIGNAL-LEVEL "unique contribution" (times in this rep
@@ -492,15 +509,17 @@ function inWindowTimes(text) {
 }
 
 // Annotate each text rep with the in-window times it has that the DENSEST rep lacks (or "⊆ densest").
-// Returns the per-rep classification ({filename, role: densest|adder|subsumed, nTimes, nUniq}) so #522's
-// applyEvidenceDefaults can drive the DEFAULT open states from the same single computation.
+// Returns the per-rep classification ({filename, source, role: densest|adder|subsumed, nTimes, nUniq,
+// other}) so #522's applyEvidenceDefaults can drive the DEFAULT open states from one computation.
+// `other` = non-clock-time scorer evidence (instructional-minutes phrasing / period-table hits) so a rep
+// the scorer's strongest detector fired on can't be classed "subsumed" purely for lacking colon-times.
 function annotateUniqueTimes(c, bodies, ordered) {
   const timeSets = {};
   ordered.forEach((r) => { timeSets[r.filename] = inWindowTimes(bodies[r.filename] || ""); });
   let best = null, bestN = -1;
   ordered.forEach((r) => { const n = timeSets[r.filename].size; if (n > bestN) { bestN = n; best = r.filename; } });
   return ordered.map((r) => {
-    const el = c.querySelector(`.rep-uniq[data-uniq="${r.filename}"]`);
+    const el = c.querySelector(`.rep-uniq[data-uniq="${CSS.escape(r.filename)}"]`);
     const mine = timeSets[r.filename], bestSet = timeSets[best] || new Set();
     const uniq = [...mine].filter((t) => !bestSet.has(t));
     const role = r.filename === best ? "densest" : (uniq.length ? "adder" : "subsumed");
@@ -509,39 +528,54 @@ function annotateUniqueTimes(c, bodies, ordered) {
       else if (role === "adder") el.innerHTML = `<span class="uniq-hot">+${uniq.length} time(s) not in densest: ${uniq.slice(0, 6).join(", ")}</span>`;
       else el.innerHTML = `<span class="uniq-sub">⊆ densest (nothing unique)</span>`;
     }
-    return { filename: r.filename, source: r.source, role, nTimes: mine.size, nUniq: uniq.length };
+    return { filename: r.filename, source: r.source, role, nTimes: mine.size, nUniq: uniq.length,
+      other: dnOtherEvidence(bodies[r.filename] || "") };
   });
 }
 
 // #522 content-adaptive defaults: the reviewer audits the machine's decision, so the DEFAULT view is the
-// evidence the machine used — densest + unique-adders open, ⊆-densest collapsed (footer/header segs stay
-// open per REQ-114). Then the load-bearing GUARDRAIL (the Huntington class, issue #522): the default may
-// hide redundancy but may NEVER hide evidence — if any rep carrying in-window times ends up collapsed,
-// surface a pointer chip that names it and click-opens it. The check is deliberately independent of the
-// open rules above it, so a future rules change cannot silently regress the guarantee.
+// evidence the machine used — densest + unique-adders + other-evidence carriers open, ⊆-densest collapsed
+// (footer/header segs stay open per REQ-114). Then the GUARDRAIL: the default may hide redundancy but not
+// evidence — any collapsed rep still carrying evidence gets a pointer chip that names it and click-opens
+// it. SCOPE (honest): "evidence" here = in-window clock times + instructional-minutes/period phrasing (the
+// client-checkable detector surface). Keyword/footer-dict evidence isn't rep-attributed in the payload
+// (build_signals collapses those to record-level scalars), and rasters carry no client-readable text — the
+// visual_text_gap auto-open is their only net. Widening past that needs server-side rep attribution.
+// This guards #522's OWN collapse rules (a NEW risk this feature introduces); the earlier Huntington
+// truncation bug was a different mechanism, fixed unconditionally by #521's full-text rendering.
+// The check re-derives "hidden evidence" independently of the open rules — including the case where the
+// densest rep itself somehow ends up closed — so a rules change can't silently regress the guarantee.
 function applyEvidenceDefaults(c, classes) {
+  const dets = new Map(classes.map((k) => [k.filename, c.querySelector(`details[data-file="${CSS.escape(k.filename)}"]`)]));
+  const showAll = c.dataset.showAll === "1";   // the user already opened everything mid-load — don't fight them
   classes.forEach((k) => {
-    const det = c.querySelector(`details[data-file="${k.filename}"]`);
+    const det = dets.get(k.filename);
     if (!det) return;
     const seg = k.source.startsWith("segment:footer") || k.source.startsWith("segment:header");
-    det.open = seg || k.role === "densest" || k.role === "adder";
-    det.dataset.defaultOpen = det.open ? "1" : "0";
+    const dflt = seg || k.role === "densest" || k.role === "adder" || k.other;
+    if (!showAll) det.open = dflt;
+    det.dataset.defaultOpen = dflt ? "1" : "0";
   });
+  const densestOpen = classes.some((k) => k.role === "densest" && dets.get(k.filename)?.open);
   const hidden = classes.filter((k) => {
-    if (k.role === "densest" ? k.nTimes === 0 : k.nUniq === 0) return false;   // carries no non-redundant evidence
-    const det = c.querySelector(`details[data-file="${k.filename}"]`);
-    return det && !det.open;
+    const evidence = k.role === "densest" ? (k.nTimes > 0 || k.other)
+      : (k.nUniq > 0 || k.other || (k.nTimes > 0 && !densestOpen));   // subsumed times count if densest is closed
+    const det = dets.get(k.filename);
+    return evidence && det && !det.open;
   });
   c.querySelector(".evidence-pointer")?.remove();
   if (!hidden.length) return;
   const strip = document.createElement("div");
   strip.className = "evidence-pointer";
-  strip.innerHTML = `<b>evidence in collapsed rep(s):</b> ` + hidden.map((k) =>
-    `<button type="button" class="chip ev-jump" data-ev="${k.filename}">${k.role === "densest" ? k.nTimes : "+" + k.nUniq} time(s) in ${k.source} → open</button>`).join(" ");
+  strip.innerHTML = `<b>evidence in collapsed rep(s):</b> ` + hidden.map((k) => {
+    const n = k.role === "densest" ? k.nTimes : (k.nUniq || k.nTimes);   // subsumed surfaced via densest-closed shows its own count
+    const what = n ? `${k.role === "adder" ? "+" : ""}${n} time(s)` : "minutes/period text";
+    return `<button type="button" class="chip ev-jump" data-ev="${dnEsc(k.filename)}">${what} in ${dnEsc(k.source)} → open</button>`;
+  }).join(" ");
   c.querySelector(".rec-header").after(strip);
   strip.querySelectorAll("[data-ev]").forEach((b) => b.onclick = () => {
-    const det = c.querySelector(`details[data-file="${b.dataset.ev}"]`);
-    if (det) { det.open = true; det.scrollIntoView({ behavior: "smooth", block: "start" }); }
+    const det = dets.get(b.dataset.ev);
+    if (det) { det.open = true; det.dataset.defaultOpen = "1"; det.scrollIntoView({ behavior: "smooth", block: "start" }); }
   });
 }
 
@@ -573,6 +607,13 @@ const DN_OFFICE_KW = ["office hours", "office is open", "main office", "front of
   "staff day", "workday", "work day", "teacher hours", "building hours", "administrative"];
 const DN_INSTRUCTIONAL = /(\d{2,4})\s*(?:minutes|mins)\s+(?:of|per)\s+(?:instruction|instructional|class|learning)|(?:instructional\s+minutes|minutes\s+per\s+day|minutes\s+of\s+instruction)/gi;
 const DN_PERIOD = /\bperiod\s*\d|\b\d(?:st|nd|rd|th)\s+period/gi;
+// Non-clock-time scorer evidence a rep can carry: explicit instructional-minutes phrasing (the scorer's
+// STRONGEST detector, lf_explicit_minutes 0.95, which needs no colon-times at all) and period-table hits.
+// Same ported regexes the density nav uses; the lastIndex resets are load-bearing (module-level /g).
+function dnOtherEvidence(text) {
+  DN_INSTRUCTIONAL.lastIndex = 0; DN_PERIOD.lastIndex = 0;
+  return DN_INSTRUCTIONAL.test(text) || DN_PERIOD.test(text);
+}
 const DN_TYPE_LABEL = { proximity_pair: "start/end pair", table_times: "schedule table",
   instructional: "instructional minutes", in_window_time: "in-window times", positive_kw: "hours keyword" };
 const dnEsc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -714,8 +755,10 @@ function renderDensityNav(pre, text, sig, W) {
   nav.querySelectorAll("[data-bm]").forEach((c) => c.onclick = () => {
     flashTo(c.dataset.bm);
     if (c.dataset.page) {   // #522: also drive the embedded PDF viewer to the bookmark's page
-      const view = document.querySelector("#center iframe[data-pdf-view]");
-      if (view) view.src = view.src.split("#")[0] + "#page=" + c.dataset.page;
+      // A record carries at most one pdf rep today (capture builds one files{pdf|bin} slot) — but that's
+      // an unenforced pipeline invariant, so steer ONLY when unambiguous; never steer the wrong document.
+      const views = document.querySelectorAll("#center iframe[data-pdf-view]");
+      if (views.length === 1) views[0].src = views[0].src.split("#")[0] + "#page=" + c.dataset.page;
     }
   });
   const strip = nav.querySelector(".dn-strip");

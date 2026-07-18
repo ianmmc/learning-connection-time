@@ -172,16 +172,25 @@ def test_content_adaptive_defaults_present_in_console():
         "the classification must DRIVE the defaults, not just decorate them"
     assert "raster-gallery" in js and "what the OCR/vision model saw" in js, \
         "per-page rasters must be demoted to one collapsed, labeled gallery (machine input, not human)"
+    assert 'gal.addEventListener("toggle"' in js, "the raster gallery must fill lazily on first open"
     assert 'data-pdf-view' in js, "the source PDF (embedded viewer) must be the default visual"
     assert "show-all-reps" in js and "collapse to defaults" in js, \
         "the full raw set must stay one click away — nothing removed"
+    assert 'const shotsOpen = s.visual_text_gap || d.kind === "image"' in js and "visual-rep" in js, \
+        "screenshots must auto-open exactly when the record may be image-only (visual_text_gap / image kind)"
+    assert "const provisional = fulls[0] || ordered[0]" in js, \
+        "a provisional densest must open at render time — the pane is never all-collapsed while bodies fetch"
+    assert 'c.dataset.showAll = "1"' in js and 'c.dataset.showAll === "1"' in js, \
+        "a mid-load 'show all reps' click must not be silently reverted by the async classification"
     assert ".evidence-pointer" in css and ".raster-gallery" in css, "the #522 styles must exist"
 
 
 def test_evidence_guardrail_pointer_present_in_console():
-    """#522 guardrail regression (the Huntington class — must not silently recur): whenever a rep carrying
-    in-window-time evidence ends up collapsed by default, the console MUST surface a pointer that names it
-    and click-opens it. The check must be independent of the open rules so a rules change can't regress it."""
+    """#522 guardrail regression: whenever a rep carrying evidence ends up collapsed by default, the console
+    MUST surface a pointer that names it and click-opens it. Scope = the client-checkable detector surface:
+    in-window clock times PLUS instructional-minutes/period phrasing (`other`) — a rep the scorer's strongest
+    detector fired on must not vanish just because it has no colon-times. The check must be independent of
+    the open rules (including a closed densest) so a rules change can't silently regress it."""
     from pathlib import Path
     repo = Path(__file__).resolve().parent.parent
     js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
@@ -189,17 +198,28 @@ def test_evidence_guardrail_pointer_present_in_console():
     assert "evidence in collapsed rep(s)" in js, "the pointer must say what it is"
     assert "const hidden = classes.filter(" in js, \
         "the guardrail must re-derive hidden evidence from the classification, independent of the open rules"
+    assert "function dnOtherEvidence" in js and "other: dnOtherEvidence(" in js, \
+        "non-clock-time scorer evidence (instructional-minutes/period) must feed the classification"
+    assert "k.nTimes > 0 && !densestOpen" in js, \
+        "a subsumed rep's times must count as hidden evidence when the densest rep is not open (no tautology)"
+    assert "CSS.escape(k.filename)" in js, \
+        "filename-interpolated selectors must be CSS-escaped (an odd filename must not throw and kill the guardrail)"
 
 
 def test_density_bookmarks_carry_pdf_page_and_steer_viewer():
     """#522 composition with #521: pdftotext output keeps \\f page separators, so a char-offset bookmark
-    maps deterministically to a source-PDF page — chips must carry p.N and steer the embedded viewer."""
+    maps deterministically to a source-PDF page — chips must carry p.N and steer the embedded viewer.
+    Pins the FULL steering expression: the fragment-strip (src.split("#")[0]) keeps repeated clicks
+    idempotent, and steering must abstain unless exactly one PDF iframe exists (never steer the wrong doc)."""
     from pathlib import Path
     repo = Path(__file__).resolve().parent.parent
     js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
     assert 'text.indexOf("\\f")' in js and "const pageOf = (off)" in js, "the \\f page map must exist"
-    assert "data-page" in js and '"#page=" + c.dataset.page' in js, \
-        "bookmark chips must carry the page and steer the PDF iframe to it"
+    assert "data-page" in js, "bookmark chips must carry the page"
+    assert 'views[0].src = views[0].src.split("#")[0] + "#page=" + c.dataset.page' in js, \
+        "steering must strip the old fragment (idempotent across clicks), not append to it"
+    assert "views.length === 1" in js, \
+        "steering must abstain when the single-PDF-per-record invariant doesn't hold"
 
 
 def test_density_nav_js_constants_match_build_signals_python():
