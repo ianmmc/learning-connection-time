@@ -364,6 +364,40 @@ veto.**
   This is what surfaced from the #528 board/sports analysis: ~12 of those "board/sports" false-sends were
   really stale month-word-dated newsletters, a recency-parser gap, not a confounder-detector problem.
 
+**(7) THE IRREGULAR ELIGIBILITY VETO IS REFUTED TOO — #515 re-measured post-#537 (2026-07-18): every
+buildable conditional is net-negative; the combiner-level demotion already took the reachable ground.**
+Method: the persisted per-record votes (`signals_json.detectors`) + the worked `other_schedule` facet
+(61 labels, #537) against the current labeled tier-A population (389: 335 target / 54 non-target,
+false-send 13.9%). Simulated eligibility vetoes on the auto path (HOLD semantics — a vetoed target goes
+to review, not lost; the cost is Ian's review time, the scarcest resource):
+
+| veto rule on tier A | FP removed | targets vetoed | ratio |
+|---|---|---|---|
+| any `lf_nonstandard_day` vote | 26 | **115** | 1 : 4.4 |
+| raw term anywhere (`nonstandard_day`) | 8 | 54 | 1 : 6.8 |
+| **#515's literal rule:** strong vote AND no `regular_day_language` | 13 | **52** | 1 : 4.0 |
+| + positional `nonstandard_near_times ≥ 2` | 11 | 26 | 1 : 2.4 |
+| + `nonstandard_heading ≥ 1` | 11 | 21 | 1 : 1.9 |
+| **oracle** (human `other_schedule=yes` — a perfect detector's ceiling) | **18** | 0 | — |
+
+- **Why every rule loses:** by construction, a record that is *still tier A* after #537 either carries a
+  STRONG_STRUCTURAL positive that outvoted the wrong-day evidence, or fired only soft. An eligibility veto
+  keyed on the same signals just re-litigates the combiner's precedence — and the collateral list shows the
+  precedence is right: real bell-schedule hubs and handbooks routinely name early-dismissal/late-start
+  variants next to the regular day (the 37%-co-occurrence fact of obs. 5, now visible per-record).
+- **The ceiling is 18 FPs and no signal reaches it cleanly:** even the human facet only removes 18 of the
+  54 remaining false-sends, and the best detector approximation catches 11 of those 18 while dragging 21
+  real targets into review. 8 of the residual 18 are ONE shape — DASD `apps/bell_schedules` variant-only
+  pages (early-dismissal/remote id-pages of the same CMS app whose regular-day sibling IS the target) —
+  a *sibling-aware dispatch* problem (prefer-regular among same-app siblings, cf. prefer-recent §3G), not
+  an eligibility one.
+- **Consequence: #515 should CLOSE, not be built.** Its stale half was refuted by obs. 6; its irregular
+  half is now measured net-negative post-#537. The eligibility union stays as-is; wrong-day evidence
+  remains a combiner concern. The residual send-side leak (54 FPs) decomposes as ~18 wrong-day-only pages
+  the combiner deliberately lets through under strong-structural precedence (revisit only via the
+  sibling-aware dispatch idea above), plus the multi-confounder homepage cluster (#532) and the remaining
+  soft-confounder co-occurrence (#519's ground, partially taken by #528).
+
 ---
 
 ## 4. Labeling — a THREE-AXIS object (v2.1, REQ-114)
