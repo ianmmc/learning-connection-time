@@ -26,6 +26,7 @@ const CONFOUNDERS = [
   ["transportation", "Bus / transportation", "lf_transport"],
   ["news_feed", "News / social feed", "lf_news_feed"],
   ["office_building_hours", "Building / office hours (not the student day)", "lf_office_hours"],
+  ["other_schedule", "Non-Regular-Day Schedule", "lf_nonstandard_day"],
 ];
 // AXIS 3 (checkboxes): where the target hides / how to read it. `sig` = the signal that hints it.
 const LOCATION = [
@@ -51,6 +52,7 @@ const DEFS = {
   transportation: "Bus / transport times.",
   news_feed: "A news / social-media feed whose post timestamps are spurious time signal.",
   office_building_hours: "Building/office hours (often a footer “Building Hours 7:15–3:15”) that mimic a start/end pair but are NOT the student day.",
+  other_schedule: "Times/schedule for something other than the regular full school day: early dismissal, late start / delay, remote/virtual, inclement (snow/fog), minimum/half day, exam day, summer school/ESY, or special events (open house, registration, back-to-school).",
   // location (Axis 3)
   buried_handbook: "The target is present but inside a long multi-topic document (e.g. a handbook) — record the page(s).",
   needs_vision: "You can see the target in the image/PDF, but NO text extractor captured it — needs vision at Stage 6/7.",
@@ -607,6 +609,10 @@ const DN_OFFICE_KW = ["office hours", "office is open", "main office", "front of
   "staff day", "workday", "work day", "teacher hours", "building hours", "administrative"];
 const DN_INSTRUCTIONAL = /(\d{2,4})\s*(?:minutes|mins)\s+(?:of|per)\s+(?:instruction|instructional|class|learning)|(?:instructional\s+minutes|minutes\s+per\s+day|minutes\s+of\s+instruction)/gi;
 const DN_PERIOD = /\bperiod\s*\d|\b\d(?:st|nd|rd|th)\s+period/gi;
+// Verbatim port of build_signals.NONSTANDARD_TERM_RE (#537 follow-on) — pinned by a no-drift test, like
+// DN_INSTRUCTIONAL/DN_PERIOD. Without it the heat-strip could not show the wrong-day evidence that can
+// demote a lone table to review (PR #538 review find).
+const DN_NONSTANDARD = /early dismissal|early release|late start|minimum day|half.day|delayed (?:start|opening)|(?:2|two).hour delay|remote learning|e.?learning|virtual (?:day|learning)|distance learning|snow day|fog(?:gy)? day|inclement weather|weather event|summer (?:school|session|program|hours)|extended school year|\besy\b|jump.?start|open house|(?:student|kindergarten|fall|spring|school) registration|registration (?:day|night|dates?|times|schedule)|back.to.school|exam schedule|final exam|finals schedule|substitute (?:bell )?(?:schedule|day)|act 80/gi;
 // Non-clock-time scorer evidence a rep can carry: explicit instructional-minutes phrasing (the scorer's
 // STRONGEST detector, lf_explicit_minutes 0.95, which needs no colon-times at all) and period-table hits.
 // Same ported regexes the density nav uses; the lastIndex resets are load-bearing (module-level /g).
@@ -657,6 +663,8 @@ function dnEvents(text, sig, W) {
   ["board", "sports", "calendar", "transport"].forEach((cls) =>
     (neg[cls] || []).forEach((k) => dnAllIndexOf(lc, k).forEach((o) => push(o, cls))));
   DN_OFFICE_KW.forEach((k) => dnAllIndexOf(lc, k).forEach((o) => push(o, "office_hours")));
+  DN_NONSTANDARD.lastIndex = 0;
+  while ((m = DN_NONSTANDARD.exec(text))) push(m.index, "wrong_day");
   return ev;
 }
 

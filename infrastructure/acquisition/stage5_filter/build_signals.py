@@ -14,6 +14,7 @@ docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE5_FILTER_DESIG
 Usage:  python3 build_signals.py [--root data/raw/lea-website-captures] [--db <path>]
 """
 import argparse
+import bisect
 import hashlib
 import json
 import re
@@ -118,10 +119,68 @@ HOURS_INTENT_KW = ["school hours", "school day", "hours of operation", "start ti
 # Hours that belong to the OFFICE/STAFF, not the student day (the research's #1 confusable, §5.2).
 OFFICE_HOURS_KW = ["office hours", "office is open", "main office", "front office", "staff hours",
                    "staff day", "workday", "work day", "teacher hours", "building hours", "administrative"]
-# A schedule that exists but is NOT the standard school day (weather/remote/delay-only variants).
+# ---- The non-regular-day vocabulary (#537) — THREE regexes, ONE review surface. Edit them TOGETHER: ----
+# a term added to the CLASS (what a non-regular day looks like) usually implies checking the GUARD (how a
+# page names its regular day) and vice versa; a drift between them is a measured failure mode (PR #538
+# review). NONSTANDARD_DAY_KW (the legacy anywhere-in-text class) is pinned as a SUBSET of
+# NONSTANDARD_TERM_RE by test_nonstandard_term_re_covers_legacy_kw, so tuning the class can't silently
+# strand the legacy signal.
+# (1) The legacy anywhere-in-text class — kept as the SOFT-vote basis (weather/remote/delay variants only;
+#     deliberately narrow, since a bare mention anywhere fires it — 37% of real targets mention these).
 NONSTANDARD_DAY_KW = ["remote learning", "e-learning", "elearning", "weather event", "2-hour delay",
                       "2 hour delay", "two hour delay", "early dismissal schedule", "delayed start",
                       "virtual day", "snow day", "inclement weather", "distance learning"]
+# (2) The FULL facet term class, used POSITIONALLY (#537 follow-on). The anywhere boolean above is a weak
+# discriminator both ways (measured 2026-07-18 on the 44-record facet ground truth): it recalled 12/44
+# (no summer/event/exam/foggy/substitute terms), and 63 of its 123 false claims were bare "inclement
+# weather" POLICY prose nowhere near a schedule. What separates the non-regular-day PAGE (DASD's "Early
+# Dismissal Bell Schedule" table) from a regular-day page that merely mentions delays is WHERE the term
+# sits: titling a schedule, or adjacent to the in-window times themselves. Over-generic bare words are
+# deliberately QUALIFIED ("registration"/"substitute" alone match ordinary school-site content — course
+# registration, substitute-teacher hiring — a PR #538 review find): they fire only in an
+# event-time/schedule phrasing.
+NONSTANDARD_TERM_RE = re.compile(
+    r"early dismissal|early release|late start|minimum day|half.day|delayed (?:start|opening)|"
+    r"(?:2|two).hour delay|remote learning|e.?learning|virtual (?:day|learning)|distance learning|"
+    r"snow day|fog(?:gy)? day|inclement weather|weather event|summer (?:school|session|program|hours)|"
+    r"extended school year|\besy\b|jump.?start|open house|"
+    r"(?:student|kindergarten|fall|spring|school) registration|registration (?:day|night|dates?|times|schedule)|"
+    r"back.to.school|exam schedule|final exam|finals schedule|substitute (?:bell )?(?:schedule|day)|act 80", re.I)
+NONSTANDARD_NEAR_CHARS = 140   # a term within this many chars of an in-window time = the times are that day's
+NONSTANDARD_HEAD_CHARS = 40    # a term this close BEFORE schedule/hours/bell = the term TITLES the schedule
+# Word-bounded on purpose: bare "schedule"/"bell" substring-matched inside "unscheduled"/"Bellevue"
+# (PR #538 review find), spuriously titling a schedule that isn't there.
+NONSTANDARD_SCHED_RE = re.compile(r"\bschedules?\b|\bhours\b|\bbell\b", re.I)
+# (3) The dial-back GUARD (measured 2026-07-18, rule S3): a page that ALSO declares its regular day is a
+# regular-day page listing its variant sections, not a non-regular-day page — a real bell page routinely
+# carries a "Minimum Day"/"Late Start" row beside the regular rows. On the load-bearing records the guard
+# restored 16/37 wrongly-demoted real targets at a cost of 1/43 regained false-sends. Vocabulary covers
+# the district phrasings for "the default day" (regular/daily/normal/traditional/standard — the last two
+# added after the PR #538 review showed "Traditional Schedule" sites slipped the guard).
+NONSTANDARD_REGULAR_RE = re.compile(
+    r"regular (?:bell )?schedule|regular (?:school )?day|daily schedule|normal schedule|regular hours|"
+    r"traditional (?:bell )?schedule|standard (?:bell )?schedule|standard (?:school )?day", re.I)
+
+
+def nonstandard_positional(text: str, tpos: list) -> tuple:
+    """(near_times, heading) occurrence counts for the non-regular-day term class (#537).
+    `tpos` = in-window time char offsets in the SAME text (the max-evidence time basis). Counts, not
+    booleans, on purpose: the strong/soft detector split reads them as truthy, but the magnitudes feed
+    the guard-dominance measurement (STAGE5 change log 2026-07-18) and the console's evidence readout.
+    The near check bisects a sorted offset list (was a linear any() per match — O(m·t), a PR #538
+    review find; a big handbook has hundreds of both)."""
+    tpos = sorted(tpos)
+    near = heading = 0
+    for m in NONSTANDARD_TERM_RE.finditer(text):
+        lo = m.start() - NONSTANDARD_NEAR_CHARS
+        i = bisect.bisect_left(tpos, lo)
+        if i < len(tpos) and tpos[i] <= m.end() + NONSTANDARD_NEAR_CHARS:
+            near += 1
+        if NONSTANDARD_SCHED_RE.search(text[m.end():m.end() + NONSTANDARD_HEAD_CHARS]):
+            heading += 1
+    return near, heading
+
+
 # A heading-like occurrence of an hours-intent phrase (heading-proximity, research §2.2/§4.3).
 HEADING_HOURS_RE = re.compile(
     r"(office hours|school hours|school day hours|hours of operation|bell schedule|school day|"
@@ -576,6 +635,20 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
     period_hits = len(PERIOD_RE.findall(all_text))
     roster_hits = sum(1 for rn in roster_norm if rn and rn in all_lc)
     nonstandard_day = any(k in all_lc for k in NONSTANDARD_DAY_KW)
+    # positional non-regular-day evidence (#537): computed over the TIME basis (best_text) AND every
+    # table rep — each against its OWN in-window offsets (offsets never cross texts). The table pass
+    # closes a PR #538 review find: the lf_time_table evidence this signal undermines comes from
+    # table_reps, which can be a DIFFERENT physical representation than best_text — a camelot-extracted
+    # "Early Dismissal Bell Schedule" table whose surrounding prose (the best_text) never says so.
+    ns_near, ns_heading = nonstandard_positional(best_text, [off for off, _ in in_window])
+    for t in table_reps:
+        tn, th = nonstandard_positional(t, [off for off, _ in in_window_positions(t)])
+        ns_near, ns_heading = max(ns_near, tn), max(ns_heading, th)
+    # The S3 guard scans the SAME bases the positional evidence came from, and only when there is
+    # positional evidence to guard (it is consulted nowhere else — a per-record regex saved on the
+    # majority of records, PR #538 review).
+    regular_day_language = bool((ns_near or ns_heading) and any(
+        NONSTANDARD_REGULAR_RE.search(t) for t in [best_text, *table_reps]))
 
     # visual exists but text is thin -> possible missed content
     has_visual = bool(files.get("png") or (files.get("bin") and not files.get("txt"))) or "pdf" in files
@@ -604,6 +677,8 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
         "heading_hours_hits": headings["count"], "heading_hours_labels": headings["labels"],
         "table_time_density": table_time_density, "table_period_rows": table_period_rows,
         "nonstandard_day": nonstandard_day,
+        "nonstandard_near_times": ns_near, "nonstandard_heading": ns_heading,
+        "regular_day_language": regular_day_language,
     }
     # Clustering dedups by WHOLE-page content, so it uses the full best text, not the de-chromed main.
     return sig, full_best

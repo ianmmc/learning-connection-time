@@ -265,3 +265,177 @@ def test_resolve_harvest_slice_prefers_new_location_falls_back_to_legacy(monkeyp
     new.parent.mkdir(parents=True)
     new.write_text("new slice")
     assert BS.resolve_harvest_slice(did, ddir, rk) == new
+
+
+# ---- #537 follow-on: positional non-regular-day evidence (signal + detector + combiner rule) ----
+def test_nonstandard_positional_heading_and_near_times():
+    # the DASD shape: the term TITLES the schedule and the times sit right under it
+    t = "Early Dismissal Bell Schedule\nPeriod 1  8:00 AM - 8:35 AM\nPeriod 2  8:40 AM - 9:15 AM"
+    tpos = [off for off, _ in BS.in_window_positions(t)]
+    near, heading = BS.nonstandard_positional(t, tpos)
+    assert near >= 1 and heading >= 1
+    # summer-program times (no "schedule" word needed — near-times alone fires)
+    t2 = "Summer School runs 8:00 AM to 12:00 PM daily in June."
+    near2, _ = BS.nonstandard_positional(t2, [off for off, _ in BS.in_window_positions(t2)])
+    assert near2 >= 1
+
+
+def test_nonstandard_positional_ignores_policy_prose_far_from_times():
+    # the measured false-claim driver: bare "inclement weather" POLICY prose nowhere near the schedule
+    policy = "In case of inclement weather, please monitor local news for closure information. " * 3
+    sched = "\n" + ("x" * 300) + "\nSchool Hours: 8:00 AM - 3:00 PM"
+    t = policy + sched
+    tpos = [off for off, _ in BS.in_window_positions(t)]
+    near, heading = BS.nonstandard_positional(t, tpos)
+    assert near == 0 and heading == 0
+
+
+def test_lf_nonstandard_day_two_strengths():
+    from infrastructure.acquisition.stage5_filter import detectors as DET
+    strong = DET.lf_nonstandard_day(_sig(nonstandard_near_times=1), DET.DEFAULT_DETECTOR_PARAMS)
+    assert strong.strength == "strong" and strong.confidence == 0.7
+    soft = DET.lf_nonstandard_day(_sig(nonstandard_day=True), DET.DEFAULT_DETECTOR_PARAMS)
+    assert soft.strength == "soft" and soft.confidence == 0.45
+    assert DET.lf_nonstandard_day(_sig(), DET.DEFAULT_DETECTOR_PARAMS) is None
+
+
+def _table_sig(**over):
+    # a lone schedule TABLE (no footer/heading hours, no explicit minutes) — the #528/#530 lone-table shape
+    return _sig(table_time_density=6, table_period_rows=4, has_table=True, n_times=6,
+                n_times_in_window=6, **over)
+
+
+def test_lone_table_with_strong_wrong_day_routes_to_review():
+    # DASD: "Early Dismissal Bell Schedule" as a lone table -> the table's times ARE the irregular day's
+    out = COMB.score_record(_table_sig(nonstandard_heading=1, nonstandard_day=True))
+    assert out["decision"] == "review" and out["tier"] == "B"
+
+
+def test_lone_table_with_soft_wrong_day_mention_still_sends():
+    # #60/#528 held: a real schedule table + a bare weather-policy MENTION elsewhere must still send
+    out = COMB.score_record(_table_sig(nonstandard_day=True))
+    assert out["decision"] == "send" and out["tier"] == "A"
+
+
+def test_strong_structural_beats_strong_wrong_day():
+    # an intentional hours block still sends (structure beats noise — the combiner's core rule)
+    out = COMB.score_record(_sig(instructional_time=True, nonstandard_near_times=2))
+    assert out["decision"] == "send" and out["tier"] == "A"
+
+
+def test_wrong_day_only_evidence_is_review_not_suppress():
+    # positional wrong-day evidence with no target detector: a genuine schedule of the wrong day ->
+    # review (C), never a confident suppress
+    out = COMB.score_record(_sig(n_times_in_window=1, nonstandard_near_times=1))
+    assert out["decision"] == "review" and out["tier"] == "C"
+
+
+def test_regular_day_language_guard_downgrades_strong_to_soft():
+    # rule S3 (measured): a page that declares its regular day is a regular page listing variants —
+    # positional wrong-day evidence downgrades to a mention, so a real bell table still sends
+    from infrastructure.acquisition.stage5_filter import detectors as DET
+    v = DET.lf_nonstandard_day(_sig(nonstandard_heading=1, regular_day_language=True), DET.DEFAULT_DETECTOR_PARAMS)
+    assert v.strength == "soft"
+    out = COMB.score_record(_table_sig(nonstandard_heading=1, regular_day_language=True))
+    assert out["decision"] == "send" and out["tier"] == "A"
+
+
+# ---- PR #538 review fixes: precedence pins, regex hygiene, vocabulary invariants, table basis ----
+def test_no_times_suppress_floor_outranks_wrong_day_heading():
+    """PR #538 review: a wrong-day HEADING with zero in-window times anywhere (nonstandard_heading needs
+    no times) is a page with nothing extractable — the measured suppress floor wins over wrong-day-only
+    review. This precedence is deliberate, not an elif-ordering accident; the one-hop-away case is #517."""
+    out = COMB.score_record(_sig(nonstandard_heading=1))
+    assert out["decision"] == "suppress" and out["tier"] == "D"
+
+
+def test_nonstandard_sched_re_is_word_bounded():
+    """PR #538 review: bare 'schedule'/'bell' substring-matched inside 'unscheduled'/'Bellevue'."""
+    assert not BS.NONSTANDARD_SCHED_RE.search("unscheduled closure")
+    assert not BS.NONSTANDARD_SCHED_RE.search("Bellevue Elementary")
+    assert not BS.NONSTANDARD_SCHED_RE.search("rescheduled event")
+    assert BS.NONSTANDARD_SCHED_RE.search("Bell Schedule")
+    assert BS.NONSTANDARD_SCHED_RE.search("schedules for the week")
+    assert BS.NONSTANDARD_SCHED_RE.search("hours of operation")
+
+
+def test_nonstandard_term_re_covers_legacy_kw():
+    """PR #538 review: the legacy anywhere-in-text NONSTANDARD_DAY_KW and the positional
+    NONSTANDARD_TERM_RE are two vocabularies for one class — pin the subset invariant so tuning the
+    class regex can never silently strand a legacy term."""
+    for kw in BS.NONSTANDARD_DAY_KW:
+        assert BS.NONSTANDARD_TERM_RE.search(kw), f"legacy term not covered by NONSTANDARD_TERM_RE: {kw!r}"
+
+
+def test_generic_terms_require_event_qualifier():
+    """PR #538 review: bare 'registration'/'substitute' matched ordinary school-site content (course
+    registration forms, substitute-teacher hiring). They now fire only in event-time/schedule phrasing."""
+    for benign in ("online registration form", "register here", "substitute teacher application",
+                   "apply to be a substitute", "Registration Hours: 8:00 AM"):
+        assert not BS.NONSTANDARD_TERM_RE.search(benign), f"should not match: {benign!r}"
+    for real in ("school registration times", "fall registration", "kindergarten registration",
+                 "registration day", "substitute schedule", "substitute bell schedule"):
+        assert BS.NONSTANDARD_TERM_RE.search(real), f"should match: {real!r}"
+
+
+def test_regular_guard_covers_traditional_and_standard_phrasings():
+    """PR #538 review: 'Traditional Schedule' / 'Standard Day' sites slipped the S3 guard."""
+    for phrase in ("Traditional Schedule", "traditional bell schedule", "Standard Bell Schedule",
+                   "standard school day", "Regular Schedule", "daily schedule"):
+        assert BS.NONSTANDARD_REGULAR_RE.search(phrase), f"guard must cover: {phrase!r}"
+
+
+def test_nonstandard_positional_reads_table_reps_too(tmp_path):
+    """PR #538 review: the table evidence lf_time_table scores can come from a camelot/pdfplumber rep
+    that is NOT best_text — the wrong-day scan must cover it, or the DASD shape (an 'Early Dismissal
+    Bell Schedule' TABLE whose surrounding prose never says so) slips the STRONG vote."""
+    prose = ("Welcome to our school. Doors open at 7:45 AM and classes begin at 8:00 AM. "
+             "Dismissal is at 3:00 PM. " * 4)
+    (tmp_path / "page.txt").write_text(prose)
+    tbl = ("Early Dismissal Bell Schedule\n---\n"
+           "Period 1 | 8:00 AM | 8:25 AM\nPeriod 2 | 8:30 AM | 8:55 AM\nPeriod 3 | 9:00 AM | 9:25 AM")
+    (tmp_path / "camelot.txt").write_text(tbl)
+    texts = [{"usable": True, "text_file": "page.txt", "n_chars": len(prose), "n_times": 6},
+             {"usable": True, "text_file": "camelot.txt", "source": "camelot_hybrid",
+              "n_chars": len(tbl), "n_times": 6}]
+    sig, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=None)
+    assert sig["nonstandard_heading"] >= 1, "the table rep's wrong-day title must be seen"
+
+
+def test_regular_day_guard_only_computed_with_positional_evidence(tmp_path):
+    """PR #538 review (efficiency + semantics): regular_day_language is consulted only to guard
+    positional evidence — with none, it reads False (not-applicable), and the guard regex isn't the
+    thing keeping the record alive."""
+    t = "Our regular schedule is great. School Hours: 8:00 AM - 3:00 PM. " * 3
+    (tmp_path / "page.txt").write_text(t)
+    texts = [{"usable": True, "text_file": "page.txt", "n_chars": len(t), "n_times": 2}]
+    sig, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=None)
+    assert not (sig["nonstandard_near_times"] or sig["nonstandard_heading"])
+    assert sig["regular_day_language"] is False
+
+
+def test_sort_score_symmetric_across_undermine_kinds():
+    """PR #538 review: two lone tables, one undermined by lf_news_feed (hard_neg) and one by the STRONG
+    lf_nonstandard_day (wrong_day_strong), both confidence 0.7 -> identical sort_score. The wrong-day
+    vote rides nconf like every other hard-undermining negative."""
+    table = {"name": "lf_time_table", "polarity": "target", "strength": "strong",
+             "confidence": 0.85, "reason": "t", "category": "school_bell_table"}
+    feed = {"name": "lf_news_feed", "polarity": "negative", "strength": "strong",
+            "confidence": 0.7, "reason": "f", "category": "embedded_feed"}
+    wrong = {"name": "lf_nonstandard_day", "polarity": "negative", "strength": "strong",
+             "confidence": 0.7, "reason": "w", "category": "other_schedule"}
+    a, b = COMB.combine([table, feed]), COMB.combine([table, wrong])
+    assert a["decision"] == b["decision"] == "review" and a["tier"] == b["tier"] == "B"
+    assert a["sort_score"] == b["sort_score"]
+
+
+def test_variant_dominated_page_overrides_regular_guard():
+    """PR #538 review (measured): >= wrong_day_dominance_min variant-schedule titles = a
+    variant-dominated page (DASD/MUSD shape) — one stray 'regular hours' phrase must not mute it."""
+    from infrastructure.acquisition.stage5_filter import detectors as DET
+    muted = DET.lf_nonstandard_day(_sig(nonstandard_heading=2, regular_day_language=True),
+                                   DET.DEFAULT_DETECTOR_PARAMS)
+    assert muted.strength == "soft"
+    dominated = DET.lf_nonstandard_day(_sig(nonstandard_heading=4, regular_day_language=True),
+                                       DET.DEFAULT_DETECTOR_PARAMS)
+    assert dominated.strength == "strong"

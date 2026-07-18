@@ -23,6 +23,9 @@ DEFAULT_DETECTOR_PARAMS = {
     "table_min_times": 4,     # DENSE in-window times in a table rep (with a positive kw) -> a schedule table
     "table_min_periods": 2,   # OR real period-row structure (Period 1/2/…) — the higher-precision path
     "neg_dom_min": 2,         # a negative class this dominant (and > positives, no proximity pair) -> negative
+    "wrong_day_dominance_min": 4,  # >= this many wrong-day schedule TITLES overrides the S3 regular-day
+                                   # guard (a variant-dominated page — DASD/MUSD shape). Measured
+                                   # 2026-07-18: at 4, +3 facet coverage for 0 extra real-target fires.
 }
 
 
@@ -133,8 +136,30 @@ def lf_calendar_widget(sig, p):
 
 
 def lf_nonstandard_day(sig, p):
-    """A genuine bell-shaped schedule that is NOT the standard day (weather/remote/delay). Soft negative:
-    real times, wrong schedule (Stroudsburg ?id= variants, TCUSD2 weather articles)."""
+    """A genuine schedule that is NOT the regular school day (the #537 "Non-Regular-Day Schedule" facet:
+    early dismissal / late start / remote / summer / event times). Two strengths (#537 follow-on):
+    STRONG when the term is POSITIONAL — titling a schedule ("Early Dismissal Bell Schedule", the DASD
+    shape) or adjacent to the in-window times themselves — because then the times ARE the irregular
+    day's; SOFT on a bare anywhere-in-text mention (a regular-day page merely mentioning delay policy —
+    37% of real targets do, so a mention alone must never demote structure). GUARD (measured, rule S3):
+    a page that also declares its REGULAR day ("Regular Schedule" / "Daily Schedule") is a regular-day
+    page listing its variants beside the regular rows — positional evidence downgrades to a mention.
+    SOFT is the FLOOR either way: guarded-positional and the legacy anywhere-mention both land there,
+    which is why the S3 guard reads only in the strong/soft split — there is no weaker level for it to
+    act on below soft (PR #538 review; if a future change strengthens the anywhere branch, the guard
+    must be re-threaded through it too)."""
+    positional = sig.get("nonstandard_near_times") or sig.get("nonstandard_heading")
+    # Dominance override (PR #538 review, measured): the guard is an any-match boolean, so one stray
+    # "regular hours" phrase would otherwise mute a page carrying MANY variant-schedule titles — a page
+    # that variant-dominated is a non-regular-day page regardless. Free at the measured threshold
+    # (+3 facet coverage, 0 extra real-target fires).
+    variant_dominated = (sig.get("nonstandard_heading") or 0) >= p["wrong_day_dominance_min"]
+    if positional and (not sig.get("regular_day_language") or variant_dominated):
+        return Vote("lf_nonstandard_day", "negative", "strong", 0.7,
+                    "non-regular-day schedule named at/near the times", "other_schedule")
+    if positional:
+        return Vote("lf_nonstandard_day", "negative", "soft", 0.45,
+                    "non-regular-day terms near times, but the page declares its regular day", "other_schedule")
     if sig.get("nonstandard_day"):
         return Vote("lf_nonstandard_day", "negative", "soft", 0.45, "non-standard-day (weather/remote) schedule", "other_schedule")
     return None
@@ -198,6 +223,9 @@ EVENT_WEIGHTS = {
     "transport":      (-1, 0.65),   # lf_transport
     "office_hours":   (-1, 0.50),   # lf_office_hours     — "office/staff hours" language
     "calendar":       (-1, 0.50),   # lf_calendar_widget  — calendar-keyword context (weak variant)
+    "wrong_day":      (-1, 0.70),   # lf_nonstandard_day  — a non-regular-day term (STRONG positional
+                                    #  variant's confidence; #537 follow-on — without this event the
+                                    #  heat-strip couldn't show the evidence that demoted the record)
 }
 
 # Which detector's live Vote confidence each event MUST match (the no-drift contract; positive_kw has no
@@ -205,7 +233,7 @@ EVENT_WEIGHTS = {
 EVENT_CONFIDENCE_SOURCE = {
     "instructional": "lf_explicit_minutes", "table_times": "lf_time_table", "proximity_pair": "lf_prose_pair",
     "in_window_time": "lf_weak_times", "board": "lf_board", "sports": "lf_sports", "transport": "lf_transport",
-    "office_hours": "lf_office_hours", "calendar": "lf_calendar_widget",
+    "office_hours": "lf_office_hours", "calendar": "lf_calendar_widget", "wrong_day": "lf_nonstandard_day",
 }
 
 

@@ -255,6 +255,27 @@ def test_density_nav_js_regexes_match_build_signals_python():
     assert m_period.group(1) == BS.PERIOD_RE.pattern
 
 
+def test_non_regular_day_confounder_checkbox_present_in_console():
+    """UI-visibility regression (#537): the ONE coarse "Non-Regular-Day Schedule" Axis-2 checkbox must
+    exist, keyed `other_schedule` (continuity with the v2.0→v2.1 migration rows + harness.DETECTOR_FACET's
+    lf_nonstandard_day mapping — reusing the key is what un-freezes that detector's facet denominator),
+    hinted by lf_nonstandard_day, with a tooltip enumerating the class (the helper text does the scoping
+    work the deliberately-coarse label can't). Guards the #537 vocabulary decision from silently vanishing
+    or fragmenting back into per-cause checkboxes."""
+    from pathlib import Path
+    repo = Path(__file__).resolve().parent.parent
+    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    assert '["other_schedule", "Non-Regular-Day Schedule", "lf_nonstandard_day"]' in js, \
+        "the coarse other_schedule confounder checkbox must be in CONFOUNDERS, hinted by lf_nonstandard_day"
+    assert "other_schedule: \"Times/schedule for something other than the regular full school day" in js, \
+        "the tooltip must define the class"
+    for term in ("early dismissal", "late start", "remote", "summer school", "open house"):
+        assert term in js, f"the tooltip must enumerate the class members (missing: {term})"
+    from infrastructure.acquisition.stage5_filter.harness import DETECTOR_FACET
+    assert DETECTOR_FACET["lf_nonstandard_day"] == {"other_schedule"}, \
+        "the checkbox key must stay aligned with the harness facet mapping"
+
+
 def test_followup_flag_jumps_attention_then_resolves(client):
     r = client.post("/api/followup", json={"scope": "district", "target_id": DL, "directive": "do X", "actor": "zz-test"})
     assert r.status_code == 200
@@ -583,3 +604,20 @@ def test_progress_counts_never_report_labeled_over_total(gov_session):
     counts = server._progress_counts(gov_session)
     assert counts == {"total": 1, "labeled": 1}       # the orphan label doesn't inflate `labeled`
     assert counts["labeled"] <= counts["total"]
+
+
+def test_density_nav_nonstandard_regex_matches_build_signals_python():
+    """No-drift guard (PR #538 review): DN_NONSTANDARD in app.js is a verbatim port of
+    build_signals.NONSTANDARD_TERM_RE so the heat-strip can show the wrong-day evidence that can demote
+    a lone table to review (#537 follow-on). Pin the pattern strings, same as DN_INSTRUCTIONAL/DN_PERIOD."""
+    from pathlib import Path
+    from infrastructure.acquisition.stage5_filter import build_signals as BS
+    from infrastructure.acquisition.stage5_filter import detectors as DET
+    repo = Path(__file__).resolve().parent.parent
+    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    import re
+    m = re.search(r"const DN_NONSTANDARD = /(.+)/gi;", js)
+    assert m, "DN_NONSTANDARD declaration must be present and in this exact shape"
+    assert m.group(1) == BS.NONSTANDARD_TERM_RE.pattern
+    assert 'push(m.index, "wrong_day")' in js, "wrong-day events must feed the heat-strip"
+    assert "wrong_day" in DET.EVENT_WEIGHTS and DET.EVENT_WEIGHTS["wrong_day"] == (-1, 0.70)

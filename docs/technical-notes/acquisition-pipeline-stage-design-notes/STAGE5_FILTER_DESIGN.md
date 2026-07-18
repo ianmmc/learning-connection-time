@@ -121,7 +121,7 @@ list is involved (config-as-data, §5). Seed set — the polarity is the directi
 | `lf_news_feed` | URL/DOM feed pattern (`live-feed`/`/announcements`/`page_no=`) or an embed to a social/feed host | **−negative** | the #1 tier-A pollutant (20/42 FPs); a *down-weight*, not a hard reject (some carry real hub hours) |
 | `lf_calendar_widget` | a calendar embed/iframe host, or `NEG_CALENDAR` dominance with no proximity pair | **−negative** | the Pittsylvania month-view cluster |
 | `lf_board` / `lf_sports` / `lf_transport` | the respective negative-keyword class dominant | **−negative** | V1 neg classes, now independent votes |
-| `lf_nonstandard_day` | weather/remote/delay/early-dismissal-only schedule language | **−negative (soft)** | genuine bell-shape but the *wrong* schedule (Stroudsburg `?id=`, TCUSD2 weather articles) |
+| `lf_nonstandard_day` | non-regular-day schedule language (the #537 `other_schedule` class). **Two strengths (2026-07-18):** STRONG when POSITIONAL — the term titles a schedule or sits within 140 chars of in-window times (`nonstandard_near_times`/`nonstandard_heading`), guarded by `regular_day_language` (a page declaring its regular day is a regular page listing variants — rule S3, measured); SOFT on a bare anywhere-mention | **−negative (strong/soft)** | genuine bell-shape but the *wrong* schedule; the strong form undermines a lone table/pair in the combiner (DASD "Early Dismissal Bell Schedule"); STRONG_STRUCTURAL still sends |
 | `lf_no_times` | zero in-window times anywhere (incl. raw reps) | **−suppress** | §2a-3, the corrected suppress floor |
 
 **`lf_office_hours` is not a 14th standalone detector** — there is no `lf_office_hours` function in the
@@ -184,7 +184,12 @@ before the human sees it; a borderline page reaching gate@5 costs only review ti
 > obs. 4 below are SUPERSEDED in place** on this basis (issues #207/#223/#512 closed 2026-07-16; the
 > event-content / wrong-schedule facet **vocabulary** is a single holistic decision, originally folded into
 > #522 by comment and **re-homed to #537** when #522 shipped its center-pane scope and closed, 2026-07-17 —
-> the vocabulary call itself stays gated on Ian). Memory: `project-stage5-labeling-serves-learning`.
+> **DECIDED + BUILT 2026-07-17 (Ian):** ONE coarse Axis-2 checkbox, display **"Non-Regular-Day Schedule"**,
+> key **`other_schedule`** (continuity with the v2.0→v2.1 migration rows + `harness.DETECTOR_FACET`'s
+> `lf_nonstandard_day` mapping — reusing the key un-freezes that detector's frozen facet denominator), with
+> a glossary definition enumerating the class (early dismissal · late start/delay · remote · inclement ·
+> minimum/half day · exam day · summer/ESY · event times). "Non-regular," not "wrong" — a Late Start
+> schedule isn't wrong, it's just not the target). Memory: `project-stage5-labeling-serves-learning`.
 
 **(1) A footer time-range on a DISTRICT page leans building/office hours**; on a SCHOOL page it leans the
 student day (2026-07-01). An unlabeled footer range (the `school_start_end_list` shape) is more likely
@@ -375,7 +380,9 @@ human answer scores exactly one detector (§5) and multi-module pages are repres
   Plus terminals **`target_absent`** and **`unusable`** (kept distinct: "no target" vs. "can't read it").
 - **Axis 2 — confounding signals PRESENT (checkbox, multi):** the former non-targets, now non-exclusive —
   `board` · `sports` · `academic_calendar` · `community_calendar` · `transportation` · `news_feed` ·
-  `office_building_hours`. Usable whether or not a target is present (Las Cruces: a real `district_hub_by_school`
+  `office_building_hours` · `other_schedule` ("Non-Regular-Day Schedule", #537 — the ONE coarse
+  not-the-regular-day facet: early dismissal / late start / remote / summer / event times; ground truth for
+  `lf_nonstandard_day`). Usable whether or not a target is present (Las Cruces: a real `district_hub_by_school`
   *delivered in* a news feed). These are the ground truth for the negative detectors.
 - **Axis 3 — where / how it hides (checkbox):** `buried_handbook` (+ a **print-dialog page range** "4, 7-9"
   parsed to `[4,7,8,9]` for the harvester — the guessed `harvest_pages` vs. labeled pattern) · `needs_vision`
@@ -819,7 +826,7 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 | `migrate_labels_v21` re-run guard (refuses a second real run without `force=True`) | **BUILT 2026-07-02** |
 | Harvest slices relocated out of `data/raw/` to `data/acquisition/harvest_slices/` (read-fallback to legacy location) | **BUILT 2026-07-02** |
 | Stage-3 iframe/embed capture + `cms_hint` promotion + iframe-innerText check | **BUILT (REQ-115)** |
-| **Facet-level per-detector scoring** (negative detectors vs. their Axis-2 confounder facets — `harness.DETECTOR_FACET` + `facet_detector_diagnostics`, scored over the 339/667 labels that carry facets) | **BUILT (#108, 2026-07-09)** — surfaced low confounder-precision the coarse target-accuracy hid (office_hours 0.18, sports 0.13 — provisional; nonstandard_day 0.17 — FROZEN, its facet has no live checkbox, tracked #207) |
+| **Facet-level per-detector scoring** (negative detectors vs. their Axis-2 confounder facets — `harness.DETECTOR_FACET` + `facet_detector_diagnostics`, scored over the labels that carry facets) | **BUILT (#108, 2026-07-09)** — surfaced low confounder-precision the coarse target-accuracy hid (office_hours 0.18, sports 0.13 — provisional). *nonstandard_day's denominator was frozen at the migration rows until the #537 checkbox shipped (2026-07-17; #207 closed as superseded) — it accrues normally now; see the #537 rows below* |
 | **`lf_footer_hours` footer/header evaluated independently** (an office footer no longer downgrades a school header) | **BUILT (#61, 2026-07-09)** — a bug guard; 0 current-corpus triggers, no metric change |
 | **`lf_nonstandard_day` soft-gate** (an incidental prose-pair + a weather/remote/delay soft negative → review, not auto-send; structural targets still send) | **BUILT (#60, 2026-07-09)** — measured pass: tier-A precision 0.8382→0.8444, tier-A + A+B recall held (0.8906 / 0.9961); 6 pages routed to review, 72 structural preserved |
 | **Canonical recall floor** (`harness.RECALL_FLOOR=0.98`/`FLOOR_TIER="A+B"`, `floor_recall`/`floor_satisfied`/`assert_floor`) — one source of truth replacing frontier's/the ledger's prior inconsistent 0.97/0.98-on-tier-A floors | **BUILT (#208, 2026-07-10)** — **enforced INSIDE `build_signals.ingest()`'s transaction** via `--assert-floor`: a violation raises and rolls back the *whole* re-ingest (not a post-hoc report) — see §5b |
@@ -834,12 +841,73 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 | **Console error-review lanes** (FP = tier-A ∩ `target_absent` via `release.MONEY_LEAK_WHERE`, the SSOT shared with `decide()`; FN = the fixed-seed reject-audit sample) + `rec_key` search + right-pane reorder | **BUILT (#516, PR #534, 2026-07-16)** — disagreement as the primary product of labeling, surfaced as first-class lanes |
 | **Relevance-density evidence navigation** for long reps (signed detector events on the char axis → smoothed curve → ranked bookmarks + heat-strip; weights served from `detectors.EVENT_WEIGHTS` via `/api/detector-weights` — display-only mirror of the live Vote confidences, pinned by a no-drift test, NOT a combiner weight surface) | **BUILT (#521, PR #535, 2026-07-17)** — replaces the 20k-char display cap; full text renders with peak anchors |
 | **Content-adaptive center-pane defaults** (evidence classification drives `<details>` open states: densest + unique-adders + instructional/period-phrasing carriers open, ⊆-densest collapsed; rasters demoted to one lazy collapsed gallery; source-PDF iframe = default visual; `\f`-page-mapped bookmarks steer the PDF viewer; hidden-evidence pointer strip + show-all toggle) | **BUILT (#522, PR #536, 2026-07-17)** — guardrail scope is the client-checkable surface (in-window times + instructional/period regexes); per-rep keyword/table attribution needs a server payload change (documented in-code as follow-up) |
+| **"Non-Regular-Day Schedule" Axis-2 checkbox** (key `other_schedule`, hinted by `lf_nonstandard_day`, glossary definition enumerating the class) — the #537 facet-vocabulary decision: ONE coarse checkbox, never per-cause fragments | **BUILT (#537, 2026-07-17)** — un-freezes `lf_nonstandard_day`'s facet denominator (was frozen at the migration rows since #108); UI-visibility pin `test_non_regular_day_confounder_checkbox_present_in_console` |
+| **Positional non-regular-day evidence** (`NONSTANDARD_TERM_RE` full class + `nonstandard_near_times`/`nonstandard_heading`/`regular_day_language` signals; `lf_nonstandard_day` STRONG variant; combiner `wrong_day_strong` undermines a lone table/pair, STRONG_STRUCTURAL still sends; wrong-day evidence **with time content** and no target → review C — the no-times suppress floor and hard negatives still outrank it, a deliberate precedence pinned by test) | **BUILT + MEASURED (#537 follow-on, 2026-07-18)** — after the PR #538 review round: tier-A precision **0.7817→0.8612**, FP-lane **100→54** (false-send rate 21.8%→**13.9%**), tier-A recall 0.8585→**0.8034** (demoted targets reach REVIEW, not suppress), **A+B recall 0.9928 HELD**, reject-quality 1.0; two ledger episodes recorded. **Hardened by the PR #538 max-effort review (17 findings, all fixed)** — see the change-log entry |
 | Learned `LabelModel` combiner · hierarchical/vendor pooling · online-FDR drift | **DEFERRED (scale endgame)** |
 
 ---
 
 ## Change log
 
+- **2026-07-18 (later) — PR #538 max-effort review round: 17 findings, all addressed, measured
+  net-positive.** A 10-angle adversarial review of the #537 PR confirmed 16 + 1 plausible finding; every
+  one fixed same-day. The load-bearing ones: **(1)** over-generic terms — bare `registration`/`substitute`
+  matched ordinary school-site content; both now require an event-time/schedule qualifier ("Registration
+  Hours: 8:00" no longer fires; "school registration times" still does). **(2)** `NONSTANDARD_SCHED_RE`
+  word-bounded (it substring-matched "unscheduled"/"Bellevue"). **(3)** the positional scan now also runs
+  over every TABLE rep against its own offsets — the lf_time_table evidence it undermines can come from a
+  camelot rep that is NOT best_text (the DASD shape could slip the STRONG vote entirely). **(4)** the S3
+  guard vocabulary gained traditional/standard phrasings, and the three vocabularies are now one
+  co-located review surface with a subset-invariant test (`test_nonstandard_term_re_covers_legacy_kw`).
+  **(5)** a **measured dominance override** (`wrong_day_dominance_min=4`, a tunable param): ≥4
+  variant-schedule titles = a variant-dominated page, un-muted by a stray "regular hours" phrase — free
+  at the threshold (+3 facet coverage, 0 extra real-target fires). **(6)** `wrong_day_strong` now rides
+  `nconf` so two equally-undermined review records sort identically regardless of which negative demoted
+  them. **(7)** the suppress-floor precedence question settled and PINNED: a wrong-day HEADING with zero
+  in-window times suppresses (the measured §2a-3 floor outranks wrong-day-only review; the one-hop case
+  is #517's affordance) — the prior "never suppress" claim was over-broad and is corrected here and in
+  the combiner comments, with tests pinning both sides. **(8)** the #521 heat-strip gained the
+  `wrong_day` event (`EVENT_WEIGHTS` −0.70, `DN_NONSTANDARD` verbatim-port pinned by a no-drift test) —
+  the console can now SHOW the evidence that demoted a record. Plus: bisect-based near check (was
+  O(m·t)), the guard computed only when consulted, stale harness/doc claims about the frozen facet
+  denominator corrected. **Measured (before→after `--assert-floor` re-ingest, ledger episode):** tier-A
+  precision held **0.8612**, tier-A recall **0.7938→0.8034** (the tightened vocabulary restored real
+  targets), FP-lane 53→54 (rate 13.9%), **A+B 0.9928 held**, reject-quality 1.0, detector fires 473→416.
+- **2026-07-18 — the #537 follow-on measured pass: positional non-regular-day evidence (the money pass
+  the checkbox existed for).** With the facet accrued (61 labels, the worked relabel queue), the
+  anywhere-in-text `nonstandard_day` boolean measured **12/44 recall** on the facet ground truth and its
+  false claims were dominated by bare "inclement weather" POLICY prose (63/123). Built the positional
+  form: `NONSTANDARD_TERM_RE` (the full facet class incl. summer/ESY, event times, exam, foggy,
+  substitute, Act 80) + `nonstandard_near_times` (term ≤140 chars from an in-window time) +
+  `nonstandard_heading` (term titling a schedule — the DASD "Early Dismissal Bell Schedule" shape) → a
+  STRONG `lf_nonstandard_day` vote that undermines a lone table/pair in the combiner (mirror of #530;
+  STRONG_STRUCTURAL still sends; wrong-day-only evidence → review C, never suppress). **Build-best-then-
+  dial-back in action:** the first (unguarded) cut lifted precision 0.7817→0.856 but demoted 57 real
+  targets — real bell pages legitimately list their early-release/minimum-day VARIANTS beside the regular
+  rows. A rule ladder measured on exactly the load-bearing records found **S3**: guard the strong vote
+  with `regular_day_language` ("Regular/Daily/Normal Schedule" present ⇒ regular page listing variants ⇒
+  downgrade to mention) — restores 16/37 targets at 1/43 regained false-sends. **Final measured pass
+  (before→after `--assert-floor` re-ingest, ledger episode recorded):** tier-A precision **0.7817→0.862**,
+  FP-lane **100→53**, auto false-send rate **21.8%→13.8%**, tier-A recall 0.8585→0.7938 (the ~21
+  still-demoted real targets land in REVIEW — human-time cost, not recall; **A+B 0.9928 held exactly**),
+  exploration-cohort reject-quality **1.0**. Residual (accepted, not chased): facet-tagged pages whose
+  only evidence is structural-with-no-term (the Stroudsburg "special subset" bell tables — a possible
+  future URL-sibling signal); STRONG_STRUCTURAL summer pages (structure beats noise stands). Consequence
+  for **#515**: the combiner-level demotion now covers much of the eligibility-veto's intended ground —
+  re-measure what an eligibility-layer veto still adds before building it.
+- **2026-07-17 (later) — #537 DECIDED + the checkbox BUILT: "Non-Regular-Day Schedule" (`other_schedule`).**
+  The facet-vocabulary decision (Ian): ONE coarse Axis-2 checkbox for every not-the-regular-day schedule
+  shape — early dismissal, late start/delay, remote/virtual, inclement, minimum/half day, exam day,
+  summer/ESY, event times (open house/registration/back-to-school) — never per-cause checkboxes (the
+  governing principle: coarsest learnable distinction; one detector = one denominator). Naming: "non-regular,"
+  not "wrong"/"irregular" — a Late Start schedule isn't wrong, it's just not the target; the phrasing matches
+  the labeler's own note vernacular ("not a regular school day schedule", verbatim in ~10 notes). Key stays
+  `other_schedule` so the migration rows seed the denominator and `DETECTOR_FACET` needs no change. Grounds:
+  the 2026-07-17 fresh decomposition of the 100 live tier-A false-sends found **~36 are the wrong-schedule
+  class** (30 note-diagnosed no-facet + 6 `other_schedule`) — the largest remaining bucket by far — heavily
+  concentrated in CMS bell-schedule apps serving day-variants (DASD early-dismissal ×10, MUSD foggy-day ×4).
+  Follow-on (separate, measured): the note-guided relabel queue, then `lf_nonstandard_day`'s term-class
+  extension + measured pass (#515 prep). Verified: Playwright against the live console + a static-source pin.
 - **2026-07-17 — the console trio SHIPPED (#516 → PR #534, #521 → #535, #522 → #536): the
   labeling-that-drives-learning surface.** Three console builds in sequence, each through a max-effort
   multi-agent review with all confirmed findings fixed before merge. **#516** — FP/FN error-review lanes

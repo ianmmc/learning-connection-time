@@ -256,10 +256,10 @@ DETECTOR_POLARITY = {
 DETECTOR_FACET = {
     "lf_news_feed": {"news_feed"},
     "lf_calendar_widget": {"academic_calendar", "community_calendar"},
-    # CAVEAT (#199 review): `other_schedule` has NO live checkbox in the v2.1 questionnaire (app.js
-    # CONFOUNDERS) — its only writer was the one-time v2.0→v2.1 label migration, so this detector's
-    # facet-tagged denominator is FROZEN at the migrated rows and cannot accrue from new gate@5 review
-    # until a nonstandard-day/other-schedule checkbox is added (tracked: #207).
+    # `other_schedule` = the "Non-Regular-Day Schedule" checkbox (#537): one coarse facet for every
+    # not-the-regular-day schedule shape (early dismissal / late start / remote / summer / event times) —
+    # deliberately NOT split into per-cause facets, so this detector's denominator can accrue. The
+    # pre-#537 rows written by the one-time v2.0→v2.1 migration seed it.
     "lf_nonstandard_day": {"other_schedule"},
     "lf_office_hours": {"office_building_hours"},
     "lf_board": {"board"},
@@ -302,7 +302,8 @@ def facet_detector_diagnostics(rows):
     predicate), the fraction where its claimed confounder facet (DETECTOR_FACET) is present. This is
     confounder-ID accuracy, orthogonal to whether a target co-occurs. `fires_facet_tagged` is the
     (transparent) denominator — a small one means facets are still accruing (§8), so read the precision as
-    provisional (EXCEPT lf_nonstandard_day, whose facet has no live checkbox — see DETECTOR_FACET).
+    provisional. (lf_nonstandard_day's denominator was frozen at the migration rows until the #537
+    "Non-Regular-Day Schedule" checkbox shipped, 2026-07-17 — it accrues normally now; see DETECTOR_FACET.)
     Records with no facets tagged can't inform it and are excluded, not counted as misses."""
     rows = list(rows)
     out = {}

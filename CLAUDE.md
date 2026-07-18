@@ -120,35 +120,41 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-17): epic #106's first wave is SHIPPED.** School-year currency (#107/#241 →
-PRs #529/#533: the `content_school_year` signal, the pre-2017-18 validity floor as HOLD, prefer-recent
-dispatch holds), the #530 combiner refinement (lone times-table on a feed/calendar page → review), and the
-**console trio** — **#516** (PR #534, FP/FN error-review lanes + `rec_key` search), **#521** (PR #535,
-relevance-density evidence navigation for long reps), **#522** (PR #536, content-adaptive center-pane
-defaults + the hidden-evidence guardrail). Each console PR went through a max-effort multi-agent review
-with every confirmed finding fixed before merge (lessons distilled in `PROJECT_HISTORY.md`'s 2026-07-16/17
-entry). The doc tower (stage notes, governance, pipeline map) was refreshed to present-state 2026-07-17.
+**Current status (2026-07-18): epic #106's precision arc is in its second wave.** First wave SHIPPED
+(2026-07-16/17): school-year currency (#107/#241/#531 → PRs #529/#533), the **#528** combiner refinement
+(→ PR #530, merged `90dae45` — #528 is CLOSED; a lone times-table on a feed/calendar page routes to
+review, −14 tier-A false-sends, remainder split to #531 shipped + #532 open), and the **console trio**
+(#516/#521/#522 → PRs #534–#536). Then **#537 DECIDED + BUILT (2026-07-17/18):** ONE coarse Axis-2
+checkbox **"Non-Regular-Day Schedule"** (key `other_schedule` — continuity un-froze `lf_nonstandard_day`'s
+facet denominator), and the note-guided relabel queue (posted on #537) is **WORKED** — 61 labels now carry
+the facet (was 6). Fresh live decomposition of the 100 tier-A false-sends (2026-07-17, in #537's comments):
+**~36 = the non-regular-day class** (the largest bucket) · 12 already floor-held by shipped #241/#531 ·
+7 homepage multi-confounder (#532) · 4 feed-URLs (#226) · ~20 scattered news/board/sports with NO lever
+(three measurements agree — accept as review-lane cost, don't chase).
 
-**Next (RESUME HERE — 2026-07-17): #528 — calendar scalar + the news_feed separating analysis.**
-**Read #528's issue comments first** — the 2026-07-17 comment carries the build-session context: the
-FP-lane (`release.MONEY_LEAK_WHERE`) IS the false-send population; the separator candidates are existing
-`signals_json` fields (`footer_hours`/`table_period_rows`/`instructional_time`/`proximity_pairs`); and the
-**two-weight-tables trap** — the combiner's weights are `DEFAULT_DETECTOR_PARAMS`/Vote confidences, NOT
-`detectors.EVENT_WEIGHTS` (that's #521's display-only mirror; its no-drift test will flag the mirror when
-a real confidence changes). Measure first: re-run the #519-recompute (fingerprints have moved; #530/#533
-shipped after the measured ground), confirm calendar is still ~5/0, run the 21-vs-30 analysis, bring back
-findings before building (per [[feedback-explore-before-scoring-changes]]).
-The remaining #106 slate after #528: **#537** (the confounder facet-vocabulary decision, re-homed from
-closed #522 — **gated on Ian**) → **#515** (eligibility gates, sequenced behind #537; news/calendar/board/
-sports stay SOFT per §3a obs. 5) · recall **#517/#518** · **#226** (URL-level feed negative — the
-structural signal #528's interaction and the forked-out board/sports mechanism would consume) ·
-#109/#110 (blocked on Council Lab)/#75 (re-scope first)/#83. Then **#111** → liveness gate → **#479/#480**
-→ **#92**. Parked: #475/#476, #103/#80 (Council Lab). Documented-in-code deferrals: `_satisfied_bands_now`
+**The #537 follow-on measured pass SHIPPED (2026-07-18):** positional non-regular-day evidence
+(`NONSTANDARD_TERM_RE` full class + `nonstandard_near_times`/`nonstandard_heading` + the
+`regular_day_language` S3 guard → a STRONG `lf_nonstandard_day` vote undermining a lone table/pair,
+STRONG_STRUCTURAL still sends). Measured (ledger episode recorded): tier-A precision **0.7817→0.862**,
+FP-lane **100→53**, auto false-send rate **21.8%→13.8%**, tier-A recall 0.8585→0.7938 (demoted targets
+reach REVIEW, not suppress), **A+B 0.9928 held**, reject-quality 1.0. Full derivation:
+`STAGE5_FILTER_DESIGN.md` change log 2026-07-18.
+
+**Next (RESUME HERE — 2026-07-18): the small precision wins, then re-scope #515.** (1) **#226** (URL
+`feed`/`live-feed` negative — guard "feeder", a real K-12 term; 4 live FP-lane records). (2) **#532**
+(page-focus signal, obs. 1 — the 7 multi-confounder homepage false-sends). (3) **#515 re-measure before
+building**: the combiner-level wrong-day demotion now covers much of the eligibility-veto's intended
+ground — measure what an eligibility-layer veto still adds (likely little; news/calendar/board/sports
+stay SOFT per §3a obs. 5). Also pending human review: the ~21 real targets the wrong-day rule now routes
+to review (they surface in the normal gate@5 queue). Then recall **#517/#518** · #75 (re-triage) · #83 ·
+#109 · #110 (blocked on Council Lab — candidate to re-home out of #106). Then **#111** → liveness gate →
+**#479/#480** → **#92**.
+Parked: #475/#476, #103/#80 (Council Lab). Documented-in-code deferrals: `_satisfied_bands_now`
 batching (revisit on volume); the #522 guardrail's per-rep keyword/table attribution (needs a server
 payload change); JS behavioral tests (no JS harness in repo — static-source pins only).
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
--m "not integration"` (expect **~1601** pass) + `pytest -q -m govdb` (expect **~241**, Postgres up).
+-m "not integration"` (expect **~1602** pass) + `pytest -q -m govdb` (expect **~241**, Postgres up).
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (the
 motivating ones: Huntington `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters).
 Full detail: `docs/PROJECT_HISTORY.md`, `STAGE5_FILTER_DESIGN.md` §8 + Change log,
