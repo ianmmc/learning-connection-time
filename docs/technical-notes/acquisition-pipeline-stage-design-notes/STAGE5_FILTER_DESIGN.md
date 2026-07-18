@@ -877,11 +877,33 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 | **Content-adaptive center-pane defaults** (evidence classification drives `<details>` open states: densest + unique-adders + instructional/period-phrasing carriers open, ⊆-densest collapsed; rasters demoted to one lazy collapsed gallery; source-PDF iframe = default visual; `\f`-page-mapped bookmarks steer the PDF viewer; hidden-evidence pointer strip + show-all toggle) | **BUILT (#522, PR #536, 2026-07-17)** — guardrail scope is the client-checkable surface (in-window times + instructional/period regexes); per-rep keyword/table attribution needs a server payload change (documented in-code as follow-up) |
 | **"Non-Regular-Day Schedule" Axis-2 checkbox** (key `other_schedule`, hinted by `lf_nonstandard_day`, glossary definition enumerating the class) — the #537 facet-vocabulary decision: ONE coarse checkbox, never per-cause fragments | **BUILT (#537, 2026-07-17)** — un-freezes `lf_nonstandard_day`'s facet denominator (was frozen at the migration rows since #108); UI-visibility pin `test_non_regular_day_confounder_checkbox_present_in_console` |
 | **Positional non-regular-day evidence** (`NONSTANDARD_TERM_RE` full class + `nonstandard_near_times`/`nonstandard_heading`/`regular_day_language` signals; `lf_nonstandard_day` STRONG variant; combiner `wrong_day_strong` undermines a lone table/pair, STRONG_STRUCTURAL still sends; wrong-day evidence **with time content** and no target → review C — the no-times suppress floor and hard negatives still outrank it, a deliberate precedence pinned by test) | **BUILT + MEASURED (#537 follow-on, 2026-07-18)** — after the PR #538 review round: tier-A precision **0.7817→0.8612**, FP-lane **100→54** (false-send rate 21.8%→**13.9%**), tier-A recall 0.8585→**0.8034** (demoted targets reach REVIEW, not suppress), **A+B recall 0.9928 HELD**, reject-quality 1.0; two ledger episodes recorded. **Hardened by the PR #538 max-effort review (17 findings, all fixed)** — see the change-log entry |
+| **Page-focus negative** (`lf_district_homepage`: `url_rootish` × `roster_school_names_hit ≥ 3` → the feed/calendar hard-undermine class; strong-structural still sends — the obs. 1 gap, closed for the landing-page slice) | **BUILT + MEASURED (#532, 2026-07-18)** — tier-A precision 0.8612→**0.8701**, FP 54→50, tier-A + A+B recall held EXACTLY; the multi-confounder-breadth candidate measured net-negative and was dropped (see change log) |
 | Learned `LabelModel` combiner · hierarchical/vendor pooling · online-FDR drift | **DEFERRED (scale endgame)** |
 
 ---
 
 ## Change log
+
+- **2026-07-18 — #532: the page-focus signal SHIPPED as `lf_district_homepage` — measured
+  tier-A precision 0.8612→0.8701 at exactly-held recall.** Exploration first (build-best-then-dial-back):
+  the issue's lead candidate — multi-confounder co-occurrence (N≥3 detectors on one record) — **does not
+  reproduce at the detector level** (fired-negative breadth never exceeds 2 on any tier-A record; at ≥2
+  it's 7 FP vs 19 targets — net-negative), and the human-facet oracle at ≥3 boxes is only 5 records. Raw
+  URL-shape alone is also unusable: 4 FP vs ~12 real homepage targets (school homepages with footer
+  hours; `lincnet.org` is a `district_hub_by_school` ON the district homepage — obs. 1's warning, live).
+  **The separating pair is URL-shape × roster-breadth:** `url_rootish` (domain root or bare `/o/<slug>`,
+  a new build_signals signal) AND `roster_school_names_hit ≥ 3` (`homepage_roster_min`) = a many-schools
+  LANDING page whose times are incidental. Both halves required: roster breadth alone hits real hub
+  *pages* (deep URLs listing every school); URL shape alone hits single-school homepages. The recall
+  guard is the existing strong-structural precedence, and it separates PERFECTLY on the live corpus: the
+  4 homepage FPs (sfps.info, ortiz.sfps, coffeecounty, millard) all have `heading_hours=0`; every
+  homepage target carries an intentional hours block. Wiring: the detector joins `HARD_NEGATIVE` +
+  `UNDERMINE_TIMES` (the #199 join-the-set discipline — no new boolean), so it demotes a lone
+  table/prose-pair to review and nothing else. **No Axis-2 facet maps to it** (page focus is not a
+  confounder the human labels; decision-level-measured only — the labeling-serves-learning test).
+  **Measured pass (ledger episode 8):** tier-A FP **54→50** (all 4 homepage FPs → review), tp 335
+  unchanged, tier-A recall **0.8034 held exactly**, A+B recall **0.9928 held exactly**, D targets 3
+  (reject-quality preserved), false-send rate **13.9%→13.0%**. Epic-level: 24.3%→13.0% since 2026-07-15.
 
 - **2026-07-18 — #226: bounded feed-token URL negative — a measured NULL on current labels, shipped as
   channel-closure.** `FEED_URL_RE` extended from the `/live-feed`-shape whitelist to the full bounded

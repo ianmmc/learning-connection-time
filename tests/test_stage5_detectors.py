@@ -235,3 +235,38 @@ def test_event_weights_shape_and_polarity_signs():
     assert all(D.EVENT_WEIGHTS[e][0] == +1 and D.EVENT_WEIGHTS[e][1] > 0 for e in pos)
     assert all(D.EVENT_WEIGHTS[e][0] == -1 and D.EVENT_WEIGHTS[e][1] > 0 for e in neg)
     assert "positive_kw" not in D.EVENT_CONFIDENCE_SOURCE   # the one intentionally free-to-tune event
+
+
+# ---- #532: the page-focus (district-homepage) negative ----
+def test_homepage_with_roster_breadth_demotes_incidental_times_to_review():
+    # the measured shape (sfps.info / millard / coffeecounty): a landing page hitting >=3 roster school
+    # names whose incidental times (news teasers) trip table/prose detectors -> review, not auto-send.
+    r = decide(url_rootish=True, roster_school_names_hit=3, proximity_pairs=5, n_times_in_window=6,
+               positive_kw=["dismissal"], table_time_density=10)
+    assert r["decision"] == "review" and r["tier"] == "B"
+    assert "lf_district_homepage" in r["fired"]
+
+
+def test_homepage_with_an_hours_block_still_sends():
+    # the recall guard made flesh: lincnet.org / carlosgilbert — a homepage carrying a REAL intentional
+    # hours block (strong-structural) is a target; page-focus must not demote it.
+    r = decide(url_rootish=True, roster_school_names_hit=4, proximity_pairs=5,
+               positive_kw=["school hours"], heading_hours_hits=1, heading_hours_labels=["school hours"])
+    assert r["decision"] == "send" and r["tier"] == "A"
+    assert "lf_district_homepage" in r["fired"] and "lf_heading_hours" in r["fired"]
+
+
+def test_school_homepage_with_low_roster_breadth_is_untouched():
+    # a single school's homepage (roster hits < 3) with a clean pair still auto-sends — the detector is
+    # about MANY-school landing pages, not homepages per se (learningworkscharter / strasburg).
+    r = decide(url_rootish=True, roster_school_names_hit=2, proximity_pairs=2, positive_kw=["school hours"])
+    assert r["decision"] == "send" and r["tier"] == "A"
+    assert "lf_district_homepage" not in r["fired"]
+
+
+def test_deep_page_with_roster_breadth_is_untouched():
+    # a real district hub PAGE (/schedules/ listing every school) hits many roster names by design —
+    # the URL shape is the page-focus half; without a rootish URL the detector must abstain.
+    r = decide(url_rootish=False, roster_school_names_hit=9, proximity_pairs=4, positive_kw=["bell schedule"])
+    assert r["decision"] == "send" and r["tier"] == "A"
+    assert "lf_district_homepage" not in r["fired"]
