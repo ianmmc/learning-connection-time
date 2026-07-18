@@ -373,6 +373,7 @@ async function selectRecord(recKey, li) {
 }
 
 async function renderCenter(d) {
+  const myRecKey = CURRENT;   // snapshot: guards against a stale continuation overwriting a newer selection
   const c = $("#center");
   const s = d.signals;
   const chips = [`<span class="chip">tier ${d.tier}</span>`, `<span class="chip">${d.kind || "?"}</span>`];
@@ -430,12 +431,18 @@ async function renderCenter(d) {
   // Lazy-load text bodies, then compute the per-rep SIGNAL-LEVEL "unique contribution" (times in this rep
   // that the densest rep lacks) — so you never re-read a rep that adds nothing, but never miss one that does.
   const bodies = {};
+  const W = await detectorWeights();   // #521: the relevance-density weight SSOT (fetched once, cached)
+  if (CURRENT !== myRecKey) return;   // a newer selectRecord() call superseded this one while we awaited
   await Promise.all([...c.querySelectorAll("pre.text")].map(async (pre) => {
     const r = await fetch(fileUrl(d, pre.dataset.target));
     const t = await r.text();
     bodies[pre.dataset.target] = t;
-    pre.textContent = t.slice(0, 20000) || "(empty)";
+    // #521: a LONG rep gets relevance-density navigation (full text + heat-strip + ranked bookmarks) so a
+    // schedule buried past the old ~20k display cap is reachable in relevance order; short reps already fit.
+    if (t.length > DENSITY_MIN_CHARS) renderDensityNav(pre, t, s, W);
+    else pre.textContent = t || "(empty)";
   }));
+  if (CURRENT !== myRecKey) return;   // re-check: the Promise.all body-fetches could also have been outrun
   annotateUniqueTimes(c, bodies, ordered);
 }
 
@@ -470,6 +477,185 @@ function annotateUniqueTimes(c, bodies, ordered) {
     else if (uniq.length) el.innerHTML = `<span class="uniq-hot">+${uniq.length} time(s) not in densest: ${uniq.slice(0, 6).join(", ")}</span>`;
     else el.innerHTML = `<span class="uniq-sub">⊆ densest (nothing unique)</span>`;
   });
+}
+
+// ----------------------------- #521 relevance-density navigation -----------------------------
+// A long rep is read in RELEVANCE order, not document order: project the SAME signed detector signals that
+// scored the record onto the character axis, smooth into a density curve, and surface the peaks as ranked
+// bookmarks + a heat-strip. Weights come from the server (/api/detector-weights — the ONE source, so the
+// strip can never contradict the score); the keyword vocabulary is THIS record's own matched
+// positive_kw/negative_kw (no drift); only stable code-constant regexes/lists are ported here.
+let DWEIGHTS = null, DWEIGHTS_INFLIGHT = null;
+async function detectorWeights() {
+  if (DWEIGHTS) return DWEIGHTS;
+  if (!DWEIGHTS_INFLIGHT) {
+    DWEIGHTS_INFLIGHT = (async () => {
+      try { return await (await fetch("/api/detector-weights")).json(); }
+      catch (_) { return null; }   // failure isn't cached — the next call retries instead of going dark for the session
+      finally { DWEIGHTS_INFLIGHT = null; }
+    })();
+  }
+  const w = await DWEIGHTS_INFLIGHT;
+  if (w) DWEIGHTS = w;
+  return w || {};
+}
+
+const DENSITY_MIN_CHARS = 20000;   // reps shorter than the old display cap already fit — no nav needed
+const DN_RENDER_CAP = 1000000;     // hard ceiling on chars rendered into one <pre> (perf; realistic docs are far under)
+const DN_PROXIMITY = 220, DN_WIN_LO = 420, DN_WIN_HI = 960;   // mirror build_signals PROXIMITY_CHARS / WINDOW
+const DN_OFFICE_KW = ["office hours", "office is open", "main office", "front office", "staff hours",
+  "staff day", "workday", "work day", "teacher hours", "building hours", "administrative"];
+const DN_INSTRUCTIONAL = /(\d{2,4})\s*(?:minutes|mins)\s+(?:of|per)\s+(?:instruction|instructional|class|learning)|(?:instructional\s+minutes|minutes\s+per\s+day|minutes\s+of\s+instruction)/gi;
+const DN_PERIOD = /\bperiod\s*\d|\b\d(?:st|nd|rd|th)\s+period/gi;
+const DN_TYPE_LABEL = { proximity_pair: "start/end pair", table_times: "schedule table",
+  instructional: "instructional minutes", in_window_time: "in-window times", positive_kw: "hours keyword" };
+const dnEsc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// In-window (07:00–16:00) time offsets — the inWindowTimes regex/window, keeping m.index this time.
+function dnTimeOffsets(text) {
+  const re = /\b(\d{1,2}):(\d{2})\s*([ap])?\.?m?\.?/gi, out = []; let m;
+  while ((m = re.exec(text))) {
+    let h = +m[1]; const mm = +m[2], ap = (m[3] || "").toLowerCase();
+    if (ap === "p" && h !== 12) h += 12; else if (ap === "a" && h === 12) h = 0;
+    else if (!ap && h >= 1 && h <= 6) h += 12;
+    if (h > 23 || mm > 59) continue;
+    const mins = h * 60 + mm;
+    if (mins >= DN_WIN_LO && mins <= DN_WIN_HI) out.push({ off: m.index, mins });
+  }
+  return out;
+}
+function dnAllIndexOf(hayLc, needle) {
+  const n = (needle || "").toLowerCase(), out = [];
+  if (!n) return out;
+  let i = hayLc.indexOf(n);
+  while (i !== -1) { out.push(i); i = hayLc.indexOf(n, i + n.length); }
+  return out;
+}
+
+// Signed relevance events over one rep's full text. Keyword vocab = this record's own matched terms.
+function dnEvents(text, sig, W) {
+  const ev = [], lc = text.toLowerCase();
+  const push = (off, type) => { const w = W[type]; if (w) ev.push({ off, type, weight: w.polarity * w.weight }); };
+  const tps = dnTimeOffsets(text);
+  tps.forEach((t) => push(t.off, "in_window_time"));
+  for (let i = 0; i < tps.length; i++)
+    for (let j = i + 1; j < tps.length && tps[j].off - tps[i].off <= DN_PROXIMITY; j++)
+      if (tps[i].mins !== tps[j].mins) { push(tps[i].off, "proximity_pair"); break; }   // anchor on the first time (a real clock time for the bookmark)
+  let m; DN_INSTRUCTIONAL.lastIndex = 0;
+  while ((m = DN_INSTRUCTIONAL.exec(text))) push(m.index, "instructional");
+  DN_PERIOD.lastIndex = 0;
+  while ((m = DN_PERIOD.exec(text))) push(m.index, "table_times");
+  (sig.positive_kw || []).forEach((k) => dnAllIndexOf(lc, k).forEach((o) => push(o, "positive_kw")));
+  const neg = sig.negative_kw || {};
+  ["board", "sports", "calendar", "transport"].forEach((cls) =>
+    (neg[cls] || []).forEach((k) => dnAllIndexOf(lc, k).forEach((o) => push(o, cls))));
+  DN_OFFICE_KW.forEach((k) => dnAllIndexOf(lc, k).forEach((o) => push(o, "office_hours")));
+  return ev;
+}
+
+// Gaussian-smoothed signed density over the char axis (nbins), plus ranked positive peaks.
+function dnCurve(events, length, nbins = 140) {
+  const raw = new Float64Array(nbins);
+  events.forEach((e) => { raw[Math.min(nbins - 1, Math.floor(e.off / length * nbins))] += e.weight; });
+  const sigma = 1.6, radius = 5, ker = []; let ksum = 0;
+  for (let k = -radius; k <= radius; k++) { const v = Math.exp(-(k * k) / (2 * sigma * sigma)); ker.push(v); ksum += v; }
+  const sm = new Float64Array(nbins);
+  for (let i = 0; i < nbins; i++) {
+    let acc = 0;
+    for (let k = -radius; k <= radius; k++) { const j = i + k; if (j >= 0 && j < nbins) acc += raw[j] * ker[k + radius]; }
+    sm[i] = acc / ksum;
+  }
+  let maxPos = 0, maxAbs = 1e-9;
+  for (let i = 0; i < nbins; i++) { if (sm[i] > maxPos) maxPos = sm[i]; if (Math.abs(sm[i]) > maxAbs) maxAbs = Math.abs(sm[i]); }
+  const peaks = [], floor = maxPos * 0.25;
+  for (let i = 0; i < nbins; i++) {
+    const l = i === 0 ? -Infinity : sm[i - 1], r = i === nbins - 1 ? -Infinity : sm[i + 1];
+    if (sm[i] > 0 && sm[i] >= floor && sm[i] > l && sm[i] >= r)
+      peaks.push({ bin: i, height: sm[i], off: Math.round((i + 0.5) / nbins * length) });
+  }
+  peaks.sort((a, b) => b.height - a.height);
+  return { sm, peaks, maxAbs };
+}
+
+// The strongest POSITIVE event near a peak's bin centre — the bookmark focuses on IT (a proximity pair /
+// time), so the chip snippet + anchor + scroll land on the schedule signal itself, not the smoothed centre.
+function dnPeakFocus(events, binOff, win) {
+  let best = null;
+  events.forEach((e) => { if (e.weight > 0 && Math.abs(e.off - binOff) <= win && (!best || e.weight > best.weight)) best = e; });
+  return best || { off: binOff, type: null };
+}
+function dnSnippet(text, off, span = 52) {
+  const s = Math.max(0, off - Math.floor(span / 2));
+  return text.slice(s, s + span).replace(/\s+/g, " ").trim();
+}
+// Full-text HTML with a thin anchor marker (▎) at each bookmark offset; text escaped in slices between them.
+function dnAnchoredHtml(text, marks) {
+  const parts = []; let prev = 0;
+  marks.forEach((mk) => {
+    const o = Math.max(prev, Math.min(mk.off, text.length));
+    parts.push(dnEsc(text.slice(prev, o)));
+    parts.push(`<span class="bm-anchor" id="${mk.id}" title="relevance peak">▎</span>`);
+    prev = o;
+  });
+  parts.push(dnEsc(text.slice(prev)));
+  return parts.join("");
+}
+
+// Render the relevance-density nav (heat-strip + ranked bookmarks) above a long rep's <pre>, fill the <pre>
+// with FULL text + peak anchors. The <pre> is itself the scroll container (.text max-height), so bookmarks
+// set pre.scrollTop to the anchor and the strip scrolls proportionally — no ancestor-scroll math.
+function renderDensityNav(pre, text, sig, W) {
+  const truncated = text.length > DN_RENDER_CAP;
+  if (truncated) text = text.slice(0, DN_RENDER_CAP);
+  const events = dnEvents(text, sig, W);
+  const { sm, peaks, maxAbs } = dnCurve(events, text.length);
+  const win = text.length / sm.length * 1.5;
+  const top = peaks.slice(0, 8).map((p, rank) => {
+    const f = dnPeakFocus(events, p.off, win);
+    return { rank, off: f.off, id: `bm-${pre.dataset.target}-${rank}`,
+      label: DN_TYPE_LABEL[f.type] || "times", snippet: dnSnippet(text, f.off) };
+  });
+  pre.innerHTML = dnAnchoredHtml(text, [...top].sort((a, b) => a.off - b.off));   // anchors in ascending order for slicing
+  const cell = (v) => {
+    const a = Math.min(1, Math.abs(v) / maxAbs);
+    if (a < 0.02) return `<div class="dn-cell"></div>`;
+    const varName = v >= 0 ? "--status-success" : "--status-danger";   // same tokens as .bm-anchor / .tier.A
+    return `<div class="dn-cell" style="background:color-mix(in srgb, var(${varName}) ${Math.round((0.12 + 0.78 * a) * 100)}%, transparent)"></div>`;
+  };
+  const chips = top.length
+    ? top.map((b) => `<button class="dn-chip" data-bm="${b.id}" title="${dnEsc(b.snippet)}">` +
+        `<span class="dn-rank">${b.rank + 1}</span>${dnEsc(b.snippet) || "(peak)"} <span class="dn-lbl">· ${b.label}</span></button>`).join("")
+    : `<span class="dn-note">no relevance peak stood out — read top-to-bottom</span>`;
+  const nav = document.createElement("div");
+  nav.className = "dn";
+  nav.innerHTML = `<div class="dn-strip" tabindex="0" role="slider" aria-label="relevance density — click or use arrow keys to jump" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" title="relevance density — click to jump">${Array.from(sm, cell).join("")}</div>
+    <div class="dn-bmk">${chips}</div>
+    <div class="dn-note">Relevance order, not page order — ${Math.round(text.length / 1000)}k chars${truncated ? " (truncated at 1M)" : ""}; green = schedule-like, red = confounder.</div>`;
+  pre.parentNode.insertBefore(nav, pre);
+  const flashTo = (id) => {
+    const a = pre.querySelector(`#${CSS.escape(id)}`);
+    if (!a) return;
+    pre.scrollTop = Math.max(0, a.offsetTop - pre.clientHeight / 2);
+    a.classList.remove("bm-flash"); void a.offsetWidth; a.classList.add("bm-flash");
+  };
+  nav.querySelectorAll("[data-bm]").forEach((c) => c.onclick = () => flashTo(c.dataset.bm));
+  const strip = nav.querySelector(".dn-strip");
+  const scrollToFrac = (frac) => {
+    frac = Math.min(1, Math.max(0, frac));
+    pre.scrollTop = frac * (pre.scrollHeight - pre.clientHeight);
+    strip.setAttribute("aria-valuenow", Math.round(frac * 100));
+  };
+  strip.onclick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    scrollToFrac((e.clientX - rect.left) / rect.width);
+  };
+  strip.onkeydown = (e) => {
+    const step = { ArrowRight: 0.05, ArrowLeft: -0.05, Home: -1, End: 1 }[e.key];
+    if (step === undefined) return;
+    e.preventDefault();
+    const cur = pre.scrollHeight > pre.clientHeight ? pre.scrollTop / (pre.scrollHeight - pre.clientHeight) : 0;
+    scrollToFrac(e.key === "Home" ? 0 : e.key === "End" ? 1 : cur + step);
+  };
 }
 
 function card(head, meta, body) {

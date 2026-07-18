@@ -108,6 +108,91 @@ def test_facets_vocabulary(client):
     assert "untouched" in ps and "complete" in ps
 
 
+def test_detector_weights_endpoint_mirrors_the_ssot(client):
+    """#521: /api/detector-weights serves detectors.EVENT_WEIGHTS verbatim so the frontend holds no
+    weights of its own. Shape = {event: {polarity: ±1, weight: >0}}, exactly the SSOT."""
+    from infrastructure.acquisition.stage5_filter import detectors as DET
+    w = client.get("/api/detector-weights").json()
+    assert set(w) == set(DET.EVENT_WEIGHTS)
+    for ev, (pol, weight) in DET.EVENT_WEIGHTS.items():
+        assert w[ev] == {"polarity": pol, "weight": weight}
+    assert w["proximity_pair"]["polarity"] == 1 and w["board"]["polarity"] == -1   # both directions present
+
+
+def test_relevance_density_nav_present_in_console():
+    """UI-visibility regression (#521): a long rep must get relevance-density navigation — a heat-strip +
+    ranked bookmarks + text anchors, driven by the SERVER weight SSOT (no hardcoded weights in JS) with
+    click-to-scroll. Guards the feature (and its no-second-weight-set discipline) from silently vanishing."""
+    from pathlib import Path
+    repo = Path(__file__).resolve().parent.parent
+    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    css = (repo / "infrastructure/acquisition/process_governance/static/app.css").read_text()
+    assert "function renderDensityNav" in js and "if (t.length > DENSITY_MIN_CHARS) renderDensityNav" in js, \
+        "a long rep must route to the density nav"
+    assert "/api/detector-weights" in js and "w.polarity * w.weight" in js, \
+        "weights must come from the server SSOT applied as polarity*weight — no hardcoded JS weights"
+    assert 'class="dn-strip"' in js and 'class="dn-chip"' in js and 'class="bm-anchor"' in js, \
+        "heat-strip, bookmark chips, and in-text anchors must render"
+    assert "data-bm" in js and "strip.onclick" in js, "bookmarks + heat-strip must be click-to-scroll"
+    assert ".dn-strip" in css and ".bm-anchor" in css, "the density-nav styles must exist"
+
+
+def test_relevance_density_nav_is_keyboard_accessible():
+    """#521 follow-up: the heat-strip is the primary click-to-jump surface; a keyboard-only reviewer must
+    be able to reach and operate it too (the bookmark chips already do, via real <button> elements)."""
+    from pathlib import Path
+    repo = Path(__file__).resolve().parent.parent
+    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    assert 'tabindex="0"' in js and 'role="slider"' in js, "the heat-strip must be focusable and announce its role"
+    assert "strip.onkeydown" in js, "the heat-strip must respond to keyboard input, not just clicks"
+
+
+def test_dn_esc_escapes_quotes():
+    """Security regression: dnEsc's output fills an HTML attribute (title="...") via innerHTML — it must
+    escape " (and ') or a quote in scraped document text breaks out of the attribute."""
+    from pathlib import Path
+    repo = Path(__file__).resolve().parent.parent
+    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    import re
+    m = re.search(r"const dnEsc = \(s\) => s\.replace\((/\[[^\]]*\]/g)", js)
+    assert m, "dnEsc's escape regex must be present and easy to locate"
+    charclass = m.group(1)
+    assert '"' in charclass or "&quot;" in js.split("dnEsc")[0], "dnEsc must escape the double-quote character"
+
+
+def test_density_nav_js_constants_match_build_signals_python():
+    """No-drift guard (#521): DN_PROXIMITY/DN_WIN_LO/DN_WIN_HI in app.js are hand-mirrored copies of
+    build_signals.py's PROXIMITY_CHARS/WINDOW_LO/WINDOW_HI — nothing else ties them together, so pin the
+    literal values here. If build_signals.py's constants change, this fails instead of the heat-strip
+    silently drifting from the real proximity/window definition."""
+    from pathlib import Path
+    from infrastructure.acquisition.stage5_filter import build_signals as BS
+    repo = Path(__file__).resolve().parent.parent
+    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    import re
+    m = re.search(r"const DN_PROXIMITY = (\d+), DN_WIN_LO = (\d+), DN_WIN_HI = (\d+)", js)
+    assert m, "DN_PROXIMITY/DN_WIN_LO/DN_WIN_HI declaration must be present and in this exact shape"
+    assert int(m.group(1)) == BS.PROXIMITY_CHARS
+    assert (int(m.group(2)), int(m.group(3))) == (BS.WINDOW_LO, BS.WINDOW_HI)
+
+
+def test_density_nav_js_regexes_match_build_signals_python():
+    """No-drift guard (#521): DN_INSTRUCTIONAL/DN_PERIOD in app.js are verbatim ports of build_signals.py's
+    INSTRUCTIONAL_RE/PERIOD_RE (JS can't import a Python module). Pin the pattern strings so a future edit
+    to either Python regex — this one has already been revised once, per build_signals.py's own comment —
+    fails loudly here instead of leaving the heat-strip silently visualizing a stale pattern."""
+    from pathlib import Path
+    from infrastructure.acquisition.stage5_filter import build_signals as BS
+    repo = Path(__file__).resolve().parent.parent
+    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    import re
+    m_instr = re.search(r"const DN_INSTRUCTIONAL = /(.+)/gi;", js)
+    m_period = re.search(r"const DN_PERIOD = /(.+)/gi;", js)
+    assert m_instr and m_period, "DN_INSTRUCTIONAL/DN_PERIOD declarations must be present and in this exact shape"
+    assert m_instr.group(1) == BS.INSTRUCTIONAL_RE.pattern
+    assert m_period.group(1) == BS.PERIOD_RE.pattern
+
+
 def test_followup_flag_jumps_attention_then_resolves(client):
     r = client.post("/api/followup", json={"scope": "district", "target_id": DL, "directive": "do X", "actor": "zz-test"})
     assert r.status_code == 200

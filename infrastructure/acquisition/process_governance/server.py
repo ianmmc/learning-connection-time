@@ -26,6 +26,7 @@ from sqlalchemy import select, text
 HERE = Path(__file__).resolve().parent
 from infrastructure.acquisition.stage5_filter import build_signals as BS    # noqa: E402  (export_labels lives here, shared with ingest)
 from infrastructure.acquisition.stage5_filter import release as REL         # noqa: E402  (filtered.json projection — REQ-094)
+from infrastructure.acquisition.stage5_filter import detectors as DET       # noqa: E402  (#521 relevance-density event weights — the SSOT)
 from infrastructure.acquisition.common import db as gdb                     # noqa: E402  (isolated governance Postgres — REQ-103)
 from infrastructure.acquisition.common import district_status as DS         # noqa: E402  (state_event log — gate@1 audit events)
 from infrastructure.acquisition.common import calibration as CAL            # noqa: E402  (gate-decision calibration log — REQ-121)
@@ -615,6 +616,16 @@ def stage5_facets():
             "tier": counts("SELECT tier, COUNT(*) FROM record GROUP BY tier ORDER BY 1"),
             "reason": counts("SELECT attention_reasons_json::jsonb->>0, COUNT(*) FROM record GROUP BY 1 ORDER BY 2 DESC"),
         }
+
+
+@app.get("/api/detector-weights")
+def detector_weights():
+    """The relevance-density event weights (#521) — the ONE polarity/confidence source, mirrored from the
+    Stage-5 detectors (`detectors.EVENT_WEIGHTS`, pinned to the live Vote confidences by a no-drift test).
+    The console's heat-strip + bookmarks sign each positional event with these, so the visual density can
+    never contradict the score. Served here so the frontend JS carries NO weights of its own — the
+    anti-"second hand-tuned set" discipline #521 requires. Static config; the client fetches it once."""
+    return {ev: {"polarity": pol, "weight": w} for ev, (pol, w) in DET.EVENT_WEIGHTS.items()}
 
 
 def _backup_precious_table(con, select_sql: str, tracked_path) -> int:
