@@ -1,7 +1,9 @@
 """Stage 4 tool-runner hardening: #32 (exit-code policy in _run -- nonzero+empty stdout is an
 error surfaced on the representation entry; nonzero+substantial stdout is success, the text is
 the product) and #45 (raster page cap, per-page OCR tolerance, pdftoppm returncode check +
-stale-raster clearing). Every subprocess call is monkeypatched -- no poppler/tesseract needed."""
+stale-raster clearing). Every subprocess call is monkeypatched -- no poppler/tesseract needed
+(except TestPdftotextPageSeparators, which runs the REAL toolchain and skips where absent)."""
+import shutil
 import subprocess
 
 import pytest
@@ -92,3 +94,30 @@ class TestTesseractMulti:
         out = C4.run_tesseract_multi(pages)
         assert calls == ["raster_p1.png", "raster_p2.png"]
         assert "3 page(s) beyond 2 not OCR'd" in out
+
+
+@pytest.mark.skipif(
+    not (shutil.which("gs") and shutil.which("pdftotext")),
+    reason="needs ghostscript + poppler (the Stage-4 toolchain)")
+class TestPdftotextPageSeparators:
+    """The #522 console's bookmark→PDF-page map splits Stage-4's pdftotext output on \\f — pin that
+    real `pdftotext -layout` emits ONE form-feed per page with page content BEFORE its \\f, so the
+    client-side rule `page = (form-feeds strictly before offset) + 1` stays deterministic. If a
+    poppler upgrade ever changes \\f emission, this fails instead of bookmarks silently mislabeling
+    pages (the map is otherwise tied to the server by nothing)."""
+
+    def test_layout_output_carries_one_formfeed_per_page(self, tmp_path):
+        pdf = tmp_path / "three.pdf"
+        subprocess.run(
+            ["gs", "-q", "-o", str(pdf), "-sDEVICE=pdfwrite", "-c",
+             "/Helvetica findfont 12 scalefont setfont "
+             "72 720 moveto (page one 8:00 am) show showpage "
+             "72 720 moveto (page two dismissal 3:15 pm) show showpage "
+             "72 720 moveto (page three) show showpage"],
+            check=True, capture_output=True)
+        text = subprocess.run(["pdftotext", "-layout", str(pdf), "-"],
+                              check=True, capture_output=True, text=True).stdout
+        assert text.count("\f") == 3, "one \\f per page (including a trailing one)"
+        # The client rule: page N's content precedes the Nth \f — "dismissal" (page 2) has exactly 1 \f before it.
+        assert text[:text.index("\f")].count("page one") == 1
+        assert text[:text.index("dismissal")].count("\f") == 1
