@@ -160,14 +160,22 @@ rather than silently skip if Chromium is unavailable.
   follow-ups, still open). #237 spun off a structure-aware charter track: #243/#244/#245/#246, the current
   backlog in this area. Full detail: `STAGE7_EXTRACT_DESIGN.md` §6 (decision log).
 
-Next (as of 2026-07-16): **Stage 8 gate@8 has SHIPPED** (#89; the standalone console + approve/send-back +
+Next (as of 2026-07-17): **Stage 8 gate@8 has SHIPPED** (#89; the standalone console + approve/send-back +
 the 4 human-judgment tables + frozen receipt — `STAGE8_AGGREGATE_DESIGN.md` §0a), and the #499 slot program
 (REQ-144…150) + epic #478's overrides with it. Epic #119 (Stage 7 extraction quality, PRs #508–#511) also
-CLOSED. **The live work is epic #106** (Stage 5/6 filter & dispatch refinements — the console + scoring
-slate #515–#522, plus recency #241/#107; see `STAGE5_FILTER_DESIGN.md` §3a and CLAUDE.md's RESUME block).
-Still genuinely unbuilt downstream: the **Stage-9 write** (#93), the **8→1/8→6 back-edges**, and gate@8
-**auto** mode. Other open tracks: the Council Lab backlog (`cost_benchmark`, prompt A/B, #80/#81); the
-charter-segmentation track (#243/#244/#245); #238 (deferred efficiency follow-ups). The live gate-mode (manual/auto) persistence + console toggle (#104 part
+CLOSED. **The live work is epic #106** (Stage 5/6 filter & dispatch refinements): the **school-year-currency
+work SHIPPED** (#107/#241 → PR #529; month-word dates #531 → #533 — the `content_school_year` signal, the
+pre-2017-18 validity floor, prefer-recent dispatch holds), the **#530 combiner refinement** SHIPPED (a lone
+times-table on a feed/calendar page routes to review), and the **console trio SHIPPED** (#516 → PR #534
+FP/FN error-review lanes + rec_key search; #521 → #535 relevance-density evidence navigation; #522 → #536
+content-adaptive center-pane defaults — see §11f's Stage-5 bullet and `STAGE5_FILTER_DESIGN.md` §8/Change
+log). Remaining #106 slate: **#528** (calendar scalar + the news_feed separating analysis — the next
+buildable; see its issue comments for the build-session context), **#537** (the re-homed confounder
+facet-vocabulary decision, gated on Ian), **#515** (eligibility gates, sequenced behind #537), #517/#518
+(recall), #226/#109/#110/#75/#83. Still genuinely unbuilt downstream: the **Stage-9 write** (#93), the
+**8→1/8→6 back-edges**, and gate@8 **auto** mode. Other open tracks: the Council Lab backlog
+(`cost_benchmark`, prompt A/B, #80/#81); the charter-segmentation track (#243/#244/#245); #238 (deferred
+efficiency follow-ups). The live gate-mode (manual/auto) persistence + console toggle (#104 part
 a) and **#211/#214 are now all SHIPPED** (epic #209's Phase 0/1/2 build-complete, merged 2026-07-13 via PR
 #250 — see above); #104 part b (per-gate confidence-escalating auto beyond gate@5) remains open, future
 work. Still open: REQ-100 (staleness, tracked: #100), the gate@7 inline PNG/PDF viewer (tracked: #151).
@@ -1180,6 +1188,22 @@ The immutable Stage-6 dispatch freeze is what keeps "what we sent" recoverable a
   target-labeled record back to its discovery tool (`candidate_tools_json`) and its winning representation's
   source (`representation.source`). Same fingerprinted-scorecard discipline as Stage 5, applied to discovery
   and processing (tracked: #118).
+- **Stage 5** — the district-driven, attention-first labeling console (REQ-112/REQ-114); the default
+  stage view. **Console trio SHIPPED 2026-07-16/17 (the labeling-that-drives-learning surface,
+  per `project-stage5-labeling-serves-learning`):** **#516** (PR #534) — FP/FN **error-review lanes**
+  (FP = tier-A ∩ `target_absent` via `release.MONEY_LEAK_WHERE`, the SSOT shared with `decide()`;
+  FN = the fixed-seed reject-audit sample; disagreement is the primary product of labeling) + `rec_key`
+  as the searchable entry-ID + right-pane reorder. **#521** (PR #535) — **relevance-density evidence
+  navigation** for long reps: the same signed detector signals that scored the record, projected onto
+  the char axis → ranked bookmarks + heat-strip; weights served from `detectors.EVENT_WEIGHTS` via
+  `/api/detector-weights` (display-only mirror, no-drift-tested — combiner weights stay
+  `DEFAULT_DETECTOR_PARAMS`). **#522** (PR #536) — **content-adaptive center-pane defaults**: the
+  evidence classification drives the default open states (densest + unique-adders + instructional/
+  period-phrasing carriers open; ⊆-densest collapsed; never removed — show-all restores everything);
+  rasters demoted to one lazy gallery; the source-PDF iframe is the default visual, steered to a
+  bookmark's page via pdftotext's `\f` separators; a hidden-evidence pointer guards the collapse rules
+  (scope: the client-checkable detector surface — documented in-code). Guardrail across the trio: the
+  default view never silently contradicts the score. See `STAGE5_FILTER_DESIGN.md` §8 + Change log.
 - **Stage 6** — routing / release; **BUILT to the seam (REQ-101, merged 2026-06-30; console REDESIGNED
   around a persisted draft dispatch 2026-07-13, PR #256)**: a reopenable `dispatch_draft` a human builds up
   (add/remove districts, council overrides, verified-only) → **freeze** → the immutable dispatch + a

@@ -120,88 +120,39 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-16):** **Epic #119 CLOSED** (Stage 7 quality) and **Stage 8 / gate@8 BUILT**
-(#89). **Epic #106 (Stage 5/6) is the live work — design-complete, ready to build.** This session did two
-things. (1) **Measured the recency question and refuted a written projection** (`STAGE5_FILTER_DESIGN.md`
-§3a **obs. 6**): a stale eligibility veto removes ~0 false-sends for a 17-target cost and *raises* the
-false-send rate — obs. 5's "stale = clean unconditional veto / 53-for-6" was mined from human notes, not a
-reproducible signal, and never held. Recency is now two rules: a pre-2017-18 **validity floor** (HOLD,
-REQ-026 correctness, ~0 money — #241) + **prefer-recent dispatch ranking** (the money half — #107). The
-measured money lever is **#519** (re-measured, then closed→**#528** this session), NOT #515. (2) **Ran a full code-grounded doc-tower audit** (7 commits):
-corrected the tower to present-state (gate@8 was documented as "unbuilt" in 3 docs; STAGE7 predated #119;
-CLAUDE.md had two failing commands), normalized `REQUIREMENTS.yaml` (152 reqs, backfilled REQ-152 for PR
-#509), curated memory 23→19 with a **no-`type:project`-status-memories** rule, and filed 4 code-side defects
-as issues (#523/#524 Stage-2 docstrings, #525 `gate_mode.py:35`, #526 Stage-2 reads receipt-not-DB).
+**Current status (2026-07-17): epic #106's first wave is SHIPPED.** School-year currency (#107/#241 →
+PRs #529/#533: the `content_school_year` signal, the pre-2017-18 validity floor as HOLD, prefer-recent
+dispatch holds), the #530 combiner refinement (lone times-table on a feed/calendar page → review), and the
+**console trio** — **#516** (PR #534, FP/FN error-review lanes + `rec_key` search), **#521** (PR #535,
+relevance-density evidence navigation for long reps), **#522** (PR #536, content-adaptive center-pane
+defaults + the hidden-evidence guardrail). Each console PR went through a max-effort multi-agent review
+with every confirmed finding fixed before merge (lessons distilled in `PROJECT_HISTORY.md`'s 2026-07-16/17
+entry). The doc tower (stage notes, governance, pipeline map) was refreshed to present-state 2026-07-17.
 
-**Next (RESUME HERE — 2026-07-16): epic #106. Phase 0 + Phase 1 MERGED** (PR #529, squash `74cae77`;
-code-review round of 5 findings fixed in the same PR). **CLOSED: #107** (school-year currency, REQ-044
-`tested`) + its pieces **#241** (pre-2017-18 validity floor, HOLD) / **#192** (cost-model `n_times` scaler)
-/ **#525** (stale comment). Built: the `content_school_year` deterministic URL/filename signal
-(`infrastructure.utilities.school_year`, obs.6 guards hardened vs word-month/label FPs + source-ordered so
-a redirect URL can't leak a spurious year past the floor), the release-layer #241 floor, and **prefer-recent**
-Stage-6 dispatch ranking (school-grain, zero recall cost by construction). Band-coverage redundancy across
-schools was deferred to **#83** by design. **Next buildable: #528** (the calendar scalar win + the
-**news_feed × structure separating analysis** — "what distinguishes the 21 false-send news_feeds from the 30
-real-target ones"; measure before building the interaction term), then the console trio **#522→#521→#516**
-(the labeling-that-drives-learning surface). The remaining slate, all #106 sub-issues:
-- **#528** (successor to closed #519) cut confounder false-auto-sends where the combiner can reach them.
-  The recompute broke #519's "~40 false-sends, tune the weights" into three mechanisms: (1) **`board`/
-  `sports` fire on ~0 tier-A false-sends** — a firing-condition problem (they need neg-class *dominance*,
-  which a tier-A page can't meet), unreachable by any weight → **forked OUT** of #528 (own issue or #226);
-  (2) **`news_feed` fires on MORE real targets (30) than false-sends (21)** — a blanket weight-up is
-  net-negative; the lever is `news_feed × no-strong-positive-structure`, a combiner INTERACTION gated on a
-  "what separates the 21 from the 30" separating analysis (explore-first) — **IN #528**; (3) **`calendar`
-  (5 gain / 0 cost) is the one clean scalar win** — **IN #528**, ships now. Actionable ceiling = 26, not ~40.
-  Facet precision (live #108): `news_feed` 0.89 / `board` 0.52 / `calendar` 0.46 / `sports` 0.32 — the old
-  "0.13–0.18" doesn't reproduce. `lf_nonstandard_day` 0.09 stays out of scope (frozen grab-bag = #207).
-- **#515** Stage-6 confounder eligibility vetoes — **the "24.5%→~15% money lever" headline is WRONG** (§3a
-  obs. 6, measured 2026-07-16: stale contributes **0** — it removes 1 false-send for 17 target-vetoes and
-  *raises* the rate 24.1%→24.8%; staleness and target-absence are near-independent). #515's remaining
-  basis was the conditional irregular-day veto, but **#207 (its enabling facet) was closed superseded
-  2026-07-16** — the irregular-day/wrong-schedule distinction now lives as a coarse facet+detector folded
-  into **#522** (per [[project-stage5-labeling-serves-learning]]). So #515 = the *eligibility-gate* question
-  only, sequenced **behind #522** (the facet must exist and be learnable before it can gate); news/calendar/
-  board/sports stay SOFT (never gates — §3a obs. 5). Shares the eligibility seam with **#83** (narrow-to-hub)
-  — they collide in the same file.
-- Recency (**#241**/**#107**, re-scoped 2026-07-16): **#241** = a pre-2017-18 validity floor, semantics =
-  **HOLD** not hard-reject (Ian) — a **REQ-026 correctness guarantee floored on the CRDC 2017-18 federal
-  input, which pays ~0 money**; never justify it on spend. **#107 stays the parent** (§3G: "complementary,
-  not duplicates") — it builds the shared `content_school_year` signal (which **does not exist yet**) +
-  **prefer-recent** dispatch *ranking*, the half that actually saves money (rank siblings ≥ floor, send the
-  newest, hold the rest — zero recall cost by construction).
-- Console (the labeling-that-drives-learning surface, per [[project-stage5-labeling-serves-learning]] —
-  build order **#522 → #521 → #516**): **#522** (content-adaptive center-pane default: show what the machine
-  read; PDFs → embedded viewer, rasters demoted to "available"; **now also carries the folded-in confounder
-  facet-vocabulary decision** — one coarse "wrong-schedule / not-the-regular-day" negative, not 6–7 facets),
-  **#521** (relevance-density bookmarks + heat-strip for long reps — #522's long-doc mechanism; build the FULL
-  version incl. confounder negative-weighting then dial back, per [[feedback-build-best-then-dial-back]]),
-  **#516** (FP/FN error-lanes — disagreement is the primary product of labeling — + rec_key as the searchable
-  left-pane entry-ID + right-pane reorder).
-- Recall: **#517** (schedule_link_only affordance), **#518** (capture-fidelity leak: login walls/0-byte PDFs/truncation, Stage 3/4).
-- Older #106 items still open: #109/#110/#75/#83/#226 (#107 + #192 CLOSED via PR #529). Triage from the
-  2026-07-16 epic read-through: **#226** (URL-level `feed`/`live-feed` negative, extends `lf_news_feed`, no new label) is the
-  structural signal #528's news_feed interaction — and its forked-out board/sports mechanism — would consume;
-  fold the board/sports fork into #226 or spin its own issue. **#110** is blocked behind the parked Council
-  Lab (#103/#80), not merely deferred. **#75** is an underspecified triage note — re-scope before building.
-  **Closed superseded 2026-07-16** by [[project-stage5-labeling-serves-learning]] (per-confounder detector-build
-  issues fail the "a detector must measurably learn from it" test): **#207** (nonstandard-day), **#223** (summer)
-  — both folded into #522's facet-vocabulary; **#512** (snake) — its reader-routing/small-voter context-ceiling
-  remnant re-homed to Council Lab **#80**, not dropped. Remaining vocabulary call gated on Ian: #107's Axis-3
-  `content_school_year` facet (the signal/extractor itself is unblocked).
-Guardrail across the console work: the default view must NEVER silently contradict the score (surface a pointer to the scored evidence). Then the sequence continues: **#111** (Stages 1-4) → liveness gate → **#479/#480** → **#92**. Parked: #475/#476, #103/#80 (Council Lab — `MODEL_FIELD_NOTES.md` + the #512 snake context-ceiling finding, re-homed as an #80 comment, are prep). Deferred-by-design from the #499 reviews (documented in
-code, revisit on volume): batching `_satisfied_bands_now`'s per-district loads (`ANY(:d)` shape) once
-the approved-request backlog grows.
+**Next (RESUME HERE — 2026-07-17): #528 — calendar scalar + the news_feed separating analysis.**
+**Read #528's issue comments first** — the 2026-07-17 comment carries the build-session context: the
+FP-lane (`release.MONEY_LEAK_WHERE`) IS the false-send population; the separator candidates are existing
+`signals_json` fields (`footer_hours`/`table_period_rows`/`instructional_time`/`proximity_pairs`); and the
+**two-weight-tables trap** — the combiner's weights are `DEFAULT_DETECTOR_PARAMS`/Vote confidences, NOT
+`detectors.EVENT_WEIGHTS` (that's #521's display-only mirror; its no-drift test will flag the mirror when
+a real confidence changes). Measure first: re-run the #519-recompute (fingerprints have moved; #530/#533
+shipped after the measured ground), confirm calendar is still ~5/0, run the 21-vs-30 analysis, bring back
+findings before building (per [[feedback-explore-before-scoring-changes]]).
+The remaining #106 slate after #528: **#537** (the confounder facet-vocabulary decision, re-homed from
+closed #522 — **gated on Ian**) → **#515** (eligibility gates, sequenced behind #537; news/calendar/board/
+sports stay SOFT per §3a obs. 5) · recall **#517/#518** · **#226** (URL-level feed negative — the
+structural signal #528's interaction and the forked-out board/sports mechanism would consume) ·
+#109/#110 (blocked on Council Lab)/#75 (re-scope first)/#83. Then **#111** → liveness gate → **#479/#480**
+→ **#92**. Parked: #475/#476, #103/#80 (Council Lab). Documented-in-code deferrals: `_satisfied_bands_now`
+batching (revisit on volume); the #522 guardrail's per-rep keyword/table attribution (needs a server
+payload change); JS behavioral tests (no JS harness in repo — static-source pins only).
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
--m "not integration"` (expect **~1588** pass) + `pytest -q -m govdb` (expect **~226**, Postgres up).
-For the #106 build, the measured findings + the exact design decisions live in
-`STAGE5_FILTER_DESIGN.md` §3a **obs. 5 AND obs. 6 — read BOTH, in that order, before touching recency**:
-obs. 6 refutes obs. 5's stale-veto projection with measurements on the real corpus and marks the superseded
-bullets in place. **The trap it closes:** obs. 5's numbers were mined from *human notes* (records where Ian
-had already written "too dated") — that is judgment, not a signal a detector can reproduce, which is why the
-53/6 projection never held. Don't re-derive it. The per-issue specs are in the #106 sub-issues (#515–#522).
-Full detail: `docs/PROJECT_HISTORY.md`, `STAGE8_AGGREGATE_DESIGN.md`,
-`PIPELINE_GOVERNANCE_AND_STATE.md`, `docs/REQUIREMENTS.yaml`.
+-m "not integration"` (expect **~1601** pass) + `pytest -q -m govdb` (expect **~241**, Postgres up).
+Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (the
+motivating ones: Huntington `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters).
+Full detail: `docs/PROJECT_HISTORY.md`, `STAGE5_FILTER_DESIGN.md` §8 + Change log,
+`STAGE6_DISPATCH_DESIGN.md` §3G, `PIPELINE_GOVERNANCE_AND_STATE.md`, `docs/REQUIREMENTS.yaml`.
 
 ---
 

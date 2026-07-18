@@ -182,8 +182,9 @@ before the human sees it; a borderline page reaching gate@5 costs only review ti
 > **disagreement (FP/FN) is the primary product** of labeling — the training signal, not a page description.
 > Consequence: the per-confounder "add one checkbox + one `lf_X` detector" pattern is retired — **obs. 3 and
 > obs. 4 below are SUPERSEDED in place** on this basis (issues #207/#223/#512 closed 2026-07-16; the
-> event-content / wrong-schedule facet **vocabulary** is now a single holistic decision folded into the
-> console/labeling rework, #522). Memory: `project-stage5-labeling-serves-learning`.
+> event-content / wrong-schedule facet **vocabulary** is a single holistic decision, originally folded into
+> #522 by comment and **re-homed to #537** when #522 shipped its center-pane scope and closed, 2026-07-17 —
+> the vocabulary call itself stays gated on Ian). Memory: `project-stage5-labeling-serves-learning`.
 
 **(1) A footer time-range on a DISTRICT page leans building/office hours**; on a SCHOOL page it leans the
 student day (2026-07-01). An unlabeled footer range (the `school_start_end_list` shape) is more likely
@@ -213,9 +214,9 @@ both observations would pay off.
 ~~Content about these sorts of events seem to come up a lot. There may be associated keywords to look at
 for downweighting. They may merit adding facet checkboxes to the console view for Stage 5.~~ **SUPERSEDED
 2026-07-16** (governing principle above): these are the event-content confounder class, not N separate
-facets — resolved as ONE coarse "wrong-schedule / not-the-regular-day" vocabulary decision folded into #522,
-kept only if a detector measurably learns from it. Retained (not deleted) so a reader doesn't re-propose the
-per-event checkboxes.
+facets — resolved as ONE coarse "wrong-schedule / not-the-regular-day" vocabulary decision (now tracked in
+#537, re-homed from closed #522), kept only if a detector measurably learns from it. Retained (not deleted)
+so a reader doesn't re-propose the per-event checkboxes.
 
 **(4) SUMMER SCHOOL pages are a confounder shape the detectors don't distinguish (2026-07-02).** Marshall
 WI (5508790, batch_00008): `…/students-families/summer-school.cfm` auto-sent as **tier-A** — it carries a
@@ -225,8 +226,8 @@ weather/delay cases: real bell-shape, wrong schedule. ~~Candidate signal: a `sum
 (summer school / summer session / ESY / extended school year) as a soft negative and/or a `summer_school`
 confounder facet on Axis 2 (pairs naturally with obs. 3's event-content facets).~~ **The confounder
 OBSERVATION stands; the standalone-facet PROPOSAL is SUPERSEDED 2026-07-16** (governing principle above;
-#223 closed): summer folds into the single coarse wrong-schedule facet-vocabulary decision (#522), not its
-own checkbox + `lf_summer_school`. Also relates to the recency/dispatch question — see
+#223 closed): summer folds into the single coarse wrong-schedule facet-vocabulary decision (#537, re-homed
+from closed #522), not its own checkbox + `lf_summer_school`. Also relates to the recency/dispatch question — see
 `STAGE6_DISPATCH_DESIGN` §3G.
 
 **(5) Comprehensive review 2026-07-15 (epic #106) — measured the money leak, re-specified the vetoes,
@@ -829,12 +830,42 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 | **Empty-domain admission guard** (`common/discover.py` `domain_of()`/`is_scoping_domain()`, refuses blank/junk-domain districts at Stage-1 batch build) | **BUILT (#229, 2026-07-11)** — see §4 |
 | **Millard contamination remediation** (`process_governance/remediate_contamination.py`, manifest-first dry-run-by-default cleanup tool) | **BUILT (#227, 2026-07-11)** — see §4 |
 | **Stage-7/8 outcome feedback** (`harness.extract_outcome_calibration` — P(any_accepted) headline + per-tier calibration + detectors-vs-outcome + the two disagreement cells + `unjoined`; fourth `outcome` fingerprint; `extract_outcome_calibration` ledger delta) | **BUILT (#91, 2026-07-14)** — measurement only; see §5 item 2 |
+| **School-year currency** (`infrastructure/utilities/school_year.py::content_school_year` URL/filename signal, incl. month-word dates `December98`→SY 1998-99; the #241 pre-2017-18 **validity floor** in `release.py` — HOLD semantics, floored on the CRDC 2017-18 federal input) | **BUILT (#107/#241/#531, PRs #529/#533, 2026-07-16)** — the money half (prefer-recent ranking) lives in Stage 6 dispatch, see `STAGE6_DISPATCH_DESIGN.md` §3G |
+| **Console error-review lanes** (FP = tier-A ∩ `target_absent` via `release.MONEY_LEAK_WHERE`, the SSOT shared with `decide()`; FN = the fixed-seed reject-audit sample) + `rec_key` search + right-pane reorder | **BUILT (#516, PR #534, 2026-07-16)** — disagreement as the primary product of labeling, surfaced as first-class lanes |
+| **Relevance-density evidence navigation** for long reps (signed detector events on the char axis → smoothed curve → ranked bookmarks + heat-strip; weights served from `detectors.EVENT_WEIGHTS` via `/api/detector-weights` — display-only mirror of the live Vote confidences, pinned by a no-drift test, NOT a combiner weight surface) | **BUILT (#521, PR #535, 2026-07-17)** — replaces the 20k-char display cap; full text renders with peak anchors |
+| **Content-adaptive center-pane defaults** (evidence classification drives `<details>` open states: densest + unique-adders + instructional/period-phrasing carriers open, ⊆-densest collapsed; rasters demoted to one lazy collapsed gallery; source-PDF iframe = default visual; `\f`-page-mapped bookmarks steer the PDF viewer; hidden-evidence pointer strip + show-all toggle) | **BUILT (#522, PR #536, 2026-07-17)** — guardrail scope is the client-checkable surface (in-window times + instructional/period regexes); per-rep keyword/table attribution needs a server payload change (documented in-code as follow-up) |
 | Learned `LabelModel` combiner · hierarchical/vendor pooling · online-FDR drift | **DEFERRED (scale endgame)** |
 
 ---
 
 ## Change log
 
+- **2026-07-17 — the console trio SHIPPED (#516 → PR #534, #521 → #535, #522 → #536): the
+  labeling-that-drives-learning surface.** Three console builds in sequence, each through a max-effort
+  multi-agent review with all confirmed findings fixed before merge. **#516** — FP/FN error-review lanes
+  (FP driven by `release.MONEY_LEAK_WHERE`, the tier-A∩`target_absent` SSOT; FN = the fixed-seed
+  reject-audit sample) + `rec_key` as the searchable entry-ID. **#521** — relevance-density navigation:
+  the SAME signed detector signals that scored a record projected onto its char axis → ranked bookmarks +
+  heat-strip; weights are served from `detectors.EVENT_WEIGHTS` via `/api/detector-weights` (a
+  **display-only** mirror of live Vote confidences, pinned by a no-drift test — the combiner's weights
+  remain `DEFAULT_DETECTOR_PARAMS`, a distinction now load-bearing for #528). Measured-then-dialed-back:
+  `positive_kw` event weight 0.40→0.20 after real-corpus testing (Huntington) showed keyword scatter
+  out-ranking the true schedule. **#522** — content-adaptive defaults: the evidence classification
+  (densest / unique-adder / ⊆-densest, extended with instructional/period-phrasing carriers) now DRIVES
+  the default open states instead of decorating them; rasters (measured 40% of all reps; one record
+  carries 258) demoted to one lazy gallery; the source PDF is the default visual, steered to a bookmark's
+  page via the `\f` separators real `pdftotext -layout` emits (pinned by a real-toolchain test); a
+  hidden-evidence pointer guards #522's own collapse rules (honest scope: the client-checkable detector
+  surface — per-rep keyword/table attribution needs a server payload change). The #536 review's
+  altitude finding is recorded in-code: the guardrail is NOT a re-guard of the #521 truncation fix, and
+  says so. The facet-vocabulary decision folded into #522 by comment was NOT part of its shipped scope —
+  **re-homed to #537** (gated on Ian; #515 stays sequenced behind it).
+- **2026-07-16 — school-year currency BUILT (#107/#241, PR #529; month-word dates #531 → PR #533).**
+  `content_school_year` (deterministic URL/filename SY signal, obs.-6-hardened against word-month/label
+  FPs, source-ordered so a redirect URL can't leak a spurious year past the floor) + the #241 pre-2017-18
+  validity floor in `release.py` (HOLD, REQ-026 correctness, ~0 money — never justify it on spend) +
+  prefer-recent Stage-6 dispatch ranking (the money half, zero recall cost by construction). #107/#241/
+  #192/#525 CLOSED. Band-coverage redundancy deferred to #83 by design.
 - **2026-07-16 (later) — #528: a lone times-table on a feed/calendar page routes to review (a measured
   combiner refinement).** The combiner's `structural` branch auto-sent tier-A on ANY structural target, so a
   bare `lf_time_table` beat a `news_feed`/`calendar` negative unconditionally — the #1 remaining tier-A
@@ -851,7 +882,7 @@ existing plain-text footer capture is already sufficient for the heading-proximi
   real targets). Measured pass (before→after `--assert-floor` re-ingest): **tier-A precision 0.7585→0.7817**,
   tier-A non-targets **114→100** (−14, exactly as measured), tier-A recall **0.8585 held** (0 real targets
   lost), **A+B recall 0.9928 held** (floor passed), exploration-cohort reject-quality **1.0**. board/sports
-  remain a structural-detector job (#226 / own issue); `lf_nonstandard_day` is #207 (superseded → #522).
+  remain a structural-detector job (#226 / own issue); `lf_nonstandard_day` is #207 (superseded → #537).
 
 - **2026-07-16 — §3a obs. 6: the stale-veto projection REFUTED by measurement; obs. 5's stale bullet marked
   superseded.** Building #241 surfaced that its enabling signal (`content_school_year`, §3G) does not exist.

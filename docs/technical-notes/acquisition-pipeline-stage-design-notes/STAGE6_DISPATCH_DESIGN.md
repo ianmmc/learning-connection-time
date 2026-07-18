@@ -213,6 +213,12 @@ unlabeled **tier-B/C** are **`hold`** (a *third* decision — a maybe-target awa
 **`harvest_slice`** (the high-signal `harvest_pages`, ~1–4 pp — built at Stage-5 ingest), not the whole PDF.
 **Verified-only mode** (a gate@6 toggle — §3E) narrows the send set to **labeled targets only**, holding the
 speculative tier-A auto-sends, for building a manually-verified, training-grade corpus.
+**Two more hold reasons since PR #529 (2026-07-16, school-year currency — §3G):** (a) the **#241 validity
+floor** — a record whose `content_school_year` predates 2017-18 holds with a
+`stale:pre-2017-18-validity-floor` reason (`release.pre_validity_floor`; REQ-026 correctness, overridable);
+(b) **prefer-recent** (`stage6_dispatch._prefer_recent_holds`, dispatch-time) — among send-eligible siblings
+covering the same school, only the newest school-year's doc sends; stale siblings hold (zero recall cost by
+construction — no fresher sibling ⇒ the old doc still sends).
 
 **Stage-5 v2.1 ripple check (2026-07-01).** The Stage-5 labeling rework (target-shape taxonomy; non-targets →
 confounder facets; REQ-114) flows into Stage 6 **cleanly** — `release.decide` and the gate@6 candidates SQL
@@ -577,7 +583,7 @@ dispatch is what makes this recoverable) into a fresh call with an appropriate f
 or may not persist in the OpenRouter session; the dispatch freeze + per-model prompts (§3A) are the
 mechanisms for reconstituting context if they don't.
 
-### G. Recency preference in bell-schedule documentation (OPEN — a DISPATCH decision; Ian, 2026-07-02) (tracked: #107)
+### G. Recency preference in bell-schedule documentation (BUILT 2026-07-16 — PR #529; was OPEN since 2026-07-02) (#107/#241 CLOSED)
 
 **The problem, from live data (batch_00008):** Marshall WI's tier-gated auto-send set included a
 **2021-2022 HS Handbook (COVID-era)** and a **2018-2019 MES Handbook** alongside the current
@@ -620,15 +626,19 @@ per-record gate (REQ-044 scoped recency there; the two are complementary, not du
   `project-auto-act-when-failure-observable`: a hold is reversible and visibly fails; a hard-reject silently
   destroys a district's only evidence. Tracked: **#241** (the floor) — **#107** stays the parent for the
   shared `content_school_year` signal + the prefer-recent ranking.
-- **Still not decided:** whether year-preference lives in `release.decide` (Stage 5) or the routing/package
-  layer (here); how it interacts with the handbook `harvest_slice` (an old handbook's slice may still be the
-  only evidence for a band — which the HOLD semantics above now make recoverable rather than lost).
-- **The signal is still unbuilt** (verified 2026-07-16: `content_school_year` has zero hits in the codebase).
-  Extractor caveats measured the hard way — URL-**decode first** (`Bell%20Schedule%2025-26` reads as year
-  `2025-26` raw because `%20` is an encoded space: right answer, wrong reason), guard GUIDs/asset-ids
-  (`live_feed_image/17728374`, `uploaded_file/5125` → phantom years), a CMS upload path is not a vintage
-  (`/wp-content/uploads/2021/05/`), a date is not a school year (`4-20-21-Minutes.pdf` = April 20 2021), and
-  validate the pair is consecutive (`2020-2023` is a plan span). Full detail: §3a obs. 6.
+- **RESOLVED + BUILT (PR #529, 2026-07-16; month-word dates #531 → PR #533).** The split landed exactly as
+  the two halves above: the **#241 validity floor** lives in `release.py::pre_validity_floor` (Stage 5's
+  release layer — `_VALIDITY_FLOOR_START = start_year(SPED_BASELINE_YEAR)` = 2017; a pre-floor record gets
+  `decision: "hold"` with a `stale:pre-2017-18-validity-floor:<SY>` reason, human-overridable), and
+  **prefer-recent** lives HERE, in `process_governance/stage6_dispatch.py::_prefer_recent_holds` — among
+  send-eligible siblings covering the same school, the newest `content_school_year` sends and stale
+  siblings HOLD (zero recall cost by construction: no fresher sibling ⇒ the old doc still sends).
+- **The signal is BUILT:** `infrastructure/utilities/school_year.py::content_school_year(*sources)` —
+  deterministic, URL-decode-first, source-ordered (a redirect URL can't leak a spurious year past the
+  floor), guards for GUIDs/asset-ids (`live_feed_image/17728374` → no phantom year), CMS upload paths
+  (`/wp-content/uploads/2021/05/` is not a vintage), calendar dates (`4-20-21-Minutes.pdf` is a date, not
+  a SY), non-consecutive pairs (`2020-2023` is a plan span), and month-word dates (`December98` → SY
+  1998-99, #531). Full derivation history: STAGE5 §3a obs. 6.
 Cross-refs: REQ-044 (recency gate), REQ-007/school_year.py (COVID exclusion), the batch_00008
 observation record (issues #60/#61's deferral note explains the measured-pass rule this follows).
 

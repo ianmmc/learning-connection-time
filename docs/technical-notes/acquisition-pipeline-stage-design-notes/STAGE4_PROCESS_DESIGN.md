@@ -95,7 +95,11 @@ pair *even though* the `.txt` already looked usable — the short-circuit was di
 - **Every PDF** → all four kept methods unconditionally: `pdftotext -layout`, `pdfplumber.extract_tables()`
   (`lines` strategy), `camelot` `stream`, `camelot` `hybrid`. `pdfplumber`/`camelot` output is rendered as
   real **Markdown-table syntax** (header + `---` + rows), kept as `.txt` (the extension is invisible — the
-  text is pasted into a chat-completion prompt, never uploaded as a file).
+  text is pasted into a chat-completion prompt, never uploaded as a file). **A now-load-bearing property of
+  the `pdftotext` output: it keeps `\f` form-feed page separators** (one per page, page content before its
+  `\f`) — the Stage-5 console's bookmark→PDF-page map (#522) splits on them client-side. Pinned by a
+  real-toolchain test (`tests/test_stage4_tools.py::TestPdftotextPageSeparators`, skips where gs/poppler
+  absent) so a poppler upgrade that changes `\f` emission fails loudly instead of silently mislabeling pages.
 - **Every image** → Tesseract, kept as **three distinctly-named representations** that can disagree:
   `tesseract_screenshot` (`page.png`), `tesseract_image` (a `kind:"image"` download), `tesseract_raster`
   (a fresh `pdftoppm -r 200` rasterization of any PDF — tesseract can't read a PDF directly). Rasters are

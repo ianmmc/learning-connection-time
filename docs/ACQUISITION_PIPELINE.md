@@ -13,7 +13,7 @@
 > **Update this when:** a stage's purpose/IO changes, a new stage is built, or the flow diagram needs a new
 > edge — for implementation detail within an already-mapped stage, update that stage's own design note instead.
 
-**Current build state (2026-07-15):** the console runs the pipeline live **end to end through `gate@8`**
+**Current build state (2026-07-17):** the console runs the pipeline live **end to end through `gate@8`**
 (Stage 9 remains the one undesigned-into-code seam — see §9). Stage 1
 queue (`gate@1`, REQ-102), Stage 2 deterministic SERP cascade (REQ-104), Stage 3 capture + resilience
 (REQ-110), Stage 4 process + the Stage 4→5 incremental handoff (REQ-111), Stage 5 district-driven
@@ -136,6 +136,18 @@ deterministic tier decision against the actual PAID Stage-7 outcome (measurement
 mutates scoring config); `CURRENT_SCHOOL_YEAR` became a derived July-1-rollover value instead of a
 hand-bumped constant (the prior constant went stale exactly one rollover after it was written); and the
 gate@1 console collapsed a 1,400+-district no-domain refusal wall into a Settings → Exclusions view.
+
+**Epic #106's first wave shipped (2026-07-16/17):** **school-year currency** (#107/#241 → PRs #529/#533 —
+the deterministic `content_school_year` URL/filename signal, a pre-2017-18 **validity floor** with HOLD
+semantics floored on the CRDC 2017-18 federal input, and **prefer-recent** dispatch holds: among
+send-eligible siblings covering the same school only the newest school-year's doc sends, at zero recall
+cost by construction); the **#530 combiner refinement** (a lone times-table on a feed/calendar page routes
+to review — −14 tier-A false-sends, 0 recall cost); and the **Stage-5 console trio** (#516/#521/#522 →
+PRs #534/#535/#536 — FP/FN error-review lanes, relevance-density evidence navigation for long reps, and
+content-adaptive center-pane defaults whose guardrail is that the default view never silently contradicts
+the score). Next buildable in the epic: **#528** (calendar scalar + the news_feed separating analysis);
+the confounder facet-vocabulary decision is re-homed in **#537** (gated on Ian), with #515 sequenced
+behind it. Detail: `STAGE5_FILTER_DESIGN.md` §8/Change log, `STAGE6_DISPATCH_DESIGN.md` §3G.
 
 Epic #209's own ordering constraint (gate@8's calibrated-confidence gate must exist before gates 6/7 can
 relax supervision) is now satisfied structurally — gate@8 is built and its calibration hook is wired
@@ -270,7 +282,7 @@ flowchart TD
         P_OUT --> P_REG
     end
 
-    subgraph STAGE5 ["Stage 5 — Local filter · DISTRICT-DRIVEN, attention-first console (BUILT — REQ-112/113/114)"]
+    subgraph STAGE5 ["Stage 5 — Local filter · DISTRICT-DRIVEN, attention-first console (BUILT — REQ-112/113/114; console trio #516/#521/#522 SHIPPED 2026-07-17: FP/FN lanes + relevance-density nav + content-adaptive defaults)"]
         direction TB
         F_ING["Stage 4→5 handoff: build_signals.ingest_batch() — batch-scoped ingest into<br/>the governance signal + cross-stage cache tables (no full-corpus rebuild)"]
         F_SCORE["Scoring V2 (REQ-113): labeling-function detectors + combiner<br/>-> per-record tier (A / B / C / D)"]

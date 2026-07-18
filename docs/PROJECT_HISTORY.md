@@ -410,6 +410,35 @@ audit was enforcing on the docs.* Authority: `STAGE5_FILTER_DESIGN.md` §3a obs.
 `docs/REQUIREMENTS.yaml` (REQ-152, the status normalization); issues #523–#526; the curated
 `memory/MEMORY.md`.
 
+### Epic #106's first wave: school-year currency ships as a floor + a ranking, and the console trio makes labeling the learning surface (2026-07-16/17)
+
+The measured re-scoping of recency (the 2026-07-16 entry above) **shipped**: `content_school_year` (a
+deterministic URL/filename school-year signal, hardened against the phantom-year traps the measurement
+surfaced), the **pre-2017-18 validity floor** as a HOLD (REQ-026 correctness floored on the CRDC 2017-18
+federal input — deliberately never justified on spend), and **prefer-recent** as a dispatch-time *ranking*
+(newest sibling sends, stale siblings hold — zero recall cost by construction). Then the **console trio**
+(#516/#521/#522 → PRs #534/#535/#536) rebuilt the Stage-5 review surface around
+`project-stage5-labeling-serves-learning`: FP/FN **error-review lanes** (disagreement as the primary
+product of labeling), **relevance-density navigation** (a long doc read in relevance order — the same
+signed detector signals that scored the record, projected onto its char axis as bookmarks + a heat-strip),
+and **content-adaptive defaults** (the evidence classification drives what's open; redundancy collapses;
+nothing is removed). *Lessons:* (a) **a display layer that mirrors scoring weights is a second SSOT
+waiting to drift** — resolved by serving the mirror from the detectors module and pinning it with a
+no-drift test, and by documenting loudly that the combiner's weights live elsewhere (a confusion #528's
+build would otherwise walk into). (b) **max-effort adversarial review earns its keep most on the
+safety-critical piece**: the #536 review proved the evidence guardrail was blind to the system's
+*strongest* detector and rested on a tautology — both fixed before merge; and it taught a naming rule:
+**name a guard for the mechanism it checks, not the incident that motivated it** (the "Huntington class"
+label implied protection #521 had already delivered by different means). (c) **build-best-then-dial-back
+works, but only against real data** — the density model's keyword weight and bookmark anchoring were both
+wrong in ways synthetic tests couldn't show, and a 333k-char production handbook found both in minutes.
+(d) **a scope addition made by issue-comment dies silently when its carrier issue closes** — #522's
+folded-in facet-vocabulary decision shipped nowhere and was only caught by a post-merge audit; re-homed
+immediately as #537 (the tracker convention exists precisely so work items can't be orphaned by a close).
+Authority: `STAGE5_FILTER_DESIGN.md` §8 + change log; `STAGE6_DISPATCH_DESIGN.md` §3G;
+`STAGE4_PROCESS_DESIGN.md` (the now-load-bearing `\f` contract); PRs #529/#533/#534/#535/#536; issues
+#528 (build-session context comment) and #537.
+
 ---
 
 ## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)
