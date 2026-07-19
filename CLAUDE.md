@@ -120,8 +120,11 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-19): epic #111 (Stages 1-4 hardening) ships both its planned phases in two
-days, each with its own adversarial review round finding a real bug the green suites couldn't.**
+**Current status (2026-07-19): epic #111 (Stage 2-3 discovery & capture improvements) ships its first
+two phases — the crossfam correctness sweep + the #526 DB-batch-read migration — each with its own
+adversarial review round finding a real bug the green suites couldn't. The epic itself is NOT closed:
+those phases covered the crossfam-triage fallout attached to it, not its founding charter
+(discovery/capture robustness + recall), most of which is still open — see the reappraisal below.**
 **Phase 1** (post-triage, worked by dependency cluster same as #106's slate): five parallel correctness
 sweeps, one PR per module — Stage 2 (#265/#341/#452/#523/#524, PR #549), Stage 1 (#264/#338/#339, PR
 #550), the Node scraper (#375/#416, PR #551), Stage 3/4 (#267/#347/#348/#351/#454, PR #552), `common/`
@@ -143,14 +146,23 @@ gone stale within the session that wrote it, superseded by #555's `to_working_do
 Full derivation: `docs/PROJECT_HISTORY.md` (the epic-#111-phases entry); `STAGE1-4_*_DESIGN.md` change
 logs; PRs #549–#553, #555.
 
-**Next (RESUME HERE — 2026-07-19): epic #111 is done — pick the next epic in sequence.** Per the
-pre-#106 sequencing plan (unchanged): **#479/#480** (LCT DB hygiene / legacy NCES-SEA script hygiene —
-#480 already holds #444, re-homed during #106's close) → **#92** (Stage 9 — Incorporate; the one
-remaining unbuilt pipeline stage). Parked: #475/#476 (extract crossfam-review/fuzzy-dependency tooling
-to standalone packages), #103/#80 (Council Lab — #110 lives here too). Documented-in-code deferrals:
-`_satisfied_bands_now` batching (revisit on volume); the #522 guardrail's per-rep keyword/table
-attribution (needs a server payload change); JS behavioral tests (no JS harness in repo — static-source
-pins only).
+**Next (RESUME HERE — 2026-07-19): epic #111 continues — Phase 4, the capture-fidelity cluster.**
+The 2026-07-19 reappraisal (Ian-approved plan, posted on the epic) corrected the previous checkpoint's
+"epic #111 is done" claim: the epic's charter work remains. **Phase 3 (cleanup) is DONE**: #340
+wontfix-closed; #227 closed as mitigated-by-#229 (residual → #164); #415 dispositioned as a #518
+dependency; #554 merged (PR #556 — `paths.atomic_write_json` is now the single home for the
+tmp+replace pattern). Remaining, in approved order: **Phase 4** — the Stage 3/4 capture cluster:
+quantify #518's failure classes first (login walls, 0-byte PDFs, truncation; motivating records on
+the issue), land the #415 `r.ok` fix inside it, spike #225's `networkidle→domcontentloaded` with a
+measured before/after, then #116 partial-retry + #117 per-task JSONL. **Phase 5** — discovery recall:
+#114 (investigate the 4 misses, cheap, do first) → #164 (geo-scoped queries; Millard 3173740 is the
+acceptance case) → then a build-vs-defer decision on #112 with #114's evidence in hand. **Phase 6** —
+#222 (small, slot anywhere) + #118 (measurement capstone), then close the epic. Open question for
+Ian: whether #112/#118 stay in-epic or get re-homed (both are expansive). After #111: **#479/#480**
+→ **#92** (Stage 9) per the unchanged pre-#106 sequencing; parked: #475/#476, #103/#80 (+#110).
+Documented-in-code deferrals: `_satisfied_bands_now` batching (revisit on volume); the #522
+guardrail's per-rep keyword/table attribution (needs a server payload change); JS behavioral tests
+(no JS harness in repo — static-source pins only).
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
 -m "not integration"` (expect **1702** pass) + `pytest -q -m govdb` (expect **253**, Postgres up).
