@@ -93,9 +93,8 @@ def guard_tracked_backup(out: Path) -> Path:
 def atomic_write_json(path: Path, doc: dict) -> None:
     """Crash-safe JSON write: serialize to a sibling temp file, then os.replace() -- a reader
     never sees a partially-written file, only the old version or the new one. The one shared
-    home for the tmp+replace pattern (#265 review); stage2's manifest writes use it today.
-    district_status.export_status and batch_store.write_receipt still hand-roll their own copy
-    of the same three lines -- consolidating them is tracked as #554, not done here."""
+    home for the tmp+replace pattern (#265 review; #554 consolidated the last hand-rolled
+    copies onto it) -- any future change to the pattern (e.g. fsync-before-replace) lands here."""
     tmp = path.with_name(path.name + ".tmp")
     tmp.write_text(json.dumps(doc, indent=2))
     os.replace(tmp, path)

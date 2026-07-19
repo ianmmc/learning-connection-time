@@ -6,9 +6,6 @@ in `gdb.session_scope`; tests use the rolling-back `gov_session` fixture). The g
 (reject district / reject school / add school) are soft flips of `included` / row inserts, so nothing
 is ever destroyed — the full proposed batch stays auditable.
 """
-import json
-import os
-
 from sqlalchemy import select, text
 
 from infrastructure.acquisition.common import db as gdb
@@ -273,9 +270,8 @@ def write_receipt(sess, batch_id: str):
     doc = to_receipt_doc(sess, batch_id)
     paths.QUEUE_DIR.mkdir(parents=True, exist_ok=True)
     out_path = paths.QUEUE_DIR / f"{batch_id}.json"
-    tmp = out_path.with_name(out_path.name + ".tmp")   # atomic (issue #50): a crash mid-write must
-    tmp.write_text(json.dumps(doc, indent=2))          # never leave a truncated receipt behind —
-    os.replace(tmp, out_path)                          # same tmp+replace pattern as export_status
+    paths.atomic_write_json(out_path, doc)   # atomic (issue #50): a crash mid-write must never
+                                             # leave a truncated receipt behind
     return out_path
 
 

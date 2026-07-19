@@ -272,9 +272,7 @@ def export_status(s, out=None) -> int:
             d["notes"] = r["note"]   # carry the latest non-empty note up to the district level
     doc = {"schema_version": SCHEMA_VERSION, "last_updated": _now(), "districts": districts}
     out.parent.mkdir(parents=True, exist_ok=True)
-    tmp = out.with_name(out.name + ".tmp")
-    tmp.write_text(json.dumps(doc, indent=2))
-    tmp.replace(out)   # atomic
+    paths.atomic_write_json(out, doc)
     return len(districts)
 
 

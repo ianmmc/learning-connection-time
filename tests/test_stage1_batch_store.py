@@ -317,7 +317,7 @@ class TestReceiptAtomicity:
         out.write_text('{"old": "receipt"}')                   # the prior good receipt
         def boom(src, dst):
             raise OSError("simulated crash at replace")
-        monkeypatch.setattr(BS.os, "replace", boom)
+        monkeypatch.setattr(BS.paths.os, "replace", boom)      # #554: the pattern lives in paths.atomic_write_json now
         with pytest.raises(OSError):
             BS.write_receipt(sess, "batch_test_store")
         assert out.read_text() == '{"old": "receipt"}'         # untouched — no partial overwrite
