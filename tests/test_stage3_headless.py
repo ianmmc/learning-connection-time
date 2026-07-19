@@ -145,3 +145,21 @@ def test_no_link_districts_are_skipped_before_playwright(tmp_path, monkeypatch, 
     assert summary["todo"] == 1 and summary["no_links"] == 1
     assert ran == ["111_d111"]                        # only the with-links district hit Playwright
     assert not (d2 / "captures.json").exists()         # no Stage-3 artifact for the no-link district
+
+
+class TestCorruptManifestMessage:
+    """#267 — a truncated captures.json (crash mid-write) must fail finish_district with the
+    delete-then-reconstruct recovery spelled out, not a bare JSONDecodeError (the silent-wedge
+    state: reconcile skips forever, reconstruct refuses)."""
+
+    def test_finish_district_names_the_recovery_path(self, tmp_path):
+        (tmp_path / "captures.json").write_text('[{"url": "u", "ok": tru')   # truncated
+        district = {"dir": tmp_path, "district_id": "D9", "name": "N", "state": "AK"}
+        with pytest.raises(RuntimeError) as ei:
+            C3.finish_district(district, registry={"districts": {}})
+        msg = str(ei.value)
+        assert "corrupt captures.json" in msg
+        # The suggested command must ACTUALLY PARSE against the real reconstruct subparser
+        # (review: the first draft cited a nonexistent <batch.json> positional).
+        cmd_tail = msg.split("capture_stage3 ", 1)[1].rstrip("`").split()
+        assert cmd_tail == ["reconstruct", "D9"]

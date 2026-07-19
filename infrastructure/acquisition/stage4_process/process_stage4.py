@@ -114,7 +114,13 @@ def check_file_consistency(district: dict) -> list[str]:
             continue
         record_dir = district["dir"] / "captures" / rec["hash"]
         for fname in (rec.get("files") or {}).values():
-            if not (record_dir / fname).exists():
+            if not isinstance(fname, str) or not fname:
+                # #351: a non-string files{} value (hand-edited/corrupt manifest) must surface as
+                # an inconsistency, not a TypeError that aborts the whole reconcile.
+                problems.append(
+                    f"captures.json has a non-string files entry {fname!r} in {record_dir}"
+                )
+            elif not (record_dir / fname).exists():
                 problems.append(
                     f"captures.json claims '{fname}' exists in {record_dir} but it does not"
                 )
@@ -301,7 +307,10 @@ def process_record(rec: dict, record_dir: Path) -> dict:
     """Build the texts[] list for one captures.json record -- every kept tool run against
     every applicable input it has, unconditionally; every attempt (success, below-bar, or
     errored) gets an entry, never silently omitted (completeness is the audit bar)."""
-    files = rec.get("files") or {}
+    # #351: drop non-string files{} values up front -- Stage 3 never writes them, but a
+    # hand-edited/corrupt manifest must degrade to "that representation is absent", not an
+    # AttributeError on .lower() mid-district.
+    files = {k: v for k, v in (rec.get("files") or {}).items() if isinstance(v, str) and v}
     texts: list[dict] = []
 
     def add(source: str, text: str | None, error: str | None, text_file: str | None, write: bool):
