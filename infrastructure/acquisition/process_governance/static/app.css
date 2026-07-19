@@ -633,3 +633,6 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .q-spine-selected { border-color: var(--action-primary); font-weight: 600; }
 .q-spine-ch { font-size: 0.85em; color: var(--text-secondary); border: 1px solid var(--border-subtle); border-radius: 3px; padding: 0 3px; }
 .q-spine-criteria { margin-top: 6px; }
+
+/* REQ-097 (#75): the advisory drift badge in the header — amber, same warn family as .s7-contam */
+.drift-badge { color: #b45309; font-weight: 600; margin-left: 10px; }

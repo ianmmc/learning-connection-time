@@ -2322,20 +2322,24 @@ requirements:
     description: Stage 5 drift detector — alert when newly-labeled data degrades the live config enough to warrant a retune
     type: functional
     priority: should
-    status: accepted
+    status: tested
     acceptance_criteria:
-      - Bernoulli CUSUM on tier-A recall and precision separately vs the policy floor (accumulates evidence; a single noisy batch won't trip it)
-      - Two-gate against small-n false alarms — alert only when CUSUM trips AND the lower Wilson-score CI bound also breaches the floor
-      - Distinguishes config-induced data change (a tuning move's own effect) from new-district data change (the world shifted -> retune)
-      - Surfaces "retune recommended" in the governance console; never auto-retunes (CP ramp-up posture)
-      - Reads the tuning-ledger episode history (REQ-095) as its series
+      - "Bernoulli CUSUM on tier-A recall and precision separately vs the policy floor (accumulates evidence; a single noisy batch won't trip it) — MET (drift.py::_stream; recall vs harness.RECALL_FLOOR, precision vs the segment-adoption baseline − margin, since no policy precision floor exists)"
+      - "Two-gate against small-n false alarms — alert only when CUSUM trips AND the lower Wilson-score CI bound also breaches the floor — MET (test_single_noisy_small_n_point_does_not_false_alarm)"
+      - "Distinguishes config-induced data change (a tuning move's own effect) from new-district data change (the world shifted -> retune) — MET STRUCTURALLY: the series is segmented by config fingerprint and the CUSUM runs only within the latest segment (test_config_change_resets_the_segment)"
+      - "Surfaces \"retune recommended\" in the governance console; never auto-retunes (CP ramp-up posture) — MET (/api/progress drift key + the data-feat=drift-badge header badge; pure-read pinned by test_verdict_is_advisory_never_mutating + test_console_badge_is_wired)"
+      - "Reads the tuning-ledger episode history (REQ-095) as its series — MET IN SUBSTANCE via the same measured-pass discipline's other output: the fingerprinted SCORECARDS are the series (episodes carry deltas, not the levels/counts a CUSUM+Wilson needs); the ledger remains the decision log"
+    tests:
+      - tests/test_stage5_drift.py
     created: "2026-06-26T00:00:00Z"
-    updated: "2026-06-26T00:00:00Z"
-    notes: "Designed (research-backed: CUSUM+Wilson beat EWMA/Page-Hinkley for binary-proportion metrics; KS/chi-sq
-      are the wrong layer). Original deferral ('until batch 2 exists') EXPIRED — batches 00002-00007 exist
-      (re-triaged 2026-07-02, issue #75): remains accepted/unbuilt by choice, best sequenced after the
-      facet-level per-detector scoring pass (its input series — the tuning ledger — gains V2-era episodes
-      there first). Authority: PIPELINE_GOVERNANCE_AND_STATE.md §7a."
+    updated: "2026-07-18T00:00:00Z"
+    notes: "BUILT 2026-07-18 (#75). Designed (research-backed: CUSUM+Wilson beat EWMA/Page-Hinkley for
+      binary-proportion metrics; KS/chi-sq are the wrong layer). The 2026-07-02 re-triage's sequencing
+      condition (V2-era episodes accrued after facet-level scoring) was met by 2026-07-18 — the ledger
+      holds 9 V2-era episodes and the scorecard directory 14 fingerprinted cards, so the minimal
+      single-stream build shipped. The ADDIS online-FDR multi-stream monitor stays a deferred scale-endgame
+      item (STAGE5_FILTER_DESIGN §8), NOT this requirement. Verified against the live series at build time:
+      8 same-config points, no alert (correct — the 2026-07-18 arc improved both streams)."
 
   - id: REQ-098
     description: Package the acquisition tree + code move + wire the dependency/dead-code/architecture tooling baseline
