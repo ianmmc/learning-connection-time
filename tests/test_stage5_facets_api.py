@@ -619,5 +619,10 @@ def test_density_nav_nonstandard_regex_matches_build_signals_python():
     m = re.search(r"const DN_NONSTANDARD = /(.+)/gi;", js)
     assert m, "DN_NONSTANDARD declaration must be present and in this exact shape"
     assert m.group(1) == BS.NONSTANDARD_TERM_RE.pattern
-    assert 'push(m.index, "wrong_day")' in js, "wrong-day events must feed the heat-strip"
+    assert "push(m.index, wdType)" in js, "wrong-day events must feed the heat-strip"
+    # The strip mirrors the record's OWN stored vote strength (strong -> wrong_day, soft/none ->
+    # wrong_day_soft) — the #521 guardrail closure from the PR #538/#539/#541 review: a raw regex match
+    # must not paint a full-STRONG spike where the actual lf_nonstandard_day vote was soft or absent.
+    assert 'wdVote.strength === "strong" ? "wrong_day" : "wrong_day_soft"' in js
     assert "wrong_day" in DET.EVENT_WEIGHTS and DET.EVENT_WEIGHTS["wrong_day"] == (-1, 0.70)
+    assert "wrong_day_soft" in DET.EVENT_WEIGHTS and DET.EVENT_WEIGHTS["wrong_day_soft"] == (-1, 0.45)

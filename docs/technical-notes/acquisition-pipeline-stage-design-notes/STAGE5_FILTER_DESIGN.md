@@ -884,6 +884,31 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 
 ## Change log
 
+- **2026-07-18 — max-effort review of PRs #538/#539/#541 (10 angles, 7 confirmed findings, all fixed
+  same-day; ledger episode 9, ZERO decision movement — every fix is a robustness/consistency closure).**
+  (1) `FEED_URL_RE`'s glued-feed alternative was exact-case (`(?-i:[a-z]Feed)`) and missed
+  case-normalized URLs (`smartsitefeed`, `PSQFEED=`) — now `[a-z]feeds?(?![a-z])` under `re.I`, with the
+  feeder/feedback right-bound intact. (2) `NONSTANDARD_TERM_RE` separator dots (`half.day`,
+  `(?:2|two).hour`, `back.to.school`) matched ANY character — bounded to `[- ]`, Python + the JS mirror
+  (the no-drift pattern pin keeps them synced). (3) `lf_district_homepage` was missing from
+  `harness.DETECTOR_POLARITY`, silently under-counting the `conflict` diagnostic when it co-fires with a
+  target — added, plus a registry-completeness pin (which also fixed the `_neg_class` factory closures
+  all sharing `__name__ "lf"`). (4) The heat-strip's `wrong_day` event painted full STRONG on every raw
+  term match — the JS now picks `wrong_day` (0.70) vs the new `wrong_day_soft` (0.45) from the record's
+  OWN stored `lf_nonstandard_day` vote strength, so the strip mirrors the score by construction (#521
+  guardrail; Playwright-verified on live soft- and strong-voted records). (5) The join-the-set
+  discipline made STRUCTURAL: `detectors.UNDERMINE_CLASS` is the one registration map (next to where
+  detectors are authored); the combiner DERIVES `UNDERMINE_TIMES`/`UNDERMINE_TIMES_SOFT`/
+  `HARD_NEGATIVE` from it — membership verified identical, wiring detector N+1 is one entry, pinned.
+  (6) `frontier.DEFAULT_GRID` now covers `wrong_day_dominance_min` + `homepage_roster_min` (they were
+  invisible to the tracked tuning surface), with a keys-equality drift pin. (7) `lf_district_homepage`'s
+  "never a suppress" docstring claim was OVERSTATED: firing alone it rides the hard-negative suppress —
+  which is counterfactual-identical (a times-but-no-target page suppresses via the final `else` anyway;
+  the vote changes the audit trail, not the decision) — docstring corrected + the alone/counterfactual
+  pair pinned by test. NOTE: the review also established the same "suppresses when firing alone"
+  reading applies to every `HARD_NEGATIVE` member (lf_news_feed's "only suppresses when NO target
+  detector fires" wording is the accurate phrasing for the whole class).
+
 - **2026-07-18 — #532: the page-focus signal SHIPPED as `lf_district_homepage` — measured
   tier-A precision 0.8612→0.8701 at exactly-held recall.** Exploration first (build-best-then-dial-back):
   the issue's lead candidate — multi-confounder co-occurrence (N≥3 detectors on one record) — **does not

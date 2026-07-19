@@ -479,3 +479,26 @@ def test_rootish_url_matches_homepage_shapes_only():
         assert BS.rootish_url(u), u
     for u in no:
         assert not BS.rootish_url(u), u
+
+
+# ---- PR #538/#539/#541 review fixes: regex tightening pins ----
+def test_feed_url_matches_case_normalized_glued_tokens():
+    # The camelCase alternative was exact-case ((?-i:[a-z]Feed)) and missed case-normalized variants of
+    # the PR's own fixture. Now the glued-token alternative folds case like the rest of the pattern.
+    for u in [
+        "https://tups.org/index.php?pageID=smartsitefeed&psqfeed=true",   # lowercased proxy/CMS
+        "https://tups.org/index.php?pageID=SMARTSITEFEED&psqFEED=true",   # uppercased legacy CMS
+        "https://tups.org/index.php?pageID=smartSiteFeed&psqFeed=true",   # the original camelCase
+    ]:
+        assert BS.feed_url(u), u
+    for u in ["https://example.org/schools/feeder-pattern", "https://example.org/about/feedback",
+              "https://example.org/FEEDER-schools"]:
+        assert not BS.feed_url(u), u
+
+
+def test_nonstandard_term_separators_are_space_or_hyphen_only():
+    # 'half.day' / '(?:2|two).hour' / 'back.to.school' used a bare `.` (any character); now a [- ] class.
+    for hit in ["half day", "half-day", "2-hour delay", "two hour delay", "back to school", "back-to-school"]:
+        assert BS.NONSTANDARD_TERM_RE.search(hit), hit
+    for miss in ["halfXday", "2Xhour delay", "backXtoXschool"]:
+        assert not BS.NONSTANDARD_TERM_RE.search(miss), miss

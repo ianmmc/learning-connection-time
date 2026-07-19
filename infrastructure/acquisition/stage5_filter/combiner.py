@@ -25,8 +25,20 @@ Decision policy (recall-biased — the expensive error is dropping a real schedu
   - anything else (some evidence, nothing conclusive) → REVIEW (tier C)
 `send`/`review`/`suppress` map onto the already-built 5/6 tier-gate: A auto-sends, B/C hold for a label, D rejects.
 """
-HARD_NEGATIVE = {"lf_no_times", "lf_news_feed", "lf_calendar_widget", "lf_district_homepage",
-                 "lf_board", "lf_sports", "lf_transport"}
+from infrastructure.acquisition.stage5_filter.detectors import UNDERMINE_CLASS
+
+# Negatives that specifically UNDERMINE incidental-time evidence — DERIVED from the registration map
+# next to the detectors themselves (detectors.UNDERMINE_CLASS; the #199 join-the-set discipline made
+# structural after the #538/#539/#541 review found nothing enforced that a new underminer was hand-added
+# to both set literals here). Two flavors, ONE mechanism:
+#   hard: the times are the page's own post/event/teaser times (a feed, calendar widget, landing page)
+#   soft (#60): a real bell-shape but the WRONG schedule (weather / remote / delay / early-dismissal) —
+#     don't auto-send the pair, route to review so a human confirms the standard day. Structural targets
+#     (footer block / schedule table / explicit minutes) still auto-send: the structure IS the standard
+#     day even amid delay language, and structure beats noise (the combiner's core rule).
+UNDERMINE_TIMES = {n for n, k in UNDERMINE_CLASS.items() if k == "hard"}
+UNDERMINE_TIMES_SOFT = {n for n, k in UNDERMINE_CLASS.items() if k == "soft"}
+HARD_NEGATIVE = {"lf_no_times", "lf_board", "lf_sports", "lf_transport"} | UNDERMINE_TIMES
 # Targets grounded in a real hours STRUCTURE (an intentional block/table/declaration) — trustworthy even on a
 # feed page. vs. lf_prose_pair, whose evidence is just two nearby times, which a news post can incidentally trip.
 # STRONG_STRUCTURAL = an INTENTIONAL hours block/declaration (footer/heading hours block, explicit minutes) —
@@ -40,19 +52,6 @@ TABLE_TARGET = {"lf_time_table"}
 # The full structural set — DERIVED so a new structural detector added to one set can't silently miss the
 # other (it's used only to keep a real hours structure OUT of the incidental/prose-pair bucket).
 STRUCTURAL_TARGET = STRONG_STRUCTURAL | TABLE_TARGET
-# Negatives that specifically UNDERMINE incidental-time evidence — the times an lf_prose_pair/lf_weak_times
-# saw are probably NOT the regular student day. Two flavors, ONE mechanism (the next such detector joins a
-# set here instead of growing a new one-off boolean — #199 review):
-#   hard: the times are the page's own post/event times (a feed, a calendar widget, or a many-schools
-#     landing page's news/event strips — lf_district_homepage, #532)
-#   soft (#60): a real bell-shape but the WRONG schedule (weather / remote / delay / early-dismissal) —
-#     don't auto-send the pair, route to review so a human confirms the standard day. Structural targets
-#     (footer block / schedule table / explicit minutes) still auto-send: the structure IS the standard
-#     day even amid delay language, and structure beats noise (the combiner's core rule).
-UNDERMINE_TIMES = {"lf_news_feed", "lf_calendar_widget", "lf_district_homepage"}
-UNDERMINE_TIMES_SOFT = {"lf_nonstandard_day"}
-
-
 def _by(votes, polarity, strength=None):
     return [v for v in votes if v["polarity"] == polarity and (strength is None or v["strength"] == strength)]
 

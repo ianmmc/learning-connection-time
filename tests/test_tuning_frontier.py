@@ -273,3 +273,14 @@ def test_gate_runs_end_to_end_through_the_db_loader(gov_session):
     tightened = {**DET.DEFAULT_DETECTOR_PARAMS, "table_min_times": 5}
     v = FR.gate(recs, DET.DEFAULT_DETECTOR_PARAMS, tightened, margin=0.02, seed=1)
     assert v["promote"] is False and v["non_inferiority"]["passes"] is False
+
+
+def test_default_grid_covers_the_full_detector_param_surface():
+    """PR #538/#539/#541 review: wrong_day_dominance_min and homepage_roster_min were added to
+    DEFAULT_DETECTOR_PARAMS but not DEFAULT_GRID, so frontier sweeps silently held them fixed. Pin the
+    two key sets equal so the next param can't bypass the tracked tuning surface."""
+    from infrastructure.acquisition.stage5_filter import detectors as DET
+    from infrastructure.acquisition.stage5_filter import frontier as FR
+    assert set(FR.DEFAULT_GRID) == set(DET.DEFAULT_DETECTOR_PARAMS)
+    for k, values in FR.DEFAULT_GRID.items():
+        assert DET.DEFAULT_DETECTOR_PARAMS[k] in values, f"{k}: shipped default not in its own grid"
