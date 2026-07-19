@@ -146,20 +146,21 @@ gone stale within the session that wrote it, superseded by #555's `to_working_do
 Full derivation: `docs/PROJECT_HISTORY.md` (the epic-#111-phases entry); `STAGE1-4_*_DESIGN.md` change
 logs; PRs #549–#553, #555.
 
-**Next (RESUME HERE — 2026-07-19): epic #111 continues — Phase 4, the capture-fidelity cluster.**
-The 2026-07-19 reappraisal (Ian-approved plan, posted on the epic) corrected the previous checkpoint's
-"epic #111 is done" claim: the epic's charter work remains. **Phase 3 (cleanup) is DONE**: #340
-wontfix-closed; #227 closed as mitigated-by-#229 (residual → #164); #415 dispositioned as a #518
-dependency; #554 merged (PR #556 — `paths.atomic_write_json` is now the single home for the
-tmp+replace pattern). Remaining, in approved order: **Phase 4** — the Stage 3/4 capture cluster:
-quantify #518's failure classes first (login walls, 0-byte PDFs, truncation; motivating records on
-the issue), land the #415 `r.ok` fix inside it, spike #225's `networkidle→domcontentloaded` with a
-measured before/after, then #116 partial-retry + #117 per-task JSONL. **Phase 5** — discovery recall:
-#114 (investigate the 4 misses, cheap, do first) → #164 (geo-scoped queries; Millard 3173740 is the
-acceptance case) → then a build-vs-defer decision on #112 with #114's evidence in hand. **Phase 6** —
-#222 (small, slot anywhere) + #118 (measurement capstone), then close the epic. Open question for
-Ian: whether #112/#118 stay in-epic or get re-homed (both are expansive). After #111: **#479/#480**
-→ **#92** (Stage 9) per the unchanged pre-#106 sequencing; parked: #475/#476, #103/#80 (+#110).
+**Next (RESUME HERE — 2026-07-19): epic #111 Phase 4 is half done — next #116 (partial-retry) +
+#117 (per-task JSONL crash recovery), then Phase 5.** Phase 3 (cleanup) DONE: #340 wontfix; #227
+mitigated (residual → #164); #554 merged (PR #556). **Phase 4 so far:** #518 quantified (survey
+numbers on the issue: 92 visible errs dominated by 61 crash-`not_recovered` + 27 deadline; 2 login
+walls, 9 soft-404s, 61 time-blind) then its detect+flag landed (PR #557, max-effort review round: 15
+findings, 13 fixed — incl. the review save that the naive #415 fix would have produced blank ok:true
+captures; #415 closed; REQ-154 records the contract + deferrals). #225 landed (PR #558): measured
+spike (47 URLs / 3 districts — `networkidle` burned its full 30s on 32/35 Apptegy pages, zero content
+loss with `domcontentloaded`+settle) → shared `GOTO_WAIT`; issue stays open pending a real-batch
+confirmation (a big district completing without `captured_partial` closes it). **#518 remaining
+scope:** the gate@5/Stage-5 consumer (fidelity_json columns are write-only until it lands),
+recovery affordances (ties into #116), follow-the-link for doc-viewer pages (overlaps #517).
+**Phase 5** — discovery recall: #114 → #164 (Millard 3173740 acceptance case) → #112 decision.
+**Phase 6** — #222 + #118, then close. Open question for Ian: whether #112/#118 stay in-epic.
+After #111: **#479/#480** → **#92** (Stage 9); parked: #475/#476, #103/#80 (+#110).
 Documented-in-code deferrals: `_satisfied_bands_now` batching (revisit on volume); the #522
 guardrail's per-rep keyword/table attribution (needs a server payload change); JS behavioral tests
 (no JS harness in repo — static-source pins only).
