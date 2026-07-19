@@ -66,6 +66,18 @@ test('cmsHint matches CMS_HOSTS by suffix, like discover.py gate()', () => {
   assert.equal(cmsHint(['', 'www.example.org', 'foo.blackboard.com']), 'blackboard.com');
 });
 
+test('cmsHint requires a dot boundary — a dotless superstring host must NOT match (#416)', () => {
+  // pre-fix: host.endsWith(cms) let `myfinalsite.net` claim `finalsite.net` — and cms_hint is
+  // dispatch-load-bearing since #540 (Edlio sibling-variant dedup), so a false hint has
+  // behavioral downstream. Same rule as discover.py's _host_matches.
+  assert.equal(cmsHint(['myfinalsite.net']), null);
+  assert.equal(cmsHint(['evilschoolwires.com']), null);
+  assert.equal(cmsHint(['notapptegy.net']), null);
+  // the exact host and dotted-subdomain forms still match
+  assert.equal(cmsHint(['finalsite.net']), 'finalsite.net');
+  assert.equal(cmsHint(['assets.finalsite.net']), 'finalsite.net');
+});
+
 test('strippedLen measures visible text length, ignoring tags/script/style', () => {
   assert.equal(strippedLen('<html><body>hello world</body></html>'), 'hello world'.length);
   // a JS shell: lots of markup, no real text

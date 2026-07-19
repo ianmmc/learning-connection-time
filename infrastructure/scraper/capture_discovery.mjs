@@ -127,13 +127,15 @@ export function cdnHints(headers) {
 }
 
 // The ONE cheap inline classification: a host-suffix match against CMS_HOSTS, same logic as
-// discover.py's gate(). Returns the matched suffix or null -- richer classification stays a
+// discover.py's _host_matches (#416): exact host or dot-boundary suffix ONLY -- a dotless
+// endsWith would let `myfinalsite.net` claim `finalsite.net`, and cms_hint is dispatch-
+// load-bearing since #540 (Edlio sibling-variant dedup). Richer classification stays a
 // later pure function over the raw signals.
 export function cmsHint(hosts) {
   for (const host of hosts) {
     if (!host) continue;
     for (const cms of CMS_HOSTS) {
-      if (host === cms || host.endsWith('.' + cms) || host.endsWith(cms)) return cms;
+      if (host === cms || host.endsWith('.' + cms)) return cms;
     }
   }
   return null;
@@ -648,7 +650,9 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
             jsDependent: strippedLen(rawHtml) < 200 && text.trim().length >= 600,
           });
           // DOM segmentation (REQ-091): de-chrome the page for Stage 5 signals (additive; page.txt kept).
-          try { writeSegments(recDir, await segmentChrome(page, DE_CHROME_LANDMARKS)); rec.segmented = true; }
+          // withTimeout (#375): segmentChrome is a page.evaluate -- Playwright puts NO deadline on it,
+          // so a wedged main thread would hang the worker forever (its .catch handles rejection, not a hang).
+          try { writeSegments(recDir, await withTimeout(segmentChrome(page, DE_CHROME_LANDMARKS), OP_TIMEOUT_MS, 'segment')); rec.segmented = true; }
           catch { rec.segmented = false; }
           rec.ok = true;
 
@@ -868,7 +872,9 @@ async function runBackfillSegments(ROOT, CONC) {
         // timeout and segment whatever rendered (the DOM is present) rather than aborting.
         await page.goto(t.target, { waitUntil: 'networkidle', timeout: 30000 }).catch(() => null);
         await page.waitForTimeout(2500);
-        writeSegments(t.recDir, await segmentChrome(page, DE_CHROME_LANDMARKS));
+        // withTimeout (#375): a hung evaluate here stalled the worker AND lost the whole run's
+        // manifest writes (they only happen after Promise.all resolves).
+        writeSegments(t.recDir, await withTimeout(segmentChrome(page, DE_CHROME_LANDMARKS), OP_TIMEOUT_MS, 'segment'));
         t.rec.segmented = true;
       } catch (e) {
         t.rec.segment_err = String(e).slice(0, 120);
