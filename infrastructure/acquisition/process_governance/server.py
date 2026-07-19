@@ -27,6 +27,7 @@ HERE = Path(__file__).resolve().parent
 from infrastructure.acquisition.stage5_filter import build_signals as BS    # noqa: E402  (export_labels lives here, shared with ingest)
 from infrastructure.acquisition.stage5_filter import release as REL         # noqa: E402  (filtered.json projection — REQ-094)
 from infrastructure.acquisition.stage5_filter import detectors as DET       # noqa: E402  (#521 relevance-density event weights — the SSOT)
+from infrastructure.acquisition.stage5_filter import drift                  # noqa: E402  (REQ-097 advisory drift verdict — #75)
 from infrastructure.acquisition.common import db as gdb                     # noqa: E402  (isolated governance Postgres — REQ-103)
 from infrastructure.acquisition.common import district_status as DS         # noqa: E402  (state_event log — gate@1 audit events)
 from infrastructure.acquisition.common import calibration as CAL            # noqa: E402  (gate-decision calibration log — REQ-121)
@@ -439,8 +440,16 @@ def _progress_counts(con) -> dict:
 
 @app.get("/api/progress")
 def progress():
+    """Label progress + the REQ-097 drift verdict (#75). Drift is ADVISORY — a 'retune recommended'
+    badge in the console header, never an auto-retune (CP ramp-up posture). Computed fresh per call
+    (a dozen small scorecard reads); failure degrades to no-verdict, never breaks the header."""
     with gdb.session_scope() as con:
-        return _progress_counts(con)
+        out = _progress_counts(con)
+    try:
+        out["drift"] = drift.detect()
+    except Exception:   # the monitor must never take down the console header
+        out["drift"] = {"retune_recommended": False, "note": "drift detector unavailable"}
+    return out
 
 
 # ---------------------------------------------------------------- Stage 5 faceted console (the rework)

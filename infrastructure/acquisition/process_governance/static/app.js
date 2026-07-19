@@ -982,6 +982,18 @@ function flash() { const f = $("#savedFlash"); if (!f) return; f.textContent = "
 async function refreshProgress() {
   const p = await (await fetch("/api/progress")).json();
   $("#progress").textContent = `${p.labeled} / ${p.total} labeled`;
+  // REQ-097 (#75): the ADVISORY drift badge — "retune recommended" when the CUSUM+Wilson two-gate
+  // trips on the live config. Text + title carry the evidence; the human decides, nothing auto-retunes.
+  const dr = p.drift || {};
+  if (dr.retune_recommended) {
+    const b = document.createElement("span");
+    b.className = "drift-badge";
+    b.dataset.feat = "drift-badge";
+    b.title = `REQ-097 drift detector: degradation on config ${dr.config} over ${dr.n_points} scorecards `
+      + `(recall cusum=${(dr.recall || {}).cusum}, precision cusum=${(dr.precision || {}).cusum}). Advisory only.`;
+    b.textContent = "⚠ retune recommended";
+    $("#progress").appendChild(b);
+  }
 }
 
 // ----------------------------- glossary -----------------------------
