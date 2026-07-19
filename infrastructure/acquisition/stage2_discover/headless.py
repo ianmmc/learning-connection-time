@@ -383,7 +383,7 @@ def rollup(districts: list) -> dict:
     }
 
 
-def run_batch(batch_ref: str, *, actor: str = "auto:stage2", on_event=None,
+def run_batch(batch: dict, *, actor: str = "auto:stage2", on_event=None,
               wave1_search=None, wave2_runner=None) -> dict:
     """Deterministic Stage 2 (SERP) for an approved batch: reconcile (filesystem is truth; a
     registry-ahead-of-disk CONTROL FAILURE raises SystemExit and halts), then per todo district run
@@ -391,8 +391,11 @@ def run_batch(batch_ref: str, *, actor: str = "auto:stage2", on_event=None,
     write -> one registry record. SEQUENTIAL (one registry writer, no race; providers are fast enough
     at batch scale). Records a per-district `dispatched` event up front and `completed`/`failed` per
     district. `on_event(kind, payload)` is the progress hook the console job feed consumes.
-    `wave1_search`/`wave2_runner` are injectable for tests."""
-    batch = load_batch_any(batch_ref)
+    `wave1_search`/`wave2_runner` are injectable for tests.
+
+    `batch` is the resolved working-store dict ({batch_id, districts:[...]}) — the caller passes it
+    from the DB (the console, via _batch_from_db) or the receipt (the CLI, via load_batch_any), so
+    the runner never reaches for the on-disk receipt itself. Same contract as Stage 3/4 (#526)."""
     batch_id = batch["batch_id"]
     with gdb.session_scope() as _con:      # #168: never run a stage on a terminal abandoned batch
         BG.assert_runnable(_con, batch_id)
@@ -459,7 +462,8 @@ def main():
     p.add_argument("--actor", default="ian")
     a = ap.parse_args()
     if a.cmd == "run":
-        summary = run_batch(a.batch, actor=a.actor,
+        batch = load_batch_any(a.batch)   # CLI loads the receipt; the console passes a DB-resolved dict
+        summary = run_batch(batch, actor=a.actor,
                             on_event=lambda k, p: print(f"[{k}] " + json.dumps(p)))
         print(json.dumps(summary, indent=2))
 

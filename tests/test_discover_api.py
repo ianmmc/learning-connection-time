@@ -79,6 +79,24 @@ def _approve(con):
     BS.approve_batch(con, BID, "setup")
 
 
+def test_batch_from_db_excludes_gate1_rejected_schools_and_districts(client):
+    """#526 regression: _batch_from_db must yield the CANONICAL included-only batch_doc
+    (to_receipt_doc), not the to_view shape. The old to_view basis filtered districts but left
+    gate@1-REJECTED SCHOOLS in schools_by_band — harmless for Stages 3/4 (which never read
+    schools), roster-poisoning for Stage 2 (which builds its roster from schools_by_band)."""
+    from infrastructure.acquisition.process_governance import server
+    with gdb.session_scope() as con:
+        BS.reject_school(con, BID, "ZZDISCA", "A1")
+        BS.reject_district(con, BID, "ZZDISCB")
+    batch = server._batch_from_db(BID)
+    assert batch["batch_status"] == "draft"
+    assert [d["district_id"] for d in batch["districts"]] == ["ZZDISCA"]
+    a = batch["districts"][0]
+    assert all(s["school_id"] != "A1"
+               for band in a["schools_by_band"].values() for s in band["schools"])
+    assert server._batch_from_db("batch_nope_999") is None
+
+
 def test_run_on_draft_is_409(client):
     """Discovery requires gate@1 approval — a draft batch must be refused before any job starts."""
     r = client.post(f"/api/discover/{BID}/run", json={"actor": "ian"})
@@ -97,11 +115,11 @@ def test_run_on_approved_starts_background_job(client, monkeypatch):
 
     calls = {}
 
-    def fake_run_batch(batch_ref, *, actor="auto:stage2", workers=2, provider=None, on_event=None, **kw):
-        calls["ref"], calls["actor"] = batch_ref, actor
+    def fake_run_batch(batch, *, actor="auto:stage2", workers=2, provider=None, on_event=None, **kw):
+        calls["batch"], calls["actor"] = batch, actor
         if on_event:
-            on_event("completed", {"batch_id": batch_ref, "district_id": "ZZDISCA", "outcome": "found_all"})
-        return {"batch_id": batch_ref, "todo": 1, "skipped": 0,
+            on_event("completed", {"batch_id": batch["batch_id"], "district_id": "ZZDISCA", "outcome": "found_all"})
+        return {"batch_id": batch["batch_id"], "todo": 1, "skipped": 0,
                 "results": [{"district_id": "ZZDISCA", "outcome": "found_all"}]}
 
     monkeypatch.setattr(server.H2, "run_batch", fake_run_batch)
@@ -117,7 +135,11 @@ def test_run_on_approved_starts_background_job(client, monkeypatch):
         time.sleep(0.05)
     job = server._DISCOVER_JOBS.get(BID)
     assert job and job["state"] == "done"
-    assert calls["ref"] == BID and calls["actor"] == "ian"
+    # #526: the endpoint passes the DB-RESOLVED batch dict (canonical batch_doc shape), not a
+    # batch_id/receipt ref — the runner never reaches for the on-disk receipt.
+    assert calls["actor"] == "ian"
+    assert calls["batch"]["batch_id"] == BID
+    assert [d["district_id"] for d in calls["batch"]["districts"]] == ["ZZDISCA", "ZZDISCB"]
     assert job["summary"]["results"][0]["outcome"] == "found_all"
 
 

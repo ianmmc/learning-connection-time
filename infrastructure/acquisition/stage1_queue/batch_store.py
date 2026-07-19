@@ -144,7 +144,8 @@ def _ordered_districts(sess, batch_id: str, *, included_only: bool) -> list:
 
 def to_receipt_doc(sess, batch_id: str) -> dict:
     """The canonical batch_doc (INCLUDED rows only, original shape) — what the receipt file holds and
-    what Stage 2 consumes. Raises KeyError if the batch is unknown."""
+    what server._batch_from_db serves to the Stage 2/3/4 runners (#526: the DB is the transport; the
+    receipt file is the CLI/offline + audit copy). Raises KeyError if the batch is unknown."""
     b = sess.get(Batch, batch_id)
     if b is None:
         raise KeyError(batch_id)
