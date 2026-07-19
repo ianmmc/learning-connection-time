@@ -479,6 +479,115 @@ review is now 13.9%, with the recall floor (A+B) held exactly throughout both me
 
 ---
 
+### Epic #106 closes: a measured-null result, a veto refuted before it was built, and two adversarial review rounds each catching a bug the green test suite couldn't — six remaining issues ship in one arc (2026-07-18)
+
+The epic's remaining slate cleared in a single day, worked in dependency order rather than issue-number
+order, and produced two results worth keeping as method, not just outcome.
+
+**A measured null is still a finding.** #226 (bounded feed-token URL negative) widened `FEED_URL_RE`
+to catch `live_feeds/<id>` permalinks and camelCase-collapsed query tokens (`smartSiteFeed`), guarding
+"feeder" (a real K-12 term) and "feedback" by token-boundary discipline. The measured pass found **zero
+tier/decision movement** on the current corpus — every one of the 10 newly-caught records was already
+held out of tier A by prior passes. The null was the point: #226 closes the live-feed URL-pollution
+*channel* at the signal level for batches not yet captured, where the #528/#530/#537 content-based passes
+can't reach. Shipping a zero-movement change is still shipping, when the change's value is forward
+robustness rather than a metric.
+
+**#515 — a veto refuted twice before anyone built it.** The eligibility-veto issue was already half-dead
+(obs. 6, 2026-07-16: the stale half removed 1 false-send for 17 target-vetoes — net harmful). Re-measured
+post-#537 against the same live tier-A population, the irregular half died too: every buildable veto rule,
+from "any wrong-day vote" down to the tightest hand-tuned cut, traded more real targets than false-sends
+it removed (the best cut: 11 FPs removed for 21 targets pushed to review — a losing trade even under
+HOLD semantics). The oracle ceiling — the *perfect* detector's best case — was only 18 FPs, and 8 of
+those turned out to be one shape: a single CMS vendor's schedule-variant siblings (see #540 below),
+a dispatch problem wearing a scoring-eligibility costume. #515 closed **without a line of production
+code**, which is the entire value of measuring before building: the issue had looked like "the money
+lever" in the 2026-07-15 review; two measured passes established it wasn't, at a fraction of the cost
+of building and then discovering the same thing in production.
+
+**#532 — exploration overturned its own lead hypothesis.** The issue's proposed signal
+(multi-confounder co-occurrence: N≥3 negative detectors firing on one record) never reproduced —
+detector breadth never exceeded 2 on any tier-A record, and at breadth 2 it traded 7 false-sends for 19
+real targets. The signal that *did* work was different in kind: `url_rootish` (a bare domain root or
+`/o/<slug>`) crossed with `roster_school_names_hit ≥ 3` — a landing page naming many schools is a
+different *shape* of page than a confounder-dense one. Shipped as `lf_district_homepage`, joined to the
+existing feed/calendar undermine class rather than a new mechanism. Tier-A precision 0.8612→0.8701,
+recall held exactly.
+
+**The first adversarial review (10 angles, 7 confirmed findings) found what a green measured pass
+structurally can't see.** All three PRs (#226/#515-adjacent/#532) passed their own before/after numbers
+clean, then a 10-angle review of the diffs found: a case-sensitivity gap in the new regex (an
+uppercase/lowercased variant of the PR's own motivating fixture didn't match — two independent angles
+found it separately), an unescaped separator character matching any character instead of a space/hyphen,
+a harness diagnostic silently undercounting because a new detector was missing from a polarity map, and
+a detector docstring claiming "never a suppress" that the actual code contradicted (though tracing it
+further showed this was a pre-existing pattern across the whole negative-detector family, not new —
+the docstring was simply more absolute than its siblings). All seven fixed same day, zero decision
+movement on the corpus — these were robustness and consistency gaps, not scoring regressions, exactly
+the class of defect a metrics-only measured pass has no mechanism to catch.
+
+**The completion sweep: five more issues, worked by cluster.** #75 (REQ-097 drift detector) had been
+designed and research-cited weeks earlier and re-triaged twice without building — the sequencing
+condition (V2-era tuning-ledger episodes) was finally met, so it shipped: a Bernoulli CUSUM + Wilson
+two-gate over the fingerprinted scorecard series, segmented by config fingerprint so a tuning move's own
+effect can't be mistaken for the world drifting. Advisory only, a console badge, never auto-retunes —
+the same shape that caught the 2026-06-30 V1 precision collapse *by hand* is now automatic. #109 and #83
+were worked together as one Stage-6 dispatch cluster: the harvest-slice basis now prefers a human-labeled
+page range over the auto-detected one (verified live — a record whose auto detection was empty got its
+first-ever slice from a human range), and REQ-116 finally got the acceptance criteria it had shipped
+without in 2026-07-01 (the requirement's own note flagged this as deliberate — captured by hand against
+a session limit, "not an oversight to be silently filled in") — a labeled district hub now narrows a
+district's first dispatch to itself, with "covers all bands" made an explicit, safety-net-backed
+presumption rather than a verified fact (a wrong presumption costs one cheap 7→6 retry; a right one
+saves every redundant per-school send). #517 (`schedule_link_only`) shipped as a pure recall affordance —
+a page that *names* a bell schedule it doesn't contain routes to a retry receipt instead of a dead-end
+absent; measured 78/78 census-labeled non-targets, zero collateral by construction. #540 closed the
+loop #515 had opened: the residual 8 false-sends in #515's oracle ceiling were one CMS vendor's
+schedule-variant siblings (Edlio's `/apps/bell_schedules/` app family), so Edlio was profiled and
+approved into the CMS fingerprint vocabulary (the first vendor under a newly-written standing
+requirement, REQ-153: *profile every CMS encountered*, not just the ones a given issue happens to name),
+and a sibling-aware dispatch pass sends the best page per app family instead of one call per variant.
+
+**The second adversarial review found a bug that would have silently defeated the guarantee #83 had
+just built — and widened its own initial finding on cross-examination.** The 10-angle review of the
+five completion-sweep PRs converged, across four independent angles, on the same defect: the new
+sibling-variant dispatch pass ranked purely on URL shape and ran *before* the hub-priority pass in the
+same function, so a human-labeled district hub sharing a CMS-app URL family with an unlabeled sibling
+could be silently held before hub-priority ever got to evaluate it — the exact case #83 shipped same-day
+to solve. Reproduced directly, three ways, with a concrete two-record input. Fixing it exposed a second,
+worse version of the same gap under adversarial follow-up: the ranking wasn't just hub-blind, it was
+*any-label*-blind (a verified, human-confirmed target could lose to a denser unlabeled duplicate) and
+*school*-blind (the family key grouped by host only, so two genuinely different schools sharing one
+district-level host could collapse into one family and drop a school's only send). Both reproduced
+directly; both fixed by making the ranking label-aware (a human judgment always outranks the URL-shape
+heuristic) and scoping the family key to `(host, school-set)`. The fix was pinned end-to-end through the
+full dispatch composition, not just the isolated hold function — the isolation-level tests that already
+existed for both passes were green throughout and would never have caught a composition bug between
+them. **This is the second time in one day an adversarial review caught a same-day feature silently
+defeating a same-day guarantee**, both times in code a green measured pass or a green test suite had
+already blessed. The lesson generalizes past this epic: composition bugs between features that land
+close together are a distinct failure class from both scoring regressions (caught by the measured pass)
+and unit-level logic errors (caught by ordinary tests) — nothing but reading the *composed* code paths
+adversarially catches them, and doing it same-day, before the interaction has a chance to run on real
+traffic, is cheap compared to finding it in production.
+
+**Net across the epic:** auto false-send rate 24.3%→**13.0%** (from the 2026-07-15 baseline), A+B recall
+held at 0.9928 through every single change — roughly two dozen commits, two review rounds, one closed
+issue with zero shipped code. Two housekeeping items closed alongside: **#110** (cross-config cascade)
+was assessed and correctly re-homed to epic #80 (Council Lab) rather than built — only two council
+configs exist and they're different *modalities*, not strength tiers, so there is nothing to escalate
+to yet, and per standing policy model composition is never guessed. **#444** (a mis-filed production
+correctness bug in an NCES/SEA ingestion script, sitting in the test-quality epic #481 by way of which
+test file happened to exercise it) was re-homed to epic #480 by subject matter, closing #481 as a
+side effect — a reminder that an epic closes when its *scope* is exhausted, not when its issue count
+hits zero; the one remaining item there was never really that epic's item to begin with.
+
+Authority: `STAGE5_FILTER_DESIGN.md` and `STAGE6_DISPATCH_DESIGN.md` change logs (2026-07-18 entries);
+`docs/REQUIREMENTS.yaml` REQ-097/REQ-116/REQ-153; issues #226/#515/#532/#75/#109/#83/#517/#540/#110/#444;
+PRs #539/#541/#542 (first review round) and #543–#548 (completion sweep + second review round).
+
+---
+
 ## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)
 
 ### Strategy: shift from "automate everything" to "AI-assisted human efficiency"

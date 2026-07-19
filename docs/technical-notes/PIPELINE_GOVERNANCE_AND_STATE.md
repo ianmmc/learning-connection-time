@@ -20,7 +20,7 @@ This note is the architecture for three coupled decisions that span every stage:
 3. **The app's scope** — a single **stage-selectable governance console** at
    `infrastructure/acquisition/process_governance/`, the human-in-the-loop surface for every gate (§7, §11).
 
-**Current build state (2026-07-16):** REQ-098/099/103/094 (packaging, state-event log, Postgres governance
+**Current build state (2026-07-18):** REQ-098/099/103/094 (packaging, state-event log, Postgres governance
 DB, event-driven `filtered.json`) are all COMPLETE — see §1b, §3, §6. The console is built and run live
 **through `gate@8`** (the standalone Stage 8 / gate@8 shipped #89, 2026-07-14 — see below and
 `STAGE8_AGGREGATE_DESIGN.md` §0a). Through **`gate@7`**: gate@1 (REQ-102), Stage 2 (REQ-104), Stage 3 (REQ-110), Stage 4 + the Stage 4→5
@@ -160,25 +160,36 @@ rather than silently skip if Chromium is unavailable.
   follow-ups, still open). #237 spun off a structure-aware charter track: #243/#244/#245/#246, the current
   backlog in this area. Full detail: `STAGE7_EXTRACT_DESIGN.md` §6 (decision log).
 
-Next (as of 2026-07-17): **Stage 8 gate@8 has SHIPPED** (#89; the standalone console + approve/send-back +
+Next (as of 2026-07-18): **Stage 8 gate@8 has SHIPPED** (#89; the standalone console + approve/send-back +
 the 4 human-judgment tables + frozen receipt — `STAGE8_AGGREGATE_DESIGN.md` §0a), and the #499 slot program
 (REQ-144…150) + epic #478's overrides with it. Epic #119 (Stage 7 extraction quality, PRs #508–#511) also
-CLOSED. **The live work is epic #106** (Stage 5/6 filter & dispatch refinements): the **school-year-currency
-work SHIPPED** (#107/#241 → PR #529; month-word dates #531 → #533 — the `content_school_year` signal, the
-pre-2017-18 validity floor, prefer-recent dispatch holds), the **#530 combiner refinement** SHIPPED (a lone
-times-table on a feed/calendar page routes to review), and the **console trio SHIPPED** (#516 → PR #534
-FP/FN error-review lanes + rec_key search; #521 → #535 relevance-density evidence navigation; #522 → #536
-content-adaptive center-pane defaults — see §11f's Stage-5 bullet and `STAGE5_FILTER_DESIGN.md` §8/Change
-log). Remaining #106 slate: **#528** (calendar scalar + the news_feed separating analysis — the next
-buildable; see its issue comments for the build-session context), **#537** (the re-homed confounder
-facet-vocabulary decision, gated on Ian), **#515** (eligibility gates, sequenced behind #537), #517/#518
-(recall), #226/#109/#110/#75/#83. Still genuinely unbuilt downstream: the **Stage-9 write** (#93), the
-**8→1/8→6 back-edges**, and gate@8 **auto** mode. Other open tracks: the Council Lab backlog
-(`cost_benchmark`, prompt A/B, #80/#81); the charter-segmentation track (#243/#244/#245); #238 (deferred
-efficiency follow-ups). The live gate-mode (manual/auto) persistence + console toggle (#104 part
-a) and **#211/#214 are now all SHIPPED** (epic #209's Phase 0/1/2 build-complete, merged 2026-07-13 via PR
-#250 — see above); #104 part b (per-gate confidence-escalating auto beyond gate@5) remains open, future
-work. Still open: REQ-100 (staleness, tracked: #100), the gate@7 inline PNG/PDF viewer (tracked: #151).
+CLOSED. **Epic #106 (Stage 5/6 filter & dispatch refinements) is now CLOSED** — its full slate shipped:
+the school-year-currency work (#107/#241/#531 → PR #529/#533 — `content_school_year`, the pre-2017-18
+validity floor, prefer-recent dispatch holds), the #530 combiner refinement (lone times-table on a
+feed/calendar page → review), the console trio (#516/#521/#522 → PRs #534–#536), the #528 calendar-scalar
+cut, the #537 confounder facet-vocabulary decision + measured detector pass, the #515 eligibility vetoes
+(measured net-negative post-#537, closed without shipping the veto — see `STAGE5_FILTER_DESIGN.md` §3a),
+#109 (human-labeled page range outranks auto `harvest_pages` for the handbook slice), #517
+(`schedule_link_only` — the one-hop-away schedule link routes to a retry receipt), **#75/REQ-097 (the
+Stage-5 drift detector** — CUSUM + Wilson two-gate over the fingerprinted scorecard series,
+`stage5_filter/drift.py`, an advisory "retune recommended" badge on `/api/progress`; never auto-retunes —
+see §11b's guardrail model and REQUIREMENTS.yaml REQ-097, `tested`), and **#83/REQ-116 (hub-priority
+dispatch** — a labeled district hub narrows the first dispatch to itself; every other surviving send HOLDs
+for the 7→6 back-edge; `tested`). A late #106 addition, **#540/REQ-153 (CMS-vendor profiling as a standing
+expectation** — profile and fingerprint every CMS encountered; Edlio is the first vendor approved, adding
+sibling-variant dedup to Stage-6 dispatch and two `cms_hosts.json` entries; REQ-153 `approved`, tests
+pending). **Stage-6 `district_release_input` now runs FOUR sequential hold-passes** (base `decide()` +
+`verified_only` downgrade → #107 prefer-recent → #540 sibling-variant → REQ-116 hub-priority; detail:
+`STAGE6_DISPATCH_DESIGN.md`). Still genuinely unbuilt downstream: the **Stage-9 write** (#93), the
+**8→1/8→6 back-edges**, and gate@8 **auto** mode. Other open tracks: **#518** (Stage 3/4 capture-fidelity
+recall leak — login walls, 0-byte PDFs, truncation), **#110** (Stage 7 cross-config cascade escalation on
+no-consensus, re-homed to epic #80 Council Lab — genuinely blocked on that lab producing a measured
+config), the rest of the Council Lab backlog (`cost_benchmark`, prompt A/B, #81); the charter-segmentation
+track (#243/#244/#245); #238 (deferred efficiency follow-ups). The live gate-mode (manual/auto) persistence
++ console toggle (#104 part a) and **#211/#214 are now all SHIPPED** (epic #209's Phase 0/1/2
+build-complete, merged 2026-07-13 via PR #250 — see above); #104 part b (per-gate confidence-escalating
+auto beyond gate@5) remains open, future work. Still open: REQ-100 (staleness, tracked: #100), the gate@7
+inline PNG/PDF viewer (tracked: #151).
 
 ---
 
@@ -643,8 +654,10 @@ recorded as they surface:
   CP-C (write). Open: which stages get a *read* view vs an *action* surface.
 - **Generate/Release trigger + staleness** (REQ-100/§6): each district shows new/current/stale from the
   three stamped fingerprints (config,labels,data) — the UI must let the human filter by *which* changed.
-- **Tuning console surface** (§10 / REQ-095/096/097): where drift alerts, the advisory frontier (with
-  which-records-move), and ledger history live in the UI — a distinct surface from per-district review.
+- **Tuning console surface** (§10 / REQ-095/096): the advisory frontier (with which-records-move) and
+  ledger history — where they live in the UI is still open. **REQ-097 (drift) shipped narrower than this
+  note anticipated:** not a tuning-console surface, an advisory "retune recommended" badge on
+  `/api/progress` (`stage5_filter/drift.py`) — pure-read, never auto-retunes.
 - **Orchestration triggers** (§7a-B/C): "run next stage" buttons dispatch background work whose status is
   itself event-log rows; the UI needs a job/attention view fed by those events.
 - **Actor identity** (§7a-D): single-user now, but the event log carries identity — the UI should capture
@@ -859,7 +872,7 @@ Stage-9 DB write are ungated:
 |---|---|---|---|---|
 | **gate@1** | 1 Queue | approve the batch (right districts/schools/bands) | CP-A | structural |
 | **gate@5** | 5 Filter | per-URL representation review (labeling) | CP-B | structural |
-| **gate@6** | 6 Dispatch | approve routing/dispatch (which reps → which council config); optional **verified-only** (labeled-targets-only) mode | *new* | supervision |
+| **gate@6** | 6 Dispatch | approve routing/dispatch (which reps → which council config) over an already-narrowed send set (prefer-recent + sibling-variant + hub-priority holds — `STAGE6_DISPATCH_DESIGN.md`); optional **verified-only** (labeled-targets-only) mode | *new* | supervision |
 | **gate@7** | 7 Extract | review extraction results + council requests/recommendations | *new, BUILT* | supervision |
 | **gate@8** | 8 Aggregate | review per-band results; override needs a reason | *effective CP-C* | structural |
 

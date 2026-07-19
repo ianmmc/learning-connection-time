@@ -123,6 +123,7 @@ list is involved (config-as-data, §5). Seed set — the polarity is the directi
 | `lf_board` / `lf_sports` / `lf_transport` | the respective negative-keyword class dominant | **−negative** | V1 neg classes, now independent votes |
 | `lf_nonstandard_day` | non-regular-day schedule language (the #537 `other_schedule` class). **Two strengths (2026-07-18):** STRONG when POSITIONAL — the term titles a schedule or sits within 140 chars of in-window times (`nonstandard_near_times`/`nonstandard_heading`), guarded by `regular_day_language` (a page declaring its regular day is a regular page listing variants — rule S3, measured); SOFT on a bare anywhere-mention | **−negative (strong/soft)** | genuine bell-shape but the *wrong* schedule; the strong form undermines a lone table/pair in the combiner (DASD "Early Dismissal Bell Schedule"); STRONG_STRUCTURAL still sends |
 | `lf_no_times` | zero in-window times anywhere (incl. raw reps) | **−suppress** | §2a-3, the corrected suppress floor |
+| `lf_district_homepage` | a rootish URL (domain root / bare `/o/<slug>`) whose text hits ≥`homepage_roster_min` (3) distinct roster school names | **−negative (strong)** | #532, obs. 1's page-focus gap; a many-schools landing page's times are incidental, not the student day; joins the `UNDERMINE_CLASS` hard set alongside `lf_news_feed`/`lf_calendar_widget` |
 
 **`lf_office_hours` is not a 14th standalone detector** — there is no `lf_office_hours` function in the
 `DETECTORS` registry (`detectors.py`). It is a shared **negative Vote** that `lf_footer_hours` and
@@ -137,6 +138,13 @@ config-as-data), *not* a learned model, per the research's "start with weighted 
 graduate to a `LabelModel` if diagnostics show heterogeneous accuracy at medium label density" (§5). It
 records **which detectors fired** on each record (into `signals_json`), which is what makes per-detector
 scoring (§5) and UI pre-fill (§4) possible.
+
+**Which negative detectors undermine incidental time evidence — and how hard — is itself config-as-data.**
+Each such detector declares its class (`hard` | `soft`) in `detectors.UNDERMINE_CLASS`, next to where it's
+authored; the combiner **derives** `HARD_NEGATIVE`/`UNDERMINE_TIMES`/`UNDERMINE_TIMES_SOFT` from that one
+map rather than hand-edited set literals in `combiner.py` — the #199 join-the-set discipline made
+structural (post-#532/#540 review, PR #548), so adding detector N+1's undermine behavior is one dict
+entry, not two files kept in sync by hand.
 
 ---
 
@@ -162,6 +170,11 @@ at page granularity for multi-page PDFs. Existing (V1, retained): `n_times`, `n_
 - **`embed_hosts`** — categorized iframe/embed `src` hosts (social/feed · calendar · doc-viewer · other),
   from the Stage-3 capture upgrade (REQ-115, §6) — a structural, vendor-agnostic replacement for guessing
   "this is a feed" from URL/keyword patterns.
+- **`url_rootish`** — the URL is a domain root or bare `/o/<slug>`, nothing deeper (feeds `lf_district_homepage`, #532).
+- **`schedule_link_only`** (#517) — a derived signal: schedule-intent keywords + ≤1 in-window time + no
+  table, i.e. a page that *names* a bell schedule whose times live one hop away. Zero-collateral by
+  construction (measured 78/78 `target_absent` on the census); surfaced as an attention chip (weight 60)
+  and feeds the `link_followup.py` Stage-3 revisit queue, not a confounder facet.
 
 **Trigger discipline (recall-bias stance).** Hard `suppress` fires only on high-precision negatives
 (no in-window times anywhere; a confident negative detector with no target detector). Everything with any
@@ -258,7 +271,9 @@ grep + a 5-way Haiku subagent clustering of the un-attributed absents. All numbe
   24.5%→15.2%~~ — **the STALE half of this is REFUTED, see obs. 6**: measured on the real tier-A records, a
   stale veto removes **1** false-send for **17** target-vetoes (and 0-for-4 at the pre-2017-18 floor), i.e.
   stale contributes ~nothing to the 24.5%→15.2% and the combined figure never reproduced. The *irregular*
-  half is untested and remains the candidate (#207). Still sound and unaffected: adding the
+  half is untested and remains the candidate (#207) — **SUPERSEDED by obs. 7 below: #207 shipped
+  2026-07-17, and the irregular eligibility veto itself was measured net-negative and closed as #515
+  (2026-07-18).** Still sound and unaffected: adding the
   existing-confounder facets removes 99 but **wrongly vetoes 49 real targets** (they co-occur with real
   hubs — Las Cruces). So news/calendar/board/sports must stay SOFT (combiner weight), never eligibility
   gates — that is the basis for #519.
@@ -286,7 +301,8 @@ grep + a 5-way Haiku subagent clustering of the un-attributed absents. All numbe
   debt.** 218/228 are already tier-D-suppressed; the Haiku cluster: ~76% structurally EMPTY pages (generic
   nav 31%, policy/handbook 12%, staff/HR 7%, staff directory 5%, registration 7%) with no times — correctly
   suppressed, no rich facet warranted. **Don't census-label easy negatives**; grade the suppress detectors on
-  the 783 absents that DO carry facets/notes. The one pattern worth formalizing is **`schedule_link_only`
+  the 783 absents that DO carry facets/notes. **BUILT 2026-07-18 as #517 — see §8.** The one pattern worth
+  formalizing is **`schedule_link_only`
   (~14%)** — a page that names a bell schedule whose times aren't in the capture; a RECALL affordance
   (follow-the-link / capture-retry), not a confounder facet. A distinct **capture-fidelity recall leak**
   surfaced too (login walls, 0-byte PDFs, truncation — a Stage 3/4 problem, not scoring). ~3 records flagged
@@ -344,7 +360,9 @@ veto.**
   *stale + irregular together*; stale contributes **0**. #515's remaining value rests entirely on #207's
   irregular-day veto (which is gated on a human facet decision), so **#515 is not the money lever and should
   not be the resume point**. The measured money lever is **#519** (tune the existing news/calendar/board/
-  sports detectors — ~40 of the 115 false-sends, existing facets, the built #108 harness, no new labels).
+  sports detectors — ~40 of the 115 false-sends, existing facets, the built #108 harness, no new labels)
+  — **#519 shipped 2026-07-18** (partly as #528, the rest folded into #537's positional detector); no
+  longer a resume point.
 - **Scope (Ian, 2026-07-16):** **#241** = the pre-2017-18 validity floor (hold + scoring weight) — its
   Brashear origin. **#107** stays the parent and remains whole per §3G ("complementary, not duplicates"):
   it builds the shared `content_school_year` signal + prefer-recent dispatch; #241 consumes that signal.
@@ -396,7 +414,11 @@ to review, not lost; the cost is Ian's review time, the scarcest resource):
   remains a combiner concern. The residual send-side leak (54 FPs) decomposes as ~18 wrong-day-only pages
   the combiner deliberately lets through under strong-structural precedence (revisit only via the
   sibling-aware dispatch idea above), plus the multi-confounder homepage cluster (#532) and the remaining
-  soft-confounder co-occurrence (#519's ground, partially taken by #528).
+  soft-confounder co-occurrence (#519's ground, partially taken by #528). **Status as of 2026-07-18
+  (late): all three closed.** #532 shipped as `lf_district_homepage` (§8); #519 shipped (via #528 +
+  #537); the sibling-aware dispatch idea shipped as `_sibling_variant_holds` (#540) — see
+  `STAGE6_DISPATCH_DESIGN.md` §3G, which also records a label-blind/school-blind hold bug found and
+  fixed same-day by the PR #543-#547 review.
 
 ---
 
@@ -419,7 +441,9 @@ human answer scores exactly one detector (§5) and multi-module pages are repres
   `lf_nonstandard_day`). Usable whether or not a target is present (Las Cruces: a real `district_hub_by_school`
   *delivered in* a news feed). These are the ground truth for the negative detectors.
 - **Axis 3 — where / how it hides (checkbox):** `buried_handbook` (+ a **print-dialog page range** "4, 7-9"
-  parsed to `[4,7,8,9]` for the harvester — the guessed `harvest_pages` vs. labeled pattern) · `needs_vision`
+  parsed to `[4,7,8,9]` for the harvester — the harvester now **prefers** this human range over the
+  guessed `harvest_pages` (#109), and a human range alone qualifies a doc the auto `is_handbook`
+  classifier missed) · `needs_vision`
   (image/PDF only, missing from all text) · a structured `where` picker (main/footer/header/table/image/feed).
 - **Free-text note stays** as color commentary.
 
@@ -507,12 +531,20 @@ episodes), config-as-data with `provenance`.
    *proxy* whose calibration against the paid outcome is measured. Measurement only — v1 changes no
    scoring config; the outcome signal is per-rep `school_fact.status`, not gate@8 approval (which lags).
    The read is raw SQL on the shared governance DB — stage5 never imports stage7 (the layering contract).
-3. **LATER (documented, deferred — the scale endgame, `STAGE5_TUNING_NOTES`):** a learned combiner
+3. **BUILT (#75/REQ-097, 2026-07-18): the drift detector** — see §8. A Bernoulli CUSUM + Wilson two-gate
+   over the *fingerprinted scorecard series*, segmented by config fingerprint (a config change starts a
+   fresh segment; within-segment movement can only come from new labels/data — the config-induced vs.
+   new-district distinction). Advisory "retune recommended" console badge, never auto-retunes. This is a
+   simpler, *within-config* early-warning tripwire, distinct from item 4 below.
+4. **LATER (documented, deferred — the scale endgame, `STAGE5_TUNING_NOTES`):** a learned combiner
    (Snorkel `LabelModel`, inferring per-detector accuracy from agreement without gold labels for every
    point) replaces the hand-weighted vote **once diagnostics justify it**; hierarchical partial-pooling
    **by CMS vendor** (the natural structure, since detector accuracy plausibly varies more by template than
-   geography); ADDIS online-FDR drift across per-vendor/per-state streams; VPC/ICC to decide which knobs
-   live at which level. **None of this runs at n≈440** — built only when label coverage warrants.
+   geography); **ADDIS online-FDR drift across per-vendor/per-state streams** (a multi-stream,
+   false-discovery-controlled monitor — NOT the same system as item 3's built single-stream CUSUM/Wilson
+   badge, which answers "has this config's own performance drifted," not the cross-vendor/cross-state FDR
+   question this item defers); VPC/ICC to decide which knobs live at which level. **None of this runs at
+   n≈440** — built only when label coverage warrants.
 
 ---
 
@@ -878,6 +910,9 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 | **"Non-Regular-Day Schedule" Axis-2 checkbox** (key `other_schedule`, hinted by `lf_nonstandard_day`, glossary definition enumerating the class) — the #537 facet-vocabulary decision: ONE coarse checkbox, never per-cause fragments | **BUILT (#537, 2026-07-17)** — un-freezes `lf_nonstandard_day`'s facet denominator (was frozen at the migration rows since #108); UI-visibility pin `test_non_regular_day_confounder_checkbox_present_in_console` |
 | **Positional non-regular-day evidence** (`NONSTANDARD_TERM_RE` full class + `nonstandard_near_times`/`nonstandard_heading`/`regular_day_language` signals; `lf_nonstandard_day` STRONG variant; combiner `wrong_day_strong` undermines a lone table/pair, STRONG_STRUCTURAL still sends; wrong-day evidence **with time content** and no target → review C — the no-times suppress floor and hard negatives still outrank it, a deliberate precedence pinned by test) | **BUILT + MEASURED (#537 follow-on, 2026-07-18)** — after the PR #538 review round: tier-A precision **0.7817→0.8612**, FP-lane **100→54** (false-send rate 21.8%→**13.9%**), tier-A recall 0.8585→**0.8034** (demoted targets reach REVIEW, not suppress), **A+B recall 0.9928 HELD**, reject-quality 1.0; two ledger episodes recorded. **Hardened by the PR #538 max-effort review (17 findings, all fixed)** — see the change-log entry |
 | **Page-focus negative** (`lf_district_homepage`: `url_rootish` × `roster_school_names_hit ≥ 3` → the feed/calendar hard-undermine class; strong-structural still sends — the obs. 1 gap, closed for the landing-page slice) | **BUILT + MEASURED (#532, 2026-07-18)** — tier-A precision 0.8612→**0.8701**, FP 54→50, tier-A + A+B recall held EXACTLY; the multi-confounder-breadth candidate measured net-negative and was dropped (see change log) |
+| **Drift detector** (`drift.py` — Bernoulli CUSUM + Wilson two-gate over the fingerprinted scorecard series, segmented by config fingerprint; advisory "retune recommended" console badge via `/api/progress`, never auto-retunes) | **BUILT (#75/REQ-097, 2026-07-18)** — a *within-config* early-warning tripwire, distinct from and simpler than the deferred scale-endgame ADDIS online-FDR system in §5 item 4 |
+| **`schedule_link_only` signal + `link_followup.py` retry receipt** (schedule-intent keywords + ≤1 in-window time + no table = a page that NAMES a schedule it doesn't contain; an attention chip, not a confounder facet) | **BUILT (#517, 2026-07-18)** — 78/78 census-labeled `target_absent`, zero collateral by construction; the retry-receipt hand-off to the Stage-3 one-hop revisit rides epic #111 with #518 |
+| **Human-labeled page-range preference for harvest slices** (`labeled_pages_of` reads Axis-3 `facets_json._pages_list`; outranks the auto `harvest_pages`, and a human range alone qualifies a doc the auto `is_handbook` classifier missed) | **BUILT (#109, 2026-07-18)** — verified live: 52 labels carry ranges; a record with EMPTY auto `harvest_pages` got its first-ever slice from the human's range |
 | Learned `LabelModel` combiner · hierarchical/vendor pooling · online-FDR drift | **DEFERRED (scale endgame)** |
 
 ---
