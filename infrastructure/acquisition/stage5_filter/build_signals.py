@@ -995,6 +995,21 @@ def resolve_harvest_slice(district_id: str, district_dir: str, rec_key: str) -> 
     return legacy if legacy.exists() else None
 
 
+# #517: the schedule-intent vocabulary for the link-only shape — a page whose keywords CLAIM a bell
+# schedule while carrying (near-)zero in-window time content is a REFERENCE to a schedule that lives
+# one hop away (a "Bell Schedules" link-hub page, a documents/bell-schedule viewer stub). Measured on
+# the census labels 2026-07-18: 78/78 such records are target_absent (all tier D) — zero collateral
+# against real targets by construction (a real target HAS times). A RECALL affordance, not a confounder.
+SCHED_INTENT_KW = ("schedule", "bell", "school hours", "start time")
+
+
+def schedule_link_only(sig: dict) -> bool:
+    kw = [str(k).lower() for k in (sig.get("positive_kw") or [])]
+    intent = any(t in k for k in kw for t in SCHED_INTENT_KW)
+    return bool(intent and (sig.get("n_times_in_window") or 0) <= 1
+                and not (sig.get("table_time_density") or 0))
+
+
 def labeled_pages_of(facets_json_str) -> list:
     """#109: the HUMAN-labeled page range for a long doc — v2.1 Axis-3's `_pages_list`, the parsed
     print-dialog-style range the console writes into label.facets_json alongside `buried_handbook`.
@@ -1088,6 +1103,9 @@ def ingest_district(sess, ddir: Path, *, splits: set, batches: dict, nces: dict)
         # Deterministic content school-year read from the URL/final-URL (#107; never inferred — REQ-054).
         # Rides signals_json for #107's prefer-recent dispatch ranking + #241's pre-2017-18 validity floor.
         sig["content_school_year"] = SY.content_school_year(prec["url"], cap.get("final_url") or "")
+        # #517: the one-hop-away shape — schedule-intent keywords, (near-)zero in-window times. A recall
+        # AFFORDANCE (attention chip + the link_followup retry receipt), never a scoring input.
+        sig["schedule_link_only"] = schedule_link_only(sig)
         scored = COMB.score_record(sig)
         sig["detectors"] = scored["votes"]            # the fired votes, persisted for harness + UI pre-fill
         sig["decision"] = scored["decision"]          # send | suppress | review (the routing decision)

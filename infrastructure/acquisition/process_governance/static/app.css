@@ -636,3 +636,4 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 
 /* REQ-097 (#75): the advisory drift badge in the header — amber, same warn family as .s7-contam */
 .drift-badge { color: #b45309; font-weight: 600; margin-left: 10px; }
+.r-linkonly { background: #7c3aed; color: #fff; }  /* #517 schedule_link_only — one hop away */
