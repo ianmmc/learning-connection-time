@@ -184,7 +184,13 @@ def _batch_progress(sess) -> dict:
     this batch's events*; `flagged` = districts whose latest stage event in this batch is
     `manual_flag_all` (no links — terminal at Stage 2, never captured). Events predating the
     batch_id column show as no-progress in old batches — honest, and those batches are long done.
-    Best-effort → {} if the table isn't present yet."""
+    Best-effort → {} if the table isn't present yet.
+
+    NOTE for the next batch-scoped consumer: `current_state` is a GLOBAL one-row-per-district
+    view by design — joining it per-batch is exactly the #339 bug this query fixed. If a second
+    consumer ever needs per-batch progress, extract THIS subquery into a shared batch-scoped
+    projection (a `current_state_by_batch` view or helper) rather than copy-pasting the SQL or
+    re-joining current_state."""
     try:
         rows = sess.execute(text("""
             SELECT bd.batch_id,
@@ -217,8 +223,12 @@ def list_batches(sess) -> list:
     carries per-stage PROGRESS counts (`progress`) so each stage view's left pane can show a
     stage-contextual fraction (e.g. captured+flagged / total) instead of the stale gate@1 status."""
     progress = _batch_progress(sess)
-    # #338: one grouped count for every batch, not a COUNT query per batch (N+1). Independent of
-    # the best-effort progress dict, which can legitimately come back {}.
+    # #338: one grouped count for every batch, not a COUNT query per batch (N+1).
+    # DELIBERATE REDUNDANCY (review-confirmed): this count provably equals
+    # progress[bid]["total"], but it must stay an independent query — _batch_progress is
+    # best-effort (`except → {}`), and n_districts has to survive that degrade. Do NOT
+    # "simplify" this into progress.get(bid, {}).get("total") — that reintroduces the
+    # n_districts=0-on-progress-failure regression.
     counts = {r["batch_id"]: r["n"] for r in sess.execute(text(
         "SELECT batch_id, COUNT(*) AS n FROM batch_district "
         "WHERE included IS TRUE GROUP BY batch_id")).mappings()}

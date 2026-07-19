@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
@@ -182,9 +183,19 @@ def inject_district(d: dict, gt_root: Path = GT_ROOT, raw_root: Path | None = No
                  "no source URLs survive)"),
         "schools": [],
     }
-    (ddir / "discovery.json").write_text(json.dumps(discovery_doc, indent=2))
-    (ddir / "candidates.json").write_text(json.dumps({"candidates": cands}, indent=2))
-    (ddir / "captures.json").write_text(json.dumps(caps, indent=2))
+    # discovery.json is the "Stage 2 done" marker every reconcile keys on, so it is written
+    # LAST and all three writes are atomic (tmp+os.replace) — a crash mid-injection must leave
+    # the district looking not-done, never done-with-no-capture-plan. Same rule as
+    # discover_stage2.write_discovery (#265 review); consolidates onto the shared
+    # paths.atomic_write_json helper post-merge.
+    def _atomic(path, doc):
+        tmp = path.with_name(path.name + ".tmp")
+        tmp.write_text(json.dumps(doc, indent=2))
+        os.replace(tmp, path)
+
+    _atomic(ddir / "captures.json", caps)
+    _atomic(ddir / "candidates.json", {"candidates": cands})
+    _atomic(ddir / "discovery.json", discovery_doc)
     return {"district_id": d["district_id"], "dir": str(ddir), "n_files": len(files)}
 
 
