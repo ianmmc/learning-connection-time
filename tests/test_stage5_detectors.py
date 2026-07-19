@@ -216,6 +216,7 @@ def test_event_weights_match_live_detector_confidence():
         "office_hours":   (D.lf_footer_hours,     {"footer_hours": {"hit": True, "office": True}, "positive_kw": []}),
         "calendar":       (D.lf_calendar_widget,  {"negative_kw": {"calendar": ["a", "b"]}}),
         "wrong_day":      (D.lf_nonstandard_day,  {"nonstandard_near_times": 1}),
+        "wrong_day_soft": (D.lf_nonstandard_day,  {"nonstandard_day": True}),
     }
     assert set(triggers) == set(D.EVENT_CONFIDENCE_SOURCE), "trigger set must cover every anchored event"
     for event, (fn, sig) in triggers.items():
@@ -230,7 +231,7 @@ def test_event_weights_match_live_detector_confidence():
 def test_event_weights_shape_and_polarity_signs():
     """Positive events vote +1 toward a schedule, negatives -1 away; positive_kw is present but unanchored."""
     pos = {"instructional", "table_times", "proximity_pair", "in_window_time", "positive_kw"}
-    neg = {"board", "sports", "transport", "office_hours", "calendar", "wrong_day"}
+    neg = {"board", "sports", "transport", "office_hours", "calendar", "wrong_day", "wrong_day_soft"}
     assert set(D.EVENT_WEIGHTS) == pos | neg
     assert all(D.EVENT_WEIGHTS[e][0] == +1 and D.EVENT_WEIGHTS[e][1] > 0 for e in pos)
     assert all(D.EVENT_WEIGHTS[e][0] == -1 and D.EVENT_WEIGHTS[e][1] > 0 for e in neg)
@@ -270,3 +271,38 @@ def test_deep_page_with_roster_breadth_is_untouched():
     r = decide(url_rootish=False, roster_school_names_hit=9, proximity_pairs=4, positive_kw=["bell schedule"])
     assert r["decision"] == "send" and r["tier"] == "A"
     assert "lf_district_homepage" not in r["fired"]
+
+
+def test_homepage_alone_suppresses_and_is_counterfactually_identical():
+    # PR #538/#539/#541 review pin: lf_district_homepage firing ALONE (zero target votes) lands on the
+    # hard-negative suppress — and that is DELIBERATE, because the counterfactual (same page, vote
+    # removed) suppresses via the combiner's final else anyway: times but no pair/table/structure/
+    # keyword was never sendable. The vote changes the audit trail (winner/reason), not the decision.
+    alone = decide(url_rootish=True, roster_school_names_hit=3, n_times_in_window=2, harvest_pages=["p"])
+    assert alone["decision"] == "suppress" and alone["tier"] == "D"
+    assert alone["fired"] == ["lf_district_homepage"]
+    counterfactual = decide(url_rootish=False, roster_school_names_hit=3, n_times_in_window=2,
+                            harvest_pages=["p"])
+    assert counterfactual["decision"] == "suppress" and counterfactual["tier"] == "D"
+
+
+def test_undermine_class_registration_derives_the_combiner_sets():
+    # The #199 join-the-set discipline, made structural (PR #538/#539/#541 review): detectors.py owns the
+    # UNDERMINE_CLASS declaration; combiner derives its sets from it. A new underminer is ONE entry next
+    # to its detector, and this test fails if the declaration names a detector that doesn't exist.
+    names = {lf.__name__ for lf in D.DETECTORS}
+    assert set(D.UNDERMINE_CLASS) <= names
+    assert set(D.UNDERMINE_CLASS.values()) <= {"hard", "soft"}
+    assert C.UNDERMINE_TIMES == {n for n, k in D.UNDERMINE_CLASS.items() if k == "hard"}
+    assert C.UNDERMINE_TIMES_SOFT == {n for n, k in D.UNDERMINE_CLASS.items() if k == "soft"}
+    assert C.UNDERMINE_TIMES <= C.HARD_NEGATIVE   # hard underminers ride the hard-negative machinery
+
+
+def test_detector_polarity_covers_every_registry_detector():
+    # PR #538/#539/#541 review: lf_district_homepage was missing from harness.DETECTOR_POLARITY, so the
+    # conflict diagnostic silently undercounted (`.get(nm)` -> None never equals "negative"). Pin
+    # completeness: every registry detector name + the shared lf_office_hours alias must be classified.
+    from infrastructure.acquisition.stage5_filter import harness as H
+    names = {lf.__name__ for lf in D.DETECTORS} | {"lf_office_hours"}
+    missing = names - set(H.DETECTOR_POLARITY)
+    assert not missing, f"DETECTOR_POLARITY missing: {missing}"

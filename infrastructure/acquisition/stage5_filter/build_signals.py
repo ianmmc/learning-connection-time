@@ -140,12 +140,12 @@ NONSTANDARD_DAY_KW = ["remote learning", "e-learning", "elearning", "weather eve
 # registration, substitute-teacher hiring — a PR #538 review find): they fire only in an
 # event-time/schedule phrasing.
 NONSTANDARD_TERM_RE = re.compile(
-    r"early dismissal|early release|late start|minimum day|half.day|delayed (?:start|opening)|"
-    r"(?:2|two).hour delay|remote learning|e.?learning|virtual (?:day|learning)|distance learning|"
+    r"early dismissal|early release|late start|minimum day|half[- ]day|delayed (?:start|opening)|"
+    r"(?:2|two)[- ]hour delay|remote learning|e.?learning|virtual (?:day|learning)|distance learning|"
     r"snow day|fog(?:gy)? day|inclement weather|weather event|summer (?:school|session|program|hours)|"
     r"extended school year|\besy\b|jump.?start|open house|"
     r"(?:student|kindergarten|fall|spring|school) registration|registration (?:day|night|dates?|times|schedule)|"
-    r"back.to.school|exam schedule|final exam|finals schedule|substitute (?:bell )?(?:schedule|day)|act 80", re.I)
+    r"back[- ]to[- ]school|exam schedule|final exam|finals schedule|substitute (?:bell )?(?:schedule|day)|act 80", re.I)
 NONSTANDARD_NEAR_CHARS = 140   # a term within this many chars of an in-window time = the times are that day's
 NONSTANDARD_HEAD_CHARS = 40    # a term this close BEFORE schedule/hours/bell = the term TITLES the schedule
 # Word-bounded on purpose: bare "schedule"/"bell" substring-matched inside "unscheduled"/"Bellevue"
@@ -195,8 +195,10 @@ FEED_URL_RE = re.compile(
     r"/live-feed|/announcements?\b|/news(?:/|\?|$)|[?&]page_no=|/o/[^/]+/(?:live-feed|article/\d)"
     r"|live[-_]feeds?(?![A-Za-z])"           # live_feeds/<id> permalinks, live_feed_image S3 rehosts
     r"|(?:^|[/?&=_.\-])feeds?(?![A-Za-z])"   # generic bounded token: /feed/, /feeds/, ?feed=, news-feed
-    r"|(?-i:[a-z]Feed(?![A-Za-z]))",         # camelCase query tokens: pageID=smartSiteFeed, psqFeed=true
-    re.I)
+    r"|[a-z]feeds?(?![a-z])",                # word-glued token, ANY case under re.I: smartSiteFeed,
+    re.I)                                    # smartsitefeed, PSQFEED= — the right bound still blocks feeder/feedback
+                                             # (the #539-review case-scope fix: the old (?-i:[a-z]Feed) variant
+                                             # matched only exact-case camelCase and missed case-normalized URLs)
 
 
 def feed_url(url: str) -> bool:

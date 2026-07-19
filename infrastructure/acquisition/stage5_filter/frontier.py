@@ -47,6 +47,8 @@ DEFAULT_GRID = {
     "table_min_times": [3, 4, 5],     # lf_time_table: dense in-window table times (with a positive kw)
     "table_min_periods": [1, 2, 3],   # lf_time_table: period-row structure floor
     "neg_dom_min": [2, 3, 4],         # lf_board/sports/transport + _neg_dominant: negative-class dominance
+    "wrong_day_dominance_min": [3, 4, 5],  # lf_nonstandard_day: variant-title dominance override (#537)
+    "homepage_roster_min": [2, 3, 4],      # lf_district_homepage: roster-name breadth floor (#532)
 }
 
 

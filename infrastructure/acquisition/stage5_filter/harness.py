@@ -239,7 +239,7 @@ DETECTOR_POLARITY = {
     "lf_explicit_minutes": "target", "lf_time_table": "target", "lf_prose_pair": "target",
     "lf_footer_hours": "target", "lf_heading_hours": "target", "lf_weak_times": "target",
     "lf_no_times": "negative", "lf_news_feed": "negative", "lf_calendar_widget": "negative",
-    "lf_nonstandard_day": "negative", "lf_office_hours": "negative",
+    "lf_nonstandard_day": "negative", "lf_office_hours": "negative", "lf_district_homepage": "negative",
     "lf_board": "negative", "lf_sports": "negative", "lf_transport": "negative",
 }
 

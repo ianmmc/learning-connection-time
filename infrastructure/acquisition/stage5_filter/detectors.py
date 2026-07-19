@@ -173,9 +173,14 @@ def lf_district_homepage(sig, p):
     """A district/landing HOMEPAGE — a rootish URL (domain root or bare /o/<slug>) whose text hits MANY
     distinct roster school names (#532, §3a obs. 1's page-focus gap). A many-topics landing page's times
     are almost always incidental (news teasers, event strips), not the student day. A DOWN-WEIGHT in the
-    feed/calendar undermine class, never a suppress: a homepage that carries a REAL hours block is a
-    target (lincnet.org is a district_hub_by_school ON the district homepage) — strong-structural
-    precedence still sends it. Measured (2026-07-18): the 4 live tier-A homepage FPs all have
+    feed/calendar undermine class: it never suppresses a record carrying ANY target evidence — a lone
+    table/pair demotes to review, and a homepage that carries a REAL hours block is a target
+    (lincnet.org is a district_hub_by_school ON the district homepage) that strong-structural precedence
+    still sends. Firing ALONE (zero target votes) it lands on the combiner's hard-negative suppress,
+    which is counterfactual-identical: a page with times but no pair/table/structure/keyword suppresses
+    via the combiner's final else regardless — the vote changes the audit trail, not the decision
+    (pinned by test; the max-effort review flagged the earlier "never a suppress" wording here as
+    overstated). Measured (2026-07-18): the 4 live tier-A homepage FPs all have
     heading_hours=0 and fire; every homepage target carries heading/footer hours and does not move.
     BOTH halves are required: roster breadth alone would hit real hub PAGES (deep URLs listing every
     school — the obs. 1 warning); the URL shape alone would hit single-school homepages with footer
@@ -194,6 +199,7 @@ def _neg_class(cls, cat):
                 and nb[cls] > len(sig.get("positive_kw") or []) and sig.get("proximity_pairs", 0) == 0:
             return Vote(f"lf_{cls}", "negative", "strong", 0.65, f"{cls}-dominant negative keywords", cat)
         return None
+    lf.__name__ = f"lf_{cls}"   # the factory's closures otherwise all share __name__ "lf" (registry-completeness pin)
     return lf
 
 
@@ -219,6 +225,18 @@ DETECTORS = [
     lf_no_times, lf_news_feed, lf_calendar_widget, lf_nonstandard_day, lf_district_homepage,
     lf_board, lf_sports, lf_transport,
 ]
+
+# Undermine-class registration (the #199 join-the-set discipline made STRUCTURAL, post-#532 review):
+# a negative detector that undermines incidental-time evidence declares its class HERE, next to where
+# detectors are authored — the combiner DERIVES its UNDERMINE_TIMES / UNDERMINE_TIMES_SOFT /
+# HARD_NEGATIVE sets from this map. Wiring detector N+1 is one entry in this file, not hand-edits to
+# two set literals in combiner.py (the review found nothing enforced that both got edited).
+#   hard: the times are the page's own post/event/teaser times (feed, calendar widget, landing page)
+#   soft: a real bell-shape but the WRONG schedule (the #60/#537 wrong-day mention)
+UNDERMINE_CLASS = {
+    "lf_news_feed": "hard", "lf_calendar_widget": "hard", "lf_district_homepage": "hard",
+    "lf_nonstandard_day": "soft",
+}
 
 
 # ----------------------------- relevance-density event weights (#521) -----------------------------
@@ -249,6 +267,13 @@ EVENT_WEIGHTS = {
     "wrong_day":      (-1, 0.70),   # lf_nonstandard_day  — a non-regular-day term (STRONG positional
                                     #  variant's confidence; #537 follow-on — without this event the
                                     #  heat-strip couldn't show the evidence that demoted the record)
+    "wrong_day_soft": (-1, 0.45),   # lf_nonstandard_day  — the SOFT variant's confidence. The JS picks
+                                    #  wrong_day vs wrong_day_soft from the record's OWN stored
+                                    #  lf_nonstandard_day vote strength (signals_json.detectors), so a
+                                    #  bare policy mention no longer paints a full-strength spike where
+                                    #  the score only carried a soft (or no) vote — the #521 guardrail
+                                    #  ("the heat-strip can never contradict the score"), closed for
+                                    #  wrong-day by the max-effort review of PRs #538/#539/#541.
 }
 
 # Which detector's live Vote confidence each event MUST match (the no-drift contract; positive_kw has no
@@ -257,6 +282,7 @@ EVENT_CONFIDENCE_SOURCE = {
     "instructional": "lf_explicit_minutes", "table_times": "lf_time_table", "proximity_pair": "lf_prose_pair",
     "in_window_time": "lf_weak_times", "board": "lf_board", "sports": "lf_sports", "transport": "lf_transport",
     "office_hours": "lf_office_hours", "calendar": "lf_calendar_widget", "wrong_day": "lf_nonstandard_day",
+    "wrong_day_soft": "lf_nonstandard_day",
 }
 
 
