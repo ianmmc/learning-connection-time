@@ -3800,3 +3800,33 @@ requirements:
       profiled once is solved for every district that uses it. First consumer: #540's sibling
       grouping key (Edlio). Implementation home: the Stage-3 fingerprint (capture), read via
       build_signals.cms_hint_of."
+  - id: REQ-154
+    github_issue: "#518 (epic #111 Phase 4); folds in #415"
+    description: "Capture-fidelity flags: a capture that succeeds mechanically (ok:true) but whose
+      content is not what the URL promised is FLAGGED, never dropped — login_wall / soft_404 at
+      Stage 3 (fidelityFlags over url/final_url, page-text head, and the fingerprint's has_password
+      raw signal), time_blind at Stage 4 (a schedule-promising URL whose USABLE reps all recovered
+      zero clock times). Flags project into the governance DB working store (capture.fidelity_json,
+      processed_doc.fidelity_json) so Stage 5 sees 'capture suspect', never a silent target_absent.
+      A non-2xx response with a binary content-type is a visible per-record err (binary_fetch_<status>),
+      never written as original.* and never rendered (#415)."
+    type: functional
+    priority: should
+    status: implemented
+    acceptance_criteria:
+      - "Flag, never drop: a fidelity-flagged record still captures, processes, and ingests normally"
+      - "Flags are derived ONLY from persisted facts (url/final_url, page.txt head, fingerprint.has_password), so `recompute-fidelity` re-derives them after a regex tuning without re-capture — the recompute-cms-hint discipline"
+      - "time_blind gates on USABLE reps only (a spurious time in a garbled below-bar rep must not suppress the flag) and asserts on the URL, never text content (the Stage-4/5 aboutness boundary)"
+      - "The DB carries the queryable flags (fidelity_json columns, cache_ingest DDL+ALTERs+UPSERTs); the JSON receipts are never the downstream transport"
+      - "DEFERRED (remaining #518 scope): a Stage-5 consumer surfacing the flags at gate@5 — the columns are written but unread until that lands"
+    tests:
+      - infrastructure/scraper/capture_fidelity.test.mjs
+      - tests/test_stage4_tools.py::TestTimeBlindFidelity
+      - tests/test_cache_ingest.py::test_fidelity_flags_are_queryable_on_capture_and_processed_doc
+    created: "2026-07-19T00:00:00Z"
+    updated: "2026-07-19T00:00:00Z"
+    notes: "Sized by the 2026-07-19 read-only corpus survey on #518 (1,471 live records: 92 visible
+      errs, 2 login walls, 9 soft-404s, 61 time-blind schedule-asserting). Cache columns extend the
+      REQ-110 working store (same additive-ALTER discipline as capture.err). Schedule-URL vocabulary
+      currently lives in SCHED_URL_RE (process_stage4.py) — consolidation with SCHED_KW /
+      stage5_positive_kw into config-as-data is tracked follow-up work, not done here."

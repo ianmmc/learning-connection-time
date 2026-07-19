@@ -29,6 +29,9 @@
 //   node capture_discovery.mjs recompute-cms-hint <ROOT>           -- re-derive ONLY cms_hint
 //       from each record's already-stored fingerprint (no browser, no network). Apply a
 //       human-approved CMS_HOSTS change to already-captured data without re-capturing.
+//   node capture_discovery.mjs recompute-fidelity <ROOT>            -- re-derive ONLY the #518
+//       fidelity flags from facts already on disk (url/final_url, page.txt head,
+//       fingerprint.has_password) -- apply a LOGIN/SOFT404 regex tuning without re-capturing.
 import { chromium } from 'playwright';
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, renameSync } from 'fs';
 import { createHash } from 'crypto';
@@ -108,15 +111,26 @@ export const DE_CHROME_LANDMARKS = loadConfigValues('de_chrome_landmarks');
 // captures and processes normally; the flag makes the fidelity problem queryable downstream
 // (Stage 5 must see "capture suspect", not a silent target_absent). Sized by the 2026-07-19
 // corpus survey on #518: 2 login walls + 9 soft-404s among 1,471 live records, all ok:true.
-const LOGIN_URL_RE = /login\.aspx|\/log[io]n(\/|\.|$|\?)|\/sign[-_]?in(\/|\.|$|\?)|[?&]returnurl=/i;
-const SOFT404_RE = /page not found|page cannot be found|status\s*:?\s*404|error\s*:?\s*404|404\s+error/i;
+// Derived ONLY from persisted facts (url/final_url, page.txt, fingerprint.has_password), so
+// `recompute-fidelity` can re-derive flags after a regex change without re-capturing --
+// the same capture-facts/classify-downstream split as cms_hint.
+// Boundary groups allow `-`/`_`/word-break forms (/login-page, /log-in, /sign-in-form) --
+// under-flagging is the costlier error at flag-not-drop semantics. The bare `returnurl=`
+// alternative can false-positive on CMS breadcrumb params carried by non-login pages; accepted
+// deliberately (flag-not-drop + the gate@5 human review absorbs the rare over-flag).
+const LOGIN_URL_RE = /login\.aspx|[/._-]log[-_]?[io]n([/.?_-]|$)|[/._-]sign[-_]?in([/.?_-]|$)|[?&]returnurl=/i;
+// \s+ separators: innerText renders &nbsp;/<br> between the words as  /\n, both matched by \s.
+const SOFT404_RE = /page\s+(?:not|cannot\s+be|could\s+not\s+be)\s+found|status\s*:?\s*404|error\s*:?\s*404|404\s+error/i;
+// "A real content page": shared with the js_dependent fingerprint signal so login-wall detection
+// and JS-dependence classification can't silently disagree about whether a page has substance.
+const SUBSTANTIAL_TEXT_CHARS = 600;
 
-export function fidelityFlags({ url = '', finalUrl = '', text = '', hasPassword = false }) {
+export function fidelityFlags({ url = '', finalUrl = '', text = '', hasPassword = false } = {}) {
   const flags = [];
   // Login wall: the URL itself is a login endpoint (Huntington's gateway/Login.aspx?returnUrl=...),
   // or the rendered page is password-gated with almost no content of its own.
   if (LOGIN_URL_RE.test(finalUrl) || LOGIN_URL_RE.test(url)
-      || (hasPassword && text.trim().length < 600)) flags.push('login_wall');
+      || (hasPassword && text.trim().length < SUBSTANTIAL_TEXT_CHARS)) flags.push('login_wall');
   // Soft-404: a styled "Page Not Found" served 200 (verified visually on morey/arlington.sburg.org
   // bell-schedule URLs). Scan only the head of the text so a long article MENTIONING a 404 can't trip it.
   if (SOFT404_RE.test(text.slice(0, 3000))) flags.push('soft_404');
@@ -203,8 +217,11 @@ export async function domFingerprint(page) {
       try { const hn = new URL(raw, location.href).hostname.toLowerCase(); if (hn) iframeHosts[hn] = 1; } catch { /* skip */ }
     }
     return { meta_generator: gen ? (gen.getAttribute('content') || null) : null,
-             resource_hosts: Object.keys(hosts), iframe_hosts: Object.keys(iframeHosts) };
-  }).catch(() => ({ meta_generator: null, resource_hosts: [], iframe_hosts: [] }));
+             resource_hosts: Object.keys(hosts), iframe_hosts: Object.keys(iframeHosts),
+             // #518: raw signal for the login_wall fidelity flag -- stored on the fingerprint so
+             // recompute-fidelity can re-derive the flag without a re-capture.
+             has_password: !!document.querySelector('input[type="password"]') };
+  }).catch(() => ({ meta_generator: null, resource_hosts: [], iframe_hosts: [], has_password: false }));
 }
 
 // Pure, unit-testable: categorize an embed/iframe host into the class Stage 5 routes on (REQ-115).
@@ -301,6 +318,7 @@ export function buildHtmlFingerprint({ finalHost, headers, dom, jsDependent }) {
     iframe_hosts: (dom.iframe_hosts || []).slice(0, 20),
     embed_hosts: embedCategories(dom.iframe_hosts),
     embed_present: (dom.iframe_hosts || []).length > 0,
+    has_password: !!dom.has_password,   // #518 raw signal (login_wall input; recomputable)
   };
 }
 
@@ -518,7 +536,7 @@ async function htmlFingerprintFor(ctx, url) {
       try { rendered += `\n${(await fr.evaluate(() => (document.body ? document.body.innerText : ''))) || ''}`; } catch { /* cross-origin frame */ }
     }
     const dom = await domFingerprint(page);
-    const jsDependent = strippedLen(rawHtml) < 200 && rendered.trim().length >= 600;
+    const jsDependent = strippedLen(rawHtml) < 200 && rendered.trim().length >= SUBSTANTIAL_TEXT_CHARS;
     return buildHtmlFingerprint({ finalHost: hostOf(page.url()), headers: response ? response.headers() : {}, dom, jsDependent });
   } finally {
     await page.close();
@@ -617,17 +635,24 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
         rec.final_url = r.url;
         noteFinalUrl(byDistrict[did], rec.final_url);
         const cls = classifyFetchKind(ct);
-        // #415 (folded into #518): never write a non-2xx body as original.* -- a 404/403 served
-        // with a PDF/image content-type would land HTML error bytes in a file Stage 4's pdftotext
-        // then chokes on. Record the status as a fact and fall through to the render path.
-        if (cls.binary && r.ok) {
-          writeFileSync(path.join(recDir, `original.${cls.ext}`), Buffer.from(await r.arrayBuffer()));
-          rec.kind = cls.kind;
-          rec.files.bin = `original.${cls.ext}`;
-          rec.fingerprint = buildFetchFingerprint(r);
-          rec.ok = true;
-        } else if (cls.binary) {
-          rec.fetch_status = r.status;
+        if (cls.binary) {
+          // #415 (folded into #518): never write a non-2xx body as original.* -- a 404/403 served
+          // with a PDF/image content-type would land HTML error bytes in a file Stage 4's pdftotext
+          // then chokes on. And never fall through to the render path either: page.goto on a true
+          // binary URL aborts as a download and would produce a BLANK ok:true html record --
+          // worse than a visible failure. A non-2xx binary is a per-record err (queryable via
+          // capture.err, same as needs_oauth_reauth), picked up by retry paths, never silent.
+          if (r.ok) {
+            writeFileSync(path.join(recDir, `original.${cls.ext}`), Buffer.from(await r.arrayBuffer()));
+            rec.kind = cls.kind;
+            rec.files.bin = `original.${cls.ext}`;
+            rec.fingerprint = buildFetchFingerprint(r);
+            rec.ok = true;
+          } else {
+            rec.err = `binary_fetch_${r.status}`;
+            rec.fetch_status = r.status;
+            return;
+          }
         }
       } catch { /* fall through to render */ }
 
@@ -680,24 +705,24 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
           rec.kind = 'html';
           rec.text_times = (text.match(TIME) || []).length;
 
-          // Capture-fidelity flags (#518): login wall / soft-404 detection over what actually
-          // rendered. Flag, never drop -- the record still processes; downstream sees "suspect".
-          const hasPassword = await page.evaluate(
-            () => !!document.querySelector('input[type="password"]'),
-          ).catch(() => false);
-          const flags = fidelityFlags({ url, finalUrl: rec.final_url, text, hasPassword });
-          if (flags.length) rec.fidelity = flags;
-
           // Hosting/CMS fingerprint -- gathered from the goto Response (headers we used to
           // discard) + a single DOM evaluate + a JS-dependency proxy (served-HTML text near
-          // empty but rendered text substantial -> content came from JS).
+          // empty but rendered text substantial -> content came from JS). #518's has_password
+          // raw signal rides the SAME evaluate -- no second DOM round-trip.
           const dom = await domFingerprint(page);
           rec.fingerprint = buildHtmlFingerprint({
             finalHost: hostOf(rec.final_url),
             headers: response ? response.headers() : {},
             dom,
-            jsDependent: strippedLen(rawHtml) < 200 && text.trim().length >= 600,
+            jsDependent: strippedLen(rawHtml) < 200 && text.trim().length >= SUBSTANTIAL_TEXT_CHARS,
           });
+          // Capture-fidelity flags (#518): login wall / soft-404 classification over persisted
+          // facts (url/final_url, page text, fingerprint.has_password). Flag, never drop -- the
+          // record still processes; downstream sees "suspect". Re-derivable via recompute-fidelity.
+          const flags = fidelityFlags({
+            url, finalUrl: rec.final_url, text, hasPassword: dom.has_password,
+          });
+          if (flags.length) rec.fidelity = flags;
           // DOM segmentation (REQ-091): de-chrome the page for Stage 5 signals (additive; page.txt kept).
           try { writeSegments(recDir, await segmentWithTimeout(page)); rec.segmented = true; }
           catch { rec.segmented = false; }
@@ -883,6 +908,40 @@ function runRecomputeCmsHint(ROOT) {
   console.log(`RECOMPUTE cms_hint DONE — ${changed} of ${scanned} fingerprinted records updated across ${dirs.length} districts`);
 }
 
+// ============================ RECOMPUTE fidelity (#518) ============================
+// Re-derive ONLY the fidelity flags, in place, from facts already on disk (url/final_url,
+// the head of page.txt, fingerprint.has_password) -- a pure recompute, NO browser, NO network,
+// mirroring recompute-cms-hint: a LOGIN_URL_RE/SOFT404_RE tuning applies to already-captured
+// data without a re-capture. Only ok html records carry the inputs; others are skipped.
+function runRecomputeFidelity(ROOT) {
+  const dirs = readdirSync(ROOT).filter((d) => existsSync(path.join(ROOT, d, 'captures.json')));
+  let changed = 0;
+  let scanned = 0;
+  for (const did of dirs) {
+    const capPath = path.join(ROOT, did, 'captures.json');
+    const records = JSON.parse(readFileSync(capPath));
+    let dirty = false;
+    for (const rec of records) {
+      if (!rec.ok || rec.kind !== 'html' || !rec.hash) continue;
+      scanned += 1;
+      const txtPath = path.join(ROOT, did, 'captures', rec.hash, rec.files?.txt || 'page.txt');
+      let text = '';
+      try { text = readFileSync(txtPath, 'utf8').slice(0, 3000); } catch { /* no page.txt -> URL/password signals only */ }
+      const next = fidelityFlags({
+        url: rec.url, finalUrl: rec.final_url, text,
+        hasPassword: !!(rec.fingerprint && rec.fingerprint.has_password),
+      });
+      const prev = rec.fidelity || [];
+      if (JSON.stringify(next) !== JSON.stringify(prev)) {
+        if (next.length) rec.fidelity = next; else delete rec.fidelity;
+        dirty = true; changed += 1;
+      }
+    }
+    if (dirty) writeVersioned(capPath, JSON.stringify(records, null, 2));
+  }
+  console.log(`RECOMPUTE fidelity DONE — ${changed} of ${scanned} ok html records updated across ${dirs.length} districts`);
+}
+
 // ============================ SEGMENT BACKFILL (de-chrome, REQ-091) ============================
 // Re-visit each existing ok HTML record, run DOM segmentation, and write page.main/header/footer/
 // nav.txt into the record's capture dir. ADDITIVE: never touches page.txt/png/pdf or any Stage 4
@@ -952,6 +1011,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     await runBackfillSegments(argv[1], parseInt(argv[2] || '5', 10));
   } else if (argv[0] === 'recompute-cms-hint') {
     runRecomputeCmsHint(argv[1]);
+  } else if (argv[0] === 'recompute-fidelity') {
+    runRecomputeFidelity(argv[1]);
   } else if (argv[0] === 'district') {
     // Capture ONE district dir under ROOT (the console's per-district runner):
     //   node capture_discovery.mjs district <ROOT> <DISTRICT_DIR> [CONC] [DEADLINE_S]

@@ -174,3 +174,12 @@ class TestTimeBlindFidelity:
         out = self._rec(tmp_path, "https://x.org/documents/716886", self.FILLER,
                         final_url="https://x.org/documents/bus-%26-bell-schedules/716886")
         assert out["fidelity"] == ["time_blind"]
+
+    def test_spurious_time_in_an_unusable_rep_does_not_suppress_the_flag(self, tmp_path):
+        """Review fix: the gate reads USABLE reps only -- a garbled below-bar OCR rep whose
+        noise happens to contain '12:00' must not hide a genuinely time-blind usable capture."""
+        (tmp_path / "page.txt").write_text(self.FILLER)          # usable, zero times
+        (tmp_path / "extra.txt").write_text("g@rb1e 12:00 x")    # < USABLE_MIN_CHARS -> unusable, 1 time
+        out = C4.process_record({"url": "https://x.org/bell-schedule", "hash": "h", "ok": True,
+                                 "files": {"txt": "page.txt", "md": "extra.txt"}}, tmp_path)
+        assert out["usable"] is True and out["fidelity"] == ["time_blind"]

@@ -37,6 +37,17 @@ test('login_wall: "login" must be a path/query token, not a substring of a word'
   assert.deepEqual(fidelityFlags({ url: 'https://x.org/about/technology', text: 'ok' }), []);
 });
 
+test('login_wall: hyphenated login-endpoint forms match (/login-page, /log-in, /sign-in-form)', () => {
+  assert.deepEqual(fidelityFlags({ url: 'https://x.org/staff-login-page', text: 'ok' }), ['login_wall']);
+  assert.deepEqual(fidelityFlags({ url: 'https://x.org/staff/log-in', text: 'ok' }), ['login_wall']);
+  assert.deepEqual(fidelityFlags({ url: 'https://x.org/portal/sign-in-form', text: 'ok' }), ['login_wall']);
+  assert.deepEqual(fidelityFlags({ url: 'https://x.org/district/login', text: 'ok' }), ['login_wall']);
+});
+
+test('fidelityFlags() with no argument returns [] instead of throwing', () => {
+  assert.deepEqual(fidelityFlags(), []);
+});
+
 // --- soft_404 -----------------------------------------------------------------------------
 
 test('soft_404: the verified morey.sburg.org shape ("Page Not Found" + "Status : 404")', () => {
@@ -44,6 +55,15 @@ test('soft_404: the verified morey.sburg.org shape ("Page Not Found" + "Status :
     url: 'https://morey.sburg.org/about-us/bell-schedule',
     text: 'District Home\nB.F. Morey Elementary School\nPage Not Found\nStatus : 404, Server #: w14a',
   }), ['soft_404']);
+});
+
+test('soft_404: phrase variants and non-ASCII separators (nbsp/<br> innerText) match', () => {
+  // Next.js-style: '404 | This page could not be found.'
+  assert.deepEqual(fidelityFlags({ url: 'https://x.org/p', text: '404 | This page could not be found.' }),
+    ['soft_404']);
+  // <h1>Page&nbsp;Not&nbsp;Found</h1> -> innerText with  ; <br>-separated -> \n
+  assert.deepEqual(fidelityFlags({ url: 'https://x.org/p', text: 'Page Not Found' }), ['soft_404']);
+  assert.deepEqual(fidelityFlags({ url: 'https://x.org/p', text: 'Page\nNot\nFound' }), ['soft_404']);
 });
 
 test('soft_404: only the head of the text is scanned -- a long article mentioning 404 does not trip', () => {
@@ -67,10 +87,23 @@ test('flags compose: a login page whose text also says page not found carries bo
   }), ['login_wall', 'soft_404']);
 });
 
-// --- #415 static-source pin ----------------------------------------------------------------
+// --- #415 static-source pins -----------------------------------------------------------------
 
-test('#415 pin: the direct-fetch binary write is gated on r.ok', () => {
+test('#415 pin: a non-2xx binary is a visible per-record err, never a render fallback', () => {
   const src = readFileSync(new URL('./capture_discovery.mjs', import.meta.url), 'utf8');
-  assert.match(src, /cls\.binary && r\.ok/,
+  // The write is gated on r.ok inside the binary branch (comment growth between the two
+  // conditions is fine -- the window is generous on purpose)...
+  assert.match(src, /if \(cls\.binary\) \{[\s\S]{0,2000}?if \(r\.ok\) \{/,
     'the non-2xx guard on the binary fetch path (#415) must not be simplified away');
+  // ...and the non-2xx arm records the err and RETURNS (a render of a binary URL would
+  // produce a blank ok:true html record -- worse than a visible failure). Order/spacing of
+  // the assignments is deliberately NOT pinned.
+  assert.match(src, /rec\.err = `binary_fetch_\$\{r\.status\}`;[\s\S]{0,300}?return;/,
+    'non-2xx binary must err+return, not fall through to the render path');
+});
+
+test('#518 pin: has_password is gathered as a raw fingerprint signal', () => {
+  const src = readFileSync(new URL('./capture_discovery.mjs', import.meta.url), 'utf8');
+  assert.match(src, /has_password: !!document\.querySelector\('input\[type="password"\]'\)/,
+    'the raw login_wall signal must be gathered inside domFingerprint');
 });

@@ -174,6 +174,14 @@ def upsert_discovery_rows(con, disc: dict, cand_map: dict) -> None:
             "tools_json": json.dumps(c.get("tools", [])), "n_schools": len(c.get("schools", []))})
 
 
+def _flag_list(v) -> list:
+    """Normalize a record's fidelity value to a list of flags. `or []` alone would pass a
+    hand-edited scalar (e.g. \"login_wall\" as a bare string) through json.dumps and downstream
+    `in`/iteration would then match characters, not flags -- same hand-edited-manifest bar as
+    the #351 non-string files{} guard."""
+    return v if isinstance(v, list) else []
+
+
 def upsert_capture_rows(con, district_id: str, caps: dict) -> None:
     """Replace one district's Stage-3 capture receipts (one row per hash, incl. captures that never
     processed). `caps`: hash -> capture record dict (from captures.json). DELETE-then-UPSERT (#33)."""
@@ -189,7 +197,7 @@ def upsert_capture_rows(con, district_id: str, caps: dict) -> None:
             "modals_dismissed": int(bool(cap.get("modals_dismissed"))),
             "segmented": int(bool(cap.get("segmented"))), "text_times": cap.get("text_times"),
             "final_host": fp.get("final_host"), "fingerprint_json": json.dumps(fp),
-            "err": cap.get("err"), "fidelity_json": json.dumps(cap.get("fidelity") or [])})
+            "err": cap.get("err"), "fidelity_json": json.dumps(_flag_list(cap.get("fidelity")))})
 
 
 def upsert_processed_rows(con, district_id: str, processed: dict) -> None:
@@ -200,7 +208,7 @@ def upsert_processed_rows(con, district_id: str, processed: dict) -> None:
         con.execute(UPSERT_PROCESSED_DOC, {
             "district_id": district_id, "hash": h, "url": prec.get("url"),
             "usable": int(bool(prec.get("usable"))), "n_texts": len(prec.get("texts", [])),
-            "fidelity_json": json.dumps(prec.get("fidelity") or [])})
+            "fidelity_json": json.dumps(_flag_list(prec.get("fidelity")))})
 
 
 # ---------------------------------------------------------------- dir-based ingest (one district)

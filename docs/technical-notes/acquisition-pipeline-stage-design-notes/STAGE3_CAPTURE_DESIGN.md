@@ -362,7 +362,12 @@ whose content is not what the URL promised now carry a `fidelity` flag list on t
 served 200; 9 in-corpus, verified visually on morey/arlington.sburg.org's bell-schedule URLs). Flag,
 never drop — the record still captures/processes; the flags project into the governance DB
 (`capture.fidelity_json`, cache_ingest) so Stage 5 sees "capture suspect", never a silent
-`target_absent`. Detection is the pure exported `fidelityFlags()` (capture_fidelity.test.mjs). #415
-folded in: the direct-fetch binary write is now gated on `r.ok` — a 404/403 served with a PDF/image
-content-type records `fetch_status` and falls to the render path instead of landing HTML error bytes
-in `original.pdf` (zero instances in-corpus; purely preventive, pinned by a static-source test).
+`target_absent`. Detection is the pure exported `fidelityFlags()` (capture_fidelity.test.mjs), fed
+ONLY by persisted facts — url/final_url, the page-text head, and `fingerprint.has_password` (a raw
+signal gathered inside `domFingerprint`'s single evaluate) — so the new `recompute-fidelity` CLI
+mode re-derives flags after a regex tuning without re-capture, mirroring `recompute-cms-hint`. #415
+folded in: the direct-fetch binary write is gated on `r.ok`; a 404/403 served with a PDF/image
+content-type is a visible per-record failure (`err: binary_fetch_<status>` + `fetch_status`), never
+written as `original.*` and never fallen through to render (the PR's own review round caught that a
+render of a true binary URL yields a BLANK ok:true html record — worse than a visible failure).
+Zero instances in-corpus; purely preventive, pinned by static-source tests. REQ-154.

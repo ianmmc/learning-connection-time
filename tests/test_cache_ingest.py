@@ -50,8 +50,11 @@ def test_fidelity_flags_are_queryable_on_capture_and_processed_doc(gov_session):
     store (the receipts are never the transport), absent-field records ingest as '[]'."""
     _create_cache_temp(gov_session)
     caps = {"h1": {"url": "u1", "ok": True, "fidelity": ["login_wall", "soft_404"]},
-            "h2": {"url": "u2", "ok": True}}
+            "h2": {"url": "u2", "ok": True},
+            "h3": {"url": "u3", "ok": True, "fidelity": "login_wall"}}   # hand-edited scalar
     CI.upsert_capture_rows(gov_session, "d1", caps)
+    # a non-list fidelity (hand-edited manifest) normalizes to [], never a bare JSON string
+    assert gov_session.execute(text("SELECT fidelity_json FROM capture WHERE hash='h3'")).scalar() == "[]"
     assert gov_session.execute(text("SELECT fidelity_json FROM capture WHERE hash='h1'")).scalar() \
         == '["login_wall", "soft_404"]'
     assert gov_session.execute(text("SELECT fidelity_json FROM capture WHERE hash='h2'")).scalar() == "[]"
