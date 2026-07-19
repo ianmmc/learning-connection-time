@@ -107,3 +107,73 @@ class TestSeedUrlInjection:
         district = {"district_id": "D2", "name": "Plainville", "state": "IA", "domain": "p.org"}
         d = D2.write_discovery(district, roster=[], batch_id="batch_00099")
         assert json.loads((d / "candidates.json").read_text())["candidates"] == []
+
+
+class TestWave1PerUrlProvenance:
+    """#341 — a mid-set failover must not lose which provider surfaced which URL."""
+
+    def test_failover_mid_set_keeps_first_serving_provider_per_url(self):
+        roster = D2.build_roster(_fu_district("widen_queries"))
+        calls = []
+
+        def fake_search(q, domain):
+            calls.append(q)
+            if len(calls) == 1:
+                return ("brightdata", ["http://d.org/bell", "http://d.org/shared"])
+            return ("serper", ["http://d.org/hours", "http://d.org/shared"])
+
+        D2.run_wave1(roster, "d.org", fake_search)
+        r = roster[0]
+        by_url = {g["url"]: g["provider"] for g in r["wave1_gated"]}
+        assert by_url["http://d.org/bell"] == "brightdata"
+        assert by_url["http://d.org/hours"] == "serper"
+        assert by_url["http://d.org/shared"] == "brightdata"   # first to surface it wins
+        assert r["wave1_providers"] == ["brightdata", "serper"]
+        assert r["wave1_provider"] == "serper"                 # scalar summary stays last-wins
+
+    def test_flatten_prefers_per_url_provider_over_scalar(self):
+        roster = D2.build_roster(_fu_district("widen_queries"))
+        calls = []
+
+        def fake_search(q, domain):
+            calls.append(q)
+            provider = "brightdata" if len(calls) == 1 else "serper"
+            return (provider, [f"http://d.org/p{len(calls)}"])
+
+        D2.run_wave1(roster, "d.org", fake_search)
+        tools = {c["url"]: c["tools"] for c in D2.flatten(roster)}
+        assert tools["http://d.org/p1"] == ["brightdata"]      # pre-fix: all attributed to "serper"
+
+    def test_flatten_falls_back_to_scalar_for_pre_341_rows(self):
+        # a pre-#341 discovery.json row has no per-entry provider — the scalar still attributes
+        row = {"school": "Old High", "wave1_provider": "brightdata",
+               "wave1_gated": [{"url": "http://d.org/x", "kept": True}],
+               "wave2_gated": []}
+        assert D2.flatten([row])[0]["tools"] == ["brightdata"]
+
+
+class TestAtomicDiscoveryWrite:
+    """#265 — crash-safe manifests: no partial JSON, and candidates.json lands before discovery.json."""
+
+    def test_no_tmp_files_left_behind(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
+        district = {"district_id": "D3", "name": "Atomicville", "state": "IA", "domain": "a.org"}
+        d = D2.write_discovery(district, roster=[], batch_id="batch_00099")
+        assert (d / "discovery.json").exists() and (d / "candidates.json").exists()
+        assert not list(d.glob("*.tmp"))
+
+    def test_discovery_json_is_written_last(self, tmp_path, monkeypatch):
+        # reconcile() keys "done" on discovery.json existing — a crash between the two writes
+        # must leave the district re-runnable (candidates present, discovery absent).
+        monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
+        order = []
+        real = D2._atomic_write_json
+
+        def spy(path, doc):
+            order.append(path.name)
+            real(path, doc)
+
+        monkeypatch.setattr(D2, "_atomic_write_json", spy)
+        district = {"district_id": "D4", "name": "Orderville", "state": "IA", "domain": "o.org"}
+        D2.write_discovery(district, roster=[], batch_id="batch_00099")
+        assert order == ["candidates.json", "discovery.json"]

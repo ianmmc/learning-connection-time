@@ -23,6 +23,7 @@ Driven by `run_batch()` (the console's POST /api/discover/{batch_id}/run trigger
 import argparse
 import json
 import subprocess
+import traceback
 from pathlib import Path
 
 import requests
@@ -386,10 +387,11 @@ def run_batch(batch_ref: str, *, actor: str = "auto:stage2", on_event=None,
               wave1_search=None, wave2_runner=None) -> dict:
     """Deterministic Stage 2 (SERP) for an approved batch: reconcile (filesystem is truth; a
     registry-ahead-of-disk CONTROL FAILURE raises SystemExit and halts), then per todo district run
-    Bright Data Wave 1 -> Serper Wave 2 on residual -> atomic write -> one registry record. SEQUENTIAL
-    (one registry writer, no race; providers are fast enough at batch scale). Records a per-district
-    `dispatched` event up front and `completed`/`failed` per district. `on_event(kind, payload)` is the
-    progress hook the console job feed consumes. `wave1_search`/`wave2_search` are injectable for tests."""
+    Wave 1 = Bright Data with Serper failover -> Wave 2 = Claude WebSearch on the residual -> atomic
+    write -> one registry record. SEQUENTIAL (one registry writer, no race; providers are fast enough
+    at batch scale). Records a per-district `dispatched` event up front and `completed`/`failed` per
+    district. `on_event(kind, payload)` is the progress hook the console job feed consumes.
+    `wave1_search`/`wave2_runner` are injectable for tests."""
     batch = load_batch_any(batch_ref)
     batch_id = batch["batch_id"]
     with gdb.session_scope() as _con:      # #168: never run a stage on a terminal abandoned batch
@@ -433,6 +435,9 @@ def run_batch(batch_ref: str, *, actor: str = "auto:stage2", on_event=None,
             except SystemExit:
                 raise   # CONTROL FAILURE / billing-auth halt -- never swallow
             except Exception as e:
+                # Full stack to job stdout (#452) -- the persisted note stays bounded, but a deep
+                # failure must leave its location somewhere findable.
+                traceback.print_exc()
                 registry = DS.load()
                 DS.record_stage(registry, did, d["name"], d["state"], stage_name="discover",
                                 event_type="failed", actor=actor, batch_id=batch_id,
