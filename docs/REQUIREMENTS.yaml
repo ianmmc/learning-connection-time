@@ -3839,3 +3839,27 @@ requirements:
       and SCHED_URL_RE's `%` separator only ever matched a literal percent sign, never a real
       percent-encoded separator (%20) -- confirmed missing real in-corpus captures named e.g.
       'Bell%20Schedule%20pdf.pdf'; fixed via a `sched_url_matches()` wrapper that unquotes first."
+  - id: REQ-155
+    github_issue: "#116 (epic #111 Phase 4)"
+    description: "Partial retry: a captured_partial district's RETRYABLE failures (not_attempted from
+      a deadline truncation, not_recovered from a crash reconstruct) can be re-attempted via the Node
+      delta re-run without re-hitting anything that already answered — ok records carry verbatim, and
+      non-retryable failures (security_block per the one-attempt WAF rule, needs_oauth_reauth until
+      Drive Tier 2 (#115), binary_fetch_*) carry untouched. Entry points: `headless retry <batch_id>`
+      CLI / retry_partial() (console-drivable)."
+    type: functional
+    priority: should
+    status: implemented
+    acceptance_criteria:
+      - "Retryable = err starts with not_attempted/not_recovered AND the URL is still in the capture plan (fragment-stripped parity); the predicate is mirrored in both languages (isRetryableErr / RETRYABLE_ERR_PREFIXES)"
+      - "One-attempt errs are NEVER re-attempted by a retry (security_block stays visited-once; CLAUDE.md Critical Rule 3 holds)"
+      - "A failed emergent record does not trigger or benefit from a retry (unplanned URL; #117's recovery territory)"
+      - "The union manifest re-resolves the outcome honestly through finish_district (captured_partial -> captured_all when cleared) + the DB cache upsert"
+    tests:
+      - tests/test_stage3_headless.py::TestRetryPartial
+      - "infrastructure/scraper/capture_records.test.mjs (isRetryableErr + retryable-only seeding)"
+    created: "2026-07-19T00:00:00Z"
+    updated: "2026-07-19T00:00:00Z"
+    notes: "The #518 survey sized the motivating population: 92 visible errs, of which 61 not_recovered
+      + 27 deadline-truncated. Sibling of the #225 GOTO_WAIT fix (which shrinks how often partials
+      happen); this handles the remainder when they do."

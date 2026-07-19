@@ -163,3 +163,83 @@ class TestCorruptManifestMessage:
         # (review: the first draft cited a nonexistent <batch.json> positional).
         cmd_tail = msg.split("capture_stage3 ", 1)[1].rstrip("`").split()
         assert cmd_tail == ["reconstruct", "D9"]
+
+
+class TestRetryPartial:
+    """#116 — partial retry: re-attempt ONLY the retryable failures (not_attempted/not_recovered)
+    of a batch's already-captured districts; one-attempt errs (security_block, needs_oauth_reauth)
+    carry verbatim, and districts with nothing retryable are never dispatched."""
+
+    def _seed_partial(self, root, did, name, captures, cand_urls=None):
+        """One writer per file: candidates.json is written exactly once (review fix — the earlier
+        seed-then-overwrite made it ambiguous which plan a test actually exercised)."""
+        d = _seed_district(root, did, name)
+        if cand_urls is not None:
+            (d / "candidates.json").write_text(
+                json.dumps({"candidates": [{"url": u} for u in cand_urls]}))
+        (d / "captures.json").write_text(json.dumps(captures))
+        return d
+
+    def test_only_districts_with_retryable_planned_failures_are_dispatched(
+            self, tmp_path, monkeypatch, inmem_registry):
+        monkeypatch.setattr(C3, "RAW_DIR", tmp_path)
+        monkeypatch.setattr(H3, "RAW_DIR", tmp_path)
+        # 111: deadline-truncated -> retryable
+        self._seed_partial(tmp_path, "111", "D111",
+                           [{"hash": "a", "url": "http://111.org/a", "ok": False,
+                             "err": "not_attempted (capture deadline reached)"}])
+        # 222: only a one-attempt failure -> NOT dispatched
+        self._seed_partial(tmp_path, "222", "D222",
+                           [{"hash": "b", "url": "http://222.org/a", "ok": False,
+                             "err": "security_block"}])
+        # 333: fully captured -> NOT dispatched
+        self._seed_partial(tmp_path, "333", "D333",
+                           [{"hash": "c", "url": "http://333.org/a", "ok": True}])
+        ran = []
+
+        def run(cmd, **kw):
+            ran.append(cmd)
+            from pathlib import Path
+            Path(cmd[3], cmd[4], "captures.json").write_text(
+                json.dumps([{"hash": "a", "url": "http://111.org/a", "ok": True}]))
+            return types.SimpleNamespace(returncode=0, stdout="", stderr="")
+
+        summary = H3.retry_partial(_batch("111", "222", "333"), _run=run)
+        assert summary["todo"] == 1
+        assert [c[4] for c in ran] == ["111_d111"]
+        assert ran[0][-1] == "retryable-only"           # the Node run gets the #116 mode flag
+        assert summary["results"][0]["outcome"] == "captured_all"   # honest re-resolve
+
+    def test_retryable_failure_off_the_capture_plan_does_not_trigger(
+            self, tmp_path, monkeypatch, inmem_registry):
+        """An emergent record's retryable err can't retry via the delta re-run (its URL isn't
+        planned), so it must not dispatch the district — #117's recovery territory."""
+        monkeypatch.setattr(C3, "RAW_DIR", tmp_path)
+        monkeypatch.setattr(H3, "RAW_DIR", tmp_path)
+        self._seed_partial(tmp_path, "111", "D111",
+                           [{"hash": "a", "url": "http://elsewhere.org/emergent", "ok": False,
+                             "source": "emergent",
+                             "err": "not_attempted (capture deadline reached)"}])
+        summary = H3.retry_partial(_batch("111"), _run=lambda *a, **k: (_ for _ in ()).throw(
+            AssertionError("must not dispatch")))
+        assert summary["todo"] == 0
+
+    def test_uncaptured_district_is_not_touched_by_retry(self, tmp_path, monkeypatch, inmem_registry):
+        """retry is for partials — a district with no captures.json belongs to `run`, not `retry`."""
+        monkeypatch.setattr(C3, "RAW_DIR", tmp_path)
+        monkeypatch.setattr(H3, "RAW_DIR", tmp_path)
+        _seed_district(tmp_path, "111", "D111")   # discovered, never captured
+        summary = H3.retry_partial(_batch("111"), _run=lambda *a, **k: (_ for _ in ()).throw(
+            AssertionError("must not dispatch")))
+        assert summary["todo"] == 0
+
+    def test_fragment_variants_still_match_the_plan(self, tmp_path, monkeypatch, inmem_registry):
+        """URL matching uses _strip_fragment parity — a candidates.json URL with a #fragment must
+        still match the manifest record Node stored fragment-stripped."""
+        monkeypatch.setattr(C3, "RAW_DIR", tmp_path)
+        monkeypatch.setattr(H3, "RAW_DIR", tmp_path)
+        self._seed_partial(tmp_path, "111", "D111",
+                           [{"hash": "a", "url": "http://111.org/a", "ok": False,
+                             "err": "not_recovered (capture interrupted before completion)"}],
+                           cand_urls=["http://111.org/a#top"])
+        assert H3._retryable_failures(tmp_path / "111_d111") == 1

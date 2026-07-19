@@ -75,12 +75,15 @@ def candidate_count(ddir: Path) -> int:
         return 0
 
 
-def _capture_one(district: dict, *, _run=subprocess.run) -> None:
+def _capture_one(district: dict, *, retryable_only: bool = False, _run=subprocess.run) -> None:
     """Run the Node Playwright capture for ONE district dir (a fresh subprocess). Raises on a non-zero
     exit or a missing captures.json, so run_batch records the district `failed` rather than silently
-    advancing it."""
+    advancing it. `retryable_only` (#116): the Node run seeds from the prior manifest and re-attempts
+    ONLY retryable failures (see RETRYABLE_ERR_PREFIXES)."""
     cmd = ["node", str(CAPTURE_MJS), "district", str(RAW_DIR), district["dir"].name,
            str(CONCURRENCY), str(CAPTURE_DEADLINE_S)]   # Node owns its deadline; the subprocess timeout is a backstop
+    if retryable_only:
+        cmd.append("retryable-only")
     proc = _run(cmd, capture_output=True, text=True, timeout=CAPTURE_TIMEOUT_S, cwd=str(paths.REPO_ROOT))
     if proc.returncode != 0:
         raise RuntimeError(f"node capture exit {proc.returncode}: {(proc.stderr or proc.stdout)[:300]}")
@@ -250,38 +253,106 @@ def run_batch(batch: dict, *, actor: str = "auto:stage3", on_event=None, _run=su
             return {"batch_id": batch_id, "todo": 0, "skipped": len(skipped),
                     "no_links": len(no_link), "results": []}
 
-        registry = DS.load()
-        for d in todo:
-            DS.record_stage(registry, d["district_id"], d["name"], d["state"], stage_name="capture",
-                            event_type="dispatched", actor=actor, batch_id=batch_id)
-            emit("dispatched", district_id=d["district_id"], name=d["name"])
-        DS.save(registry, export=False)
-
-        results = []
-        for d in todo:
-            did = d["district_id"]
-            try:
-                _capture_one(d, _run=_run)
-                registry = DS.load()
-                outcome = C3.finish_district(d, registry)   # reads captures.json + upserts the DB cache
-                DS.save(registry, export=False)
-                results.append({"district_id": did, "name": d["name"], "outcome": outcome})
-                emit("completed", district_id=did, name=d["name"], outcome=outcome)
-            except SystemExit:
-                raise   # CONTROL FAILURE -- never swallow
-            except Exception as e:
-                registry = DS.load()
-                DS.record_stage(registry, did, d["name"], d["state"], stage_name="capture",
-                                event_type="failed", actor=actor, batch_id=batch_id,
-                                notes=f"{type(e).__name__}: {str(e)[:200]}")
-                DS.save(registry, export=False)
-                results.append({"district_id": did, "name": d["name"], "outcome": "error",
-                                "error": f"{type(e).__name__}: {str(e)[:200]}"})
-                emit("failed", district_id=did, name=d["name"], error=str(e)[:200])
+        results = _dispatch_and_finish(todo, batch_id=batch_id, actor=actor, emit=emit, _run=_run)
         return {"batch_id": batch_id, "todo": len(todo), "skipped": len(skipped),
                 "no_links": len(no_link), "results": results}
     finally:
         DS.export()   # one full district_status.json regeneration per run (issue #49)
+
+
+def _dispatch_and_finish(todo: list, *, batch_id: str, actor: str, emit, _run,
+                         retryable_only: bool = False, dispatch_notes: str = "") -> list:
+    """The shared dispatch + capture + finish + error-isolation loop for run_batch AND retry_partial
+    (#116 review: one copy, so a future fix to the loop can't silently apply to only one of them).
+    SEQUENTIAL (one registry writer). A SystemExit is a CONTROL FAILURE and propagates."""
+    registry = DS.load()
+    for d in todo:
+        DS.record_stage(registry, d["district_id"], d["name"], d["state"], stage_name="capture",
+                        event_type="dispatched", actor=actor, batch_id=batch_id, notes=dispatch_notes)
+        emit("dispatched", district_id=d["district_id"], name=d["name"])
+    DS.save(registry, export=False)
+
+    results = []
+    for d in todo:
+        did = d["district_id"]
+        try:
+            _capture_one(d, retryable_only=retryable_only, _run=_run)
+            registry = DS.load()
+            outcome = C3.finish_district(d, registry)   # reads captures.json + upserts the DB cache
+            DS.save(registry, export=False)
+            results.append({"district_id": did, "name": d["name"], "outcome": outcome})
+            emit("completed", district_id=did, name=d["name"], outcome=outcome)
+        except SystemExit:
+            raise   # CONTROL FAILURE -- never swallow
+        except Exception as e:
+            registry = DS.load()
+            DS.record_stage(registry, did, d["name"], d["state"], stage_name="capture",
+                            event_type="failed", actor=actor, batch_id=batch_id,
+                            notes=f"{type(e).__name__}: {str(e)[:200]}")
+            DS.save(registry, export=False)
+            results.append({"district_id": did, "name": d["name"], "outcome": "error",
+                            "error": f"{type(e).__name__}: {str(e)[:200]}"})
+            emit("failed", district_id=did, name=d["name"], error=str(e)[:200])
+    return results
+
+
+# ----------------------------------------------------------------------------------- partial retry (#116)
+# Python mirror of the mjs isRetryableErr predicate -- crash/deadline remnants only. NOT retryable:
+# security_block (the one-attempt WAF rule, CLAUDE.md Critical Rule 3), needs_oauth_reauth (fails
+# identically until Drive Tier 2 -- #115), binary_fetch_* (the origin already answered).
+RETRYABLE_ERR_PREFIXES = ("not_attempted", "not_recovered")
+
+
+def _retryable_failures(ddir: Path) -> int:
+    """How many of a district's failed capture records a partial retry could actually re-attempt:
+    ok=false, a retryable err class, AND the URL is still in the capture plan (candidates.json) --
+    the Node delta re-run re-queues only planned URLs, so a failed EMERGENT record can't retry this
+    way (its parent page is ok and won't re-render; that's #117's recovery territory, not this one's).
+    Reads the on-disk manifest deliberately: Stage 3's own reconcile stance is filesystem-is-truth
+    for its own artifacts, and this is the same file the Node run will seed from."""
+    try:
+        caps = json.loads((ddir / "captures.json").read_text())
+        cand_urls = {C3._strip_fragment(c["url"])
+                     for c in json.loads((ddir / "candidates.json").read_text()).get("candidates", [])
+                     if isinstance(c, dict) and isinstance(c.get("url"), str)}
+    except (json.JSONDecodeError, OSError, AttributeError, TypeError):
+        return 0
+    return sum(1 for r in caps if isinstance(r, dict) and not r.get("ok")
+               and str(r.get("err") or "").startswith(RETRYABLE_ERR_PREFIXES)
+               and isinstance(r.get("url"), str) and C3._strip_fragment(r["url"]) in cand_urls)
+
+
+def retry_partial(batch: dict, *, actor: str = "auto:stage3-retry", on_event=None,
+                  _run=subprocess.run) -> dict:
+    """#116: re-attempt the RETRYABLE failures of a batch's already-captured districts. Selects
+    districts whose captures.json holds >=1 retryable planned-URL failure (not_attempted from a
+    deadline truncation, not_recovered from a crash reconstruct) and re-runs the Node capture in
+    retryable-only mode: prior ok records carry verbatim (never re-hit), retryable failures are
+    dropped-and-re-attempted, and non-retryable failures (security_block / needs_oauth_reauth /
+    binary_fetch_*) carry untouched -- the one-attempt rule holds. The union manifest lands via
+    the same finish_district path as a first run (state_event + DB cache upsert), so the outcome
+    honestly re-resolves (captured_partial -> captured_all when the retry clears the remainder)."""
+    batch_id = batch["batch_id"]
+    with gdb.session_scope() as _con:
+        BG.assert_runnable(_con, batch_id)
+
+    def emit(kind, **payload):
+        if on_event:
+            on_event(kind, {"batch_id": batch_id, **payload})
+
+    try:
+        districts = find_batch_districts(batch)
+        todo = [d for d in districts
+                if (d["dir"] / "captures.json").exists() and _retryable_failures(d["dir"]) > 0]
+        emit("retry_reconciled", todo=[d["district_id"] for d in todo])
+        if not todo:
+            return {"batch_id": batch_id, "todo": 0, "results": []}
+        results = _dispatch_and_finish(todo, batch_id=batch_id, actor=actor, emit=emit, _run=_run,
+                                       retryable_only=True,
+                                       dispatch_notes="partial retry (#116): retryable failures only")
+        return {"batch_id": batch_id, "todo": len(todo), "results": results}
+    finally:
+        DS.export()
 
 
 def main():
@@ -290,11 +361,20 @@ def main():
     p = sub.add_parser("run", help="capture an approved+discovered batch (per-district Node subprocess)")
     p.add_argument("batch", help="batch_id or path to batch_NNNNN.json receipt")
     p.add_argument("--actor", default="ian")
+    pr = sub.add_parser("retry", help="#116: re-attempt retryable failures (not_attempted/not_recovered) "
+                                      "of a batch's captured_partial districts; one-attempt errs carry")
+    pr.add_argument("batch", help="batch_id or path to batch_NNNNN.json receipt")
+    pr.add_argument("--actor", default="ian")
     a = ap.parse_args()
     if a.cmd == "run":
         batch = load_batch_any(a.batch)   # CLI loads the receipt; the console passes a DB-resolved dict
         summary = run_batch(batch, actor=a.actor,
                             on_event=lambda k, p: print(f"[{k}] " + json.dumps(p)))
+        print(json.dumps(summary, indent=2))
+    elif a.cmd == "retry":
+        batch = load_batch_any(a.batch)
+        summary = retry_partial(batch, actor=a.actor,
+                                on_event=lambda k, p: print(f"[{k}] " + json.dumps(p)))
         print(json.dumps(summary, indent=2))
 
 
