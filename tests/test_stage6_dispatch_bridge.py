@@ -151,3 +151,72 @@ def test_missing_district_is_skipped(monkeypatch):
     pkg = BR.build_handoff_package(session=None, district_ids=["9999999"])
     assert pkg["districts"] == []
     assert pkg["cost"]["total_usd"] == 0
+
+
+# ---------------------- REQ-116/#83 hub-priority narrowing (pure, DB-free) ----------------------
+def _h(rec_key, label=None, year=None, n_times=0):
+    return {"rec_key": rec_key, "label": label, "year": year, "n_times": n_times, "schools": []}
+
+
+def test_hub_priority_narrows_to_the_labeled_hub():
+    winner, holds = BR._hub_priority_holds([
+        _h("d:hub", "district_hub_by_band", 2025, 30),
+        _h("d:es", "school_bell_table", 2025, 10),
+        _h("d:hs", "school_start_end_list", 2024, 8)])
+    assert winner == "d:hub" and holds == {"d:es", "d:hs"}
+
+
+def test_no_labeled_hub_means_no_narrowing():
+    # the unlabeled-tier-A arm is structurally ready but INACTIVE (no detector emits a hub category) —
+    # an all-unlabeled or all-school-shape send set is never narrowed.
+    winner, holds = BR._hub_priority_holds([
+        _h("d:a", None, 2025, 30), _h("d:b", "school_bell_table", 2025, 10)])
+    assert winner is None and holds == set()
+
+
+def test_newest_then_densest_hub_wins_between_hubs():
+    winner, holds = BR._hub_priority_holds([
+        _h("d:old_hub", "district_hub_by_school", 2019, 90),
+        _h("d:new_hub", "district_hub_by_band", 2025, 12),
+        _h("d:es", "school_bell_table", 2025, 10)])
+    assert winner == "d:new_hub" and holds == {"d:old_hub", "d:es"}
+    # same year -> density breaks the tie
+    winner2, _ = BR._hub_priority_holds([
+        _h("d:sparse", "district_hub_by_band", 2025, 5),
+        _h("d:dense", "district_hub_by_school", 2025, 40)])
+    assert winner2 == "d:dense"
+
+
+def test_unknown_year_hub_loses_to_dated_hub_but_still_narrows_alone():
+    winner, _ = BR._hub_priority_holds([
+        _h("d:noyear", "district_hub_by_band", None, 99),
+        _h("d:dated", "district_hub_by_school", 2023, 5)])
+    assert winner == "d:dated"                      # a known year outranks unknown (never auto-newest)
+    winner_solo, holds_solo = BR._hub_priority_holds([
+        _h("d:noyear", "district_hub_by_band", None, 99), _h("d:es", "school_bell_table", 2024, 3)])
+    assert winner_solo == "d:noyear" and holds_solo == {"d:es"}
+
+
+def test_hub_priority_composes_after_prefer_recent(monkeypatch):
+    """Integration through district_release_input: a STALE hub held by prefer-recent must not win;
+    the surviving newest hub narrows the rest. DB readers monkeypatched (the file's convention)."""
+    def rec(rec_key, label, year, schools, n_times=20):
+        return {"rec_key": rec_key, "url": f"http://x/{rec_key}", "tier": "A", "category": None,
+                "signals": {"content_school_year": f"{year}-{(year + 1) % 100:02d}" if year else None,
+                            "n_times_in_window": 4, "proximity_pairs": 2, "positive_kw": ["bell schedule"]},
+                "is_emergent": 0, "intended_schools": schools, "label": label, "facets": {},
+                "reps": [{"source": "extracted", "filename": "e.txt", "file_kind": "text",
+                          "n_chars": 1000, "n_times": n_times, "usable": 1}]}
+    records = [rec("d:hub_old", "district_hub_by_band", 2019, ["HS"]),      # superseded on HS
+               rec("d:hub_new", "district_hub_by_band", 2025, ["HS"]),
+               rec("d:es", "school_bell_table", 2024, ["ES"])]
+    monkeypatch.setattr(REL, "load_district", lambda s, d: {"district_id": d, "name": "X", "state": "ZZ",
+                                                            "district_dir": "x", "labeled_topology": None,
+                                                            "nces_denominator": {"total": 3, "by_level": {}}})
+    monkeypatch.setattr(REL, "load_district_records", lambda s, d: records)
+    _, out = BR.district_release_input(None, "D1")
+    by = {r["rec_key"]: r for r in out}
+    assert by["d:hub_new"]["decision"] == "send"
+    assert by["d:hub_old"]["decision"] == "hold" and "stale-sibling" in by["d:hub_old"]["reason"]
+    assert by["d:es"]["decision"] == "hold" and "hub-priority" in by["d:es"]["reason"]
+    assert "d:hub_new" in by["d:es"]["reason"]      # the reason names the winner (traceable)

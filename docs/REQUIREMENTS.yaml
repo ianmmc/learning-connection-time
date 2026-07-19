@@ -2816,12 +2816,18 @@ requirements:
     description: "In preparation of dispatches during Stage 6, If a district has a URL with either a labeled or A-scoring district hub schedule (either by school or by band) that covers all bands, then the best representation of that URL is the only URL that needs to be sent for the district on the first dispatch."
     type: functional
     priority: must
-    status: proposed
+    status: tested
     github_issue: "#83 — author acceptance criteria + tests for district-hub-priority dispatch (epic #106)"
-    acceptance_criteria: null   # DELIBERATELY EMPTY — authoring them IS issue #83. See notes.
-    tests: null                 # ditto
+    acceptance_criteria:
+      - "When a district's dispatch-time send set (AFTER the union eligibility rule + verified_only + the #107 prefer-recent holds) contains ≥1 record human-labeled district_hub_by_school or district_hub_by_band, the best hub is the ONLY record that stays `send` on the first dispatch; every other surviving send is downgraded to `hold` with a traceable reason naming the winner — MET (stage6_dispatch._hub_priority_holds + district_release_input)"
+      - "\"Covers all bands\" is a PRESUMPTION carried by the hub label itself (no per-record claimed-band data exists to verify against, and none is needed for safety: the Stage-7 coverage gates + request-more-evidence loop detect an under-covering hub and pull the HELD reps back via 7→6 — the presumption costs at most one cheap retry round) — MET, documented in the pass's docstring"
+      - "\"Best representation of that URL\" = release.best_send's existing per-record pick; BETWEEN hubs, newest content_school_year wins, then rep time-density; an unknown-year hub loses to a dated hub but still narrows when it is the only hub — MET (test_newest_then_densest_hub_wins_between_hubs, test_unknown_year_hub_loses_to_dated_hub_but_still_narrows_alone)"
+      - "The REQ's \"or A-scoring\" arm is STRUCTURALLY ready but INACTIVE: no detector emits a hub category, so an unlabeled tier-A record can never satisfy the hub test today; when a hub detector exists it joins the same predicate — MET (test_no_labeled_hub_means_no_narrowing pins the inactive state)"
+      - "ZERO recall cost: hold, never reject; composes AFTER prefer-recent so a stale hub superseded by a newer same-school sibling cannot win — MET (test_hub_priority_composes_after_prefer_recent)"
+    tests:
+      - tests/test_stage6_dispatch_bridge.py
     created: "2026-07-01T00:00:00Z"
-    updated: "2026-07-16T00:00:00Z"
+    updated: "2026-07-18T00:00:00Z"
     notes: "Design: STAGE6_DISPATCH_DESIGN.md §4. The rationale here is that the presence of a district hub schedule renders the need for representations of other URLs moot. Sending more would needless add to cost. If more information is needed, the extraction council can request more representations and more URLs. Acceptance criteria + tests + implementation tracked: GitHub #83.
       PROVENANCE (Ian, 2026-07-16): written by hand against a session limit to capture the idea before it was lost — hence the empty AC/tests. It is the only `must` in this file with no acceptance criteria, and that is a known, tracked gap (#83), not an oversight to be silently filled in.
       CAVEAT for whoever authors the AC (2026-07-16 doc-tower audit): this REQ predates the finding that Stage-6 eligibility is a UNION (`tier==A OR human_label in target-shapes`) — see STAGE5_FILTER_DESIGN.md §3a obs. 5. Author the AC against that current rule, not the older tier-only framing. Also note #83 shares the Stage-6 eligibility seam with #515 (confounder vetoes): #83 NARROWS eligibility to one hub rep; #515 VETOES confounders out of it. Same file, different intent — sequence them."
