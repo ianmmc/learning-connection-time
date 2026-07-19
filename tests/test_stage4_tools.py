@@ -175,6 +175,16 @@ class TestTimeBlindFidelity:
                         final_url="https://x.org/documents/bus-%26-bell-schedules/716886")
         assert out["fidelity"] == ["time_blind"]
 
+    def test_percent_encoded_separator_still_matches(self, tmp_path):
+        """Review-round-2 fix: SCHED_URL_RE's `[-_ ]?` character class can only ever consume a
+        single literal char, never a real 3-char percent-encoded separator like %20 -- a raw
+        regex match on 'Bell%20Schedule%20pdf.pdf' (a real in-corpus filename, per the 2026-07-19
+        combined-diff review) would silently miss it. sched_url_matches() unquotes first."""
+        out = self._rec(tmp_path, "https://x.org/file/Bell%20Schedule%20pdf.pdf", self.FILLER)
+        assert out["fidelity"] == ["time_blind"]
+        assert C4.sched_url_matches("https://x.org/file/Bell%20Schedule%20pdf.pdf") is True
+        assert C4.sched_url_matches(None) is False
+
     def test_spurious_time_in_an_unusable_rep_does_not_suppress_the_flag(self, tmp_path):
         """Review fix: the gate reads USABLE reps only -- a garbled below-bar OCR rep whose
         noise happens to contain '12:00' must not hide a genuinely time-blind usable capture."""

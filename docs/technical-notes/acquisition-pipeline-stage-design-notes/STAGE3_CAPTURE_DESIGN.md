@@ -96,7 +96,8 @@ Every URL (and any emergent candidate) is `stripFragment()`-normalized before th
    halt — one stuck Drive item says nothing about the rest of the batch.
 2. **Direct PDF/image fetch** (non-Google) — plain HTTP GET, byte-for-byte; never `page.pdf()` a URL that
    is already a PDF.
-3. **Generic HTML render** — `goto(networkidle)` + a wait, then **modal dismissal**, then
+3. **Generic HTML render** — `goto(domcontentloaded)` + a wait (§2's #225 entry — `GOTO_WAIT`,
+   shared by all three goto sites), then **modal dismissal**, then
    innerText→`.txt`, full-page screenshot→`.png`, and **`page.pdf()` unconditionally** (removes the need
    for a Tier-1→2 escalation trigger — capture both, decide downstream). **Emergent candidates:** scan
    anchors whose text/href match `SCHED_KW` → new candidate, exactly one hop, never recursive

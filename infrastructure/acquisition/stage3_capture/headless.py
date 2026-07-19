@@ -37,8 +37,9 @@ CAPTURE_DEADLINE_S = 600   # the Node-owns-shutdown budget passed to the capture
                            # work orphaned. A large district (LAS CRUCES, 128 candidates) captures what
                            # fits and cleanly reports the remainder, retriable later.
 DRAIN_BUFFER_S = 240       # headroom for in-flight pages to finish + the manifest write after the
-                           # deadline (each page is bounded by the per-op timeouts: goto 30 / fetch 20 /
-                           # screenshot+pdf 45 each). The Python subprocess timeout is the BACKSTOP —
+                           # deadline (each page is bounded by the per-op timeouts: goto 15 (#225,
+                           # GOTO_WAIT in capture_discovery.mjs) / fetch 20 / screenshot+pdf 45 each).
+                           # The Python subprocess timeout is the BACKSTOP —
                            # it only fires if Node itself hangs; then reconstruct-from-disk recovers it.
 CAPTURE_TIMEOUT_S = CAPTURE_DEADLINE_S + DRAIN_BUFFER_S   # subprocess backstop (> Node's own deadline)
 CONCURRENCY = 5            # within-district page concurrency passed to the Node script

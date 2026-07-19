@@ -3829,4 +3829,13 @@ requirements:
       errs, 2 login walls, 9 soft-404s, 61 time-blind schedule-asserting). Cache columns extend the
       REQ-110 working store (same additive-ALTER discipline as capture.err). Schedule-URL vocabulary
       currently lives in SCHED_URL_RE (process_stage4.py) — consolidation with SCHED_KW /
-      stage5_positive_kw into config-as-data is tracked follow-up work, not done here."
+      stage5_positive_kw into config-as-data is tracked follow-up work, not done here.
+      2026-07-19 combined-diff review (PRs #556/#557/#558 reviewed together): #558 (merged same day,
+      into capture_discovery.mjs) shortened the goto wait this feature's page-text snapshot depends
+      on (networkidle/30s -> domcontentloaded/15s) -- re-verified with the same 47-URL measurement
+      corpus that fidelityFlags' inputs (settled text, has_password) are unaffected, so acceptance
+      criterion 2 still holds; also fixed a real iframe-scoping gap where has_password was
+      main-frame-only while `text` was frame-inclusive (now both scan page.frames() identically),
+      and SCHED_URL_RE's `%` separator only ever matched a literal percent sign, never a real
+      percent-encoded separator (%20) -- confirmed missing real in-corpus captures named e.g.
+      'Bell%20Schedule%20pdf.pdf'; fixed via a `sched_url_matches()` wrapper that unquotes first."

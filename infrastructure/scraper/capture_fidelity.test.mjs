@@ -102,8 +102,14 @@ test('#415 pin: a non-2xx binary is a visible per-record err, never a render fal
     'non-2xx binary must err+return, not fall through to the render path');
 });
 
-test('#518 pin: has_password is gathered as a raw fingerprint signal', () => {
+test('review-round-2 pin: hasPassword scans the SAME frames as text, not just the main frame', () => {
+  // A prior version gathered has_password via a main-frame-only page.evaluate while `text`
+  // (fed into the SAME fidelityFlags call) iterated page.frames() -- an iframe-embedded
+  // login wall (e.g. an SSO widget) would silently escape detection. Pin: the password check
+  // must live inside the SAME per-frame loop that builds `text`.
   const src = readFileSync(new URL('./capture_discovery.mjs', import.meta.url), 'utf8');
-  assert.match(src, /has_password: !!document\.querySelector\('input\[type="password"\]'\)/,
-    'the raw login_wall signal must be gathered inside domFingerprint');
+  assert.match(src, /document\.querySelector\('input\[type="password"\]'\)/,
+    'the password probe must still exist');
+  assert.doesNotMatch(src, /has_password: !!document\.querySelector/,
+    'the password probe must not live in a standalone main-frame-only page.evaluate again');
 });
