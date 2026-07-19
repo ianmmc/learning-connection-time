@@ -152,12 +152,16 @@ mitigated (residual → #164); #554 merged (PR #556). **Phase 4 so far:** #518 q
 numbers on the issue: 92 visible errs dominated by 61 crash-`not_recovered` + 27 deadline; 2 login
 walls, 9 soft-404s, 61 time-blind) then its detect+flag landed (PR #557, max-effort review round: 15
 findings, 13 fixed — incl. the review save that the naive #415 fix would have produced blank ok:true
-captures; #415 closed; REQ-154 records the contract + deferrals). #225 landed (PR #558): measured
+captures; #415 closed; REQ-154 records the contract + deferrals). #225 CLOSED (PR #558): measured
 spike (47 URLs / 3 districts — `networkidle` burned its full 30s on 32/35 Apptegy pages, zero content
-loss with `domcontentloaded`+settle) → shared `GOTO_WAIT`; issue stays open pending a real-batch
-confirmation (a big district completing without `captured_partial` closes it). **#518 remaining
-scope:** the gate@5/Stage-5 consumer (fidelity_json columns are write-only until it lands),
-recovery affordances (ties into #116), follow-the-link for doc-viewer pages (overlaps #517).
+loss with `domcontentloaded`+settle) → shared `GOTO_WAIT`; reopen trigger documented on the issue (a
+big post-#558 district hitting `captured_partial` + deadline errs). A same-day combined-diff review
+of PRs #556/#557/#558 together (PR #559, merged) caught 2 cross-PR bugs the per-PR rounds couldn't:
+an iframe-scoped `has_password` blind spot and SCHED_URL_RE missing real `%20`-encoded URLs — plus
+follow-ups filed as **#560** (inject_district ordering crash test) + **#561** (six remaining
+hand-rolled tmp+replace copies), both attached to the epic. **#518 remaining scope:** the
+gate@5/Stage-5 consumer (fidelity_json columns are write-only until it lands), recovery affordances
+(ties into #116), follow-the-link for doc-viewer pages (overlaps #517).
 **Phase 5** — discovery recall: #114 → #164 (Millard 3173740 acceptance case) → #112 decision.
 **Phase 6** — #222 + #118, then close. Open question for Ian: whether #112/#118 stay in-epic.
 After #111: **#479/#480** → **#92** (Stage 9); parked: #475/#476, #103/#80 (+#110).
@@ -166,7 +170,7 @@ guardrail's per-rep keyword/table attribution (needs a server payload change); J
 (no JS harness in repo — static-source pins only).
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
--m "not integration"` (expect **1702** pass) + `pytest -q -m govdb` (expect **253**, Postgres up).
+-m "not integration"` (expect **1709** pass) + `pytest -q -m govdb` (expect **254**, Postgres up).
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (the
 motivating ones: Huntington `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters).
 Full detail: `docs/PROJECT_HISTORY.md`, `STAGE1-4_*_DESIGN.md`, `PIPELINE_GOVERNANCE_AND_STATE.md`,
