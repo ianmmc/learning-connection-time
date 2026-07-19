@@ -100,7 +100,5 @@ def write(doc: dict, root=None) -> Path:
     out = root / handoff_filename(doc)
     if out.exists():
         raise FileExistsError(f"immutable handoff already exists: {out}")
-    tmp = out.with_name(out.name + ".tmp")
-    tmp.write_text(json.dumps(doc, indent=2))
-    tmp.replace(out)
+    paths.atomic_write_json(out, doc)
     return out

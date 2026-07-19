@@ -335,9 +335,7 @@ def generate(session, district_id: str = None, root=None) -> list:
         written = None
         if ddir.exists():
             out = ddir / "filtered.json"
-            tmp = out.with_name("filtered.json.tmp")
-            tmp.write_text(json.dumps(doc, indent=2))
-            tmp.replace(out)   # atomic; regenerable (overwritten each run)
+            paths.atomic_write_json(out, doc)   # atomic; regenerable (overwritten each run)
             written = str(out)
         summary.append({"district_id": did, "topology": doc["topology"],
                         "n_canonical": doc["completeness"]["n_canonical"],

@@ -898,9 +898,7 @@ def export_labels(s, out: Path = LABELS_JSON) -> int:
         f"SELECT {','.join(LABEL_COLS)} FROM label WHERE status!='unlabeled' ORDER BY rec_key")).fetchall()
     data = [dict(zip(LABEL_COLS, r)) for r in rows]
     out.parent.mkdir(parents=True, exist_ok=True)
-    tmp = out.with_name(out.name + ".tmp")
-    tmp.write_text(json.dumps(data, indent=2))
-    tmp.replace(out)   # atomic
+    paths.atomic_write_json(out, data)   # atomic
     return len(data)
 
 
@@ -910,9 +908,7 @@ def export_splits(s, out: Path = CLUSTER_SPLITS_JSON) -> int:
     out = paths.guard_tracked_backup(out)
     rows = [r[0] for r in s.execute(text("SELECT rec_key FROM cluster_split ORDER BY rec_key"))]
     out.parent.mkdir(parents=True, exist_ok=True)
-    tmp = out.with_name(out.name + ".tmp")
-    tmp.write_text(json.dumps(rows, indent=2))
-    tmp.replace(out)
+    paths.atomic_write_json(out, rows)
     return len(rows)
 
 

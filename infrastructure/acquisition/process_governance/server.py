@@ -644,9 +644,7 @@ def _backup_precious_table(con, select_sql: str, tracked_path) -> int:
     under pytest the tracked file is quarantine-redirected via guard_tracked_backup (issue #178)."""
     rows = con.execute(text(select_sql)).mappings().all()
     out = paths.guard_tracked_backup(tracked_path)
-    tmp = out.with_name(out.name + ".tmp")
-    tmp.write_text(json.dumps([dict(r) for r in rows], indent=2))
-    tmp.replace(out)
+    paths.atomic_write_json(out, [dict(r) for r in rows])
     return len(rows)
 
 

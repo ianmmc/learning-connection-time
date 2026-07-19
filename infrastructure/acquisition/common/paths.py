@@ -90,14 +90,12 @@ def guard_tracked_backup(out: Path) -> Path:
     return q
 
 
-def atomic_write_json(path: Path, doc: dict) -> None:
+def atomic_write_json(path: Path, doc: dict | list) -> None:
     """Crash-safe JSON write: serialize to a sibling temp file, then os.replace() -- a reader
-    never sees a partially-written file, only the old version or the new one. The shared home
+    never sees a partially-written file, only the old version or the new one. THE single home
     for the tmp+replace pattern (#265 review; #554 consolidated district_status/batch_store/
-    benchmark_batch onto it) -- any future change to the pattern (e.g. fsync-before-replace)
-    should land here AND be propagated to the hand-rolled copies still elsewhere (capture_stage3.py,
-    stage5_filter/build_signals.py + release.py, stage6_handoff/handoff.py, process_governance/
-    server.py) -- consolidating those is tracked follow-up, not done by #554."""
+    benchmark_batch, #561 the remaining six sites) -- any future change to the pattern
+    (e.g. fsync-before-replace) lands here, nowhere else."""
     tmp = path.with_name(path.name + ".tmp")
     tmp.write_text(json.dumps(doc, indent=2))
     os.replace(tmp, path)
