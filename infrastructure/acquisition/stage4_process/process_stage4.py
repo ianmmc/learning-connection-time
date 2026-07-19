@@ -39,6 +39,7 @@ import json
 import re
 import subprocess
 from pathlib import Path
+from urllib.parse import unquote
 
 from infrastructure.acquisition.common import batch_guard as BG
 from infrastructure.acquisition.common import cache_ingest as CI
@@ -54,8 +55,20 @@ TIME_RE = re.compile(r"\b\d{1,2}:\d{2}\s*(?:[AaPp]\.?[Mm]\.?)?")
 # text-aboutness judgment stays Stage 5's, per is_usable's docstring) whose usable reps all
 # recovered zero clock times. Sized by the 2026-07-19 corpus survey: 61 such records, incl.
 # CMS document-viewer pages and soft-404s -- the class that otherwise lands as a silent
-# target_absent at Stage 5.
-SCHED_URL_RE = re.compile(r"bell[-_ %]?schedule|daily[-_ %]?schedule|school[-_ %]?hours|class[-_ %]?times", re.I)
+# target_absent at Stage 5. Matched against the UNQUOTED url (see sched_url_matches) -- a
+# `[-_ %]?` character class can only ever consume a single literal `%`, never a real
+# percent-encoded separator like `%20` (3 chars); the in-corpus survey found real captures
+# named e.g. "Bell%20Schedule%20pdf.pdf" that a raw match on this pattern silently misses.
+SCHED_URL_RE = re.compile(r"bell[-_ ]?schedule|daily[-_ ]?schedule|school[-_ ]?hours|class[-_ ]?times", re.I)
+
+
+def sched_url_matches(url: str) -> bool:
+    """SCHED_URL_RE over the percent-DECODED url -- see the pattern's own comment for why a
+    raw match on encoded URLs (e.g. bell%20schedule) would silently miss real captures."""
+    try:
+        return bool(SCHED_URL_RE.search(unquote(url or "")))
+    except Exception:
+        return bool(SCHED_URL_RE.search(url or ""))
 USABLE_MIN_CHARS = 120  # reused from reading.py's PDF_MIN_TEXT_CHARS precedent, not a new number
 USABLE_PRINTABLE_RATIO = 0.85
 IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".gif", ".tif", ".tiff")
@@ -398,7 +411,7 @@ def process_record(rec: dict, record_dir: Path) -> dict:
     # suppress the flag -- Stage 5 reads the usable reps). Unusable/errored records are already
     # visible via `usable`.
     if out["usable"] and all(t["n_times"] == 0 for t in texts if t["usable"]) \
-            and (SCHED_URL_RE.search(rec["url"]) or SCHED_URL_RE.search(rec.get("final_url") or "")):
+            and (sched_url_matches(rec["url"]) or sched_url_matches(rec.get("final_url"))):
         out["fidelity"] = ["time_blind"]
     return out
 

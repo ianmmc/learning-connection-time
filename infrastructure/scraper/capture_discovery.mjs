@@ -226,11 +226,8 @@ export async function domFingerprint(page) {
       try { const hn = new URL(raw, location.href).hostname.toLowerCase(); if (hn) iframeHosts[hn] = 1; } catch { /* skip */ }
     }
     return { meta_generator: gen ? (gen.getAttribute('content') || null) : null,
-             resource_hosts: Object.keys(hosts), iframe_hosts: Object.keys(iframeHosts),
-             // #518: raw signal for the login_wall fidelity flag -- stored on the fingerprint so
-             // recompute-fidelity can re-derive the flag without a re-capture.
-             has_password: !!document.querySelector('input[type="password"]') };
-  }).catch(() => ({ meta_generator: null, resource_hosts: [], iframe_hosts: [], has_password: false }));
+             resource_hosts: Object.keys(hosts), iframe_hosts: Object.keys(iframeHosts) };
+  }).catch(() => ({ meta_generator: null, resource_hosts: [], iframe_hosts: [] }));
 }
 
 // Pure, unit-testable: categorize an embed/iframe host into the class Stage 5 routes on (REQ-115).
@@ -310,7 +307,7 @@ function writeSegments(recDir, seg) {
   }
 }
 
-export function buildHtmlFingerprint({ finalHost, headers, dom, jsDependent }) {
+export function buildHtmlFingerprint({ finalHost, headers, dom, jsDependent, hasPassword }) {
   // Off-domain resource hosts are the signal; drop the page's own host, cap to keep the
   // record small even on asset-heavy pages.
   const resourceHosts = (dom.resource_hosts || []).filter((hn) => hn && hn !== finalHost).slice(0, 20);
@@ -327,7 +324,8 @@ export function buildHtmlFingerprint({ finalHost, headers, dom, jsDependent }) {
     iframe_hosts: (dom.iframe_hosts || []).slice(0, 20),
     embed_hosts: embedCategories(dom.iframe_hosts),
     embed_present: (dom.iframe_hosts || []).length > 0,
-    has_password: !!dom.has_password,   // #518 raw signal (login_wall input; recomputable)
+    has_password: !!hasPassword,   // #518 raw signal (login_wall input; recomputable); frame-scoped
+                                    // identically to `text` -- see the captureInto call site
   };
 }
 
@@ -541,12 +539,20 @@ async function htmlFingerprintFor(ctx, url) {
     await page.waitForTimeout(2500);
     await dismissModals(page);
     let rendered = '';
+    let hasPassword = false;
     for (const fr of page.frames()) {
-      try { rendered += `\n${(await fr.evaluate(() => (document.body ? document.body.innerText : ''))) || ''}`; } catch { /* cross-origin frame */ }
+      try {
+        const r = await fr.evaluate(() => ({
+          text: document.body ? document.body.innerText : '',
+          hasPassword: !!document.querySelector('input[type="password"]'),
+        }));
+        rendered += `\n${r.text || ''}`;
+        hasPassword = hasPassword || r.hasPassword;
+      } catch { /* cross-origin frame */ }
     }
     const dom = await domFingerprint(page);
     const jsDependent = strippedLen(rawHtml) < 200 && rendered.trim().length >= SUBSTANTIAL_TEXT_CHARS;
-    return buildHtmlFingerprint({ finalHost: hostOf(page.url()), headers: response ? response.headers() : {}, dom, jsDependent });
+    return buildHtmlFingerprint({ finalHost: hostOf(page.url()), headers: response ? response.headers() : {}, dom, jsDependent, hasPassword });
   } finally {
     await page.close();
   }
@@ -681,9 +687,21 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
           rec.modals_dismissed = modalsDismissed;
           if (modalsDismissed) await page.waitForTimeout(500);
 
+          // #518: hasPassword scans the SAME frames as `text` below (page.evaluate alone is
+          // main-frame-only and would miss an iframe-embedded SSO/login widget -- a login wall
+          // whose password field lives in a same-origin iframe, common on portal-gated CMS
+          // homepages, must not be scoped more narrowly than the text fidelityFlags reads it against).
           let text = '';
+          let hasPassword = false;
           for (const fr of page.frames()) {
-            try { text += `\n${(await fr.evaluate(() => (document.body ? document.body.innerText : ''))) || ''}`; } catch { /* cross-origin frame */ }
+            try {
+              const r = await fr.evaluate(() => ({
+                text: document.body ? document.body.innerText : '',
+                hasPassword: !!document.querySelector('input[type="password"]'),
+              }));
+              text += `\n${r.text || ''}`;
+              hasPassword = hasPassword || r.hasPassword;
+            } catch { /* cross-origin frame */ }
           }
           writeFileSync(path.join(recDir, 'page.txt'), text);
           rec.files.txt = 'page.txt'; // only after the write succeeded (a throw lands in processTask's catch)
@@ -716,21 +734,20 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
 
           // Hosting/CMS fingerprint -- gathered from the goto Response (headers we used to
           // discard) + a single DOM evaluate + a JS-dependency proxy (served-HTML text near
-          // empty but rendered text substantial -> content came from JS). #518's has_password
-          // raw signal rides the SAME evaluate -- no second DOM round-trip.
+          // empty but rendered text substantial -> content came from JS).
           const dom = await domFingerprint(page);
           rec.fingerprint = buildHtmlFingerprint({
             finalHost: hostOf(rec.final_url),
             headers: response ? response.headers() : {},
             dom,
             jsDependent: strippedLen(rawHtml) < 200 && text.trim().length >= SUBSTANTIAL_TEXT_CHARS,
+            hasPassword,
           });
           // Capture-fidelity flags (#518): login wall / soft-404 classification over persisted
-          // facts (url/final_url, page text, fingerprint.has_password). Flag, never drop -- the
-          // record still processes; downstream sees "suspect". Re-derivable via recompute-fidelity.
-          const flags = fidelityFlags({
-            url, finalUrl: rec.final_url, text, hasPassword: dom.has_password,
-          });
+          // facts (url/final_url, page text, hasPassword -- all frame-scoped identically to `text`,
+          // gathered together above). Flag, never drop -- the record still processes; downstream
+          // sees "suspect". Re-derivable via recompute-fidelity.
+          const flags = fidelityFlags({ url, finalUrl: rec.final_url, text, hasPassword });
           if (flags.length) rec.fidelity = flags;
           // DOM segmentation (REQ-091): de-chrome the page for Stage 5 signals (additive; page.txt kept).
           try { writeSegments(recDir, await segmentWithTimeout(page)); rec.segmented = true; }
@@ -890,65 +907,66 @@ async function runBackfill(ROOT, CONC) {
   console.log(`BACKFILL DONE — ${done}/${total} records fingerprinted across ${dirs.length} districts`);
 }
 
-// ============================ RECOMPUTE cms_hint ============================
-// Re-derive ONLY cms_hint, in place, from each record's already-stored fingerprint
-// (final_host + resource_hosts) -- a pure recompute over facts already on disk, NO browser,
-// NO network. This is the mechanism for applying a (human-approved) CMS_HOSTS change to
-// already-captured data without re-capturing: the raw signals never changed, only the
-// classification function over them. Writes via versioned-redo only for districts that
-// actually changed.
-function runRecomputeCmsHint(ROOT) {
+// ============================ RECOMPUTE (shared skeleton) ============================
+// Re-derive ONE field, in place, from facts already on disk -- a pure recompute, NO browser,
+// NO network. The mechanism for applying a human-approved classification change (a CMS_HOSTS
+// vocabulary edit, a LOGIN_URL_RE/SOFT404_RE tuning) to already-captured data without
+// re-capturing: the raw signals never changed, only the function over them. Writes via
+// versioned-redo only for districts that actually changed. `eligible(rec)` decides which
+// records carry the inputs the recompute needs; `recompute(rec, did)` returns the new value
+// (or undefined/null to mean "clear"); `changed(next, prev)` decides whether to write it.
+function runRecompute(ROOT, label, { eligible, recompute, changed: hasChanged }) {
   const dirs = readdirSync(ROOT).filter((d) => existsSync(path.join(ROOT, d, 'captures.json')));
-  let changed = 0;
+  let changedCount = 0;
   let scanned = 0;
   for (const did of dirs) {
     const capPath = path.join(ROOT, did, 'captures.json');
     const records = JSON.parse(readFileSync(capPath));
     let dirty = false;
     for (const rec of records) {
-      const fp = rec.fingerprint;
-      if (!fp || fp.error) continue;
+      if (!eligible(rec)) continue;
       scanned += 1;
-      const next = cmsHint([fp.final_host, ...(fp.resource_hosts || [])]);
-      if (next !== (fp.cms_hint ?? null)) { fp.cms_hint = next; dirty = true; changed += 1; }
+      const { prev, next } = recompute(rec, did);
+      if (hasChanged(next, prev)) { changedCount += 1; dirty = true; }
     }
     if (dirty) writeVersioned(capPath, JSON.stringify(records, null, 2));
   }
-  console.log(`RECOMPUTE cms_hint DONE — ${changed} of ${scanned} fingerprinted records updated across ${dirs.length} districts`);
+  console.log(`RECOMPUTE ${label} DONE — ${changedCount} of ${scanned} eligible records updated across ${dirs.length} districts`);
 }
 
-// ============================ RECOMPUTE fidelity (#518) ============================
-// Re-derive ONLY the fidelity flags, in place, from facts already on disk (url/final_url,
-// the head of page.txt, fingerprint.has_password) -- a pure recompute, NO browser, NO network,
-// mirroring recompute-cms-hint: a LOGIN_URL_RE/SOFT404_RE tuning applies to already-captured
-// data without a re-capture. Only ok html records carry the inputs; others are skipped.
+function runRecomputeCmsHint(ROOT) {
+  runRecompute(ROOT, 'cms_hint', {
+    eligible: (rec) => rec.fingerprint && !rec.fingerprint.error,
+    recompute: (rec) => {
+      const fp = rec.fingerprint;
+      const prev = fp.cms_hint ?? null;
+      const next = cmsHint([fp.final_host, ...(fp.resource_hosts || [])]);
+      if (next !== prev) fp.cms_hint = next;
+      return { prev, next };
+    },
+    changed: (next, prev) => next !== prev,
+  });
+}
+
 function runRecomputeFidelity(ROOT) {
-  const dirs = readdirSync(ROOT).filter((d) => existsSync(path.join(ROOT, d, 'captures.json')));
-  let changed = 0;
-  let scanned = 0;
-  for (const did of dirs) {
-    const capPath = path.join(ROOT, did, 'captures.json');
-    const records = JSON.parse(readFileSync(capPath));
-    let dirty = false;
-    for (const rec of records) {
-      if (!rec.ok || rec.kind !== 'html' || !rec.hash) continue;
-      scanned += 1;
+  runRecompute(ROOT, 'fidelity', {
+    eligible: (rec) => rec.ok && rec.kind === 'html' && !!rec.hash,
+    recompute: (rec, did) => {
       const txtPath = path.join(ROOT, did, 'captures', rec.hash, rec.files?.txt || 'page.txt');
       let text = '';
       try { text = readFileSync(txtPath, 'utf8').slice(0, 3000); } catch { /* no page.txt -> URL/password signals only */ }
+      const prev = rec.fidelity || [];
       const next = fidelityFlags({
         url: rec.url, finalUrl: rec.final_url, text,
         hasPassword: !!(rec.fingerprint && rec.fingerprint.has_password),
       });
-      const prev = rec.fidelity || [];
       if (JSON.stringify(next) !== JSON.stringify(prev)) {
         if (next.length) rec.fidelity = next; else delete rec.fidelity;
-        dirty = true; changed += 1;
       }
-    }
-    if (dirty) writeVersioned(capPath, JSON.stringify(records, null, 2));
-  }
-  console.log(`RECOMPUTE fidelity DONE — ${changed} of ${scanned} ok html records updated across ${dirs.length} districts`);
+      return { prev, next };
+    },
+    changed: (next, prev) => JSON.stringify(next) !== JSON.stringify(prev),
+  });
 }
 
 // ============================ SEGMENT BACKFILL (de-chrome, REQ-091) ============================

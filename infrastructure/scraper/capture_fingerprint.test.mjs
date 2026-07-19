@@ -120,6 +120,21 @@ test('buildHtmlFingerprint assembles fields, drops own host, caps resource hosts
   assert.equal(fp.cms_hint, 'finalsite.net'); // from the resource host
 });
 
+test('buildHtmlFingerprint carries hasPassword as has_password (#518 review-round-2)', () => {
+  // hasPassword is now an explicit param (frame-scoped identically to `text` at the call site,
+  // not gathered inside domFingerprint's main-frame-only evaluate) -- pin the plumbing.
+  const withPw = buildHtmlFingerprint({
+    finalHost: 'x.org', headers: {}, dom: {}, jsDependent: false, hasPassword: true,
+  });
+  assert.equal(withPw.has_password, true);
+  const withoutPw = buildHtmlFingerprint({
+    finalHost: 'x.org', headers: {}, dom: {}, jsDependent: false, hasPassword: false,
+  });
+  assert.equal(withoutPw.has_password, false);
+  const omitted = buildHtmlFingerprint({ finalHost: 'x.org', headers: {}, dom: {}, jsDependent: false });
+  assert.equal(omitted.has_password, false);
+});
+
 test('buildFetchFingerprint gives a reduced (no-DOM) fingerprint from a fetch Response', () => {
   const fakeResponse = {
     url: 'https://files-backend.assets.thrillshare.com/documents/x/Bell_Schedule.pdf',
