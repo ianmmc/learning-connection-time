@@ -36,6 +36,12 @@ def create_batch(sess, batch_doc: dict, *, batch_type: str = "first-run", actor:
         existing.created_at = batch_doc.get("created") or utcnow()
         existing.created_by = actor
         existing.meta_json = {k: batch_doc[k] for k in _META_KEYS if k in batch_doc}
+    elif existing is not None:
+        # #264: a non-reserving batch already owns this id (e.g. a CLI-supplied number that
+        # collides with a draft) -- refuse cleanly instead of dying on the PK IntegrityError
+        # at flush. The console path never hits this (reserve_next_batch is race-safe).
+        raise BatchLocked(f"{bid} already exists ({existing.status}); pick another id or "
+                          f"reopen/abandon the existing batch")
     else:
         sess.add(Batch(
             batch_id=bid, batch_type=batch_type, status="draft",
@@ -170,21 +176,33 @@ def to_view(sess, batch_id: str) -> dict:
 
 
 def _batch_progress(sess) -> dict:
-    """Per-batch district-progress counts for the stage-contextual left-pane fraction. Derived purely
-    from `current_state` (the always-populated state-event projection), NOT the regenerable cache, so it
-    can't be skewed by an un-ingested cache: `discovered/captured/processed` = districts whose
-    furthest_stage reached 2/3/4; `flagged` = districts whose latest stage outcome is `manual_flag_all`
-    (no links — terminal at Stage 2, never captured). Best-effort → {} if the view isn't present yet."""
+    """Per-batch district-progress counts for the stage-contextual left-pane fraction. Derived from
+    the state-event log SCOPED TO THE BATCH (#339) — `current_state` is one global row per district,
+    so joining it attributed a district's first-run progress to every later batch containing it (a
+    freshly-created follow-up batch showed discovered/captured/processed = total before its own
+    discovery ran). `discovered/captured/processed` = districts whose max stage reached 2/3/4 *within
+    this batch's events*; `flagged` = districts whose latest stage event in this batch is
+    `manual_flag_all` (no links — terminal at Stage 2, never captured). Events predating the
+    batch_id column show as no-progress in old batches — honest, and those batches are long done.
+    Best-effort → {} if the table isn't present yet."""
     try:
         rows = sess.execute(text("""
             SELECT bd.batch_id,
                    COUNT(*) AS total,
-                   COUNT(*) FILTER (WHERE cs.furthest_stage >= 2) AS discovered,
-                   COUNT(*) FILTER (WHERE cs.furthest_stage >= 3) AS captured,
-                   COUNT(*) FILTER (WHERE cs.furthest_stage >= 4) AS processed,
-                   COUNT(*) FILTER (WHERE cs.outcome = 'manual_flag_all') AS flagged
+                   COUNT(*) FILTER (WHERE bp.max_stage >= 2) AS discovered,
+                   COUNT(*) FILTER (WHERE bp.max_stage >= 3) AS captured,
+                   COUNT(*) FILTER (WHERE bp.max_stage >= 4) AS processed,
+                   COUNT(*) FILTER (WHERE bp.last_outcome = 'manual_flag_all') AS flagged
             FROM batch_district bd
-            LEFT JOIN current_state cs ON cs.district_id = bd.district_id
+            LEFT JOIN (
+                SELECT DISTINCT ON (batch_id, district_id)
+                       batch_id, district_id,
+                       MAX(stage) OVER (PARTITION BY batch_id, district_id) AS max_stage,
+                       outcome AS last_outcome
+                FROM state_event
+                WHERE batch_id IS NOT NULL AND stage IS NOT NULL
+                ORDER BY batch_id, district_id, event_id DESC
+            ) bp ON bp.batch_id = bd.batch_id AND bp.district_id = bd.district_id
             WHERE bd.included IS TRUE
             GROUP BY bd.batch_id""")).mappings()
         return {r["batch_id"]: {"total": r["total"], "discovered": r["discovered"],
@@ -199,10 +217,14 @@ def list_batches(sess) -> list:
     carries per-stage PROGRESS counts (`progress`) so each stage view's left pane can show a
     stage-contextual fraction (e.g. captured+flagged / total) instead of the stale gate@1 status."""
     progress = _batch_progress(sess)
+    # #338: one grouped count for every batch, not a COUNT query per batch (N+1). Independent of
+    # the best-effort progress dict, which can legitimately come back {}.
+    counts = {r["batch_id"]: r["n"] for r in sess.execute(text(
+        "SELECT batch_id, COUNT(*) AS n FROM batch_district "
+        "WHERE included IS TRUE GROUP BY batch_id")).mappings()}
     out = []
     for b in sess.scalars(select(Batch).order_by(Batch.batch_id)):
-        n = len(list(sess.scalars(select(BatchDistrict.district_id).where(
-            BatchDistrict.batch_id == b.batch_id, BatchDistrict.included.is_(True)))))
+        n = counts.get(b.batch_id, 0)
         out.append({"batch_id": b.batch_id, "batch_type": b.batch_type, "status": b.status,
                     "nces_year": b.nces_year, "n_districts": n, "created_at": b.created_at,
                     "created_by": b.created_by, "approved_at": b.approved_at, "approved_by": b.approved_by,
