@@ -240,29 +240,63 @@ def _record_from_folder(folder: Path, url: str, *, tools, source, found_on) -> d
     return rec
 
 
+def _journal_records(ddir: Path) -> dict:
+    """hash -> record from the #117 per-task journal(s): the live `captures.journal.jsonl` plus any
+    timestamp-suffixed crash leftovers a later run renamed aside, oldest first, so the LATEST line
+    for a hash wins (a retried record supersedes its earlier attempt). Tolerates a torn final line
+    (the SIGKILL landed mid-append) and non-dict lines. {} when no journal exists — reconstruction
+    then degrades to the folder-scan path exactly as before #117."""
+    out: dict = {}
+    live = ddir / "captures.journal.jsonl"
+    paths_ = sorted(ddir.glob("captures.journal.*.jsonl")) + ([live] if live.exists() else [])
+    for jp in paths_:
+        try:
+            lines = jp.read_text().splitlines()
+        except OSError:
+            continue
+        for line in lines:
+            try:
+                rec = json.loads(line)
+            except json.JSONDecodeError:
+                continue   # torn final line at the kill point, or stray garbage — skip
+            if isinstance(rec, dict) and isinstance(rec.get("hash"), str):
+                out[rec["hash"]] = rec
+    return out
+
+
 def reconstruct_captures(district: dict) -> list:
-    """RECOVERY ONLY: rebuild the captures.json record list from the on-disk per-URL folders. EVERY
-    candidate appears (completeness is the audit bar): a recovered candidate is ok=True with its files;
-    a candidate whose folder is empty/absent (capture interrupted before it finished) is ok=False with a
-    `not_recovered` err -> the district honestly resolves `captured_partial`. Refuses if captures.json
-    already exists. Emergent folders (a captured URL not in candidates.json) can't be reconstructed —
-    md5 is one-way, so their URL is unrecoverable — and are left on disk, out of the manifest."""
+    """RECOVERY ONLY: rebuild the captures.json record list after a hard kill. EVERY candidate appears
+    (completeness is the audit bar). Two evidence tiers, best first:
+      1. the #117 per-task journal (captures.journal.jsonl + renamed-aside leftovers) — FULL-fidelity
+         records exactly as the live run built them, including EMERGENT captures whose URL is
+         otherwise unrecoverable (md5 is one-way);
+      2. the on-disk per-URL folder scan — DEGRADED records (no fingerprint/final_url/text_times),
+         for work journaled runs predate or whose journal line was lost.
+    A candidate covered by neither is ok=False `not_recovered` -> the district honestly resolves
+    `captured_partial`. Refuses if captures.json already exists. Pre-#117 limitation (emergent
+    folders left out of the manifest) now applies only when no journal exists."""
     ddir = district["dir"]
     if (ddir / "captures.json").exists():
         raise SystemExit(f"{ddir / 'captures.json'} exists — refusing to overwrite "
                          f"(reconstruction is recovery-only)")
     cand = json.loads((ddir / "candidates.json").read_text()).get("candidates", [])
     capdir = ddir / "captures"
+    journal = _journal_records(ddir)
     records = []
+    covered = set()
     for c in cand:
         h = _url_hash(c["url"])
-        rec = _record_from_folder(capdir / h, c["url"], tools=c.get("tools", []),
-                                  source="discovered", found_on=None)
+        covered.add(h)
+        rec = journal.get(h) or _record_from_folder(capdir / h, c["url"], tools=c.get("tools", []),
+                                                    source="discovered", found_on=None)
         if rec is None:
             rec = {"url": c["url"], "tools": list(c.get("tools", [])), "source": "discovered",
                    "found_on": None, "hash": h, "ok": False, "files": {},
                    "err": "not_recovered (capture interrupted before completion)"}
         records.append(rec)
+    # Journal records beyond the capture plan — emergent (and manual) captures the pre-#117
+    # reconstruction had to abandon. Full-fidelity, carried verbatim.
+    records.extend(rec for h, rec in journal.items() if h not in covered)
     return records
 
 
