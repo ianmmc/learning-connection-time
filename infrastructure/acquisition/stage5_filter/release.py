@@ -75,7 +75,11 @@ def best_send(reps: list, signals: dict, facets: dict) -> list:
                    and r.get("source") != "harvest_slice"]
     images = [r for r in reps if r.get("file_kind") == "image" and r.get("filename")]
     pdfs = [r for r in reps if r.get("file_kind") == "pdf" and r.get("filename")]
-    harvest = signals.get("harvest_pages") or []
+    # #109: the human-labeled page range (Axis-3 _pages_list) outranks the auto harvest_pages — and a
+    # human range also qualifies a doc the auto is_handbook classifier missed (buried_handbook).
+    human_pages = BS.labeled_pages_of(facets)
+    harvest = human_pages or signals.get("harvest_pages") or []
+    handbookish = bool(signals.get("is_handbook") or (human_pages and facets.get("buried_handbook") == "yes"))
     slice_rep = next((r for r in reps if r.get("source") == "harvest_slice" and r.get("filename")), None)
 
     # ONE densest-text computation (n_times, then n_chars) — shared by the handbook yield-compare
@@ -90,7 +94,7 @@ def best_send(reps: list, signals: dict, facets: dict) -> list:
     # n_times=26 sent, pdftotext n_times=90 waiting), wasting a paid round before the 7->6 retry
     # self-corrected. Same ordering rule as the retry loop's rank_alternates: yield-bearing text by
     # n_times, ties to the slice (it's the purpose-built handbook rep).
-    if signals.get("is_handbook") and slice_rep:
+    if handbookish and slice_rep:
         best_text_times = (best_text.get("n_times") or 0) if best_text else 0
         if (slice_rep.get("n_times") or 0) >= best_text_times:
             return [{"file": slice_rep["filename"], "kind": "text", "pages": harvest}]
@@ -98,7 +102,7 @@ def best_send(reps: list, signals: dict, facets: dict) -> list:
     # the PDF+pages fallback is ONLY for a handbook whose slice wasn't materialized (older ingests) —
     # gated on `not slice_rep`, or it would intercept the yield fall-through above and re-waste the
     # round on the whole PDF (adversarial review of the #230 fix caught exactly that).
-    if signals.get("is_handbook") and not slice_rep and harvest and pdfs:
+    if handbookish and not slice_rep and harvest and pdfs:
         return [{"file": pdfs[0]["filename"], "kind": "pdf", "pages": harvest}]
     if (facets.get("needs_vision") == "yes" or signals.get("visual_text_gap")) and images:
         return [{"file": _best_image(images)["filename"], "kind": "image"}]

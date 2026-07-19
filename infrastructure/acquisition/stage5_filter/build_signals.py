@@ -995,6 +995,21 @@ def resolve_harvest_slice(district_id: str, district_dir: str, rec_key: str) -> 
     return legacy if legacy.exists() else None
 
 
+def labeled_pages_of(facets_json_str) -> list:
+    """#109: the HUMAN-labeled page range for a long doc — v2.1 Axis-3's `_pages_list`, the parsed
+    print-dialog-style range the console writes into label.facets_json alongside `buried_handbook`.
+    Ground truth for WHERE the schedule lives, so it outranks the AUTO harvest_pages wherever both
+    exist (the auto detector guesses from keyword/time density; the human looked). Empty/absent/
+    malformed ⇒ [] — the auto path wins, never an error."""
+    try:
+        facets = (json.loads(facets_json_str) if isinstance(facets_json_str, str) else facets_json_str) \
+            if facets_json_str else {}
+        pages = (facets or {}).get("_pages_list") or []
+        return [int(p) for p in pages if int(p) > 0]
+    except (ValueError, TypeError, json.JSONDecodeError):
+        return []
+
+
 def build_harvest_slice(harvest_pages: list, page_text_fn):
     """Q2.1 (Ian 2026-06-30): materialize the high-signal HARVEST PAGES of a long doc (a handbook, or a
     big district-hub listing) as a small standalone text slice, so Stage 6 dispatches just those ~1-4
@@ -1120,8 +1135,14 @@ def ingest_district(sess, ddir: Path, *, splits: set, batches: dict, nces: dict)
                                           int(bool(t.get("usable")))))
         # Q2.1: for a handbook (or any record carrying harvest_pages), materialize just those high-signal
         # pages as a small `harvest_slice.txt` text rep — so Stage 6 dispatches the slice, not the whole PDF.
-        hp = sig.get("harvest_pages") or []
-        if sig.get("is_handbook") and hp:
+        # #109: the HUMAN-labeled page range (facets_json._pages_list — the label rows are precious and
+        # survive re-ingest, so they're queryable right here) outranks the AUTO harvest_pages, and its
+        # presence alone qualifies the record for a slice even when the auto is_handbook classifier
+        # missed it (the buried_handbook case is exactly a doc the auto path misread).
+        human_hp = labeled_pages_of(sess.execute(
+            text("SELECT facets_json FROM label WHERE rec_key=:rk"), {"rk": rec_key}).scalar())
+        hp = human_hp or sig.get("harvest_pages") or []
+        if hp and (human_hp or sig.get("is_handbook")):
             pdf_name = files.get("pdf") or (files.get("bin")
                        if str(files.get("bin", "")).lower().endswith(".pdf") else None)
             pdf = rdir / pdf_name if pdf_name else None
