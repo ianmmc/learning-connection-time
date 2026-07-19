@@ -35,8 +35,13 @@ the acquisition→LCT layering boundary, alongside Stage 9's write).
 never re-derives band membership from NCES CSVs — that would discard every gate@1 edit. A batch stays in
 `draft` until approved; Stage 2 has nothing to consume until then. **Mechanism (#526, closed
 2026-07-18):** the console/autoflow resolves the batch **from the DB** via `server._batch_from_db` →
-`to_receipt_doc` (the canonical included-only batch_doc + `batch_status`) for Stages 2, 3 AND 4 alike —
-the "JSON is never the transport between stages" invariant now holds everywhere. The on-disk receipt
+`batch_store.to_working_doc` (the canonical included-only batch_doc + live `batch_status`, off one
+`Batch` row fetch) for Stages 2, 3 AND 4 alike — the "JSON is never the transport between stages"
+invariant now holds everywhere. `to_working_doc` is deliberately distinct from `to_receipt_doc` (which
+feeds only the on-disk receipt file, via `write_receipt`, and stays status-free — see §6b): a review
+round on PR #555 (#526's own PR) caught that folding status into `to_receipt_doc` would leak it into
+the receipt, contradicting `batch_guard.py`'s documented invariant that a CLI loader must re-check
+status against the DB, never trust the file. The on-disk receipt
 (`load_batch_any` → `QUEUE_DIR/<batch_id>.json`, still regenerated on every gate@1 edit via
 `write_receipt`) serves the CLI/offline path and audit only; the `cli_only_loaders` fitness function in
 `arch-manifest.json` fails the suite on any `load_batch_any` reference inside `process_governance/`.
@@ -270,22 +275,37 @@ the cross-batch queries the user stories need (a district in multiple batches; p
   concurrent creates could compute the *same* number and collide 20s later. A concurrent `reserve` of the
   same number fails fast on the PK instead. **`release_reservation(sess, id)`** deletes the placeholder if
   the build then fails (never burns the number on a dead reservation).
-- **`create_batch(sess, batch_doc, …)`** — write a freshly-built batch_doc into rows; if a `reserving`
-  placeholder exists for the id, upgrades it in place rather than inserting a duplicate.
-- **`to_receipt_doc(sess, id)`** — the canonical batch_doc (INCLUDED rows only, original shape) for the
-  receipt file + `server._batch_from_db` (the console's batch resolve for Stages 2/3/4, #526);
-  `n_selected` is **recomputed live** from included rows (counts stay honest after edits).
+- **`create_batch(sess, batch_doc, …)`** — three branches (#264): if a `reserving` placeholder exists for
+  the id, upgrades it in place; if a **non-reserving** batch already owns the id, raises `BatchLocked`
+  (`"... already exists (status); pick another id or reopen/abandon the existing batch"`) instead of a
+  bare PK `IntegrityError` traceback (a CLI-path scenario — the console always reserves first); otherwise
+  a fresh insert.
+- **`to_receipt_doc(sess, id)`** — the canonical batch_doc (INCLUDED rows only, original shape) —
+  **deliberately status-free**, feeding only the receipt file (`write_receipt`) and `common.batch_guard`'s
+  invariant that a CLI loader must re-check status against the DB, never trust the file; `n_selected` is
+  **recomputed live** from included rows (counts stay honest after edits).
+- **`to_working_doc(sess, id)`** — `to_receipt_doc`'s shape **plus** live `batch_status`, off one `Batch`
+  row fetch — the console's batch resolve for Stages 2/3/4 (`server._batch_from_db`, #526). Split from
+  `to_receipt_doc` on purpose (a #555 review-round catch): folding status into the receipt-doc function
+  would leak it into the on-disk file, contradicting the status-free invariant above.
 - **`to_view(sess, id)`** — the gate@1 review payload: lifecycle fields + ALL rows (included *and*
   soft-rejected) with their flags, so the human sees what was proposed and what they dropped.
 - **`write_receipt(sess, id)`** — regenerate `batch_NNNNN.json` from the rows (the receipt always mirrors
   the working store); writes via tmp-file + `os.replace` so a crash mid-write can never leave a truncated
   receipt. Every function takes a Session and does **not** commit — the caller owns the txn.
 - **`list_batches(sess)`** — the queue-list rows. Each carries a **`progress`** block (REQ-110): per-batch
-  district counts `{total, discovered, captured, processed, flagged}` from a cheap `current_state`
-  aggregate (`furthest_stage` ≥ 2/3/4; `flagged` = latest stage outcome `manual_flag_all`), so every stage
-  view's left pane can render a stage-contextual fraction (Stage 2/3/4) instead of the stale gate@1 status.
-  Best-effort (degrades to `null` if `current_state` isn't present). The shared frontend `progressBadge`
-  (`static/outcomes.js`) consumes it.
+  district counts `{total, discovered, captured, processed, flagged}`, so every stage view's left pane can
+  render a stage-contextual fraction (Stage 2/3/4) instead of the stale gate@1 status. **Batch-scoped, not
+  `current_state`-derived (#339, fixing the mechanism this doc previously described):** `_batch_progress`
+  aggregates directly from the `state_event` log via a `DISTINCT ON (batch_id, district_id)` subquery
+  (`max_stage`/`last_outcome` per batch) — the global one-row-per-district `current_state` view was
+  attributing a district's first-run progress to every later batch containing it (a freshly-created
+  follow-up batch showed `discovered/captured/processed = total` before its own discovery ever ran).
+  Best-effort (degrades to `null` if the query fails). `n_districts` (the included-district count) is a
+  **separate, deliberately redundant** grouped query (#338: one query for every batch, not a COUNT
+  per-batch — a real console-latency problem at ~1000+ batches) so it survives `_batch_progress`
+  degrading to `{}`. The shared frontend `progressBadge` (`static/outcomes.js`) consumes the `progress`
+  block.
 
 ### 6c. gate@1 edit operations (soft, audited, REVERSIBLE — APGA stories 29–31)
 - **`reject_district`** / **`reject_school`** → flip `included = False` (never a delete — the full
@@ -483,3 +503,15 @@ the guard is live at `queue_batch.py`, as §2h now describes. #222 still open.)
   empty `website` produces `domain=''`, which flips discovery to its unscoped branch and lets common
   school names collide nationwide. A Stage-1 pre-flight guard closes this at the source; `batch_00000`
   (benchmark) is exempt since its curated GT files bypass discovery entirely.
+
+**2026-07-18/19 — epic #111 Phase 1 correctness sweep (PR #550, #264/#338/#339): batch-scoped progress,
+a collision message, and an N+1 fix.** #339 was the load-bearing one: `_batch_progress` (backing the
+`list_batches` left-pane fraction) had been LEFT JOINing the global one-row-per-district `current_state`
+view, so a freshly-created follow-up batch containing an already-processed district showed
+`discovered/captured/processed = total` before its own discovery ever ran — wrong exactly where an
+operator relies on it. Fixed by aggregating from the `state_event` log scoped to `(batch_id,
+district_id)` instead (§6b). #264: `create_batch` on an existing non-`reserving` id now raises
+`BatchLocked` with a clear message instead of a bare PK `IntegrityError` traceback. #338: `list_batches`'
+included-district counts moved from one `COUNT` query per batch to one grouped query — a real
+console-latency problem at ~1000+ batches, kept deliberately independent of `_batch_progress` so it
+survives that aggregate's best-effort degrade. See §6b for the present-state description.

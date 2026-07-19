@@ -14,15 +14,6 @@
 district, `data/raw/lea-website-captures/<id>_<slug>/discovery.json` (audit trail) + `candidates.json`
 (capture-ready URL list). The `stage2-discover` skill (the retired agent-wave orchestrator) is **obsolete**.
 
-**Known code-level inconsistency (not fixed here, worth knowing):** `discover_stage2.py`'s own module
-docstring (its top-of-file comment) still describes the retired agent-in-the-loop framing as current —
-"Orchestration is agent-in-the-loop: Wave 1 needs a Haiku WebSearch subagent, which this script cannot
-spawn... See `.claude/skills/stage2-discover/SKILL.md`" — even though the module is invoked today via
-`headless.py`'s deterministic SERP path (`discover_stage2.py` retains a legacy `reconcile`/`roster`/
-`finish` CLI that still exercises the original agent-handoff contract, §2's "legacy CLI" note below, but
-that is no longer the primary path). A reader of the raw source risks being misled by the docstring
-itself, independent of this design doc.
-
 **Code:** `common/discover.py` (`brightdata_search`, `serper_search`, `domain_of`, `is_scoping_domain`,
 the gate — the retired `openrouter_search`/`perplexity_search` were deleted 2026-07-06, #87);
 `stage2_discover/discover_stage2.py` (`build_roster`, `run_wave1(search_fn)`, `run_wave2(search_fn)`,
@@ -131,14 +122,23 @@ in §5's 2026-06-23 entries). They're superseded for routine use by `headless.py
 - **`flatten()`** dedups all kept URLs across schools by normalized URL, collapsing a shared hub page into
   one capture target listing all its schools. Each candidate's `tools[]` records the **true serving
   provider** per URL — `"brightdata"` / `"serper"` (whichever the Wave-1 cascade actually used) or
-  `"claude_websearch"` (Wave 2) — read from the per-school `wave1_provider`/`wave2_provider` fields the
-  cascade sets. *(Backfill note: batches discovered before this fix (≤ batch_00007) carry the retired
-  labels `"claude"` (really Bright Data/Serper) and `"openrouter"` (really Claude WebSearch) — not
-  backfilled by script; pre-fix vintage rows are simply mislabeled.)*
+  `"claude_websearch"` (Wave 2). Preferred source is the **per-URL** `provider` key `run_wave1` stamps
+  onto each gated entry (`provider_by_url`, #341) — so a widen-strategy school whose queries failed over
+  mid-set still attributes each URL to whichever provider actually served *it*; the per-school scalar
+  `wave1_provider`/`wave2_provider` is only a fallback for rows lacking that key (pre-#341 batches, the
+  legacy agent-handoff `merge_wave1` path). *(Backfill note: batches discovered before this fix (≤
+  batch_00007) carry the retired labels `"claude"` (really Bright Data/Serper) and `"openrouter"`
+  (really Claude WebSearch) — not backfilled by script; pre-fix vintage rows are simply mislabeled.)*
 - **Outcomes:** per-school `found` (any kept URL) else `manual_flag`; per-district `found_all` /
   `manual_flag_all` / `found_partial`.
-- **`write_discovery()`** — single atomic write of both files; an existing `discovery.json` is renamed
-  aside with a UTC timestamp before a redo (never overwritten — `data/raw/` is write-once in spirit).
+- **`write_discovery()`** — **two separate atomic writes, deliberately ordered**: `candidates.json` first,
+  `discovery.json` last (#265) — `discovery.json`'s existence is the "done" marker, so a crash between the
+  two writes leaves the district looking *not done* (re-runnable) rather than done-with-no-capture-plan.
+  Each existing file is independently renamed aside with a UTC timestamp before a redo (`if
+  disc_path.exists() or cand_path.exists()`, each gated on its own presence, not a single check covering
+  both — never overwritten, `data/raw/` is write-once in spirit). Both writes go through the shared
+  `paths.atomic_write_json` helper (the tmp-file+`os.replace` pattern also used by `district_status.py` and
+  `batch_store.write_receipt`).
 - **`finish_district()`** — one registry write per district, at completion only.
 
 ### 2c-bis. Widened queries for follow-up rediscovery (foundation, #160/epic #163)
@@ -156,10 +156,18 @@ same Google index (unlike Wave 2's Claude WebSearch, which earns its keep from a
 
 `run_wave1()` runs **every** query in a school's `queries` list (not just the default) and unions the
 returned URLs with order-preserving dedup — a widen-strategy school can accumulate hits across several
-differently-phrased searches into one candidate set. This is **lossy on provenance**: with multiple
-queries, `wave1_provider` records only the **last** query's serving provider, per-school, not a
-per-query breakdown — acceptable because `tools[]` in `flatten()`'s output only needs to distinguish
-Wave-1-vs-Wave-2 broadly, not which of several Wave-1 queries won.
+differently-phrased searches into one candidate set. The per-school scalar `wave1_provider` is still
+**last-query-wins** (not a per-query breakdown), but this is no longer lossy where it matters: `tools[]`
+in `flatten()`'s output prefers each URL's own `provider` key (`provider_by_url`, #341 — see §2c), so a
+widen-strategy school's mid-set failover doesn't lose per-URL attribution even though the scalar field
+does.
+
+**Failed-vs-empty query accounting (#523/#524):** `run_wave1`'s per-query exception handler sets
+`qurls = None` (not `[]`) so a **failed** query is distinguishable from one that **ran and found
+nothing**. The provider-append condition (`if qurls is not None and provider not in providers`) means a
+failed query can never appear in `wave1_providers` or overwrite the scalar `provider`, while a
+legitimate empty-but-successful answer still counts as that provider having served the school — "found
+nothing" is service, not failure.
 
 This machinery is **foundation only** (epic #163's own framing): first-run and plain `new_schools`
 follow-up bands still get the single default query; nothing yet sets `query_strategy=="widen_queries"`
@@ -198,6 +206,14 @@ finished:
   follow-up exists precisely to redo discovery for districts already discovered. The
   registry-ahead-of-disk control-failure check still applies unchanged (a follow-up district silently
   missing its prior `discovery.json` is exactly as alarming as in a first run).
+- **Crash-tolerant prior-state recovery (#265, review-deepened):** merging needs the prior round's
+  manifests, but a crashed merge=True retry can leave the two files in an inconsistent state — e.g. an
+  orphaned `candidates.json` with no `discovery.json` from a partial write. `_prior_doc(d, live, stem)`
+  reads each prior manifest **independently**: the live file if present, else the newest timestamped
+  aside (`<stem>.<ts>.json`, sorted lexicographically since `fs_stamp()` is sortable), else `{}`. The
+  old code gated reading *both* manifests on a single `disc_path.exists()` check, so this exact
+  orphaned-candidates state silently dropped the prior round's candidates on retry; recovering each
+  manifest on its own presence check fixes that.
 - **`write_discovery(..., merge=True)`'s union semantics:** the redo does not replace the prior round's
   manifests — it merges with them, because Stage 5's ingest reads only the current on-disk manifests
   (per-district delete + rebuild), so a slice-only manifest would erase the district's existing records
@@ -241,11 +257,13 @@ school count).
 **Live progress via a job-feed event stream:** `run_batch()` takes an `on_event(kind, payload)` callback
 and emits `reconciled` (todo/skipped district lists), `dispatched` (per district, before it runs),
 `completed` (per district, with outcome), and `failed` (per district, with error) — the mechanism the
-console's job feed consumes to show a run in flight rather than only a post-hoc status page. Per-district
-registry writes during a run use `DS.save(registry, export=False)`, deferring the full
-`district_status.json` regeneration (an O(N²) cost over a run, #49) to exactly one `DS.export()` call at
-the very end, in a `finally` — so a crash mid-run still leaves the backup file current with whatever
-events actually committed.
+console's job feed consumes to show a run in flight rather than only a post-hoc status page. A failed
+district's exception prints its full traceback to job stdout (#452) before the bounded 200-char note is
+persisted to the registry — the persisted note stays short, but a deep failure's location is still
+findable. Per-district registry writes during a run use `DS.save(registry, export=False)`, deferring the
+full `district_status.json` regeneration (an O(N²) cost over a run, #49) to exactly one `DS.export()`
+call at the very end, in a `finally` — so a crash mid-run still leaves the backup file current with
+whatever events actually committed.
 
 **Shared UI labels + left-pane progress:** `static/outcomes.js` (`outcomeBadge`, `progressBadge`) — the
 same elements Stage 3/4 use, so a label rename is one edit. The active batch's chip live-syncs to the
@@ -378,6 +396,20 @@ Stage 2's own chokepoint means a blank/junk domain arriving by any *other* path 
 future batch builder, a remediation script) still can't silently reopen the same nationwide-collision
 failure mode — the run visibly yields nothing for that district instead. Shipped alongside #228
 (a console reset-labels button) and the Millard remediation itself, all in commit 7655277/PR #242.
+
+**2026-07-18/19 — epic #111 Phase 1 correctness sweep (PR #549, #265/#341/#452/#523/#524): crash-tolerant
+merge, true per-URL provenance, and a stale docstring corrected.** The merge-retry crash gap (#265): a
+crashed `merge=True` redo could leave an orphaned `candidates.json` with no `discovery.json`, and the old
+single `disc_path.exists()` gate covering both manifests silently dropped the prior round's candidates on
+retry — fixed by `_prior_doc` reading each manifest independently, live-or-newest-aside-or-empty (§2e).
+Wave-1 provenance (#341): `flatten()` now prefers each URL's own `provider` key over the per-school
+scalar, so a widen-strategy school's mid-set failover keeps per-URL attribution (§2c); paired with #523's
+`None`-vs-`[]` fix distinguishing a failed query from one that ran and found nothing (§2c-bis). #452:
+a failed district's full traceback now prints to job stdout before the bounded persisted note, so a deep
+failure's location stays findable (§3). #524 corrected `discover_stage2.py`'s own module docstring, which
+had kept describing the retired agent-in-the-loop framing as current years after the deterministic SERP
+cascade replaced it — this doc's own "known code-level inconsistency" callout about that docstring is now
+resolved and removed. See §2c/§2c-bis/§2e/§3 for the present-state description.
 
 **2026-07-18 — #526: the console/autoflow batch read moved off the on-disk receipt onto the governance
 DB — the "JSON is never the transport between stages" invariant now holds for every stage.**

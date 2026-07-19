@@ -586,6 +586,88 @@ Authority: `STAGE5_FILTER_DESIGN.md` and `STAGE6_DISPATCH_DESIGN.md` change logs
 `docs/REQUIREMENTS.yaml` REQ-097/REQ-116/REQ-153; issues #226/#515/#532/#75/#109/#83/#517/#540/#110/#444;
 PRs #539/#541/#542 (first review round) and #543–#548 (completion sweep + second review round).
 
+### Epic #111 (Stages 1-4 hardening) ships both its planned phases in two days: a five-module correctness sweep, then the DB-batch-read migration it was sequenced ahead of — each with its own adversarial review round finding real bugs the green suites couldn't (2026-07-18/19)
+
+With epic #106 closed, the pre-#106 sequencing plan called for #111 next. It split into two phases,
+worked in the same disciplined shape epic #106 had just validated: ship, review at max effort, fix
+everything the review found, re-report with outcomes.
+
+**Phase 0 (crossfam triage) → Phase 1 (five parallel correctness sweeps).** #111's own issue list was
+mostly untriaged crossfam-review findings across stage1-4 plus a handful of named feature issues;
+triaging it by dependency cluster (the way #106's slate was worked) surfaced five independent module
+sweeps that could ship as five parallel branches rather than one sprawling PR: Stage 2 (#265/#341/#452/
+#523/#524, PR #549), Stage 1 (#264/#338/#339, PR #550), the Node scraper (#375/#416, PR #551), Stage 3/4
+(#267/#347/#348/#351/#454, PR #552), and `common/` (#326/#328/#330, PR #553). The load-bearing fixes: a
+merge-retry crash gap in Stage 2 where a crashed follow-up redo could silently drop the prior round's
+candidates (`_prior_doc` now reads each manifest independently, live-or-newest-aside-or-empty); a
+batch-scoped progress bug in Stage 1 (#339) where a freshly-created follow-up batch showed
+`discovered/captured/processed = total` before its own discovery ever ran, because the progress query
+joined the *global* `current_state` view instead of scoping to `(batch_id, district_id)`; a
+cross-language CMS-host-matching false positive (`myfinalsite.net` matching the vendor `finalsite.net`)
+closed with a shared golden-vector fixture pinning the JS and Python implementations to identical
+behavior, not just a code comment claiming they agree; and malformed-manifest-entry tolerance closed on
+*both* sides of Stage 3/4's read/write boundary, not just the side the original bug report happened to
+hit.
+
+**A same-day max-effort review of all five PRs (10 angles, 15 findings) caught the subtlest bug of the
+batch: two features quietly defeating each other, invisible to five green isolation-level test suites.**
+The review's most consequential catch wasn't in any single PR's diff — it was in how #553's fix to
+`district_status.save()` had been shaped. The original #330 fix conflated two separate things: clearing
+the event buffer at commit time (the real fix, preventing a retried `save()` from double-inserting) and
+swallowing the `export_status()` exception (an unrelated side effect that silently broke
+`server.py`'s `stage5_bookkeeping_failed` discriminator, which depends on that exception propagating).
+The review separated them — keep the buffer-clear, revert the swallow — restoring the safety property
+*and* the failure signal in one move, something neither Stage 4's tests nor `common/`'s own tests could
+have caught in isolation, since the interaction only exists at the seam between them. Thirteen of fifteen
+findings were code-fixed with new tests; one (a deliberately redundant `batch_store` count query) was
+verified as already-correct and only needed a comment explaining why not to "simplify" it away; one
+follow-up (#554, consolidating the remaining hand-rolled atomic-write copies onto the shared
+`paths.atomic_write_json` helper #549 introduced) was filed rather than fixed in-flight, since the two
+remaining copies live in files owned by different PRs in the same batch and consolidating them there
+would have created cross-PR merge conflicts.
+
+**Phase 2 (#526): Stage 2's batch read moves onto the governance DB, closing the last exception to "the
+DB is the working store."** This had been a known, tracked architectural inconsistency since the
+2026-07-16 doc-tower audit: every other stage's console/autoflow resolved its batch from the DB working
+store, but Stage 2 alone still read the on-disk receipt (`load_batch_any`) — correct *today* only because
+every DB mutation path happened to also regenerate the receipt file, an unenforced discipline rather than
+a structural guarantee. The fix (`server._batch_from_db` rebased onto a new `batch_store.to_working_doc`)
+mattered beyond symmetry: the resolver's prior basis (`to_view`, shared with Stage 3/4) filtered
+gate@1-*rejected districts* but not gate@1-rejected *schools within an included district* — harmless for
+Stage 3/4, which never read the school list, but a roster-poisoning trap for Stage 2, which builds its
+search roster from exactly that field. A govdb regression test now pins the included-only shape, and a
+new `arch-manifest.json` fitness function (`cli_only_loaders`) fails the suite if `load_batch_any` is ever
+referenced inside the console again — the invariant that used to depend on nobody forgetting is now
+enforced.
+
+**This PR's own review round repeated the same lesson at smaller scale: the "obvious" fix for one of its
+own findings would have been wrong.** A max-effort review of #526 found `_batch_from_db` fetching the
+`Batch` row twice per call (confirmed via SQL-echo against live Postgres — a real, not theoretical, cost
+on a path polled every ~3.5 seconds by three console views). The naive fix — return `status` from the
+existing receipt-doc function — would have leaked batch status into the on-disk receipt file, contradicting
+`common/batch_guard.py`'s documented invariant that a CLI loader must re-check status against the DB and
+never trust the file. The actual fix split the concerns: `to_working_doc` (status included, DB-resolve
+only) alongside `to_receipt_doc` (deliberately status-free, feeds only the receipt). Three other candidate
+findings from the same review were refuted with concrete evidence rather than fixed reflexively — `run_batch`
+dropping its internal existence check turned out to already match Stage 3/4's established
+caller-validates convention; a dropped `included` flag on district dicts was never read by any consumer,
+before or after; and a substring-scan fitness function that looked less rigorous than the AST-based
+mechanism one section above it in the same file turned out to be the *more* conservative choice for a
+whole-directory negative check, not a rigor gap.
+
+**Net across both phases:** five independent module sweeps plus a cross-stage architecture migration
+shipped in two days, each carrying its own adversarial review round, each round finding at least one bug
+a green, well-tested change would not have surfaced on its own — the same pattern epic #106 established
+and this epic's second PR (#555) repeated on itself. Both max-effort reviews' full finding lists, verdicts,
+and fix outcomes are preserved via `ReportFindings` calls in-session; the doc tower (`ACQUISITION_PIPELINE.md`,
+`PIPELINE_GOVERNANCE_AND_STATE.md`, all four `STAGE*_DESIGN.md` present-state notes) was swept against
+current code the same day these PRs merged, closing every stale claim the sweep's own audit agents found —
+including, in STAGE1_QUEUE_DESIGN.md's case, a claim that had gone stale within the same session that wrote
+it, when the #555 review's `to_working_doc` split superseded the `to_receipt_doc`-only description the
+doc had captured hours earlier. Authority: `STAGE1-4_*_DESIGN.md` change logs (2026-07-18/19 entries);
+`PIPELINE_GOVERNANCE_AND_STATE.md` §1/§10/§12a; issues #264/#265/#267/#326/#328/#330/#338/#339/#341/#347/
+#348/#351/#375/#416/#452/#454/#523/#524/#526/#554; PRs #549-#553, #555.
+
 ---
 
 ## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)

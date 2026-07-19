@@ -379,6 +379,7 @@ flowchart TD
 - **Reconcile = filesystem-authoritative:** `discovery.json` on disk IS "done"; registry-ahead-of-disk is a hard-stop CONTROL FAILURE. **Redo is versioned, never an overwrite, always manual.** One registry write per district at completion. `run_batch` is sequential (one registry writer).
 - **Failure handling:** Wave 1/2 degrade per-school on a normal error, but **HTTP 401/402/429 (billing/auth) raises `SystemExit`** and halts the whole run; Bright Data billing-failure instead *fails over to Serper* (the only non-halting billing case).
 - **Ungated** (no `gate@2`; Stages 2/3/4 are ungated) — the next human gate is `gate@5` (Filter). Outcomes: `found_all` / `found_partial` / `manual_flag_all`.
+- **Batch resolution: DB, not receipt (#526, closed 2026-07-18).** Stage 2 was the one stage whose console/autoflow batch read came from the on-disk receipt (`load_batch_any`) rather than the governance DB — the last exception to "the DB is the working store, disk holds receipts." Now `server._batch_from_db` → `batch_store.to_working_doc` resolves it for Stage 2 same as Stages 3/4; `load_batch_any` is CLI/offline-only, enforced by an `arch-manifest.json` fitness function.
 - **Run live:** batch_00002 (Bright Data Wave-1 found 28/30 schools; 2 residuals → Claude → recovered 0, genuine no-page cases) + batch_00003, both end-to-end through the console. **Cost reframe:** Stage 2 is cheap REAL cash now (~$0.001–0.0015/query, ~$17–21 / 17k pass), not subscription quota. Watch-items (design note §7d): is Claude-Wave-2 worth its latency; Serper-on-Bright-Data-misses; Claude timeout 420s→~60–90s.
 
 ### 3 · Capture — *tiered* (local Playwright) — built 2026-06-23 · deep design + decision log: `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE3_CAPTURE_DESIGN.md`
@@ -401,6 +402,17 @@ flowchart TD
 - **Two fail-loud reconcile checks:** registry-ahead-of-disk **and** a manifest-claims-a-missing-file consistency check. **No vision escalation, no dup-PDF dedup** (deliberate non-goals). **Ungated.** Outcome: `processed_all`/`processed_partial`/`no_usable_text_any`.
 - **Console view + Stage 4→5 handoff (REQ-111, built 2026-06-29):** ungated status (per-district usable/not-usable doc counts + a usable-reps-by-tool readout, from the `processed_doc` DB cache) + an **in-process** run trigger (`stage4_process/headless.py`; no node-owns-shutdown). When a run resolves the whole batch, the orchestration layer runs the **Stage 4→5 incremental handoff**: `build_signals.ingest_batch(district_ids)` — a **batch-scoped** Stage-5 ingest (`ingest_district` shared with the full `ingest()`; per-district DELETE+INSERT; `O(batch)` not `O(corpus)`; prior batches + precious labels untouched) + `filtered.json` regen + a per-district `furthest_stage→5` event. **This is the seam where the batch dissolves into Stage 5's district-driven world** (governance §12). Detail: `STAGE4_PROCESS_DESIGN` §4a/§4b.
 
+> **Epic #111 (Stages 1-4 hardening), Phase 1 + Phase 2 shipped 2026-07-18/19.** Phase 1: a
+> crossfam-review correctness sweep across all five Stage 1-4 modules + the Node scraper, five PRs
+> (#549-553) — crash-tolerant merge-retry recovery (Stage 2), batch-scoped progress counts (Stage 1,
+> #339), a shared cross-language CMS-host-matching golden-vector fixture + a hang-risk fix (Node
+> scraper), malformed-manifest-entry tolerance on both read and write (Stage 3/4), and a `common/`
+> sweep (a shared `atomic_write_json` helper, `state_event` buffer-clear-on-commit, a secrets
+> pre-flight check). Phase 2 (#526/PR #555): Stage 2's console/autoflow batch read moved off the
+> on-disk receipt onto the governance DB, closing the pipeline's last "DB is the working store"
+> exception. Both phases' own max-effort review rounds each found real findings the green test suite
+> hadn't — full detail in each `STAGE*_DESIGN.md`'s decision log and `PROJECT_HISTORY.md`.
+
 ### 5 · Local filtering (coarse)
 Cheap `pdftotext`-density sniff: clock-time count + bell keywords; reject obvious non-schedules (board calendars, administrative pages). Deliberately cheap and high-recall — precision tightening (URL-keyword weighting, time-grid detection) is a later pass. (The stale `relevance.py` draft of this idea was deleted 2026-07-06, #125 — superseded by the as-built Stage 5 below; precision tightening remains tracked as #113.)
 
@@ -416,7 +428,9 @@ scorecard series, segmented by config fingerprint; advisory "retune recommended"
 auto-retunes (the same shape that caught the 2026-06-30 V1 incident by hand, now automatic). **#517
 `schedule_link_only`** — a derived signal + attention chip for pages that NAME a bell schedule they don't
 contain (measured 78/78 census-labeled `target_absent`, zero collateral); `link_followup.py` emits the
-retry receipt for the Stage-3 one-hop revisit (executor deferred to epic #111/#518). **#109** — the
+retry receipt for the Stage-3 one-hop revisit (executor deferred to epic #111/#518, whose Phase 1
+correctness sweep + Phase 2 DB-batch-read migration have since shipped — see the epic #111 callout
+after Stage 4, above). **#109** — the
 harvest-slice basis now PREFERS the human-labeled page range (Axis-3 `_pages_list`) over the auto
 `is_handbook`/`harvest_pages` detection, and a human range alone can qualify a doc the auto classifier
 missed. **`lf_district_homepage`** (#532) joined the detector set — a rootish-URL + roster-breadth

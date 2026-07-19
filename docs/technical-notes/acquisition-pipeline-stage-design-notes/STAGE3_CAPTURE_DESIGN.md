@@ -109,8 +109,15 @@ the successful `writeFileSync` call.
 ### 2c. Hosting/CMS fingerprint + iframe/embed (per record, raw signals only)
 `buildHtmlFingerprint`/`buildFetchFingerprint` record, at the **URL level**, facts gathered for free from
 data the capture already held: `final_host`, `server`, `powered_by`, `cdn_hints[]`, `meta_generator`,
-`resource_hosts[]` (off-domain script/link/img hosts, cap 20), `js_dependent`, and `cms_hint` (a suffix
-match against the shared `cms_hosts` config knob). **Iframe/embed detection (REQ-115):** `iframe_srcs[]`
+`resource_hosts[]` (off-domain script/link/img hosts, cap 20), `js_dependent`, and `cms_hint`. **Host
+matching is dot-boundary, not a bare suffix check (#416):** the shared `hostMatches(host, suffix)` —
+`host === suffix || host.endsWith('.' + suffix)` — replaced a buggy bare `host.endsWith(cms)` that let
+`myfinalsite.net` false-match the CMS vendor `finalsite.net`. `hostMatches` (JS) and `_host_matches`
+(Python, `common/discover.py`) are pinned to identical behavior by a shared cross-language golden-vector
+fixture, `common/config/cms_host_match_cases.json` (11 cases: exact match, dotted/deep subdomain,
+dotless-superstring negatives, edge cases), declared in `arch-manifest.json`'s `shared_config` and
+consumed by both `capture_fingerprint.test.mjs` and `tests/test_cms_host_parity.py`. **Iframe/embed
+detection (REQ-115):** `iframe_srcs[]`
 (categorized social/feed · calendar · doc-viewer · other) + `embed_present`, a structural, vendor-agnostic
 signal for the `embedded_feed`/embedded-calendar confounders Stage 5 screens for. Direct PDF/image/Drive
 records get a reduced (no-DOM) fingerprint. Facts, not classification — real CMS ID is a later pure
@@ -140,6 +147,12 @@ hours. `backfill-segments` applies it to already-captured data. Measured: catego
 topology 0.6→0.8 — a strong win (detail in `STAGE5_FILTER_DESIGN.md`). Stage 5's V2 scoring
 computes time signals over the **max-evidence source** (main ∪ chrome ∪ best raw rep), never main
 exclusively — de-chrome stays for keyword/category signal, never suppresses time evidence.
+**Both call sites (`captureInto`, `runBackfillSegments`) route through `segmentWithTimeout(page)`
+(#375)** — a shared `withTimeout(segmentChrome(page, DE_CHROME_LANDMARKS), OP_TIMEOUT_MS, 'segment')`
+wrapper. Before this, both called `segmentChrome` directly and unwrapped: a `page.evaluate` with no
+native Playwright deadline, so a wedged page could hang a capture worker indefinitely (in the backfill
+path, this also risked losing the whole run's manifest writes, since those only happen after every
+worker resolves).
 
 ### 2e. Emergent dedup includes redirect targets (fable review issue #44)
 `noteFinalUrl()` adds a captured page's `stripFragment(final_url)` to the `seen` set right after capture —
@@ -328,3 +341,14 @@ mechanisms: the follow-up/redo delta-capture path (#174, `reconcile`'s `redo` pa
 `seedFromPriorCaptures`), `batch_guard`'s abandoned-batch refusal (#168/#206), the #127/PR #239 `node:test`
 harness, and the pure decision-core functions #127 extracted for testability. All four folded into §0/§2a/
 §2c/§2g/§4 above; §5 gained a pointer to the #225 capacity-planning finding already in this log.
+
+**2026-07-18/19 — epic #111 Phase 1 Node scraper sweep (PR #551, #375/#416): a hang risk closed, and a
+false-match bug closed with a cross-language parity pin.** #375 closed the same "unwrapped page.evaluate
+can hang a worker forever" class the 2026-07-02 entry already fixed for the PDF/screenshot paths, but had
+missed the DOM de-chrome segmentation step: both `captureInto` and `runBackfillSegments` called
+`segmentChrome` directly, with no native Playwright deadline. Fixed with a shared `segmentWithTimeout`
+wrapper (§2d). #416 fixed a real false-match in `cmsHint`'s host suffix check (a bare `endsWith` let
+`myfinalsite.net` match the CMS vendor `finalsite.net`) by extracting the dot-boundary `hostMatches`
+predicate already used elsewhere in the gate, and pinned its behavior against the Python-side
+`_host_matches` with a shared golden-vector fixture (§2c) — the review pattern this epic's sweep repeated
+across every stage: a cross-language behavior claim gets a fixture, not just a code comment.

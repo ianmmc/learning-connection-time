@@ -51,6 +51,11 @@ is better at merged/spanning cells than deterministic code).
   winning/representation text written to files (`extracted.txt`, `<tool>.txt`) and persisted rasterizations
   (`raster_p-<N>.png`) inside each `captures/<hash>/`. `text_file` is a **filename reference**, never inline
   text — resolved against that record's own directory (same convention as `captures.json`'s `files`).
+  **Read-side tolerance (#347/#348):** the console's status/rollup path never trusts `processed.json`'s
+  shape blindly — `headless._load_processed(ddir)` is the ONE parse (`[]` on absent/unreadable/non-list),
+  and `_winning_from(docs)` filters both a malformed TOP-LEVEL entry (a stray `None`/string instead of a
+  dict where a doc-list entry belongs) and a malformed nested `texts[]` entry, so a corrupt or hand-edited
+  file degrades to "no usable text found" for that record rather than crashing the batch-status endpoint.
 - **Gate:** **none** (Stages 2/3/4 ungated). Registry outcome: `processed_all` / `processed_partial` /
   `no_usable_text_any`. The next human gate is `gate@5`.
 
@@ -67,7 +72,11 @@ is better at merged/spanning cells than deterministic code).
    that district** (`inconsistent`, a `failed` process state_event, retriable) — it no longer halts the
    whole run (fable review issue #78: a single missing screenshot file used to brick every future Stage-4
    run for the batch). The check runs **only on districts about to be processed**, not retroactively on
-   already-processed ones. `ok: false` records (`files: {}`) are exempt by design. `finish_district`
+   already-processed ones. `ok: false` records (`files: {}`) are exempt by design. **A second, independent
+   failure mode (#351):** before the `.exists()` check even runs, a `files{}` value that isn't a
+   non-empty string is flagged as its own inconsistency (`"captures.json has a non-string files entry
+   {fname!r} in {record_dir}"`) — a malformed manifest entry quarantines the district the same way a
+   missing file does, rather than reaching the `.exists()` call and raising a type error. `finish_district`
    (the direct `run <id>` CLI path) still raises a district-scoped `InconsistentCapturesError`.
 
 ### 2a-i. `reconcile()`'s `redo` parameter — follow-up batches must not no-op on an existing `processed.json`
@@ -88,6 +97,11 @@ new discovery/capture work a follow-up batch exists to make never got processed 
 unnoticed bug in the request-loop machinery (#122).
 
 ### 2b. Run every kept tool against every applicable input, always — no waterfall
+**Malformed `files{}` entries degrade, not crash (#351):** `process_record` filters
+`{k: v for k, v in (rec.get("files") or {}).items() if isinstance(v, str) and v}` before touching any
+tool — a non-string or empty `files{}` value now silently reads as "that representation is absent"
+instead of raising `AttributeError` on the first `.lower()`/path call downstream.
+
 This superseded a first-pass "stop at the first usable representation" design: a real test (Longfellow
 Elementary's `page.pdf`) showed `pdftotext` surfacing the literal `8:20-School Begins`/`3:20-School Ends`
 pair *even though* the `.txt` already looked usable — the short-circuit was discarding real signal. Same
@@ -218,9 +232,8 @@ timeouts). What landed (code is authoritative — this records the shape + the d
 - **`server.py`** — `GET /api/process/{batch_id}` (status) + `POST /api/process/{batch_id}/run`
   (background job, `_PROCESS_JOBS`); the batch is resolved from the **DB working store** via the shared
   **`_batch_from_db`** (renamed from `_capture_batch_from_db`; now used by capture + process).
-  `process_run` also calls **`_acquire_batch_run(batch_id)`** (`server.py:1325`; the helper is defined at
-  `:134`, issue #47) before starting the job — the same cross-stage per-batch mutex `capture_run` uses
-  (`server.py:1253`), preventing e.g. a
+  `process_run` also calls **`_acquire_batch_run(batch_id)`** (defined `server.py:~136`, issue #47) before
+  starting the job — the same cross-stage per-batch mutex `capture_run` uses, preventing e.g. a
   concurrent capture-run and process-run from both operating on the same `batch_id`. Unlike `capture_run`,
   `process_run`'s `_work()` closure has no `_run=_tracked_run` injection — there's no Node child process to
   track (Stage 4 has no subprocess worker to babysit, consistent with headless.py's "no injectable `_run`"
@@ -320,6 +333,17 @@ document"; fixed to check the return code. (3) `run_tesseract_multi`/`rasterize`
 every prior page's OCR), and ignored `pdftoppm`'s exit code, silently reusing stale rasters from a failed
 prior run; fixed with a page cap, per-page tolerance, and a returncode check + stale-raster clear. See §2a
 and §2b for the present-state description.
+
+**2026-07-18/19 — epic #111 Phase 1 correctness sweep (PR #552, #347/#348/#351): manifest-entry
+robustness closes on both the write side and the read side.** #347/#348 consolidated the console's
+processed.json consumers (`_disk_doc_count`, `winning_sources`) onto one shared parse
+(`_load_processed`/`_winning_from`), which tolerates a malformed TOP-LEVEL list entry — not just a
+malformed nested `texts[]` entry, the only shape the prior code guarded against — so a corrupt or
+hand-edited `processed.json` degrades to "no usable text" for that record instead of a 500 on the
+batch-status endpoint. #351 closed the write-side counterpart in `check_file_consistency`/
+`process_record`: a non-string/empty `files{}` value is now its own detected inconsistency (quarantining
+the district, same as a missing file) rather than reaching an `.exists()` call or a `.lower()` call on
+the wrong type and raising. See §1, §2a, and §2b for the present-state description.
 
 **2026-07-05 — follow-up-batch redo (#174).** A follow-up batch's districts were silently skipping Stage
 2/3/4 entirely whenever prior-run artifacts already existed on disk — `processed.json` present read as

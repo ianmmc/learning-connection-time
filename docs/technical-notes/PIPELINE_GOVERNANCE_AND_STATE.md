@@ -202,6 +202,12 @@ DB, regenerable from the web) and the **regenerable JSON files** the stages emit
 **auditable receipts** — for state-confirmation, human inspection, and recovery — **not** the medium that
 carries data between stages. (That file-as-transmitter model was the original 2026-06-26 framing; it was
 retired when the cross-stage cache became a live working store — REQ-110/111/112; build history in §7a-A / §12.)
+**Now unconditional across every stage (#526, closed 2026-07-18):** Stage 2's console/autoflow batch
+read was the one standing exception — it consumed the on-disk receipt (`load_batch_any`) rather than
+the DB, tracked as a live gap in this doc's own prior revisions. It now resolves via `server.
+_batch_from_db` → `batch_store.to_working_doc`, the same DB-resolve contract Stages 3/4 already used;
+`arch-manifest.json`'s `cli_only_loaders` fitness function fails the suite if `load_batch_any` is ever
+referenced inside `process_governance/` again.
 
 | class | what it is | home | properties |
 |---|---|---|---|
@@ -830,7 +836,7 @@ would mostly surface `sys.path` noise; **package first, then the tools light up.
 |---|---|---|
 | **Intra-Python graph + contracts** | `import-linter` (contracts: layers/forbidden/independence) on `grimp` (queryable graph); `vulture` (dead code) | **now** (REQ-098) |
 | **Intra-Node graph + contracts** | `dependency-cruiser` (rule engine + schema-validated JSON; the import-linter analog for `.mjs`/TS) | **now** (REQ-098) |
-| **Cross-boundary edges** (Python→subprocess→Node/CLI · shared `config/*.json` read by both · file-based stage dispatches) | **no tool** → a hand-declared `arch-manifest.json` + **fitness-function tests** (AST scan of `subprocess.*` / config-path reads, asserted against the manifest); `datacontract-cli` for stage-dispatch schema validation | **FIRST INCREMENT BUILT (#124, 2026-07-09):** `arch-manifest.json` (repo root) + `tests/test_arch_manifest.py` — AST-scan fitness functions asserting (1) every external-process edge (argv-list head, surviving the injectable `_run` seam — `claude`/`node`/`pdftotext`/`pdftoppm`/`pdfinfo`/`tesseract`) is declared, (2) an invariant guard (`assert_runnable`) is reached by every declared entry point, (3) no client JS compares against a server-authoritative literal (`batch_00000`), (4) a shared client helper (`statusBadge`) is defined once, (5) each stage receipt's producer references its filename. Each check was proven to FAIL on a deliberate drift then revert. **Still to add:** `config/*.json` schema validation + `datacontract-cli` on the stage-dispatch artifacts (a bigger, separable piece; the artifacts are declared in the manifest's `file_dispatches` ready for schema refs). |
+| **Cross-boundary edges** (Python→subprocess→Node/CLI · shared `config/*.json` read by both · file-based stage dispatches) | **no tool** → a hand-declared `arch-manifest.json` + **fitness-function tests** (AST scan of `subprocess.*` / config-path reads, asserted against the manifest); `datacontract-cli` for stage-dispatch schema validation | **FIRST INCREMENT BUILT (#124, 2026-07-09):** `arch-manifest.json` (repo root) + `tests/test_arch_manifest.py` — fitness functions asserting (1) every external-process edge (argv-list head, surviving the injectable `_run` seam — `claude`/`node`/`pdftotext`/`pdftoppm`/`pdfinfo`/`tesseract`) is declared, (2) an invariant guard (`assert_runnable`) is reached by every declared entry point (AST-scanned), (3) no client JS compares against a server-authoritative literal (`batch_00000`), (4) a shared client helper (`statusBadge`) is defined once, (5) each stage receipt's producer references its filename, **(6) a receipt loader declared `cli_only` is never referenced outside its CLI (#526, 2026-07-18) — `load_batch_any`'s only current entry, a name-presence scan over `process_governance/` rather than an AST call-graph walk, deliberately: it's a whole-directory negative check with no single function to anchor an AST walk on, and the broader scan is the more conservative choice for that shape.** Each check was proven to FAIL on a deliberate drift then revert. **Still to add:** `config/*.json` schema validation (now largely covered separately — see `shared_config` in the manifest + `tests/test_config_schemas.py`) + `datacontract-cli` on the stage-dispatch artifacts (a bigger, separable piece; the artifacts are declared in the manifest's `file_dispatches` ready for schema refs). |
 
 **Concrete contracts to encode (import-linter), once packaged:** stage *layering* (1→…→9); *forbidden* —
 no stage imports the production LCT/database layer's internals (enforces the STATE-vs-DATA + DB isolation
@@ -1272,7 +1278,10 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
   `batch_00002` (11) and `batch_00003` (12, with add/reject-school edits) both ran through the UI end to
   end — the second console stage view, following the gate@1 build pattern. (A switcher refactor to add it
   briefly broke the Stage-1 view via a deleted `v1` var — fixed; a reminder that the static JS has no
-  lint/`no-undef` gate, unlike the Python side.)
+  lint/`no-undef` gate, unlike the Python side.) **Batch resolution stayed receipt-based here until #526
+  (2026-07-18)** — unlike the cache repoint below, which fixed *signal* reads, the underlying batch dict
+  itself kept coming from `load_batch_any` (the on-disk receipt) rather than the DB working store Stages
+  3/4 already used; see §1's updated principle statement.
 - **Stage 3 console view BUILT + RUN LIVE 2026-06-28/29 (REQ-110)** (`static/stage3.js` + `/api/capture/*` +
   `stage3_capture/headless.py`): the ungated health/emergent readout (read from the DB cross-stage cache)
   + a per-district Node-Playwright capture run trigger. Load-bearing infra change underneath it: the
@@ -1412,6 +1421,19 @@ layer's `process_governance/server._ingest_stage5_if_complete`:
    already-durable Stage-4 job).
 The trigger lives in the **app layer, not `stage4_process`** — `stage4_process`→`stage5_filter` would break
 the import-linter independence contract; `process_governance` may import every stage.
+
+**Registry save/export semantics this dispatch relies on (#330, epic #111 Phase 1, PR #553):**
+`district_status.save()` clears `registry["_events"] = []` immediately after the `state_event` insert
+commits, and *before* the (unguarded) `export_status()` call — so a caller retrying `save()` after an
+export failure can't double-insert, and `export_status`'s failure now correctly **propagates** rather
+than being swallowed. `server._ingest_stage5_if_complete` (and its sibling `stage5_bookkeeping_failed`
+discriminator) relies on that propagation to distinguish a real bookkeeping failure from a clean run.
+The same Phase-1 sweep also consolidated the tmp-file+`os.replace` atomic-write pattern into one shared
+`common/paths.atomic_write_json` helper (used today by Stage 2's manifest writes; `batch_store.
+write_receipt` and `district_status.export_status` still hand-roll their own copy, tracked #554), and
+added a secrets pre-flight (`common/discover._require_secrets`) that halts Wave-1's Bright Data/Serper
+calls with a precise "key not set" message *before* any HTTP request, rather than a reactive patch at
+the 401 site.
 
 **§12b — Why this design (the choice we made, for future-me).** The user's instinct was "precompute the
 Stage-5 ingest at batch completion so the Stage-5 view loads with no lag." Correct — but a *full-corpus*
