@@ -273,3 +273,38 @@ def test_handbook_yield_rule_matches_rank_alternates_ordering():
     alts = [{"kind": "text", "n_times": r["n_times"], "file": r["filename"]} for r in reps]
     assert sent == rank_alternates(alts)[0]["file"], \
         "Stage 5's initial pick disagrees with the retry loop's yield ranking"
+
+
+# ---- #109: the human-labeled page range outranks the auto harvest_pages ----
+def test_human_pages_list_outranks_auto_harvest_pages():
+    reps = [{"source": "harvest_slice", "filename": "harvest_slice.txt", "file_kind": "text",
+             "n_times": 12, "usable": 1}]
+    sig = {"is_handbook": True, "harvest_pages": [4, 9]}
+    facets = {"buried_handbook": "yes", "_pages_list": [7, 8, 9]}
+    assert R.best_send(reps, sig, facets) == [{"file": "harvest_slice.txt", "kind": "text",
+                                              "pages": [7, 8, 9]}]
+
+
+def test_human_pages_qualify_a_doc_the_auto_classifier_missed():
+    # buried_handbook + a human range on a record with is_handbook=False (the auto miss): the
+    # PDF+pages fallback must engage exactly as it would for an auto-classified handbook.
+    reps = [{"source": "capture:pdf", "filename": "doc.pdf", "file_kind": "pdf"}]
+    facets = {"buried_handbook": "yes", "_pages_list": [16, 17]}
+    assert R.best_send(reps, {}, facets) == [{"file": "doc.pdf", "kind": "pdf", "pages": [16, 17]}]
+
+
+def test_no_human_pages_means_auto_behavior_unchanged():
+    reps = [{"source": "harvest_slice", "filename": "harvest_slice.txt", "file_kind": "text",
+             "n_times": 12, "usable": 1}]
+    sig = {"is_handbook": True, "harvest_pages": [4, 9]}
+    assert R.best_send(reps, sig, {"buried_handbook": "yes"}) == \
+        [{"file": "harvest_slice.txt", "kind": "text", "pages": [4, 9]}]
+
+
+def test_labeled_pages_of_handles_str_dict_and_junk():
+    assert BS.labeled_pages_of('{"_pages_list": [3, 5]}') == [3, 5]
+    assert BS.labeled_pages_of({"_pages_list": [3, "5"]}) == [3, 5]
+    assert BS.labeled_pages_of({"_pages_list": [0, -2]}) == []      # non-positive filtered
+    assert BS.labeled_pages_of(None) == []
+    assert BS.labeled_pages_of("{not json") == []
+    assert BS.labeled_pages_of({"buried_handbook": "yes"}) == []    # facet without a range
