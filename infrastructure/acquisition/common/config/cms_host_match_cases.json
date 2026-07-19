@@ -1,0 +1,17 @@
+{
+  "knob": "cms_host_match_cases",
+  "purpose": "Golden-vector parity fixture for the dot-boundary host-suffix matching RULE, implemented twice: Python common/discover.py::_host_matches and JS infrastructure/scraper/capture_discovery.mjs::hostMatches. REQ-089 unified the CMS host DATA (cms_hosts.json) but not the algorithm — issue #34's Python fix shipped 16 days before #416's identical JS fix because nothing pinned the two implementations together. Both test suites (tests/test_cms_host_parity.py and capture_fingerprint.test.mjs) run every case here through their language's predicate; a rule change in one language fails the other's suite until both are updated.",
+  "cases": [
+    {"host": "finalsite.net", "suffix": "finalsite.net", "match": true, "why": "exact host"},
+    {"host": "assets.finalsite.net", "suffix": "finalsite.net", "match": true, "why": "dotted subdomain"},
+    {"host": "cmsv2-assets.finalsite.net", "suffix": "finalsite.net", "match": true, "why": "deep dotted subdomain"},
+    {"host": "foo.blackboard.com", "suffix": "blackboard.com", "match": true, "why": "dotted subdomain"},
+    {"host": "myfinalsite.net", "suffix": "finalsite.net", "match": false, "why": "dotless superstring — the #416 attack"},
+    {"host": "evilschoolwires.com", "suffix": "schoolwires.com", "match": false, "why": "dotless superstring — the #34 attack"},
+    {"host": "halifax.com", "suffix": "x.com", "match": false, "why": "dotless superstring, short suffix"},
+    {"host": "notapptegy.net", "suffix": "apptegy.net", "match": false, "why": "dotless superstring"},
+    {"host": "finalsite.net.evil.com", "suffix": "finalsite.net", "match": false, "why": "suffix appearing as a non-terminal label"},
+    {"host": "net", "suffix": "finalsite.net", "match": false, "why": "bare TLD fragment"},
+    {"host": "", "suffix": "finalsite.net", "match": false, "why": "empty host"}
+  ]
+}

@@ -4,9 +4,12 @@
 // (REQ-079); these cover the deterministic header/host/CMS logic that decides the fields.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import {
-  hostOf, cdnHints, cmsHint, strippedLen, buildHtmlFingerprint, buildFetchFingerprint,
-  categorizeEmbedHost, embedCategories,
+  hostOf, cdnHints, cmsHint, hostMatches, strippedLen, buildHtmlFingerprint,
+  buildFetchFingerprint, categorizeEmbedHost, embedCategories,
 } from './capture_discovery.mjs';
 
 test('categorizeEmbedHost buckets social/calendar/doc-viewer, else other (REQ-115)', () => {
@@ -64,6 +67,18 @@ test('cmsHint matches CMS_HOSTS by suffix, like discover.py gate()', () => {
   assert.equal(cmsHint(['www.marion-isd.org']), null);
   // first match across the list wins; empty/falsey hosts skipped
   assert.equal(cmsHint(['', 'www.example.org', 'foo.blackboard.com']), 'blackboard.com');
+});
+
+test('hostMatches agrees with the shared cross-language golden vectors (#34/#416 parity)', () => {
+  // The same fixture tests/test_cms_host_parity.py runs through Python's _host_matches —
+  // a rule change in one language fails the other's suite until both are updated.
+  const f = path.join(path.dirname(fileURLToPath(import.meta.url)),
+                      '..', 'acquisition', 'common', 'config', 'cms_host_match_cases.json');
+  const { cases } = JSON.parse(readFileSync(f, 'utf8'));
+  assert.ok(cases.length >= 10, 'fixture must carry the full vector set');
+  for (const c of cases) {
+    assert.equal(hostMatches(c.host, c.suffix), c.match, `${c.host} ~ ${c.suffix}: ${c.why}`);
+  }
 });
 
 test('cmsHint requires a dot boundary — a dotless superstring host must NOT match (#416)', () => {

@@ -126,16 +126,24 @@ export function cdnHints(headers) {
   return out;
 }
 
-// The ONE cheap inline classification: a host-suffix match against CMS_HOSTS, same logic as
-// discover.py's _host_matches (#416): exact host or dot-boundary suffix ONLY -- a dotless
-// endsWith would let `myfinalsite.net` claim `finalsite.net`, and cms_hint is dispatch-
-// load-bearing since #540 (Edlio sibling-variant dedup). Richer classification stays a
-// later pure function over the raw signals.
+// Dot-boundary host-suffix predicate -- the JS twin of discover.py's `_host_matches` (#416/#34):
+// exact host or dot-boundary suffix ONLY (a dotless endsWith would let `myfinalsite.net` claim
+// `finalsite.net`). The RULE is parity-pinned across both languages by the shared golden-vector
+// fixture `common/config/cms_host_match_cases.json` (consumed by capture_fingerprint.test.mjs
+// AND tests/test_cms_host_parity.py) -- change the rule in one language and the other's suite
+// fails, closing the drift class that let #34's Python fix ship 16 days before #416's JS one.
+export function hostMatches(host, suffix) {
+  return host === suffix || host.endsWith('.' + suffix);
+}
+
+// The ONE cheap inline classification: a host-suffix match against CMS_HOSTS. cms_hint is
+// dispatch-load-bearing since #540 (Edlio sibling-variant dedup). Richer classification stays
+// a later pure function over the raw signals.
 export function cmsHint(hosts) {
   for (const host of hosts) {
     if (!host) continue;
     for (const cms of CMS_HOSTS) {
-      if (host === cms || host.endsWith('.' + cms)) return cms;
+      if (hostMatches(host, cms)) return cms;
     }
   }
   return null;
@@ -238,6 +246,13 @@ export async function segmentChrome(page, landmarks) {
     return { main, header, footer, nav };
   }, { removeSel, buckets }).catch(() => ({ main: '', header: '', footer: '', nav: '' }));
 }
+
+// The ONE segmentChrome invocation shape (#375): page.evaluate gets no deadline from Playwright,
+// so a wedged page main thread would hang the worker forever -- segmentChrome's own .catch
+// handles rejection, not a hang. Shared by the mainline capture and the backfill so the two
+// sites can't drift on the timeout/label.
+const segmentWithTimeout = (page) =>
+  withTimeout(segmentChrome(page, DE_CHROME_LANDMARKS), OP_TIMEOUT_MS, 'segment');
 
 // Persist the segments (only non-empty ones) as page.main/header/footer/nav.txt. Stage 5 reads
 // page.main.txt when present and tiers on it; full page.txt is always kept, so this is additive.
@@ -650,9 +665,7 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
             jsDependent: strippedLen(rawHtml) < 200 && text.trim().length >= 600,
           });
           // DOM segmentation (REQ-091): de-chrome the page for Stage 5 signals (additive; page.txt kept).
-          // withTimeout (#375): segmentChrome is a page.evaluate -- Playwright puts NO deadline on it,
-          // so a wedged main thread would hang the worker forever (its .catch handles rejection, not a hang).
-          try { writeSegments(recDir, await withTimeout(segmentChrome(page, DE_CHROME_LANDMARKS), OP_TIMEOUT_MS, 'segment')); rec.segmented = true; }
+          try { writeSegments(recDir, await segmentWithTimeout(page)); rec.segmented = true; }
           catch { rec.segmented = false; }
           rec.ok = true;
 
@@ -872,9 +885,9 @@ async function runBackfillSegments(ROOT, CONC) {
         // timeout and segment whatever rendered (the DOM is present) rather than aborting.
         await page.goto(t.target, { waitUntil: 'networkidle', timeout: 30000 }).catch(() => null);
         await page.waitForTimeout(2500);
-        // withTimeout (#375): a hung evaluate here stalled the worker AND lost the whole run's
-        // manifest writes (they only happen after Promise.all resolves).
-        writeSegments(t.recDir, await withTimeout(segmentChrome(page, DE_CHROME_LANDMARKS), OP_TIMEOUT_MS, 'segment'));
+        // #375: a hung evaluate here stalled the worker AND lost the whole run's manifest
+        // writes (they only happen after Promise.all resolves).
+        writeSegments(t.recDir, await segmentWithTimeout(page));
         t.rec.segmented = true;
       } catch (e) {
         t.rec.segment_err = String(e).slice(0, 120);
