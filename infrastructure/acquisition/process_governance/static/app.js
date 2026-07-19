@@ -78,7 +78,8 @@ const short = (u) => (u || "").replace(/^https?:\/\//, "").slice(0, 40);
 // can be saved as named presets (DB-backed). The batch is gone here; the district is the unit.
 const ATTN_REASON = {   // dominant reason -> {label, tone} for the rationale chips
   manual_flag: ["⚑ flagged", "r-flag"], image_only: ["image-only", "r-image"],
-  signal_text_disagree: ["signal≠text", "r-disagree"], buried_long_doc: ["buried in doc", "r-buried"],
+  signal_text_disagree: ["signal≠text", "r-disagree"], schedule_link_only: ["link-only", "r-linkonly"],
+  buried_long_doc: ["buried in doc", "r-buried"],
   ambiguous: ["ambiguous", "r-amb"], clean_target: ["clean yes", "r-clean"],
   low_signal: ["low signal", "r-low"], resolved: ["done", "r-done"],
 };

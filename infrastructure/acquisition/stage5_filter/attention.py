@@ -18,8 +18,8 @@ from infrastructure.acquisition.common import config_loader
 
 # Highest human-attention first. The DOMINANT reason (first applicable in this order) sets the score;
 # all applicable reasons travel in reasons[] for the chips.
-REASON_ORDER = ["manual_flag", "image_only", "signal_text_disagree", "buried_long_doc",
-                "ambiguous", "clean_target", "low_signal", "resolved"]
+REASON_ORDER = ["manual_flag", "image_only", "signal_text_disagree", "schedule_link_only",
+                "buried_long_doc", "ambiguous", "clean_target", "low_signal", "resolved"]
 
 
 def load_config() -> dict:
@@ -51,6 +51,9 @@ def record_reasons(sig: dict, tier: str, label_status: str | None, *, has_flag: 
         reasons.append("image_only")             # strong visual, text below the usable bar (OCR/vision gap)
     if _has_schedule_signal(sig) and tier in ("C", "D") and not sig.get("visual_text_gap"):
         reasons.append("signal_text_disagree")   # the signal says schedule, the deterministic tier doesn't
+    if sig.get("schedule_link_only"):
+        reasons.append("schedule_link_only")     # the page NAMES a schedule it doesn't contain — the
+        # target lives one hop away (#517); a recall affordance for a capture-retry, not a confounder
     if sig.get("is_handbook") and sig.get("harvest_pages"):
         reasons.append("buried_long_doc")        # a schedule likely on a few pages of a long document
 

@@ -1,20 +1,26 @@
 {
-  "knob": "stage5_attention",
-  "description": "Stage 5 ATTENTION weights + thresholds. Attention = 'where does my judgment move us forward?' — the INVERSE of automatable-confidence: it peaks at promising-but-unresolved records (strong schedule signal, weak/mixed text) and explicit follow-up flags, and troughs at clean obvious targets (a swift yes) and already-resolved records. Higher weight = more human attention. Tier-0 config-as-data: change a weight, re-ingest, and the harness re-scores the attention ordering against the labels.",
-  "provenance": {"added": "2026-06-29", "rationale": "initial attention model for the district-driven Stage-5 console rework (REQ-111 follow-on); bands derived with the user — flagged > image-only > signal/text-disagreement > buried-in-long-doc > ambiguous > clean-yes > resolved", "approved_by": "ian", "loop_tier": 0},
-  "weights": {
-    "manual_flag": 100,
-    "image_only": 70,
-    "signal_text_disagree": 65,
-    "buried_long_doc": 55,
-    "ambiguous": 40,
-    "clean_target": 10,
-    "low_signal": 5,
-    "resolved": 0
-  },
-  "thresholds": {
-    "clean_target_win_min": 3,
-    "district_volume_per_extra": 2,
-    "district_volume_cap": 10
-  }
+ "knob": "stage5_attention",
+ "description": "Stage 5 ATTENTION weights + thresholds. Attention = 'where does my judgment move us forward?' \u2014 the INVERSE of automatable-confidence: it peaks at promising-but-unresolved records (strong schedule signal, weak/mixed text) and explicit follow-up flags, and troughs at clean obvious targets (a swift yes) and already-resolved records. Higher weight = more human attention. Tier-0 config-as-data: change a weight, re-ingest, and the harness re-scores the attention ordering against the labels.",
+ "provenance": {
+  "added": "2026-06-29",
+  "rationale": "initial attention model for the district-driven Stage-5 console rework (REQ-111 follow-on); bands derived with the user \u2014 flagged > image-only > signal/text-disagreement > buried-in-long-doc > ambiguous > clean-yes > resolved",
+  "approved_by": "ian",
+  "loop_tier": 0
+ },
+ "weights": {
+  "manual_flag": 100,
+  "image_only": 70,
+  "signal_text_disagree": 65,
+  "schedule_link_only": 60,
+  "buried_long_doc": 55,
+  "ambiguous": 40,
+  "clean_target": 10,
+  "low_signal": 5,
+  "resolved": 0
+ },
+ "thresholds": {
+  "clean_target_win_min": 3,
+  "district_volume_per_extra": 2,
+  "district_volume_cap": 10
+ }
 }

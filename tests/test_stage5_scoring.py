@@ -502,3 +502,22 @@ def test_nonstandard_term_separators_are_space_or_hyphen_only():
         assert BS.NONSTANDARD_TERM_RE.search(hit), hit
     for miss in ["halfXday", "2Xhour delay", "backXtoXschool"]:
         assert not BS.NONSTANDARD_TERM_RE.search(miss), miss
+
+
+# ---- #517: the schedule_link_only shape (detection is pure signal derivation) ----
+def test_schedule_link_only_fires_on_the_link_hub_shape():
+    # the measured shape (78/78 target_absent on the census): schedule-intent keywords, no time content
+    assert BS.schedule_link_only({"positive_kw": ["bell schedule"], "n_times_in_window": 0,
+                                  "table_time_density": 0})
+    assert BS.schedule_link_only({"positive_kw": ["Calendars and Bell Schedules"],
+                                  "n_times_in_window": 1, "table_time_density": 0})
+
+
+def test_schedule_link_only_never_fires_with_time_content():
+    # zero collateral by construction: a real target HAS times / a table
+    assert not BS.schedule_link_only({"positive_kw": ["bell schedule"], "n_times_in_window": 4,
+                                      "table_time_density": 0})
+    assert not BS.schedule_link_only({"positive_kw": ["bell schedule"], "n_times_in_window": 0,
+                                      "table_time_density": 6})
+    assert not BS.schedule_link_only({"positive_kw": ["dress code"], "n_times_in_window": 0,
+                                      "table_time_density": 0})   # no schedule intent

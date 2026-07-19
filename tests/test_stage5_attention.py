@@ -157,3 +157,15 @@ def test_recompute_attention_honors_unresolved_followup_flag(gov_session):
     assert rec[0] == 100 and "manual_flag" in json.loads(rec[1])
     nf = gov_session.execute(text("SELECT n_flagged FROM district WHERE district_id='d3'")).scalar()
     assert nf == 1
+
+
+def test_schedule_link_only_reason_chip():
+    """#517: the one-hop-away shape earns an attention chip on unlabeled records (a recall affordance);
+    a resolved record stays resolved (the label already carries the human's judgment)."""
+    from infrastructure.acquisition.stage5_filter import attention as A
+    cfg = A.load_config()
+    r = A.record_attention({"schedule_link_only": True, "positive_kw": ["bell schedule"]},
+                           "D", None, cfg)
+    assert "schedule_link_only" in r["reasons"] and r["score"] >= cfg["weights"]["schedule_link_only"]
+    resolved = A.record_attention({"schedule_link_only": True}, "D", "labeled", cfg)
+    assert resolved["reasons"] == ["resolved"]
