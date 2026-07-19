@@ -177,3 +177,86 @@ class TestAtomicDiscoveryWrite:
         district = {"district_id": "D4", "name": "Orderville", "state": "IA", "domain": "o.org"}
         D2.write_discovery(district, roster=[], batch_id="batch_00099")
         assert order == ["candidates.json", "discovery.json"]
+
+
+class TestMergeRetrySurvivesCrash:
+    """Review finding on #265: a crash between the candidates and discovery writes on a
+    merge=True redo must not cause the retry to discard the union (the orphaned
+    candidates.json) or the prior schools (living only in the newest renamed-aside file)."""
+
+    @staticmethod
+    def _roster(url):
+        return [{"school_id": "s1", "school": "Fresh High", "bands": ["high"],
+                 "query": "q", "queries": ["q"],
+                 "wave1_raw_urls": [url], "wave1_provider": "brightdata",
+                 "wave1_providers": ["brightdata"],
+                 "wave1_gated": [{"url": url, "kept": True, "reason": "on-domain",
+                                  "provider": "brightdata"}],
+                 "wave2_invoked": False, "wave2_raw_urls": [], "wave2_gated": []}]
+
+    def test_orphaned_candidates_union_survives_retry(self, tmp_path, monkeypatch):
+        import json
+        monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
+        district = {"district_id": "D5", "name": "Crashville", "state": "IA", "domain": "c.org"}
+        # Round 1 completes normally.
+        d = D2.write_discovery(district, self._roster("http://c.org/round1"), "batch_1")
+        # Simulate a crashed round 2: rename-aside already happened, the union candidates.json
+        # was written, but discovery.json was never rewritten (the #265 crash window).
+        (d / "discovery.json").rename(d / "discovery.20990101T000000Z.json")
+        cands = json.loads((d / "candidates.json").read_text())
+        cands["candidates"].append({"url": "http://c.org/round2", "schools": ["Fresh High"],
+                                    "tools": ["serper"], "batch_id": "batch_2"})
+        (d / "candidates.json").write_text(json.dumps(cands))
+        # The retry (round 3, merge=True) must union in BOTH prior rounds' candidates and
+        # recover round 1's schools from the aside file.
+        D2.write_discovery(district, self._roster("http://c.org/round3"), "batch_3", merge=True)
+        urls = {c["url"] for c in json.loads((d / "candidates.json").read_text())["candidates"]}
+        assert {"http://c.org/round1", "http://c.org/round2", "http://c.org/round3"} <= urls
+        schools = json.loads((d / "discovery.json").read_text())["schools"]
+        assert schools and schools[0]["school_id"] == "s1"   # recovered via the aside fallback
+
+    def test_orphaned_candidates_renamed_aside_not_clobbered(self, tmp_path, monkeypatch):
+        import json
+        monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
+        district = {"district_id": "D6", "name": "Orphanville", "state": "IA", "domain": "o.org"}
+        d = D2.lea_dir("D6", "Orphanville")
+        d.mkdir(parents=True)
+        # An orphaned candidates.json with NO discovery.json (first-run crash in the window).
+        (d / "candidates.json").write_text(json.dumps(
+            {"district_id": "D6", "candidates": [{"url": "http://o.org/orphan"}]}))
+        D2.write_discovery(district, self._roster("http://o.org/fresh"), "batch_9")
+        # write-once in spirit: the orphan was renamed aside, not overwritten in place
+        assert list(d.glob("candidates.*.json")), "orphaned candidates.json must be preserved"
+
+
+class TestWave1ProviderAccounting:
+    """Review finding on #341: an empty-but-successful answer still counts as serving, and a
+    failed final query must not be double-counted or misattributed."""
+
+    def test_empty_result_provider_still_listed(self):
+        roster = D2.build_roster(_fu_district("widen_queries"))
+        calls = []
+
+        def fake_search(q, domain):
+            calls.append(q)
+            if len(calls) == 1:
+                return ("brightdata", [])          # ran fine, found nothing (the common case)
+            return ("serper", [f"http://d.org/x{len(calls)}"])
+
+        D2.run_wave1(roster, "d.org", fake_search)
+        assert roster[0]["wave1_providers"] == ["brightdata", "serper"]
+
+    def test_failed_query_provider_not_listed(self):
+        roster = D2.build_roster(_fu_district("widen_queries"))
+        calls = []
+
+        def fake_search(q, domain):
+            calls.append(q)
+            if len(calls) == 1:
+                return ("brightdata", ["http://d.org/a"])
+            raise RuntimeError("network blip")     # every later query fails
+
+        D2.run_wave1(roster, "d.org", fake_search)
+        r = roster[0]
+        assert r["wave1_providers"] == ["brightdata"]   # the failed attempts served nothing
+        assert r["wave1_provider"] == "brightdata"      # last SUCCESSFUL query's provider

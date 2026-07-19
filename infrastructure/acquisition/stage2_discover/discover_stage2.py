@@ -20,7 +20,6 @@ Usage:
 """
 import argparse
 import json
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
@@ -223,9 +222,12 @@ def run_wave1(roster: list, domain: str, search_fn) -> list:
     (provider_name, urls) tuple -- the failover cascade returns the tuple, because only IT knows
     which provider actually served the query. A bare list falls back to the fn's `provider_name`
     attribute. Each URL keeps the provider that FIRST surfaced it (a `provider` key on its
-    wave1_gated entry, preferred by flatten()); `wave1_provider` stays the last query's provider
-    as a scalar summary and `wave1_providers` lists every provider that served the school -- so
-    a mid-set failover (#160 multi-query) no longer loses per-URL attribution."""
+    wave1_gated entry, preferred by flatten()); `wave1_provider` is the last SUCCESSFULLY-
+    answering query's provider (a scalar summary -- a failed final query does not overwrite
+    it, and cannot masquerade as having served) and `wave1_providers` lists every provider
+    that successfully answered a query for the school, INCLUDING legitimate zero-URL answers
+    (a "found nothing" search is service, not failure) -- so a mid-set failover (#160
+    multi-query) no longer loses per-URL attribution or undercounts the audit trail."""
     default_provider = getattr(search_fn, "provider_name", "unknown_wave1")
     for r in roster:
         provider = default_provider
@@ -239,11 +241,11 @@ def run_wave1(roster: list, domain: str, search_fn) -> list:
             except SystemExit:
                 raise
             except Exception as e:
-                qurls = []
+                qurls = None   # None = the query FAILED; [] = it ran and found nothing
                 print(f"   [w1/{r['school'][:24]}] ERR {str(e)[:60]}")
-            if qurls and provider not in providers:
-                providers.append(provider)
-            for u in qurls:
+            if qurls is not None and provider not in providers:
+                providers.append(provider)   # an empty-but-successful answer still counts as serving
+            for u in qurls or []:
                 if u not in seen:
                     seen.add(u)
                     urls.append(u)
@@ -334,12 +336,25 @@ def flatten(roster: list) -> list:
     return list(dedup.values())
 
 
-def _atomic_write_json(path: Path, doc: dict) -> None:
-    """Crash-safe JSON write (#265): serialize to a sibling temp file, then os.replace() --
-    a reader never sees a partially-written file, only the old version or the new one."""
-    tmp = path.with_name(path.name + ".tmp")
-    tmp.write_text(json.dumps(doc, indent=2))
-    os.replace(tmp, path)
+# Crash-safe JSON write (#265) -- the shared common/paths helper (review: this was the third
+# hand-rolled copy of the tmp+os.replace pattern; district_status.export_status and
+# batch_store.write_receipt consolidate onto the same helper post-merge). Kept as a module
+# global so tests can monkeypatch the write for order-spying.
+_atomic_write_json = paths.atomic_write_json
+
+
+def _prior_doc(d: Path, live: Path, stem: str) -> dict:
+    """The most recent prior version of a manifest: the live file if present, else the newest
+    timestamped aside (`<stem>.<ts>.json`). The aside fallback is crash-orphan tolerance
+    (review finding on #265): a prior attempt may have renamed the old files aside and then
+    died between the two writes, leaving e.g. candidates.json present (already the union)
+    but discovery.json absent -- the prior schools then live only in the newest aside."""
+    if live.exists():
+        return json.loads(live.read_text()) or {}
+    asides = sorted(d.glob(f"{stem}.*.json"))   # fs_stamp is lexicographically sortable
+    if asides:
+        return json.loads(asides[-1].read_text()) or {}
+    return {}
 
 
 def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool = False) -> Path:
@@ -366,14 +381,19 @@ def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool 
     disc_path, cand_path = d / "discovery.json", d / "candidates.json"
 
     old_schools, old_candidates = [], []
-    if merge and disc_path.exists():
-        old_schools = (json.loads(disc_path.read_text()) or {}).get("schools", [])
-        if cand_path.exists():
-            old_candidates = (json.loads(cand_path.read_text()) or {}).get("candidates", [])
+    if merge:
+        # Each prior doc is read independently (live file, else newest aside) -- gating BOTH
+        # on disc_path.exists() lost the union when a crashed attempt left an orphaned
+        # candidates.json with no discovery.json (review finding on #265; see _prior_doc).
+        old_schools = _prior_doc(d, disc_path, "discovery").get("schools", [])
+        old_candidates = _prior_doc(d, cand_path, "candidates").get("candidates", [])
 
-    if disc_path.exists():
+    if disc_path.exists() or cand_path.exists():
+        # Rename aside whichever exists -- independent gates, so a crash-orphaned
+        # candidates.json is preserved with a timestamp instead of silently clobbered.
         ts = TU.fs_stamp()
-        disc_path.rename(d / f"discovery.{ts}.json")
+        if disc_path.exists():
+            disc_path.rename(d / f"discovery.{ts}.json")
         if cand_path.exists():
             cand_path.rename(d / f"candidates.{ts}.json")
 

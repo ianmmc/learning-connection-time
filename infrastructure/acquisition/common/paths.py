@@ -12,6 +12,7 @@ Split of concerns (see the 2026-06-25 reorg discussion):
 
 Import locations from here; do not re-hardcode them.
 """
+import json
 import os
 from pathlib import Path
 
@@ -87,3 +88,13 @@ def guard_tracked_backup(out: Path) -> Path:
         _quarantine_noted.add(out.name)
         print(f"[paths] test run — {out.name} export quarantined to {q} (issue #178)", flush=True)
     return q
+
+
+def atomic_write_json(path: Path, doc: dict) -> None:
+    """Crash-safe JSON write: serialize to a sibling temp file, then os.replace() -- a reader
+    never sees a partially-written file, only the old version or the new one. The one shared
+    home for the tmp+replace pattern (previously hand-rolled in district_status.export_status,
+    batch_store.write_receipt, and stage2's manifest writes -- #265 review)."""
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(json.dumps(doc, indent=2))
+    os.replace(tmp, path)
