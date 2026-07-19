@@ -102,6 +102,27 @@ const CMS_HOSTS = loadConfigValues('cms_hosts');
 // text Stage 5 tiers on, so footer building-hours / school-switcher nav can't inject false signal).
 export const DE_CHROME_LANDMARKS = loadConfigValues('de_chrome_landmarks');
 
+// --- Capture-fidelity flags (#518) --------------------------------------------------------
+// Detect captures that succeed mechanically (ok:true) but whose CONTENT is not what the URL
+// promised -- a login wall or a styled soft-404 page. Flag, never drop: the record still
+// captures and processes normally; the flag makes the fidelity problem queryable downstream
+// (Stage 5 must see "capture suspect", not a silent target_absent). Sized by the 2026-07-19
+// corpus survey on #518: 2 login walls + 9 soft-404s among 1,471 live records, all ok:true.
+const LOGIN_URL_RE = /login\.aspx|\/log[io]n(\/|\.|$|\?)|\/sign[-_]?in(\/|\.|$|\?)|[?&]returnurl=/i;
+const SOFT404_RE = /page not found|page cannot be found|status\s*:?\s*404|error\s*:?\s*404|404\s+error/i;
+
+export function fidelityFlags({ url = '', finalUrl = '', text = '', hasPassword = false }) {
+  const flags = [];
+  // Login wall: the URL itself is a login endpoint (Huntington's gateway/Login.aspx?returnUrl=...),
+  // or the rendered page is password-gated with almost no content of its own.
+  if (LOGIN_URL_RE.test(finalUrl) || LOGIN_URL_RE.test(url)
+      || (hasPassword && text.trim().length < 600)) flags.push('login_wall');
+  // Soft-404: a styled "Page Not Found" served 200 (verified visually on morey/arlington.sburg.org
+  // bell-schedule URLs). Scan only the head of the text so a long article MENTIONING a 404 can't trip it.
+  if (SOFT404_RE.test(text.slice(0, 3000))) flags.push('soft_404');
+  return flags;
+}
+
 // --- Fingerprint helpers (raw signals only, no classification) ---------------------------
 // The pure ones are exported for unit testing (capture_fingerprint.test.mjs); the
 // browser-driving ones are not.
@@ -596,12 +617,17 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
         rec.final_url = r.url;
         noteFinalUrl(byDistrict[did], rec.final_url);
         const cls = classifyFetchKind(ct);
-        if (cls.binary) {
+        // #415 (folded into #518): never write a non-2xx body as original.* -- a 404/403 served
+        // with a PDF/image content-type would land HTML error bytes in a file Stage 4's pdftotext
+        // then chokes on. Record the status as a fact and fall through to the render path.
+        if (cls.binary && r.ok) {
           writeFileSync(path.join(recDir, `original.${cls.ext}`), Buffer.from(await r.arrayBuffer()));
           rec.kind = cls.kind;
           rec.files.bin = `original.${cls.ext}`;
           rec.fingerprint = buildFetchFingerprint(r);
           rec.ok = true;
+        } else if (cls.binary) {
+          rec.fetch_status = r.status;
         }
       } catch { /* fall through to render */ }
 
@@ -653,6 +679,14 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
 
           rec.kind = 'html';
           rec.text_times = (text.match(TIME) || []).length;
+
+          // Capture-fidelity flags (#518): login wall / soft-404 detection over what actually
+          // rendered. Flag, never drop -- the record still processes; downstream sees "suspect".
+          const hasPassword = await page.evaluate(
+            () => !!document.querySelector('input[type="password"]'),
+          ).catch(() => false);
+          const flags = fidelityFlags({ url, finalUrl: rec.final_url, text, hasPassword });
+          if (flags.length) rec.fidelity = flags;
 
           // Hosting/CMS fingerprint -- gathered from the goto Response (headers we used to
           // discard) + a single DOM evaluate + a JS-dependency proxy (served-HTML text near

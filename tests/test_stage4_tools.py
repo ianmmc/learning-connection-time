@@ -137,3 +137,40 @@ class TestMalformedManifestTolerance:
                     "captures": [{"url": "u", "hash": "h", "ok": True, "files": {"bin": None}}]}
         problems = C4.check_file_consistency(district)
         assert len(problems) == 1 and "non-string files entry" in problems[0]
+
+
+class TestTimeBlindFidelity:
+    """#518 — the SILENT capture-fidelity shape: a schedule-promising URL whose usable reps
+    all recovered zero clock times gets fidelity=['time_blind']. Assertion is on the URL
+    (capture metadata), never the text — text-aboutness stays Stage 5's (is_usable docstring)."""
+
+    FILLER = "Our district is committed to student success and community engagement. " * 4
+
+    def _rec(self, tmp_path, url, text, final_url=None):
+        (tmp_path / "page.txt").write_text(text)
+        rec = {"url": url, "hash": "h", "ok": True, "files": {"txt": "page.txt"}}
+        if final_url:
+            rec["final_url"] = final_url
+        return C4.process_record(rec, tmp_path)
+
+    def test_schedule_url_with_zero_times_is_flagged(self, tmp_path):
+        out = self._rec(tmp_path, "https://x.org/about-us/bell-schedule", self.FILLER)
+        assert out["usable"] is True and out["fidelity"] == ["time_blind"]
+
+    def test_times_present_means_no_flag(self, tmp_path):
+        out = self._rec(tmp_path, "https://x.org/bell-schedule",
+                        self.FILLER + " Breakfast 8:55 AM, dismissal 3:43 PM.")
+        assert "fidelity" not in out
+
+    def test_non_schedule_url_with_zero_times_is_not_flagged(self, tmp_path):
+        out = self._rec(tmp_path, "https://x.org/news/article-42", self.FILLER)
+        assert "fidelity" not in out
+
+    def test_unusable_record_is_not_flagged_its_failure_is_already_visible(self, tmp_path):
+        out = self._rec(tmp_path, "https://x.org/bell-schedule", "tiny")
+        assert out["usable"] is False and "fidelity" not in out
+
+    def test_post_redirect_final_url_asserting_a_schedule_counts(self, tmp_path):
+        out = self._rec(tmp_path, "https://x.org/documents/716886", self.FILLER,
+                        final_url="https://x.org/documents/bus-%26-bell-schedules/716886")
+        assert out["fidelity"] == ["time_blind"]

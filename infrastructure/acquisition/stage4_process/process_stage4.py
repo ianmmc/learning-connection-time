@@ -50,6 +50,12 @@ from infrastructure.acquisition.common import timeutil as TU
 RAW_DIR = Path("data/raw/lea-website-captures")
 
 TIME_RE = re.compile(r"\b\d{1,2}:\d{2}\s*(?:[AaPp]\.?[Mm]\.?)?")
+# #518 time_blind: a URL that PROMISES a schedule (capture metadata, not text content -- the
+# text-aboutness judgment stays Stage 5's, per is_usable's docstring) whose usable reps all
+# recovered zero clock times. Sized by the 2026-07-19 corpus survey: 61 such records, incl.
+# CMS document-viewer pages and soft-404s -- the class that otherwise lands as a silent
+# target_absent at Stage 5.
+SCHED_URL_RE = re.compile(r"bell[-_ %]?schedule|daily[-_ %]?schedule|school[-_ %]hours|class[-_ %]times", re.I)
 USABLE_MIN_CHARS = 120  # reused from reading.py's PDF_MIN_TEXT_CHARS precedent, not a new number
 USABLE_PRINTABLE_RATIO = 0.85
 IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".gif", ".tif", ".tiff")
@@ -384,8 +390,15 @@ def process_record(rec: dict, record_dir: Path) -> dict:
         except Exception as e:
             add("tesseract_raster", None, f"{type(e).__name__}: {e}", None, write=False)
 
-    return {"url": rec["url"], "hash": rec["hash"],
-            "usable": any(t["usable"] for t in texts), "texts": texts}
+    out = {"url": rec["url"], "hash": rec["hash"],
+           "usable": any(t["usable"] for t in texts), "texts": texts}
+    # #518 time_blind: only the SILENT failure shape gets the flag -- usable text came back
+    # (so nothing else marks the record suspect) from a schedule-promising URL, yet no rep
+    # holds a single clock time. Unusable/errored records are already visible via `usable`.
+    if out["usable"] and all(t["n_times"] == 0 for t in texts) \
+            and SCHED_URL_RE.search(f"{rec.get('url') or ''} {rec.get('final_url') or ''}"):
+        out["fidelity"] = ["time_blind"]
+    return out
 
 
 def process_district(district: dict) -> list[dict]:

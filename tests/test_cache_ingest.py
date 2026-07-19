@@ -45,6 +45,25 @@ def test_emergent_source_and_failure_reason_are_queryable(gov_session):
     assert gov_session.execute(text("SELECT err FROM capture WHERE ok=0")).scalar() == "security_block"
 
 
+def test_fidelity_flags_are_queryable_on_capture_and_processed_doc(gov_session):
+    """#518 — Stage 3's login_wall/soft_404 and Stage 4's time_blind land in the DB working
+    store (the receipts are never the transport), absent-field records ingest as '[]'."""
+    _create_cache_temp(gov_session)
+    caps = {"h1": {"url": "u1", "ok": True, "fidelity": ["login_wall", "soft_404"]},
+            "h2": {"url": "u2", "ok": True}}
+    CI.upsert_capture_rows(gov_session, "d1", caps)
+    assert gov_session.execute(text("SELECT fidelity_json FROM capture WHERE hash='h1'")).scalar() \
+        == '["login_wall", "soft_404"]'
+    assert gov_session.execute(text("SELECT fidelity_json FROM capture WHERE hash='h2'")).scalar() == "[]"
+
+    processed = {"h1": {"url": "u1", "usable": True, "texts": [], "fidelity": ["time_blind"]},
+                 "h2": {"url": "u2", "usable": True, "texts": []}}
+    CI.upsert_processed_rows(gov_session, "d1", processed)
+    assert gov_session.execute(text("SELECT fidelity_json FROM processed_doc WHERE hash='h1'")).scalar() \
+        == '["time_blind"]'
+    assert gov_session.execute(text("SELECT fidelity_json FROM processed_doc WHERE hash='h2'")).scalar() == "[]"
+
+
 def test_discovery_upsert_rolls_up_waves(gov_session):
     _create_cache_temp(gov_session)
     disc = {"district_id": "d1", "schools": [

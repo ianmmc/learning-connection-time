@@ -54,8 +54,9 @@ available*, decide which representation to trust downstream.
     plain-named files (`page.txt`/`page.png`/`page.pdf` for HTML; `original.<ext>` for a direct binary;
     `<format>.<ext>` for a Drive export; plus the de-chrome segments — §2d).
   - `captures.json` — per-candidate record (`url`, `hash`, `tools`/`source`/`found_on`, `ok`, `kind`,
-    `final_url`, `files`, `err`, `fingerprint`, `segmented`) — a separate file from `candidates.json`,
-    never a mutation of it.
+    `final_url`, `files`, `err`, `fingerprint`, `segmented`; `fidelity` (#518: `login_wall`/`soft_404`,
+    present only when flagged) and `fetch_status` (#415: the non-2xx status when a binary-content-type
+    fetch was refused a write)) — a separate file from `candidates.json`, never a mutation of it.
 - **Gate:** **none** (Stages 2/3/4 ungated). Registry outcome: `captured_all` / `captured_partial` /
   `capture_failed_all` + a short `notes` rollup.
 
@@ -352,3 +353,16 @@ wrapper (§2d). #416 fixed a real false-match in `cmsHint`'s host suffix check (
 predicate already used elsewhere in the gate, and pinned its behavior against the Python-side
 `_host_matches` with a shared golden-vector fixture (§2c) — the review pattern this epic's sweep repeated
 across every stage: a cross-language behavior claim gets a fixture, not just a code comment.
+
+**2026-07-19 — #518 capture-fidelity flags + the #415 fold-in (epic #111 Phase 4).** Sized by a
+read-only corpus survey (1,471 live records; numbers on #518): captures that succeed mechanically but
+whose content is not what the URL promised now carry a `fidelity` flag list on the record — `login_wall`
+(URL is a login endpoint, or a password field gates a near-empty page; Huntington's
+`gateway/Login.aspx?returnUrl=…` is the motivating pair) and `soft_404` (a styled "Page Not Found"
+served 200; 9 in-corpus, verified visually on morey/arlington.sburg.org's bell-schedule URLs). Flag,
+never drop — the record still captures/processes; the flags project into the governance DB
+(`capture.fidelity_json`, cache_ingest) so Stage 5 sees "capture suspect", never a silent
+`target_absent`. Detection is the pure exported `fidelityFlags()` (capture_fidelity.test.mjs). #415
+folded in: the direct-fetch binary write is now gated on `r.ok` — a 404/403 served with a PDF/image
+content-type records `fetch_status` and falls to the render path instead of landing HTML error bytes
+in `original.pdf` (zero instances in-corpus; purely preventive, pinned by a static-source test).
