@@ -47,11 +47,11 @@ CACHE_DDL = [
     """CREATE TABLE IF NOT EXISTS capture (
         district_id text, hash text, url text, final_url text, ok integer, kind text, source text,
         found_on text, tools_json text, files_json text, modals_dismissed integer, segmented integer,
-        text_times integer, final_host text, fingerprint_json text, err text,
+        text_times integer, final_host text, fingerprint_json text, err text, fidelity_json text,
         PRIMARY KEY (district_id, hash))""",
     # Stage 4 processed doc — one row per (district, processed hash); texts live in `representation`.
     """CREATE TABLE IF NOT EXISTS processed_doc (
-        district_id text, hash text, url text, usable integer, n_texts integer,
+        district_id text, hash text, url text, usable integer, n_texts integer, fidelity_json text,
         PRIMARY KEY (district_id, hash))""",
 ]
 
@@ -78,20 +78,24 @@ UPSERT_CANDIDATE = text(
          n_schools=excluded.n_schools""")
 UPSERT_CAPTURE = text(
     """INSERT INTO capture (district_id, hash, url, final_url, ok, kind, source, found_on,
-         tools_json, files_json, modals_dismissed, segmented, text_times, final_host, fingerprint_json, err)
+         tools_json, files_json, modals_dismissed, segmented, text_times, final_host, fingerprint_json,
+         err, fidelity_json)
        VALUES (:district_id, :hash, :url, :final_url, :ok, :kind, :source, :found_on,
-         :tools_json, :files_json, :modals_dismissed, :segmented, :text_times, :final_host, :fingerprint_json, :err)
+         :tools_json, :files_json, :modals_dismissed, :segmented, :text_times, :final_host,
+         :fingerprint_json, :err, :fidelity_json)
        ON CONFLICT (district_id, hash) DO UPDATE SET
          url=excluded.url, final_url=excluded.final_url, ok=excluded.ok, kind=excluded.kind,
          source=excluded.source, found_on=excluded.found_on, tools_json=excluded.tools_json,
          files_json=excluded.files_json, modals_dismissed=excluded.modals_dismissed,
          segmented=excluded.segmented, text_times=excluded.text_times,
-         final_host=excluded.final_host, fingerprint_json=excluded.fingerprint_json, err=excluded.err""")
+         final_host=excluded.final_host, fingerprint_json=excluded.fingerprint_json, err=excluded.err,
+         fidelity_json=excluded.fidelity_json""")
 UPSERT_PROCESSED_DOC = text(
-    """INSERT INTO processed_doc (district_id, hash, url, usable, n_texts)
-       VALUES (:district_id, :hash, :url, :usable, :n_texts)
+    """INSERT INTO processed_doc (district_id, hash, url, usable, n_texts, fidelity_json)
+       VALUES (:district_id, :hash, :url, :usable, :n_texts, :fidelity_json)
        ON CONFLICT (district_id, hash) DO UPDATE SET
-         url=excluded.url, usable=excluded.usable, n_texts=excluded.n_texts""")
+         url=excluded.url, usable=excluded.usable, n_texts=excluded.n_texts,
+         fidelity_json=excluded.fidelity_json""")
 
 
 # Columns added after a table's first creation. Because the cache is now never dropped, a table that
@@ -99,6 +103,10 @@ UPSERT_PROCESSED_DOC = text(
 # reason) won't pick it up from CREATE TABLE IF NOT EXISTS — so apply idempotent ALTERs too.
 CACHE_ALTERS = [
     "ALTER TABLE capture ADD COLUMN IF NOT EXISTS err text",
+    # #518: capture-fidelity flags (login_wall / soft_404 from Stage 3; time_blind from Stage 4) —
+    # queryable from the DB so Stage 5 sees "capture suspect", never a silent target_absent.
+    "ALTER TABLE capture ADD COLUMN IF NOT EXISTS fidelity_json text",
+    "ALTER TABLE processed_doc ADD COLUMN IF NOT EXISTS fidelity_json text",
 ]
 
 
@@ -166,6 +174,14 @@ def upsert_discovery_rows(con, disc: dict, cand_map: dict) -> None:
             "tools_json": json.dumps(c.get("tools", [])), "n_schools": len(c.get("schools", []))})
 
 
+def _flag_list(v) -> list:
+    """Normalize a record's fidelity value to a list of flags. `or []` alone would pass a
+    hand-edited scalar (e.g. \"login_wall\" as a bare string) through json.dumps and downstream
+    `in`/iteration would then match characters, not flags -- same hand-edited-manifest bar as
+    the #351 non-string files{} guard."""
+    return v if isinstance(v, list) else []
+
+
 def upsert_capture_rows(con, district_id: str, caps: dict) -> None:
     """Replace one district's Stage-3 capture receipts (one row per hash, incl. captures that never
     processed). `caps`: hash -> capture record dict (from captures.json). DELETE-then-UPSERT (#33)."""
@@ -181,7 +197,7 @@ def upsert_capture_rows(con, district_id: str, caps: dict) -> None:
             "modals_dismissed": int(bool(cap.get("modals_dismissed"))),
             "segmented": int(bool(cap.get("segmented"))), "text_times": cap.get("text_times"),
             "final_host": fp.get("final_host"), "fingerprint_json": json.dumps(fp),
-            "err": cap.get("err")})
+            "err": cap.get("err"), "fidelity_json": json.dumps(_flag_list(cap.get("fidelity")))})
 
 
 def upsert_processed_rows(con, district_id: str, processed: dict) -> None:
@@ -191,7 +207,8 @@ def upsert_processed_rows(con, district_id: str, processed: dict) -> None:
     for h, prec in processed.items():
         con.execute(UPSERT_PROCESSED_DOC, {
             "district_id": district_id, "hash": h, "url": prec.get("url"),
-            "usable": int(bool(prec.get("usable"))), "n_texts": len(prec.get("texts", []))})
+            "usable": int(bool(prec.get("usable"))), "n_texts": len(prec.get("texts", [])),
+            "fidelity_json": json.dumps(_flag_list(prec.get("fidelity")))})
 
 
 # ---------------------------------------------------------------- dir-based ingest (one district)

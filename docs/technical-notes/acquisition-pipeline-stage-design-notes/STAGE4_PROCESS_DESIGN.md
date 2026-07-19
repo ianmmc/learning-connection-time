@@ -361,3 +361,12 @@ into `headless.py`'s `run_batch`. The #206 review found this left Stage 3/4's ol
 (`run --all` / `run <district_id>`, which take a district dir, not a batch_id) unguarded; extended the
 module with the district-grain `assert_district_runnable`, which resolves the producing batch via the
 district's own `discovery.json`. See §2f.
+
+**2026-07-19 — #518 `time_blind` fidelity flag (epic #111 Phase 4).** `process_record` now flags the
+one SILENT fidelity shape Stage 4 can see: a schedule-promising URL (`SCHED_URL_RE` over
+`url`/`final_url` — capture metadata, deliberately NOT the text, preserving the is_usable docstring's
+Stage-4/5 aboutness boundary) whose usable reps all recovered zero clock times →
+`fidelity: ["time_blind"]` on the processed record, projected to `processed_doc.fidelity_json`
+(cache_ingest). Unusable/errored records are not flagged — their failure is already visible via
+`usable`. Sized by the 2026-07-19 survey: 61 in-corpus records (CMS document-viewer pages whose
+linked PDF was never fetched, soft-404s, login walls). Tests: TestTimeBlindFidelity.
