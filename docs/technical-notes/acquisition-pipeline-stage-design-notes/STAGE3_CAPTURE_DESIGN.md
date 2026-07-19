@@ -385,8 +385,9 @@ the settle window + the Tier 2.5/3 visual backstop. Full measurements: #225 (202
 
 **2026-07-19 — #116: partial retry (epic #111 Phase 4).** A `captured_partial` district's retryable
 remnants are now re-attemptable without re-hitting anything that already answered: `python3 -m
-infrastructure.acquisition.stage3_capture.headless retry <batch_id>` (or `retry_partial()` — the
-console can drive it the same way as `run_batch`). Selection: a district dispatches only if its
+infrastructure.acquisition.stage3_capture.headless retry <batch_id>`, or the console's
+`POST /api/capture/{batch_id}/retry` (same background-job/lock machinery as `/run`; a UI button
+rides with the gate@5 console work — the endpoint is curl-able meanwhile). Selection: a district dispatches only if its
 on-disk manifest holds ≥1 failed record whose err is RETRYABLE (`not_attempted*` — deadline
 truncation; `not_recovered*` — crash reconstruct) AND whose URL is still in the capture plan
 (fragment-stripped parity with candidates.json). The Node run then executes in `retryable-only`

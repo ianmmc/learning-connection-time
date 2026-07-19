@@ -171,9 +171,12 @@ class TestRetryPartial:
     carry verbatim, and districts with nothing retryable are never dispatched."""
 
     def _seed_partial(self, root, did, name, captures, cand_urls=None):
+        """One writer per file: candidates.json is written exactly once (review fix — the earlier
+        seed-then-overwrite made it ambiguous which plan a test actually exercised)."""
         d = _seed_district(root, did, name)
-        urls = cand_urls or [f"http://{did}.org/a"]
-        (d / "candidates.json").write_text(json.dumps({"candidates": [{"url": u} for u in urls]}))
+        if cand_urls is not None:
+            (d / "candidates.json").write_text(
+                json.dumps({"candidates": [{"url": u} for u in cand_urls]}))
         (d / "captures.json").write_text(json.dumps(captures))
         return d
 

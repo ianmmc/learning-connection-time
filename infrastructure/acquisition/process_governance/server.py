@@ -1344,6 +1344,45 @@ async def capture_run(batch_id: str, payload: dict):
     return {"started": True, "batch_id": batch_id}
 
 
+@app.post("/api/capture/{batch_id}/retry")
+async def capture_retry(batch_id: str, payload: dict):
+    """#116: re-attempt the batch's RETRYABLE capture failures (not_attempted/not_recovered) as a
+    background job — same job/lock machinery as /run; one-attempt errs (security_block,
+    needs_oauth_reauth) are never re-hit (headless.retry_partial)."""
+    actor = payload.get("actor", "ian")
+    batch = _batch_from_db(batch_id)
+    if batch is None:
+        raise HTTPException(404, f"no such batch {batch_id}")
+    existing = _CAPTURE_JOBS.get(batch_id)
+    if existing and existing["state"] == "running":
+        raise HTTPException(409, f"capture already running for {batch_id}")
+    run_lock = _acquire_batch_run(batch_id)
+
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    job = {"state": "running", "started_at": now, "actor": actor, "events": [],
+           "summary": None, "error": None, "finished_at": None}
+    _CAPTURE_JOBS[batch_id] = job
+
+    def _on_event(kind, p):
+        job["events"].append({"kind": kind, **p})
+
+    def _work():
+        try:
+            job["summary"] = H3.retry_partial(batch, actor=actor, on_event=_on_event, _run=_tracked_run)
+            job["state"] = "done"
+        except SystemExit as e:
+            job["state"], job["error"] = "halted", f"CONTROL FAILURE: {e}"
+        except Exception as e:
+            job["state"], job["error"] = "error", f"{type(e).__name__}: {e}"
+        finally:
+            job["finished_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            run_lock.release()
+
+    threading.Thread(target=_work, name=f"capture-retry-{batch_id}", daemon=True).start()
+    return {"started": True, "batch_id": batch_id, "mode": "retry"}
+
+
 # ---------------------------------------------------------------- Stage 4 (Process) console — REQ-111
 # Stage 4 is UNGATED -> status/observability (a processing-health + tool-effectiveness readout read FROM
 # THE DB cross-stage cache, the working store the Stage-4 finish hook keeps fresh) + an orchestration

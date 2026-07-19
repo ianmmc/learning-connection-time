@@ -253,38 +253,47 @@ def run_batch(batch: dict, *, actor: str = "auto:stage3", on_event=None, _run=su
             return {"batch_id": batch_id, "todo": 0, "skipped": len(skipped),
                     "no_links": len(no_link), "results": []}
 
-        registry = DS.load()
-        for d in todo:
-            DS.record_stage(registry, d["district_id"], d["name"], d["state"], stage_name="capture",
-                            event_type="dispatched", actor=actor, batch_id=batch_id)
-            emit("dispatched", district_id=d["district_id"], name=d["name"])
-        DS.save(registry, export=False)
-
-        results = []
-        for d in todo:
-            did = d["district_id"]
-            try:
-                _capture_one(d, _run=_run)
-                registry = DS.load()
-                outcome = C3.finish_district(d, registry)   # reads captures.json + upserts the DB cache
-                DS.save(registry, export=False)
-                results.append({"district_id": did, "name": d["name"], "outcome": outcome})
-                emit("completed", district_id=did, name=d["name"], outcome=outcome)
-            except SystemExit:
-                raise   # CONTROL FAILURE -- never swallow
-            except Exception as e:
-                registry = DS.load()
-                DS.record_stage(registry, did, d["name"], d["state"], stage_name="capture",
-                                event_type="failed", actor=actor, batch_id=batch_id,
-                                notes=f"{type(e).__name__}: {str(e)[:200]}")
-                DS.save(registry, export=False)
-                results.append({"district_id": did, "name": d["name"], "outcome": "error",
-                                "error": f"{type(e).__name__}: {str(e)[:200]}"})
-                emit("failed", district_id=did, name=d["name"], error=str(e)[:200])
+        results = _dispatch_and_finish(todo, batch_id=batch_id, actor=actor, emit=emit, _run=_run)
         return {"batch_id": batch_id, "todo": len(todo), "skipped": len(skipped),
                 "no_links": len(no_link), "results": results}
     finally:
         DS.export()   # one full district_status.json regeneration per run (issue #49)
+
+
+def _dispatch_and_finish(todo: list, *, batch_id: str, actor: str, emit, _run,
+                         retryable_only: bool = False, dispatch_notes: str = "") -> list:
+    """The shared dispatch + capture + finish + error-isolation loop for run_batch AND retry_partial
+    (#116 review: one copy, so a future fix to the loop can't silently apply to only one of them).
+    SEQUENTIAL (one registry writer). A SystemExit is a CONTROL FAILURE and propagates."""
+    registry = DS.load()
+    for d in todo:
+        DS.record_stage(registry, d["district_id"], d["name"], d["state"], stage_name="capture",
+                        event_type="dispatched", actor=actor, batch_id=batch_id, notes=dispatch_notes)
+        emit("dispatched", district_id=d["district_id"], name=d["name"])
+    DS.save(registry, export=False)
+
+    results = []
+    for d in todo:
+        did = d["district_id"]
+        try:
+            _capture_one(d, retryable_only=retryable_only, _run=_run)
+            registry = DS.load()
+            outcome = C3.finish_district(d, registry)   # reads captures.json + upserts the DB cache
+            DS.save(registry, export=False)
+            results.append({"district_id": did, "name": d["name"], "outcome": outcome})
+            emit("completed", district_id=did, name=d["name"], outcome=outcome)
+        except SystemExit:
+            raise   # CONTROL FAILURE -- never swallow
+        except Exception as e:
+            registry = DS.load()
+            DS.record_stage(registry, did, d["name"], d["state"], stage_name="capture",
+                            event_type="failed", actor=actor, batch_id=batch_id,
+                            notes=f"{type(e).__name__}: {str(e)[:200]}")
+            DS.save(registry, export=False)
+            results.append({"district_id": did, "name": d["name"], "outcome": "error",
+                            "error": f"{type(e).__name__}: {str(e)[:200]}"})
+            emit("failed", district_id=did, name=d["name"], error=str(e)[:200])
+    return results
 
 
 # ----------------------------------------------------------------------------------- partial retry (#116)
@@ -338,36 +347,9 @@ def retry_partial(batch: dict, *, actor: str = "auto:stage3-retry", on_event=Non
         emit("retry_reconciled", todo=[d["district_id"] for d in todo])
         if not todo:
             return {"batch_id": batch_id, "todo": 0, "results": []}
-
-        registry = DS.load()
-        for d in todo:
-            DS.record_stage(registry, d["district_id"], d["name"], d["state"], stage_name="capture",
-                            event_type="dispatched", actor=actor, batch_id=batch_id,
-                            notes="partial retry (#116): retryable failures only")
-            emit("dispatched", district_id=d["district_id"], name=d["name"])
-        DS.save(registry, export=False)
-
-        results = []
-        for d in todo:
-            did = d["district_id"]
-            try:
-                _capture_one(d, retryable_only=True, _run=_run)
-                registry = DS.load()
-                outcome = C3.finish_district(d, registry)
-                DS.save(registry, export=False)
-                results.append({"district_id": did, "name": d["name"], "outcome": outcome})
-                emit("completed", district_id=did, name=d["name"], outcome=outcome)
-            except SystemExit:
-                raise   # CONTROL FAILURE -- never swallow
-            except Exception as e:
-                registry = DS.load()
-                DS.record_stage(registry, did, d["name"], d["state"], stage_name="capture",
-                                event_type="failed", actor=actor, batch_id=batch_id,
-                                notes=f"partial retry: {type(e).__name__}: {str(e)[:200]}")
-                DS.save(registry, export=False)
-                results.append({"district_id": did, "name": d["name"], "outcome": "error",
-                                "error": f"{type(e).__name__}: {str(e)[:200]}"})
-                emit("failed", district_id=did, name=d["name"], error=str(e)[:200])
+        results = _dispatch_and_finish(todo, batch_id=batch_id, actor=actor, emit=emit, _run=_run,
+                                       retryable_only=True,
+                                       dispatch_notes="partial retry (#116): retryable failures only")
         return {"batch_id": batch_id, "todo": len(todo), "results": results}
     finally:
         DS.export()
