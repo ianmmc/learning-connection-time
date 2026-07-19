@@ -121,3 +121,79 @@ def test_manual_capture_record_copies_file_and_builds_record(tmp_path):
     assert rec["files"] == {"bin": "original.pdf"}
     dest = dist["dir"] / "captures" / C3._url_hash(url) / "original.pdf"
     assert dest.exists() and dest.read_text().startswith("%PDF")
+
+
+# ---------------------------------------------------------------- #117: the per-task journal
+def _journal_line(dist, rec):
+    with open(dist["dir"] / "captures.journal.jsonl", "a") as f:
+        f.write(json.dumps(rec) + "\n")
+
+
+def test_journal_record_wins_over_folder_scan_full_fidelity(tmp_path):
+    """A journaled record carries what the folder scan can't (fingerprint/final_url) — it must be
+    used verbatim instead of the degraded folder reconstruction."""
+    cands = [{"url": "https://x.org/page/", "tools": ["bd"]}]
+    dist = _district(tmp_path, cands)
+    _folder(dist, "https://x.org/page/", {"page.txt": "8:00"})
+    h = C3._url_hash("https://x.org/page/")
+    _journal_line(dist, {"url": "https://x.org/page/", "hash": h, "ok": True, "kind": "html",
+                         "files": {"txt": "page.txt"}, "final_url": "https://x.org/page/?v=2",
+                         "fingerprint": {"final_host": "x.org"}, "source": "discovered"})
+    recs = C3.reconstruct_captures(dist)
+    assert len(recs) == 1
+    assert recs[0]["final_url"] == "https://x.org/page/?v=2"        # journal fidelity, not degraded
+    assert recs[0]["fingerprint"] == {"final_host": "x.org"}
+    assert "reconstructed" not in recs[0]                            # a live record, not a rebuild
+
+
+def test_journal_recovers_emergent_captures_beyond_the_plan(tmp_path):
+    """THE #117 case: an emergent capture's URL was in-memory only — pre-journal reconstruction
+    abandoned it (md5 is one-way). With a journal line it comes back, full-fidelity."""
+    dist = _district(tmp_path, [{"url": "https://x.org/planned/", "tools": []}])
+    _folder(dist, "https://x.org/planned/", {"page.txt": "hello"})
+    _journal_line(dist, {"url": "https://cdn.example.com/bell.pdf", "hash": "abc123def0",
+                         "ok": True, "kind": "pdf", "files": {"bin": "original.pdf"},
+                         "source": "emergent", "found_on": "https://x.org/planned/"})
+    recs = C3.reconstruct_captures(dist)
+    by_source = {r["source"]: r for r in recs}
+    assert by_source["emergent"]["url"] == "https://cdn.example.com/bell.pdf"
+    assert by_source["emergent"]["ok"] is True
+
+
+def test_journal_torn_final_line_and_garbage_are_tolerated(tmp_path):
+    """The SIGKILL can land mid-append — the torn last line must be skipped, not crash recovery."""
+    dist = _district(tmp_path, [{"url": "https://x.org/a/", "tools": []}])
+    h = C3._url_hash("https://x.org/a/")
+    _journal_line(dist, {"url": "https://x.org/a/", "hash": h, "ok": True, "kind": "html",
+                         "files": {"txt": "page.txt"}, "source": "discovered"})
+    with open(dist["dir"] / "captures.journal.jsonl", "a") as f:
+        f.write('{"url": "https://x.org/b/", "hash": "trunca')   # torn at the kill point
+    recs = C3.reconstruct_captures(dist)
+    assert len(recs) == 1 and recs[0]["ok"] is True
+
+
+def test_journal_latest_line_wins_and_renamed_aside_leftovers_are_read(tmp_path):
+    """A crash leftover renamed aside by a later run still counts (oldest first), and the LIVE
+    journal's line supersedes it for the same hash — a retried record beats its earlier attempt."""
+    dist = _district(tmp_path, [{"url": "https://x.org/a/", "tools": []}])
+    h = C3._url_hash("https://x.org/a/")
+    (dist["dir"] / "captures.journal.20260101T000000Z.jsonl").write_text(
+        json.dumps({"url": "https://x.org/a/", "hash": h, "ok": False, "files": {},
+                    "err": "not_attempted (capture deadline reached)", "source": "discovered"}) + "\n")
+    _journal_line(dist, {"url": "https://x.org/a/", "hash": h, "ok": True, "kind": "html",
+                         "files": {"txt": "page.txt"}, "source": "discovered"})
+    recs = C3.reconstruct_captures(dist)
+    assert len(recs) == 1 and recs[0]["ok"] is True                  # the retry's line won
+
+
+def test_write_manifest_consumes_all_journals(tmp_path):
+    """Review fix on #563: a LANDED manifest supersedes every journal — write_manifest sweeps the
+    live journal AND renamed-aside crash leftovers, so a future reconstruct (after a re-discovery
+    deletes the manifest) can never resurrect records from a defunct round."""
+    dist = _district(tmp_path, [{"url": "https://x.org/a/", "tools": []}])
+    _journal_line(dist, {"url": "https://x.org/a/", "hash": "aaaaaaaaaa", "ok": True, "files": {}})
+    (dist["dir"] / "captures.journal.20260101T000000Z.jsonl").write_text("{}\n")
+    C3.write_manifest(dist, [{"url": "https://x.org/a/", "hash": "aaaaaaaaaa", "ok": True, "files": {}}])
+    assert (dist["dir"] / "captures.json").exists()
+    assert not (dist["dir"] / "captures.journal.jsonl").exists()
+    assert not list(dist["dir"].glob("captures.journal.*.jsonl"))

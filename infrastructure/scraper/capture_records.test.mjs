@@ -6,6 +6,7 @@
 // fingerprint helpers' tests -- these cover the deterministic manifest logic.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'fs';
 import { noteFileResult, noteFinalUrl, stripFragment, seedFromPriorCaptures, isRetryableErr } from './capture_discovery.mjs';
 
 test('noteFileResult records a files{} entry only on success (#18)', () => {
@@ -116,4 +117,21 @@ test('seedFromPriorCaptures default mode is unchanged by the #116 param (any fai
   const prior = [{ url: 'https://x.org/waf', ok: false, source: 'discovered', files: {}, err: 'security_block' }];
   seedFromPriorCaptures(district, prior, new Set(['https://x.org/waf']));
   assert.equal(district.records.length, 0);                    // #174 follow-up semantics preserved
+});
+
+test('#117 pins: the per-task journal is appended per record, renamed aside at start, deleted after the manifest', () => {
+  // The journal write sites live in the browser-driving loop (uncovered by convention, REQ-079);
+  // pin the three load-bearing behaviors as source shapes instead.
+  const src = readFileSync(new URL('./capture_discovery.mjs', import.meta.url), 'utf8');
+  // 1. appended in processTask's finally, best-effort (a journal failure must not fail the task)
+  assert.match(src, /appendFileSync\(byDistrict\[t\.did\]\.journalPath, `\$\{JSON\.stringify\(rec\)\}\\n`\)/,
+    'each completed record must be journaled');
+  // 2. a crash leftover is renamed aside (uniqueness-guarded), never clobbered
+  assert.match(src, /let aside = path\.join\(ROOT, did, `captures\.journal\.\$\{tsSuffix\(\)\}\.jsonl`\);[\s\S]{0,300}?renameSync\(journalPath, aside\)/,
+    'a leftover journal must be preserved aside with a uniqueness guard');
+  // 3. ALL journals (live + renamed-aside leftovers) are swept only after the manifest write
+  // LANDED (inside the same try, after writeVersioned) -- a landed manifest supersedes them,
+  // and sweeping leftovers is what stops a future reconstruct resurrecting a defunct round.
+  assert.match(src, /writeVersioned\(path\.join\(ROOT, did, 'captures\.json'\)[\s\S]{0,900}?f\.startsWith\('captures\.journal\.'\)[\s\S]{0,200}?unlinkSync/,
+    'every journal is swept only once captures.json supersedes it');
 });

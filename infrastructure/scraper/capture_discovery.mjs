@@ -36,7 +36,7 @@
 //       fidelity flags from facts already on disk (url/final_url, page.txt head,
 //       fingerprint.has_password) -- apply a LOGIN/SOFT404 regex tuning without re-capturing.
 import { chromium } from 'playwright';
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, renameSync } from 'fs';
+import { readFileSync, writeFileSync, appendFileSync, mkdirSync, readdirSync, existsSync, renameSync, unlinkSync } from 'fs';
 import { createHash } from 'crypto';
 import path from 'path';
 import { pathToFileURL, fileURLToPath } from 'url';
@@ -594,7 +594,22 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
     const meta = JSON.parse(readFileSync(path.join(ROOT, did, 'candidates.json')));
     const capDir = path.join(ROOT, did, 'captures');
     mkdirSync(capDir, { recursive: true });
-    byDistrict[did] = { capDir, records: [], seen: new Set(), emergent: 0 };
+    // #117: the per-task journal. One JSONL line per record as it COMPLETES, so a hard kill
+    // (SIGKILL before the end-of-run manifest) preserves full-fidelity records -- including
+    // EMERGENT ones, whose URL is otherwise unrecoverable (md5 is one-way). A leftover journal
+    // from a crashed run is renamed aside (never clobbered) -- reconstruct consumes it from
+    // either name; the live journal is deleted once the real manifest lands (it supersedes it).
+    const journalPath = path.join(ROOT, did, 'captures.journal.jsonl');
+    if (existsSync(journalPath)) {
+      // Uniqueness guard (review): tsSuffix is second-resolution and renameSync overwrites --
+      // two rename-asides in the same second must not clobber an earlier crash journal.
+      let aside = path.join(ROOT, did, `captures.journal.${tsSuffix()}.jsonl`);
+      for (let n = 1; existsSync(aside); n += 1) {
+        aside = path.join(ROOT, did, `captures.journal.${tsSuffix()}-${n}.jsonl`);
+      }
+      renameSync(journalPath, aside);
+    }
+    byDistrict[did] = { capDir, records: [], seen: new Set(), emergent: 0, journalPath };
     // #174 (follow-up redo): a prior round's captures.json seeds records + seen so this run
     // captures only the delta and the written manifest stays the district's complete union.
     // First runs are untouched (no manifest exists until end-of-run). An unreadable prior
@@ -810,6 +825,11 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
       if (!rec.err) rec.err = String(e).slice(0, 120);
     } finally {
       byDistrict[t.did].records.push(rec);
+      // #117: journal the completed record NOW -- appendFileSync is per-line durable, so a
+      // SIGKILL between tasks loses at most the in-flight page, never completed work. A journal
+      // write failure must never fail the task (the manifest is still the end-of-run authority).
+      try { appendFileSync(byDistrict[t.did].journalPath, `${JSON.stringify(rec)}\n`); }
+      catch { /* journal is best-effort; captures.json remains the authority */ }
     }
     return rec;
   }
@@ -851,6 +871,16 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
     for (const did of Object.keys(byDistrict)) {
       try {
         writeVersioned(path.join(ROOT, did, 'captures.json'), JSON.stringify(byDistrict[did].records, null, 2));
+        // #117: a LANDED manifest supersedes every journal for the district -- the live one AND
+        // any renamed-aside crash leftovers (this run seeded from the prior manifest and re-covered
+        // the plan, so a crashed run's journaled work is redone, not lost). Sweeping them here is
+        // what keeps a FUTURE reconstruct from resurrecting stale records (review finding). A failed
+        // manifest write keeps everything, so reconstruct still has full fidelity.
+        for (const f of readdirSync(path.join(ROOT, did))) {
+          if (f === 'captures.journal.jsonl' || (f.startsWith('captures.journal.') && f.endsWith('.jsonl'))) {
+            try { unlinkSync(path.join(ROOT, did, f)); } catch { /* best-effort sweep */ }
+          }
+        }
       } catch (e) {
         console.error(`manifest write FAILED for ${did}: ${e}`); // keep writing the other districts'
       }

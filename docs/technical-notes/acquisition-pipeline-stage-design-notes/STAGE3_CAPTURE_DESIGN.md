@@ -263,8 +263,9 @@ for the DOM-touching functions that can't be faked that way.
 - **Partial-retry — RESOLVED 2026-07-19 (#116, see the change log).** `headless retry <batch_id>` /
   `retry_partial()` re-attempts a captured district's retryable failures via the Node delta re-run in
   `retryable-only` mode; one-attempt errs carry verbatim.
-- **Emergent recovery.** Reconstruction can't recover emergent captures (no URL); a future capture could
-  write an incremental per-task JSONL line so even a hard kill preserves emergent URLs. (tracked: #117)
+- **Emergent recovery — RESOLVED 2026-07-19 (#117, see the change log).** The capture journals each
+  completed record (`captures.journal.jsonl`); reconstruction consumes it, recovering emergent
+  captures full-fidelity.
 - **Politeness / rate-limiting.** A capture burst can trigger transient stalls on a target site; consider
   a small per-request delay or lower per-district concurrency if this recurs.
 - **Per-district deadline can truncate large districts (#225, logged 2026-07-11, not yet fixed).** The
@@ -399,3 +400,16 @@ origin already answered). The predicate is mirrored (`isRetryableErr` in the mjs
 isn't planned and its ok parent won't re-render) — that's #117's recovery territory. The union
 manifest lands through the same `finish_district` path as a first run, so the outcome honestly
 re-resolves (`captured_partial` → `captured_all` when the retry clears the remainder). REQ-155.
+
+**2026-07-19 — #117: per-task journal — a hard kill no longer orphans emergent captures (epic #111
+Phase 4).** The capture loop appends one JSONL line per COMPLETED record to the district's
+`captures.journal.jsonl` (best-effort — a journal failure never fails the task; the manifest stays
+the end-of-run authority). A crash leftover is renamed aside at the next run's start (never
+clobbered); the live journal is deleted only once `captures.json` actually lands (it supersedes it).
+`reconstruct_captures` now reads the journal(s) FIRST (live + renamed-aside, oldest first, latest
+line per hash wins): a journaled record is used verbatim — full fidelity (fingerprint/final_url/
+fidelity flags), where the folder scan could only rebuild a degraded record — and journal records
+beyond the capture plan bring back the EMERGENT captures the pre-#117 reconstruction had to abandon
+(md5 is one-way; their URL only ever existed in Node's memory). The folder scan remains the fallback
+for pre-#117 orphans and lost journal lines; a torn final line (SIGKILL mid-append) is tolerated.
+REQ-156.

@@ -3863,3 +3863,25 @@ requirements:
     notes: "The #518 survey sized the motivating population: 92 visible errs, of which 61 not_recovered
       + 27 deadline-truncated. Sibling of the #225 GOTO_WAIT fix (which shrinks how often partials
       happen); this handles the remainder when they do."
+  - id: REQ-156
+    github_issue: "#117 (epic #111 Phase 4)"
+    description: "Emergent-capture crash recovery: the Stage-3 capture journals each completed record
+      as one JSONL line (captures.journal.jsonl, per district) so a hard kill preserves full-fidelity
+      records — including EMERGENT captures whose URL (md5 is one-way) was otherwise unrecoverable.
+      reconstruct_captures consumes the journal first (folder scan remains the degraded fallback);
+      the journal is best-effort at write time and superseded (deleted) once captures.json lands."
+    type: functional
+    priority: should
+    status: implemented
+    acceptance_criteria:
+      - "A journal write failure never fails a capture task; captures.json remains the authority"
+      - "A crash-leftover journal is renamed aside (never clobbered); the live journal is deleted only after the manifest write lands"
+      - "Reconstruction uses journal records verbatim (full fidelity) over folder-scan rebuilds, appends beyond-plan (emergent/manual) journal records, tolerates a torn final line, and keeps the pre-#117 folder-scan behavior when no journal exists"
+    tests:
+      - "tests/test_capture_reconstruct.py (the #117 journal cases)"
+      - "infrastructure/scraper/capture_records.test.mjs (#117 source pins)"
+    created: "2026-07-19T00:00:00Z"
+    updated: "2026-07-19T00:00:00Z"
+    notes: "Companion of REQ-155 (#116): partial retry re-attempts what a completed manifest calls
+      retryable; the journal ensures a KILLED run leaves a manifest worth retrying from. The #518
+      survey's 61 not_recovered records (50 in one district) are the motivating population."
