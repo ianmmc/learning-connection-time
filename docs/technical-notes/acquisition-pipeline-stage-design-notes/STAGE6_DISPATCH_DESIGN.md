@@ -45,8 +45,9 @@ ways: Stage 7 running standalone against the frozen handoff, or — the same cod
 
 The Stage 6 package is `infrastructure/acquisition/stage6_handoff/` (pure, `common`-only imports — independent
 of the other stages, enforced by import-linter) + the app-layer bridge in `process_governance/`. Built
-slice-by-slice; **68 tests** across `test_stage6_*.py` (councils 19, package 9, cost 9, routing 9, handoff_api
-7, handoff_artifact 8, dispatch 6, requests 6, dispatch_bridge 4; incl. govdb Postgres) + a live end-to-end
+slice-by-slice; **101 tests** across `test_stage6_*.py` (councils 20, package 10, cost 9, routing 9, handoff_api
+8, handoff_artifact 8, dispatch 6, requests 9, dispatch_bridge 22 — the last jumped from 4 with the #540/#83
+dispatch-hold-pass work and its #543-#547 review-round hardening; incl. govdb Postgres) + a live end-to-end
 dispatch.
 
 | piece | code | what it does |
@@ -219,7 +220,7 @@ floor** — a record whose `content_school_year` predates 2017-18 holds with a
 (b) **prefer-recent** (`stage6_dispatch._prefer_recent_holds`, dispatch-time) — among send-eligible siblings
 covering the same school, only the newest school-year's doc sends; stale siblings hold (zero recall cost by
 construction — no fresher sibling ⇒ the old doc still sends).
-**A fourth hold reason (#540, 2026-07-18): sibling-variant** (`stage6_dispatch._sibling_variant_holds`,
+**A third hold reason (#540, 2026-07-18): sibling-variant** (`stage6_dispatch._sibling_variant_holds`,
 runs after prefer-recent, before hub-priority) — among send-eligible siblings of ONE Edlio
 `/apps/bell_schedules/` app family (the first vendor profile under REQ-153; `cms_hosts` gained
 `edlioschool.com` + `edl.io`, Tier-0 recomputed: 53 records now fingerprint as Edlio), the best page
@@ -234,7 +235,7 @@ of its own family (the prefer-recent precedent); pinned end-to-end by
 `test_labeled_hub_survives_its_sibling_family_end_to_end`. This is the dispatch answer to the #515
 re-measurement's residual (8 of the 18-FP oracle ceiling were DASD variant-only pages). Zero recall
 cost: a variant-only family still sends its best.
-**A third hold reason since 2026-07-18 (#83 / REQ-116): hub-priority** (`stage6_dispatch._hub_priority_holds`,
+**A fourth hold reason since 2026-07-18 (#83 / REQ-116): hub-priority** (`stage6_dispatch._hub_priority_holds`,
 runs AFTER prefer-recent) — when the surviving send set contains a HUMAN-LABELED district hub
 (`district_hub_by_school`/`by_band`), the best hub (newest content year, then rep time-density) is the only
 URL the first dispatch sends; every other send holds with `hub-priority:first-dispatch-narrowed-to:<winner>`.
@@ -379,12 +380,13 @@ enable the Lab.
 > **Most of this section is now BUILT (see §0).** It's kept as the rationale behind the as-built code;
 > the items still genuinely open are flagged inline. Quick status: **§3A** council config = BUILT
 > (config-as-data + validator); *composition* OPEN (the lab). **§3B** routing = BUILT (data-driven off
-> `input_kinds` + the fidelity gate); the *cross-config cascade* OPEN. **§3C** cost = BUILT on a bootstrap;
-> the *measured token×live-price* model DESIGNED. **§3D** dispatch schema = BUILT. **§3E** gate@6 = *manual*
-> BUILT (console); *auto* DEFERRED. **§3F** request-more-evidence = Stage 7 (deferred). **§3G** recency
-> preference = OPEN (a dispatch decision; batch_00008 evidence). **§3F** request-more-evidence: detection
-+ routing + execution are all BUILT (REQ-117/118, Stage 7 — see `STAGE7_EXTRACT_DESIGN` §3F); the
-OpenRouter session-persistence question below remains open research, not a blocker.
+> `input_kinds` + the fidelity gate); the *cross-config cascade* BLOCKED on the Council Lab (#80/#110,
+> re-homed from the closed epic #106 2026-07-18 — no stronger text config exists to escalate TO today).
+> **§3C** cost = BUILT on a bootstrap; the *measured token×live-price* model DESIGNED. **§3D** dispatch
+> schema = BUILT. **§3E** gate@6 = *manual* BUILT (console); *auto* DEFERRED. **§3G** recency preference
+> = BUILT (PR #529, 2026-07-16 — see §G). **§3F** request-more-evidence: detection + routing + execution
+> are all BUILT (REQ-117/118, Stage 7 — see `STAGE7_EXTRACT_DESIGN` §3F); the OpenRouter
+> session-persistence question below remains open research, not a blocker.
 
 ### A. What *is* a council configuration? (the heart of Stage 6)
 A first-class, registered object (stories 62–66: view/create/assign/override; default assignment). The
@@ -687,7 +689,7 @@ observation record (issues #60/#61's deferral note explains the measured-pass ru
 - **Council/judge "request more evidence"** (§3F): more text reps, the image → image council, or a new
   Stage 2 query — i.e. **Stage 7 can trigger prior-stage scripts**, and Stage 6 equips the follow-up
   (incl. the OpenRouter session/context-persistence question).
-- **Prioritization of District Hub schedules** If a district has a URL with either a labeled or A-scoring district hub schedule (either by school or by band) that covers all bands, then the best representation of that URL is the only URL that needs to be sent for the district on the first dispatch.
+- **Prioritization of District Hub schedules — BUILT as REQ-116 (#83, 2026-07-18; see the fourth hold-reason above).** If a district has a URL with either a labeled or A-scoring district hub schedule (either by school or by band) that covers all bands, then the best representation of that URL is the only URL that needs to be sent for the district on the first dispatch.
 
 ---
 

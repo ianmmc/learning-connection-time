@@ -13,7 +13,7 @@
 > **Update this when:** a stage's purpose/IO changes, a new stage is built, or the flow diagram needs a new
 > edge — for implementation detail within an already-mapped stage, update that stage's own design note instead.
 
-**Current build state (2026-07-17):** the console runs the pipeline live **end to end through `gate@8`**
+**Current build state (2026-07-18):** the console runs the pipeline live **end to end through `gate@8`**
 (Stage 9 remains the one undesigned-into-code seam — see §9). Stage 1
 queue (`gate@1`, REQ-102), Stage 2 deterministic SERP cascade (REQ-104), Stage 3 capture + resilience
 (REQ-110), Stage 4 process + the Stage 4→5 incremental handoff (REQ-111), Stage 5 district-driven
@@ -137,17 +137,21 @@ mutates scoring config); `CURRENT_SCHOOL_YEAR` became a derived July-1-rollover 
 hand-bumped constant (the prior constant went stale exactly one rollover after it was written); and the
 gate@1 console collapsed a 1,400+-district no-domain refusal wall into a Settings → Exclusions view.
 
-**Epic #106's first wave shipped (2026-07-16/17):** **school-year currency** (#107/#241 → PRs #529/#533 —
-the deterministic `content_school_year` URL/filename signal, a pre-2017-18 **validity floor** with HOLD
-semantics floored on the CRDC 2017-18 federal input, and **prefer-recent** dispatch holds: among
-send-eligible siblings covering the same school only the newest school-year's doc sends, at zero recall
-cost by construction); the **#530 combiner refinement** (a lone times-table on a feed/calendar page routes
-to review — −14 tier-A false-sends, 0 recall cost); and the **Stage-5 console trio** (#516/#521/#522 →
-PRs #534/#535/#536 — FP/FN error-review lanes, relevance-density evidence navigation for long reps, and
-content-adaptive center-pane defaults whose guardrail is that the default view never silently contradicts
-the score). Next buildable in the epic: **#528** (calendar scalar + the news_feed separating analysis);
-the confounder facet-vocabulary decision is re-homed in **#537** (gated on Ian), with #515 sequenced
-behind it. Detail: `STAGE5_FILTER_DESIGN.md` §8/Change log, `STAGE6_DISPATCH_DESIGN.md` §3G.
+**Epic #106 CLOSED (2026-07-16/18):** **school-year currency** (#107/#241 → PRs #529/#533 — the
+deterministic `content_school_year` URL/filename signal, a pre-2017-18 **validity floor** with HOLD
+semantics floored on the CRDC 2017-18 federal input, and **prefer-recent** dispatch holds); the **#530
+combiner refinement** (−14 tier-A false-sends, 0 recall cost); the **Stage-5 console trio**
+(#516/#521/#522 → PRs #534/#535/#536); **#537** (Non-Regular-Day Schedule facet + measured positional
+detector, PRs #538/#542 — tier-A precision 0.7817→0.8612, false-send rate 21.8%→13.9%, A+B recall held
+0.9928) and its follow-ons **#226**/**#532** (feed-token + page-focus negatives, precision →0.8701);
+**REQ-097 drift detector** (#75, `stage5_filter/drift.py` — CUSUM+Wilson two-gate over the fingerprinted
+scorecard series, advisory-only console badge, never auto-retunes); **#109** (harvest-slice basis now
+prefers the human-labeled page range over auto `harvest_pages`); **#517 `schedule_link_only`** (the
+one-hop-away bell-schedule shape, an attention chip + `link_followup.py` retry receipt, 78/78 census
+`target_absent`, zero collateral); **REQ-116/#83 hub-priority dispatch** and **#540 sibling-variant
+dispatch** (see § 6 below). **#515** re-measured and recommended-close (§3a obs. 7) — the combiner-level
+wrong-day demotion already covers its intended ground. Detail: `STAGE5_FILTER_DESIGN.md` §8/Change log,
+`STAGE6_DISPATCH_DESIGN.md` §3G.
 
 Epic #209's own ordering constraint (gate@8's calibrated-confidence gate must exist before gates 6/7 can
 relax supervision) is now satisfied structurally — gate@8 is built and its calibration hook is wired
@@ -282,7 +286,7 @@ flowchart TD
         P_OUT --> P_REG
     end
 
-    subgraph STAGE5 ["Stage 5 — Local filter · DISTRICT-DRIVEN, attention-first console (BUILT — REQ-112/113/114; console trio #516/#521/#522 SHIPPED 2026-07-17: FP/FN lanes + relevance-density nav + content-adaptive defaults)"]
+    subgraph STAGE5 ["Stage 5 — Local filter · DISTRICT-DRIVEN, attention-first console (BUILT — REQ-112/113/114; epic #106 CLOSED 2026-07-18: console trio #516/#521/#522, REQ-097 drift detector, schedule_link_only, harvest-slice human-range basis)"]
         direction TB
         F_ING["Stage 4→5 handoff: build_signals.ingest_batch() — batch-scoped ingest into<br/>the governance signal + cross-stage cache tables (no full-corpus rebuild)"]
         F_SCORE["Scoring V2 (REQ-113): labeling-function detectors + combiner<br/>-> per-record tier (A / B / C / D)"]
@@ -406,11 +410,40 @@ Cheap `pdftotext`-density sniff: clock-time count + bell keywords; reject obviou
 
 > **Stage 5 SCORING + LABELING V2 / v2.1 (REQ-113/114/115, 2026-07-01; authority `STAGE5_FILTER_DESIGN`, present-state rewrite).** The V1 tier cascade (`tier_and_category`, one if/elif) validated at 85% tier-A precision on 12 districts but **drifted to 69% + leaked 10 tier-D targets at 59 districts / 440 labels** — a monolithic rule hides *which branch* drifted. **V2 (REQ-113):** independent **DETECTORS** (`stage5_filter/detectors.py`, labeling functions — Snorkel framing) combined by a transparent weighted vote (`combiner.py`) into a **`send` / `suppress` / `review`** decision (tier letters kept as a derived summary). Fixed three measured defects at zero recall cost — de-chrome time signal over the **max-evidence** source (recovers footer/OCR targets), a **proximity-pair** requirement, and a `no-in-window-times` **suppress floor**; added footer/heading/table-density signals + `cms_hint`. Result over 440 labels: tier-A precision **0.79** / recall **0.88** / **tier-D 0-target leak** / A+B recall **1.0**; per-detector harness diagnostics (coverage/accuracy/overlap/conflict) named the one tuning iteration. **v2.1 labeling (REQ-114):** the label became a **three-axis object** — Axis 1 target SHAPE (`school_start_end_list` / `school_bell_table` / `school_start_end_prose` / `district_hub_by_school` / `district_hub_by_band` / `explicit_instructional_time` / `target_other_shape` + `target_absent`/`unusable`); Axis 2 confounder facets (multi-select, the former non-targets); Axis 3 location (buried-handbook + a **print-dialog page range**, needs-vision, where). A fired detector *hints* but never auto-checks (facets stay clean ground truth). `migrate_label_v21` moved all 440 labels (128 targets preserved; git = restore point). The **detail pane reordered text-first** (footer/header first) with a per-rep "unique-times-vs-densest" readout. **REQ-115:** Stage 3 `capture_discovery.mjs` records categorized iframe/embed hosts + promotes `cms_hint` into the record signal. A **field-observations log** (`STAGE5_FILTER_DESIGN` §3a) accumulates gate@5 review insights for later, measured refinement. Stage 6 verified clean (everything reads `TARGET_LABELS` dynamically). **Reset labels (#228, 2026-07-12):** a gate@5 "Reset labels" action (`POST /api/reset-labels` → the shared `build_signals.reset_labels_bulk`) returns a record to `unlabeled` when a label asserted a false non-target ground truth (a valid schedule for the *wrong* district) that neither `target_absent` nor `unusable` can honestly express — the remedy for the empty-domain contamination chain (#229 prevents it at the source; `remediate_contamination.py`, #227, cleans up already-contaminated data).
 
+> **Stage 5 maturity pass (2026-07-18, epic #106 closeout).** **REQ-097 drift detector**
+(`stage5_filter/drift.py`, #75) — a Bernoulli CUSUM + Wilson two-gate monitor over the fingerprinted
+scorecard series, segmented by config fingerprint; advisory "retune recommended" console badge, never
+auto-retunes (the same shape that caught the 2026-06-30 V1 incident by hand, now automatic). **#517
+`schedule_link_only`** — a derived signal + attention chip for pages that NAME a bell schedule they don't
+contain (measured 78/78 census-labeled `target_absent`, zero collateral); `link_followup.py` emits the
+retry receipt for the Stage-3 one-hop revisit (executor deferred to epic #111/#518). **#109** — the
+harvest-slice basis now PREFERS the human-labeled page range (Axis-3 `_pages_list`) over the auto
+`is_handbook`/`harvest_pages` detection, and a human range alone can qualify a doc the auto classifier
+missed. **`lf_district_homepage`** (#532) joined the detector set — a rootish-URL + roster-breadth
+negative for many-schools landing pages, tier-A precision 0.8612→0.8701.
+
 ### 6 · Dispatch — routing + release (`gate@6`) — BUILT to the seam (REQ-101, merged 2026-06-30) · authority: `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE6_DISPATCH_DESIGN.md` §0
 Extraction standardizes on **OpenRouter** (`google/gemini-2.5-flash` etc.). Stage 6 decides *which representation* goes to *which council* and performs the release/dispatch up to (not including) the paid call.
 
-> **Stage 6 = routing + release — BUILT to the Stage 6→7 seam.** Stage 6 reads the Stage-5 release decision from the **DB** (`record`/`representation`/`label` + `release.decide`; `filtered.json` is the receipt, not the transport), **routes each representation per-rep to a council** (`stage6_handoff/routing.py`, data-driven off each council's `input_kinds` + the capture-fidelity gate: `visual_text_gap` → vision council, `fidelity_suspect`), **prices** it (`cost.py` over a config-as-data cost model with `provenance` — a labeled **bootstrap** today), **freezes** an immutable **`handoff_<hash>_<ts>.json`** (a **price-independent** content hash; `data/acquisition/handoffs/`), records a precious **`handoff`** index row + a per-district **`dispatched`** `state_event` (atomically), and **assembles the OpenRouter requests** (`prompts.py`/`requests.py` — the ported extraction prompt reads TIMES only, REQ-054) — **stopping before the paid POST.** The **gate@6 console** (`static/stage6.js` + `process_governance/stage6_draft_store.py` + `/api/dispatch*`, redesigned 2026-07-13 around a **persisted draft dispatch** — PR #256, `STAGE6_DISPATCH_DESIGN.md` §0b) is: one unified left-pane list of in-progress drafts + frozen dispatches → open a draft into an always-editable center pane (add/remove districts, each showing **n_send / n_verified / n_hold**, per-rep council override, click-to-inspect, a **verified-only** toggle, live-priced on every edit) → **Freeze**. A frozen dispatch's origin (`draft` / a genuine Stage-7→6 back-edge / a plain console dispatch) is **derived from receipts on every read, never stored**. The old `/api/handoff/{preview,dispatch,candidates,councils,inspect}` routes are kept as a "dispatch without a draft" escape hatch. The **5/6 send set is tier-gated** (`release.decide`): labeled targets + unlabeled **tier-A** → send, **tier-B/C** → **hold** (a third state awaiting a gate@5 label — `n_hold`), tier-D/non-target → reject; handbooks send the materialized **`harvest_slice`** (high-signal `harvest_pages`), not the whole PDF. **Verified-only** narrows dispatch to **labeled targets only** (holding the speculative tier-A sends) for a training-grade corpus — frozen into the dispatch identity. Council template = **2 cross-family voters → a 3rd-family judge** on disagreement, enforced by `councils.validate()` (seeds: `low-cost-text`, `image`; the `image` council's judge is `qwen/qwen3-vl-235b-a22b-instruct`, swapped 2026-07-04 from the non-vision-capable `deepseek-v3.2`, GitHub #82 — closed). **The REQ-051 budget governor is BUILT** (`common/budget.py` — per-run/per-district/per-district-total spend caps + a request-depth guard) and enforced pre-district in Stage 7's extraction loop. **Deferred (own tracks):** the **Council Lab**'s remaining backlog (`cost_benchmark` — measured token rates + live OpenRouter pricing; composition re-benchmark on clean data; tracked: #80/#81 — its first experiment, the judge-replay harness, is already built and measured, see `COUNCIL_LAB_DESIGN.md`); gate@6 **auto** mode (tracked: #104 part b — the per-gate manual/auto Settings toggle itself is built,
-#104 part a; only gate@5 has a control law behind it so far, #211); the cross-config cascade. **Stage 7** = the paid call + the judge loop + the "request more evidence" back-edges (detect/route/review/**execute** — REQ-117/118, all built).
+> **Stage 6 = routing + release — BUILT to the Stage 6→7 seam.** Stage 6 reads the Stage-5 release decision from the **DB** (`record`/`representation`/`label` + `release.decide`; `filtered.json` is the receipt, not the transport), **routes each representation per-rep to a council** (`stage6_handoff/routing.py`, data-driven off each council's `input_kinds` + the capture-fidelity gate: `visual_text_gap` → vision council, `fidelity_suspect`), **prices** it (`cost.py` over a config-as-data cost model with `provenance` — a labeled **bootstrap** today), **freezes** an immutable **`handoff_<hash>_<ts>.json`** (a **price-independent** content hash; `data/acquisition/handoffs/`), records a precious **`handoff`** index row + a per-district **`dispatched`** `state_event` (atomically), and **assembles the OpenRouter requests** (`prompts.py`/`requests.py` — the ported extraction prompt reads TIMES only, REQ-054) — **stopping before the paid POST.** The **gate@6 console** (`static/stage6.js` + `process_governance/stage6_draft_store.py` + `/api/dispatch*`, redesigned 2026-07-13 around a **persisted draft dispatch** — PR #256, `STAGE6_DISPATCH_DESIGN.md` §0b) is: one unified left-pane list of in-progress drafts + frozen dispatches → open a draft into an always-editable center pane (add/remove districts, each showing **n_send / n_verified / n_hold**, per-rep council override, click-to-inspect, a **verified-only** toggle, live-priced on every edit) → **Freeze**. A frozen dispatch's origin (`draft` / a genuine Stage-7→6 back-edge / a plain console dispatch) is **derived from receipts on every read, never stored**. The old `/api/handoff/{preview,dispatch,candidates,councils,inspect}` routes are kept as a "dispatch without a draft" escape hatch. The **5/6 send set is tier-gated** (`release.decide`): labeled targets + unlabeled **tier-A** → send, **tier-B/C** → **hold** (a third state awaiting a gate@5 label — `n_hold`), tier-D/non-target → reject; handbooks send the materialized **`harvest_slice`** (high-signal `harvest_pages`), not the whole PDF. **Verified-only** narrows dispatch to **labeled targets only** (holding the speculative tier-A sends) for a training-grade corpus — frozen into the dispatch identity. Council template = **2 cross-family voters → a 3rd-family judge** on disagreement, enforced by `councils.validate()` (seeds: `low-cost-text`, `image`; the `image` council's judge is `qwen/qwen3-vl-235b-a22b-instruct`, swapped 2026-07-04 from the non-vision-capable `deepseek-v3.2`, GitHub #82 — closed). **The REQ-051 budget governor is BUILT** (`common/budget.py` — per-run/per-district/per-district-total spend caps + a request-depth guard) and enforced pre-district in Stage 7's extraction loop.
+
+**Dispatch-time hold composition (four sequential passes over the send set, `district_release_input`):**
+verified-only (training-grade narrowing, above) → the **#241 validity floor** (pre-2017-18
+`content_school_year` holds, overridable) + **#107 prefer-recent** (among same-school siblings, only the
+newest school-year's doc sends) → **#540 sibling-variant** (`_sibling_variant_holds` — among one CMS
+app's schedule-variant siblings, e.g. Edlio `/apps/bell_schedules/`, the best page sends, ranked
+label-aware: labeled hub ≻ labeled target ≻ unlabeled, then no-strong-wrong-day ≻ bare-app-hub ≻ newest ≻
+densest; the family key is `(host, intended-school set)` — not host-only, which would collapse different
+schools sharing one host, a bug found and fixed same-day by the #543-#547 review) → **REQ-116/#83
+hub-priority** (`_hub_priority_holds` — a HUMAN-LABELED district hub narrows the first dispatch to
+itself; every other surviving send holds for the 7→6 back-edge). Each pass is zero-recall-cost by
+construction (a held rep remains available for cheap re-dispatch). Detail: `STAGE6_DISPATCH_DESIGN.md` §3G.
+
+**Deferred (own tracks):** the **Council Lab**'s remaining backlog (`cost_benchmark` — measured token rates + live OpenRouter pricing; composition re-benchmark on clean data; tracked: #80/#81 — its first experiment, the judge-replay harness, is already built and measured, see `COUNCIL_LAB_DESIGN.md`); gate@6 **auto** mode (tracked: #104 part b — the per-gate manual/auto Settings toggle itself is built,
+#104 part a; only gate@5 has a control law behind it so far, #211); the cross-config cascade (#110, re-homed
+to epic #80 — blocked on the lab producing a measured escalation config: only two councils exist today,
+`low-cost-text`/`image`, different modalities not strength tiers, so there is nothing to escalate TO yet).
+**Stage 7** = the paid call + the judge loop + the "request more evidence" back-edges (detect/route/review/**execute** — REQ-117/118, all built).
 
 ### 7 · Extraction — council, **per-school**
 **BUILT (REQ-117) — see `STAGE7_EXTRACT_DESIGN.md` §0 for the as-built code map and results.**
@@ -646,7 +679,9 @@ Two independent extractors disagree on a large share of districts; at <1 hr/week
 | **Governance app, state model & Postgres (architecture authority, 2026-06-26)** | `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE.md` |
 | **Stage 5 operational filter → `filtered.json` (event-driven release export — BUILT, REQ-094)** | `infrastructure/acquisition/stage5_filter/release.py`; design: `STAGE5_FILTER_DESIGN.md` |
 | **Stage 5 scoring V2: detectors + combiner → send/suppress/review (REQ-113)** | `infrastructure/acquisition/stage5_filter/{detectors,combiner}.py` |
-| **Stage 6 dispatch: routing/cost/immutable handoff/request assembly + gate@6 (REQ-101)** | `infrastructure/acquisition/stage6_handoff/`, `process_governance/stage6_dispatch.py`; design: `STAGE6_DISPATCH_DESIGN.md` §0 |
+| **Stage 5 drift detector: CUSUM+Wilson two-gate over the fingerprinted scorecard series, advisory (REQ-097/#75)** | `infrastructure/acquisition/stage5_filter/drift.py`; design: `STAGE5_FILTER_DESIGN.md` §8/Change log |
+| **Stage 5 `schedule_link_only` detection + retry receipt (#517)** | `infrastructure/acquisition/stage5_filter/{build_signals,link_followup}.py`; design: `STAGE5_FILTER_DESIGN.md` Change log |
+| **Stage 6 dispatch: routing/cost/immutable handoff/request assembly + gate@6 (REQ-101), incl. the four dispatch-hold passes (#107/#540/REQ-116)** | `infrastructure/acquisition/stage6_handoff/`, `process_governance/stage6_dispatch.py`; design: `STAGE6_DISPATCH_DESIGN.md` §0/§3G |
 | **gate@6 console: persisted draft dispatch (redesigned 2026-07-13, PR #256)** | `infrastructure/acquisition/stage6_handoff/draft_models.py`, `process_governance/stage6_draft_store.py`, `process_governance/static/stage6.js`; design: `STAGE6_DISPATCH_DESIGN.md` §0b |
 | **Stage 7 extraction: council calls, token sizing, truncation retry, run_kind (REQ-117, REQ-119)** | `infrastructure/acquisition/stage7_extract/{openrouter,models,parse,validate}.py`; design: `STAGE7_EXTRACT_DESIGN.md` §0 |
 | **Stage 7: durable/resumable run + persistence + request-more-evidence detection (REQ-117/118)** | `infrastructure/acquisition/process_governance/stage7_run.py`; design: `STAGE7_EXTRACT_DESIGN.md` §0/§4 |

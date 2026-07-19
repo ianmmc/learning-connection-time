@@ -2,12 +2,12 @@
 
 Reads Stage 1's batch JSON directly (schools_by_band, domain) -- NEVER recomputes band
 membership from raw NCES CSV (see ACQUISITION_PIPELINE.md Stage 2; that's the exact bug
-class Stage 1's CP-A review spent a full day fixing -- recomputing here would silently
-discard every fix). Orchestration is agent-in-the-loop: Wave 1 needs a Haiku WebSearch
-subagent, which this script cannot spawn. See .claude/skills/stage2-discover/SKILL.md for
-the full procedure this module is driven by. None of this module ever runs inside a
-subagent -- a subagent only ever returns its raw findings as a strict JSON result; this
-script does all gating, Wave 2, flattening, writing, and registry bookkeeping.
+class Stage 1's gate@1 review spent a full day fixing -- recomputing here would silently
+discard every fix). Orchestration is a fully deterministic SERP cascade (REQ-104,
+`headless.py`): Wave 1 = Bright Data SERP with Serper failover, Wave 2 = Claude WebSearch
+on the genuine residual only. No agent in the loop -- the retired agent-in-the-loop Wave 1
+(and its stage2-discover skill) is documented in STAGE2_DISCOVER_DESIGN.md §5 history.
+This module does all gating, Wave 2 scoping, flattening, writing, and registry bookkeeping.
 
 Filesystem is authoritative: a district's discovery.json existing in
 data/raw/lea-website-captures/<id>_<slug>/ IS "Stage 2 done" -- the registry is a cache of
@@ -218,14 +218,20 @@ def run_wave1(roster: list, domain: str, search_fn) -> list:
     handoff of the retired agent-in-the-loop model. A billing/auth SystemExit propagates (halts the
     run, like a reconcile CONTROL FAILURE); any other per-school error degrades to zero URLs (logged).
 
-    Provenance (issue #30): search_fn may return either a bare url list or a
+    Provenance (issue #30, #341): search_fn may return either a bare url list or a
     (provider_name, urls) tuple -- the failover cascade returns the tuple, because only IT knows
     which provider actually served the query. A bare list falls back to the fn's `provider_name`
-    attribute. The name lands in `wave1_provider` and flows through flatten() into candidates.json."""
+    attribute. Each URL keeps the provider that FIRST surfaced it (a `provider` key on its
+    wave1_gated entry, preferred by flatten()); `wave1_provider` is the last SUCCESSFULLY-
+    answering query's provider (a scalar summary -- a failed final query does not overwrite
+    it, and cannot masquerade as having served) and `wave1_providers` lists every provider
+    that successfully answered a query for the school, INCLUDING legitimate zero-URL answers
+    (a "found nothing" search is service, not failure) -- so a mid-set failover (#160
+    multi-query) no longer loses per-URL attribution or undercounts the audit trail."""
     default_provider = getattr(search_fn, "provider_name", "unknown_wave1")
     for r in roster:
-        provider = default_provider   # NOTE: with multiple queries (#160), the LAST query's provider
-        seen, urls = set(), []        # wins wave1_provider — per-school provenance, lossy on mid-set failover
+        provider = default_provider
+        seen, urls, providers, provider_by_url = set(), [], [], {}
         # run every query for the school (#160: a widen-strategy follow-up school has the default +
         # the differentiated set), UNIONing the URLs (order-preserving dedup).
         for q in r.get("queries") or [r["query"]]:
@@ -235,15 +241,21 @@ def run_wave1(roster: list, domain: str, search_fn) -> list:
             except SystemExit:
                 raise
             except Exception as e:
-                qurls = []
+                qurls = None   # None = the query FAILED; [] = it ran and found nothing
                 print(f"   [w1/{r['school'][:24]}] ERR {str(e)[:60]}")
-            for u in qurls:
+            if qurls is not None and provider not in providers:
+                providers.append(provider)   # an empty-but-successful answer still counts as serving
+            for u in qurls or []:
                 if u not in seen:
                     seen.add(u)
                     urls.append(u)
+                    provider_by_url[u] = provider
         r["wave1_raw_urls"] = urls
         r["wave1_provider"] = provider
+        r["wave1_providers"] = providers
         r["wave1_gated"] = gate_urls(urls, domain)
+        for g in r["wave1_gated"]:
+            g["provider"] = provider_by_url.get(g["url"], provider)
         r["wave2_invoked"] = False
         r["wave2_raw_urls"] = []
         r["wave2_gated"] = []
@@ -297,9 +309,10 @@ def flatten(roster: list) -> list:
 
     `tools[]` records the REAL provider that served each kept URL (issue #30): Wave 1 =
     "brightdata"/"serper" (whichever the failover cascade actually used), Wave 2 =
-    "claude_websearch" -- read from the per-row `wave1_provider`/`wave2_provider` set by
-    run_wave1/run_wave2/merge_wave1. The list flows into candidates.json -> the DB cache ->
-    Stage-5 candidate_tools_json, so the names must be true provenance.
+    "claude_websearch" -- read from each gated entry's own `provider` (#341, first provider
+    to surface the URL), falling back to the per-row `wave1_provider`/`wave2_provider` for
+    pre-#341 rows and the legacy merge_wave1 path. The list flows into candidates.json ->
+    the DB cache -> Stage-5 candidate_tools_json, so the names must be true provenance.
 
     BACKFILL NOTE (issue #30): batches discovered BEFORE this fix (<= batch_00007) carry the
     retired-architecture labels "claude" (really Bright Data/Serper Wave 1) and "openrouter"
@@ -308,11 +321,12 @@ def flatten(roster: list) -> list:
     labels are simply pre-fix vintage."""
     dedup = {}
     for r in roster:
-        for tool, gated in ((r.get("wave1_provider") or "unknown_wave1", r["wave1_gated"]),
-                            (r.get("wave2_provider") or "unknown_wave2", r["wave2_gated"])):
+        for fallback_tool, gated in ((r.get("wave1_provider") or "unknown_wave1", r["wave1_gated"]),
+                                     (r.get("wave2_provider") or "unknown_wave2", r["wave2_gated"])):
             for g in gated:
                 if not g["kept"]:
                     continue
+                tool = g.get("provider") or fallback_tool
                 k = _normalize_url(g["url"])
                 entry = dedup.setdefault(k, {"url": g["url"], "schools": [], "tools": []})
                 if r["school"] not in entry["schools"]:
@@ -322,9 +336,33 @@ def flatten(roster: list) -> list:
     return list(dedup.values())
 
 
+# Crash-safe JSON write (#265) -- the shared common/paths helper (review: this was the third
+# hand-rolled copy of the tmp+os.replace pattern; district_status.export_status and
+# batch_store.write_receipt consolidate onto the same helper post-merge). Kept as a module
+# global so tests can monkeypatch the write for order-spying.
+_atomic_write_json = paths.atomic_write_json
+
+
+def _prior_doc(d: Path, live: Path, stem: str) -> dict:
+    """The most recent prior version of a manifest: the live file if present, else the newest
+    timestamped aside (`<stem>.<ts>.json`). The aside fallback is crash-orphan tolerance
+    (review finding on #265): a prior attempt may have renamed the old files aside and then
+    died between the two writes, leaving e.g. candidates.json present (already the union)
+    but discovery.json absent -- the prior schools then live only in the newest aside."""
+    if live.exists():
+        return json.loads(live.read_text()) or {}
+    asides = sorted(d.glob(f"{stem}.*.json"))   # fs_stamp is lexicographically sortable
+    if asides:
+        return json.loads(asides[-1].read_text()) or {}
+    return {}
+
+
 def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool = False) -> Path:
-    """Single atomic write -- discovery.json (full per-school audit trail) + candidates.json
-    (flattened, capture-ready). NEVER overwritten in place: an existing discovery.json (a
+    """Write discovery.json (full per-school audit trail) + candidates.json (flattened,
+    capture-ready). Both writes are atomic (temp + os.replace, #265), and candidates.json is
+    written FIRST: reconcile() keys "Stage 2 done" on discovery.json existing, so a crash
+    between the two writes must leave the district looking not-done (re-runnable) rather than
+    done-with-no-capture-plan. NEVER overwritten in place: an existing discovery.json (a
     deliberate redo -- a follow-up batch, or a manual one) is renamed aside with a timestamp
     suffix first, preserving the full attempt history -- data/raw/ is write-once in spirit
     (see ACQUISITION_PIPELINE.md Stage 2 and CLAUDE.md's "never modify data/raw/" rule).
@@ -343,14 +381,19 @@ def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool 
     disc_path, cand_path = d / "discovery.json", d / "candidates.json"
 
     old_schools, old_candidates = [], []
-    if merge and disc_path.exists():
-        old_schools = (json.loads(disc_path.read_text()) or {}).get("schools", [])
-        if cand_path.exists():
-            old_candidates = (json.loads(cand_path.read_text()) or {}).get("candidates", [])
+    if merge:
+        # Each prior doc is read independently (live file, else newest aside) -- gating BOTH
+        # on disc_path.exists() lost the union when a crashed attempt left an orphaned
+        # candidates.json with no discovery.json (review finding on #265; see _prior_doc).
+        old_schools = _prior_doc(d, disc_path, "discovery").get("schools", [])
+        old_candidates = _prior_doc(d, cand_path, "candidates").get("candidates", [])
 
-    if disc_path.exists():
+    if disc_path.exists() or cand_path.exists():
+        # Rename aside whichever exists -- independent gates, so a crash-orphaned
+        # candidates.json is preserved with a timestamp instead of silently clobbered.
         ts = TU.fs_stamp()
-        disc_path.rename(d / f"discovery.{ts}.json")
+        if disc_path.exists():
+            disc_path.rename(d / f"discovery.{ts}.json")
         if cand_path.exists():
             cand_path.rename(d / f"candidates.{ts}.json")
 
@@ -362,6 +405,7 @@ def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool 
             "query": r["query"],
             "wave1_raw_urls": r["wave1_raw_urls"],
             "wave1_provider": r.get("wave1_provider"),
+            "wave1_providers": r.get("wave1_providers"),
             "wave1_gated": r["wave1_gated"],
             "wave2_invoked": r["wave2_invoked"],
             "wave2_raw_urls": r["wave2_raw_urls"],
@@ -387,7 +431,6 @@ def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool 
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "schools": schools,
     }
-    disc_path.write_text(json.dumps(discovery_doc, indent=2))
 
     new_candidates = flatten(roster)
     if merge:
@@ -414,7 +457,9 @@ def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool 
         "domain": district.get("domain", ""),
         "candidates": candidates,
     }
-    cand_path.write_text(json.dumps(candidates_doc, indent=2))
+    # candidates first, discovery last (#265): discovery.json existing is the "done" marker.
+    _atomic_write_json(cand_path, candidates_doc)
+    _atomic_write_json(disc_path, discovery_doc)
     return d
 
 
