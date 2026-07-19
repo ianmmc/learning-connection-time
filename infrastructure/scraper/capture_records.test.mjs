@@ -6,7 +6,7 @@
 // fingerprint helpers' tests -- these cover the deterministic manifest logic.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { noteFileResult, noteFinalUrl, stripFragment, seedFromPriorCaptures } from './capture_discovery.mjs';
+import { noteFileResult, noteFinalUrl, stripFragment, seedFromPriorCaptures, isRetryableErr } from './capture_discovery.mjs';
 
 test('noteFileResult records a files{} entry only on success (#18)', () => {
   const rec = { files: {} };
@@ -83,4 +83,37 @@ test('stripFragment normalizes like new URL(): case, default port, empty path (#
   assert.equal(stripFragment('https://x.org/a b'), 'https://x.org/a%20b');
   assert.equal(stripFragment('https://x.org/a/../b'), 'https://x.org/b');
   assert.equal(stripFragment('not a url#frag'), 'not a url'); // catch branch: raw split
+});
+
+test('isRetryableErr: crash/deadline remnants retry; one-attempt classes do not (#116)', () => {
+  assert.equal(isRetryableErr('not_attempted (capture deadline reached)'), true);
+  assert.equal(isRetryableErr('not_recovered (capture interrupted before completion)'), true);
+  assert.equal(isRetryableErr('security_block'), false);      // one-attempt WAF rule
+  assert.equal(isRetryableErr('needs_oauth_reauth'), false);  // fails identically until #115
+  assert.equal(isRetryableErr('binary_fetch_403'), false);    // the origin already answered
+  assert.equal(isRetryableErr(null), false);
+});
+
+test('seedFromPriorCaptures retryable-only mode: retryable failures retry, one-attempt failures carry (#116)', () => {
+  const district = { records: [], seen: new Set(), emergent: 0 };
+  const prior = [
+    { url: 'https://x.org/slow', ok: false, source: 'discovered', files: {},
+      err: 'not_attempted (capture deadline reached)' },                      // retryable -> dropped
+    { url: 'https://x.org/waf', ok: false, source: 'discovered', files: {},
+      err: 'security_block' },                                                // one-attempt -> carried
+    { url: 'https://x.org/good', ok: true, source: 'discovered', files: { txt: 'page.txt' } },
+  ];
+  const candidates = new Set(['https://x.org/slow', 'https://x.org/waf', 'https://x.org/good']);
+  seedFromPriorCaptures(district, prior, candidates, true);
+  assert.deepEqual(district.records.map((r) => r.url).sort(),
+    ['https://x.org/good', 'https://x.org/waf']);              // waf + good carried
+  assert.equal(district.seen.has('https://x.org/slow'), false); // retry NOT blocked
+  assert.equal(district.seen.has('https://x.org/waf'), true);   // never re-hit (one-attempt)
+});
+
+test('seedFromPriorCaptures default mode is unchanged by the #116 param (any failed candidate retries)', () => {
+  const district = { records: [], seen: new Set(), emergent: 0 };
+  const prior = [{ url: 'https://x.org/waf', ok: false, source: 'discovered', files: {}, err: 'security_block' }];
+  seedFromPriorCaptures(district, prior, new Set(['https://x.org/waf']));
+  assert.equal(district.records.length, 0);                    // #174 follow-up semantics preserved
 });

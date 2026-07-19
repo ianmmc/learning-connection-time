@@ -260,8 +260,9 @@ for the DOM-touching functions that can't be faked that way.
   real Drive link actually needs it; zero real links have needed it so far. (tracked: #115)
 - **Duplicate-PDF dedup — deliberately NOT built.** A cross-directory content-hash scan for a negligible
   current benefit; recorded watch-item.
-- **Partial-retry.** A recovered/partial district has a `captures.json`, so reconcile treats it as done —
-  its `not_attempted`/`not_recovered` candidates don't auto-retry. Natural follow-up, not blocking. (tracked: #116)
+- **Partial-retry — RESOLVED 2026-07-19 (#116, see the change log).** `headless retry <batch_id>` /
+  `retry_partial()` re-attempts a captured district's retryable failures via the Node delta re-run in
+  `retryable-only` mode; one-attempt errs carry verbatim.
 - **Emergent recovery.** Reconstruction can't recover emergent captures (no URL); a future capture could
   write an incremental per-task JSONL line so even a hard kill preserves emergent URLs. (tracked: #117)
 - **Politeness / rate-limiting.** A capture burst can trigger transient stalls on a target site; consider
@@ -381,3 +382,19 @@ averaged 7.8s even where it settled, vs 3.2–5.3s for `domcontentloaded` + the 
 with ZERO content loss (identical innerText clock-time counts row-for-row). Jefferson's projected
 capture drops ~670s → ~130s, comfortably inside the deadline. The late-hydration risk is absorbed by
 the settle window + the Tier 2.5/3 visual backstop. Full measurements: #225 (2026-07-19 spike).
+
+**2026-07-19 — #116: partial retry (epic #111 Phase 4).** A `captured_partial` district's retryable
+remnants are now re-attemptable without re-hitting anything that already answered: `python3 -m
+infrastructure.acquisition.stage3_capture.headless retry <batch_id>` (or `retry_partial()` — the
+console can drive it the same way as `run_batch`). Selection: a district dispatches only if its
+on-disk manifest holds ≥1 failed record whose err is RETRYABLE (`not_attempted*` — deadline
+truncation; `not_recovered*` — crash reconstruct) AND whose URL is still in the capture plan
+(fragment-stripped parity with candidates.json). The Node run then executes in `retryable-only`
+mode: `seedFromPriorCaptures(..., retryableOnly)` carries ok records verbatim (never re-hit),
+drops-and-re-attempts retryable failures, and carries NON-retryable failures untouched —
+`security_block` (the one-attempt WAF rule), `needs_oauth_reauth` (#115), `binary_fetch_*` (the
+origin already answered). The predicate is mirrored (`isRetryableErr` in the mjs,
+`RETRYABLE_ERR_PREFIXES` in headless.py). A failed EMERGENT record can't retry this way (its URL
+isn't planned and its ok parent won't re-render) — that's #117's recovery territory. The union
+manifest lands through the same `finish_district` path as a first run, so the outcome honestly
+re-resolves (`captured_partial` → `captured_all` when the retry clears the remainder). REQ-155.
