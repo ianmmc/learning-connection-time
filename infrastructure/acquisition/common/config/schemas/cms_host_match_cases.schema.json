@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Cross-language golden-vector fixture: host-suffix matching rule",
+  "description": "Parity vectors for the dot-boundary host-suffix predicate implemented in BOTH Python (discover.py::_host_matches) and JS (capture_discovery.mjs::hostMatches). Consumed by tests/test_cms_host_parity.py and capture_fingerprint.test.mjs — the rule's single review surface (#34/#416 review).",
+  "type": "object",
+  "required": ["knob", "cases"],
+  "properties": {
+    "knob": {"const": "cms_host_match_cases"},
+    "purpose": {"type": "string"},
+    "cases": {
+      "type": "array",
+      "minItems": 10,
+      "items": {
+        "type": "object",
+        "required": ["host", "suffix", "match", "why"],
+        "properties": {
+          "host": {"type": "string"},
+          "suffix": {"type": "string", "minLength": 1},
+          "match": {"type": "boolean"},
+          "why": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}
