@@ -285,3 +285,63 @@ class TestReceiptAtomicity:
         with pytest.raises(OSError):
             BS.write_receipt(sess, "batch_test_store")
         assert out.read_text() == '{"old": "receipt"}'         # untouched — no partial overwrite
+
+
+class TestCreateBatchCollision:
+    """#264 — a non-reserving batch already owning the id must refuse cleanly, not die on the
+    PK IntegrityError at flush."""
+
+    def test_create_over_existing_draft_raises_batch_locked(self, sess):
+        BS.create_batch(sess, _doc("batch_collide"), actor="t")
+        with pytest.raises(BS.BatchLocked, match="already exists \\(draft\\)"):
+            BS.create_batch(sess, _doc("batch_collide"), actor="t")
+
+    def test_reservation_upgrade_still_works(self, sess):
+        bid = BS.reserve_next_batch(sess, actor="t")
+        BS.create_batch(sess, _doc(bid), actor="t")   # the one sanctioned same-id path
+        assert sess.get(Batch, bid).status == "draft"
+
+
+class TestBatchScopedProgress:
+    """#339 — progress counts must come from the batch's OWN events; a district's first-run
+    progress must not bleed into a later follow-up batch containing it."""
+
+    @staticmethod
+    def _event(sess, district_id, stage, batch_id, outcome="ok"):
+        from infrastructure.acquisition.common.district_status import INSERT_STATE_EVENT
+        sess.execute(INSERT_STATE_EVENT, {
+            "district_id": district_id, "name": "N", "state": "AK", "stage": stage,
+            "stage_name": f"stage{stage}", "checkpoint": None, "event_type": outcome,
+            "outcome": outcome, "topology": None, "batch_id": batch_id,
+            "fingerprints_json": None, "actor": "t", "note": None,
+            "created_at": "2026-07-18T00:00:00Z"})
+
+    def test_followup_batch_shows_no_progress_from_first_run(self, sess):
+        BS.create_batch(sess, _doc("batch_first"), actor="t")
+        BS.create_batch(sess, _doc("batch_follow"), batch_type="follow-up", actor="t")
+        for stage in (2, 3, 4):
+            self._event(sess, "D1", stage, "batch_first")
+        prog = BS._batch_progress(sess)
+        assert prog["batch_first"]["discovered"] == 1
+        assert prog["batch_first"]["processed"] == 1
+        # pre-#339 this read 1/1/1 — the first run's global snapshot bled in
+        assert prog["batch_follow"]["discovered"] == 0
+        assert prog["batch_follow"]["captured"] == 0
+        assert prog["batch_follow"]["processed"] == 0
+
+    def test_followup_batch_counts_its_own_events(self, sess):
+        BS.create_batch(sess, _doc("batch_first2"), actor="t")
+        BS.create_batch(sess, _doc("batch_follow2"), batch_type="follow-up", actor="t")
+        self._event(sess, "D1", 4, "batch_first2")
+        self._event(sess, "D1", 2, "batch_follow2")
+        prog = BS._batch_progress(sess)
+        assert prog["batch_follow2"]["discovered"] == 1
+        assert prog["batch_follow2"]["captured"] == 0   # its own redo hasn't captured yet
+
+    def test_flagged_is_batch_scoped_and_latest_wins(self, sess):
+        BS.create_batch(sess, _doc("batch_flag"), actor="t")
+        self._event(sess, "D2", 2, "batch_flag", outcome="manual_flag_all")
+        prog = BS._batch_progress(sess)
+        assert prog["batch_flag"]["flagged"] == 1
+        self._event(sess, "D2", 2, "batch_flag", outcome="found_all")   # later event supersedes
+        assert BS._batch_progress(sess)["batch_flag"]["flagged"] == 0
