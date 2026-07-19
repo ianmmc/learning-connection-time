@@ -146,31 +146,31 @@ gone stale within the session that wrote it, superseded by #555's `to_working_do
 Full derivation: `docs/PROJECT_HISTORY.md` (the epic-#111-phases entry); `STAGE1-4_*_DESIGN.md` change
 logs; PRs #549–#553, #555.
 
-**Next (RESUME HERE — 2026-07-19): epic #111 Phase 4 is half done — next #116 (partial-retry) +
-#117 (per-task JSONL crash recovery), then Phase 5.** Phase 3 (cleanup) DONE: #340 wontfix; #227
-mitigated (residual → #164); #554 merged (PR #556). **Phase 4 so far:** #518 quantified (survey
-numbers on the issue: 92 visible errs dominated by 61 crash-`not_recovered` + 27 deadline; 2 login
-walls, 9 soft-404s, 61 time-blind) then its detect+flag landed (PR #557, max-effort review round: 15
-findings, 13 fixed — incl. the review save that the naive #415 fix would have produced blank ok:true
-captures; #415 closed; REQ-154 records the contract + deferrals). #225 CLOSED (PR #558): measured
-spike (47 URLs / 3 districts — `networkidle` burned its full 30s on 32/35 Apptegy pages, zero content
-loss with `domcontentloaded`+settle) → shared `GOTO_WAIT`; reopen trigger documented on the issue (a
-big post-#558 district hitting `captured_partial` + deadline errs). A same-day combined-diff review
-of PRs #556/#557/#558 together (PR #559, merged) caught 2 cross-PR bugs the per-PR rounds couldn't:
-an iframe-scoped `has_password` blind spot and SCHED_URL_RE missing real `%20`-encoded URLs — plus
-follow-ups filed as **#560** (inject_district ordering crash test) + **#561** (six remaining
-hand-rolled tmp+replace copies), both attached to the epic. **#518 remaining scope:** the
-gate@5/Stage-5 consumer (fidelity_json columns are write-only until it lands), recovery affordances
-(ties into #116), follow-the-link for doc-viewer pages (overlaps #517).
-**Phase 5** — discovery recall: #114 → #164 (Millard 3173740 acceptance case) → #112 decision.
-**Phase 6** — #222 + #118, then close. Open question for Ian: whether #112/#118 stay in-epic.
+**Next (RESUME HERE — 2026-07-19): epic #111 — Phase 4 DONE + #114 closed; next #164 (geo-scoped
+follow-up discovery), then Phase 6 (#222 + #118).** Phase 3 DONE (#340 wontfix; #227 mitigated →
+#164; #554 PR #556). **Phase 4 DONE:** #518's detect+flag (PR #557, REQ-154; the issue stays open
+ONLY for the gate@5/Stage-5 consumer — fidelity_json columns are write-only until it lands — and
+follow-the-link, overlaps #517); #225 (PR #558, `GOTO_WAIT`, closed w/ reopen trigger); a combined
+cross-PR review (PR #559: iframe `has_password` gap, `%20` SCHED_URL_RE gap); #116 partial retry
+(PR #562, REQ-155: `headless retry <batch_id>` / console `POST /api/capture/{id}/retry`;
+`security_block` NEVER re-hit); #117 per-task journal (PR #563, REQ-156: `captures.journal.jsonl`,
+reconstruct recovers emergent captures full-fidelity; journals swept when a manifest lands); #560
+ordering crash test (PR #564); #561 atomic-write consolidation complete (PR #565 —
+`paths.atomic_write_json` is now genuinely the only home). **Phase 5:** #114 CLOSED (investigated:
+the 4 'misses' are retired-era artifacts — 3 of 4 are batch_00000 GT districts whose schedules were
+hand-found, the modern cascade never ran on any; reopen trigger on the issue). **NEXT: #164** —
+geo-scoped ({city}/{zip} from NCES CCD) un-domain-scoped query set for the follow-up path; sibling
+config knob to `stage2_query_templates.json`; carries #227's residual (blank-NCES-website districts
+the #229 guard refuses); Millard 3173740 is the acceptance case (real domain `mpsomaha.org`, blank
+NCES website). **Phase 6** — #222 + #118, then close. #112 re-homed to epic #128 (deferred by
+design). Open question for Ian: whether #118 stays in-epic.
 After #111: **#479/#480** → **#92** (Stage 9); parked: #475/#476, #103/#80 (+#110).
 Documented-in-code deferrals: `_satisfied_bands_now` batching (revisit on volume); the #522
 guardrail's per-rep keyword/table attribution (needs a server payload change); JS behavioral tests
 (no JS harness in repo — static-source pins only).
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
--m "not integration"` (expect **1709** pass) + `pytest -q -m govdb` (expect **254**, Postgres up).
+-m "not integration"` (expect **1719** pass) + `pytest -q -m govdb` (expect **254**, Postgres up).
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (the
 motivating ones: Huntington `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters).
 Full detail: `docs/PROJECT_HISTORY.md`, `STAGE1-4_*_DESIGN.md`, `PIPELINE_GOVERNANCE_AND_STATE.md`,
