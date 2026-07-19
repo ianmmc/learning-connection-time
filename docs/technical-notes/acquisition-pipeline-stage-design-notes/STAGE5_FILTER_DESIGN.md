@@ -884,6 +884,22 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 
 ## Change log
 
+- **2026-07-18 (evening) — the epic-#106 completion sweep, Stage-5 side (#75, #109, #517; PRs
+  #543/#544/#546).** (1) **#75 / REQ-097 drift detector BUILT** (`drift.py`): Bernoulli CUSUM + Wilson
+  two-gate over the fingerprinted scorecard series, segmented by config fingerprint (segment reset =
+  config-induced change; within-segment movement = the world shifted — the 2026-06-30 incident's shape,
+  now caught automatically). Advisory "retune recommended" badge on the console header
+  (`/api/progress`), never auto-retunes; verified no-alert on the live 8-point segment. (2) **#109**:
+  the harvest-slice basis now PREFERS the human-labeled page range (`labeled_pages_of`,
+  `facets_json._pages_list`) over the auto `harvest_pages`, and a human range alone qualifies a doc the
+  auto `is_handbook` classifier missed — verified live (52 labels carry ranges; one record with EMPTY
+  auto pages got its first-ever slice). (3) **#517 schedule_link_only**: the one-hop-away shape
+  (schedule-intent keywords + ≤1 in-window time + no table) measured 78/78 `target_absent` on the
+  census (zero collateral by construction) — now a derived signal, an attention chip (weight 60), and
+  the `link_followup.py` retry receipt (78 records / 21 districts) handed to the Stage-3 revisit
+  (executor rides epic #111 with #518; stored captures keep no raw HTML, so the linked href is only
+  recoverable by revisiting). All three passes: recall floor held, ZERO tier/decision movement.
+
 - **2026-07-18 — max-effort review of PRs #538/#539/#541 (10 angles, 7 confirmed findings, all fixed
   same-day; ledger episode 9, ZERO decision movement — every fix is a robustness/consistency closure).**
   (1) `FEED_URL_RE`'s glued-feed alternative was exact-case (`(?-i:[a-z]Feed)`) and missed

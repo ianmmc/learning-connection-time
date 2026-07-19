@@ -5,12 +5,15 @@ single source of truth shared by discover.py and capture_discovery.mjs (no more 
 from infrastructure.acquisition.common import config_loader  # noqa: E402
 from infrastructure.acquisition.common import paths  # noqa: E402
 
-# The exact list (and order) that was hardcoded in BOTH files before the migration — the
-# behavior-preserving baseline for "resolves identically."
+# The exact list (and order) as governed: the pre-migration hardcoded baseline + every
+# human-approved addition since (each with provenance in the knob file). A new entry is added HERE
+# in the same change that adds it to the knob — this pin is the review surface for the
+# human-in-the-loop CMS_HOSTS discipline, not a frozen snapshot.
 ORIGINAL_CMS_HOSTS = [
     "finalsite.net", "echalksites.com", "sites.google.com", "drive.google.com",
     "docs.google.com", "schoolwires.net", "schoolwires.com", "blackboard.com",
     "sharpschool.com", "apptegy.net", "thrillshare.com", "educationalnetworks.net",
+    "edlioschool.com", "edl.io",   # Edlio (#540/REQ-153, approved by Ian 2026-07-18)
 ]
 
 

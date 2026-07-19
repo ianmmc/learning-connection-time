@@ -219,6 +219,14 @@ floor** — a record whose `content_school_year` predates 2017-18 holds with a
 (b) **prefer-recent** (`stage6_dispatch._prefer_recent_holds`, dispatch-time) — among send-eligible siblings
 covering the same school, only the newest school-year's doc sends; stale siblings hold (zero recall cost by
 construction — no fresher sibling ⇒ the old doc still sends).
+**A fourth hold reason (#540, 2026-07-18): sibling-variant** (`stage6_dispatch._sibling_variant_holds`,
+runs after prefer-recent, before hub-priority) — among send-eligible siblings of ONE Edlio
+`/apps/bell_schedules/` app family (the first vendor profile under REQ-153; `cms_hosts` gained
+`edlioschool.com` + `edl.io`, Tier-0 recomputed: 53 records now fingerprint as Edlio), the best page
+sends (no strong wrong-day vote ≻ the bare app hub ≻ newest ≻ densest) and the variant permalinks hold
+with `sibling-variant:same-app-page-sends:<winner>`. This is the dispatch answer to the #515
+re-measurement's residual (8 of the 18-FP oracle ceiling were DASD variant-only pages). Zero recall
+cost: a variant-only family still sends its best.
 **A third hold reason since 2026-07-18 (#83 / REQ-116): hub-priority** (`stage6_dispatch._hub_priority_holds`,
 runs AFTER prefer-recent) — when the surviving send set contains a HUMAN-LABELED district hub
 (`district_hub_by_school`/`by_band`), the best hub (newest content year, then rep time-density) is the only
