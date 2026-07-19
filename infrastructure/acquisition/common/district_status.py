@@ -221,9 +221,16 @@ def save(registry: dict, *, export: bool = True) -> int:
         for ev in events:
             s.execute(INSERT_STATE_EVENT, ev)
         s.commit()                 # persist before exporting, so the backup only reflects committed state
-        if export:
-            export_status(s)
-    registry["_events"] = []
+        registry["_events"] = []   # #330: cleared the moment the commit lands -- an export failure
+        if export:                 # below must not leave the buffer primed for a double-insert
+            try:
+                export_status(s)
+            except Exception as e:
+                # The JSON is the regenerable backup; the DB is the precious record. The committed
+                # events are durable -- warn and let the next save()/export() regenerate.
+                print(f"[warn] district_status export failed after commit "
+                      f"({type(e).__name__}: {e}) -- events are durable in the DB; "
+                      f"a later save()/export() will regenerate the backup")
     return len(events)
 
 

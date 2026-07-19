@@ -1231,3 +1231,4 @@ class TestProcessStage4Finish:
         rec = registry["districts"]["9999999"]
         assert rec["furthest_stage"] == 4
         assert rec["outcome"] == "processed_all"
+

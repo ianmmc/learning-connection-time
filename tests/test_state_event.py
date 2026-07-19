@@ -189,3 +189,20 @@ def test_save_export_false_defers_the_backup(monkeypatch):
     assert exports == []                     # no per-district regeneration
     DS.export()
     assert exports == [1]                    # exactly one full regeneration at run end
+
+
+def test_save_survives_export_failure_and_clears_buffer(monkeypatch):
+    """#330 — the commit makes the events durable; an export failure after it must neither
+    propagate nor leave the buffer primed (a retried save() would double-insert every event
+    into the append-only log)."""
+    exports: list = []
+    _fake_db(monkeypatch, exports)
+
+    def boom(s, out=None):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(DS, "export_status", boom)
+    reg = _empty()
+    DS.record_stage(reg, "TSTX", "N", "ZZ", stage=1, stage_name="queue", outcome="queued")
+    assert DS.save(reg) == 1        # no raise -- the JSON is the regenerable backup
+    assert reg["_events"] == []     # cleared at commit time, not after the export

@@ -92,9 +92,28 @@ class TransientProviderError(RuntimeError):
 
 
 def _secret(name):
-    """A secret from env or the gitignored secrets file (repo-anchored, never CWD-relative)."""
-    return os.getenv(name) or (json.loads(SECRETS_FILE.read_text()).get(name)
-                               if SECRETS_FILE.exists() else None)
+    """A secret from env or the gitignored secrets file (repo-anchored, never CWD-relative).
+    Returns None when absent -- the provider's 401 handler names the missing secret via
+    _auth_hint() (#328), so a fresh clone's first run doesn't mis-read as a billing problem.
+    A MALFORMED secrets file halts here with its own message (not a bare JSONDecodeError)."""
+    if os.getenv(name):
+        return os.getenv(name)
+    if not SECRETS_FILE.exists():
+        return None
+    try:
+        return json.loads(SECRETS_FILE.read_text()).get(name)
+    except json.JSONDecodeError as e:
+        raise SystemExit(f"CONTROL FAILURE: malformed secrets file {SECRETS_FILE}: {e}") from e
+
+
+def _auth_hint(*names):
+    """Disambiguate a provider 401/402 (#328): if any required secret is absent, the halt message
+    says WHICH one and where to put it, instead of narrating first-run setup as 'billing/auth'."""
+    missing = [n for n in names if not _secret(n)]
+    if missing:
+        return (f" Likely cause: {', '.join(missing)} not set (env or {SECRETS_FILE}) -- "
+                f"a missing key, not a billing problem.")
+    return ""
 
 
 def serper_search(q, dhost, k=10, _sleep=time.sleep):
@@ -120,7 +139,7 @@ def serper_search(q, dhost, k=10, _sleep=time.sleep):
                                          f"degrading, not halting. {r.text[:160]}")
     if r.status_code in BILLING_AUTH_STATUS_CODES:
         raise SystemExit(f"CONTROL FAILURE: Serper HTTP {r.status_code} (billing/auth) -- "
-                         f"halting the run. {r.text[:160]}")
+                         f"halting the run. {r.text[:160]}{_auth_hint('SERPER_API_KEY')}")
     r.raise_for_status()
     return [o["link"] for o in r.json().get("organic", []) if o.get("link")][:k]
 
@@ -143,7 +162,8 @@ def brightdata_search(q, dhost, k=10):
                       timeout=60)
     if r.status_code in BILLING_AUTH_STATUS_CODES:
         raise SystemExit(f"CONTROL FAILURE: Bright Data HTTP {r.status_code} (billing/auth) -- "
-                         f"halting the run. {r.text[:160]}")
+                         f"halting the run. {r.text[:160]}"
+                         f"{_auth_hint('BRIGHTDATA_API_KEY', 'BRIGHTDATA_SERP_ZONE')}")
     if r.status_code == 429:
         raise TransientProviderError(f"Bright Data HTTP 429 (rate-limited) -- transient, "
                                      f"failover to Serper. {r.text[:160]}")
