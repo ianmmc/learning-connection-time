@@ -219,6 +219,14 @@ floor** — a record whose `content_school_year` predates 2017-18 holds with a
 (b) **prefer-recent** (`stage6_dispatch._prefer_recent_holds`, dispatch-time) — among send-eligible siblings
 covering the same school, only the newest school-year's doc sends; stale siblings hold (zero recall cost by
 construction — no fresher sibling ⇒ the old doc still sends).
+**A third hold reason since 2026-07-18 (#83 / REQ-116): hub-priority** (`stage6_dispatch._hub_priority_holds`,
+runs AFTER prefer-recent) — when the surviving send set contains a HUMAN-LABELED district hub
+(`district_hub_by_school`/`by_band`), the best hub (newest content year, then rep time-density) is the only
+URL the first dispatch sends; every other send holds with `hub-priority:first-dispatch-narrowed-to:<winner>`.
+"Covers all bands" is a presumption carried by the hub label — safe because the Stage-7 coverage gates +
+request-more-evidence loop pull the held reps back via 7→6 if the hub under-covers (at most one cheap retry
+round vs. every redundant per-school send saved on round 1). The REQ's "or A-scoring" arm is structurally
+ready but inactive (no detector emits a hub category); REQ-116 → `tested`, AC authored with the build.
 
 **Stage-5 v2.1 ripple check (2026-07-01).** The Stage-5 labeling rework (target-shape taxonomy; non-targets →
 confounder facets; REQ-114) flows into Stage 6 **cleanly** — `release.decide` and the gate@6 candidates SQL
@@ -227,9 +235,12 @@ count as targets and `target_absent`/`unusable` reject; candidates / preview / v
 against the migrated set (108 verified targets, preview assembles + prices normally). *(The
 `server._TARGET_IN` frozen-at-import wrinkle noted here on 2026-07-01 was removed 2026-07-02 — the module
 constant was deleted entirely in favor of a bound list param computed per request, issue #62.)* One
-remaining wrinkle, not a defect: the human now records the real handbook **page range**
-(`facets_json._pages_list`), but the `harvest_slice` still materializes off the *auto* `harvest_pages` — a
-worthwhile future edge (prefer the human-labeled pages once they accrue), tracked as a follow-up. (tracked: #109)
+remaining wrinkle, ~~not a defect: the human now records the real handbook **page range**
+(`facets_json._pages_list`), but the `harvest_slice` still materializes off the *auto* `harvest_pages`~~ —
+**CLOSED 2026-07-18 (#109):** the slice basis now PREFERS the human range (`build_signals.labeled_pages_of`,
+read at ingest from the precious label rows; `release.best_send` mirrors it for the pages hint), and a human
+range alone qualifies a doc the auto `is_handbook` classifier missed (the `buried_handbook` case — verified
+live: a record with EMPTY auto harvest_pages got its first-ever slice from the human's `[8]`).
 
 **The seam:** everything needed to POST is assembled here; **Stage 7's code** makes the paid call, runs the
 judge-on-disagreement loop, and the "request more evidence" back-edges (§3F) — and the gate@6 console is

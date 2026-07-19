@@ -83,6 +83,38 @@ def _prefer_recent_holds(sendables: list) -> set:
     return holds
 
 
+# REQ-116 (#83): the hub label vocabulary — a human-labeled district hub (per-school or per-band
+# listing) is the one URL whose best rep suffices for a district's FIRST dispatch.
+HUB_LABELS = {"district_hub_by_school", "district_hub_by_band"}
+
+
+def _hub_priority_holds(sendables: list) -> tuple:
+    """REQ-116 (#83) hub-priority narrowing (a DISPATCH decision — STAGE6 §4): when a district's send
+    set contains a HUMAN-LABELED district hub, the best hub is the only URL the first dispatch needs —
+    every other send is HELD (available for the 7→6 back-edge). `sendables` = [{rec_key, label,
+    year:int|None, n_times:int}]. Returns (winner_rec_key|None, set of rec_keys to hold).
+
+    Operational semantics (the AC REQ-116 lacked, authored with #83):
+      * "covers all bands" is a PRESUMPTION carried by the hub label itself — district_hub_by_school /
+        district_hub_by_band mean "a page listing schedules across the district's schools/bands." No
+        per-record claimed-band data exists to verify against, and none is needed for safety: the
+        Stage-7 coverage gates + request-more-evidence loop detect an under-covering hub and pull the
+        HELD reps back via 7→6 — the presumption costs at most one cheap retry round, while a correct
+        presumption saves every redundant per-school send on round 1 (the REQ's point).
+      * "best representation of that URL" = best_send's existing per-record pick; BETWEEN hubs, newest
+        content year wins, then time density (the prefer-recent tie discipline).
+      * "or A-scoring" (the REQ's unlabeled arm) is STRUCTURALLY ready but inactive: no detector emits
+        a hub category today (hub-ness is human/topology knowledge), so an unlabeled tier-A record can
+        never satisfy the hub test — when a hub detector exists, it joins this predicate, not a new pass.
+    ZERO recall cost by construction: hold, never reject; verified_only composes upstream (a labeled
+    hub IS a labeled target, so it survives training-grade mode)."""
+    hubs = [r for r in sendables if r.get("label") in HUB_LABELS]
+    if not hubs:
+        return None, set()
+    winner = max(hubs, key=lambda r: (r["year"] if r["year"] is not None else -1, r.get("n_times") or 0))
+    return winner["rec_key"], {r["rec_key"] for r in sendables if r["rec_key"] != winner["rec_key"]}
+
+
 def district_release_input(session, district_id: str, verified_only: bool = False):
     """Read one district's release decision from the DB, shaped for stage6 assembly:
     `(district_meta, [records])`. Returns None if the district isn't present.
@@ -109,8 +141,9 @@ def district_release_input(session, district_id: str, verified_only: bool = Fals
         }
         records.append(rd)
         if decision == "send":
-            sendables.append({"rec_key": rec["rec_key"],
+            sendables.append({"rec_key": rec["rec_key"], "label": rec.get("label"),
                               "year": _content_start_year(rec.get("signals")),
+                              "n_times": max((r.get("n_times") or 0) for r in rec.get("reps") or [{}]),
                               "schools": rec.get("intended_schools") or []})
     # #107 prefer-recent (dispatch-time): HOLD a stale same-school sibling — the newest still sends, the
     # older is available for a cheap 7->6 re-dispatch if extraction fails. Composes after verified_only.
@@ -121,6 +154,16 @@ def district_release_input(session, district_id: str, verified_only: bool = Fals
             csy = (rd["signals"] or {}).get("content_school_year")
             rd["decision"], rd["send"] = "hold", []
             rd["reason"] = f"stale-sibling:{csy}:newer-same-school-sends"
+    # REQ-116 (#83) hub-priority (dispatch-time): a labeled district hub narrows the FIRST dispatch to
+    # itself; every other surviving send is HELD for the 7→6 back-edge. Runs AFTER prefer-recent so a
+    # stale hub already held by a newer same-school sibling can't be the winner.
+    survivors = [s for s in sendables if by_key[s["rec_key"]]["decision"] == "send"]
+    hub_winner, hub_holds = _hub_priority_holds(survivors)
+    for rk in hub_holds:
+        rd = by_key.get(rk)
+        if rd is not None and rd["decision"] == "send":
+            rd["decision"], rd["send"] = "hold", []
+            rd["reason"] = f"hub-priority:first-dispatch-narrowed-to:{hub_winner}"
     return district, records
 
 
