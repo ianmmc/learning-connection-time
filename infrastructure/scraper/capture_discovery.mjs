@@ -601,7 +601,13 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
     // either name; the live journal is deleted once the real manifest lands (it supersedes it).
     const journalPath = path.join(ROOT, did, 'captures.journal.jsonl');
     if (existsSync(journalPath)) {
-      renameSync(journalPath, path.join(ROOT, did, `captures.journal.${tsSuffix()}.jsonl`));
+      // Uniqueness guard (review): tsSuffix is second-resolution and renameSync overwrites --
+      // two rename-asides in the same second must not clobber an earlier crash journal.
+      let aside = path.join(ROOT, did, `captures.journal.${tsSuffix()}.jsonl`);
+      for (let n = 1; existsSync(aside); n += 1) {
+        aside = path.join(ROOT, did, `captures.journal.${tsSuffix()}-${n}.jsonl`);
+      }
+      renameSync(journalPath, aside);
     }
     byDistrict[did] = { capDir, records: [], seen: new Set(), emergent: 0, journalPath };
     // #174 (follow-up redo): a prior round's captures.json seeds records + seen so this run
@@ -865,9 +871,16 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
     for (const did of Object.keys(byDistrict)) {
       try {
         writeVersioned(path.join(ROOT, did, 'captures.json'), JSON.stringify(byDistrict[did].records, null, 2));
-        // #117: the manifest supersedes the journal -- delete it ONLY after the write landed
-        // (a failed manifest write keeps the journal, so reconstruct still has full fidelity).
-        try { unlinkSync(byDistrict[did].journalPath); } catch { /* never written -> nothing to delete */ }
+        // #117: a LANDED manifest supersedes every journal for the district -- the live one AND
+        // any renamed-aside crash leftovers (this run seeded from the prior manifest and re-covered
+        // the plan, so a crashed run's journaled work is redone, not lost). Sweeping them here is
+        // what keeps a FUTURE reconstruct from resurrecting stale records (review finding). A failed
+        // manifest write keeps everything, so reconstruct still has full fidelity.
+        for (const f of readdirSync(path.join(ROOT, did))) {
+          if (f === 'captures.journal.jsonl' || (f.startsWith('captures.journal.') && f.endsWith('.jsonl'))) {
+            try { unlinkSync(path.join(ROOT, did, f)); } catch { /* best-effort sweep */ }
+          }
+        }
       } catch (e) {
         console.error(`manifest write FAILED for ${did}: ${e}`); // keep writing the other districts'
       }

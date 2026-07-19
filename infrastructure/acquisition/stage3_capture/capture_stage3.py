@@ -316,13 +316,22 @@ def manual_capture_record(district: dict, *, url: str, src_file: Path, found_on:
 
 
 def write_manifest(district: dict, records: list) -> None:
-    """Atomic write of a reconstructed captures.json (recovery path; refuses to clobber)."""
+    """Atomic write of a reconstructed captures.json (recovery path; refuses to clobber). A LANDED
+    manifest supersedes every #117 journal for the district — they are consumed (deleted) here so a
+    future reconstruct (after e.g. a re-discovery deletes the manifest) can never resurrect records
+    from a defunct round (review finding on #563)."""
     path = district["dir"] / "captures.json"
     if path.exists():
         raise SystemExit(f"{path} exists — refusing to overwrite (reconstruction is recovery-only)")
     tmp = path.with_name(path.name + ".tmp")
     tmp.write_text(json.dumps(records, indent=2))
     tmp.replace(path)
+    for jp in list(district["dir"].glob("captures.journal.*.jsonl")) + \
+            [district["dir"] / "captures.journal.jsonl"]:
+        try:
+            jp.unlink()
+        except OSError:
+            pass   # absent / already swept — the manifest is what matters
 
 
 def finish_district(district: dict, registry: dict) -> str:

@@ -126,10 +126,12 @@ test('#117 pins: the per-task journal is appended per record, renamed aside at s
   // 1. appended in processTask's finally, best-effort (a journal failure must not fail the task)
   assert.match(src, /appendFileSync\(byDistrict\[t\.did\]\.journalPath, `\$\{JSON\.stringify\(rec\)\}\\n`\)/,
     'each completed record must be journaled');
-  // 2. a crash leftover is renamed aside, never clobbered
-  assert.match(src, /renameSync\(journalPath, path\.join\(ROOT, did, `captures\.journal\.\$\{tsSuffix\(\)\}\.jsonl`\)\)/,
-    'a leftover journal must be preserved aside');
-  // 3. deleted only after the manifest write LANDED (inside the same try, after writeVersioned)
-  assert.match(src, /writeVersioned\(path\.join\(ROOT, did, 'captures\.json'\)[\s\S]{0,400}?unlinkSync\(byDistrict\[did\]\.journalPath\)/,
-    'the journal is deleted only once captures.json supersedes it');
+  // 2. a crash leftover is renamed aside (uniqueness-guarded), never clobbered
+  assert.match(src, /let aside = path\.join\(ROOT, did, `captures\.journal\.\$\{tsSuffix\(\)\}\.jsonl`\);[\s\S]{0,300}?renameSync\(journalPath, aside\)/,
+    'a leftover journal must be preserved aside with a uniqueness guard');
+  // 3. ALL journals (live + renamed-aside leftovers) are swept only after the manifest write
+  // LANDED (inside the same try, after writeVersioned) -- a landed manifest supersedes them,
+  // and sweeping leftovers is what stops a future reconstruct resurrecting a defunct round.
+  assert.match(src, /writeVersioned\(path\.join\(ROOT, did, 'captures\.json'\)[\s\S]{0,900}?f\.startsWith\('captures\.journal\.'\)[\s\S]{0,200}?unlinkSync/,
+    'every journal is swept only once captures.json supersedes it');
 });

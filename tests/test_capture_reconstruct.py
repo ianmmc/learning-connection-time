@@ -184,3 +184,16 @@ def test_journal_latest_line_wins_and_renamed_aside_leftovers_are_read(tmp_path)
                          "files": {"txt": "page.txt"}, "source": "discovered"})
     recs = C3.reconstruct_captures(dist)
     assert len(recs) == 1 and recs[0]["ok"] is True                  # the retry's line won
+
+
+def test_write_manifest_consumes_all_journals(tmp_path):
+    """Review fix on #563: a LANDED manifest supersedes every journal — write_manifest sweeps the
+    live journal AND renamed-aside crash leftovers, so a future reconstruct (after a re-discovery
+    deletes the manifest) can never resurrect records from a defunct round."""
+    dist = _district(tmp_path, [{"url": "https://x.org/a/", "tools": []}])
+    _journal_line(dist, {"url": "https://x.org/a/", "hash": "aaaaaaaaaa", "ok": True, "files": {}})
+    (dist["dir"] / "captures.journal.20260101T000000Z.jsonl").write_text("{}\n")
+    C3.write_manifest(dist, [{"url": "https://x.org/a/", "hash": "aaaaaaaaaa", "ok": True, "files": {}}])
+    assert (dist["dir"] / "captures.json").exists()
+    assert not (dist["dir"] / "captures.journal.jsonl").exists()
+    assert not list(dist["dir"].glob("captures.journal.*.jsonl"))
