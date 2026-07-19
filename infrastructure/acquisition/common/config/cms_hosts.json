@@ -14,6 +14,8 @@
     {"value": "sharpschool.com", "added": "2026-06-24", "rationale": "dominant K-12 CMS in batch_00001 (Open decision #8)", "evidence": "51 records; cms_hint was null until added", "approved_by": "ian", "loop_tier": 0},
     {"value": "apptegy.net", "added": "2026-06-24", "rationale": "Apptegy/Thrillshare K-12 platform in batch_00001 (Open decision #8)", "evidence": "~24 records (apptegy.net + core-docs.s3)", "approved_by": "ian", "loop_tier": 0},
     {"value": "thrillshare.com", "added": "2026-06-24", "rationale": "Apptegy/Thrillshare K-12 platform in batch_00001 (Open decision #8)", "evidence": "Apptegy's content host", "approved_by": "ian", "loop_tier": 0},
-    {"value": "educationalnetworks.net", "added": "2026-06-24", "rationale": "Educational Networks K-12 platform in batch_00001 (Open decision #8)", "evidence": "25 records", "approved_by": "ian", "loop_tier": 0}
+    {"value": "educationalnetworks.net", "added": "2026-06-24", "rationale": "Educational Networks K-12 platform in batch_00001 (Open decision #8)", "evidence": "25 records", "approved_by": "ian", "loop_tier": 0},
+    {"value": "edlioschool.com", "added": "2026-07-18", "rationale": "Edlio K-12 CMS (#540/REQ-153) — the /apps/bell_schedules/ variant-page vendor; sites load their master assets from <district>.edlioschool.com", "evidence": "4 districts / 52 records (musdaztecs, dasd.us, sburg.org, huntingtonisd) share the Edlio app signature; resource_hosts show <slug>.edlioschool.com on every rendered capture", "approved_by": "ian", "loop_tier": 0},
+    {"value": "edl.io", "added": "2026-07-18", "rationale": "Edlio content/CDN host (#540/REQ-153) — files.edl.io serves Edlio-site documents", "evidence": "N.files.edl.io in resource_hosts of the same captures; 4.files.edl.io/… schedule PDFs are live labeled targets", "approved_by": "ian", "loop_tier": 0}
   ]
 }

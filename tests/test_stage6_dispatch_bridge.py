@@ -220,3 +220,47 @@ def test_hub_priority_composes_after_prefer_recent(monkeypatch):
     assert by["d:hub_old"]["decision"] == "hold" and "stale-sibling" in by["d:hub_old"]["reason"]
     assert by["d:es"]["decision"] == "hold" and "hub-priority" in by["d:es"]["reason"]
     assert "d:hub_new" in by["d:es"]["reason"]      # the reason names the winner (traceable)
+
+
+# ---------------------- #540 Edlio sibling-variant holds (pure, DB-free) ----------------------
+def _e(rec_key, url, wd_strong=False, year=None, n_times=0):
+    return {"rec_key": rec_key, "url": url, "wd_strong": wd_strong, "year": year,
+            "n_times": n_times, "label": None, "schools": []}
+
+
+def test_sibling_variant_family_sends_the_regular_day_page():
+    # the DASD shape: variant permalinks (strong wrong-day votes) hold; the clean page sends
+    holds = BR._sibling_variant_holds([
+        _e("d:reg", "https://ms.dasd.us/apps/bell_schedules/index.jsp?id=100", wd_strong=False),
+        _e("d:early", "https://ms.dasd.us/apps/bell_schedules/index.jsp?id=101", wd_strong=True),
+        _e("d:remote", "https://ms.dasd.us/apps/bell_schedules/index.jsp?id=102", wd_strong=True)])
+    assert set(holds) == {"d:early", "d:remote"} and set(holds.values()) == {"d:reg"}
+
+
+def test_bare_app_hub_beats_variant_permalinks():
+    holds = BR._sibling_variant_holds([
+        _e("d:hub", "https://gv.dasd.us/apps/bell_schedules/", wd_strong=False),
+        _e("d:var", "https://gv.dasd.us/apps/bell_schedules/index.jsp?id=200", wd_strong=False)])
+    assert holds == {"d:var": "d:hub"}
+
+
+def test_variant_only_family_still_sends_its_best():
+    # zero recall cost: a family with ONLY variant pages keeps one (no fresher/cleaner sibling exists)
+    holds = BR._sibling_variant_holds([
+        _e("d:v1", "https://x.org/apps/bell_schedules/index.jsp?id=1", wd_strong=True, n_times=9),
+        _e("d:v2", "https://x.org/apps/bell_schedules/index.jsp?id=2", wd_strong=True, n_times=3)])
+    assert holds == {"d:v2": "d:v1"}
+
+
+def test_different_hosts_are_different_families():
+    # ms.dasd.us and hs.dasd.us are different SCHOOLS — never collapsed into one family
+    holds = BR._sibling_variant_holds([
+        _e("d:ms", "https://ms.dasd.us/apps/bell_schedules/", wd_strong=False),
+        _e("d:hs", "https://hs.dasd.us/apps/bell_schedules/", wd_strong=False)])
+    assert holds == {}
+
+
+def test_non_edlio_urls_never_form_a_family():
+    holds = BR._sibling_variant_holds([
+        _e("d:a", "https://x.org/bell-schedules/a"), _e("d:b", "https://x.org/bell-schedules/b")])
+    assert holds == {}

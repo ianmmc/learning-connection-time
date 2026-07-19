@@ -115,6 +115,41 @@ def _hub_priority_holds(sendables: list) -> tuple:
     return winner["rec_key"], {r["rec_key"] for r in sendables if r["rec_key"] != winner["rec_key"]}
 
 
+# #540: the Edlio bell_schedules APP family — one school's schedule surface materialized as sibling
+# pages (the bare app hub listing all variants + a dedicated page per variant + printerfriendly
+# twins). The first vendor profile under REQ-153; the family key is the URL module (works even where
+# the Stage-3 fingerprint is absent), the vendor identity is corroborated by cms_hint='edlioschool.com'.
+import re as _re
+_EDLIO_APP_RE = _re.compile(r"^(https?://[^/]+)/apps/bell_schedules(?:/|$)", _re.I)
+
+
+def _sibling_variant_holds(sendables: list) -> dict:
+    """#540 sibling-aware dispatch (the prefer-recent pattern, keyed on the CMS app family): among
+    send-eligible siblings of ONE Edlio bell_schedules app, send the best page and HOLD the rest —
+    a variant-only page (early dismissal / remote / delay) whose regular-day sibling is present must
+    not each cost a council call. Ranking (ascending; min wins): a page WITHOUT a strong wrong-day
+    vote beats one with (the variant pages fire lf_nonstandard_day strong); the bare app hub (no
+    ?id= variant param) beats a variant permalink (the hub lists ALL schedules incl. the regular
+    day); then newest year, then densest. ZERO recall cost: a family with only variant pages still
+    sends its best. Returns {held_rec_key: winner_rec_key}."""
+    fams = {}
+    for r in sendables:
+        m = _EDLIO_APP_RE.match(r.get("url") or "")
+        if m:
+            fams.setdefault(m.group(1).lower(), []).append(r)
+    holds = {}
+    for fam in fams.values():
+        if len(fam) < 2:
+            continue
+        winner = min(fam, key=lambda r: (
+            bool(r.get("wd_strong")), bool(_re.search(r"[?&]id=", r.get("url") or "")),
+            -(r["year"] if r.get("year") is not None else -1), -(r.get("n_times") or 0)))
+        for r in fam:
+            if r["rec_key"] != winner["rec_key"]:
+                holds[r["rec_key"]] = winner["rec_key"]
+    return holds
+
+
 def district_release_input(session, district_id: str, verified_only: bool = False):
     """Read one district's release decision from the DB, shaped for stage6 assembly:
     `(district_meta, [records])`. Returns None if the district isn't present.
@@ -141,9 +176,14 @@ def district_release_input(session, district_id: str, verified_only: bool = Fals
         }
         records.append(rd)
         if decision == "send":
+            sig = rec.get("signals") or {}
             sendables.append({"rec_key": rec["rec_key"], "label": rec.get("label"),
-                              "year": _content_start_year(rec.get("signals")),
+                              "url": rec.get("url"),
+                              "year": _content_start_year(sig),
                               "n_times": max((r.get("n_times") or 0) for r in rec.get("reps") or [{}]),
+                              "wd_strong": any(d.get("name") == "lf_nonstandard_day"
+                                               and d.get("strength") == "strong"
+                                               for d in sig.get("detectors") or []),
                               "schools": rec.get("intended_schools") or []})
     # #107 prefer-recent (dispatch-time): HOLD a stale same-school sibling — the newest still sends, the
     # older is available for a cheap 7->6 re-dispatch if extraction fails. Composes after verified_only.
@@ -154,6 +194,15 @@ def district_release_input(session, district_id: str, verified_only: bool = Fals
             csy = (rd["signals"] or {}).get("content_school_year")
             rd["decision"], rd["send"] = "hold", []
             rd["reason"] = f"stale-sibling:{csy}:newer-same-school-sends"
+    # #540 sibling-variant (dispatch-time): among one Edlio bell_schedules app's sibling pages, the
+    # best (non-variant, hub-shaped, newest, densest) sends; the variant permalinks hold. Runs after
+    # prefer-recent, before hub-priority (a labeled hub then supersedes whatever survived).
+    survivors = [s for s in sendables if by_key[s["rec_key"]]["decision"] == "send"]
+    for rk, winner_rk in _sibling_variant_holds(survivors).items():
+        rd = by_key.get(rk)
+        if rd is not None and rd["decision"] == "send":
+            rd["decision"], rd["send"] = "hold", []
+            rd["reason"] = f"sibling-variant:same-app-page-sends:{winner_rk}"
     # REQ-116 (#83) hub-priority (dispatch-time): a labeled district hub narrows the FIRST dispatch to
     # itself; every other surviving send is HELD for the 7→6 back-edge. Runs AFTER prefer-recent so a
     # stale hub already held by a newer same-school sibling can't be the winner.
