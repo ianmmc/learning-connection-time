@@ -32,7 +32,8 @@ def _create_temp_schema(sess):
         sess.execute(text(ddl.strip().replace("CREATE TABLE IF NOT EXISTS ", "CREATE TEMP TABLE ", 1)))
     for ddl in CI.CACHE_DDL:
         sess.execute(text(ddl.strip().replace("CREATE TABLE IF NOT EXISTS ", "CREATE TEMP TABLE ", 1)))
-    sess.execute(text("CREATE TEMP TABLE label (rec_key text PRIMARY KEY, status text DEFAULT 'unlabeled')"))
+    sess.execute(text("CREATE TEMP TABLE label (rec_key text PRIMARY KEY, status text DEFAULT 'unlabeled', "
+                      "facets_json text)"))   # facets_json: read by the #109 human-page-range slice pass
 
 
 def _seed(root, did, *, n_records=1):
