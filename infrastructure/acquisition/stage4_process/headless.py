@@ -81,29 +81,37 @@ def candidate_count(ddir: Path) -> int:
         return 0
 
 
+def _load_processed(ddir: Path) -> list:
+    """One parse of a district's processed.json ([] if absent/unreadable/not-a-list) -- the
+    single reader the count and winning-sources derivations share, so status_for_batch reads
+    the file once per district instead of twice (#347/#348 review)."""
+    try:
+        docs = json.loads((ddir / "processed.json").read_text())
+    except (json.JSONDecodeError, OSError, TypeError):
+        return []
+    return docs if isinstance(docs, list) else []
+
+
+def _winning_from(docs: list) -> list:
+    """Sources of every USABLE representation -- the tool-effectiveness signal (which
+    harvesters/OCR are yielding usable text; governance §11f / STAGE4 §4 user story).
+    #348 (review-completed): tolerate a malformed TOP-LEVEL entry (null / non-dict) as well
+    as a malformed texts[] entry -- either can 500 the batch status endpoint otherwise."""
+    return [t["source"] for doc in docs if isinstance(doc, dict)
+            for t in (doc.get("texts") or [])
+            if isinstance(t, dict) and t.get("usable") and t.get("source")]
+
+
 def _disk_doc_count(ddir: Path) -> int:
     """Record count in a district's processed.json (0 if absent/unreadable) -- the freshness
     signal the #347 self-heal compares against the processed_doc cache row count."""
-    try:
-        return len(json.loads((ddir / "processed.json").read_text()))
-    except (json.JSONDecodeError, OSError, TypeError):
-        return 0
+    return len(_load_processed(ddir))
 
 
 def winning_sources(ddir: Path) -> list:
-    """Sources of every USABLE representation in this district's processed.json -- the tool-effectiveness
-    signal (which harvesters/OCR are yielding usable text; governance §11f / STAGE4 §4 user story). Read
-    off disk: the per-text `source` is NOT in the live processed_doc cache (which carries only n_texts +
-    the doc-level usable flag). [] if absent/unreadable."""
-    pf = ddir / "processed.json"
-    try:
-        docs = json.loads(pf.read_text())
-    except (json.JSONDecodeError, OSError):
-        return []
-    # #348: tolerate a malformed texts[] entry (null / non-dict / missing source) rather than
-    # letting one corrupt file 500 the whole batch status endpoint.
-    return [t["source"] for doc in docs for t in (doc.get("texts") or [])
-            if isinstance(t, dict) and t.get("usable") and t.get("source")]
+    """Read-off-disk convenience wrapper (the per-text `source` is NOT in the live
+    processed_doc cache, which carries only n_texts + the doc-level usable flag)."""
+    return _winning_from(_load_processed(ddir))
 
 
 # ----------------------------------------------------------------- status / observability (reads the DB)
@@ -142,11 +150,14 @@ def status_for_batch(batch: dict) -> dict:
         cached_counts = {r[0]: r[1] for r in con.execute(text(
             "SELECT district_id, COUNT(*) FROM processed_doc WHERE district_id = ANY(:ids) "
             "GROUP BY district_id"), {"ids": done_ids or [""]})}
+    # ONE processed.json parse per done district, shared by the self-heal count check and the
+    # winning-sources rollup below (review: the two used to each read the same file).
+    disk_docs = {did: _load_processed(ondisk[did]["dir"]) for did in done_ids}
     for did in done_ids:
         # self-heal (#347): ingest when the cache row count doesn't MATCH disk, not only when it's
         # zero -- a follow-up redo that rewrote processed.json while the best-effort finish-hook
         # ingest failed used to leave stale prior-run rows the existence check skipped forever.
-        if cached_counts.get(did, 0) != _disk_doc_count(ondisk[did]["dir"]):
+        if cached_counts.get(did, 0) != len(disk_docs[did]):
             CI.cache_processed(ondisk[did]["dir"], did)
 
     rows_by_did: dict = {}
@@ -184,7 +195,7 @@ def status_for_batch(batch: dict) -> dict:
         # as no_usable_text_any, matching process_stage4.
         outcome = ("no_usable_text_any" if n_usable == 0 else
                    "processed_all" if n_usable == len(docs) else "processed_partial")
-        for src in winning_sources(ondisk[did]["dir"]):
+        for src in _winning_from(disk_docs.get(did) or []):
             sources[src] += 1
         districts.append({**row, "status": "done", "outcome": outcome, "n_docs": len(docs),
                           "n_usable": n_usable, "n_not_usable": len(docs) - n_usable})

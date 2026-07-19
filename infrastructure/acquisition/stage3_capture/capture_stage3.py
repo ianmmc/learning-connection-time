@@ -303,11 +303,14 @@ def finish_district(district: dict, registry: dict) -> str:
         # #267: a truncated/corrupt manifest (crash mid-write) must fail with the recovery path
         # spelled out -- without this, reconcile() skips the district forever (file exists = done)
         # while reconstruct refuses to run (file exists), a silent wedge.
+        # The command must match the reconstruct subparser's REAL signature (a single
+        # district_id positional; --root optional) -- the review caught the first draft
+        # citing a nonexistent <batch.json> argument, the opposite of a recovery aid.
         raise RuntimeError(
             f"corrupt captures.json for {district['district_id']} at {captures_path}: {e}. "
             f"Recovery: move the corrupt file aside, then rebuild it from the captures/ tree with "
             f"`python3 -m infrastructure.acquisition.stage3_capture.capture_stage3 reconstruct "
-            f"<batch.json> {district['district_id']}`"
+            f"{district['district_id']}`"
         ) from e
     outcome, notes = compute_outcome(captures)
     DS.record_stage(

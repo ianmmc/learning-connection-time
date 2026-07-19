@@ -157,4 +157,9 @@ class TestCorruptManifestMessage:
         district = {"dir": tmp_path, "district_id": "D9", "name": "N", "state": "AK"}
         with pytest.raises(RuntimeError) as ei:
             C3.finish_district(district, registry={"districts": {}})
-        assert "corrupt captures.json" in str(ei.value) and "reconstruct" in str(ei.value)
+        msg = str(ei.value)
+        assert "corrupt captures.json" in msg
+        # The suggested command must ACTUALLY PARSE against the real reconstruct subparser
+        # (review: the first draft cited a nonexistent <batch.json> positional).
+        cmd_tail = msg.split("capture_stage3 ", 1)[1].rstrip("`").split()
+        assert cmd_tail == ["reconstruct", "D9"]

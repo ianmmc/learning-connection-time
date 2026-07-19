@@ -220,3 +220,22 @@ class TestDiskDocCount:
         (tmp_path / "processed.json").write_text("{corrupt")
         assert H4._disk_doc_count(tmp_path) == 0
         assert H4._disk_doc_count(tmp_path / "missing") == 0
+
+
+class TestWinningSourcesTopLevelTolerance:
+    """Review completion of #348: a malformed TOP-LEVEL docs entry (null / non-dict) must be
+    skipped like a malformed texts[] entry — either could 500 the status endpoint."""
+
+    def test_top_level_null_and_string_entries_are_skipped(self, tmp_path):
+        import json as _json
+        from infrastructure.acquisition.stage4_process import headless as H4
+        (tmp_path / "processed.json").write_text(_json.dumps(
+            [None, "junk", {"texts": [{"source": "pdftotext", "usable": True}]}]))
+        assert H4.winning_sources(tmp_path) == ["pdftotext"]
+        assert H4._disk_doc_count(tmp_path) == 3   # count stays honest (raw record count)
+
+    def test_non_list_top_level_reads_as_empty(self, tmp_path):
+        from infrastructure.acquisition.stage4_process import headless as H4
+        (tmp_path / "processed.json").write_text('{"not": "a list"}')
+        assert H4.winning_sources(tmp_path) == []
+        assert H4._disk_doc_count(tmp_path) == 0
