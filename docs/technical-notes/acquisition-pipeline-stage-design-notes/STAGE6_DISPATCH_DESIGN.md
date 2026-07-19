@@ -223,8 +223,15 @@ construction — no fresher sibling ⇒ the old doc still sends).
 runs after prefer-recent, before hub-priority) — among send-eligible siblings of ONE Edlio
 `/apps/bell_schedules/` app family (the first vendor profile under REQ-153; `cms_hosts` gained
 `edlioschool.com` + `edl.io`, Tier-0 recomputed: 53 records now fingerprint as Edlio), the best page
-sends (no strong wrong-day vote ≻ the bare app hub ≻ newest ≻ densest) and the variant permalinks hold
-with `sibling-variant:same-app-page-sends:<winner>`. This is the dispatch answer to the #515
+sends and the variant permalinks hold with `sibling-variant:same-app-page-sends:<winner>`.
+**Hardened by the #543-#547 max-effort review (same-day):** the family key is **(host ×
+intended-school set)** — host-only grouping collapsed genuinely different schools' pages served from
+one district host, dropping a school's only send — and the ranking is **LABEL-AWARE** (labeled hub ≻
+labeled target ≻ unlabeled, then no-strong-wrong-day ≻ bare app hub ≻ newest ≻ densest): the review
+reproduced the label-blind version holding a human-labeled hub before hub-priority ever saw it,
+silently defeating REQ-116. A labeled record can now only be held in favor of another labeled record
+of its own family (the prefer-recent precedent); pinned end-to-end by
+`test_labeled_hub_survives_its_sibling_family_end_to_end`. This is the dispatch answer to the #515
 re-measurement's residual (8 of the 18-FP oracle ceiling were DASD variant-only pages). Zero recall
 cost: a variant-only family still sends its best.
 **A third hold reason since 2026-07-18 (#83 / REQ-116): hub-priority** (`stage6_dispatch._hub_priority_holds`,

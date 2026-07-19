@@ -884,6 +884,26 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 
 ## Change log
 
+- **2026-07-18 (late) — max-effort review of PRs #543-#547 (10 angles + sweep, 7 findings, all fixed
+  same-day; the severe one reproduced three ways before fixing).** (1) **`_sibling_variant_holds`
+  was label-blind AND school-blind** — it could hold a human-labeled hub (or any labeled target) in
+  favor of an unlabeled sibling BEFORE hub-priority ran, silently defeating REQ-116, and could
+  collapse two different schools sharing one district host into one family. Fixed: label-aware
+  ranking (labeled hub ≻ labeled target ≻ unlabeled) + (host × school-set) family key; composition
+  pinned end-to-end. (2) **`drift.detect()` crashed** (TypeError) on a scorecard with zero tier-A
+  predictions (harness's documented `precision=None` shape) — per-stream measurable-point filtering
+  + an inert-stream fallback; the badge can no longer silently go dark on a fresh config's first
+  card. (3) `wilson_lower` k>n math-domain landmine — clamped, precondition documented, and the
+  hand-rolled formula replaced by `statsmodels.proportion_confint(method='wilson')` (already a
+  package dependency via promotion_gate). (4) The precision stream's self-referential baseline
+  (adoption-level, so it cannot alert on a config SHIPPED already-regressed) is now explicitly
+  scoped as deliberate — adoption-time regression is the **#212 promotion gate's jurisdiction** —
+  and the verdict carries `historical_best` (cross-config) so the human sees the adoption gap the
+  CUSUM structurally cannot alert on. (5) `HUB_LABELS` de-duplicated (stage6_dispatch now imports
+  build_signals' canonical set; identity pinned). (6) The #109 per-record label SELECT (an N+1
+  inside ingest's record loop) became one per-district prefetch. (7) The dead no-op slice in
+  `detect()` removed. Re-verified: recall floor held, zero tier/decision movement.
+
 - **2026-07-18 (evening) — the epic-#106 completion sweep, Stage-5 side (#75, #109, #517; PRs
   #543/#544/#546).** (1) **#75 / REQ-097 drift detector BUILT** (`drift.py`): Bernoulli CUSUM + Wilson
   two-gate over the fingerprinted scorecard series, segmented by config fingerprint (segment reset =

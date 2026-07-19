@@ -95,3 +95,36 @@ def test_console_badge_is_wired():
     assert ".drift-badge" in css
     server = (repo / "infrastructure/acquisition/process_governance/server.py").read_text()
     assert 'out["drift"] = drift.detect()' in server
+
+
+# ---- #543-#547 review fixes ----
+def test_zero_tier_a_predictions_never_crashes(tmp_path):
+    # harness's documented shape for zero tier-A predictions is precision=None — the unguarded first
+    # build crashed with TypeError on the fresh-config segment this is most likely on.
+    c = {"generated_at": "2026-07-18T00:00:00Z", "fingerprints": {"config": "cfgA", "label_set": "l", "data": "d"},
+         "tier_vs_target": {"thresholds": {
+             "A": {"tp": 0, "fp": 0, "precision": None, "fn": 0, "recall": 0.0, "f1": 0.0},
+             H.FLOOR_TIER: {"tp": 10, "fn": 0, "fp": 0, "recall": 1.0, "precision": 0.0, "f1": 0.0}}}}
+    Path(tmp_path, "scorecard_t0.json").write_text(json.dumps(c))
+    v = DR.detect(tmp_path)
+    assert v["retune_recommended"] is False
+    assert v["precision"]["alert"] is False and v["precision"].get("note")
+    assert v["recall"]["alert"] is False       # the recall stream still evaluated normally
+
+
+def test_wilson_lower_clamps_k_above_n():
+    # was ValueError: math domain error — a landmine for any caller outside the harness invariant
+    assert DR.wilson_lower(15, 10) == DR.wilson_lower(10, 10)
+
+
+def test_historical_best_is_reported_cross_config(tmp_path):
+    """The precision baseline is deliberately self-referential (post-adoption drift only; adoption-time
+    regression is the #212 promotion gate's jurisdiction) — historical_best is the informational field
+    that lets a human see an adoption-level gap the CUSUM structurally cannot alert on."""
+    card(tmp_path, "a0", "2026-07-10T00:00:00Z", "cfgOLD", 335, 54, 414, 3)     # 0.8612 era
+    for i in range(3):
+        card(tmp_path, f"b{i}", f"2026-07-1{i + 1}T00:00:00Z", "cfgNEW", 70, 30, 414, 3)  # adopted at 0.70
+    v = DR.detect(tmp_path)
+    assert v["retune_recommended"] is False    # flat-at-adoption never CUSUM-alerts (documented)
+    assert v["precision"]["historical_best"] == 0.8612   # but the gap is visible to the human
+    assert v["precision"]["baseline"] == 0.7
