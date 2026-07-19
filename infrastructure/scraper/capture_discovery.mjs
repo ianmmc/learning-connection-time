@@ -84,6 +84,15 @@ export const withTimeout = (p, ms, label) => {
 // Cap emergent (one-hop) candidates per district so a link-dense page can't explode the task queue.
 const EMERGENT_CAP = 25;
 
+// #225: goto wait strategy. `networkidle` burned its FULL 30s timeout on most school-CMS pages
+// (live feeds / trackers never go idle: 17/20 Jefferson AL and 15/15 Gallup NM sample URLs timed
+// out), truncating big districts at the per-district deadline (Jefferson captured 85/112).
+// `domcontentloaded` + the existing 2.5s settle measured ZERO content loss across 47 URLs on 3
+// districts / multiple CMS vendors (identical innerText clock-time counts row-for-row) at a
+// 2.4-8.7x mean speedup — the late-hydrated-content risk is absorbed by the settle window plus
+// the Tier 2.5/3 visual backstop. Measurements: issue #225 (2026-07-19 spike).
+const GOTO_WAIT = { waitUntil: 'domcontentloaded', timeout: 15000 };
+
 // CMS_HOSTS is the shared config-as-data knob `cms_hosts` -- the SAME JSON file discover.py reads,
 // so the two can no longer drift (REQ-089, ending the prior hand-synced duplication). Domain
 // SUFFIXES signalling a known K-12 CMS / content host, matched via endsWith. Governance +
@@ -527,7 +536,7 @@ async function htmlFingerprintFor(ctx, url) {
   const page = await ctx.newPage();
   setupPageDialogHandler(page);
   try {
-    const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 }).catch(() => null);
+    const response = await page.goto(url, GOTO_WAIT).catch(() => null);
     const rawHtml = response ? await response.text().catch(() => '') : '';
     await page.waitForTimeout(2500);
     await dismissModals(page);
@@ -660,7 +669,7 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
         const page = await ctx.newPage();
         setupPageDialogHandler(page);
         try {
-          const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 }).catch(() => null);
+          const response = await page.goto(url, GOTO_WAIT).catch(() => null);
           const rawHtml = response ? await response.text().catch(() => '') : '';
           await page.waitForTimeout(2500);
           rec.final_url = page.url();
@@ -974,9 +983,9 @@ async function runBackfillSegments(ROOT, CONC) {
       const t = tasks[idx++];
       const page = await ctx.newPage();
       try {
-        // Match runCapture: networkidle often never settles on JS-heavy school CMSs, so CATCH the
-        // timeout and segment whatever rendered (the DOM is present) rather than aborting.
-        await page.goto(t.target, { waitUntil: 'networkidle', timeout: 30000 }).catch(() => null);
+        // Match runCapture (#225: shared GOTO_WAIT): CATCH a goto timeout and segment whatever
+        // rendered (the DOM is present) rather than aborting.
+        await page.goto(t.target, GOTO_WAIT).catch(() => null);
         await page.waitForTimeout(2500);
         // #375: a hung evaluate here stalled the worker AND lost the whole run's manifest
         // writes (they only happen after Promise.all resolves).

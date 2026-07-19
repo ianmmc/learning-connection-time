@@ -371,3 +371,12 @@ content-type is a visible per-record failure (`err: binary_fetch_<status>` + `fe
 written as `original.*` and never fallen through to render (the PR's own review round caught that a
 render of a true binary URL yields a BLANK ok:true html record — worse than a visible failure).
 Zero instances in-corpus; purely preventive, pinned by static-source tests. REQ-154.
+
+**2026-07-19 — #225: goto wait strategy `networkidle/30s` → `domcontentloaded/15s` (shared
+`GOTO_WAIT`, all three goto sites).** The Jefferson-AL truncation (85/112 at the 600s deadline) was
+per-URL latency, not URL count: measured on 47 real URLs across 3 districts / multiple CMS vendors,
+`networkidle` burned its FULL 30s timeout on 32/35 Apptegy pages (live feeds never go idle) and
+averaged 7.8s even where it settled, vs 3.2–5.3s for `domcontentloaded` + the existing 2.5s settle —
+with ZERO content loss (identical innerText clock-time counts row-for-row). Jefferson's projected
+capture drops ~670s → ~130s, comfortably inside the deadline. The late-hydration risk is absorbed by
+the settle window + the Tier 2.5/3 visual backstop. Full measurements: #225 (2026-07-19 spike).
