@@ -888,6 +888,16 @@ LCT calculations use a **layered architecture** with State Education Agency (SEA
 - **Status**: the schema columns (`is_career_technical_center`, `is_shared_service_entity`) existed since this rule was designed but were never actually populated until 2026-06-22 — the exclusion was a no-op in every LCT calculation prior to that date. Backfilled via `infrastructure/database/migrations/apply_ctc_classification.py` (idempotent — re-running after expanding the criteria only adds flags, never reverts one). Sets both columns (the LCT filter checks `is_shared_service_entity`; the originally documented fix only proposed `is_career_technical_center`).
 - **See**: `docs/technical-notes/PA_CTC_DATA_DISCREPANCY.md` for the original detailed analysis.
 
+**Rule 6b - Juvenile-Justice / Facility-Named Schools: FLAG, never auto-exclude (#222, 2026-07-19)**:
+a juvenile-justice / detention / correctional education program is not a conventional instructional day
+(secure-facility scheduling, court-driven programming) — the same comparability family as Rule 6 — but
+NCES CCD mis-codes at least some as `SCH_TYPE=1 "Regular School"` (verified: 2900593's "Jackson County
+Juvenile Ctr.", the gate@1 reject that surfaced this), so no reliable upstream indicator exists to key an
+automatic exclusion on. The pipeline instead FLAGS facility-pattern school names for review at gate@1
+(`school_sampling.facility_name_flags`, computed at view time so token-list tunings apply retroactively;
+the console shows a "facility?" badge) and the human decides — name-matching is lossy in both directions,
+so a hard exclude would silently drop legitimately-named schools.
+
 **Rule 7 - Grade-Span Data Integrity Exclusion (Acquisition Queue)**: A district is excluded from the bell-schedule **acquisition queue** if its school-level roster doesn't actually cover the grade range its LEA-level record claims.
 - **Rationale**: Decided 2026-06-22 during the acquisition-pipeline Stage 1 design. The LEA-level `GSLO`/`GSHI` declares the district's overall grade span; the school-level union (each open school's own `GSLO`/`GSHI`, classified into elementary/middle/high via `school_sampling.bands_for()`) shows which bands are *actually* covered by a real school. When a band the LEA claims to serve has **zero** schools covering it (e.g. LEA-level says K-12, but the school roster is K-5 + 9-12 with nothing spanning grades 6-8), that's a discontinuity — a true gap in the served range, not merely a band the district doesn't serve at all. Treated as a data-integrity red flag rather than a benign quirk: in a project where queue targeting depends on trusting NCES's school roster, an internally-inconsistent roster isn't safe to sample from.
 - **Not a flag for "this district doesn't serve this band"**: a K-8 district legitimately has zero high schools (LEA-level span ends at grade 8, not claimed) — that's normal, not a gap. The rule only fires when the LEA-level span *claims* a band and the school-level union shows no coverage for it, at either an edge or in the middle of the range.

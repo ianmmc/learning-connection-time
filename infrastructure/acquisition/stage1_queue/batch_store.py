@@ -10,6 +10,7 @@ from sqlalchemy import select, text
 
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import paths
+import infrastructure.acquisition.common.school_sampling as S
 from infrastructure.acquisition.stage1_queue.models import Batch, BatchDistrict, BatchSchool, utcnow
 
 BANDS = ("elementary", "middle", "high")
@@ -126,6 +127,12 @@ def _district_doc(sess, d: BatchDistrict, *, included_only: bool, with_flags: bo
 def _school_dict(s: BatchSchool, with_flags: bool) -> dict:
     out = {"school_id": s.school_id, "name": s.name, "is_charter": s.is_charter,
            "level": s.level, "gslo": s.gslo, "gshi": s.gshi}
+    # #222: computed at view time (pure over the name, never stored) so a token-list tuning
+    # applies retroactively. Only present when non-empty — a gate@1 reviewer's attention cue
+    # for facility-named schools NCES mis-codes as Regular (flag, never hard-exclude).
+    flags = S.facility_name_flags(s.name)
+    if flags:
+        out["review_flags"] = flags
     if with_flags:
         out["included"] = s.included
         out["source"] = s.source

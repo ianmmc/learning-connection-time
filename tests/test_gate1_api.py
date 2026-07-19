@@ -227,3 +227,12 @@ def test_gate1_console_carries_the_roster_spine_markers():
         assert marker in js, f"gate1.js lost the marker {marker!r}"
     css = (Path(SRV.__file__).parent / "static" / "app.css").read_text()
     assert ".q-spine-unfilled" in css and ".q-spine-selected" in css
+
+
+def test_gate1_console_carries_the_facility_flag_marker():
+    """UI-visibility regression (#222): the facility-name badge must stay in the gate@1 school row."""
+    from pathlib import Path
+    from infrastructure.acquisition.process_governance import server as SRV
+    js = (Path(SRV.__file__).parent / "static" / "gate1.js").read_text()
+    assert 'data-feat="s1-facility-flag"' in js, "gate1.js lost the #222 facility-flag badge"
+    assert "review_flags" in js

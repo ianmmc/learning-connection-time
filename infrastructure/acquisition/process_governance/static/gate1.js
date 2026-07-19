@@ -159,12 +159,16 @@
 
   function schoolRow(did, s, draft) {
     const src = s.source === "manual_add" ? `<span class="badge badge-lavender">added</span>` : "";
+    // #222: facility-named school (juvenile/detention/correctional) — NCES mis-codes these as
+    // Regular; the badge is the gate@1 attention cue (flag, never auto-exclude; reviewer decides).
+    const fac = (s.review_flags || []).includes("facility_name")
+      ? `<span class="badge badge-warn" data-feat="s1-facility-flag" title="facility-type name (juvenile/detention/correctional) — verify this is a conventional instructional day (#222)">facility?</span>` : "";
     const btn = !draft ? "" : s.included
       ? `<button class="btn btn-mini reject" data-act="reject_school" data-did="${did}" data-sid="${s.school_id}">reject</button>`
       : `<button class="btn btn-mini restore" data-act="restore_school" data-did="${did}" data-sid="${s.school_id}">restore</button>`;
     return `<div class="q-school${s.included ? "" : " excluded"}">
       <span class="q-sname" title="${esc(s.name)}">${esc(s.name)}</span>
-      <span class="q-smeta">${esc(s.level || "?")} ${esc(s.gslo || "")}–${esc(s.gshi || "")}</span>${src}${btn}</div>`;
+      <span class="q-smeta">${esc(s.level || "?")} ${esc(s.gslo || "")}–${esc(s.gshi || "")}</span>${fac}${src}${btn}</div>`;
   }
 
   function wireDetail() {
