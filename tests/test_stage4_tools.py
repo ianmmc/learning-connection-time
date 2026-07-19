@@ -121,3 +121,19 @@ class TestPdftotextPageSeparators:
         # The client rule: page N's content precedes the Nth \f — "dismissal" (page 2) has exactly 1 \f before it.
         assert text[:text.index("\f")].count("page one") == 1
         assert text[:text.index("dismissal")].count("\f") == 1
+
+
+class TestMalformedManifestTolerance:
+    """#351 — a non-string files{} value (hand-edited/corrupt captures.json; Stage 3 never
+    writes one) degrades to representation-absent / a reported inconsistency, never a crash."""
+
+    def test_process_record_drops_non_string_files_values(self, tmp_path):
+        out = C4.process_record({"url": "u", "hash": "h", "ok": True,
+                                 "files": {"bin": None, "pdf": 123, "txt": ""}}, tmp_path)
+        assert out["texts"] == []   # nothing crashed; nothing claimed
+
+    def test_check_file_consistency_reports_non_string_entry_instead_of_crashing(self, tmp_path):
+        district = {"dir": tmp_path,
+                    "captures": [{"url": "u", "hash": "h", "ok": True, "files": {"bin": None}}]}
+        problems = C4.check_file_consistency(district)
+        assert len(problems) == 1 and "non-string files entry" in problems[0]

@@ -238,8 +238,9 @@ def run_batch(batch: dict, *, actor: str = "auto:stage3", on_event=None, _run=su
         # have nothing for Playwright, are terminal at Stage 2, and get no Stage-3 artifact/event (they
         # surface as `manual_flag_all` in status, sourced from the discovery state). Cheap pre-capture skip
         # that matters at continuous-running scale.
-        no_link = [d for d in todo if candidate_count(d["dir"]) == 0]
-        todo = [d for d in todo if candidate_count(d["dir"]) > 0]
+        n_cands = {d["district_id"]: candidate_count(d["dir"]) for d in todo}   # one read per district (#454)
+        no_link = [d for d in todo if n_cands[d["district_id"]] == 0]
+        todo = [d for d in todo if n_cands[d["district_id"]] > 0]
         for d in no_link:
             emit("skipped_no_links", district_id=d["district_id"], name=d["name"])
         emit("reconciled", todo=[d["district_id"] for d in todo],

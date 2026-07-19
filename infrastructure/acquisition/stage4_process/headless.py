@@ -81,6 +81,15 @@ def candidate_count(ddir: Path) -> int:
         return 0
 
 
+def _disk_doc_count(ddir: Path) -> int:
+    """Record count in a district's processed.json (0 if absent/unreadable) -- the freshness
+    signal the #347 self-heal compares against the processed_doc cache row count."""
+    try:
+        return len(json.loads((ddir / "processed.json").read_text()))
+    except (json.JSONDecodeError, OSError, TypeError):
+        return 0
+
+
 def winning_sources(ddir: Path) -> list:
     """Sources of every USABLE representation in this district's processed.json -- the tool-effectiveness
     signal (which harvesters/OCR are yielding usable text; governance §11f / STAGE4 §4 user story). Read
@@ -91,7 +100,10 @@ def winning_sources(ddir: Path) -> list:
         docs = json.loads(pf.read_text())
     except (json.JSONDecodeError, OSError):
         return []
-    return [t["source"] for doc in docs for t in (doc.get("texts") or []) if t.get("usable")]
+    # #348: tolerate a malformed texts[] entry (null / non-dict / missing source) rather than
+    # letting one corrupt file 500 the whole batch status endpoint.
+    return [t["source"] for doc in docs for t in (doc.get("texts") or [])
+            if isinstance(t, dict) and t.get("usable") and t.get("source")]
 
 
 # ----------------------------------------------------------------- status / observability (reads the DB)
@@ -127,11 +139,14 @@ def status_for_batch(batch: dict) -> dict:
                    ORDER BY district_id, event_id DESC"""), {"ids": ids or [""]}).mappings():
             if r["event_type"] == "failed":
                 failed_procs[r["district_id"]] = r["note"]
-        cached_ids = {r[0] for r in con.execute(text(
-            "SELECT DISTINCT district_id FROM processed_doc WHERE district_id = ANY(:ids)"),
-            {"ids": done_ids or [""]})}
-    for did in done_ids:                     # self-heal: ingest the processed-doc rows the cache is missing
-        if did not in cached_ids:
+        cached_counts = {r[0]: r[1] for r in con.execute(text(
+            "SELECT district_id, COUNT(*) FROM processed_doc WHERE district_id = ANY(:ids) "
+            "GROUP BY district_id"), {"ids": done_ids or [""]})}
+    for did in done_ids:
+        # self-heal (#347): ingest when the cache row count doesn't MATCH disk, not only when it's
+        # zero -- a follow-up redo that rewrote processed.json while the best-effort finish-hook
+        # ingest failed used to leave stale prior-run rows the existence check skipped forever.
+        if cached_counts.get(did, 0) != _disk_doc_count(ondisk[did]["dir"]):
             CI.cache_processed(ondisk[did]["dir"], did)
 
     rows_by_did: dict = {}

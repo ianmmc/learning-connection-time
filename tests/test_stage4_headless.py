@@ -194,3 +194,29 @@ def test_rollup_counts():
                  "awaiting_capture": 1, "awaiting_discovery": 1, "resolved": 4,
                  "processed_all": 1, "processed_partial": 1, "no_usable_text_any": 1,
                  "n_docs": 11, "n_usable": 8, "n_not_usable": 3}
+
+
+class TestWinningSourcesTolerance:
+    """#348 — one malformed texts[] entry must not 500 the batch status endpoint."""
+
+    def test_non_dict_entries_are_skipped(self, tmp_path):
+        import json as _json
+        from infrastructure.acquisition.stage4_process import headless as H4
+        (tmp_path / "processed.json").write_text(_json.dumps([
+            {"texts": [None, "junk", {"source": "pdftotext", "usable": True},
+                       {"usable": True}, {"source": "camelot_stream", "usable": False}]},
+        ]))
+        assert H4.winning_sources(tmp_path) == ["pdftotext"]
+
+
+class TestDiskDocCount:
+    """#347 — the freshness signal the self-heal compares against the cache row count."""
+
+    def test_counts_records_and_zero_on_garbage(self, tmp_path):
+        import json as _json
+        from infrastructure.acquisition.stage4_process import headless as H4
+        (tmp_path / "processed.json").write_text(_json.dumps([{}, {}, {}]))
+        assert H4._disk_doc_count(tmp_path) == 3
+        (tmp_path / "processed.json").write_text("{corrupt")
+        assert H4._disk_doc_count(tmp_path) == 0
+        assert H4._disk_doc_count(tmp_path / "missing") == 0

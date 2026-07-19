@@ -297,7 +297,18 @@ def finish_district(district: dict, registry: dict) -> str:
     against a half-finished state, since captures.json only exists once the Node capture
     script has fully finished that district."""
     captures_path = district["dir"] / "captures.json"
-    captures = json.loads(captures_path.read_text())
+    try:
+        captures = json.loads(captures_path.read_text())
+    except json.JSONDecodeError as e:
+        # #267: a truncated/corrupt manifest (crash mid-write) must fail with the recovery path
+        # spelled out -- without this, reconcile() skips the district forever (file exists = done)
+        # while reconstruct refuses to run (file exists), a silent wedge.
+        raise RuntimeError(
+            f"corrupt captures.json for {district['district_id']} at {captures_path}: {e}. "
+            f"Recovery: move the corrupt file aside, then rebuild it from the captures/ tree with "
+            f"`python3 -m infrastructure.acquisition.stage3_capture.capture_stage3 reconstruct "
+            f"<batch.json> {district['district_id']}`"
+        ) from e
     outcome, notes = compute_outcome(captures)
     DS.record_stage(
         registry, district["district_id"], district["name"], district["state"],
