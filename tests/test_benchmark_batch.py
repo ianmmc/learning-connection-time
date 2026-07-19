@@ -125,3 +125,35 @@ def test_tracked_gt_proposals_manifest_has_27_valid_entries():
     assert len(props) == 27
     assert {p["topology"] for p in props} == {"hub", "per_school"}
     assert all(p.get("district_id") and p.get("dir") for p in props)
+
+
+def test_inject_crash_before_discovery_json_leaves_district_looking_not_done(tmp_path, monkeypatch):
+    """#560 — pin the write ORDERING invariant: discovery.json is the 'Stage 2 done' marker every
+    reconcile keys on, so it is written LAST — a crash after the first two writes must leave the
+    district looking not-done (discovery.json absent), never done-with-no-capture-plan. Simulated
+    by failing the THIRD atomic write; a future reorder/parallelization of the three calls fails
+    this test."""
+    from infrastructure.acquisition.common import paths as P
+    gt = _fake_gt(tmp_path)
+    raw = tmp_path / "captures_root"
+    d = {"district_id": "9999999", "name": "Testville", "state": "ZZ",
+         "domain": "", "gt_dirname": "9999999_Testville"}
+
+    real_write = P.atomic_write_json
+    calls = []
+
+    def crashing_write(path, doc):
+        calls.append(path.name)
+        if len(calls) == 3:
+            raise OSError("simulated crash before the third write")
+        real_write(path, doc)
+
+    monkeypatch.setattr(BB.paths, "atomic_write_json", crashing_write)
+    with pytest.raises(OSError, match="simulated crash"):
+        BB.inject_district(d, gt_root=gt, raw_root=raw)
+
+    ddir = raw / "9999999_testville"
+    assert calls == ["captures.json", "candidates.json", "discovery.json"]   # the pinned order
+    assert (ddir / "captures.json").exists()
+    assert (ddir / "candidates.json").exists()
+    assert not (ddir / "discovery.json").exists()   # the done-marker never landed -> looks not-done
