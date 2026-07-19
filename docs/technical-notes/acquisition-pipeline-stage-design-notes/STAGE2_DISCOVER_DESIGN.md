@@ -37,11 +37,12 @@ the gate — the retired `openrouter_search`/`perplexity_search` were deleted 20
 
 **Receipt from prior stage:** Stage 1's `gate@1`-approved batch (never the NCES CSVs — `build_roster()`
 reads only `domain` and `schools_by_band` from the batch; re-deriving band membership would silently
-discard every Stage 1 gate@1 fix). **Mechanism caveat (2026-07-16 audit, tracked #526):** the batch is read
-from the **on-disk receipt** (`headless.load_batch_any` → `QUEUE_DIR/<batch_id>.json`), NOT from the DB —
-Stage 2 is the one stage that does this (Stages 3/4 use `_batch_from_db`). The receipt is a DB projection
-regenerated on every gate@1 edit, so the data is current; but it makes Stage 2 an exception to the
-"JSON is never the transport" invariant. #526 tracks aligning it with 3/4.
+discard every Stage 1 gate@1 fix). **Mechanism (#526, closed 2026-07-18):** the console/autoflow resolves
+the batch **from the governance DB** via `server._batch_from_db` → `batch_store.to_receipt_doc` (the
+canonical included-only batch_doc) and passes the dict into `headless.run_batch(batch)` — the same
+contract as Stages 3/4. `load_batch_any` (`QUEUE_DIR/<batch_id>.json`) remains for the **CLI/offline
+path only**, enforced by the `cli_only_loaders` fitness function in `arch-manifest.json` (any
+`load_batch_any` reference inside `process_governance/` fails the suite).
 
 **Handoff to next stage:** `candidates.json` per district (the deduped, capture-ready URL list, each
 candidate carrying its `schools[]` map and `tools[]` provenance) is Stage 3's input, read via
@@ -377,3 +378,16 @@ Stage 2's own chokepoint means a blank/junk domain arriving by any *other* path 
 future batch builder, a remediation script) still can't silently reopen the same nationwide-collision
 failure mode — the run visibly yields nothing for that district instead. Shipped alongside #228
 (a console reset-labels button) and the Millard remediation itself, all in commit 7655277/PR #242.
+
+**2026-07-18 — #526: the console/autoflow batch read moved off the on-disk receipt onto the governance
+DB — the "JSON is never the transport between stages" invariant now holds for every stage.**
+`headless.run_batch` takes the resolved batch **dict** (the Stage-3/4 contract) instead of a
+batch_id/receipt ref; the console (`/api/discover/*`) and autoflow resolve it via
+`server._batch_from_db`, now rebased on `batch_store.to_receipt_doc` (the canonical INCLUDED-only
+batch_doc) + `batch_status`. The rebase matters beyond symmetry: the old `to_view` basis filtered
+districts but **not schools**, so gate@1-rejected schools survived in `schools_by_band` — harmless for
+Stages 3/4 (which never read schools), roster-poisoning for Stage 2 (which builds its roster from it);
+a govdb regression test pins this. `load_batch_any` survives strictly as the CLI/offline receipt
+loader, enforced by the new `cli_only_loaders` fitness function in `arch-manifest.json` (#124): any
+reference to it under `process_governance/` fails the suite, so the receipt-as-transport edge can't
+quietly return.

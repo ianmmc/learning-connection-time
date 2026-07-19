@@ -1175,6 +1175,21 @@ def queue_candidates(batch_id: str, district_id: str):
     return {"batch_id": batch_id, "district_id": district_id, "candidates_by_band": out}
 
 
+def _batch_from_db(batch_id: str) -> dict | None:
+    """Resolve the batch straight from the governance DB working store in the CANONICAL batch_doc
+    shape + lifecycle status (batch_store.to_working_doc: INCLUDED districts and INCLUDED schools
+    only, one Batch fetch) — the DB is the source of truth for the batch (§7a-A / §11h); the
+    on-disk receipt is never the transport (#526). A receipt file WITHOUT a DB row is not a
+    supported state (receipts are always derived from the rows in the same transaction), so such
+    a batch 404s upstream rather than falling back to disk — a deliberate #526 semantics change
+    from the old receipt-loader path. Shared by every stage view (discover, capture, process) and
+    autoflow. Previously built on to_view, whose district-level included filter left
+    gate@1-EXCLUDED SCHOOLS in schools_by_band — a roster-poisoning trap for Stage 2, which
+    builds its roster from schools_by_band. None if no such batch."""
+    with gdb.session_scope() as con:
+        return BSTORE.to_working_doc(con, batch_id)
+
+
 # ---------------------------------------------------------------- Stage 2 (Discover) console — REQ-104
 # Stage 2 is UNGATED, so the console surfaces it as STATUS/observability + an orchestration trigger
 # (headless `claude -p` Wave 1, subscription-billed). The run is a background job; its status is the
@@ -1196,18 +1211,13 @@ def _job_view(batch_id: str) -> dict | None:
 @app.get("/api/discover/{batch_id}")
 def discover_status(batch_id: str):
     """Read-only Stage 2 status for a batch: lifecycle (must be gate@1-approved to run) + per-district
-    discovery outcome read straight from disk + the live job feed (if a run is in flight)."""
-    try:
-        batch = H2.load_batch_any(batch_id)
-    except SystemExit as e:
-        raise HTTPException(404, str(e))
-    with gdb.session_scope() as con:
-        try:
-            batch_status = BSTORE.to_view(con, batch_id)["status"]
-        except KeyError:
-            batch_status = None
+    discovery outcome, with the batch resolved from the DB working store (#526 — not the on-disk
+    receipt), plus the live job feed (if a run is in flight)."""
+    batch = _batch_from_db(batch_id)
+    if batch is None:
+        raise HTTPException(404, f"no such batch {batch_id}")
     districts = H2.status_for_batch(batch)
-    return {"batch_id": batch_id, "batch_status": batch_status, "districts": districts,
+    return {"batch_id": batch_id, "batch_status": batch["batch_status"], "districts": districts,
             "rollup": H2.rollup(districts), "job": _job_view(batch_id)}
 
 
@@ -1218,14 +1228,16 @@ async def discover_run(batch_id: str, payload: dict):
     and no run already in flight. Live progress streams into _DISCOVER_JOBS; durable truth is the
     state_event log + discovery.json that run_batch writes."""
     actor = payload.get("actor", "ian")
-    with gdb.session_scope() as con:
-        try:
-            view = BSTORE.to_view(con, batch_id)
-        except KeyError:
-            raise HTTPException(404, f"no such batch {batch_id}")
-    if view["status"] != "approved":
-        raise HTTPException(409, f"batch {batch_id} is '{view['status']}' — gate@1 approval is required "
-                                 f"before discovery")
+    # Resolved at schedule time and captured by the _work closure — safe because a non-draft batch
+    # is locked against gate@1 edits (batch_store._require_draft), so an approved batch's roster
+    # cannot change before or while the background run uses it (the same invariant autoflow's
+    # single-resolve comment states).
+    batch = _batch_from_db(batch_id)
+    if batch is None:
+        raise HTTPException(404, f"no such batch {batch_id}")
+    if batch["batch_status"] != "approved":
+        raise HTTPException(409, f"batch {batch_id} is '{batch['batch_status']}' — gate@1 approval is "
+                                 f"required before discovery")
     existing = _DISCOVER_JOBS.get(batch_id)
     if existing and existing["state"] == "running":
         raise HTTPException(409, f"discovery already running for {batch_id}")
@@ -1247,7 +1259,7 @@ async def discover_run(batch_id: str, payload: dict):
 
     def _work():
         try:
-            job["summary"] = H2.run_batch(batch_id, actor=actor, on_event=_on_event,
+            job["summary"] = H2.run_batch(batch, actor=actor, on_event=_on_event,
                                           wave2_runner=_wave2)
             job["state"] = "done"
         except SystemExit as e:   # reconcile CONTROL FAILURE / billing-auth halt — surface, don't hide
@@ -1276,20 +1288,6 @@ def _capture_job_view(batch_id: str) -> dict | None:
     return {"state": j["state"], "started_at": j["started_at"], "finished_at": j.get("finished_at"),
             "actor": j["actor"], "events": j["events"][-50:], "summary": j.get("summary"),
             "error": j.get("error")}
-
-
-def _batch_from_db(batch_id: str) -> dict | None:
-    """Resolve the batch's INCLUDED districts straight from the governance DB working store (not the
-    on-disk receipt) — the DB is the source of truth for the batch (§7a-A / §11h). Shared by every
-    ungated stage view (capture, process). None if no such batch."""
-    with gdb.session_scope() as con:
-        try:
-            view = BSTORE.to_view(con, batch_id)
-        except KeyError:
-            return None
-    districts = [d for d in view["districts"] if d.get("included", True)]
-    return {"batch_id": batch_id, "batch_status": view["status"],
-            "batch_type": view.get("batch_type"), "districts": districts}
 
 
 @app.get("/api/capture/{batch_id}")
@@ -2660,14 +2658,17 @@ def _autoflow_followup(batch_id: str, actor: str) -> None:
             # else: genuinely already approved (idempotent re-run) — carry on into the stage chain
         job["stages"]["gate1"] = "approved"
 
+        # One DB resolve for the whole chain (#526): the batch is approved (locked against gate@1
+        # edits), so its working-store content is stable across the stage runs.
+        batch = _batch_from_db(batch_id)
+
         job["stage"] = "discover"                 # Stage 2
         def _w2(district, residual, domain):
             return H2._wave2_claude(district, residual, domain, _run=_tracked_run)
-        s2 = H2.run_batch(batch_id, actor=actor, wave2_runner=_w2)
+        s2 = H2.run_batch(batch, actor=actor, wave2_runner=_w2)
         job["stages"]["discover"] = (s2 or {}).get("summary", s2)
 
         job["stage"] = "capture"                  # Stage 3
-        batch = _batch_from_db(batch_id)
         s3 = H3.run_batch(batch, actor=actor, _run=_tracked_run)
         job["stages"]["capture"] = (s3 or {}).get("summary", s3)
 

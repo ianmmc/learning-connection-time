@@ -33,14 +33,13 @@ the acquisition→LCT layering boundary, alongside Stage 9's write).
 
 **Handoff to next stage:** an **approved** batch (`batch.status == "approved"`) is Stage 2's input. It
 never re-derives band membership from NCES CSVs — that would discard every gate@1 edit. A batch stays in
-`draft` until approved; Stage 2 has nothing to consume until then. **Mechanism caveat (2026-07-16 audit,
-tracked #526):** Stage 2 actually reads the batch from the **on-disk receipt** (`load_batch_any` →
-`QUEUE_DIR/<batch_id>.json`), NOT from the DB — unlike Stages 3/4, which read the DB via `_batch_from_db`.
-The data is still correct because the receipt is a DB projection regenerated (included-rows-only) on every
-gate@1 edit (`batch_store.write_receipt` / `to_receipt_doc`, called after each edit op), so gate@1 edits do
-reach Stage 2. But it means Stage 2 is a live exception to the "JSON is never the transport between stages"
-invariant (CLAUDE.md), and its correctness rests on an unenforced discipline (every mutation must call
-`write_receipt`). #526 tracks moving it onto `_batch_from_db`.
+`draft` until approved; Stage 2 has nothing to consume until then. **Mechanism (#526, closed
+2026-07-18):** the console/autoflow resolves the batch **from the DB** via `server._batch_from_db` →
+`to_receipt_doc` (the canonical included-only batch_doc + `batch_status`) for Stages 2, 3 AND 4 alike —
+the "JSON is never the transport between stages" invariant now holds everywhere. The on-disk receipt
+(`load_batch_any` → `QUEUE_DIR/<batch_id>.json`, still regenerated on every gate@1 edit via
+`write_receipt`) serves the CLI/offline path and audit only; the `cli_only_loaders` fitness function in
+`arch-manifest.json` fails the suite on any `load_batch_any` reference inside `process_governance/`.
 
 ---
 
@@ -274,7 +273,8 @@ the cross-batch queries the user stories need (a district in multiple batches; p
 - **`create_batch(sess, batch_doc, …)`** — write a freshly-built batch_doc into rows; if a `reserving`
   placeholder exists for the id, upgrades it in place rather than inserting a duplicate.
 - **`to_receipt_doc(sess, id)`** — the canonical batch_doc (INCLUDED rows only, original shape) for the
-  receipt + Stage 2; `n_selected` is **recomputed live** from included rows (counts stay honest after edits).
+  receipt file + `server._batch_from_db` (the console's batch resolve for Stages 2/3/4, #526);
+  `n_selected` is **recomputed live** from included rows (counts stay honest after edits).
 - **`to_view(sess, id)`** — the gate@1 review payload: lifecycle fields + ALL rows (included *and*
   soft-rejected) with their flags, so the human sees what was proposed and what they dropped.
 - **`write_receipt(sess, id)`** — regenerate `batch_NNNNN.json` from the rows (the receipt always mirrors

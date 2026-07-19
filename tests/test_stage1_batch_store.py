@@ -106,6 +106,42 @@ class TestRoundTrip:
         assert "S_H" in [s["school_id"] for s in sbb["middle"]["schools"]]
 
 
+class TestWorkingDoc:
+    """#555 review: to_working_doc is the console's DB batch resolve — canonical batch_doc +
+    live batch_status — while to_receipt_doc stays DELIBERATELY status-free (batch_guard relies
+    on the on-disk receipt carrying no status a CLI loader could wrongly trust)."""
+
+    def test_working_doc_is_receipt_doc_plus_status(self, sess):
+        BS.create_batch(sess, _doc(), actor="test")
+        wd = BS.to_working_doc(sess, "batch_test_store")
+        assert wd["batch_status"] == "draft"
+        assert {k: v for k, v in wd.items() if k != "batch_status"} == \
+            BS.to_receipt_doc(sess, "batch_test_store")
+
+    def test_receipt_doc_never_carries_status(self, sess):
+        BS.create_batch(sess, _doc(), actor="test")
+        BS.approve_batch(sess, "batch_test_store", "test")
+        rec = BS.to_receipt_doc(sess, "batch_test_store")
+        assert "batch_status" not in rec and "status" not in rec
+
+    def test_working_doc_unknown_batch_is_none(self, sess):
+        assert BS.to_working_doc(sess, "batch_nope_999") is None
+
+    def test_meta_key_cannot_shadow_computed_fields(self, sess):
+        """The meta_json spread comes FIRST in the doc literal, so a stray meta key named after
+        a computed/explicit field loses to the real value instead of silently replacing it."""
+        BS.create_batch(sess, _doc(), actor="test")
+        b = sess.get(Batch, "batch_test_store")
+        b.meta_json = {**(b.meta_json or {}), "n": 999, "nces_year": "1999_00"}
+        sess.flush()
+        rec = BS.to_receipt_doc(sess, "batch_test_store")
+        assert rec["n"] == 2 and rec["nces_year"] == "2024_25"
+        wd = BS.to_working_doc(sess, "batch_test_store")
+        assert wd["n"] == 2 and wd["nces_year"] == "2024_25"
+        view = BS.to_view(sess, "batch_test_store")
+        assert view["status"] == "draft" and view["nces_year"] == "2024_25"
+
+
 class TestGate1Edits:
     def test_reject_school_drops_it_from_receipt(self, sess):
         BS.create_batch(sess, _doc(), actor="t")

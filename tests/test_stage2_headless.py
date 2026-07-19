@@ -328,10 +328,9 @@ class TestRunBatch:
 
     def test_all_districts_found_no_wave2(self, tmp_path, monkeypatch, inmem_registry):
         monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
-        monkeypatch.setattr(H, "load_batch_any", lambda ref: self._batch())
         wave2_calls = []
         events = []
-        summary = H.run_batch("batch_00099",
+        summary = H.run_batch(self._batch(),
                               wave1_search=lambda q, dom: [f"https://{dom}/x"] if dom else [],
                               wave2_runner=lambda *a: wave2_calls.append(a),
                               on_event=lambda k, p: events.append((k, p.get("district_id"))))
@@ -343,20 +342,18 @@ class TestRunBatch:
 
     def test_residual_triggers_wave2_runner(self, tmp_path, monkeypatch, inmem_registry):
         monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
-        monkeypatch.setattr(H, "load_batch_any", lambda ref: self._batch())
         wave2_seen = []
         # Wave 1 finds nothing -> every school is residual -> wave2_runner fires per district
-        H.run_batch("batch_00099", wave1_search=lambda q, dom: [],
+        H.run_batch(self._batch(), wave1_search=lambda q, dom: [],
                     wave2_runner=lambda district, residual, domain: wave2_seen.append(district["district_id"]))
         assert sorted(wave2_seen) == ["1111111", "2222222"]
 
     def test_district_error_is_isolated(self, tmp_path, monkeypatch, inmem_registry):
         monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
-        monkeypatch.setattr(H, "load_batch_any", lambda ref: self._batch())
         def w2(district, residual, domain):
             if district["district_id"] == "1111111":
                 raise RuntimeError("boom")
-        summary = H.run_batch("batch_00099", wave1_search=lambda q, dom: [], wave2_runner=w2)
+        summary = H.run_batch(self._batch(), wave1_search=lambda q, dom: [], wave2_runner=w2)
         by_id = {r["district_id"]: r for r in summary["results"]}
         assert by_id["1111111"]["outcome"] == "error"
         assert by_id["2222222"]["outcome"] != "error"            # one failure doesn't abort the batch
@@ -364,19 +361,17 @@ class TestRunBatch:
 
     def test_billing_systemexit_halts_whole_run(self, tmp_path, monkeypatch, inmem_registry):
         monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
-        monkeypatch.setattr(H, "load_batch_any", lambda ref: self._batch())
         def w1(q, dom): raise SystemExit("both providers exhausted")
         with pytest.raises(SystemExit):
-            H.run_batch("batch_00099", wave1_search=w1)
+            H.run_batch(self._batch(), wave1_search=w1)
 
     def test_already_on_disk_is_skipped_not_redone(self, tmp_path, monkeypatch, inmem_registry):
         monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
-        monkeypatch.setattr(H, "load_batch_any", lambda ref: self._batch())
         done = D2.lea_dir("1111111", "Test Schools District")
         done.mkdir(parents=True)
         (done / "discovery.json").write_text("{}")
         searched = []
-        summary = H.run_batch("batch_00099",
+        summary = H.run_batch(self._batch(),
                               wave1_search=lambda q, dom: searched.append(dom) or ([f"https://{dom}/x"] if dom else []),
                               wave2_runner=lambda *a: None)
         assert summary["todo"] == 1 and summary["skipped"] == 1

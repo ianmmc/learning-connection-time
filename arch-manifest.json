@@ -160,6 +160,14 @@
         "producer": "infrastructure/acquisition/stage5_filter",
         "role": "event-driven release projection (winner + alternates)"
       }
+    ],
+    "cli_only_loaders": [
+      {
+        "_comment": "#526: the batch receipt (batch_NNNNN.json) is a regenerable DB projection, never the inter-stage transport. The console/autoflow resolves batches from the working store (server._batch_from_db -> batch_store.to_receipt_doc); load_batch_any is the CLI/offline receipt loader ONLY. test_cli_only_loaders_not_referenced_in_scope fails on ANY reference to the loader name inside forbidden_scope — a console call would silently reintroduce the receipt-as-transport edge this closed.",
+        "loader": "load_batch_any",
+        "why": "#526: the DB is the working store; the console must never consume the on-disk batch receipt as transport.",
+        "forbidden_scope": "infrastructure/acquisition/process_governance"
+      }
     ]
   },
   "shared_config": {
