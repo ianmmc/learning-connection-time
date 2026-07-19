@@ -93,9 +93,9 @@ class TransientProviderError(RuntimeError):
 
 def _secret(name):
     """A secret from env or the gitignored secrets file (repo-anchored, never CWD-relative).
-    Returns None when absent -- the provider's 401 handler names the missing secret via
-    _auth_hint() (#328), so a fresh clone's first run doesn't mis-read as a billing problem.
-    A MALFORMED secrets file halts here with its own message (not a bare JSONDecodeError)."""
+    Returns None when absent -- _require_secrets() (#328) is the pre-flight that names a
+    missing key BEFORE any network call. A MALFORMED secrets file halts here with its own
+    message (not a bare JSONDecodeError)."""
     if os.getenv(name):
         return os.getenv(name)
     if not SECRETS_FILE.exists():
@@ -106,14 +106,20 @@ def _secret(name):
         raise SystemExit(f"CONTROL FAILURE: malformed secrets file {SECRETS_FILE}: {e}") from e
 
 
-def _auth_hint(*names):
-    """Disambiguate a provider 401/402 (#328): if any required secret is absent, the halt message
-    says WHICH one and where to put it, instead of narrating first-run setup as 'billing/auth'."""
+def _require_secrets(*names):
+    """Pre-flight secret check (#328, review-deepened): validate BEFORE the HTTP call, the same
+    shape as stage7's openrouter has_key()/resolve_key(). Replaces the first draft's reactive
+    _auth_hint (a message patch at the 401 site), which (a) spent a real network round-trip to
+    discover a missing key and (b) could itself raise the malformed-secrets SystemExit
+    mid-f-string, masking the original billing/auth status+body. A missing key now halts with
+    its own precise message before any request; a genuine 401/402 after this passes IS
+    billing/auth, so the halt message needs no hint. In the Wave-1 cascade a Bright Data
+    pre-flight halt is caught like any billing halt and fails over to Serper."""
     missing = [n for n in names if not _secret(n)]
     if missing:
-        return (f" Likely cause: {', '.join(missing)} not set (env or {SECRETS_FILE}) -- "
-                f"a missing key, not a billing problem.")
-    return ""
+        raise SystemExit(f"CONTROL FAILURE: {', '.join(missing)} not set "
+                         f"(env or {SECRETS_FILE}) -- a missing key, not a billing problem; "
+                         f"no request was sent.")
 
 
 def serper_search(q, dhost, k=10, _sleep=time.sleep):
@@ -123,6 +129,7 @@ def serper_search(q, dhost, k=10, _sleep=time.sleep):
     identically). A 429 is TRANSIENT (issue #29): one short sleep + single retry, then
     TransientProviderError (a plain exception -- the caller degrades that school, the run continues)."""
     import requests
+    _require_secrets("SERPER_API_KEY")
 
     def _post():
         return requests.post("https://google.serper.dev/search",
@@ -139,7 +146,7 @@ def serper_search(q, dhost, k=10, _sleep=time.sleep):
                                          f"degrading, not halting. {r.text[:160]}")
     if r.status_code in BILLING_AUTH_STATUS_CODES:
         raise SystemExit(f"CONTROL FAILURE: Serper HTTP {r.status_code} (billing/auth) -- "
-                         f"halting the run. {r.text[:160]}{_auth_hint('SERPER_API_KEY')}")
+                         f"halting the run. {r.text[:160]}")
     r.raise_for_status()
     return [o["link"] for o in r.json().get("organic", []) if o.get("link")][:k]
 
@@ -153,6 +160,7 @@ def brightdata_search(q, dhost, k=10):
     TransientProviderError so the Wave-1 cascade fails over to Serper instead of halting."""
     import requests
     from urllib.parse import quote_plus
+    _require_secrets("BRIGHTDATA_API_KEY", "BRIGHTDATA_SERP_ZONE")
     qq = f"{q} site:{dhost}" if dhost else q
     gurl = f"https://www.google.com/search?q={quote_plus(qq)}&hl=en&gl=us&brd_json=1"
     r = requests.post("https://api.brightdata.com/request",
@@ -162,8 +170,7 @@ def brightdata_search(q, dhost, k=10):
                       timeout=60)
     if r.status_code in BILLING_AUTH_STATUS_CODES:
         raise SystemExit(f"CONTROL FAILURE: Bright Data HTTP {r.status_code} (billing/auth) -- "
-                         f"halting the run. {r.text[:160]}"
-                         f"{_auth_hint('BRIGHTDATA_API_KEY', 'BRIGHTDATA_SERP_ZONE')}")
+                         f"halting the run. {r.text[:160]}")
     if r.status_code == 429:
         raise TransientProviderError(f"Bright Data HTTP 429 (rate-limited) -- transient, "
                                      f"failover to Serper. {r.text[:160]}")

@@ -1,4 +1,4 @@
-"""#111 Phase-1 common/ sweep — DB-free diagnostics tests (#326, #328).
+"""#111 Phase-1 common/ sweep — DB-free diagnostics tests (#326, #328 + review deepening).
 
 Lives outside test_acquisition_stages.py on purpose: that module is pytestmark'd
 integration and deselected from the CI DB-free job; these are pure unit tests.
@@ -8,36 +8,30 @@ import pytest
 from infrastructure.acquisition.common import discover as DISC
 
 
-def _fake_response(status, payload=None, text=""):
-    class R:
-        status_code = status
+class TestSecretPreflight:
+    """#328 (review-deepened): a missing/malformed secrets setup halts BEFORE any network
+    call, with its own precise message — the openrouter has_key() pre-flight shape, not a
+    reactive message patch at the 401 site (which wasted a round-trip and could mask the
+    original billing/auth status mid-f-string)."""
 
-        def json(self):
-            return payload
-
-        @property
-        def text(self):
-            return text
-
-        def raise_for_status(self):
-            import requests
-            if status >= 400:
-                raise requests.HTTPError(f"HTTP {status}")
-    return R()
-
-
-class TestSecretDiagnostics:
-    """#328 — a missing/malformed secrets setup must diagnose as itself, not as billing/auth."""
-
-    def test_auth_hint_names_the_missing_secret(self, monkeypatch, tmp_path):
+    def test_missing_key_halts_before_any_http(self, monkeypatch, tmp_path):
+        import requests
         monkeypatch.delenv("SERPER_API_KEY", raising=False)
         monkeypatch.setattr(DISC, "SECRETS_FILE", tmp_path / "absent.json")
-        hint = DISC._auth_hint("SERPER_API_KEY")
-        assert "SERPER_API_KEY not set" in hint and "not a billing problem" in hint
+        monkeypatch.setattr(requests, "post",
+                            lambda *a, **k: pytest.fail("pre-flight must halt before any HTTP call"))
+        with pytest.raises(SystemExit, match="SERPER_API_KEY not set.*no request was sent"):
+            DISC.serper_search("q", "example.org", _sleep=lambda s: None)
 
-    def test_auth_hint_empty_when_secret_present(self, monkeypatch):
-        monkeypatch.setenv("SERPER_API_KEY", "k")
-        assert DISC._auth_hint("SERPER_API_KEY") == ""
+    def test_brightdata_names_every_missing_secret(self, monkeypatch, tmp_path):
+        import requests
+        monkeypatch.delenv("BRIGHTDATA_API_KEY", raising=False)
+        monkeypatch.delenv("BRIGHTDATA_SERP_ZONE", raising=False)
+        monkeypatch.setattr(DISC, "SECRETS_FILE", tmp_path / "absent.json")
+        monkeypatch.setattr(requests, "post",
+                            lambda *a, **k: pytest.fail("pre-flight must halt before any HTTP call"))
+        with pytest.raises(SystemExit, match="BRIGHTDATA_API_KEY, BRIGHTDATA_SERP_ZONE not set"):
+            DISC.brightdata_search("q", "example.org")
 
     def test_malformed_secrets_file_halts_with_its_own_message(self, monkeypatch, tmp_path):
         monkeypatch.delenv("SERPER_API_KEY", raising=False)
@@ -47,12 +41,18 @@ class TestSecretDiagnostics:
         with pytest.raises(SystemExit, match="malformed secrets file"):
             DISC._secret("SERPER_API_KEY")
 
-    def test_401_message_carries_the_hint_when_key_missing(self, monkeypatch, tmp_path):
+    def test_key_present_401_is_pure_billing_auth(self, monkeypatch):
+        """With the key present, a 401 passes pre-flight and halts with the REAL status+body —
+        no hint machinery left to mask it (the review's f-string-masking scenario is gone)."""
         import requests
-        monkeypatch.delenv("SERPER_API_KEY", raising=False)
-        monkeypatch.setattr(DISC, "SECRETS_FILE", tmp_path / "absent.json")
-        monkeypatch.setattr(requests, "post", lambda *a, **k: _fake_response(401, text="unauthorized"))
-        with pytest.raises(SystemExit, match="SERPER_API_KEY not set"):
+
+        class R:
+            status_code = 401
+            text = "unauthorized"
+
+        monkeypatch.setenv("SERPER_API_KEY", "k")
+        monkeypatch.setattr(requests, "post", lambda *a, **k: R())
+        with pytest.raises(SystemExit, match=r"Serper HTTP 401 \(billing/auth\).*unauthorized"):
             DISC.serper_search("q", "example.org", _sleep=lambda s: None)
 
 

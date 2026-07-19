@@ -76,6 +76,10 @@ class StateEvent(gdb.Base):
 # stage event's value, NULL included): batch membership's authority is batch_district, and
 # faking the last-seen batch onto an ad-hoc dispatch's extraction would mislead. event_id
 # (serial) is the definitive ordering tiebreaker within a second.
+# NOT BATCH-SAFE: this view is one GLOBAL row per district -- joining it per-batch attributes a
+# district's first-run progress to every later batch containing it (the #339 bug). A consumer
+# needing per-batch state must aggregate state_event scoped to (batch_id, district_id); see
+# batch_store._batch_progress for the canonical shape.
 CURRENT_STATE_VIEW = """
 CREATE OR REPLACE VIEW current_state AS
 WITH max_stage AS (
@@ -221,16 +225,15 @@ def save(registry: dict, *, export: bool = True) -> int:
         for ev in events:
             s.execute(INSERT_STATE_EVENT, ev)
         s.commit()                 # persist before exporting, so the backup only reflects committed state
-        registry["_events"] = []   # #330: cleared the moment the commit lands -- an export failure
-        if export:                 # below must not leave the buffer primed for a double-insert
-            try:
-                export_status(s)
-            except Exception as e:
-                # The JSON is the regenerable backup; the DB is the precious record. The committed
-                # events are durable -- warn and let the next save()/export() regenerate.
-                print(f"[warn] district_status export failed after commit "
-                      f"({type(e).__name__}: {e}) -- events are durable in the DB; "
-                      f"a later save()/export() will regenerate the backup")
+        registry["_events"] = []   # #330: cleared the moment the commit lands, so a caller that
+        if export:                 # retries save() after an export failure can NOT double-insert
+            # An export failure PROPAGATES (review: server.py's _ingest_stage5_if_complete
+            # relies on it to fire its stage5_bookkeeping_failed discriminator). That is safe
+            # now precisely because the buffer above is already cleared -- the #330 hazard was
+            # the retry-after-propagation double-insert, not the propagation itself. The
+            # committed events stay durable either way; a later save()/export() regenerates
+            # the JSON backup.
+            export_status(s)
     return len(events)
 
 

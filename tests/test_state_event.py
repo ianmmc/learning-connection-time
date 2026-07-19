@@ -191,10 +191,12 @@ def test_save_export_false_defers_the_backup(monkeypatch):
     assert exports == [1]                    # exactly one full regeneration at run end
 
 
-def test_save_survives_export_failure_and_clears_buffer(monkeypatch):
-    """#330 — the commit makes the events durable; an export failure after it must neither
-    propagate nor leave the buffer primed (a retried save() would double-insert every event
-    into the append-only log)."""
+def test_save_export_failure_propagates_but_buffer_already_cleared(monkeypatch):
+    """#330 (review-corrected contract) — an export failure PROPAGATES (server.py's
+    _ingest_stage5_if_complete fires its stage5_bookkeeping_failed discriminator off it),
+    and that is SAFE because the buffer is cleared the moment the commit lands: a caller
+    that retries save() after the failure cannot double-insert into the append-only log."""
+    import pytest as _pytest
     exports: list = []
     _fake_db(monkeypatch, exports)
 
@@ -204,5 +206,7 @@ def test_save_survives_export_failure_and_clears_buffer(monkeypatch):
     monkeypatch.setattr(DS, "export_status", boom)
     reg = _empty()
     DS.record_stage(reg, "TSTX", "N", "ZZ", stage=1, stage_name="queue", outcome="queued")
-    assert DS.save(reg) == 1        # no raise -- the JSON is the regenerable backup
-    assert reg["_events"] == []     # cleared at commit time, not after the export
+    with _pytest.raises(OSError, match="disk full"):
+        DS.save(reg)                # the failure is VISIBLE to callers that discriminate on it
+    assert reg["_events"] == []     # cleared at commit time — a retried save() double-inserts nothing
+    assert DS.save(reg, export=False) == 0   # the retry: no events left to re-insert
