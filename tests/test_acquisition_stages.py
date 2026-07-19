@@ -694,6 +694,14 @@ class TestSerpProviderFailureSemantics:
     429 = transient -> TransientProviderError / retry, never a whole-run halt; 5xx propagates as
     requests.HTTPError. All HTTP is mocked via requests.post."""
 
+    @pytest.fixture(autouse=True)
+    def _dummy_secrets(self, monkeypatch):
+        # #328's pre-flight validates secrets BEFORE the HTTP call; these tests drive the
+        # POST-call semantics, so give the pre-flight dummy keys (deterministic regardless
+        # of the machine's real env/secrets file).
+        for name in ("SERPER_API_KEY", "BRIGHTDATA_API_KEY", "BRIGHTDATA_SERP_ZONE"):
+            monkeypatch.setenv(name, "test-key")
+
     def test_brightdata_401_halts(self, monkeypatch):
         import requests
         monkeypatch.setattr(requests, "post", lambda *a, **k: _fake_response(401, text="bad key"))
@@ -1231,3 +1239,4 @@ class TestProcessStage4Finish:
         rec = registry["districts"]["9999999"]
         assert rec["furthest_stage"] == 4
         assert rec["outcome"] == "processed_all"
+

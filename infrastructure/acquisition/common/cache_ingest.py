@@ -120,7 +120,12 @@ def load_candidates(ddir: Path) -> dict:
         return {}
     try:
         doc = json.loads(cf.read_text())
-    except Exception:
+    except Exception as e:
+        # #326: a MALFORMED file (partial write) is not "no candidates" -- without this line the
+        # ingest would silently rebuild the district's candidate rows as empty and every captured
+        # URL would misclassify as emergent. Same [warn] convention as _best_effort.
+        print(f"[warn] cache_ingest: unreadable candidates.json in {ddir} "
+              f"({type(e).__name__}: {e}) -- ingesting as empty; fix the file and re-ingest")
         return {}
     return {c["url"]: {"schools": c.get("schools", []), "tools": c.get("tools", [])}
             for c in doc.get("candidates", []) if c.get("url")}
