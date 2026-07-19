@@ -120,54 +120,44 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-18): epic #106 (Stage 5/6 filter & dispatch refinements) is CLOSED — its
-full remaining slate shipped in one day, hardened by two adversarial review rounds.** After #537 (the
-prior checkpoint), the arc was: **#226** (bounded feed-token URL negative — measured zero decision
-movement, a forward-robustness closure) → **#515** (the eligibility-veto issue, re-measured and closed
-**without shipping code** — both the stale and irregular halves proved net-negative against the live
-corpus) → **#532** (page-focus signal `lf_district_homepage` — the issue's own lead hypothesis was
-refuted by exploration; the shape that worked was different) → **a first 10-angle review** (PRs
-#538/#539/#541 → PR #542, 7 findings, all fixed same day: a regex case-sensitivity gap, an unescaped
-separator character, a harness diagnostic undercount, a detector docstring overstating its own
-guarantee) → **the completion sweep**: **#75/REQ-097** (drift detector — Bernoulli CUSUM + Wilson
-two-gate over the scorecard series, advisory console badge, never auto-retunes), **#109** (harvest-slice
-basis now prefers the human-labeled page range), **#83/REQ-116** (hub-priority dispatch — a labeled
-district hub narrows the first dispatch to itself; REQ-116 finally got its acceptance criteria),
-**#517** (`schedule_link_only` — a pure recall affordance, 78/78 census-labeled non-targets, zero
-collateral), **#540/REQ-153** (Edlio CMS-vendor profile + sibling-aware dispatch — REQ-153 establishes
-*profile every CMS encountered* as a standing expectation, not a one-off) → **a second 10-angle review**
-(PRs #543–#547 → PR #548, 7 findings; the severe one: the new sibling-variant dispatch pass was
-label-blind AND school-blind, reproduced three ways, capable of silently defeating the hub-priority
-guarantee #83 had just shipped — the second same-day case of a review catching one feature quietly
-undoing another's guarantee, invisible to both the measured pass and the green isolation-level tests).
-**Net across the epic:** auto false-send rate **24.3%→13.0%** (from the 2026-07-15 baseline), **A+B
-recall held at 0.9928 through every single change.** Housekeeping alongside: **#110** re-homed to epic
-#80 (Council Lab — genuinely blocked, not #106's scope); **#444** re-homed to epic #480 (a mis-filed
-production bug in the test-quality epic #481, closing #481 as a side effect). The doc tower
-(`PIPELINE_GOVERNANCE_AND_STATE.md`, `ACQUISITION_PIPELINE.md`, `STAGE5_FILTER_DESIGN.md`,
-`STAGE6_DISPATCH_DESIGN.md`) was swept against current code the same day. Full derivation:
-`docs/PROJECT_HISTORY.md` (the epic-#106-closes entry); `STAGE5_FILTER_DESIGN.md` / `STAGE6_DISPATCH_DESIGN.md`
-change logs; `docs/REQUIREMENTS.yaml` REQ-097/REQ-116/REQ-153; PRs #539–#548.
+**Current status (2026-07-19): epic #111 (Stages 1-4 hardening) ships both its planned phases in two
+days, each with its own adversarial review round finding a real bug the green suites couldn't.**
+**Phase 1** (post-triage, worked by dependency cluster same as #106's slate): five parallel correctness
+sweeps, one PR per module — Stage 2 (#265/#341/#452/#523/#524, PR #549), Stage 1 (#264/#338/#339, PR
+#550), the Node scraper (#375/#416, PR #551), Stage 3/4 (#267/#347/#348/#351/#454, PR #552), `common/`
+(#326/#328/#330, PR #553). A same-day 10-angle review of all five (15 findings) caught a bug invisible
+to any single PR's own tests: #553's `district_status.save()` fix had conflated clearing the event
+buffer (the real #330 fix) with swallowing `export_status()`'s exception (an unrelated side effect that
+silently broke `server.py`'s `stage5_bookkeeping_failed` signal) — separated, keeping both properties.
+13/15 findings fixed; 1 verified already-correct; 1 filed as follow-up (#554, atomic-write
+consolidation). **Phase 2** (#526, PR #555): Stage 2's console/autoflow batch read moved off the on-disk
+receipt onto the governance DB — the last exception to "the DB is the working store." The fix mattered
+beyond symmetry: the resolver's old basis filtered rejected districts but not rejected *schools within*
+an included district — harmless for Stage 3/4, roster-poisoning for Stage 2. #555's OWN review round
+found `_batch_from_db` double-fetching the Batch row; the naive fix would have leaked status into the
+receipt file (violating `batch_guard.py`'s documented invariant) — split into `to_working_doc`
+(DB-resolve, status included) vs `to_receipt_doc` (receipt-only, deliberately status-free). Doc tower
+(`ACQUISITION_PIPELINE.md`, `PIPELINE_GOVERNANCE_AND_STATE.md`, all four `STAGE*_DESIGN.md`) swept
+against current code same day — including a self-catch: STAGE1_QUEUE_DESIGN.md's own #526 write had
+gone stale within the session that wrote it, superseded by #555's `to_working_doc` split hours later.
+Full derivation: `docs/PROJECT_HISTORY.md` (the epic-#111-phases entry); `STAGE1-4_*_DESIGN.md` change
+logs; PRs #549–#553, #555.
 
-**Next (RESUME HERE — 2026-07-18): epic #106 is done — pick the next epic in sequence.** Per the
-pre-#106 sequencing plan: **#111** (Stage 2-3 discovery & capture improvements — recall-affecting
-discovery/capture robustness, plus #518 [capture-fidelity recall leak] re-homed here today) → a
-liveness gate → **#479/#480** (LCT DB hygiene / legacy NCES-SEA script hygiene — #480 just gained #444)
-→ **#92** (Stage 9 — Incorporate; the one remaining unbuilt pipeline stage). #111 itself is large and
-mostly unтриaged crossfam-review findings (dozens of open `[crossfam]` issues across stage1-4) plus a
-handful of named feature issues (#112–#118); **triage/cluster it before diving in**, the way #106's
-slate was worked by dependency cluster rather than issue-number order. Parked: #475/#476 (extract
-crossfam-review/fuzzy-dependency tooling to standalone packages), #103/#80 (Council Lab — #110 now
-lives here too). Documented-in-code deferrals: `_satisfied_bands_now` batching (revisit on volume); the
-#522 guardrail's per-rep keyword/table attribution (needs a server payload change); JS behavioral tests
-(no JS harness in repo — static-source pins only).
+**Next (RESUME HERE — 2026-07-19): epic #111 is done — pick the next epic in sequence.** Per the
+pre-#106 sequencing plan (unchanged): **#479/#480** (LCT DB hygiene / legacy NCES-SEA script hygiene —
+#480 already holds #444, re-homed during #106's close) → **#92** (Stage 9 — Incorporate; the one
+remaining unbuilt pipeline stage). Parked: #475/#476 (extract crossfam-review/fuzzy-dependency tooling
+to standalone packages), #103/#80 (Council Lab — #110 lives here too). Documented-in-code deferrals:
+`_satisfied_bands_now` batching (revisit on volume); the #522 guardrail's per-rep keyword/table
+attribution (needs a server payload change); JS behavioral tests (no JS harness in repo — static-source
+pins only).
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
--m "not integration"` (expect **~1664** pass) + `pytest -q -m govdb` (expect **~243**, Postgres up).
+-m "not integration"` (expect **1702** pass) + `pytest -q -m govdb` (expect **253**, Postgres up).
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (the
 motivating ones: Huntington `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters).
-Full detail: `docs/PROJECT_HISTORY.md`, `STAGE5_FILTER_DESIGN.md` §8 + Change log,
-`STAGE6_DISPATCH_DESIGN.md` §3G, `PIPELINE_GOVERNANCE_AND_STATE.md`, `docs/REQUIREMENTS.yaml`.
+Full detail: `docs/PROJECT_HISTORY.md`, `STAGE1-4_*_DESIGN.md`, `PIPELINE_GOVERNANCE_AND_STATE.md`,
+`docs/REQUIREMENTS.yaml`.
 
 ---
 
