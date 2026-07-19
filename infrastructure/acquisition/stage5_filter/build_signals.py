@@ -1085,6 +1085,11 @@ def ingest_district(sess, ddir: Path, *, splits: set, batches: dict, nces: dict)
     seen_content = {}   # content_hash -> canonical rec_key
     district_records = []
     cluster_items = []  # (rec_key, shingle_set, tier, sort_score) for near-dup clustering
+    # #109: the district's human facets in ONE query (the #543-#547 review flagged the original
+    # per-record SELECT as an N+1 inside this loop). Label rows are precious and survive re-ingest.
+    district_facets = dict(sess.execute(
+        text("SELECT rec_key, facets_json FROM label WHERE rec_key LIKE :p AND facets_json IS NOT NULL"),
+        {"p": f"{did}:%"}).fetchall())
     for h, prec in processed.items():
         cap = caps.get(h, {})
         rec_key = f"{did}:{h}"
@@ -1157,8 +1162,7 @@ def ingest_district(sess, ddir: Path, *, splits: set, batches: dict, nces: dict)
         # survive re-ingest, so they're queryable right here) outranks the AUTO harvest_pages, and its
         # presence alone qualifies the record for a slice even when the auto is_handbook classifier
         # missed it (the buried_handbook case is exactly a doc the auto path misread).
-        human_hp = labeled_pages_of(sess.execute(
-            text("SELECT facets_json FROM label WHERE rec_key=:rk"), {"rk": rec_key}).scalar())
+        human_hp = labeled_pages_of(district_facets.get(rec_key))
         hp = human_hp or sig.get("harvest_pages") or []
         if hp and (human_hp or sig.get("is_handbook")):
             pdf_name = files.get("pdf") or (files.get("bin")

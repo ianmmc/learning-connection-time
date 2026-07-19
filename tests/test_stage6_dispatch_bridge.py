@@ -264,3 +264,53 @@ def test_non_edlio_urls_never_form_a_family():
     holds = BR._sibling_variant_holds([
         _e("d:a", "https://x.org/bell-schedules/a"), _e("d:b", "https://x.org/bell-schedules/b")])
     assert holds == {}
+
+
+# ---------------------- #543-#547 review fixes: label-aware + school-scoped sibling families ----------------------
+def test_labeled_target_never_held_for_an_unlabeled_sibling():
+    # the review reproduced a human-verified school_bell_table held for an unlabeled denser sibling —
+    # a label is a human judgment the URL-shape heuristic must never override.
+    holds = BR._sibling_variant_holds([
+        _e("d:verified", "https://ms.dasd.us/apps/bell_schedules/index.jsp?id=100") | {"label": "school_bell_table", "year": 2023, "n_times": 10},
+        _e("d:unlabeled", "https://ms.dasd.us/apps/bell_schedules/index.jsp?id=200") | {"year": 2025, "n_times": 50}])
+    assert holds == {"d:unlabeled": "d:verified"}
+
+
+def test_same_host_different_schools_are_different_families():
+    # the review reproduced two DIFFERENT schools' pages on one district-level host collapsed into one
+    # family (one school's only send dropped) — the family key is now school-scoped like prefer-recent.
+    holds = BR._sibling_variant_holds([
+        _e("d:schoolA", "https://schedules.district.org/apps/bell_schedules/index.jsp?id=101") | {"schools": ["Elementary A"]},
+        _e("d:schoolB", "https://schedules.district.org/apps/bell_schedules/index.jsp?id=102") | {"schools": ["High B"], "n_times": 40}])
+    assert holds == {}
+
+
+def test_labeled_hub_survives_its_sibling_family_end_to_end(monkeypatch):
+    """The review's headline repro: a labeled district hub sharing an Edlio URL family with an
+    unlabeled newer/denser sibling was held by the (then label-blind) sibling pass BEFORE
+    hub-priority ever saw it — the unlabeled record dispatched instead of the human-verified hub.
+    Pin the fix through the full district_release_input composition."""
+    def rec(rec_key, url, label, year, n_times):
+        return {"rec_key": rec_key, "url": url, "tier": "A", "category": None,
+                "signals": {"content_school_year": f"{year}-{(year + 1) % 100:02d}",
+                            "n_times_in_window": 4, "proximity_pairs": 2, "positive_kw": ["bell schedule"]},
+                "is_emergent": 0, "intended_schools": [], "label": label, "facets": {},
+                "reps": [{"source": "extracted", "filename": "e.txt", "file_kind": "text",
+                          "n_chars": 1000, "n_times": n_times, "usable": 1}]}
+    records = [rec("d:hub", "https://ms.dasd.us/apps/bell_schedules/", "district_hub_by_band", 2023, 10),
+               rec("d:dup", "https://ms.dasd.us/apps/bell_schedules/", None, 2025, 50)]
+    monkeypatch.setattr(REL, "load_district", lambda s, d: {"district_id": d, "name": "X", "state": "ZZ",
+                                                            "district_dir": "x", "labeled_topology": None,
+                                                            "nces_denominator": {"total": 2, "by_level": {}}})
+    monkeypatch.setattr(REL, "load_district_records", lambda s, d: records)
+    _, out = BR.district_release_input(None, "D1")
+    by = {r["rec_key"]: r for r in out}
+    assert by["d:hub"]["decision"] == "send"          # the human-verified hub dispatches
+    assert by["d:dup"]["decision"] == "hold"          # the unlabeled duplicate holds
+    assert "d:hub" in by["d:dup"]["reason"]
+
+
+def test_hub_labels_is_the_canonical_taxonomy_object():
+    # the review found a hand-retyped copy that a future taxonomy addition could silently miss
+    from infrastructure.acquisition.stage5_filter import build_signals as BS
+    assert BR.HUB_LABELS is BS.HUB_LABELS

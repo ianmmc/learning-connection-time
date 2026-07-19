@@ -13,6 +13,7 @@ from infrastructure.acquisition.common import calibration as CAL
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.process_governance import gate_calibration as GCAL
+from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402  (HUB_LABELS — the taxonomy's canonical home)
 from infrastructure.acquisition.stage5_filter import release as REL
 from infrastructure.utilities import school_year as SY  # calendar SSOT; prefer-recent read (#107) — NOT the LCT DB
 from infrastructure.acquisition.stage6_handoff import councils as C6
@@ -84,8 +85,10 @@ def _prefer_recent_holds(sendables: list) -> set:
 
 
 # REQ-116 (#83): the hub label vocabulary — a human-labeled district hub (per-school or per-band
-# listing) is the one URL whose best rep suffices for a district's FIRST dispatch.
-HUB_LABELS = {"district_hub_by_school", "district_hub_by_band"}
+# listing) is the one URL whose best rep suffices for a district's FIRST dispatch. Imported from its
+# canonical home (build_signals owns the label taxonomy) — the #543-#547 review found this was a
+# hand-retyped copy that a future taxonomy addition could silently miss.
+HUB_LABELS = BS.HUB_LABELS
 
 
 def _hub_priority_holds(sendables: list) -> tuple:
@@ -127,21 +130,32 @@ def _sibling_variant_holds(sendables: list) -> dict:
     """#540 sibling-aware dispatch (the prefer-recent pattern, keyed on the CMS app family): among
     send-eligible siblings of ONE Edlio bell_schedules app, send the best page and HOLD the rest —
     a variant-only page (early dismissal / remote / delay) whose regular-day sibling is present must
-    not each cost a council call. Ranking (ascending; min wins): a page WITHOUT a strong wrong-day
-    vote beats one with (the variant pages fire lf_nonstandard_day strong); the bare app hub (no
-    ?id= variant param) beats a variant permalink (the hub lists ALL schedules incl. the regular
-    day); then newest year, then densest. ZERO recall cost: a family with only variant pages still
-    sends its best. Returns {held_rec_key: winner_rec_key}."""
+    not each cost a council call. Returns {held_rec_key: winner_rec_key}.
+
+    Family key = (host, the record's intended-school set): the #543-#547 review found host-only
+    grouping collapsed genuinely DIFFERENT schools' pages served from one district-level host into
+    one family, dropping a school's only send — same school-scoping discipline as
+    _prefer_recent_holds. Ranking (ascending; min wins): a HUMAN-LABELED record outranks an
+    unlabeled sibling unconditionally, hub labels first (the same review reproduced a labeled
+    district hub — and separately a labeled school_bell_table — held in favor of an unlabeled
+    denser sibling, silently defeating REQ-116 before _hub_priority_holds ever saw the hub; a
+    label is a human judgment this URL-shape heuristic must never override). Then: no strong
+    wrong-day vote beats one (variant pages fire lf_nonstandard_day strong); the bare app hub (no
+    ?id= param) beats a variant permalink; then newest year, then densest. ZERO recall cost: a
+    family with only variant pages still sends its best, and a labeled record can only ever be
+    held in favor of ANOTHER labeled record of the same family (the prefer-recent precedent)."""
     fams = {}
     for r in sendables:
         m = _EDLIO_APP_RE.match(r.get("url") or "")
         if m:
-            fams.setdefault(m.group(1).lower(), []).append(r)
+            key = (m.group(1).lower(), tuple(sorted(r.get("schools") or [])))
+            fams.setdefault(key, []).append(r)
     holds = {}
     for fam in fams.values():
         if len(fam) < 2:
             continue
         winner = min(fam, key=lambda r: (
+            0 if r.get("label") in HUB_LABELS else (1 if r.get("label") else 2),
             bool(r.get("wd_strong")), bool(_re.search(r"[?&]id=", r.get("url") or "")),
             -(r["year"] if r.get("year") is not None else -1), -(r.get("n_times") or 0)))
         for r in fam:
@@ -195,8 +209,12 @@ def district_release_input(session, district_id: str, verified_only: bool = Fals
             rd["decision"], rd["send"] = "hold", []
             rd["reason"] = f"stale-sibling:{csy}:newer-same-school-sends"
     # #540 sibling-variant (dispatch-time): among one Edlio bell_schedules app's sibling pages, the
-    # best (non-variant, hub-shaped, newest, densest) sends; the variant permalinks hold. Runs after
-    # prefer-recent, before hub-priority (a labeled hub then supersedes whatever survived).
+    # best (labeled > non-variant > hub-shaped-URL > newest > densest) sends; the rest hold. Runs
+    # after prefer-recent, before hub-priority. The "a labeled hub then supersedes whatever
+    # survived" guarantee holds ONLY because the sibling ranking is label-aware (labels rank first,
+    # hubs first among labels) — the #543-#547 review reproduced a label-blind version of this pass
+    # holding the labeled hub before hub-priority ever saw it. If the ranking is ever edited, that
+    # property is pinned by test_labeled_hub_survives_its_sibling_family_end_to_end.
     survivors = [s for s in sendables if by_key[s["rec_key"]]["decision"] == "send"]
     for rk, winner_rk in _sibling_variant_holds(survivors).items():
         rd = by_key.get(rk)
