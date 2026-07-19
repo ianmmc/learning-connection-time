@@ -142,20 +142,41 @@ def _ordered_districts(sess, batch_id: str, *, included_only: bool) -> list:
     return list(sess.scalars(q.order_by(BatchDistrict.ord)))
 
 
+def _batch_doc(sess, b: Batch) -> dict:
+    """The canonical batch_doc projection (INCLUDED rows only, original shape) for an
+    already-fetched Batch row — the shared core of to_receipt_doc and to_working_doc.
+    meta_json is spread FIRST so the explicit fields always win: a stray meta key named
+    "n"/"nces_year"/... can never silently shadow a computed field (#555 review)."""
+    districts = [_district_doc(sess, d, included_only=True, with_flags=False)
+                for d in _ordered_districts(sess, b.batch_id, included_only=True)]
+    return {
+        **(b.meta_json or {}),
+        "batch_id": b.batch_id, "batch_type": b.batch_type, "created": b.created_at,
+        "n": len(districts), "nces_year": b.nces_year, "districts": districts,
+    }
+
+
 def to_receipt_doc(sess, batch_id: str) -> dict:
-    """The canonical batch_doc (INCLUDED rows only, original shape) — what the receipt file holds and
-    what server._batch_from_db serves to the Stage 2/3/4 runners (#526: the DB is the transport; the
-    receipt file is the CLI/offline + audit copy). Raises KeyError if the batch is unknown."""
+    """The canonical batch_doc (INCLUDED rows only, original shape) — what the receipt file holds.
+    DELIBERATELY carries no lifecycle status: batch_guard relies on the receipt being status-free
+    (a CLI loader must re-check status against the DB, never trust a file) — status-needing
+    consumers use to_working_doc. Raises KeyError if the batch is unknown."""
     b = sess.get(Batch, batch_id)
     if b is None:
         raise KeyError(batch_id)
-    districts = [_district_doc(sess, d, included_only=True, with_flags=False)
-                for d in _ordered_districts(sess, batch_id, included_only=True)]
-    return {
-        "batch_id": b.batch_id, "batch_type": b.batch_type, "created": b.created_at,
-        "n": len(districts),
-        "nces_year": b.nces_year, **(b.meta_json or {}), "districts": districts,
-    }
+    return _batch_doc(sess, b)
+
+
+def to_working_doc(sess, batch_id: str) -> dict | None:
+    """The canonical batch_doc + live `batch_status`, for the console's DB batch resolve
+    (server._batch_from_db → the Stage 2/3/4 runners; #526). Kept separate from to_receipt_doc
+    so status never leaks into the on-disk receipt file (see its docstring), and built off ONE
+    Batch fetch (#555 review: the first cut fetched the row twice). None if the batch is
+    unknown — no KeyError, so a caller can't confuse "no such batch" with a row-shape bug."""
+    b = sess.get(Batch, batch_id)
+    if b is None:
+        return None
+    return {**_batch_doc(sess, b), "batch_status": b.status}
 
 
 def to_view(sess, batch_id: str) -> dict:
@@ -167,12 +188,13 @@ def to_view(sess, batch_id: str) -> dict:
     districts = [_district_doc(sess, d, included_only=False, with_flags=True)
                 for d in _ordered_districts(sess, batch_id, included_only=False)]
     return {
+        **(b.meta_json or {}),   # spread first — explicit fields below always win (#555 review)
         "batch_id": b.batch_id, "batch_type": b.batch_type, "status": b.status,
         "nces_year": b.nces_year, "created_at": b.created_at, "created_by": b.created_by,
         "approved_at": b.approved_at, "approved_by": b.approved_by,
         "abandoned_at": b.abandoned_at, "abandoned_by": b.abandoned_by, "abandon_reason": b.abandon_reason,
         "n_included": sum(1 for d in districts if d["included"]),
-        **(b.meta_json or {}), "districts": districts,
+        "districts": districts,
     }
 
 

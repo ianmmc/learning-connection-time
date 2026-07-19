@@ -1177,20 +1177,17 @@ def queue_candidates(batch_id: str, district_id: str):
 
 def _batch_from_db(batch_id: str) -> dict | None:
     """Resolve the batch straight from the governance DB working store in the CANONICAL batch_doc
-    shape (to_receipt_doc: INCLUDED districts and INCLUDED schools only) + lifecycle status — the DB
-    is the source of truth for the batch (§7a-A / §11h); the on-disk receipt is never the transport
-    (#526). Shared by every stage view (discover, capture, process) and autoflow. Previously built on
-    to_view with a district-level included filter, which left gate@1-EXCLUDED SCHOOLS in
-    schools_by_band — harmless while only Stages 3/4 (which never read schools) consumed it, but a
-    roster-poisoning trap once Stage 2 (which builds its roster from schools_by_band) moved here.
-    None if no such batch."""
+    shape + lifecycle status (batch_store.to_working_doc: INCLUDED districts and INCLUDED schools
+    only, one Batch fetch) — the DB is the source of truth for the batch (§7a-A / §11h); the
+    on-disk receipt is never the transport (#526). A receipt file WITHOUT a DB row is not a
+    supported state (receipts are always derived from the rows in the same transaction), so such
+    a batch 404s upstream rather than falling back to disk — a deliberate #526 semantics change
+    from the old receipt-loader path. Shared by every stage view (discover, capture, process) and
+    autoflow. Previously built on to_view, whose district-level included filter left
+    gate@1-EXCLUDED SCHOOLS in schools_by_band — a roster-poisoning trap for Stage 2, which
+    builds its roster from schools_by_band. None if no such batch."""
     with gdb.session_scope() as con:
-        try:
-            doc = BSTORE.to_receipt_doc(con, batch_id)
-        except KeyError:
-            return None
-        status = con.get(Batch, batch_id).status
-    return {**doc, "batch_status": status}
+        return BSTORE.to_working_doc(con, batch_id)
 
 
 # ---------------------------------------------------------------- Stage 2 (Discover) console — REQ-104
@@ -1231,6 +1228,10 @@ async def discover_run(batch_id: str, payload: dict):
     and no run already in flight. Live progress streams into _DISCOVER_JOBS; durable truth is the
     state_event log + discovery.json that run_batch writes."""
     actor = payload.get("actor", "ian")
+    # Resolved at schedule time and captured by the _work closure — safe because a non-draft batch
+    # is locked against gate@1 edits (batch_store._require_draft), so an approved batch's roster
+    # cannot change before or while the background run uses it (the same invariant autoflow's
+    # single-resolve comment states).
     batch = _batch_from_db(batch_id)
     if batch is None:
         raise HTTPException(404, f"no such batch {batch_id}")

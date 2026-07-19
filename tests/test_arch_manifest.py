@@ -258,16 +258,22 @@ def test_single_definition_helpers(helper):
 
 
 # ----------------------------- file dispatches (receipts) -----------------------------
+def _py_files_under(scope: Path) -> list:
+    """Every .py under `scope`, pycache excluded — the one shared directory-scoped scan loop
+    for the file_dispatches tests (#555 review: this idiom had started duplicating per test).
+    Distinct from _scanned_py_files(), which walks the manifest's global python_roots."""
+    return [p for p in scope.rglob("*.py") if "__pycache__" not in str(p)]
+
+
 @pytest.mark.parametrize("receipt", MANIFEST["file_dispatches"]["receipts"],
                          ids=[r["artifact"] for r in MANIFEST["file_dispatches"]["receipts"]])
 def test_file_dispatch_producer_references_artifact(receipt):
     """Each declared receipt's producer module actually references its artifact filename — a light contract
     that the manifest's declared producer is the real one (the DB is the working store; these are receipts)."""
-    producer = REPO / receipt["producer"]
     artifact = receipt["artifact"]
     referenced = any(
         f'"{artifact}"' in p.read_text() or f"'{artifact}'" in p.read_text()
-        for p in producer.rglob("*.py") if "__pycache__" not in str(p))
+        for p in _py_files_under(REPO / receipt["producer"]))
     assert referenced, (
         f"arch-manifest.json says {receipt['producer']} produces {artifact}, but no .py there references "
         f"the filename {artifact!r}")
@@ -280,9 +286,8 @@ def test_cli_only_loaders_not_referenced_in_scope(ldr):
     scope — the console/autoflow resolves batches from the DB working store (_batch_from_db), and a
     single `H2.load_batch_any(...)` call would silently reintroduce the receipt-as-transport edge.
     Name-presence scan (comments included) on purpose: even a commented example invites the call back."""
-    scope = REPO / ldr["forbidden_scope"]
-    offenders = [str(p.relative_to(REPO)) for p in scope.rglob("*.py")
-                 if "__pycache__" not in str(p) and ldr["loader"] in p.read_text()]
+    offenders = [str(p.relative_to(REPO)) for p in _py_files_under(REPO / ldr["forbidden_scope"])
+                 if ldr["loader"] in p.read_text()]
     assert not offenders, (
         f"{ldr['loader']} is CLI-only ({ldr['why']}) but is referenced in {offenders} — "
         f"resolve the batch via _batch_from_db instead")
