@@ -27,6 +27,7 @@ from infrastructure.acquisition.common import batch_guard as BG
 from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
+from infrastructure.acquisition.common import paths
 
 IMAGE_EXTS = ("png", "jpg", "jpeg", "gif", "webp", "bmp", "tiff")
 
@@ -323,9 +324,7 @@ def write_manifest(district: dict, records: list) -> None:
     path = district["dir"] / "captures.json"
     if path.exists():
         raise SystemExit(f"{path} exists — refusing to overwrite (reconstruction is recovery-only)")
-    tmp = path.with_name(path.name + ".tmp")
-    tmp.write_text(json.dumps(records, indent=2))
-    tmp.replace(path)
+    paths.atomic_write_json(path, records)
     for jp in list(district["dir"].glob("captures.journal.*.jsonl")) + \
             [district["dir"] / "captures.journal.jsonl"]:
         try:
