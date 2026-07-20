@@ -275,6 +275,27 @@ def list_batches(sess) -> list:
     return out
 
 
+def followup_rounds(sess, district_ids: list) -> dict:
+    """#164 ladder position, DERIVED from batch history (never a stored counter): per district,
+    how many EVER-APPROVED follow-up batches contain it, split by discovery scope. Only
+    first_approved_at counts — a draft/abandoned compose never advances the ladder.
+    Returns {district_id: {"domain": n, "geo": n}}."""
+    out = {did: {"domain": 0, "geo": 0} for did in district_ids}
+    if not district_ids:
+        return out
+    rows = sess.execute(text(
+        """SELECT bd.district_id, COALESCE(b.discovery_scope, 'domain') AS scope, COUNT(*) AS n
+           FROM batch_district bd JOIN batch b ON b.batch_id = bd.batch_id
+           WHERE bd.district_id = ANY(:dids) AND b.batch_type = 'follow-up'
+             AND b.first_approved_at IS NOT NULL AND bd.included
+           GROUP BY bd.district_id, COALESCE(b.discovery_scope, 'domain')"""),
+        {"dids": list(district_ids)}).mappings()
+    for r in rows:
+        if r["scope"] in ("domain", "geo"):
+            out[r["district_id"]][r["scope"]] = int(r["n"])
+    return out
+
+
 # ---------------------------------------------------------------- receipt (rows -> file)
 def write_receipt(sess, batch_id: str):
     """Regenerate batch_NNNNN.json from the rows — the auditable receipt always reflects the working

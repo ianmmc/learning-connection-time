@@ -107,3 +107,29 @@ def test_scope_combo_validation_geo_composes_first_runs_only():
         QB.validate_scope_combo("geo", "benchmark")
     with pytest.raises(ValueError):
         QB.validate_scope_combo("geo", "follow-up")
+
+
+# ---------------------------------------------------------------- follow-up geo scope (PR 3a)
+def test_followup_geo_scope_skips_the_domain_guard_and_carries_geo_fields(monkeypatch):
+    from infrastructure.acquisition.stage1_queue import queue_batch as QB
+    monkeypatch.setattr(QB.S, "lea_info", lambda year: {
+        "3173740": {"name": "MILLARD", "state": "NE", "website": "", "status": "Open",
+                    "lea_type": "x", "claimed_bands": {"high"}, "city": "OMAHA", "zip": "68137"}})
+    monkeypatch.setattr(QB.S, "school_index", lambda year: {
+        "3173740": {"high": [{"school_id": "s1", "name": "Millard North"}]}})
+    monkeypatch.setattr(QB.S, "school_level_counts", lambda year: {})
+    monkeypatch.setattr(QB, "load_enrollment", lambda: {})
+    # domain scope refuses (blank NCES website, nothing confirmed)...
+    doc, skipped = QB.build_followup_batch("2024_25", "batch_x", {"3173740": ["high"]})
+    assert not doc["districts"] and skipped[0]["reason"].startswith("no usable scoping domain")
+    # ...geo scope composes, with the geo fields and no domain
+    doc, skipped = QB.build_followup_batch("2024_25", "batch_x", {"3173740": ["high"]}, scope="geo")
+    assert doc["discovery_scope"] == "geo" and not skipped
+    d = doc["districts"][0]
+    assert d["domain"] == "" and d["geo"] == {"city": "OMAHA", "zip": "68137"}
+    # ...and a CONFIRMED discovered domain returns the district to DOMAIN follow-ups
+    doc, skipped = QB.build_followup_batch("2024_25", "batch_x", {"3173740": ["high"]},
+                                           discovered_domains={"3173740": "mpsomaha.org"})
+    assert not skipped and doc["districts"][0]["domain"] == "mpsomaha.org"
+    assert doc["districts"][0]["domain_source"] == "discovered"
+    assert doc["discovery_scope"] == "domain"

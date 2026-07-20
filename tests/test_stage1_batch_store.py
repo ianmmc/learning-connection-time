@@ -414,3 +414,21 @@ class TestDiscoveryScopeAxis:
     def test_scope_defaults_to_domain(self, sess):
         BS.create_batch(sess, _doc("batch_default_axis"), actor="t")
         assert BS.to_working_doc(sess, "batch_default_axis")["discovery_scope"] == "domain"
+
+
+class TestFollowupRounds:
+    """#164 — ladder position derived from batch history, never a stored counter."""
+
+    def test_counts_ever_approved_followups_by_scope(self, sess):
+        for bid, scope, approved in (("batch_f1", "domain", True), ("batch_f2", "geo", True),
+                                     ("batch_f3", "geo", False)):   # draft — never advances the ladder
+            doc = _doc(bid)
+            doc["discovery_scope"] = scope
+            BS.create_batch(sess, doc, batch_type="follow-up", actor="t")
+            if approved:
+                sess.get(BS.Batch, bid).first_approved_at = "2026-07-19T00:00:00Z"
+        sess.flush()
+        rounds = BS.followup_rounds(sess, ["D1", "D2", "nowhere"])
+        assert rounds["D1"] == {"domain": 1, "geo": 1}   # f3 (draft) correctly not counted
+        assert rounds["nowhere"] == {"domain": 0, "geo": 0}
+        assert BS.followup_rounds(sess, []) == {}
