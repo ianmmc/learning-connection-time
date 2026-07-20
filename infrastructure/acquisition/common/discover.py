@@ -65,6 +65,73 @@ def _host_matches(h, suffix):
     A bare endswith() lets halifax.com match x.com and evilschoolwires.com match schoolwires.com."""
     return h == suffix or h.endswith("." + suffix)
 
+# #164: the derive-and-re-gate thresholds for a GEO-scoped discovery run. The majority host must
+# carry >=40% of the gate-eligible (non-news) results AND appear for >=3 distinct schools' queries;
+# below that the run keeps NOTHING and resolves manual_flag — never unscoped-keep-all (the #227
+# contamination class). Conservative on purpose; tune by measurement (#118 attribution).
+DERIVE_MIN_SHARE = 0.40
+DERIVE_MIN_SCHOOLS = 3
+
+
+def _merge_host_family(host_tally: dict) -> dict:
+    """Fold a raw host tally into domain families before derivation (#568 review): SERP results
+    routinely mix `www.X`, `X`, and building subdomains (`hs.X`), and counting them as separate
+    keys splits the district's own majority (the exact Millard shape #164 rescues). Two merges,
+    both conservative: (1) a leading `www.` is stripped; (2) a host folds into an OBSERVED
+    dot-boundary ancestor in the tally (hs.mpsomaha.org -> mpsomaha.org only when mpsomaha.org
+    itself appeared). Deliberately NO registrable-domain guessing — an eTLD+1 heuristic without a
+    public-suffix list collapses pcs.k12.va.us into k12.va.us, which would derive a whole state's
+    host. Sibling subdomains with no observed ancestor stay split (fails toward manual_flag,
+    never a wrong derivation); revisit with measurement (#118)."""
+    merged: dict = {}
+    def _add(host, v):
+        slot = merged.setdefault(host, {"n": 0, "schools": set()})
+        slot["n"] += v.get("n", 0)
+        slot["schools"].update(v.get("schools", ()))
+    stripped = {}
+    for h, v in host_tally.items():
+        _h = h[4:] if h.startswith("www.") else h
+        if _h in stripped:
+            stripped[_h] = {"n": stripped[_h].get("n", 0) + v.get("n", 0),
+                            "schools": set(stripped[_h].get("schools", ())) | set(v.get("schools", ()))}
+        else:
+            stripped[_h] = {"n": v.get("n", 0), "schools": set(v.get("schools", ()))}
+    hosts_by_len = sorted(stripped, key=lambda h: h.count("."))   # ancestors first
+    for h in hosts_by_len:
+        parent = next((a for a in hosts_by_len if a != h and _host_matches(h, a) and a in merged), None)
+        _add(parent or h, stripped[h])
+    return merged
+
+
+def derive_domain(host_tally: dict) -> tuple:
+    """The #164 majority-host derivation, pure over a geo run's result tally.
+
+    `host_tally`: RAW host -> {"n": result_count, "schools": iterable of school_ids whose queries
+    produced it} — news/aggregator hosts already excluded by the caller (they never scope), no
+    other normalization required: hosts are family-merged here (_merge_host_family) before the
+    thresholds apply. Returns (derived_host | None, receipt); the receipt carries the RAW and
+    merged tallies + thresholds for the discovery.json receipt and the discovered_domain
+    proposal — the auditor sees exactly why the host was (or wasn't) derived."""
+    raw_tally = {h: {"n": v.get("n", 0), "n_schools": len(set(v.get("schools", ())))}
+                 for h, v in sorted(host_tally.items(), key=lambda kv: -kv[1].get("n", 0))}
+    host_tally = _merge_host_family(host_tally)
+    total = sum(v.get("n", 0) for v in host_tally.values())
+    receipt = {"total_results": total, "min_share": DERIVE_MIN_SHARE, "min_schools": DERIVE_MIN_SCHOOLS,
+               "raw_tally": raw_tally,
+               "tally": {h: {"n": v.get("n", 0), "n_schools": len(set(v.get("schools", ())))}
+                         for h, v in sorted(host_tally.items(), key=lambda kv: -kv[1].get("n", 0))}}
+    if not total:
+        return None, {**receipt, "outcome": "no results"}
+    top_host, top = max(host_tally.items(), key=lambda kv: (kv[1].get("n", 0), kv[0]))
+    share = top.get("n", 0) / total
+    n_schools = len(set(top.get("schools", ())))
+    if share >= DERIVE_MIN_SHARE and n_schools >= DERIVE_MIN_SCHOOLS and is_scoping_domain(top_host):
+        return top_host, {**receipt, "outcome": "derived", "derived_host": top_host,
+                          "share": round(share, 3), "n_schools": n_schools}
+    return None, {**receipt, "outcome": "below threshold", "top_host": top_host,
+                  "share": round(share, 3), "n_schools": n_schools}
+
+
 def gate(url, dhost, slug, scoped):
     h=host_of(url)
     if not h: return False,"no-host"

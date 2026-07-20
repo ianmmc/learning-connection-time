@@ -30,6 +30,7 @@ def create_batch(sess, batch_doc: dict, *, batch_type: str = "first-run", actor:
         # Upgrade the id reservation (reserve_next_batch, issue #46) to the real draft row in place.
         existing.batch_type = batch_type
         existing.status = "draft"
+        existing.discovery_scope = batch_doc.get("discovery_scope", "domain")   # #164 scope-pure axis
         existing.nces_year = batch_doc.get("nces_year", "")
         existing.created_at = batch_doc.get("created") or utcnow()
         existing.created_by = actor
@@ -43,6 +44,7 @@ def create_batch(sess, batch_doc: dict, *, batch_type: str = "first-run", actor:
     else:
         sess.add(Batch(
             batch_id=bid, batch_type=batch_type, status="draft",
+            discovery_scope=batch_doc.get("discovery_scope", "domain"),   # #164 scope-pure axis
             nces_year=batch_doc.get("nces_year", ""),
             created_at=batch_doc.get("created") or utcnow(), created_by=actor,
             meta_json={k: batch_doc[k] for k in _META_KEYS if k in batch_doc},
@@ -155,7 +157,9 @@ def _batch_doc(sess, b: Batch) -> dict:
                 for d in _ordered_districts(sess, b.batch_id, included_only=True)]
     return {
         **(b.meta_json or {}),
-        "batch_id": b.batch_id, "batch_type": b.batch_type, "created": b.created_at,
+        "batch_id": b.batch_id, "batch_type": b.batch_type,
+        "discovery_scope": b.discovery_scope or "domain",   # #164 (pre-column rows read as domain)
+        "created": b.created_at,
         "n": len(districts), "nces_year": b.nces_year, "districts": districts,
     }
 
@@ -194,6 +198,7 @@ def to_view(sess, batch_id: str) -> dict:
     return {
         **(b.meta_json or {}),   # spread first — explicit fields below always win (#555 review)
         "batch_id": b.batch_id, "batch_type": b.batch_type, "status": b.status,
+        "discovery_scope": b.discovery_scope or "domain",   # #164
         "nces_year": b.nces_year, "created_at": b.created_at, "created_by": b.created_by,
         "approved_at": b.approved_at, "approved_by": b.approved_by,
         "abandoned_at": b.abandoned_at, "abandoned_by": b.abandoned_by, "abandon_reason": b.abandon_reason,

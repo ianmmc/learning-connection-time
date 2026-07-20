@@ -49,6 +49,21 @@ def query_for(school: str, state: str) -> str:
     return f"{school} {state} bell schedule start and end times"
 
 
+def geo_queries(school: str, state: str, city: str, zipc: str, *, widened: bool = False) -> list:
+    """The GEO-scoped rendering (#164): the SAME vocabulary as domain-scoped discovery — one
+    vocabulary source, two scoping forms (the REQ-089 anti-drift rule) — with the district's
+    NCES CCD geo tokens appended and NO site: composition downstream (the caller passes a blank
+    dhost). `widened=False` = the standard wave-1 vocabulary (Path 1 first-runs, the first 5->1
+    loop); `widened=True` adds the differentiated template set (the second 5->1 loop, the second
+    7->1 loop). Geography disambiguates common school names nationally (the #227 class); the
+    derive-and-re-gate in the geo run is the containment, not the query alone."""
+    geo = " ".join(t for t in ((city or "").strip(), (zipc or "").strip()) if t)
+    vocab = [query_for(school, state)]
+    if widened:
+        vocab += differentiated_queries(school, state)
+    return [f"{q} {geo}".strip() for q in vocab]
+
+
 def differentiated_queries(school: str, state: str) -> list:
     """The differentiated SERP query set for a 7->2 REDISCOVER follow-up (#160): materially different
     phrasings from the default `query_for` wave-1 query, rendered per school. A 7->2 round casts the

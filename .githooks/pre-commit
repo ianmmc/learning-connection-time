@@ -40,6 +40,8 @@ PRECIOUS_BACKUPS=(
     "data/acquisition/status/band_exclusions.json"
     "data/acquisition/status/human_added_facts.json"
     "data/acquisition/status/slot_assignments.json"
+    "data/acquisition/status/discovered_domains.json"
+    "data/acquisition/status/discovery_policy.json"
 )
 for f in "${PRECIOUS_BACKUPS[@]}"; do
     if [ -f "$f" ]; then
