@@ -25,7 +25,7 @@ Usage:
 import argparse
 import json
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 # Add project root to path
@@ -91,7 +91,7 @@ def run_quick_check(session, args):
             'enriched_districts': summary['enriched_districts'],
             'schedule_records': summary['schedule_records'],
             'states': summary['states_represented'],
-            'verified_at': datetime.utcnow().isoformat()
+            'verified_at': datetime.now(timezone.utc).isoformat()
         }, indent=2))
     else:
         print(f"\n{'=' * 60}")
@@ -101,7 +101,7 @@ def run_quick_check(session, args):
         print(f"Enriched districts: {summary['enriched_districts']}")
         print(f"Bell schedule records: {summary['schedule_records']}")
         print(f"States represented: {summary['states_represented']}")
-        print(f"\nVerified at: {datetime.utcnow().isoformat()}")
+        print(f"\nVerified at: {datetime.now(timezone.utc).isoformat()}")
         print(f"{'=' * 60}\n")
 
 
@@ -140,6 +140,7 @@ def run_claim_validation(session, args):
     result = detect_count_discrepancy(claimed, actual)
 
     if args.json:
+        result['status'] = 'invalid' if result['has_discrepancy'] else 'valid'
         print(json.dumps(result, indent=2))
     else:
         print(f"\n{'=' * 60}")
@@ -156,9 +157,10 @@ def run_claim_validation(session, args):
 
         print(f"\n{'=' * 60}\n")
 
-        # Exit with error code if invalid
-        if result.get('alert'):
-            sys.exit(1)
+    # Exit with error code if invalid — in BOTH output modes, so CI running
+    # --json doesn't miss the failure (issue #469)
+    if result.get('alert'):
+        sys.exit(1)
 
 
 def run_full_verification(session, args):
@@ -172,7 +174,8 @@ def run_full_verification(session, args):
             'report': report,
             'integrity': integrity,
             'lineage_gaps': len(gaps),
-            'verified_at': datetime.utcnow().isoformat()
+            'status': 'fail' if integrity['violations'] else 'pass',
+            'verified_at': datetime.now(timezone.utc).isoformat()
         }
         print(json.dumps(output, indent=2, default=str))
     else:
@@ -205,9 +208,9 @@ def run_full_verification(session, args):
         print("VERIFICATION COMPLETE")
         print(f"{'=' * 60}\n")
 
-        # Exit with error if violations
-        if integrity['violations']:
-            sys.exit(1)
+    # Exit with error if violations — in BOTH output modes (issue #469)
+    if integrity['violations']:
+        sys.exit(1)
 
 
 if __name__ == '__main__':

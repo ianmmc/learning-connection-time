@@ -160,3 +160,34 @@ class TestLCTWriteIdempotency:
         deleted = clear_lct_calculations(session, run_id="20260606T000000Z")
         session.query.return_value.filter.assert_called_once()
         assert deleted == 7
+
+    def test_clear_by_year_filters(self):
+        """clear_lct_calculations(session, year=...) deletes only that year's rows (issue #297)."""
+        session = MagicMock()
+        session.query.return_value.filter.return_value.delete.return_value = 11
+        deleted = clear_lct_calculations(session, year="2024-25")
+        session.query.return_value.filter.assert_called_once()
+        assert deleted == 11
+
+    def test_main_scopes_clear_to_target_year(self):
+        """A --target-year run must NOT clear other years' rows (issue #297).
+
+        main() must pass the year filter into clear_lct_calculations so a
+        target-year recalculation preserves rows from other years; only
+        blended mode may full-clear."""
+        import ast
+        import textwrap
+
+        src = textwrap.dedent(inspect.getsource(calculate_lct_variants.main))
+        clear_calls = [
+            node for node in ast.walk(ast.parse(src))
+            if isinstance(node, ast.Call)
+            and (getattr(node.func, "id", None) or getattr(node.func, "attr", None))
+            == "clear_lct_calculations"
+        ]
+        assert clear_calls, "main() no longer calls clear_lct_calculations"
+        for call in clear_calls:
+            assert any(kw.arg == "year" for kw in call.keywords), (
+                "clear_lct_calculations in main() must pass year= so a "
+                "target-year run doesn't destroy other years' calculations"
+            )
