@@ -127,6 +127,11 @@ async function loadTree() {   // (name kept: splitRecord + initial boot call it)
   data.groups.forEach((g) => list.appendChild(renderGroup(g, data.group_by)));
   if (!data.groups.length) list.innerHTML = `<div class="empty">No districts match.</div>`;
   tree.appendChild(list);
+  // #518: the capture-fidelity triage consumer, at the gate the reviewer labels from (mounted
+  // once — loadTree re-runs on every show/filter and must not stack panels).
+  if (window.fidelityTriagePanel && !tree.querySelector('[data-feat="fidelity-triage-panel"]')) {
+    window.fidelityTriagePanel(tree);
+  }
   refreshProgress();
 }
 window.loadStage5 = loadTree;   // gate1.js re-fetches on view-show

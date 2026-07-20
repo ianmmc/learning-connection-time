@@ -1404,6 +1404,68 @@ def _job_view(batch_id: str) -> dict | None:
             "error": j.get("error")}
 
 
+@app.get("/api/fidelity-triage")
+def fidelity_triage():
+    """#518 (REQ-154's missing consumer): the capture-fidelity TRIAGE queue — every capture whose
+    flags (login_wall/soft_404), security_block err (#578), or Stage-4 time_blind flag says
+    "suspect: a real schedule may be hiding behind this", grouped per district with the recovery
+    affordances' context (an open followup_flag already covering the district, the class counts).
+    Until this surface existed the fidelity columns were write-only — flagged captures degraded to
+    silent target_absent, the exact recall leak #518 quantified."""
+    from collections import Counter
+    from infrastructure.acquisition.common import cache_ingest as CI
+    _NONEMPTY = "IS NOT NULL AND {c} NOT IN ('', '[]', '{{}}', 'null')"
+    with gdb.session_scope() as con:
+        # Self-bootstrap (the status_for_batch precedent): on a fresh DB the queue is honestly
+        # empty, never a 500 on a missing cache/signal table (the CI lesson, third time: the
+        # `district` join needs the signal schema).
+        CI.ensure_cache_schema(con)
+        BS.ensure_signal_schema(con)
+        cap = con.execute(text(f"""
+            SELECT c.district_id, d.name, c.hash, c.url, c.fidelity_json, c.err
+            FROM capture c LEFT JOIN district d ON d.district_id = c.district_id
+            WHERE (c.fidelity_json {_NONEMPTY.format(c='c.fidelity_json')})
+               OR c.err LIKE 'security_block%'""")).mappings().all()
+        tb = con.execute(text(f"""
+            SELECT p.district_id, d.name, p.hash, p.url, p.fidelity_json
+            FROM processed_doc p LEFT JOIN district d ON d.district_id = p.district_id
+            WHERE p.fidelity_json {_NONEMPTY.format(c='p.fidelity_json')}""")).mappings().all()
+        open_flagged = {r[0] for r in con.execute(text(
+            "SELECT DISTINCT district_id FROM followup_flag WHERE resolved_at IS NULL"))}
+
+    def _classes(fj, err=None):
+        out = []
+        try:
+            v = json.loads(fj) if fj else []
+            out += list(v) if isinstance(v, list) else list(v.keys())
+        except (TypeError, ValueError):
+            pass
+        if err and str(err).startswith("security_block"):
+            out.append("security_block")
+        return out
+
+    by_did: dict = {}
+    summary: Counter = Counter()
+    for src, rows in (("capture", cap), ("process", tb)):
+        for r in rows:
+            classes = _classes(r["fidelity_json"], r.get("err") if src == "capture" else None)
+            if not classes:
+                continue
+            b = by_did.setdefault(r["district_id"], {
+                "district_id": r["district_id"], "name": r["name"] or r["district_id"],
+                "classes": Counter(), "rows": [],
+                "open_followup_flag": r["district_id"] in open_flagged})
+            b["classes"].update(classes)
+            summary.update(classes)
+            if len(b["rows"]) < 12:      # bounded listing (Millard holds 81 security_blocks)
+                b["rows"].append({"hash": r["hash"], "url": r["url"], "classes": classes})
+    districts = sorted(by_did.values(), key=lambda b: -sum(b["classes"].values()))
+    for b in districts:
+        b["n_total"] = sum(b["classes"].values())
+        b["classes"] = dict(b["classes"])
+    return {"summary": dict(summary), "n_districts": len(districts), "districts": districts}
+
+
 @app.get("/api/attribution")
 def attribution_card(write: bool = False):
     """#118 (REQ-160): the Stage 2/4 effectiveness attribution card over the labeled corpus —
