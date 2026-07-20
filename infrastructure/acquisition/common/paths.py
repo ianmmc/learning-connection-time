@@ -47,6 +47,7 @@ BAND_EXCLUSIONS_JSON = STATUS_DIR / "band_exclusions.json"   # precious, version
 HUMAN_ADDED_FACTS_JSON = STATUS_DIR / "human_added_facts.json"  # precious, version-controlled (gate@8 human-add, #474)
 SLOT_ASSIGNMENTS_JSON = STATUS_DIR / "slot_assignments.json"  # precious, version-controlled (gate@8 slot dispositions, #499 REQ-145)
 DISCOVERED_DOMAINS_JSON = STATUS_DIR / "discovered_domains.json"  # precious, version-controlled (#164 human-confirmed domains)
+DISCOVERED_DOMAIN_DECISIONS_JSON = STATUS_DIR / "discovered_domain_decisions.json"  # precious (#572 proposal decisions — the training corpus)
 DISCOVERY_POLICY_JSON = STATUS_DIR / "discovery_policy.json"      # precious, version-controlled (#164 scope-policy events)
 SCORECARDS_DIR = STAGE5_DIR / "scorecards"              # harness output (config-vs-labels metrics)
 
@@ -72,8 +73,8 @@ def data_root_is_default() -> bool:
 # not re-implemented per test via monkeypatching (the epic-#133 lesson).
 TRACKED_BACKUPS = frozenset({STATUS_FILE, LABELS_JSON, CLUSTER_SPLITS_JSON, FOLLOWUP_FLAGS_JSON, GATE_MODE_JSON,
                              STAGE8_APPROVALS_JSON, BAND_EXCLUSIONS_JSON, HUMAN_ADDED_FACTS_JSON,
-                             DISCOVERED_DOMAINS_JSON, DISCOVERY_POLICY_JSON,
-                             SLOT_ASSIGNMENTS_JSON})
+                             DISCOVERED_DOMAINS_JSON, DISCOVERED_DOMAIN_DECISIONS_JSON,
+                             DISCOVERY_POLICY_JSON, SLOT_ASSIGNMENTS_JSON})
 _quarantine_noted: set = set()
 
 

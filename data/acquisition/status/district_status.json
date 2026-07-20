@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-20T06:48:10Z",
+  "last_updated": "2026-07-20T07:23:21Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -6132,8 +6132,8 @@
       "name": "MILLARD PUBLIC SCHOOLS",
       "state": "NE",
       "furthest_stage": 5,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "stage_name": "discover",
+      "outcome": "found_all",
       "topology": null,
       "batch_id": "batch_00021",
       "history": [
@@ -6222,6 +6222,20 @@
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-20T07:16:22Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-20T07:23:20Z"
         }
       ],
       "notes": "gate@1 approved batch_00021"
