@@ -359,7 +359,8 @@ class TestCopyEnrichmentTransactionality:
         )
         session = MagicMock()
         enr_q = MagicMock()
-        enr_q.filter_by.return_value.first.return_value = enrichment
+        # queue lookup matches raw OR padded id via .filter(in_()) (issue #284)
+        enr_q.filter.return_value.first.return_value = enrichment
         bell_q = MagicMock()
         bell_q.filter_by.return_value.first.return_value = None
         session.query.side_effect = [enr_q, bell_q]
@@ -416,3 +417,148 @@ class TestContentParserGrossBand:
         result = parser.parse('School hours: 7:00 AM - 3:30 PM', '')
         assert result is not None
         assert result.instructional_minutes == 510
+
+
+# =============================================================================
+# WP-3 sweep fixes (epic #480: #300 #301 #385 #386 #422 #423; #479: #284)
+# =============================================================================
+
+class TestContentParserSweepFixes:
+    def _parser(self):
+        from infrastructure.scripts.enrich.content_parser import ContentParser
+        return ContentParser(use_llm=False)
+
+    def test_reversed_times_rejected_not_wrapped(self):
+        """#300: end-before-start must not be accepted as an overnight span."""
+        parser = self._parser()
+        assert parser._calculate_minutes('2:05 PM', '7:25 AM') is None
+        assert parser._calculate_minutes('8:00 AM', '8:00 AM') is None
+
+    def test_pm_start_range_matches(self):
+        """#301: a PM-start range (e.g. an afternoon session) is matchable."""
+        import re
+        parser = self._parser()
+        m = re.search(parser.TIME_RANGE_PATTERN, 'Session: 12:30 PM - 3:15 PM',
+                      re.IGNORECASE)
+        assert m and m.group(1).strip().upper().startswith('12:30')
+
+    def test_until_separator_matches(self):
+        """#301: 'until' joins ranges; the old char-class treated it as junk."""
+        import re
+        parser = self._parser()
+        assert re.search(parser.TIME_RANGE_PATTERN,
+                         '8:00 AM until 3:00 PM', re.IGNORECASE)
+
+    def test_hour_25_and_minute_60_rejected(self):
+        """#423: out-of-range clock values must not parse."""
+        parser = self._parser()
+        assert parser._parse_time('25:00') is None
+        assert parser._parse_time('8:60 AM') is None
+        assert parser._parse_time('13:00 PM') is None
+
+    def test_k8_detected_as_elementary(self):
+        """#386: K-8 spans no longer fall through to the 'high' default."""
+        parser = self._parser()
+        assert parser._detect_grade_level('lincoln k-8 school hours') == 'elementary'
+
+    def test_modal_pair_wins_over_first_row(self):
+        """#422: with 3 schools at one level, the modal (start,end) is used,
+        not whichever row happened to come first."""
+        parser = self._parser()
+        markdown = """
+        | School | Hours |
+        |--------|-------|
+        | Adams Elementary | 9:00 AM - 3:00 PM |
+        | Baker Elementary | 8:00 AM - 2:30 PM |
+        | Custer Elementary | 8:00 AM - 2:30 PM |
+        """
+        results = parser._parse_markdown_tables_all(markdown)
+        elem = [r for r in results if r.grade_level == 'elementary']
+        assert elem and elem[0].start_time == '8:00 AM'
+        assert elem[0].end_time == '2:30 PM'
+
+    def test_llm_fallback_reachable_with_default_levels(self):
+        """#385: expected_levels=None must still hand missing levels to the
+        LLM step (stubbed today, but the wiring must not dead-end)."""
+        from unittest.mock import patch
+        parser = self._parser()
+        parser.use_llm = True
+        with patch.object(parser, '_llm_extraction', return_value=None) as llm:
+            parser.parse_all('no schedules here at all', '')
+        called_levels = {c.kwargs.get('target_level') or c.args[1]
+                        for c in llm.call_args_list}
+        assert called_levels == {'elementary', 'middle', 'high'}
+
+
+class TestCopyEnrichmentZfill:
+    def test_unpadded_id_is_normalized(self):
+        """#284: an unpadded caller id must be padded before queue lookup and
+        bell write."""
+        from infrastructure.database.enrichment_utils import copy_enrichment_to_bell_schedules
+        enrichment = SimpleNamespace(
+            status='completed', current_tier=1,
+            tier_1_result={'total_minutes': 400, 'year': '2024-25',
+                           'schedule_type': 'high_school'},
+            tier_2_result=None, tier_3_result=None, tier_4_result=None,
+            tier_5_result=None, district_id='0612345',
+        )
+        session = MagicMock()
+        enr_q = MagicMock()
+        enr_q.filter.return_value.first.return_value = enrichment
+        bell_q = MagicMock()
+        bell_q.filter_by.return_value.first.return_value = None
+        session.query.side_effect = [enr_q, bell_q]
+
+        ok, message = copy_enrichment_to_bell_schedules(session, '612345')
+        assert ok, message
+        added = session.add.call_args[0][0]
+        assert added.district_id == '0612345'
+        bell_q.filter_by.assert_called_once()
+        assert bell_q.filter_by.call_args.kwargs['district_id'] == '0612345'
+
+
+class TestValidateBellDataCLI:
+    def _validator(self, strict=False):
+        from infrastructure.scripts.utilities.validate_bell_data import BellScheduleValidator
+        return BellScheduleValidator(strict=strict)
+
+    def test_99_99_rejected(self):
+        """#394: '99:99 AM' is not a valid time."""
+        v = self._validator()
+        assert v.validate_time_format('99:99 AM') is False
+        assert v.validate_time_format('8:00 AM') is True
+
+    def test_null_district_entry_is_error_not_crash(self):
+        """#435: a null district entry reports an error."""
+        v = self._validator()
+        v.validate_district('0612345', None)
+        assert any('must be an object' in e for e in v.errors)
+
+    def test_reversed_times_error(self):
+        """#468 (judge-confirmed): start must precede end."""
+        v = self._validator()
+        v.validate_grade_level('0612345', 'Test', 'high', {
+            'instructional_minutes': 400,
+            'start_time': '3:00 PM', 'end_time': '8:00 AM',
+            'source': 'x',
+        })
+        assert any('must be before' in e for e in v.errors)
+
+    def test_bounds_align_with_gross_bands(self):
+        """Validator bands now mirror the DB sanity band + REQ-055 gross band
+        (490 was a hard error under the pre-gross 480 cap)."""
+        v = self._validator()
+        severity, _ = v.validate_minutes(490, 'high')
+        assert severity is None  # inside 240-510: clean pass
+        severity, _ = v.validate_minutes(520, 'high')
+        assert severity == 'Warning'  # outside gross band, inside DB sanity
+        severity, _ = v.validate_minutes(700, 'high')
+        assert severity == 'Error'  # outside the 100-600 DB sanity band
+
+    def test_council_extraction_method_accepted(self):
+        v = self._validator()
+        v.validate_grade_level('0612345', 'Test', 'high', {
+            'instructional_minutes': 400, 'method': 'council_extraction',
+            'source': 'x',
+        })
+        assert not any('Invalid method' in w for w in v.warnings)

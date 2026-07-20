@@ -11,6 +11,7 @@ This module bridges Firecrawl markdown output to structured bell schedule data.
 """
 
 import re
+from collections import Counter
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
@@ -59,12 +60,22 @@ class ContentParser:
         r'(?:last\s+period|period\s+[678])[:\s]+\d{1,2}:\d{2}[^-]*[-–—]\s*' + TIME_PATTERN,
     ]
 
-    # Time range pattern (e.g., "8:00 AM - 3:00 PM")
-    TIME_RANGE_PATTERN = r'(\d{1,2}:\d{2}\s*(?:AM|am|a\.m\.)?)\s*[-–—to]+\s*(\d{1,2}:\d{2}\s*(?:PM|pm|p\.m\.)?)'
+    # Time range pattern (e.g., "8:00 AM - 3:00 PM"). Both sides accept AM or
+    # PM (a PM-start range like a kindergarten afternoon session used to be
+    # unmatchable), and the separator is a real alternation — the old
+    # [-–—to]+ was a CHARACTER CLASS that also matched stray 't'/'o' sequences
+    # (issue #301). Reversed ranges that slip through are rejected by
+    # _calculate_minutes (issue #300).
+    TIME_RANGE_PATTERN = (
+        r'(\d{1,2}:\d{2}\s*(?:[AP]\.?M\.?)?)'
+        r'\s*(?:[-–—]|to|until)\s*'
+        r'(\d{1,2}:\d{2}\s*(?:[AP]\.?M\.?)?)'
+    )
 
-    # Grade level indicators
-    ELEMENTARY_PATTERNS = [r'elementary', r'primary', r'k-?5', r'k-?6', r'grades?\s*k']
-    MIDDLE_PATTERNS = [r'middle', r'junior\s*high', r'6-?8', r'7-?8', r'grades?\s*6']
+    # Grade level indicators. K-8/K-4 spans map to elementary (majority
+    # grades; the single-label API can't express a span — issue #386).
+    ELEMENTARY_PATTERNS = [r'elementary', r'primary', r'k-?5', r'k-?6', r'k-?8', r'k-?4', r'grades?\s*k']
+    MIDDLE_PATTERNS = [r'middle', r'junior\s*high', r'intermediate', r'6-?8', r'7-?8', r'grades?\s*6']
     HIGH_PATTERNS = [r'high\s*school', r'secondary', r'9-?12', r'10-?12', r'grades?\s*9']
 
     def __init__(self, use_llm: bool = True):
@@ -137,10 +148,13 @@ class ContentParser:
                 regex_result.confidence = 0.7
                 results.append(regex_result)
 
-        # Step 3: Try LLM extraction for remaining levels (if enabled)
+        # Step 3: Try LLM extraction for remaining levels (if enabled).
+        # No expected_levels means "all levels", same default as step 2 —
+        # the old empty-set default made the LLM fallback unreachable in the
+        # default configuration (issue #385).
         if self.use_llm:
             found_levels = {r.grade_level for r in results}
-            missing_levels = (set(expected_levels) if expected_levels else set()) - found_levels
+            missing_levels = (set(expected_levels) if expected_levels else {'elementary', 'middle', 'high'}) - found_levels
 
             for level in missing_levels:
                 llm_result = self._llm_extraction(text, target_level=level)
@@ -238,9 +252,12 @@ class ContentParser:
         for level in ['elementary', 'middle', 'high']:
             if times_by_level[level]:
                 times = times_by_level[level]
-                # Use the first valid time found for this level
-                start = times[0]['start']
-                end = times[0]['end']
+                # Use the MODAL (start, end) pair across this level's rows —
+                # taking times[0] discarded every later school's row (issue
+                # #422), and the per-band exact-mode is the project-wide
+                # aggregation rule (REQ-054). Ties break to first-seen.
+                pair_counts = Counter((t['start'], t['end']) for t in times)
+                start, end = pair_counts.most_common(1)[0][0]
                 minutes = self._calculate_minutes(start, end)
 
                 if minutes and plausible_gross_minutes(minutes):  # REQ-055 band (240-510)
@@ -383,9 +400,11 @@ class ContentParser:
 
             diff = end_minutes - start_minutes
 
-            # Handle edge case where end is before start (shouldn't happen)
-            if diff < 0:
-                diff += 24 * 60
+            # A non-positive difference means reversed/garbled times — school
+            # days never span midnight, so the old +24h wrap silently accepted
+            # bad extractions as plausible-looking "overnight" spans (issue #300)
+            if diff <= 0:
+                return None
 
             return diff
 
@@ -408,6 +427,15 @@ class ContentParser:
         hour = int(match.group(1))
         minute = int(match.group(2))
         period = match.group(3)
+
+        # Range-validate before conversion — '25:00' / '8:60' used to parse
+        # as valid times (issue #423)
+        if minute > 59:
+            return None
+        if period and not (1 <= hour <= 12):
+            return None
+        if not period and hour > 23:
+            return None
 
         # Convert to 24-hour format
         if period == 'PM' and hour != 12:

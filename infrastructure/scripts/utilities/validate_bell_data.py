@@ -21,15 +21,27 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from infrastructure.database.school_year import (  # noqa: E402
+    GROSS_MINUTES_MIN,
+    GROSS_MINUTES_MAX,
+    DB_CHECK_MINUTES_MIN,
+    DB_CHECK_MINUTES_MAX,
+)
+
 
 class BellScheduleValidator:
     """Validates bell schedule data quality."""
 
-    # Valid values
+    # Valid values (methods mirror chk_method in the DB, incl. the migration-019
+    # additions — this validator predated the gross-minutes era and rejected
+    # values the DB accepts)
     VALID_CONFIDENCE = ['high', 'medium', 'low']
     VALID_METHODS = ['human_provided', 'web_scraping', 'pdf_extraction',
                      'school_sample', 'district_policy', 'automated_enrichment',
-                     'manual_data_collection', 'state_statutory']
+                     'manual_data_collection', 'state_statutory',
+                     'council_extraction', 'statutory_fallback']
     VALID_STATES = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
                    'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
                    'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
@@ -43,22 +55,40 @@ class BellScheduleValidator:
         self.warnings = []
 
     def validate_time_format(self, time_str):
-        """Check if time string is in valid format (e.g., '8:00 AM')."""
-        if not time_str:
-            return False
+        """Check if time string is a valid clock time (e.g., '8:00 AM').
+
+        Numeric + range validation included — '99:99 AM' used to pass on
+        format shape alone (issue #394)."""
+        minutes = self.time_to_minutes(time_str)
+        return minutes is not None
+
+    @staticmethod
+    def time_to_minutes(time_str):
+        """'H:MM AM/PM' -> minutes from midnight, or None if invalid."""
+        if not time_str or not isinstance(time_str, str):
+            return None
 
         parts = time_str.split()
         if len(parts) != 2:
-            return False
+            return None
 
         time_part, meridiem = parts
         if meridiem not in ['AM', 'PM']:
-            return False
+            return None
 
-        if ':' not in time_part:
-            return False
+        hour_str, _, minute_str = time_part.partition(':')
+        if not (hour_str.isdigit() and minute_str.isdigit()):
+            return None
 
-        return True
+        hour, minute = int(hour_str), int(minute_str)
+        if not (1 <= hour <= 12) or minute > 59:
+            return None
+
+        if hour == 12:
+            hour = 0
+        if meridiem == 'PM':
+            hour += 12
+        return hour * 60 + minute
 
     def validate_minutes(self, minutes, grade_level):
         """Validate instructional minutes are reasonable."""
@@ -68,17 +98,33 @@ class BellScheduleValidator:
         if not isinstance(minutes, (int, float)):
             return "Error", f"instructional_minutes must be numeric, got {type(minutes)}"
 
-        if minutes < 180:
-            return "Error", f"instructional_minutes ({minutes}) is too low (< 180 min = 3 hours)"
+        # Bands align with the DB + REQ-055 (the old 180/480 hard bounds
+        # predated gross-minutes semantics and errored on values the DB
+        # accepts): hard error outside the DB sanity band, warn outside the
+        # gross plausibility band.
+        if minutes < DB_CHECK_MINUTES_MIN:
+            return "Error", (
+                f"instructional_minutes ({minutes}) below DB sanity bound "
+                f"({DB_CHECK_MINUTES_MIN})"
+            )
 
-        if minutes > 480:
-            return "Error", f"instructional_minutes ({minutes}) is too high (> 480 min = 8 hours)"
+        if minutes > DB_CHECK_MINUTES_MAX:
+            return "Error", (
+                f"instructional_minutes ({minutes}) above DB sanity bound "
+                f"({DB_CHECK_MINUTES_MAX})"
+            )
 
-        if minutes < 240:
-            return "Warning", f"instructional_minutes ({minutes}) seems low for {grade_level}"
+        if minutes < GROSS_MINUTES_MIN:
+            return "Warning", (
+                f"instructional_minutes ({minutes}) below gross plausibility "
+                f"band ({GROSS_MINUTES_MIN}-{GROSS_MINUTES_MAX}) for {grade_level}"
+            )
 
-        if minutes > 420:
-            return "Warning", f"instructional_minutes ({minutes}) seems high for {grade_level}"
+        if minutes > GROSS_MINUTES_MAX:
+            return "Warning", (
+                f"instructional_minutes ({minutes}) above gross plausibility "
+                f"band ({GROSS_MINUTES_MIN}-{GROSS_MINUTES_MAX}) for {grade_level}"
+            )
 
         return None, None
 
@@ -103,11 +149,21 @@ class BellScheduleValidator:
         start_time = data.get('start_time', '')
         end_time = data.get('end_time', '')
 
-        if start_time and not self.validate_time_format(start_time):
+        start_minutes = self.time_to_minutes(start_time) if start_time else None
+        end_minutes = self.time_to_minutes(end_time) if end_time else None
+
+        if start_time and start_minutes is None:
             self.warnings.append(f"{prefix}: Invalid start_time format: '{start_time}'")
 
-        if end_time and not self.validate_time_format(end_time):
+        if end_time and end_minutes is None:
             self.warnings.append(f"{prefix}: Invalid end_time format: '{end_time}'")
+
+        # Temporal order: start must precede end (issue #468 — reversed times
+        # passed validation entirely)
+        if start_minutes is not None and end_minutes is not None and start_minutes >= end_minutes:
+            self.errors.append(
+                f"{prefix}: start_time ({start_time}) must be before end_time ({end_time})"
+            )
 
         # Check confidence
         confidence = data.get('confidence', '')
@@ -131,6 +187,15 @@ class BellScheduleValidator:
 
     def validate_district(self, district_id, district_data):
         """Validate a single district's data."""
+        # Null/type guard (issue #435): a {"id": null} or scalar entry is a
+        # data error, not an AttributeError
+        if not isinstance(district_data, dict):
+            self.errors.append(
+                f"District {district_id}: entry must be an object, got "
+                f"{type(district_data).__name__}"
+            )
+            return
+
         district_name = district_data.get('district_name', 'Unknown')
 
         # Check required fields
