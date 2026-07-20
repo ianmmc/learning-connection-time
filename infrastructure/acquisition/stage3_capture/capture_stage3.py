@@ -73,6 +73,15 @@ def reconcile(districts: list, registry: dict, *, redo: bool = False) -> tuple[l
         rec = registry["districts"].get(did)
         reg_says_done = rec is not None and rec.get("furthest_stage", 0) >= 3
         if not done_on_disk and reg_says_done:
+            # #572: a decontamination restore point is the receipted explanation for artifacts
+            # a remediated district no longer has — capture fresh instead of halting (the same
+            # exception as Stage 2's reconcile; see DS.remediation_receipt for the trade-off).
+            receipt = DS.remediation_receipt(did)
+            if receipt is not None:
+                print(f"  [reconcile] {did} ({d['name']}): registry ahead of disk, EXPLAINED by "
+                      f"the decontamination restore point {receipt.name} — capturing fresh")
+                todo.append(d)
+                continue
             raise SystemExit(
                 f"CONTROL FAILURE: registry says {did} ({d['name']}) reached Stage 3+ but "
                 f"{d['dir'] / 'captures.json'} does not exist. Stopping the entire run -- "

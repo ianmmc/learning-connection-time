@@ -160,37 +160,63 @@ class TestReconcileRemediationReceipt:
     EXPLAINED by an on-disk decontamination restore point (remediate_contamination preserves state
     history while removing artifacts — Millard NE's post-#227 redo hit exactly this halt)."""
 
-    def _setup(self, tmp_path, monkeypatch):
+    def _setup(self, tmp_path, monkeypatch, stage):
         from infrastructure.acquisition.common import district_status as DS
         from infrastructure.acquisition.stage2_discover import discover_stage2 as D2
         monkeypatch.setattr(D2, "RAW_DIR", tmp_path / "captures")
-        # Patch the paths module object D2 actually holds (D2.paths), NOT a fresh import —
-        # test_acquisition_paths pops `paths` from sys.modules, so a re-import here can be a
-        # DIFFERENT object than D2's (the test_remediate_contamination pattern).
-        monkeypatch.setattr(D2.paths, "ACQUISITION", tmp_path / "acq")
-        d = {"district_id": "9999999", "name": "Test District", "state": "ZZ"}
+        # Patch the paths module object DS (the helper's home) actually holds — NOT a fresh
+        # import: test_acquisition_paths pops `paths` from sys.modules, so a re-import here can
+        # be a DIFFERENT object (the test_remediate_contamination pattern).
+        monkeypatch.setattr(DS.paths, "ACQUISITION", tmp_path / "acq")
+        d = {"district_id": "9999999", "name": "Test District", "state": "ZZ",
+             "dir": tmp_path / "captures" / "9999999_test_district"}
         registry = {"schema_version": 1, "last_updated": None, "districts": {}}
         DS.record_stage(registry, d["district_id"], d["name"], d["state"],
-                        stage=2, stage_name="discover", outcome="found_all")
+                        stage=stage, stage_name="x", outcome="found_all")
         return D2, d, registry
 
-    def test_without_receipt_still_halts(self, tmp_path, monkeypatch):
-        D2, d, registry = self._setup(tmp_path, monkeypatch)
+    def _receipt(self, tmp_path, did="9999999"):
+        (tmp_path / "acq" / "remediation" / f"{did}_20260712T000000Z").mkdir(parents=True)
+
+    def test_stage2_without_receipt_still_halts(self, tmp_path, monkeypatch):
+        D2, d, registry = self._setup(tmp_path, monkeypatch, stage=2)
         with pytest.raises(SystemExit, match="CONTROL FAILURE"):
             D2.reconcile({"batch_id": "b", "batch_type": "follow-up", "districts": [d]}, registry)
 
-    def test_receipt_sanctions_a_fresh_rediscover(self, tmp_path, monkeypatch):
-        D2, d, registry = self._setup(tmp_path, monkeypatch)
-        (tmp_path / "acq" / "remediation" / "9999999_20260712T000000Z").mkdir(parents=True)
+    def test_stage2_receipt_sanctions_a_fresh_rediscover(self, tmp_path, monkeypatch):
+        D2, d, registry = self._setup(tmp_path, monkeypatch, stage=2)
+        self._receipt(tmp_path)
         todo, skipped = D2.reconcile(
             {"batch_id": "b", "batch_type": "follow-up", "districts": [d]}, registry)
         assert [x["district_id"] for x in todo] == ["9999999"] and skipped == []
 
-    def test_other_districts_receipt_does_not_sanction(self, tmp_path, monkeypatch):
-        D2, d, registry = self._setup(tmp_path, monkeypatch)
-        (tmp_path / "acq" / "remediation" / "1111111_20260712T000000Z").mkdir(parents=True)
+    def test_stage2_other_districts_receipt_does_not_sanction(self, tmp_path, monkeypatch):
+        D2, d, registry = self._setup(tmp_path, monkeypatch, stage=2)
+        self._receipt(tmp_path, did="1111111")
         with pytest.raises(SystemExit, match="CONTROL FAILURE"):
             D2.reconcile({"batch_id": "b", "batch_type": "follow-up", "districts": [d]}, registry)
+
+    def test_stage3_receipt_sanctions_a_fresh_capture(self, tmp_path, monkeypatch):
+        from infrastructure.acquisition.stage3_capture import capture_stage3 as C3
+        _D2, d, registry = self._setup(tmp_path, monkeypatch, stage=3)
+        with pytest.raises(SystemExit, match="CONTROL FAILURE"):
+            C3.reconcile([d], registry)
+        self._receipt(tmp_path)
+        todo, skipped = C3.reconcile([d], registry)
+        assert [x["district_id"] for x in todo] == ["9999999"] and skipped == []
+
+    def test_stage4_receipt_sanctions_a_fresh_process(self, tmp_path, monkeypatch):
+        from infrastructure.acquisition.stage4_process import process_stage4 as P4
+        _D2, d, registry = self._setup(tmp_path, monkeypatch, stage=4)
+        with pytest.raises(SystemExit, match="CONTROL FAILURE"):
+            P4.reconcile([d], registry)
+        self._receipt(tmp_path)
+        # the sanctioned district falls through to the NORMAL path (consistency check → todo);
+        # the check itself reads the loaded captures manifest, out of scope here
+        monkeypatch.setattr(P4, "check_file_consistency", lambda d_: [])
+        todo, skipped, quarantined = P4.reconcile([d], registry)
+        assert [x["district_id"] for x in todo] == ["9999999"]
+        assert skipped == [] and quarantined == []
 
 
 # ---------------------------------------------------------------- UI-visibility source pins
