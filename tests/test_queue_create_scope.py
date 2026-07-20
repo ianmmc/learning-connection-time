@@ -36,8 +36,7 @@ def stubbed_create(monkeypatch):
     monkeypatch.setattr(BSTORE, "release_reservation", lambda con, bid: None)
     monkeypatch.setattr(BSTORE, "to_view", lambda con, bid: {"batch_id": bid, "status": "draft"})
 
-    def fake_build(year, n, bid, registry, *, scope="domain", discovered_domains=None,
-                   geo_pool="blank"):
+    def fake_build(year, n, bid, registry, *, scope="domain", geo_pool="blank", **kw):
         doc = {"batch_id": bid, "discovery_scope": scope, "nces_year": year,
                "districts": [{"district_id": "ZZQ1", "name": "Q", "state": "ZZ"}]}
         seen["build"] = {"scope": scope, "geo_pool": geo_pool}

@@ -93,13 +93,20 @@ class TestGeoGovdb:
         assert DP.get_policy(gov_session) == "geo_for_blank"
 
     def test_policy_set_is_validated_audited_and_idempotent(self, gov_session):
+        # DELTA assertions, not absolute counts (#572 lesson): the event table is the LIVE
+        # append-only audit log — real console flips legitimately pre-populate it, and this
+        # rolling-back test must not assume it starts empty.
         from infrastructure.acquisition.common import db as gdb
         gdb.init_precious_schema()
-        DP.set_policy(gov_session, "geo_all", actor="ian")
-        DP.set_policy(gov_session, "geo_all", actor="ian")          # unchanged -> no event spam
-        events = gov_session.query(DP.DiscoveryPolicyEvent).all()
-        assert len(events) == 1
-        assert events[0].previous == "domain_only" and events[0].policy == "geo_all"
+        n0 = gov_session.query(DP.DiscoveryPolicyEvent).count()
+        prev = DP.get_policy(gov_session)
+        target = "geo_all" if prev != "geo_all" else "geo_interleaved"
+        DP.set_policy(gov_session, target, actor="ian")
+        DP.set_policy(gov_session, target, actor="ian")             # unchanged -> no event spam
+        events = (gov_session.query(DP.DiscoveryPolicyEvent)
+                  .order_by(DP.DiscoveryPolicyEvent.event_id).all())
+        assert len(events) == n0 + 1
+        assert events[-1].previous == prev and events[-1].policy == target
         with pytest.raises(ValueError):
             DP.set_policy(gov_session, "bogus", actor="ian")
 

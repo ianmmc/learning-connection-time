@@ -23,6 +23,7 @@
     if (!inited) { inited = true; renderShell(); }
     loadDataYears();
     loadModes();
+    loadDiscoveryPolicy();
     loadModeStability();
     loadExplorationAudit();
     loadExclusions();
@@ -46,6 +47,13 @@
           the global default. Setting a gate here persists the decision — it does not change a gate's
           behavior until that gate's auto path is built.</p>
         <div id="settings-rows" class="settings-rows"><div class="empty">Loading…</div></div>
+        <h2 class="settings-audit-h">Discovery scope policy <span class="muted">(#164 — geo first-run composition)</span></h2>
+        <p class="muted">Governs FIRST-RUN batch composition only — the failure-driven escalation
+          loops (5→1 / 7→1) are always available and individually gate@1'd. Every change is an
+          append-only, git-twinned audit event; the pool-drained moment auto-advances
+          <strong>domain_only → geo_for_blank</strong> exactly one step. Compose a geo batch from
+          Stage 1 · Queue → <strong>+ Create batch</strong> once a geo position is set.</p>
+        <div id="settings-discovery-policy" class="settings-rows" data-feat="discovery-policy-card"><div class="empty">Loading…</div></div>
         <h2 class="settings-audit-h">Stage 7 mode-stability early-exit <span class="muted">(#120 — spend shortcut)</span></h2>
         <p class="muted">Stage 7 stops paying for a district's remaining reps once every fillable band's
           running mode is stable; skipped reps are recorded and visible at gate@7, and stay dispatchable
@@ -131,6 +139,40 @@
         </div>`;
     } catch (_) {
       box.innerHTML = `<div class="empty">Failed to load data-year facts.</div>`;
+    }
+  }
+
+  // #572: the discovery scope policy control (#164) — position buttons + the audited event history.
+  async function loadDiscoveryPolicy() {
+    const box = $g("#settings-discovery-policy");
+    if (!box) return;
+    try {
+      const d = await api("/api/discovery-policy");
+      const rows = (d.positions || []).map((p) => `
+        <div class="settings-row${p.policy === d.policy ? " settings-row-default" : ""}">
+          <div class="settings-gate"><strong>${esc(p.label)}</strong> <span class="muted">(${esc(p.policy)})</span><br/>
+            <span class="muted">${esc(p.desc)}</span></div>
+          <div class="settings-toggle">
+            ${p.policy === d.policy
+              ? `<span class="badge badge-lavender" data-feat="discovery-policy-current">current</span>`
+              : `<button class="btn btn-mini" data-feat="discovery-policy-set" data-policy="${esc(p.policy)}">Set</button>`}
+          </div>
+        </div>`).join("");
+      const hist = (d.events || []).length
+        ? `<details class="q-domain-excluded" data-feat="discovery-policy-history">
+             <summary class="muted">Policy event history (${d.events.length} recent — append-only audit log)</summary>
+             ${d.events.map((e) => `<div class="muted">${esc(e.created_at)} · ${esc(e.previous)} → <b>${esc(e.policy)}</b> · ${esc(e.actor)}${e.trigger ? ` · ${esc(e.trigger)}` : ""}</div>`).join("")}
+           </details>`
+        : `<p class="muted">No policy changes yet — the empty log reads as <b>domain_only</b> (the high-supervision default).</p>`;
+      box.innerHTML = rows + hist;
+      box.querySelectorAll('[data-feat="discovery-policy-set"]').forEach((b) => b.onclick = async () => {
+        if (!confirm(`Set discovery_scope_policy → ${b.dataset.policy}?\n\nThis is an audited governance event (append-only, git-twinned). It governs first-run composition only.`)) return;
+        try { await api("/api/discovery-policy", postJSON({ policy: b.dataset.policy, actor: "ian" })); }
+        catch (e) { alert("Set failed: " + e.message); return; }
+        loadDiscoveryPolicy();
+      });
+    } catch (_) {
+      box.innerHTML = `<div class="empty">Failed to load the discovery scope policy.</div>`;
     }
   }
 

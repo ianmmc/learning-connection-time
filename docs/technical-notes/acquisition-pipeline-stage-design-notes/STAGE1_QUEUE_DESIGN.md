@@ -554,3 +554,17 @@ directive's `executed_ref` = its district's batch, one transaction. New app-laye
 dispatchable/held Stage-5 records AND no retryable errs AND no fidelity flags; ladder 0 geo →
 geo+standard, 1 → geo+widened, ≥2 → manual flag; draft at gate@1, never auto-flowed).
 Tests: tests/test_escalation_ladders.py + tests/test_queue_create_scope.py. REQ-157 implemented.
+
+**2026-07-19 — #572: the #164 console control surface (REQ-158).** Surfaced by Ian's first attempt
+at the live Millard NE run: the backend gating existed but no operator control did. New
+`GET/POST /api/discovery-policy` + a Settings card (positions, audited set, event history);
+a scope-aware gate@1 create dialog (geo offered when policy allows; drawn-by-policy under
+geo_interleaved; an `n` input; optional path-4 **target district IDs** — `build_batch(district_ids=…)`
+restricts AFTER the scope filters, records `targeted` meta, and a full miss 409s WITHOUT tripping
+the pool-drained auto-advance); scope visibility everywhere (list scope tag, GEO badge +
+containment note, `scope_draw`, per-district geo tokens + discovered-domain badge); and the
+**5→1 zero-yield check** button on ran batches (its output is a gate@1 draft — dry-run survey
+modal → compose; fuller gate@5 surfacing stays #518). Key operational fact this surfaced: Millard
+NE (3173740) is already-attempted, so NO first-run draw can include it — its geo repair runs via
+the 5→1 button on batch_00013 (live-verified eligible, rung geo+standard, with Playwright).
+Tests: tests/test_discovery_policy_console.py.

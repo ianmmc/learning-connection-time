@@ -219,7 +219,8 @@ def validate_scope_combo(scope: str, batch_type: str) -> None:
 
 def build_batch(year: str, n: int, batch_id: str, registry: dict, *, scope: str = "domain",
                 discovered_domains: dict | None = None,
-                geo_pool: str = "blank") -> tuple[dict, list, list, int]:
+                geo_pool: str = "blank",
+                district_ids: list | None = None) -> tuple[dict, list, list, int]:
     """Pure batch construction: apply the pre-queue exclusions, stratified-pick, select per-band
     schools, and assemble the batch_doc. Does NO I/O -- no file write, no registry mutation, no
     printing (it only READS the registry, via eligible_pool's already-attempted filter). The caller
@@ -231,6 +232,11 @@ def build_batch(year: str, n: int, batch_id: str, registry: dict, *, scope: str 
     source for domain-scoped batches. `geo_pool` ("blank" | "all") is the geo draw population —
     "all" is the geo_all experiment position; the POLICY check (may this caller compose a geo
     batch at all?) belongs to the caller, which reads discovery_policy and maps it to these args.
+
+    `district_ids` (#572, the AGREED DESIGN's path 4 — "dev/manual batches on direction, exception
+    path, not SOP"): restrict the draw to the named districts (post scope-filtering, so a targeted
+    geo batch still only admits the geo pool). Recorded in the doc's `targeted` meta — requested +
+    any id NOT in the pool (excluded/already-attempted/wrong pool) — so the exception is auditable.
 
     Returns (batch_doc, gap_excluded, domain_excluded, n_eligible)."""
     if scope not in ("domain", "geo"):
@@ -261,6 +267,14 @@ def build_batch(year: str, n: int, batch_id: str, registry: dict, *, scope: str 
             for did in list(pool):
                 if resolve_scoping_domain(pool[did]["website"], did, discovered_domains) != ("", ""):
                     pool.pop(did)
+    targeted = None
+    if district_ids:
+        # #572 path 4: restrict AFTER the scope filters — a targeted geo batch still only admits
+        # districts from the geo pool; an id outside the pool is reported, never force-included.
+        requested = list(dict.fromkeys(district_ids))
+        pool = {did: pool[did] for did in requested if did in pool}
+        targeted = {"requested": requested,
+                    "missing": [d for d in requested if d not in pool]}
     level_counts = S.school_level_counts(year)   # did -> {total, by_level} (the topology denominator)
     picked_ids = stratified_pick(pool, batch_id, n=n)
 
@@ -313,6 +327,8 @@ def build_batch(year: str, n: int, batch_id: str, registry: dict, *, scope: str 
         "domain_excluded": domain_excluded,
         "districts": districts_out,
     }
+    if targeted:
+        batch_doc["targeted"] = targeted   # #572 path-4 audit record (-> Batch.meta_json)
     return batch_doc, gap_excluded, domain_excluded, len(pool)
 
 

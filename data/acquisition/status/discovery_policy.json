@@ -1,0 +1,18 @@
+[
+  {
+    "event_id": 37,
+    "policy": "geo_for_blank",
+    "previous": "domain_only",
+    "actor": "claude:verify-572",
+    "trigger": "human (console)",
+    "created_at": "2026-07-20T06:31:33Z"
+  },
+  {
+    "event_id": 38,
+    "policy": "domain_only",
+    "previous": "geo_for_blank",
+    "actor": "claude:verify-572 (revert after console verification)",
+    "trigger": "human (console)",
+    "created_at": "2026-07-20T06:35:07Z"
+  }
+]
