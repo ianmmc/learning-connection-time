@@ -48,9 +48,14 @@ def get_policy(con) -> str:
 
 
 def set_policy(con, policy: str, *, actor: str, trigger: str = "human") -> str:
-    """Append a policy-change event (idempotent no-op when unchanged — no event spam)."""
+    """Append a policy-change event (idempotent no-op when unchanged — no event spam).
+    Serialized via a transaction-scoped advisory lock (#568 review): the pool-drain
+    auto-advance is a genuine second writer alongside a human console set, and an
+    unserialized read-modify-append could fork the audit chain's `previous` linkage."""
+    from sqlalchemy import text as _text
     if policy not in POLICIES:
         raise ValueError(f"policy must be one of {POLICIES} (got {policy!r})")
+    con.execute(_text("SELECT pg_advisory_xact_lock(hashtext('discovery_scope_policy'))"))
     previous = get_policy(con)
     if policy == previous:
         return policy

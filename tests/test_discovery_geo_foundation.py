@@ -32,10 +32,6 @@ def test_geo_queries_tolerate_missing_geo_fields():
 
 
 # ---------------------------------------------------------------- derive-and-re-gate (DB-free)
-def _tally(**hosts):
-    return {h: {"n": n, "schools": schools} for h, (n, schools) in hosts.items()}
-
-
 def test_derive_domain_majority_host_clears_both_thresholds():
     tally = {"mpsomaha.org": {"n": 60, "schools": ["s1", "s2", "s3", "s4"]},
              "reaganisd.tx.us": {"n": 20, "schools": ["s1"]},
@@ -106,3 +102,29 @@ class TestGeoGovdb:
         assert DD.all_confirmed(gov_session) == {"3173740": "millard.org"}
         with pytest.raises(ValueError):
             DD.confirm(gov_session, "3173740", "not a domain", actor="ian")
+
+
+def test_derive_domain_merges_www_and_observed_subdomain_families():
+    """#568 review: SERP results mixing www/bare/building-subdomains must not split the
+    district's own majority. 30+25+10 = 65% as a family clears the threshold that 30% raw
+    would have failed."""
+    tally = {"www.mpsomaha.org": {"n": 30, "schools": ["s1", "s2"]},
+             "mpsomaha.org": {"n": 25, "schools": ["s3"]},
+             "hs.mpsomaha.org": {"n": 10, "schools": ["s4"]},
+             "elsewhere.org": {"n": 35, "schools": ["s5"]}}
+    host, receipt = D.derive_domain(tally)
+    assert host == "mpsomaha.org"
+    assert receipt["tally"]["mpsomaha.org"]["n"] == 65 and receipt["n_schools"] == 4
+    assert receipt["raw_tally"]["www.mpsomaha.org"]["n"] == 30   # the raw split stays auditable
+
+
+def test_derive_domain_never_guesses_an_unobserved_ancestor():
+    """Sibling subdomains with NO observed ancestor stay split — conservative (manual_flag),
+    never a guessed registrable domain (a naive eTLD+1 would collapse pcs.k12.va.us into
+    k12.va.us and derive a whole state's host)."""
+    tally = {"hs.pcs.k12.va.us": {"n": 30, "schools": ["s1", "s2"]},
+             "ms.pcs.k12.va.us": {"n": 30, "schools": ["s3", "s4"]},
+             "other.org": {"n": 40, "schools": ["s5"]}}
+    host, receipt = D.derive_domain(tally)
+    assert host is None                       # 30% top share, correctly below threshold
+    assert "pcs.k12.va.us" not in receipt["tally"]   # no invented parent key
