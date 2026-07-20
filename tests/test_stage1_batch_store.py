@@ -381,3 +381,21 @@ class TestBatchScopedProgress:
         assert prog["batch_flag"]["flagged"] == 1
         self._event(sess, "D2", 2, "batch_flag", outcome="found_all")   # later event supersedes
         assert BS._batch_progress(sess)["batch_flag"]["flagged"] == 0
+
+
+class TestFacilityReviewFlag:
+    """#222 — the facility-name flag is computed at VIEW time (pure over the stored name, never a
+    column), so a token-list tuning applies retroactively to every batch."""
+
+    def test_view_carries_review_flags_for_facility_named_school(self, sess):
+        doc = _doc("batch_facility")
+        doc["districts"][0]["schools_by_band"]["high"]["schools"].append(
+            {"school_id": "S_JJ", "name": "Jackson County Juvenile Ctr.", "is_charter": "Yes",
+             "level": "High", "gslo": "09", "gshi": "12"})
+        BS.create_batch(sess, doc, actor="t")
+        view = BS.to_view(sess, "batch_facility")
+        schools = {s["name"]: s
+                   for d in view["districts"]
+                   for bd in d["schools_by_band"].values() for s in bd["schools"]}
+        assert schools["Jackson County Juvenile Ctr."]["review_flags"] == ["facility_name"]
+        assert "review_flags" not in schools["Alpha High"]   # normal names carry no key at all

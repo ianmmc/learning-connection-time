@@ -72,3 +72,18 @@ def test_charter_lookup_collision_never_drops_a_yes(nces):
     look = SS.charter_lookup("0100001", year="2024_25")
     assert look["roosevelt"] == "Yes"
     assert look["liberty bell"] == "Yes"
+
+
+def test_facility_name_flags_matches_facility_names_only():
+    """#222 — the gate@1 flag-for-review heuristic: facility-type name tokens (juvenile/detention/
+    correctional) flag; ordinary school names never do. NCES mis-codes these facilities as
+    SCH_TYPE=1 Regular (verified on 2900593 'Jackson County Juvenile Ctr.'), so the name is the
+    only signal — hence flag, never hard-exclude."""
+    assert SS.facility_name_flags("Jackson County Juvenile Ctr.") == ["facility_name"]
+    assert SS.facility_name_flags("Lincoln Detention Education Program") == ["facility_name"]
+    assert SS.facility_name_flags("Ozark Correctional Facility School") == ["facility_name"]
+    assert SS.facility_name_flags("Metro Youth Center") == ["facility_name"]
+    assert SS.facility_name_flags("Jefferson High School") == []
+    assert SS.facility_name_flags("Youthful Scholars Academy") == []   # 'youth' alone is NOT a token
+    assert SS.facility_name_flags("") == []
+    assert SS.facility_name_flags(None) == []

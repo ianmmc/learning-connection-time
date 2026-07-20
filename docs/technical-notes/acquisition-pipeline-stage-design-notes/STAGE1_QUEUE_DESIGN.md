@@ -515,3 +515,13 @@ district_id)` instead (§6b). #264: `create_batch` on an existing non-`reserving
 included-district counts moved from one `COUNT` query per batch to one grouped query — a real
 console-latency problem at ~1000+ batches, kept deliberately independent of `_batch_progress` so it
 survives that aggregate's best-effort degrade. See §6b for the present-state description.
+
+**2026-07-19 — #222: facility-named schools get a gate@1 review flag (epic #111 Phase 6).** The
+batch_00013 shakedown's manual reject ("Jackson County Juvenile Ctr." drawn under DeLaSalle 2900593)
+traced to an NCES mis-code: the facility carries `SCH_TYPE=1 "Regular School"`, so the Regular-School-only
+draw filter cannot see it. No reliable CCD indicator exists → per the issue's triage, this lands as
+FLAG-for-review, never hard-exclude: `school_sampling.facility_name_flags(name)` (token list:
+juvenile/detention/correctional/youth-center …) is computed at VIEW time in `batch_store._school_dict`
+(never stored — a token tuning applies retroactively to every batch) and the gate@1 school row shows a
+"facility?" badge (`data-feat="s1-facility-flag"`, UI-visibility-pinned). METHODOLOGY Rule 6b records
+the methodology stance.

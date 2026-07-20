@@ -456,6 +456,24 @@ REGULAR_SCH_TYPE = "Regular School"  # NCES SCH_TYPE_TEXT enum: Regular / Specia
 # real batch). Special Education School is excluded too for now -- a separate, deferred body
 # of work, not because it's structurally like the other two.
 
+# #222: name tokens suggesting a juvenile-justice / detention / correctional education program —
+# entities whose "day" isn't comparable to a regular school's (secure-facility scheduling,
+# court-driven programming; the same exclusion family as CTC/shared-service, METHODOLOGY Rule 6).
+# NCES mis-codes these as SCH_TYPE=1 "Regular School" (verified on 2900593 "Jackson County Juvenile
+# Ctr.", the gate@1 reject that surfaced this), so no reliable upstream flag exists — this is a
+# FLAG-FOR-REVIEW heuristic (name-matching is lossy; the gate@1 human decides), NEVER a hard exclude.
+FACILITY_NAME_TOKENS = ("juvenile", "detention", "correctional", "corrections",
+                        "youth center", "youth ctr", "justice ctr", "justice center")
+
+
+def facility_name_flags(name: str) -> list:
+    """Review flags for a school name that pattern-matches a non-conventional-instructional-day
+    facility (#222). Empty list for a normal name. Pure — computed at view time (batch_store),
+    never stored, so a token-list tuning applies retroactively to every batch."""
+    low = (name or "").lower()
+    return ["facility_name"] if any(t in low for t in FACILITY_NAME_TOKENS) else []
+
+
 def _eligible(row, virtual_ids):
     """Shared school-level eligibility predicate: open, regular, non-virtual, not a standalone
     preschool. Used by BOTH school_index() (band assignment) and school_level_counts() (raw-LEVEL
