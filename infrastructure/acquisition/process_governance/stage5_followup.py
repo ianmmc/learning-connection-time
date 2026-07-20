@@ -46,23 +46,23 @@ def zero_yield_reason(session, district_id: str) -> str | None:
     if n_dispatchable:
         return (f"{n_dispatchable} dispatchable/held Stage-5 record(s) — not zero-yield "
                 "(a hold awaiting a label blocks escalation, spend-conservatively)")
+    # #575 review: one query with conditional aggregation instead of 3 sequential round trips —
+    # priority order (retry > fidelity > security_block) is preserved in the Python checks below,
+    # only the I/O is combined.
     retry_where = " OR ".join(f"err LIKE :p{i}" for i in range(len(RETRYABLE_ERR_PREFIXES)))
     params = {"d": district_id, **{f"p{i}": f"{p}%" for i, p in enumerate(RETRYABLE_ERR_PREFIXES)}}
-    n_retry = session.execute(text(
-        f"SELECT COUNT(*) FROM capture WHERE district_id = :d AND ({retry_where})"), params).scalar()
+    n_retry, n_fid, n_sec = session.execute(text(
+        f"SELECT COUNT(*) FILTER (WHERE {retry_where}), "
+        f"COUNT(*) FILTER (WHERE {_FIDELITY_FLAGGED_SQL}), "
+        f"COUNT(*) FILTER (WHERE err LIKE 'security_block%') "
+        f"FROM capture WHERE district_id = :d"), params).one()
     if n_retry:
         return f"{n_retry} retryable capture failure(s) — run the #116 capture retry first"
-    n_fid = session.execute(text(
-        f"SELECT COUNT(*) FROM capture WHERE district_id = :d AND {_FIDELITY_FLAGGED_SQL}"),
-        {"d": district_id}).scalar()
     if n_fid:
         return f"{n_fid} fidelity-flagged capture(s) (login_wall/soft_404) — triage those first (#518)"
     # #578: a security-blocked district must NOT geo-escalate — the domain was fine, the WAF said
     # no (Rule 3: one attempt, respected). Geo rediscovery would re-derive the same blocked hosts
     # and re-pressure them. Manual triage is the only honest next step.
-    n_sec = session.execute(text(
-        "SELECT COUNT(*) FROM capture WHERE district_id = :d AND err LIKE 'security_block%'"),
-        {"d": district_id}).scalar()
     if n_sec:
         return (f"{n_sec} security-blocked capture(s) (WAF challenge, one-attempt rule) — "
                 "manual triage, never automatic re-pressure (#578)")
@@ -108,32 +108,40 @@ def compose_zero_yield(batch_id: str, *, actor: str = "ian", session=None, dry_r
         ladder = {}
         names = {d.district_id: d.name for d in eligible}   # #572: human-readable modal labels
         for d in eligible:
-            n_geo = rounds[d.district_id]["geo"]
-            if n_geo == 0:
+            rr = rounds[d.district_id]
+            # #575 review: exhaustion is the ONE shared predicate (BSTORE.geo_ladder_exhausted) —
+            # this composer must never disagree with the 7->1 scope-split composer about the same
+            # district's ladder position.
+            if BSTORE.geo_ladder_exhausted(rr):
+                flagged.append({"district_id": d.district_id, "name": d.name,
+                                "reason": (f"5->1 ladder exhausted: {rr['geo']} geo follow-up "
+                                           "round(s) already approved — manually flagged")})
+                ladder[d.district_id] = "manual_flag"
+            elif rr["geo"] == 0:
                 compose_rows.append(d)
                 ladder[d.district_id] = "geo+standard"
-            elif n_geo == 1:
+            else:
                 compose_rows.append(d)
                 widen_dids.add(d.district_id)
                 ladder[d.district_id] = "geo+widened"
-            else:
-                flagged.append({"district_id": d.district_id, "name": d.name,
-                                "reason": (f"5->1 ladder exhausted: {n_geo} geo follow-up round(s) "
-                                           "already approved — manually flagged")})
-                ladder[d.district_id] = "manual_flag"
         if flagged and not dry_run:
             _flag_escalation_exhausted(s, [f["district_id"] for f in flagged], rounds)
         if not compose_rows:
             return {"ok": True, "batch_id": None, "n_districts": 0, "ineligible": ineligible,
                     "flagged": flagged, "skipped": [], "ladder": ladder, "names": names}
 
-        targets = {d.district_id: list(d.lea_claimed_bands or []) for d in compose_rows}
+        pre_targets = {d.district_id: list(d.lea_claimed_bands or []) for d in compose_rows}
         new_bid = f"batch_{BSTORE.next_batch_number(s):05d}"
-        doc, skipped = Q1.build_followup_batch(b.nces_year or "2024_25", new_bid, targets,
+        doc, skipped = Q1.build_followup_batch(b.nces_year or "2024_25", new_bid, pre_targets,
                                                scope="geo", force_widen_dids=widen_dids)
         if not doc["districts"]:
             return {"ok": True, "batch_id": None, "n_districts": 0, "ineligible": ineligible,
                     "flagged": flagged, "skipped": skipped, "ladder": ladder, "names": names}
+        # #575 review: `targets` must reflect who actually SURVIVED build_followup_batch, not the
+        # pre-build candidate set — a claimed band with no NCES school-level coverage gets silently
+        # dropped into `skipped`, and the gate@1 dry-run preview must never show it as composable.
+        survived = {d["district_id"] for d in doc["districts"]}
+        targets = {did: bands for did, bands in pre_targets.items() if did in survived}
         if dry_run:
             return {"ok": True, "batch_id": new_bid, "dry_run": True, "scope": "geo",
                     "n_districts": len(doc["districts"]), "ladder": ladder, "names": names,

@@ -508,8 +508,9 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
 
     #164 PR 3b — the 7->1 second-loop scope split: a target district's ladder position is derived
     from its ever-approved follow-up history (`batch_store.followup_rounds`): 0 rounds -> the
-    domain-scoped batch (loop 1, unchanged); >=1 round, no geo yet -> a GEO-scoped batch with
-    forced-widened vocabulary (loop 2); a geo round already approved -> ladder exhausted: the
+    domain-scoped batch (loop 1, unchanged); >=1 round, geo not yet exhausted
+    (`batch_store.geo_ladder_exhausted`, shared with the 5->1 zero-yield composer, #575) ->
+    a GEO-scoped batch with forced-widened vocabulary (loop 2); geo ladder exhausted -> the
     directive is auto-rejected + the district gets an unresolved followup_flag (manual review).
     Scope-purity means one compose can emit up to TWO batches (`batches` in the result); the
     legacy top-level batch_id/n_* fields carry the first batch id + the totals.
@@ -561,7 +562,9 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
         # ONE transaction.
         target_dids = list(plan["targets"])
         rounds = BSTORE.followup_rounds(s, target_dids)
-        exhausted_dids = [d for d in target_dids if rounds[d]["geo"] >= 1]
+        # #575 review: exhaustion is the ONE shared predicate (BSTORE.geo_ladder_exhausted) — this
+        # composer must never disagree with the 5->1 zero-yield composer about the same district.
+        exhausted_dids = [d for d in target_dids if BSTORE.geo_ladder_exhausted(rounds[d])]
         geo_dids = [d for d in target_dids
                     if d not in exhausted_dids and (rounds[d]["domain"] + rounds[d]["geo"]) >= 1]
         domain_dids = [d for d in target_dids if d not in exhausted_dids and d not in geo_dids]

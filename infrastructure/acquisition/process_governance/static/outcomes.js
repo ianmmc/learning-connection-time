@@ -32,6 +32,10 @@
     failed:             { label: "failed", tone: "badge-red" },
     timed_out:          { label: "Timed out", tone: "badge-red" },
     error:              { label: "error", tone: "badge-red" },
+    // #518 triage panel's manual-follow-up flag state (not a Stage 2/3/4 lifecycle outcome, but
+    // the same badge system — #575 review: it was hand-writing its own <span> before this).
+    already_flagged:    { label: "already flagged", tone: "badge-lavender" },
+    flagged:            { label: "flagged", tone: "badge-lavender" },
   };
 
   const { esc } = window.LCT;
@@ -135,7 +139,7 @@
           safeUrl(r.url) ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.url)}</a>` : esc(r.url || r.hash)}</div>`).join("");
         const more = b.n_total > b.rows.length ? `<div class="q-smeta muted">…and ${b.n_total - b.rows.length} more</div>` : "";
         const flag = b.open_followup_flag
-          ? `<span class="badge badge-lavender">already flagged</span>`
+          ? window.outcomeBadge("already_flagged")
           : `<button class="btn btn-mini" data-feat="triage-flag" data-did="${esc(b.district_id)}" data-name="${esc(b.name)}">Flag district…</button>`;
         return `<details class="s-triage-d"><summary><b>${esc(b.name)}</b> <span class="muted">(${esc(b.district_id)})</span> — ${cls} ${flag}</summary>${rows}${more}</details>`;
       }).join("");
@@ -157,7 +161,7 @@
         try {
           await api("/api/followup", postJSON({ scope: "district", target_id: btn.dataset.did,
             directive: directive || "capture-fidelity triage (#518)", actor: "ian" }));
-          btn.outerHTML = `<span class="badge badge-lavender">flagged</span>`;
+          btn.outerHTML = window.outcomeBadge("flagged");
         } catch (e) { alert("Flag failed: " + e.message); }
       });
     });

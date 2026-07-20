@@ -240,6 +240,41 @@ def test_junk_domain_argument_is_refused(monkeypatch):
     assert called["execute"] is False
 
 
+# ----------------------------- remediation_receipt() trust window (no DB, #575 review) -----------------------------
+def test_remediation_receipt_within_window_is_honored(tmp_path, monkeypatch):
+    monkeypatch.setattr(DS.paths, "ACQUISITION", tmp_path)
+    from datetime import datetime, timezone
+    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    rdir = tmp_path / "remediation" / f"ZZRCPT1_{ts}"
+    rdir.mkdir(parents=True)
+    assert DS.remediation_receipt("ZZRCPT1") == rdir
+
+
+def test_remediation_receipt_older_than_window_returns_none(tmp_path, monkeypatch):
+    """#575: a receipt past REMEDIATION_RECEIPT_MAX_AGE_DAYS no longer excuses a registry-ahead-of-
+    disk halt — the narrowed exposure this review added."""
+    monkeypatch.setattr(DS.paths, "ACQUISITION", tmp_path)
+    from datetime import datetime, timedelta, timezone
+    old = datetime.now(timezone.utc) - timedelta(days=DS.REMEDIATION_RECEIPT_MAX_AGE_DAYS + 1)
+    rdir = tmp_path / "remediation" / f"ZZRCPT2_{old.strftime('%Y%m%dT%H%M%SZ')}"
+    rdir.mkdir(parents=True)
+    assert DS.remediation_receipt("ZZRCPT2") is None
+
+
+def test_remediation_receipt_malformed_timestamp_falls_through_and_is_trusted(tmp_path, monkeypatch):
+    """A dir name that doesn't match the expected timestamp shape (predates this review, or a
+    manual mkdir) falls through to the original #572 behavior — trusted, not rejected."""
+    monkeypatch.setattr(DS.paths, "ACQUISITION", tmp_path)
+    rdir = tmp_path / "remediation" / "ZZRCPT3_not-a-timestamp"
+    rdir.mkdir(parents=True)
+    assert DS.remediation_receipt("ZZRCPT3") == rdir
+
+
+def test_remediation_receipt_no_dir_returns_none(tmp_path, monkeypatch):
+    monkeypatch.setattr(DS.paths, "ACQUISITION", tmp_path)
+    assert DS.remediation_receipt("ZZRCPT4") is None
+
+
 def test_cli_targets_are_arguments_not_constants(monkeypatch, capsys):
     """PR #242 review (altitude): the next contaminated district is a CLI invocation, not a
     copy-pasted script — --batch-id/--district-id flow through to the manifest."""

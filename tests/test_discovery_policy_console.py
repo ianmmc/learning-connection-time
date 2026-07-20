@@ -83,6 +83,26 @@ def test_discovery_policy_get_pools_degrades_honestly(client, monkeypatch):
 
 
 @pytest.mark.govdb
+def test_discovery_policy_get_pools_uses_the_real_registry(client, monkeypatch):
+    """#575 review: pools=true used to call scope_pool_counts with a HARDCODED empty registry
+    ({"districts": {}}), making the already-attempted filter a silent no-op and overcounting every
+    eligible pool the Settings card displays. Must use DS.load() instead, same registry
+    queue_create's draw uses."""
+    from infrastructure.acquisition.process_governance import server as SV
+    monkeypatch.setattr(DPOL, "get_policy", lambda con: "geo_interleaved")
+    sentinel_registry = {"districts": {"SENTINEL": {"furthest_stage": 9}}}
+    monkeypatch.setattr(SV.DS, "load", lambda: sentinel_registry)
+    seen = {}
+    monkeypatch.setattr(QB, "scope_pool_counts",
+                        lambda year, registry, discovered: seen.update(registry=registry)
+                        or {"domain": 1, "geo": 2})
+    r = client.get("/api/discovery-policy?pools=true")
+    assert r.status_code == 200
+    assert seen["registry"] is sentinel_registry     # NOT {"districts": {}}
+    assert r.json()["pools"] == {"domain": 1, "geo": 2}
+
+
+@pytest.mark.govdb
 def test_discovery_policy_set_wires_store_and_twin(client, monkeypatch):
     calls = {}
     monkeypatch.setattr(DPOL, "get_policy", lambda con: "domain_only")
@@ -295,3 +315,6 @@ def test_gate1_js_carries_scope_create_and_badges():
                    "q-targeted", "q-geo-tokens", "discovery-policy?pools=true",
                    "q-zero-yield", "compose-zero-yield", "prev.names"):
         assert marker in js, f"gate1.js lost the #572 scope-surface marker {marker!r}"
+    # #575 review: prev.batch_id was interpolated into the zero-yield modal without esc(), the one
+    # inconsistency in an otherwise esc()-everywhere function — pinned so it can't silently regress.
+    assert "esc(prev.batch_id)" in js, "gate1.js lost the esc() around the zero-yield modal's batch_id"

@@ -749,7 +749,11 @@ def discovery_policy_get(pools: bool = False):
     out = {"policy": policy, "positions": _POLICY_POSITIONS, "events": events, "pools": None}
     if pools:
         try:
-            out["pools"] = Q1.scope_pool_counts("2024_25", {"districts": {}}, discovered)
+            # #575 review: the REAL registry (same DS.load() the queue_create draw uses), not a
+            # hardcoded empty one — an empty registry makes the already-attempted filter a no-op
+            # and overcounts every eligible pool shown on this card.
+            registry = DS.load()
+            out["pools"] = Q1.scope_pool_counts("2024_25", registry, discovered)
         except Exception as e:  # noqa: BLE001 — NCES files absent → the card degrades honestly
             out["pools_error"] = f"{type(e).__name__}: {e}"
     return out
@@ -1473,6 +1477,13 @@ def attribution_card(write: bool = False):
     representations, and the #164 per-district scope/ladder axes. Computed on demand (a few
     seconds — the console panels lazy-load it); `?write=true` persists the fingerprinted
     receipt beside the harness scorecards."""
+    from infrastructure.acquisition.common import cache_ingest as CI
+    # Self-bootstrap (the fidelity-triage precedent, #575 review): on a fresh DB the card is
+    # honestly empty, never a 500 on a missing cache/signal table (candidate/record/representation/
+    # capture) — the same "CI lesson" that endpoint's docstring already names.
+    with gdb.session_scope() as con:
+        CI.ensure_cache_schema(con)
+        BS.ensure_signal_schema(con)
     card = ATTR.build_card()
     if write:
         card["receipt"] = str(ATTR.write_card(card))

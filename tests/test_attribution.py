@@ -35,10 +35,13 @@ def _seed(s):
     # canonical records + labels: planned->target, emergent->target
     for h, url, label in (("aaaa111111", "https://zz.org/bells", "school_bell_table"),
                           ("bbbb222222", "https://zz.org/hidden-schedule", "school_bell_table")):
-        s.execute(text("INSERT INTO record (rec_key, district_id, url, tier, duplicate_of, "
+        # `hash` set explicitly (#575 review): the real ingest path (build_signals.py's REC_COLS)
+        # always populates it — attribution.py's capture join reads it directly (r.hash), not
+        # derived from rec_key, so a synthetic row skipping it would falsely fail that join.
+        s.execute(text("INSERT INTO record (rec_key, district_id, url, hash, tier, duplicate_of, "
                        "is_cluster_rep, cluster_id, sort_score) "
-                       "VALUES (:k, :d, :u, 'A', NULL, 1, NULL, 1.0)"),
-                  {"k": f"{did}:{h}", "d": did, "u": url})
+                       "VALUES (:k, :d, :u, :h, 'A', NULL, 1, NULL, 1.0)"),
+                  {"k": f"{did}:{h}", "d": did, "u": url, "h": h})
         s.execute(text("INSERT INTO label (rec_key, primary_label, status) "
                        "VALUES (:k, :l, 'labeled')"), {"k": f"{did}:{h}", "l": label})
     # reps: the planned record wins with pdftotext (usable), a raster rides along unusable
@@ -115,6 +118,43 @@ def test_write_card_names_receipt_by_label_fingerprint(tmp_path):
     out = ATTR.write_card(card, out_dir=tmp_path)
     assert out.name == "attribution_20260720T000000Z_abc123.json"
     assert json.loads(out.read_text())["fingerprints"]["label_set"] == "abc123"
+
+
+@pytest.fixture
+def client():
+    try:
+        gdb.get_engine().connect().close()
+    except Exception as e:
+        pytest.skip(f"governance Postgres unavailable: {type(e).__name__}: {e}")
+    from fastapi.testclient import TestClient
+    from infrastructure.acquisition.process_governance.server import app
+    return TestClient(app)
+
+
+@govdb
+def test_attribution_endpoint_self_bootstraps_schema(client, monkeypatch):
+    """#575 review: GET /api/attribution used to skip the schema-bootstrap its sibling
+    GET /api/fidelity-triage already has (added by #581 for exactly this reason) —
+    reintroducing the fresh-DB 500 that fix was written to prevent. Confirms both ensure-schema
+    calls actually fire on this endpoint's path, and that the response is still a clean 200."""
+    from infrastructure.acquisition.common import cache_ingest as CI
+    from infrastructure.acquisition.stage5_filter import build_signals as BS
+    calls = {"cache": False, "signal": False}
+    orig_cache, orig_signal = CI.ensure_cache_schema, BS.ensure_signal_schema
+
+    def _cache(con):
+        calls["cache"] = True
+        return orig_cache(con)
+
+    def _signal(con):
+        calls["signal"] = True
+        return orig_signal(con)
+
+    monkeypatch.setattr(CI, "ensure_cache_schema", _cache)
+    monkeypatch.setattr(BS, "ensure_signal_schema", _signal)
+    r = client.get("/api/attribution")
+    assert r.status_code == 200
+    assert calls == {"cache": True, "signal": True}
 
 
 def test_console_panels_are_pinned():

@@ -25,6 +25,8 @@ Schema reference: data/acquisition/status/district_status.example.json
 Doc: docs/ACQUISITION_PIPELINE.md (Stage 1), docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE.md §3
 """
 import json
+import re
+from datetime import datetime, timezone
 
 from sqlalchemy import Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column
@@ -144,26 +146,48 @@ def already_attempted(registry: dict, district_id: str) -> bool:
     return d is not None and (d.get("furthest_stage") or 0) >= ATTEMPTED_THRESHOLD_STAGE
 
 
-def remediation_receipt(district_id: str):
-    """The newest on-disk decontamination restore point for a district
-    (data/acquisition/remediation/<district_id>_<ts>/, written by remediate_contamination BEFORE it
-    mutates anything), or None. The ONE shared home (#572) for the check every stage reconcile
-    consults: remediation deliberately removes a district's artifacts while PRESERVING its state
-    history (auditability), so registry-ahead-of-disk is that path's expected, receipted end state
-    — the stage redoes the work fresh instead of halting.
+_REMEDIATION_TS_RE = re.compile(r"_(\d{8}T\d{6}Z)$")
+# #575 review: bound the "any past receipt sanctions any future desync, forever" exposure the
+# KNOWN RESIDUAL below documents. A receipt older than this no longer excuses a registry-ahead-of-
+# disk halt — something else likely went wrong, and a human should see it. Parsed from the receipt
+# directory's OWN timestamp (no DB read), so the deliberately DB-free reconciles stay DB-free.
+REMEDIATION_RECEIPT_MAX_AGE_DAYS = 30
 
-    KNOWN RESIDUAL (documented trade-off, #572): the receipt is not time-bound — if a
-    once-remediated district later loses artifacts for a BAD reason, its old receipt still
-    sanctions a redo instead of a halt. Bounded to redundant spend, never silent trust: the
-    sanctioned path always REDOES the stage (fresh receipts, merge mode), nothing missing is
-    assumed done. Tightening (compare the receipt timestamp against the district's latest
-    stage-N state_event) needs a DB read inside the deliberately DB-free reconciles — revisit if
-    remediation volume grows past the current single district."""
+
+def remediation_receipt(district_id: str):
+    """The newest on-disk decontamination restore point for a district, still within its trust
+    window (data/acquisition/remediation/<district_id>_<ts>/, written by remediate_contamination
+    BEFORE it mutates anything), or None. The ONE shared home (#572) for the check every stage
+    reconcile consults: remediation deliberately removes a district's artifacts while PRESERVING
+    its state history (auditability), so registry-ahead-of-disk is that path's expected, receipted
+    end state — the stage redoes the work fresh instead of halting.
+
+    KNOWN RESIDUAL (documented trade-off, #572, narrowed #575): the receipt is not STAGE-scoped —
+    a receipt from a Stage-2 remediation still excuses a Stage-3/4 desync for the same district. It
+    IS now time-bound (REMEDIATION_RECEIPT_MAX_AGE_DAYS): a once-remediated district that later
+    loses artifacts for a BAD reason only gets silently redone within that window, not forever.
+    Bounded to redundant spend either way, never silent trust: the sanctioned path always REDOES
+    the stage (fresh receipts, merge mode), nothing missing is assumed done. Full stage/recency
+    tightening (compare the receipt timestamp against the district's latest stage-N state_event)
+    needs a DB read inside the deliberately DB-free reconciles — revisit if remediation volume
+    grows past a handful of districts."""
     rdir = paths.ACQUISITION / "remediation"
     if not rdir.exists():
         return None
     hits = sorted(p for p in rdir.iterdir() if p.name.startswith(f"{district_id}_") and p.is_dir())
-    return hits[-1] if hits else None
+    if not hits:
+        return None
+    newest = hits[-1]
+    m = _REMEDIATION_TS_RE.search(newest.name)
+    if m:
+        try:
+            ts = datetime.strptime(m.group(1), "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc)
+            age_days = (datetime.now(timezone.utc) - ts).total_seconds() / 86400
+            if age_days > REMEDIATION_RECEIPT_MAX_AGE_DAYS:
+                return None
+        except ValueError:
+            pass   # malformed timestamp — fall through, trust the receipt as before (#572 behavior)
+    return newest
 
 
 def record_stage(

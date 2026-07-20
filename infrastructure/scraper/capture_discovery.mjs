@@ -180,6 +180,15 @@ export function cdnHints(headers) {
 // deliberately two-signal: the `cf-mitigated: challenge` response header (Cloudflare's canonical
 // marker) plus a small explicit body-marker list -- presence of a CDN (cdnHints 'cloudflare') is
 // NOT a block and must never trip this.
+//
+// #575 review (altitude): this list is Cloudflare-heavy because Cloudflare is the ONLY vendor
+// we've hit live (Millard NE, twice) — the project already lived through the failure mode this
+// list exists to prevent. A district behind a different WAF that emits none of these markers is
+// STILL invisible to the one-attempt rule; this is a documented, bounded gap (a finite marker
+// list can never claim exhaustive WAF coverage), not a silent one. The entries below for other
+// major vendors are their well-documented, stable challenge/block-page strings — added
+// preemptively, unverified against a live incident, so the FIRST time one of them is hit it's
+// already caught rather than requiring its own #574-style live remediation first.
 export const CHALLENGE_MARKERS = [
   'performing security verification',
   'checking your browser before accessing',
@@ -188,6 +197,10 @@ export const CHALLENGE_MARKERS = [
   'verify you are human',
   'attention required! | cloudflare',
   'ddos protection by',
+  'incapsula incident id',                    // Imperva/Incapsula
+  'access to this page has been denied because we believe you are using automation tools',   // PerimeterX/HUMAN
+  'sucuri website firewall',                  // Sucuri
+  'the request could not be satisfied',       // AWS CloudFront/WAF generic block
 ];
 
 // Pure, unit-testable: headers (plain lowercase-keyed object) + rendered/served body text ->
@@ -802,6 +815,16 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
       } catch { /* fall through to render */ }
 
       if (!rec.ok) {
+        // #575 review: re-check the district breaker immediately before the SECOND, more
+        // expensive network contact (a full Playwright render) — a sibling task for this same
+        // district may have tripped the breaker while THIS task's fetch() was in flight (the
+        // top-of-processTask check only guards the FIRST contact per task). This narrows, but
+        // does not eliminate, the TOCTOU window: a sibling's fetch() that was ALREADY in flight
+        // when the breaker trips still completes — there is no cross-task cancellation here.
+        if (byDistrict[did].secHalted) {
+          rec.err = `security_block (district capture halted -- ${byDistrict[did].secHaltReason}; one-attempt rule)`;
+          return;
+        }
         const page = await ctx.newPage();
         setupPageDialogHandler(page);
         try {

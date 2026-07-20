@@ -72,8 +72,7 @@ def stage2_attribution(con, district_ids=None) -> dict:
         FROM record r
         LEFT JOIN label l ON l.rec_key = r.rec_key
         LEFT JOIN candidate c ON c.district_id = r.district_id AND c.url = r.url
-        LEFT JOIN capture cap ON cap.district_id = r.district_id
-                             AND cap.hash = split_part(r.rec_key, ':', 2)
+        LEFT JOIN capture cap ON cap.district_id = r.district_id AND cap.hash = r.hash
         WHERE {REL.CANONICAL_RECORD_WHERE}{clause}"""), params).all()
     per_tool: dict = defaultdict(lambda: {"n_candidates": 0, "n_records": 0, "n_target": 0,
                                           "n_labeled": 0})
@@ -141,10 +140,14 @@ def district_axes(con, district_ids=None) -> dict:
             params):
         runs[did][f"{btype}:{scope}"] += 1
         dids.add(did)
+    # #575 review: must filter on the SAME approved+included predicate as `runs` above — otherwise
+    # a draft/abandoned/never-approved batch with a higher batch_id can win DISTINCT ON and
+    # misattribute the axis to a run that never actually happened.
     dsource = dict(con.execute(text(f"""
         SELECT DISTINCT ON (bd.district_id) bd.district_id, bd.domain_source
         FROM batch_district bd JOIN batch b ON b.batch_id = bd.batch_id
         {clause}{' AND' if clause else 'WHERE'} bd.domain_source IS NOT NULL
+        AND b.first_approved_at IS NOT NULL AND bd.included
         ORDER BY bd.district_id, b.batch_id DESC"""), params).all())
     ladder = BSTORE.followup_rounds(con, sorted(dids)) if dids else {}
     return {did: {"runs": dict(runs[did]), "ladder": ladder.get(did),

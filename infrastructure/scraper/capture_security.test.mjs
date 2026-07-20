@@ -9,7 +9,7 @@ import {
   detectChallenge, updateSecurityState, SECURITY_BREAKER_N, CHALLENGE_MARKERS,
 } from './capture_discovery.mjs';
 
-// The REAL interstitial text batch_00021 recorded as `ok` 31 times -- the motivating fixture.
+// The REAL interstitial text batch_00021 recorded as `ok` 81 times -- the motivating fixture.
 const MILLARD_INTERSTITIAL = `cms.mpsomaha.org
 Performing security verification
 
@@ -19,7 +19,7 @@ Ray ID: a1e2754d4dfb03c2
 Performance and Security by Cloudflare
 Privacy`;
 
-test('the Millard batch_00021 interstitial is detected (the 31/83 incident)', () => {
+test('the Millard batch_00021 interstitial is detected (the 81/83 incident)', () => {
   const hit = detectChallenge({}, MILLARD_INTERSTITIAL);
   assert.ok(hit && hit.includes('performing security verification'));
 });
@@ -43,6 +43,29 @@ test('a deep quote past the bounded head does not trip', () => {
 
 test('every marker is lowercase (the haystack is lowercased once)', () => {
   for (const m of CHALLENGE_MARKERS) assert.equal(m, m.toLowerCase());
+});
+
+// #575 review: markers added preemptively (unverified against a live incident) for vendors other
+// than Cloudflare -- confirms each one actually trips detectChallenge on its documented interstitial text.
+test('Imperva/Incapsula block page is detected', () => {
+  const page = 'Request unsuccessful. Incapsula incident ID: 123-456789012345678901';
+  assert.ok(detectChallenge({}, page));
+});
+
+test('PerimeterX/HUMAN block page is detected', () => {
+  const page = 'Access to this page has been denied because we believe you are using automation '
+    + 'tools to browse the website.';
+  assert.ok(detectChallenge({}, page));
+});
+
+test('Sucuri firewall block page is detected', () => {
+  const page = 'Sucuri WebSite Firewall - Access Denied\nYour access to this site has been limited.';
+  assert.ok(detectChallenge({}, page));
+});
+
+test('AWS CloudFront/WAF generic block page is detected', () => {
+  const page = 'The request could not be satisfied.\nCloudFront wasn\'t able to connect to the origin.';
+  assert.ok(detectChallenge({}, page));
 });
 
 test('breaker: trips on N consecutive challenges, an ok resets the streak', () => {

@@ -95,3 +95,14 @@ def test_console_panels_are_pinned():
         assert marker in js, f"outcomes.js lost the #518 triage marker {marker!r}"
     assert "fidelityTriagePanel" in (STATIC / "stage3.js").read_text()
     assert "fidelityTriagePanel" in (STATIC / "app.js").read_text()   # the gate@5 consumer mount
+
+
+def test_triage_panel_flag_badges_use_the_shared_badge_system():
+    """#575 review: fidelityTriagePanel used to hand-write its own <span class="badge ..."> for the
+    'already flagged'/'flagged' states instead of calling the shared window.outcomeBadge() — the
+    ONE place outcomes.js's own header comment says a label/tone change should propagate from."""
+    js = (STATIC / "outcomes.js").read_text()
+    assert 'window.outcomeBadge("already_flagged")' in js
+    assert 'window.outcomeBadge("flagged")' in js
+    assert '<span class="badge badge-lavender">already flagged</span>' not in js
+    assert '<span class="badge badge-lavender">flagged</span>' not in js

@@ -157,15 +157,17 @@ def test_compose_draft_round_does_not_advance_the_ladder(gov_session, monkeypatc
 
 @govdb
 def test_compose_exhausted_ladder_flags_and_rejects(gov_session, monkeypatch):
-    """A district whose GEO round already ran is past the ladder's end: its directive is
-    auto-rejected (human-reversible, note carries the story) and the district gets ONE unresolved
-    followup_flag — deduped across re-composes."""
+    """A district past the ladder's end (>=GEO_LADDER_EXHAUSTED_AT ever-approved geo rounds —
+    #575 review: shared with the 5->1 composer, so ONE geo round alone is NOT exhausted, it's
+    "geo+widened") gets its directive auto-rejected (human-reversible, note carries the story) and
+    ONE unresolved followup_flag — deduped across re-composes."""
     s = gov_session
     _ensure_compose_tables(s)
     hh = "zz3bexh"
     _seed_req(s, hh, "ZZ3BX")
     _seed_round(s, "batch_zz3b_x1", "ZZ3BX", "domain")
     _seed_round(s, "batch_zz3b_x2", "ZZ3BX", "geo")
+    _seed_round(s, "batch_zz3b_x3", "ZZ3BX", "geo")   # 2nd geo round -> genuinely exhausted
     calls = []
     _stub_builder(monkeypatch, calls)
 
@@ -198,6 +200,7 @@ def test_compose_dry_run_split_neither_flags_nor_rejects(gov_session, monkeypatc
     _seed_req(s, hh, "ZZ3BY")
     _seed_round(s, "batch_zz3b_y1", "ZZ3BY", "domain")
     _seed_round(s, "batch_zz3b_y2", "ZZ3BY", "geo")
+    _seed_round(s, "batch_zz3b_y3", "ZZ3BY", "geo")   # 2nd geo round -> genuinely exhausted
     calls = []
     _stub_builder(monkeypatch, calls)
     out = EX.compose_followup_batch(handoff_hash=hh, actor="zz", session=s, dry_run=True)
@@ -208,6 +211,29 @@ def test_compose_dry_run_split_neither_flags_nor_rejects(gov_session, monkeypatc
     n_flags = s.execute(text(
         "SELECT COUNT(*) FROM followup_flag WHERE district_id = 'ZZ3BY'")).scalar()
     assert n_flags == 0
+
+
+@govdb
+def test_compose_one_geo_round_is_not_exhausted_the_shared_threshold(gov_session, monkeypatch):
+    """#575 review regression: a district with exactly ONE ever-approved geo round must NOT be
+    ladder-exhausted under 7->1 — it escalates to a geo+widened batch instead (the 5->1 composer's
+    own rung 2, BSTORE.geo_ladder_exhausted is the ONE shared predicate). The bug this guards:
+    7->1 used to exhaust at geo>=1 while 5->1 offered a widened rung at geo==1, disagreeing for
+    any district sitting at exactly one approved geo round."""
+    s = gov_session
+    _ensure_compose_tables(s)
+    hh = "zz3bwid"
+    _seed_req(s, hh, "ZZ3BW")
+    _seed_round(s, "batch_zz3b_w1", "ZZ3BW", "domain")
+    _seed_round(s, "batch_zz3b_w2", "ZZ3BW", "geo")     # exactly ONE geo round
+    calls = []
+    _stub_builder(monkeypatch, calls)
+
+    out = EX.compose_followup_batch(handoff_hash=hh, actor="zz", session=s)
+    s.flush()
+    assert out["escalation_exhausted"] == []
+    assert [c["scope"] for c in out["batches"]] == ["geo"]
+    assert calls[0]["force_widen_dids"] == {"ZZ3BW"}   # loop 2's forced-widened vocabulary
 
 
 # ---------------------------------------------------------------- 5->1 zero-yield predicate
@@ -313,6 +339,32 @@ def test_compose_zero_yield_ladder_rungs(gov_session, monkeypatch):
         "SELECT COUNT(*) FROM followup_flag WHERE district_id = 'ZZ5L2' "
         "AND actor = 'auto:escalation-ladder' AND resolved_at IS NULL")).scalar()
     assert n_flags == 1
+
+
+@govdb
+def test_compose_zero_yield_dry_run_targets_reflect_survivors_not_candidates(gov_session, monkeypatch):
+    """#575 review: the dry-run preview's `targets` used to be built from the PRE-build candidate
+    set, not from what build_followup_batch actually returned — a claimed band with zero NCES
+    school-level coverage gets silently dropped into `skipped`, but the gate@1 preview would still
+    show that district as composable. Confirms `targets` now excludes a district the builder drops."""
+    s = gov_session
+    _ensure_compose_tables(s)
+    _seed_source_batch(s, "batch_zz5y_sk", ["ZZ5S0", "ZZ5S1"])
+    monkeypatch.setattr(S5F, "zero_yield_reason", lambda sess, did: None)
+
+    def fake_build(year, bid, targets, **kw):
+        # simulate build_followup_batch dropping ZZ5S1 (e.g. no school-level coverage for its
+        # claimed band) even though it was in the pre-build candidate set
+        districts = [{"district_id": d} for d in targets if d != "ZZ5S1"]
+        skipped = [{"district_id": "ZZ5S1", "reason": "no NCES school-level coverage"}]
+        return {"batch_id": bid, "districts": districts}, skipped
+    monkeypatch.setattr(S5F.Q1, "build_followup_batch", fake_build)
+
+    out = S5F.compose_zero_yield("batch_zz5y_sk", actor="zz", session=s, dry_run=True)
+    assert out["ok"] and out["dry_run"] is True
+    assert set(out["targets"]) == {"ZZ5S0"}          # ZZ5S1 must NOT appear as composable
+    assert out["n_districts"] == 1
+    assert [sk["district_id"] for sk in out["skipped"]] == ["ZZ5S1"]
 
 
 @govdb

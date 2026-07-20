@@ -305,6 +305,21 @@ def followup_rounds(sess, district_ids: list) -> dict:
     return out
 
 
+# #164/#575 review: the ONE geo-escalation exhaustion threshold, shared by BOTH escalation
+# composers (5->1 zero-yield in stage5_followup.py, 7->1 scope-split in stage7_execute.py) so a
+# district's exhaustion status can never depend on which composer reaches it first (the bug: 7->1
+# used to exhaust at geo>=1 while 5->1 offered a "geo+widened" rung at geo==1, disagreeing for any
+# district sitting at exactly one approved geo round).
+GEO_LADDER_EXHAUSTED_AT = 2
+
+
+def geo_ladder_exhausted(rounds_row: dict) -> bool:
+    """True once a district has used its full geo-escalation ladder (>=GEO_LADDER_EXHAUSTED_AT
+    ever-approved geo rounds: one standard + one widened attempt). `rounds_row` is one entry of
+    `followup_rounds()`'s per-district dict, e.g. `rounds[district_id]`."""
+    return rounds_row["geo"] >= GEO_LADDER_EXHAUSTED_AT
+
+
 # ---------------------------------------------------------------- receipt (rows -> file)
 def write_receipt(sess, batch_id: str):
     """Regenerate batch_NNNNN.json from the rows — the auditable receipt always reflects the working
