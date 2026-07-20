@@ -25,6 +25,7 @@
         <div id="s2-list" class="q-list"><div class="empty">Loading…</div></div>
       </nav>
       <section id="s2-detail" class="col col-center"><div class="empty">Select an approved batch to view Stage 2 discovery status.</div></section>`;
+    window.attributionPanel($g("#stage2view").querySelector(".q-left"), "stage2");   // #118
   }
 
   // ----------------------------- batch list -----------------------------

@@ -1,0 +1,4680 @@
+[
+  {
+    "url": "https://willowdale.mpsomaha.org/",
+    "hash": "d65fd0ef79",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 273,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 349,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 221,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 303,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 274,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://willowdale.mpsomaha.org/about/news",
+    "hash": "d4a51a4ebb",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 273,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 349,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 221,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 303,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 274,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://willowdale.mpsomaha.org/parents/school-hours",
+    "hash": "c8fd101100",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 273,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 349,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 221,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 303,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 274,
+        "n_times": 0,
+        "usable": true
+      }
+    ],
+    "fidelity": [
+      "time_blind"
+    ]
+  },
+  {
+    "url": "https://blackelk.mpsomaha.org/parents/school-hours",
+    "hash": "b5df3972b7",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 3647,
+        "n_times": 12,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 7532,
+        "n_times": 12,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 3742,
+        "n_times": 12,
+        "usable": true
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 1832,
+        "n_times": 4,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 4000,
+        "n_times": 4,
+        "usable": true
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 3490,
+        "n_times": 12,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 3439,
+        "n_times": 12,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://blackelk.mpsomaha.org/",
+    "hash": "6a1990da8b",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 3944,
+        "n_times": 3,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 7085,
+        "n_times": 3,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 3729,
+        "n_times": 6,
+        "usable": true
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 2224,
+        "n_times": 3,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 3084,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 3463,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 3287,
+        "n_times": 3,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://blackelk.mpsomaha.org/announcements",
+    "hash": "a43e8736aa",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 271,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 347,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 219,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 302,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 273,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://blackelk.mpsomaha.org/about/staff",
+    "hash": "e80da95da9",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 271,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 347,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 219,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 302,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 273,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://www.mpsomaha.org/about/school-hours",
+    "hash": "904155f874",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 297,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      }
+    ],
+    "fidelity": [
+      "time_blind"
+    ]
+  },
+  {
+    "url": "https://blackelk.mpsomaha.org/contact-us",
+    "hash": "20694bee0d",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 271,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 347,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 219,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 302,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 273,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://blackelk.mpsomaha.org/about",
+    "hash": "957768d08a",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 271,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 347,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 219,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 298,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 273,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://wheeler.mpsomaha.org/",
+    "hash": "da3655821b",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 346,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 218,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 299,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 271,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://rohwer.mpsomaha.org/",
+    "hash": "cded06ab90",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 298,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://rockwell.mpsomaha.org/",
+    "hash": "8209e5fe0a",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 271,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 347,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 219,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 302,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 272,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://mwhs.mpsomaha.org/bell-schedule",
+    "hash": "b4b8e9fe80",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 343,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 215,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 295,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ],
+    "fidelity": [
+      "time_blind"
+    ]
+  },
+  {
+    "url": "https://wheeler.mpsomaha.org/welcome-wheeler-elementary-school-0",
+    "hash": "00a2728326",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 346,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 218,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 300,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 271,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://www.mpsomaha.org/",
+    "hash": "19ca595de3",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 294,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://wheeler.mpsomaha.org/about/announcements",
+    "hash": "52595259fd",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 346,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 218,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 301,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 271,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://wheeler.mpsomaha.org/student-links",
+    "hash": "2b2c719f55",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 346,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 218,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 302,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 271,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://mshs.mpsomaha.org/students/bell-schedules",
+    "hash": "14b876ae85",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 343,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 215,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 293,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ],
+    "fidelity": [
+      "time_blind"
+    ]
+  },
+  {
+    "url": "https://bryan.mpsomaha.org/",
+    "hash": "15c0f8b79e",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 344,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 216,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 299,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://cather.mpsomaha.org/",
+    "hash": "4d45e649b2",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 298,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://bryan.mpsomaha.org/about/news",
+    "hash": "bb7221ec70",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 344,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 216,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 299,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://cather.mpsomaha.org/about-willa-cather-elementary",
+    "hash": "26c07036ed",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 300,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://cather.mpsomaha.org/parents/cather-newsletters",
+    "hash": "87668e77fd",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 299,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://cather.mpsomaha.org/parents",
+    "hash": "81c7c19cd2",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 300,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://cather.mpsomaha.org/students/e-learning-information",
+    "hash": "6ff9e87a4a",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 300,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://cather.mpsomaha.org/welcome-cather",
+    "hash": "5f8afb2952",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 301,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://morton.mpsomaha.org/contact-us",
+    "hash": "b2977849e3",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 298,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://morton.mpsomaha.org/",
+    "hash": "b39820fef2",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 300,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://mwhs.mpsomaha.org/",
+    "hash": "591251fff3",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 343,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 215,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 295,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://sandoz.mpsomaha.org/about/announcements/no-school",
+    "hash": "b3936f4ccd",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 299,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://sandoz.mpsomaha.org/parents/lunch-schedules",
+    "hash": "0c41c052df",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 300,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://mshs.mpsomaha.org/about/calendarsbell-schedule",
+    "hash": "335aff2e0c",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 343,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 215,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 297,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ],
+    "fidelity": [
+      "time_blind"
+    ]
+  },
+  {
+    "url": "https://sandoz.mpsomaha.org/about/school-hours",
+    "hash": "ec6c33d53f",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 300,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ],
+    "fidelity": [
+      "time_blind"
+    ]
+  },
+  {
+    "url": "https://sandoz.mpsomaha.org/",
+    "hash": "53a4907c52",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 299,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://disney.mpsomaha.org/preschool",
+    "hash": "b7b1df30d2",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 297,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://disney.mpsomaha.org/information",
+    "hash": "029080381c",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 301,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://www.mpsomaha.org/schools",
+    "hash": "3fff53eab5",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 297,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://reeder.mpsomaha.org/",
+    "hash": "b29f0c17fc",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 301,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://disney.mpsomaha.org/",
+    "hash": "ad1c5898d9",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 298,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://rockwell.mpsomaha.org/about/school-hours",
+    "hash": "67709ecaa1",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 271,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 347,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 219,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 302,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 272,
+        "n_times": 0,
+        "usable": true
+      }
+    ],
+    "fidelity": [
+      "time_blind"
+    ]
+  },
+  {
+    "url": "https://reagan.mpsomaha.org/about/school-hours",
+    "hash": "7b0027fc51",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 300,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ],
+    "fidelity": [
+      "time_blind"
+    ]
+  },
+  {
+    "url": "https://ezra.mpsomaha.org/",
+    "hash": "41e4a34e7b",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 343,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 215,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 298,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://reagan.mpsomaha.org/",
+    "hash": "01ed3639f4",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 345,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 217,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 300,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 270,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://ams.mpsomaha.org/about/calendars-and-schedules",
+    "hash": "9ca49c7b01",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 289,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://ezra.mpsomaha.org/schedules",
+    "hash": "52d28ad19f",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 343,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 215,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 294,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 269,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://ezra.mpsomaha.org/parents/breakfast-lunch-information",
+    "hash": "5ee7879806",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 343,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 215,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 295,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://ezra.mpsomaha.org/parents/school-hours",
+    "hash": "22efc9493e",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 343,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 215,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 295,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ],
+    "fidelity": [
+      "time_blind"
+    ]
+  },
+  {
+    "url": "https://ezra.mpsomaha.org/ezra-millard-elementary",
+    "hash": "5eda08b474",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 343,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 215,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 297,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://neihardt.mpsomaha.org/",
+    "hash": "f8097551cc",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 271,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 347,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 219,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 303,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 273,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://rms.mpsomaha.org/about/calendars-and-schedules",
+    "hash": "f3611c3256",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 297,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://rms.mpsomaha.org/",
+    "hash": "9a5e479063",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 296,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://rms.mpsomaha.org/students",
+    "hash": "25c98b4a9a",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 296,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://rms.mpsomaha.org/about",
+    "hash": "1cede0237d",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 297,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://cms.mpsomaha.org/about/about/cms-bell-schedule",
+    "hash": "4756ac3dbb",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 295,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      }
+    ],
+    "fidelity": [
+      "time_blind"
+    ]
+  },
+  {
+    "url": "https://rms.mpsomaha.org/attendance-information",
+    "hash": "9e894a818e",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 295,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://rms.mpsomaha.org/about/announcements",
+    "hash": "c9eca5a7b3",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 297,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://rms.mpsomaha.org/parents",
+    "hash": "b36463822a",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 295,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://bms.mpsomaha.org/",
+    "hash": "7d6c9e3bd2",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 294,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://bms.mpsomaha.org/about",
+    "hash": "89e3bd5b45",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 295,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://bms.mpsomaha.org/about/daily-announcements",
+    "hash": "1bc93329f3",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 295,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://bms.mpsomaha.org/beadle-middle-school-activities-and-athletics",
+    "hash": "8f124e8a7a",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 292,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://bms.mpsomaha.org/parents",
+    "hash": "1689946308",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 295,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://bms.mpsomaha.org/students",
+    "hash": "7611bd9078",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 292,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://bms.mpsomaha.org/about/announcements",
+    "hash": "f567add074",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 297,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://cms.mpsomaha.org/",
+    "hash": "1c7df4384a",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 297,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://cms.mpsomaha.org/about",
+    "hash": "073e9d0cb7",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 298,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://mnhs.mpsomaha.org/mnhs-life/school-day-schedules",
+    "hash": "892dec82d2",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 343,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 215,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 295,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://mnhs.mpsomaha.org/",
+    "hash": "513379707b",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 343,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 215,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 299,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://nms.mpsomaha.org/",
+    "hash": "ae083a8104",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 297,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://ams.mpsomaha.org/students",
+    "hash": "fd61b98dda",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 297,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://kms.mpsomaha.org/",
+    "hash": "945d375467",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 291,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://ams.mpsomaha.org/parents",
+    "hash": "9583d9af43",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 296,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://mnhs.mpsomaha.org/schedules-and-general-information",
+    "hash": "1f536290ae",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 343,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 215,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 293,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://ams.mpsomaha.org/",
+    "hash": "9a7afa8198",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 296,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://kms.mpsomaha.org/about",
+    "hash": "fe6b6f8f31",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 292,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://kms.mpsomaha.org/about/calendars-and-schedules",
+    "hash": "393673bb9a",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 291,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://kms.mpsomaha.org/parents/parent-information-page",
+    "hash": "a22c9ba864",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 292,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://kms.mpsomaha.org/kiewit-middle-school-activities-and-athletics",
+    "hash": "db1a640e0b",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 292,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://kms.mpsomaha.org/about/news",
+    "hash": "4ac21be190",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 266,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 342,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 214,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 291,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://mshs.mpsomaha.org/",
+    "hash": "fe9a7b6c36",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 343,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 215,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 298,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://mwhs.mpsomaha.org/about/announcements/senior-sunrise-922",
+    "hash": "be36d0159c",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 343,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 215,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 298,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  },
+  {
+    "url": "https://mnhs.mpsomaha.org/about/news/campus-hours",
+    "hash": "a4825f2e79",
+    "usable": true,
+    "texts": [
+      {
+        "source": "txt",
+        "text_file": "page.txt",
+        "n_chars": 267,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdftotext",
+        "text_file": "pdftotext.txt",
+        "n_chars": 343,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "pdfplumber_lines",
+        "text_file": "pdfplumber_lines.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "camelot_stream",
+        "text_file": "camelot_stream.txt",
+        "n_chars": 215,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "camelot_hybrid",
+        "text_file": "camelot_hybrid.txt",
+        "n_chars": 0,
+        "n_times": 0,
+        "usable": false
+      },
+      {
+        "source": "tesseract_screenshot",
+        "text_file": "tesseract_screenshot.txt",
+        "n_chars": 296,
+        "n_times": 0,
+        "usable": true
+      },
+      {
+        "source": "tesseract_raster",
+        "text_file": "tesseract_raster.txt",
+        "n_chars": 268,
+        "n_times": 0,
+        "usable": true
+      }
+    ]
+  }
+]

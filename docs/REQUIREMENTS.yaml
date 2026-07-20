@@ -3981,3 +3981,34 @@ requirements:
       on paper (retry classification) but no code ever assigned it — 31 of 83 captures were 266-byte
       Cloudflare interstitials recorded ok while the run kept pressuring the WAF. Millard's 31
       interstitial records await a separately-approved cleanup."
+  - id: REQ-160
+    github_issue: "#118 (epic #111)"
+    description: "The measurement harness extended upstream (governance §11f): a fingerprinted
+      attribution card over the human-labeled corpus answering (a) Stage 2 — per discovery tool,
+      candidates proposed -> canonical records -> human-labeled targets (plan attribution via
+      candidate.tools_json; plan-less records fall back to their capture source, e.g. emergent);
+      (b) Stage 4 — per processing source, which representation release.decide() actually WINS
+      with on target records, plus corpus-wide usable-rates; (c) the #164 axes per district —
+      every ever-approved (batch_type x discovery_scope) run, the derived ladder position, and
+      the scoping-domain source, recorded from day one for the geo-vs-domain comparison. Same
+      scorecard discipline as REQ-090: stamped label-set/plan/captures fingerprints, receipt
+      written beside the harness scorecards. Served at GET /api/attribution; lazy Effectiveness
+      panels on the Stage 2 and Stage 4 console views."
+    type: functional
+    priority: should
+    status: implemented
+    acceptance_criteria:
+      - "Attribution is district_ids-scopable (tests never perturb the corpus card; per-batch views possible)"
+      - "A record with no candidate plan row attributes to its capture source — emergent yield is measured, not lost"
+      - "Stage-4 wins come from release.decide()'s actual send files mapped to representation.source"
+      - "district_axes derives ladder position from ever-approved batch history (never a stored counter)"
+      - "The card stamps label_set/plan/captures fingerprints and the receipt filename carries the label fingerprint"
+    tests:
+      - tests/test_attribution.py
+    created: "2026-07-20T00:00:00Z"
+    updated: "2026-07-20T00:00:00Z"
+    notes: "First real card (2026-07-20, 1,326 canonical records): emergent one-hop capture is the
+      highest-yield non-GT discovery source (38.1% labeled-target rate vs brightdata 14.9% /
+      claude-era 25.6% / serper 3.7%); pdftotext dominates stage-4 wins (172/382 target records).
+      v1 limit (documented in-module): candidate holds each district's LATEST plan, so a
+      dual-scope district attributes to the latest run's tools — revisit if plans cycle."
