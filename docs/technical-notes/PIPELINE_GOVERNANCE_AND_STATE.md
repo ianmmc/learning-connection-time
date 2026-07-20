@@ -1191,6 +1191,18 @@ anticipated (8→1, 8→6) are **not yet real** — Stage 8 isn't built (tracked
 here once designed; don't treat them as built today. See the flow diagram in `ACQUISITION_PIPELINE.md`.
 The immutable Stage-6 dispatch freeze is what keeps "what we sent" recoverable across these loops.
 
+**5→1 (BUILT 2026-07-19, #164 PR 3b):** the ZERO-YIELD back-edge — a district that lands at gate@5
+with nothing dispatchable (no send/hold records, no retryable capture errs to route to the #116
+retry, no fidelity flags to triage) escalates to a GEO-scoped rediscovery
+(`process_governance/stage5_followup.py`, app layer): the #164 hypothesis is that the DOMAIN was
+the bottleneck. Ladder position is DERIVED from ever-approved follow-up history
+(`batch_store.followup_rounds` — never a stored counter): 0 geo rounds → geo + standard vocabulary,
+1 → geo + widened, ≥2 → manual flag (`followup_flag`, auto-deduped), no compose. The composed batch
+is a scope-pure geo DRAFT at gate@1 — escalation batches are individually gate@1'd, never
+auto-flowed. The 7→1 compose has the matching SECOND-LOOP scope split (0 prior rounds → domain
+batch, ≥1 → geo+widened batch, geo already ran → flag): one compose can emit up to two scope-pure
+batches, each directive's `executed_ref` = its district's batch, one transaction.
+
 ### 11f. Per-stage console notes
 - **Stage 3** — a thin **health / emergent readout**: emergent URLs, capture failures (WAF/security
   blocks), and the **CMS/host distribution** from the `capture` table's `final_host`/`fingerprint_json`

@@ -218,7 +218,7 @@
 
   function showComposeModal(prev, handoffHash, did) {
     closeComposeModal();
-    const districts = (prev.preview || []).map((d) => {
+    const districtList = (list) => (list || []).map((d) => {
       const bands = d.bands.map((b) => `${esc(b.band)}${b.query_strategy === "widen_queries" ? " <span class=\"s7-strat\">widen queries</span>" : b.query_strategy === "new_schools" ? " <span class=\"s7-strat\">new schools</span>" : ""} <span class=\"muted\">(${b.n_schools})</span>`).join(", ");
       const seeds = (d.seed_urls && d.seed_urls.length) ? ` · ${d.seed_urls.length} seed URL(s)` : "";
       return `<li><b>${esc(d.name || d.district_id)}</b> <span class="muted">${esc(d.state)}</span> — ${bands}${seeds}</li>`;
@@ -228,12 +228,18 @@
     if (prev.deferred && prev.deferred.length) notes.push(`${prev.deferred.length} deferred — execute the district's 7->6 first (#159)`);
     if (prev.suppressed && prev.suppressed.length) notes.push(`${prev.suppressed.length} suppressed — band covered/phantom or no fillable gap left (auto-rejected on compose; reversible per request below)`);
     if (prev.blocked && prev.blocked.length) notes.push(`${prev.blocked.length} blocked by the depth guard`);
+    if (prev.escalation_exhausted && prev.escalation_exhausted.length) notes.push(`${prev.escalation_exhausted.length} directive(s) ladder-exhausted (#164: domain + geo rounds already run — auto-rejected + district manually flagged)`);
     if (prev.benchmark_excluded && prev.benchmark_excluded.length) notes.push(`${prev.benchmark_excluded.length} benchmark-walled (batch_00000)`);
-    const nothing = !prev.batch_id || !prev.n_districts;
+    const batches = prev.batches || [];
+    const nothing = !batches.length || !prev.n_districts;
+    // #164 PR 3b: up to TWO scope-pure batches — the domain one auto-flows to gate@5; a geo
+    // escalation batch (second-loop widened+geo) stays a draft for gate@1 review.
+    const sections = batches.map((b) =>
+      `<p><b>${esc(b.batch_id)}</b> <span class="s7-strat">${b.scope === "geo" ? "GEO-scoped (escalation — reviewed at gate@1, no auto-flow)" : "domain-scoped (auto-flows to gate@5)"}</span>: <b>${b.n_districts}</b> district(s), <b>${b.n_requests}</b> directive(s).</p>
+       <ul class="s7-compose-list">${districtList(b.preview)}</ul>`).join("");
     const body = nothing
       ? `<div class="empty">Nothing to compose — no approved NEW-work directives make it into a batch.${notes.length ? "<br/>" + esc(notes.join("; ")) + "." : ""}</div>`
-      : `<p>This will compose <b>${prev.batch_id}</b>: <b>${prev.n_districts}</b> district(s), <b>${prev.n_requests}</b> directive(s), then <b>auto-flow to gate@5</b> (gate@1 auto-pass → discovery → capture → process; gate@6 dispatch stays manual).</p>
-         <ul class="s7-compose-list">${districts}</ul>
+      : `${sections}
          ${notes.length ? `<div class="s7-compose-notes muted">Also: ${esc(notes.join("; "))}.</div>` : ""}`;
     const overlay = document.createElement("div");
     overlay.id = "s7-compose-modal";
@@ -262,10 +268,14 @@
     let out;
     try { out = await api(`/api/extract/compose-followup`, postJSON({ handoff_hash: handoffHash || null, actor: "ian" })); }
     catch (e) { alert("Compose failed: " + e.message); return; }
-    let msg = `Draft follow-up ${out.batch_id}: ${out.n_districts} district(s), ${out.n_requests} directive(s) executed.`;
-    if (out.autoflow_started) msg += `\n\nAuto-flowing to gate@5 in the background… (watch Stage 1/2/3/4, review at gate@5).`;
+    let msg = (out.batches || []).map((b) =>
+      `Draft follow-up ${b.batch_id} (${b.scope}-scoped): ${b.n_districts} district(s), ${b.n_requests} directive(s) executed.`).join("\n")
+      || `Draft follow-up ${out.batch_id}: ${out.n_districts} district(s), ${out.n_requests} directive(s) executed.`;
+    if (out.autoflow_started) msg += `\n\nDomain batch auto-flowing to gate@5 in the background… (watch Stage 1/2/3/4, review at gate@5).`;
+    const geoBatch = (out.batches || []).find((b) => b.scope === "geo");
+    if (geoBatch) msg += `\n\nGeo escalation batch ${geoBatch.batch_id} is a DRAFT — review it at gate@1 (#164 second loop: widened + geo).`;
     alert(msg);
-    if (out.autoflow_started) pollAutoflow(out.batch_id);
+    (out.autoflow_batch_ids || []).forEach((bid) => pollAutoflow(bid));
     refreshAfterAction(did);
   }
 

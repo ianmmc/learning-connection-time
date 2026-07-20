@@ -186,6 +186,28 @@ def resolve_scoping_domain(website: str, did: str, discovered_domains: dict) -> 
     return "", ""
 
 
+def scope_pool_counts(year: str, registry: dict, discovered_domains: dict) -> dict:
+    """The geo_interleaved draw weights (#164 PR 3b): how many eligible first-run districts have a
+    usable scoping domain (either source) vs none. {'domain': n, 'geo': n_blank} — the 'geo' count
+    is exactly build_batch's blank-domain draw pool. One eligible_pool pass (~seconds), run at
+    queue-create where the operator already waits on the full build."""
+    pool, _sch_idx, _gap = eligible_pool(year, registry)
+    n_blank = sum(1 for did in pool
+                  if resolve_scoping_domain(pool[did]["website"], did, discovered_domains) == ("", ""))
+    return {"domain": len(pool) - n_blank, "geo": n_blank}
+
+
+def draw_interleaved_scope(weights: dict, seed: str) -> str:
+    """The geo_interleaved per-batch scope draw (#164 PR 3b): P(geo) = blank / (blank + domained),
+    over `scope_pool_counts` weights. Seeded (by batch_id) so the same pools + the same batch give
+    the same draw — the recorded {weights, drawn} pair in the batch meta is then self-verifying.
+    Empty pools draw 'domain' (the conservative no-op)."""
+    total = weights.get("domain", 0) + weights.get("geo", 0)
+    if not total:
+        return "domain"
+    return "geo" if random.Random(seed).random() < weights["geo"] / total else "domain"
+
+
 def validate_scope_combo(scope: str, batch_type: str) -> None:
     """#569 review: scope-purity includes the TYPE axis — geo composes first-runs only.
     Benchmark is NEVER geo (a geo-scoped batch_00000 would carry derived-host discovery inside
@@ -297,7 +319,8 @@ def build_batch(year: str, n: int, batch_id: str, registry: dict, *, scope: str 
 def build_followup_batch(year: str, batch_id: str, targets: dict, *,
                          attempted_by_did: dict = None, seed_urls_by_did: dict = None,
                          preferred_by_did: dict = None, scope: str = "domain",
-                         discovered_domains: dict | None = None) -> tuple[dict, list]:
+                         discovered_domains: dict | None = None,
+                         force_widen_dids: set | None = None) -> tuple[dict, list]:
     """Build a TARGETED follow-up batch (batch_type='follow-up') from explicit district×band targets —
     the Stage-1 landing point for the request-more-evidence back-edges 7->2/7->3/7->1 (governance §11d:
     any NEW capture/discovery routes through a reviewable Stage-1 batch, never straight to discovery).
@@ -332,6 +355,11 @@ def build_followup_batch(year: str, batch_id: str, targets: dict, *,
       * seed_urls_by_did {district_id: [url, ...]} (#161): explicit URLs to capture (from 7->3
         recapture directives) — carried onto the district entry for Stage 3 to capture directly,
         skipping discovery. Dormant plumbing today (no producer of target_urls yet, per Ian) but wired.
+      * force_widen_dids {district_id, ...} (#164 PR 3b): the escalation-ladder positions whose
+        vocabulary is WIDENED by rung, not by the per-band untried/preferred heuristic — every band
+        of a listed district gets query_strategy='widen_queries' (the 7->1 second loop's geo+widened,
+        the 5->1 loop-2 geo+widened). School selection is untouched; only the vocabulary signal is
+        overridden — one vocabulary, rung-forced rendering (REQ-089 stays intact).
 
     Returns (batch_doc, skipped) where skipped = [{district_id, reason}]."""
     if scope not in ("domain", "geo"):
@@ -340,6 +368,7 @@ def build_followup_batch(year: str, batch_id: str, targets: dict, *,
     seed_urls_by_did = seed_urls_by_did or {}
     preferred_by_did = preferred_by_did or {}
     discovered_domains = discovered_domains or {}
+    force_widen_dids = force_widen_dids or set()
     lea = S.lea_info(year)
     sch_idx = S.school_index(year)
     level_counts = S.school_level_counts(year)
@@ -389,6 +418,9 @@ def build_followup_batch(year: str, batch_id: str, targets: dict, *,
             else:
                 restricted[b] = dsi[b]
                 query_strategy[b] = "widen_queries"    # -> Stage 2 differentiated_queries (#160)
+        if did in force_widen_dids:                    # #164 PR 3b: ladder rung forces the vocabulary
+            for b in want:
+                query_strategy[b] = "widen_queries"
         order, schools_by_band = select_schools(batch_id, did, restricted)
         for b in schools_by_band:                          # #162/#160: the per-band signal Stage 2 reads
             schools_by_band[b]["query_strategy"] = query_strategy.get(b)
