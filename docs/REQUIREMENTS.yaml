@@ -3922,3 +3922,31 @@ requirements:
       unification with interleave-as-mechanism). Millard 3173740 = the acceptance case; the live
       geo run is a gate@1 action for Ian after this PR. Sibling: #567 (the districts.website_url
       vintage lag, epic #479)."
+  - id: REQ-158
+    github_issue: "#572 (follow-up to #164/#571)"
+    description: "Console control surface for geo discovery (the ramp-up model demands the console,
+      not curl, be the operating surface): a Settings card for discovery_scope_policy (current
+      position, the 4 positions with descriptions, an audited set control, the append-only event
+      history) over GET/POST /api/discovery-policy; a scope-aware gate@1 create dialog (domain
+      always; geo when policy allows; drawn-by-policy under geo_interleaved; an n input; optional
+      path-4 target district IDs — the AGREED DESIGN's dev/manual-on-direction exception, recorded
+      in batch meta as `targeted`); and unmistakable scope visibility (batch-list scope tag, gate@1
+      GEO badge + geo-containment note, the scope_draw record, per-district geo tokens and the
+      discovered-domain source badge)."
+    type: functional
+    priority: should
+    status: implemented
+    acceptance_criteria:
+      - "Policy set is event-logged (trigger 'human (console)') and refreshes the git twin post-commit"
+      - "The create dialog offers geo only when the policy allows it (the server 409 remains the law)"
+      - "A targeted draw restricts AFTER the scope filters (never force-includes), reports misses, and a full miss 409s WITHOUT tripping the pool-drained auto-advance"
+      - "GEO batches are visually unmistakable at gate@1 (badge + containment note); scope_draw and targeted meta render on the batch"
+      - "UI presence is regression-pinned (JS source pins) per the UI-visibility rule"
+    tests:
+      - tests/test_discovery_policy_console.py
+    created: "2026-07-19T00:00:00Z"
+    updated: "2026-07-19T00:00:00Z"
+    notes: "Surfaced by Ian's first attempt at the live Millard run: the #164 backend gating existed
+      but no operator control did, and an untargeted stratified geo draw of the ~2,400-district
+      blank pool would practically never contain Millard — path 4 targeting is what makes the
+      designed acceptance run executable."

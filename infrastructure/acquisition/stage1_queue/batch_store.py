@@ -16,7 +16,8 @@ from infrastructure.acquisition.stage1_queue.models import Batch, BatchDistrict,
 BANDS = ("elementary", "middle", "high")
 _META_KEYS = ("nces_school_counts_criteria", "stratification", "school_cap_per_band",
               "school_selection_when_over_cap", "benchmark", "domain_excluded",   # #229 refusals persist
-              "scope_draw")   # #164 PR 3b: the geo_interleaved draw + weights (audit trail)
+              "scope_draw",   # #164 PR 3b: the geo_interleaved draw + weights (audit trail)
+              "targeted")     # #572 path-4: the dev/manual district-targeted draw record
 _SCHOOL_FIELDS = ("school_id", "name", "is_charter", "level", "gslo", "gshi")
 
 
@@ -275,6 +276,7 @@ def list_batches(sess) -> list:
     for b in sess.scalars(select(Batch).order_by(Batch.batch_id)):
         n = counts.get(b.batch_id, 0)
         out.append({"batch_id": b.batch_id, "batch_type": b.batch_type, "status": b.status,
+                    "discovery_scope": b.discovery_scope or "domain",   # #572 left-pane badge
                     "nces_year": b.nces_year, "n_districts": n, "created_at": b.created_at,
                     "created_by": b.created_by, "approved_at": b.approved_at, "approved_by": b.approved_by,
                     "abandoned_at": b.abandoned_at, "abandoned_by": b.abandoned_by,

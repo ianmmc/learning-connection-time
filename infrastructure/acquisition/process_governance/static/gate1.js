@@ -71,8 +71,9 @@
     const el = document.createElement("div");
     el.className = "q-batch" + (b.batch_id === CURRENT ? " active" : "");
     el.dataset.id = b.batch_id;
+    const scope = b.discovery_scope === "geo" ? " · <b>geo</b>" : "";   // #572 scope badge
     el.innerHTML = `<div class="q-batch-top"><span class="q-batch-id">${esc(b.batch_id)}</span>${statusBadge(b.status)}</div>
-      <div class="q-batch-meta">${esc(b.batch_type)} · ${b.n_districts} district${b.n_districts === 1 ? "" : "s"} · ${esc(b.nces_year)}</div>`;
+      <div class="q-batch-meta">${esc(b.batch_type)}${scope} · ${b.n_districts} district${b.n_districts === 1 ? "" : "s"} · ${esc(b.nces_year)}</div>`;
     el.onclick = () => openBatch(b.batch_id);
     return el;
   }
@@ -91,19 +92,45 @@
     const abandoned = v.status === "abandoned";
     const incl = v.districts.filter((d) => d.included).length;
     // Draft: Approve + Abandon. Approved: Re-open (abandon is draft-only, so reopen first). Abandoned: terminal, no actions.
+    // #572: the 5->1 zero-yield escalation entry (#164 PR 3b) lives here because its OUTPUT is a
+    // gate@1 draft — a ran (ever-approved), non-benchmark batch can be checked for districts that
+    // came through with nothing dispatchable. Fuller gate@5 surfacing remains #518.
+    const zeroYield = (!draft && !abandoned && v.batch_type !== "benchmark")
+      ? `<button id="q-zero-yield" class="btn btn-secondary" data-feat="q-zero-yield"
+           title="#164 5→1: find districts with zero dispatchable Stage-5 records (no retryable errs, no fidelity flags) and compose a geo-scoped escalation draft">5→1 zero-yield check…</button>` : "";
     const actions = draft
       ? `<button id="q-approve" class="btn btn-primary">Approve batch · gate@1</button>
          <button id="q-abandon" class="btn btn-secondary">Abandon…</button>`
       : abandoned ? ""
-      : `<button id="q-reopen" class="btn btn-secondary">Re-open for editing</button>`;
+      : `<button id="q-reopen" class="btn btn-secondary">Re-open for editing</button>${zeroYield}`;
     const byline = abandoned
       ? ` · abandoned by ${esc(v.abandoned_by)} ${esc(fmt(v.abandoned_at))}`
       : v.approved_at ? ` · approved by ${esc(v.approved_by)} ${esc(fmt(v.approved_at))}`
       : ` · created by ${esc(v.created_by)} ${esc(fmt(v.created_at))}`;
+    // #572: the scope is a first-class axis — a GEO batch renders unmistakably (badge + how it
+    // was composed: the interleave draw record and/or the path-4 targeting record from meta).
+    const scopeBadge = v.discovery_scope === "geo"
+      ? ` <span class="badge badge-lavender" data-feat="q-scope-badge">GEO-scoped</span>` : "";
     let html = `<div class="q-detail-head">
-        <div><h2>${esc(v.batch_id)} ${statusBadge(v.status)}</h2>
+        <div><h2>${esc(v.batch_id)} ${statusBadge(v.status)}${scopeBadge}</h2>
           <div class="q-sub">${esc(v.batch_type)} · <b>${incl}/${v.districts.length}</b> districts included · ${esc(v.nces_year)}${byline}</div></div>
         <div class="q-actions">${actions}</div></div>`;
+    if (v.discovery_scope === "geo") {
+      html += `<div class="q-locked" data-feat="q-geo-note">GEO-scoped batch (#164): discovery runs
+        geo-rendered queries (city/zip tokens, no <code>site:</code>) with derive-and-re-gate
+        containment — a run without a derived majority host keeps nothing. The derived host surfaces
+        as a discovered-domain PROPOSAL for your confirmation.</div>`;
+    }
+    if (v.scope_draw) {
+      html += `<div class="q-locked" data-feat="q-scope-draw">Scope drawn by policy
+        (<b>${esc(v.scope_draw.policy)}</b>): <b>${esc(v.scope_draw.drawn)}</b> — weights
+        ${fmtnum(v.scope_draw.weights.domain)} domained vs ${fmtnum(v.scope_draw.weights.geo)} blank-domain.</div>`;
+    }
+    if (v.targeted) {
+      html += `<div class="q-locked" data-feat="q-targeted">Targeted draw (path 4 — dev/manual on
+        direction, not SOP): requested ${v.targeted.requested.map(esc).join(", ")}${
+        v.targeted.missing.length ? ` · <b>not in pool:</b> ${v.targeted.missing.map(esc).join(", ")}` : ""}.</div>`;
+    }
     if (abandoned) html += `<div class="q-locked">Abandoned${v.abandon_reason ? ` — ${esc(v.abandon_reason)}` : ""}. Terminal: this batch can't be edited, approved, or re-opened.</div>`;
     else if (!draft) html += `<div class="q-locked">Approved — editing is locked. Re-open to make changes.</div>`;
     // #229: districts refused at draw time for a blank/junk NCES domain (they'd run UNSCOPED
@@ -141,7 +168,9 @@
     return `<div class="q-district${d.included ? "" : " excluded"}">
       <div class="q-district-head">
         <div class="q-dtitle"><span class="q-dname">${esc(d.name)}</span>
-          <span class="q-dmeta">${esc(d.state)} · enr ${fmtnum(d.enrollment_k12)} · ${denom}</span>
+          <span class="q-dmeta">${esc(d.state)} · enr ${fmtnum(d.enrollment_k12)} · ${denom}${
+            d.geo ? ` · <span data-feat="q-geo-tokens">geo: ${esc(d.geo.city || "?")} ${esc(d.geo.zip || "")}</span>` : ""}${
+            d.domain_source === "discovered" ? ` · <span class="badge badge-lavender" title="scoped by a human-confirmed discovered domain (#164) — NCES data unmodified">discovered domain</span>` : ""}</span>
           ${d.included ? "" : `<span class="badge badge-red">rejected</span>`}</div>
         ${toggle}</div>
       ${bands}${spine}</div>`;
@@ -203,6 +232,7 @@
     const ap = $g("#q-approve"); if (ap) ap.onclick = approve;
     const ab = $g("#q-abandon"); if (ab) ab.onclick = abandon;
     const ro = $g("#q-reopen"); if (ro) ro.onclick = reopen;
+    const zy = $g("#q-zero-yield"); if (zy) zy.onclick = zeroYieldCheck;
     $g("#q-detail").querySelectorAll("[data-act]").forEach((b) => {
       const { act, did, sid, band } = b.dataset;
       b.onclick = act === "add_open" ? () => openAddPicker(did, band)
@@ -236,14 +266,78 @@
     renderDetail(VIEW); loadBatches();
   }
 
-  async function createBatch() {
-    if (!confirm("Create a new first-run batch (12 districts, 2024-25)?\n\nThis draws a stratified sample from the full NCES corpus + DB enrollment and takes ~10–20s.")) return;
-    showOverlay("Building batch — stratified draw across the full NCES corpus + DB enrollment. ~10–20s…");
-    try {
-      const v = await api("/api/queue/create", postJSON({ n: 12, nces_year: "2024_25", batch_type: "first-run", actor: "ian" }));
+  // #572: the 5->1 zero-yield escalation (#164 PR 3b) — dry-run survey first, compose on confirm.
+  // The composed batch is a geo-scoped DRAFT reviewed right here at gate@1 (never auto-flowed).
+  async function zeroYieldCheck() {
+    showOverlay("Surveying this batch's districts for zero yield (live Stage-5 read)…");
+    let prev;
+    try { prev = await api(`/api/filter/${CURRENT}/compose-zero-yield`, postJSON({ actor: "ian", dry_run: true })); }
+    catch (e) { hideOverlay(); alert("Zero-yield survey failed: " + e.message); return; }
+    hideOverlay();
+    const rung = (did) => esc((prev.ladder || {})[did] || "");
+    const composable = Object.keys(prev.targets || {});
+    const parts = [];
+    if (composable.length) parts.push(`<p>Would compose <b>${prev.batch_id}</b> (GEO-scoped draft, reviewed here at gate@1 — never auto-flowed):</p>
+      <ul class="s7-compose-list">${composable.map((d) => `<li><b>${esc(d)}</b> — ${rung(d)}</li>`).join("")}</ul>`);
+    if ((prev.flagged || []).length) parts.push(`<p class="muted">Ladder-exhausted → manual flag: ${prev.flagged.map((f) => `${esc(f.district_id)} ${esc(f.name)}`).join(", ")}</p>`);
+    if ((prev.ineligible || []).length) parts.push(`<details class="q-domain-excluded"><summary class="muted">${prev.ineligible.length} district(s) not zero-yield (expand)</summary>
+      ${prev.ineligible.map((x) => `<div class="muted">${esc(x.district_id)} ${esc(x.name)} — ${esc(x.reason)}</div>`).join("")}</details>`);
+    if (!composable.length) {
+      showModal("5→1 zero-yield check", parts.join("") || `<div class="empty">No zero-yield districts in this batch.</div>`, null);
+      return;
+    }
+    showModal("5→1 zero-yield check", parts.join(""), async () => {
+      showOverlay("Composing the geo escalation draft…");
+      let out;
+      try { out = await api(`/api/filter/${CURRENT}/compose-zero-yield`, postJSON({ actor: "ian" })); }
+      catch (e) { hideOverlay(); alert("Compose failed: " + e.message); return; }
       hideOverlay();
-      await loadBatches(v.batch_id);
-    } catch (e) { hideOverlay(); alert("Create failed: " + e.message); }
+      await loadBatches(out.batch_id);
+    }, "Compose escalation draft");
+  }
+
+  async function createBatch() {
+    // #572: the scope-aware create dialog. The policy gates which scopes are offered (the same
+    // gate the server enforces — this is presentation, the 409 is the law); geo composes from the
+    // blank-domain pool (geo_all: any district). "Drawn by policy" posts NO scope so the server
+    // runs the recorded geo_interleaved draw. Target IDs = the AGREED DESIGN's path 4 (dev/manual
+    // batches on direction — exception path, not SOP; recorded in batch meta).
+    let pol = { policy: "domain_only", pools: null };
+    showOverlay("Reading discovery policy + pool sizes…");
+    try { pol = await api("/api/discovery-policy?pools=true"); } catch (_) { /* degrade to domain-only */ }
+    hideOverlay();
+    const geoAllowed = pol.policy !== "domain_only";
+    const pools = pol.pools ? ` <span class="muted">(${fmtnum(pol.pools.domain)} domained · ${fmtnum(pol.pools.geo)} blank-domain)</span>` : "";
+    const geoLabel = pol.policy === "geo_all" ? "Geo-scoped (any district — geo_all experiment)" : "Geo-scoped (blank-domain pool)";
+    const body = `
+      <p>Stratified draw from the full NCES corpus + DB enrollment (~10–20s). Policy:
+        <b>${esc(pol.policy)}</b>${pools} <span class="muted">— change it in Settings.</span></p>
+      <label class="add-item"><input type="radio" name="q-scope" value="domain" checked/>
+        <span class="q-sname">Domain-scoped (standard)</span></label>
+      <label class="add-item"${geoAllowed ? "" : ' title="discovery_scope_policy is domain_only — enable a geo position in Settings"'}>
+        <input type="radio" name="q-scope" value="geo" data-feat="q-create-scope-geo" ${geoAllowed ? "" : "disabled"}/>
+        <span class="q-sname">${geoLabel}${geoAllowed ? "" : " <span class='muted'>(policy is domain_only)</span>"}</span></label>
+      ${pol.policy === "geo_interleaved" ? `<label class="add-item"><input type="radio" name="q-scope" value=""/>
+        <span class="q-sname">Drawn by policy (geo_interleaved — the seeded weighted draw, recorded on the batch)</span></label>` : ""}
+      <p style="margin-top:0.8em"><label>Districts <input id="q-create-n" type="number" min="1" max="12" value="12" style="width:4em"/></label>
+        <span class="muted">(12-district hard cap — governance §11d)</span></p>
+      <p><label>Target district IDs <span class="muted">(optional, comma-separated — path 4: dev/manual batch on direction, recorded in batch meta; not SOP)</span><br/>
+        <input id="q-create-targets" type="text" placeholder="e.g. 3173740" style="width:100%" data-feat="q-create-targets"/></label></p>`;
+    showModal("Create batch", body, async (root) => {
+      const scope = (root.querySelector("input[name='q-scope']:checked") || {}).value;
+      const n = parseInt(root.querySelector("#q-create-n").value, 10) || 12;
+      const targets = (root.querySelector("#q-create-targets").value || "")
+        .split(",").map((s) => s.trim()).filter(Boolean);
+      const payload = { n, nces_year: "2024_25", batch_type: "first-run", actor: "ian" };
+      if (scope) payload.discovery_scope = scope;              // "" = drawn by policy (server draws)
+      if (targets.length) payload.district_ids = targets;
+      showOverlay("Building batch — stratified draw across the full NCES corpus + DB enrollment. ~10–20s…");
+      try {
+        const v = await api("/api/queue/create", postJSON(payload));
+        hideOverlay();
+        await loadBatches(v.batch_id);
+      } catch (e) { hideOverlay(); alert("Create failed: " + e.message); }
+    }, "Create batch");
   }
 
   // ----------------------------- add-school picker -----------------------------
@@ -280,16 +374,18 @@
   }
   function hideOverlay() { const o = $g("#q-overlay"); if (o) o.classList.add("hidden"); }
 
-  function showModal(title, body, onConfirm) {
+  function showModal(title, body, onConfirm, okLabel = "Add selected") {
     let m = $g("#q-modal");
     if (!m) { m = document.createElement("div"); m.id = "q-modal"; m.className = "modal"; document.body.appendChild(m); }
+    // #572: onConfirm may be null (an informational modal — no footer button).
     m.innerHTML = `<div class="modal-card"><div class="modal-head"><h2>${esc(title)}</h2><button class="btn btn-secondary" data-x>Close</button></div>
       <div class="modal-body add-body">${body}</div>
-      <div class="modal-foot"><button class="btn btn-primary" data-ok>Add selected</button></div></div>`;
+      ${onConfirm ? `<div class="modal-foot"><button class="btn btn-primary" data-ok>${esc(okLabel)}</button></div>` : ""}</div>`;
     m.classList.remove("hidden");
     const close = () => m.classList.add("hidden");
     m.querySelector("[data-x]").onclick = close;
     m.onclick = (e) => { if (e.target === m) close(); };
-    m.querySelector("[data-ok]").onclick = async () => { try { await onConfirm(m); } catch (e) { alert(e.message); } close(); };
+    const ok = m.querySelector("[data-ok]");
+    if (ok) ok.onclick = async () => { try { await onConfirm(m); } catch (e) { alert(e.message); } close(); };
   }
 })();

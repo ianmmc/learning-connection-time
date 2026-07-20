@@ -714,6 +714,65 @@ def _backup_discovery_policy(con) -> int:
              "FROM discovery_policy_event ORDER BY event_id", paths.DISCOVERY_POLICY_JSON)
 
 
+# ---- discovery scope policy (#164/#572 — the console control surface) ----
+_POLICY_POSITIONS = [
+    {"policy": "domain_only", "label": "Domain only",
+     "desc": "Geo first-run composition refused — the high-supervision default."},
+    {"policy": "geo_for_blank", "label": "Geo for blank-domain",
+     "desc": "Geo first-runs ALLOWED for blank-domain districts; the operator picks per batch."},
+    {"policy": "geo_interleaved", "label": "Geo interleaved",
+     "desc": "Each batch's scope is DRAWN, weighted by the remaining blank-vs-domained populations; "
+             "the draw + weights are recorded on the batch."},
+    {"policy": "geo_all", "label": "Geo for all (experiment)",
+     "desc": "Geo composition allowed for ANY district — the measured geo-vs-domain comparison "
+             "mode (feeds #118 attribution)."},
+]
+
+
+@app.get("/api/discovery-policy")
+def discovery_policy_get(pools: bool = False):
+    """#572: the discovery-scope-policy control surface — current position, the 4 positions, and the
+    recent event history (append-only audit log). `?pools=true` adds the live blank-vs-domained
+    eligible counts (an NCES corpus pass, ~seconds — the create dialog asks for it, the Settings
+    card load does not); best-effort, degrades to null when the CSVs aren't on disk."""
+    from infrastructure.acquisition.common import discovered_domain as DDOM
+    from infrastructure.acquisition.common import discovery_policy as DPOL
+    gdb.init_precious_schema()
+    with gdb.session_scope() as con:
+        policy = DPOL.get_policy(con)
+        events = [{"event_id": e.event_id, "policy": e.policy, "previous": e.previous,
+                   "actor": e.actor, "trigger": e.trigger, "created_at": e.created_at}
+                  for e in con.query(DPOL.DiscoveryPolicyEvent)
+                             .order_by(DPOL.DiscoveryPolicyEvent.event_id.desc()).limit(20)]
+        discovered = DDOM.all_confirmed(con)
+    out = {"policy": policy, "positions": _POLICY_POSITIONS, "events": events, "pools": None}
+    if pools:
+        try:
+            out["pools"] = Q1.scope_pool_counts("2024_25", {"districts": {}}, discovered)
+        except Exception as e:  # noqa: BLE001 — NCES files absent → the card degrades honestly
+            out["pools_error"] = f"{type(e).__name__}: {e}"
+    return out
+
+
+@app.post("/api/discovery-policy")
+async def discovery_policy_set(payload: dict):
+    """#572: set the discovery scope policy — an audited governance decision (append-only event;
+    idempotent no-op when unchanged). Post-commit the tracked JSON twin refreshes (the sibling
+    convention every set_policy caller follows)."""
+    from infrastructure.acquisition.common import discovery_policy as DPOL
+    policy = (payload.get("policy") or "").strip()
+    actor = payload.get("actor", "ian")
+    if policy not in DPOL.POLICIES:
+        raise HTTPException(400, f"policy must be one of {DPOL.POLICIES} (got {policy!r})")
+    gdb.init_precious_schema()
+    with gdb.session_scope() as con:
+        previous = DPOL.get_policy(con)
+        DPOL.set_policy(con, policy, actor=actor, trigger="human (console)")
+    with gdb.session_scope() as con:
+        _backup_discovery_policy(con)
+    return {"policy": policy, "previous": previous, "changed": policy != previous}
+
+
 @app.post("/api/discovered-domain")
 async def discovered_domain_confirm(payload: dict):
     """#164: confirm a geo run's derived-host PROPOSAL as the district's discovered domain (the
@@ -1084,8 +1143,20 @@ async def queue_create(payload: dict):
             weights = Q1.scope_pool_counts(year, registry, discovered)
             scope = Q1.draw_interleaved_scope(weights, batch_id)
             scope_draw = {"policy": policy, "weights": weights, "drawn": scope}
+        # #572 path 4 ("dev/manual batches on direction — exception path, not SOP"): an optional
+        # explicit district-id list restricts the draw; recorded in batch meta (`targeted`).
+        district_ids = [d.strip() for d in (payload.get("district_ids") or []) if str(d).strip()]
         batch_doc, _gap, _domain_excluded, _n_elig = Q1.build_batch(
-            year, n, batch_id, registry, scope=scope, discovered_domains=discovered, geo_pool=geo_pool)
+            year, n, batch_id, registry, scope=scope, discovered_domains=discovered,
+            geo_pool=geo_pool, district_ids=district_ids or None)
+        # #572: a targeted draw that matches nothing is an operator-input miss, never a pool signal —
+        # report which ids fell outside the pool instead of persisting an empty batch (and never
+        # let it trip the pool-drained auto-advance below).
+        if district_ids and not batch_doc["districts"]:
+            missing = (batch_doc.get("targeted") or {}).get("missing") or district_ids
+            raise HTTPException(409, f"none of the targeted district id(s) are in the {scope} draw "
+                                     f"pool (excluded, already attempted, or in the other scope's "
+                                     f"pool): {', '.join(missing)}")
         # #164 PR 3b (3): the pool-drained auto-advance, detected AT COMPOSE TIME — a domain-scoped
         # first-run that can draw NOTHING while blank-domain districts remain is the moment the
         # conservative default stops meaning anything. Auto-act (observable: the event row + this
