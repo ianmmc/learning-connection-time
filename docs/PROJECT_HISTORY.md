@@ -751,6 +751,42 @@ repo specifically: a local branch surviving `--no-merged` is not evidence the wo
 Authority: this session's `ReportFindings` output (12 findings, verdicts, and per-finding fix mapping);
 PRs #562/#563/#564/#565/#566/#568/#569/#570; commit `2153a91`.
 
+### 2026-07-20 — Epic #111 closed on a live fire: Millard NE proved the geo-repair design and exposed two real gaps the same day
+
+The epic's last mile (#164 PR 3b → #118 → #518) closed in one continuous arc driven by the FIRST live
+run of the geo machinery, and the run itself became the epic's best QA. The sequence, decision-level:
+
+**The designed Millard action wasn't executable — twice.** (1) The backend gating existed but no
+operator control did (curl-only, against the ramp-up model) → #572/REQ-158 built the console surface
+(policy card, scope-aware create with the AGREED DESIGN's path-4 targeting, the 5→1 button, the
+proposal card). (2) Even then, Millard is *already-attempted*, so no first-run draw can ever contain
+it — the real path was the just-built 5→1 zero-yield escalation. Lesson reinforced: a capability
+without its control surface, or a plan that ignores admission rules, only surfaces on contact with
+the live gate.
+
+**The geo design worked on first contact**: unscoped wave-1 → derive-and-re-gate folded the
+per-school subdomain family (bms./rms./sandoz.…) into mpsomaha.org at 78.3%/21 schools; Ian
+confirmed via the new card (decisions now accrue as an append-only training corpus — confirm AND
+reject-with-reason, the future auto-confirmation's classes); Millard returned to domain-scoped flow.
+
+**The run exposed that Critical Rule 3 was classification-only** — no code ever assigned
+`security_block`, so the capture recorded 81/83 Cloudflare interstitials as `ok` while pressuring
+the WAF. #578/REQ-159 enforced it in depth (per-response `detectChallenge`, the 3-consecutive
+district breaker, the pre-capture probe — one request of IP exposure), the interstitials were
+remediated manifest-first (restore point `3173740_20260720T145158Z`), and security-blocked
+districts became ineligible for geo escalation (the WAF said no; never automatic re-pressure).
+An integrity audit prompted by Ian confirmed the audit trail clean and drove the remediation-receipt
+exception to be UNIFIED across the Stage-2/3/4 reconcile guards (a receipted decontamination is the
+one sanctioned registry-ahead-of-disk state).
+
+**Then the epic's two closers**: #118/REQ-160 (attribution with the #164 axes; first card's
+headline — emergent one-hop capture out-yields every SERP provider at 38.1% labeled-target rate)
+and #518/REQ-154's consumer (the fidelity-triage queue on Stage 3 + gate@5), closing the loop the
+survey opened: flagged captures are now reviewable decisions, not silent `target_absent`s.
+
+Authority: PRs #571/#573–#576/#579/#580/#581; issues #164/#572/#578/#118/#518/#111 (close
+comments); REQ-157…160; the `3173740_20260720T145158Z` remediation manifest.
+
 ---
 
 ## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)

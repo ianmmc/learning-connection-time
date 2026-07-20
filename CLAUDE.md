@@ -120,52 +120,40 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-19): #164 CLOSED — the full geo-discovery design is merged (PRs
-#568/#569/#570/#571).** PR 3b (#571, merged as `77fd00a`) landed the escalation surgery: the 7→1
-second-loop SCOPE SPLIT in `stage7_execute` compose (targets split by derived ladder position via
-`batch_store.followup_rounds` — 0 rounds → domain batch, ≥1 → geo+widened batch, geo already ran →
-auto-reject + deduped `followup_flag`; up to TWO scope-pure batches per compose, each directive's
-`executed_ref` = ITS district's batch, one transaction; only the domain batch auto-flows — a geo
-escalation batch stays a gate@1 draft); the 5→1 zero-yield composer
-(`process_governance/stage5_followup.py`, governance §11e back-edge: predicate = zero
-dispatchable/held Stage-5 records AND no retryable errs [#116] AND no fidelity flags [#518];
-ladder 0 geo → geo+standard, 1 → geo+widened, ≥2 → manual flag; `POST
-/api/filter/{batch}/compose-zero-yield` + CLI, never auto-flowed); the pool-drained policy
-auto-advance at queue-create (domain_only → geo_for_blank, exactly one step, event-logged + twin,
-409 notice); and the `geo_interleaved` seeded weighted draw (`scope_pool_counts` +
-`draw_interleaved_scope`, the draw recorded in `Batch.meta_json.scope_draw`).
-`build_followup_batch(force_widen_dids=…)` is the rung-forced vocabulary lever. REQ-157 →
-implemented. Live-verified: a dry-run over ran batch_00018 correctly laddered 3405970 (14 records,
-all release-rejected, no errs) to geo+standard and held Southern Lehigh on 6 dispatchable/held
-records. Earlier same day: the 12-finding retrospective review of #562–570 (fixed as `2153a91`) —
-full account in `docs/PROJECT_HISTORY.md`'s 2026-07-19 entries. **Same-day follow-up #572 (PR
-#573, REQ-158): the console control surface** — Settings policy card (`GET/POST
-/api/discovery-policy`), scope-aware gate@1 create (geo when policy allows; path-4 target
-district IDs; drawn-by-policy under interleave), scope badges/`scope_draw`/`targeted` visibility,
-and the **5→1 zero-yield check button** on ran gate@1 batches. Operational fact it surfaced:
-Millard NE (3173740) is already-attempted, so NO first-run draw can include it. **The LIVE
-Millard run is therefore: gate@1 → batch_00013 → "5→1 zero-yield check…" → compose the geo
-escalation draft (live-verified: 4 eligible districts incl. Millard NE at geo+standard) → review/
-approve the draft → after discovery, confirm the derived discovered-domain proposal.** No policy
-flip needed — escalation loops are deliberately not policy-gated (the policy governs first-runs
-only; two audited `claude:verify-572` set/revert events sit in the log from live verification).
+**Current status (2026-07-20): EPIC #111 CLOSED — every sub-issue done, live-proven end to end on
+Millard NE.** The 2026-07-19/20 run landed, in order: #164 complete (PRs #568–#571 — geo scope
+axis, audited 4-position policy, derive-and-re-gate, `discovered_domain`, the 5→1/7→1 escalation
+ladders with derived positions); **#572/REQ-158** (PRs #573–#576 — the console control surface:
+Settings policy card, scope-aware gate@1 create w/ path-4 targeting, the 5→1 zero-yield button,
+the Stage-2 discovered-domain proposal card + the append-only `discovered_domain_decision`
+training corpus [confirm AND reject-with-reason, git-twinned]); **#578/REQ-159** (PR #579 — the
+one-attempt security-block rule ENFORCED: `detectChallenge` on both capture branches, the
+3-consecutive district circuit breaker, the pre-capture probe; surfaced live when Millard's
+capture recorded 81/83 Cloudflare interstitials as ok — remediated with receipts, restore point
+`3173740_20260720T145158Z`); **#118/REQ-160** (PR #580 — Stage 2/4 attribution w/ the #164 axes;
+first card: emergent one-hop = the highest-yield non-GT discovery source, 38.1% labeled-target
+rate); **#518/REQ-154 complete** (PR #581 — the fidelity-triage consumer on Stage 3 + gate@5 with
+the flag-district affordance). **The Millard NE live fire proved the whole design**: 5→1 button →
+geo draft → discovery derived mpsomaha.org (78.3%/21 schools) → Ian confirmed via the card →
+domain-scoped again; its 2 real captures (blackelk school-hours + homepage) sit at gate@5; the 81
+blocked URLs are one-attempt-final in the triage queue. Unified along the way: the Stage-2/3/4
+reconcile guards stand down for a receipted decontamination restore point (the remediation
+exception, `district_status.remediation_receipt`). Filed: #577 (stale left-pane progress chips —
+NULL batch_id on 246 old stage events; parked under #92's epic per Ian, non-blocking).
 
-**Next (RESUME HERE — 2026-07-19): #118 → close epic #111.**
-**#118** (Ian: build in-epic, a CONDITION of closing #111): Stage 2/4 effectiveness attribution —
-attribute each target-labeled record back to its discovery tool (`candidate_tools_json`) and its
-winning representation's source, recording `discovery_scope` + ladder position from day one (the
-geo-vs-domain comparison feeder; `geo_all` is the experiment position). Then close epic #111.
-#518 remains open for its gate@5-consumer remainder (overlaps the 5→1 console surface — the
-zero-yield composer currently has endpoint+CLI only, no gate@5 button). Two Ian decisions already
-banked: #112 → epic #128; #567 (websites vintage lag) → epic #479.
-After #111: **#479/#480** → **#92** (Stage 9); parked: #475/#476, #103/#80 (+#110).
+**Next (RESUME HERE — 2026-07-20): #479/#480 → #92 (Stage 9).**
+Banked routing: #112 → epic #128; #567 (websites vintage lag) → epic #479; #577 (chips) rides
+with #92. Parked: #475/#476, #103/#80 (+#110).
 Documented-in-code deferrals: `_satisfied_bands_now` batching (revisit on volume); the #522
 guardrail's per-rep keyword/table attribution (needs a server payload change); JS behavioral tests
-(no JS harness in repo — static-source pins only).
+(no JS harness in repo — static-source pins only); the remediation-receipt exception is not
+time-bound (documented on `remediation_receipt` — bounded to redundant spend, revisit if
+remediation volume grows); attribution v1 reads each district's LATEST candidate plan (documented
+in-module — revisit if plans cycle per district).
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
--m "not integration"` (expect **1748** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **279**,
-Postgres up).
+-m "not integration"` (expect **1760** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **296**,
+Postgres up) + `cd infrastructure/scraper && npm test` (expect **86**).
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (the
 motivating ones: Huntington `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters).
 Full detail: `docs/PROJECT_HISTORY.md`, `STAGE1-4_*_DESIGN.md`, `PIPELINE_GOVERNANCE_AND_STATE.md`,
