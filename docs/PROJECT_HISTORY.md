@@ -825,6 +825,32 @@ of closing this out.
 Authority: this doc-tower refresh commit + the `fix(#164/#111): address 12 findings...` commit
 immediately preceding it; REQ-153/154/157/158/159/160/161.
 
+### 2026-07-20 — Epics #479/#480 executed: the LCT-core hygiene sweeps, refamiliarizing with the calculation side before Stage 9
+
+The two crossfam-review epics (120 unverified findings across the DB layer + legacy NCES/SEA
+scripts) were executed in one day as ten Stage-9-relevance-ordered work packages (PRs #583–#596),
+doubling as the deliberate refamiliarization with LCT-calculation code untouched for months.
+Every finding was triaged-in-code: 90 fixed, 21 closed superseded-by-retirement (the legacy
+enrichment layer — batch_composer/school_discovery/enrichment_tracking/interactive_enrichment —
+and the Homebrew-era docker migration tools, both archived with evidence manifests after
+grimp/vulture verification), 8 closed no-change with rationale, 1 (#407) left open awaiting a
+schema-migration decision (scope_all undercounts — `all_other_support_staff` never existed on
+StaffCountsEffective).
+
+Durable lessons: (1) **run the repaired reports against the live DB** — that step, not the code
+review, surfaced #594 (the CA Phase-2 tables are EMPTY; the documented CA-actual SPED precedence
+has been silently inert since the 2026-07 rebuild) and its latent sibling #589 (rebuild never
+re-runs apply_ctc_classification); the rebuild orchestrator preserves only what its phases
+explicitly re-import. (2) The **zero-pad/fixed-width id class** recurred across 9 files and two
+epics; the converter registry (`excel_digits` + per-state zfill, verified against the live
+crosswalk's stored widths) is now the single home. (3) The loop-closing gap for #92 is filed as
+#582: the LCT reader never inspects `minutes_basis`/`method`, so Stage-9 statutory_fallback rows
+would masquerade as measured bell data. (4) The arch-manifest fitness tests caught an archived
+file's stale external-program declaration exactly as #124 designed.
+
+Authority: PRs #583–#596; issues #479/#480 (disposition comments), #582, #586, #589, #594, #595;
+epic checklists.
+
 ---
 
 ## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)

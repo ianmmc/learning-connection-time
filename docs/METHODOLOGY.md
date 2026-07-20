@@ -1395,7 +1395,7 @@ This filtering ensures that policy discussions rest on solid, defensible data ra
 
 ## Appendix A: Calculation Code
 
-Reference implementation: `src/python/calculators/lct_calculator.py`
+Production implementation: `infrastructure/scripts/analyze/calculate_lct_variants.py` (the snippet below is a simplified illustration of the core formula; the old `src/python/calculators/lct_calculator.py` reference no longer exists)
 
 ```python
 def calculate_lct(enrollment: int, 

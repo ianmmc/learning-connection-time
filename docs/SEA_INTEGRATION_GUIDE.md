@@ -433,4 +433,4 @@ The `safe_float()` and `safe_int()` functions handle all of these.
 
 ---
 
-**Last Updated**: January 17, 2026
+**Last Updated**: July 20, 2026
