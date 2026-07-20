@@ -12,6 +12,7 @@ Generates comprehensive validation report showing improvements from state-specif
 """
 
 import sys
+from statistics import median
 from pathlib import Path
 import pandas as pd
 from datetime import datetime
@@ -99,7 +100,7 @@ def generate_sped_comparison():
         print(f"\nSelf-Contained Proportion Statistics:")
         print(f"  Actual (CA 2023-24):")
         print(f"    Mean: {sum(actual_props) / len(actual_props):.2%}")
-        print(f"    Median: {sorted(actual_props)[len(actual_props)//2]:.2%}")
+        print(f"    Median: {median(actual_props):.2%}")
         print(f"    Min: {min(actual_props):.2%}")
         print(f"    Max: {max(actual_props):.2%}")
 
@@ -161,7 +162,7 @@ def generate_frpm_summary():
 
         print(f"\nFRPM Percentage Statistics:")
         print(f"  Mean: {sum(poverty_rates) / len(poverty_rates):.1%}")
-        print(f"  Median: {sorted(poverty_rates)[len(poverty_rates)//2]:.1%}")
+        print(f"  Median: {median(poverty_rates):.1%}")
         print(f"  Min: {min(poverty_rates):.1%}")
         print(f"  Max: {max(poverty_rates):.1%}")
 
@@ -209,7 +210,7 @@ def generate_lcff_summary():
         print(f"\nTotal LCFF Funding:")
         print(f"  Statewide total: ${sum(total_funding):,.0f}")
         print(f"  Mean per district: ${sum(total_funding) / len(total_funding):,.0f}")
-        print(f"  Median per district: ${sorted(total_funding)[len(total_funding)//2]:,.0f}")
+        print(f"  Median per district: ${median(total_funding):,.0f}")
 
         print(f"\nFunding Components:")
         print(f"  Total Base Grants: ${sum(base_grants):,.0f} ({sum(base_grants)/sum(total_funding):.1%} of total)")
@@ -226,7 +227,7 @@ def generate_lcff_summary():
 
         print(f"\nEquity Funding (Supplemental + Concentration as % of total):")
         print(f"  Mean: {sum(equity_grants) / len(equity_grants):.1%}")
-        print(f"  Median: {sorted(equity_grants)[len(equity_grants)//2]:.1%}")
+        print(f"  Median: {median(equity_grants):.1%}")
         print(f"  Min: {min(equity_grants):.1%}")
         print(f"  Max: {max(equity_grants):.1%}")
 
@@ -259,6 +260,11 @@ def generate_data_coverage_summary():
         ).count()
 
         print(f"\nTotal CA districts in database: {total_districts}")
+        if total_districts == 0:
+            # No CA districts loaded — the coverage ratios divided by zero
+            # (issues #376/#417)
+            print("  No CA districts in database — skipping coverage ratios")
+            return
         print(f"\nData Coverage:")
         print(f"  SPED (actual environments): {sped_count} ({sped_count/total_districts:.1%})")
         print(f"  FRPM (poverty indicator): {frpm_count} ({frpm_count/total_districts:.1%})")

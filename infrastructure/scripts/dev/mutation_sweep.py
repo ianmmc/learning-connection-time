@@ -85,6 +85,16 @@ def sweep(module_path, test_files):
         for variant, label in _variants(kind, node):
             mutants.append((i, kind, variant, f"L{node.lineno} {kind} {label}"))
 
+    # Baseline: the tests must PASS against the unmutated module first — a
+    # broken baseline makes every mutant look "killed" and inflates the score
+    # to a meaningless 100% (issue #420)
+    baseline_rc = subprocess.run([sys.executable, "-m", "pytest", "-x", "-q", "-p",
+                                  "no:cacheprovider", *test_files],
+                                 capture_output=True, timeout=300).returncode
+    if baseline_rc != 0:
+        sys.exit(f"baseline test run FAILED (rc={baseline_rc}) — fix the tests "
+                 f"before measuring mutation score")
+
     killed, survived = 0, []
     print(f"{module_path.name}: {len(mutants)} mutants over {len(sites)} sites; "
           f"tests = {' '.join(test_files)}\n")
