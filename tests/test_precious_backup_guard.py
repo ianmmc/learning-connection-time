@@ -59,7 +59,8 @@ def test_all_exporters_route_through_the_guard():
     assert "guard_tracked_backup" in inspect.getsource(server._backup_precious_table)
     for fn in (server._backup_followups, server._backup_gate_mode, server._backup_stage8_approvals,
                server._backup_band_exclusions, server._backup_human_added,
-               server._backup_slot_assignments):
+               server._backup_slot_assignments, server._backup_discovered_domains,
+               server._backup_discovery_policy):
         assert "_backup_precious_table" in inspect.getsource(fn), (
             f"{fn.__module__}.{fn.__name__} bypasses the shared #178-guarded exporter body")
 

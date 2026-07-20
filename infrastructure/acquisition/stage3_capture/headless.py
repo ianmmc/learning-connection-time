@@ -15,6 +15,7 @@ Driven by `run_batch()` (the console's POST /api/capture/{batch_id}/run trigger)
   python3 -m infrastructure.acquisition.stage3_capture.headless run <batch_id|path>
 """
 import argparse
+import hashlib
 import json
 import subprocess
 from collections import Counter
@@ -75,15 +76,32 @@ def candidate_count(ddir: Path) -> int:
         return 0
 
 
-def _capture_one(district: dict, *, retryable_only: bool = False, _run=subprocess.run) -> None:
+def _plan_sha256(ddir: Path) -> str:
+    """The capture-plan fingerprint (#116 review): sha256 over the SORTED UNIQUE fragment-stripped
+    candidate URLs — the Python mirror of the mjs planSha256. Passed to the retryable-only Node
+    run, which recomputes over its OWN read and aborts on mismatch: a district can sit in two
+    batches at once (follow-ups re-include by design) with only per-batch run locks, so a
+    concurrent Stage-2 candidates.json rewrite between retry selection and the Node read is
+    reachable and must fail loudly, never silently conflate two plans in one manifest."""
+    cands = json.loads((ddir / "candidates.json").read_text()).get("candidates", [])
+    urls = sorted({C3._strip_fragment(c["url"]) for c in cands
+                   if isinstance(c, dict) and isinstance(c.get("url"), str)})
+    return hashlib.sha256("\n".join(urls).encode()).hexdigest()
+
+
+def _capture_one(district: dict, *, retryable_only: bool = False, plan_sha: str = None,
+                 _run=subprocess.run) -> None:
     """Run the Node Playwright capture for ONE district dir (a fresh subprocess). Raises on a non-zero
     exit or a missing captures.json, so run_batch records the district `failed` rather than silently
     advancing it. `retryable_only` (#116): the Node run seeds from the prior manifest and re-attempts
-    ONLY retryable failures (see RETRYABLE_ERR_PREFIXES)."""
+    ONLY retryable failures (see RETRYABLE_ERR_PREFIXES); `plan_sha` rides along so Node can verify
+    the plan hasn't been rewritten since selection (_plan_sha256)."""
     cmd = ["node", str(CAPTURE_MJS), "district", str(RAW_DIR), district["dir"].name,
            str(CONCURRENCY), str(CAPTURE_DEADLINE_S)]   # Node owns its deadline; the subprocess timeout is a backstop
     if retryable_only:
         cmd.append("retryable-only")
+        if plan_sha:
+            cmd.append(f"plan-sha256={plan_sha}")
     proc = _run(cmd, capture_output=True, text=True, timeout=CAPTURE_TIMEOUT_S, cwd=str(paths.REPO_ROOT))
     if proc.returncode != 0:
         raise RuntimeError(f"node capture exit {proc.returncode}: {(proc.stderr or proc.stdout)[:300]}")
@@ -276,7 +294,7 @@ def _dispatch_and_finish(todo: list, *, batch_id: str, actor: str, emit, _run,
     for d in todo:
         did = d["district_id"]
         try:
-            _capture_one(d, retryable_only=retryable_only, _run=_run)
+            _capture_one(d, retryable_only=retryable_only, plan_sha=d.get("_plan_sha"), _run=_run)
             registry = DS.load()
             outcome = C3.finish_district(d, registry)   # reads captures.json + upserts the DB cache
             DS.save(registry, export=False)
@@ -309,14 +327,15 @@ def _retryable_failures(ddir: Path) -> int:
     the Node delta re-run re-queues only planned URLs, so a failed EMERGENT record can't retry this
     way (its parent page is ok and won't re-render; that's #117's recovery territory, not this one's).
     Reads the on-disk manifest deliberately: Stage 3's own reconcile stance is filesystem-is-truth
-    for its own artifacts, and this is the same file the Node run will seed from."""
-    try:
-        caps = json.loads((ddir / "captures.json").read_text())
-        cand_urls = {C3._strip_fragment(c["url"])
-                     for c in json.loads((ddir / "candidates.json").read_text()).get("candidates", [])
-                     if isinstance(c, dict) and isinstance(c.get("url"), str)}
-    except (json.JSONDecodeError, OSError, AttributeError, TypeError):
-        return 0
+    for its own artifacts, and this is the same file the Node run will seed from.
+
+    RAISES on an unreadable/malformed manifest (review): swallowing it as `return 0` made a corrupt
+    captures.json indistinguishable from "nothing to retry" — the silent-wedge state the #267
+    corrupt-manifest convention exists to prevent. retry_partial catches per district and reports."""
+    caps = json.loads((ddir / "captures.json").read_text())
+    cand_urls = {C3._strip_fragment(c["url"])
+                 for c in json.loads((ddir / "candidates.json").read_text()).get("candidates", [])
+                 if isinstance(c, dict) and isinstance(c.get("url"), str)}
     return sum(1 for r in caps if isinstance(r, dict) and not r.get("ok")
                and str(r.get("err") or "").startswith(RETRYABLE_ERR_PREFIXES)
                and isinstance(r.get("url"), str) and C3._strip_fragment(r["url"]) in cand_urls)
@@ -342,15 +361,36 @@ def retry_partial(batch: dict, *, actor: str = "auto:stage3-retry", on_event=Non
 
     try:
         districts = find_batch_districts(batch)
-        todo = [d for d in districts
-                if (d["dir"] / "captures.json").exists() and _retryable_failures(d["dir"]) > 0]
-        emit("retry_reconciled", todo=[d["district_id"] for d in todo])
+        todo, unreadable = [], []
+        for d in districts:
+            if not (d["dir"] / "captures.json").exists():
+                continue
+            try:
+                n = _retryable_failures(d["dir"])
+            except SystemExit:
+                raise   # CONTROL FAILURE -- never swallow
+            except Exception as e:
+                # Loud, per-district (#267 convention: a corrupt manifest must never read as
+                # "nothing to retry") — surfaced in the event stream AND the summary, district
+                # skipped, the rest of the batch proceeds.
+                err = f"{type(e).__name__}: {str(e)[:200]}"
+                unreadable.append({"district_id": d["district_id"], "name": d["name"], "error": err})
+                emit("retry_unreadable", district_id=d["district_id"], name=d["name"], error=err)
+                continue
+            if n > 0:
+                # Fingerprint the plan we just selected against — the Node run re-verifies it
+                # (plan-sha256 arg) so a concurrent Stage-2 rewrite can't silently invalidate
+                # this selection between here and the subprocess's own read.
+                d["_plan_sha"] = _plan_sha256(d["dir"])
+                todo.append(d)
+        emit("retry_reconciled", todo=[d["district_id"] for d in todo],
+             unreadable=[u["district_id"] for u in unreadable])
         if not todo:
-            return {"batch_id": batch_id, "todo": 0, "results": []}
+            return {"batch_id": batch_id, "todo": 0, "results": [], "unreadable": unreadable}
         results = _dispatch_and_finish(todo, batch_id=batch_id, actor=actor, emit=emit, _run=_run,
                                        retryable_only=True,
                                        dispatch_notes="partial retry (#116): retryable failures only")
-        return {"batch_id": batch_id, "todo": len(todo), "results": results}
+        return {"batch_id": batch_id, "todo": len(todo), "results": results, "unreadable": unreadable}
     finally:
         DS.export()
 

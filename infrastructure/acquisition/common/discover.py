@@ -122,7 +122,12 @@ def derive_domain(host_tally: dict) -> tuple:
                          for h, v in sorted(host_tally.items(), key=lambda kv: -kv[1].get("n", 0))}}
     if not total:
         return None, {**receipt, "outcome": "no results"}
-    top_host, top = max(host_tally.items(), key=lambda kv: (kv[1].get("n", 0), kv[0]))
+    # Tiebreak on equal n: SCHOOL COVERAGE first (review) — the deterministic name tiebreak alone
+    # let an alphabetically-later 1-school host beat a 4-school host tied on n, then fail the
+    # min_schools check and wrongly reject a derivable district. Name stays as the final
+    # determinism anchor only.
+    top_host, top = max(host_tally.items(),
+                        key=lambda kv: (kv[1].get("n", 0), len(set(kv[1].get("schools", ()))), kv[0]))
     share = top.get("n", 0) / total
     n_schools = len(set(top.get("schools", ())))
     if share >= DERIVE_MIN_SHARE and n_schools >= DERIVE_MIN_SCHOOLS and is_scoping_domain(top_host):

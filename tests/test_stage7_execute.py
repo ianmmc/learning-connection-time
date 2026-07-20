@@ -202,6 +202,30 @@ def test_compose_flips_approved_to_executed(gov_session, monkeypatch):
 
 
 @govdb
+def test_compose_threads_confirmed_discovered_domains_into_the_builder(gov_session, monkeypatch):
+    """Review (#164): the dual-source guard is only as good as its inputs — the automatic back-edge
+    composer must pass the confirmed discovered-domain map, or a Millard-class district hits the
+    #229 skip on every future sweep despite its human-confirmed domain."""
+    from infrastructure.acquisition.common import discovered_domain as DDOM
+    gdb.init_precious_schema()
+    s = gov_session
+    hh = "zzddom"
+    _seed_req(s, hh, "3173740", "7->2", "high")
+    DDOM.confirm(s, "3173740", "mpsomaha.org", derived_in_batch="batch_00099", actor="zz")
+    s.flush()
+    seen = {}
+
+    def fake_build(year, bid, targets, **kw):
+        seen.update(kw)
+        return {"batch_id": bid, "districts": [{"district_id": d} for d in targets]}, []
+
+    monkeypatch.setattr(EX.Q1, "build_followup_batch", fake_build)
+    monkeypatch.setattr(EX.BSTORE, "create_batch", lambda sess, doc, **k: None)
+    EX.compose_followup_batch(handoff_hash=hh, actor="zz", session=s)
+    assert seen["discovered_domains"].get("3173740") == "mpsomaha.org"
+
+
+@govdb
 def test_compose_dry_run_previews_without_persist(gov_session, monkeypatch):
     """#154 modal: dry_run returns the preview (districts + per-band query_strategy) and flips NOTHING —
     create_batch is never called and the directives stay 'approved'."""

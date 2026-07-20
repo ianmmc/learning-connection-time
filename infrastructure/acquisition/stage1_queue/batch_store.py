@@ -66,6 +66,8 @@ def create_batch(sess, batch_doc: dict, *, batch_type: str = "first-run", actor:
             nces_school_counts=d.get("nces_school_counts", {}),
             band_processing_order=order, band_meta=band_meta, included=True,
             followup_json=({"seed_urls": seed_urls} if seed_urls else None),
+            domain_source=d.get("domain_source"),          # #164 dual-source audit trail
+            geo_json=d.get("geo"),                         # #164 geo render tokens {city, zip}
         ))
         by_school: dict = {}
         for b in order:
@@ -121,6 +123,10 @@ def _district_doc(sess, d: BatchDistrict, *, included_only: bool, with_flags: bo
     seed_urls = (d.followup_json or {}).get("seed_urls")   # 7->3 recapture URLs (#161)
     if seed_urls:
         doc["seed_urls"] = seed_urls
+    if d.domain_source:                                    # #164 dual-source audit trail
+        doc["domain_source"] = d.domain_source
+    if d.geo_json:                                         # #164 geo render tokens {city, zip}
+        doc["geo"] = d.geo_json
     if with_flags:
         doc["included"] = d.included
     return doc

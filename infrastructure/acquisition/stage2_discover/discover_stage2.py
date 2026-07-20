@@ -437,12 +437,14 @@ def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool 
     d.mkdir(parents=True, exist_ok=True)
     disc_path, cand_path = d / "discovery.json", d / "candidates.json"
 
-    old_schools, old_candidates = [], []
+    old_schools, old_candidates, old_geo = [], [], None
     if merge:
         # Each prior doc is read independently (live file, else newest aside) -- gating BOTH
         # on disc_path.exists() lost the union when a crashed attempt left an orphaned
         # candidates.json with no discovery.json (review finding on #265; see _prior_doc).
-        old_schools = _prior_doc(d, disc_path, "discovery").get("schools", [])
+        prior_disc = _prior_doc(d, disc_path, "discovery")
+        old_schools = prior_disc.get("schools", [])
+        old_geo = prior_disc.get("geo_discovery")   # #164 review: carry the derivation receipt forward
         old_candidates = _prior_doc(d, cand_path, "candidates").get("candidates", [])
 
     if disc_path.exists() or cand_path.exists():
@@ -492,6 +494,11 @@ def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool 
         # #164: the geo run's derivation receipt — the full host tally + thresholds + outcome,
         # and (when derived) the discovered_domain PROPOSAL awaiting human confirmation.
         discovery_doc["geo_discovery"] = geo_receipt
+    elif old_geo is not None:
+        # #164 review: a domain-scoped follow-up merge (geo_receipt=None) must not silently drop
+        # the district's earlier derivation receipt from the LIVE manifest — the aside file is
+        # attempt history, not where auditors look.
+        discovery_doc["geo_discovery"] = old_geo
 
     new_candidates = flatten(roster)
     if merge:

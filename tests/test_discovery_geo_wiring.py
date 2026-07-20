@@ -90,6 +90,48 @@ def test_write_discovery_carries_the_geo_receipt(tmp_path, monkeypatch):
     assert "raw_tally" in doc["geo_discovery"]            # the auditor sees the raw split too
 
 
+def test_write_discovery_merge_carries_the_prior_geo_receipt_forward(tmp_path, monkeypatch):
+    """Review: a later DOMAIN-scoped follow-up merge (geo_receipt=None) must not silently drop the
+    district's earlier derivation receipt from the LIVE manifest — the timestamped aside is attempt
+    history, not where auditors look."""
+    monkeypatch.setattr(D2, "RAW_DIR", tmp_path, raising=False)
+    monkeypatch.setattr(D2.paths, "RAW_CAPTURES", tmp_path)
+    roster = D2.build_roster(_district(), geo=True)
+    D2.run_wave1(roster, "", _search_that_finds_millard)
+    derived, receipt = D2.apply_geo_derivation(roster)
+    D2.write_discovery(_district(), roster, "batch_00099", geo_receipt=receipt)
+    # the follow-up round: domain-scoped, no geo receipt of its own
+    d2 = _district(geo=False)
+    d2["domain"] = "mpsomaha.org"
+    roster2 = D2.build_roster(d2)
+    D2.run_wave1(roster2, "mpsomaha.org",
+                 lambda q, dom: ("fake_serp", ["https://mpsomaha.org/schools/handbook.pdf"]))
+    ddir = D2.write_discovery(d2, roster2, "batch_00100", merge=True, geo_receipt=None)
+    doc = json.loads((ddir / "discovery.json").read_text())
+    assert doc["geo_discovery"]["derived_host"] == "mpsomaha.org"   # carried, not dropped
+
+
+def test_discover_district_writes_the_derived_domain_back(tmp_path, monkeypatch):
+    """Review: the derived host must land in discovery.json/candidates.json's TOP-LEVEL `domain`
+    (the field Stage 3/4 status views read), not only inside the geo_discovery receipt."""
+    from infrastructure.acquisition.stage2_discover import headless as H2
+    monkeypatch.setattr(D2, "RAW_DIR", tmp_path, raising=False)
+    monkeypatch.setattr(D2.paths, "RAW_CAPTURES", tmp_path)
+    batch = {"batch_id": "batch_00099", "batch_type": "first-run", "discovery_scope": "geo"}
+    district = _district()
+    registry: dict = {}
+    monkeypatch.setattr(H2.DS, "record_stage", lambda *a, **k: None)
+    monkeypatch.setattr(D2.CI, "cache_discovery", lambda ddir: None)   # DB-free test
+    H2.discover_district(batch, district, registry,
+                         wave1_search=_search_that_finds_millard,
+                         wave2_runner=lambda d, residual, dom: None)
+    disc = next(tmp_path.rglob("discovery.json"))
+    doc = json.loads(disc.read_text())
+    assert doc["domain"] == "mpsomaha.org"
+    cand = json.loads((disc.parent / "candidates.json").read_text())
+    assert cand["domain"] == "mpsomaha.org"
+
+
 # ---------------------------------------------------------------- build_batch scope axis
 def test_build_batch_scope_validation():
     with pytest.raises(ValueError):

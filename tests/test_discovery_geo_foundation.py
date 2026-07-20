@@ -67,6 +67,17 @@ def test_derive_domain_rejects_non_scoping_hosts():
     assert host is None
 
 
+def test_derive_domain_n_tie_breaks_on_school_coverage_not_name():
+    """Review: the name-only tiebreak let an alphabetically-later 1-school host beat a 4-school
+    host tied on n, then fail min_schools and wrongly reject a derivable district. Coverage
+    breaks the tie; name stays only as the final determinism anchor."""
+    tally = {"zzz-losing-domain.org": {"n": 10, "schools": ["s1"]},
+             "aaa-winning-domain.org": {"n": 10, "schools": ["s1", "s2", "s3", "s4"]}}
+    host, receipt = D.derive_domain(tally)
+    assert host == "aaa-winning-domain.org"
+    assert receipt["outcome"] == "derived" and receipt["n_schools"] == 4
+
+
 # ---------------------------------------------------------------- working store (govdb)
 @pytest.mark.integration
 @pytest.mark.govdb

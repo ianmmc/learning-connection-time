@@ -186,6 +186,25 @@ def test_journal_latest_line_wins_and_renamed_aside_leftovers_are_read(tmp_path)
     assert len(recs) == 1 and recs[0]["ok"] is True                  # the retry's line won
 
 
+def test_journal_same_second_collision_suffix_sorts_chronologically(tmp_path):
+    """Review: ASCII '-' < '.' makes `<TS>-1.jsonl` sort lexically BEFORE `<TS>.jsonl`, but the
+    `-1` aside is the SECOND (newer) rename in that second — plain sorted() replayed them
+    newest-first and a stale failure resurrected over the retried success. The chronological
+    key must put the unsuffixed file first."""
+    dist = _district(tmp_path, [{"url": "https://x.org/a/", "tools": []}])
+    h = C3._url_hash("https://x.org/a/")
+    # First rename-aside in the second (older attempt): the retryable failure.
+    (dist["dir"] / "captures.journal.20260719T160000Z.jsonl").write_text(
+        json.dumps({"url": "https://x.org/a/", "hash": h, "ok": False, "files": {},
+                    "err": "not_attempted (capture deadline reached)", "source": "discovered"}) + "\n")
+    # Second rename-aside in the SAME second (newer attempt): the successful retry.
+    (dist["dir"] / "captures.journal.20260719T160000Z-1.jsonl").write_text(
+        json.dumps({"url": "https://x.org/a/", "hash": h, "ok": True, "kind": "html",
+                    "files": {"txt": "page.txt"}, "source": "discovered"}) + "\n")
+    recs = C3.reconstruct_captures(dist)
+    assert len(recs) == 1 and recs[0]["ok"] is True                  # the -1 (newer) file won
+
+
 def test_write_manifest_consumes_all_journals(tmp_path):
     """Review fix on #563: a LANDED manifest supersedes every journal — write_manifest sweeps the
     live journal AND renamed-aside crash leftovers, so a future reconstruct (after a re-discovery

@@ -7,7 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'fs';
-import { noteFileResult, noteFinalUrl, stripFragment, seedFromPriorCaptures, isRetryableErr } from './capture_discovery.mjs';
+import { noteFileResult, noteFinalUrl, stripFragment, seedFromPriorCaptures, isRetryableErr, planSha256 } from './capture_discovery.mjs';
 
 test('noteFileResult records a files{} entry only on success (#18)', () => {
   const rec = { files: {} };
@@ -134,4 +134,20 @@ test('#117 pins: the per-task journal is appended per record, renamed aside at s
   // and sweeping leftovers is what stops a future reconstruct resurrecting a defunct round.
   assert.match(src, /writeVersioned\(path\.join\(ROOT, did, 'captures\.json'\)[\s\S]{0,900}?f\.startsWith\('captures\.journal\.'\)[\s\S]{0,200}?unlinkSync/,
     'every journal is swept only once captures.json supersedes it');
+});
+
+test('planSha256 is order/fragment/duplicate-invariant and matches the Python mirror shape (#116 review)', () => {
+  const a = planSha256([{ url: 'https://x.org/b#frag' }, { url: 'https://x.org/a' }]);
+  const b = planSha256([{ url: 'https://x.org/a' }, { url: 'https://x.org/b' }, { url: 'https://x.org/b#other' }]);
+  assert.equal(a, b);                                          // same plan -> same fingerprint
+  const c = planSha256([{ url: 'https://x.org/a' }]);
+  assert.notEqual(a, c);                                       // a rewritten plan is detectable
+  // cross-language parity pin: headless._plan_sha256 (Python) asserts this same literal —
+  // if either side's normalization drifts, one of the two suites breaks.
+  assert.equal(b, '048ef948ceafd914c4c1fbbb1ca2f55820564573dfa5a5e2a19fe3914e216cef');
+  // pin the runCapture wiring: retryable-only + a mismatched plan sha must abort loudly (a
+  // concurrent Stage-2 rewrite between selection and this read), never conflate two plans.
+  const src = readFileSync(new URL('./capture_discovery.mjs', import.meta.url), 'utf8');
+  assert.match(src, /retryableOnly && planSha && planSha !== planSha256\(meta\.candidates\)[\s\S]{0,400}?process\.exit\(3\)/,
+    'a plan fingerprint mismatch in retryable-only mode must abort the run');
 });

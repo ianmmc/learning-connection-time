@@ -249,7 +249,20 @@ def _journal_records(ddir: Path) -> dict:
     then degrades to the folder-scan path exactly as before #117."""
     out: dict = {}
     live = ddir / "captures.journal.jsonl"
-    paths_ = sorted(ddir.glob("captures.journal.*.jsonl")) + ([live] if live.exists() else [])
+
+    def _aside_key(p: Path) -> tuple:
+        # Chronological, NOT lexicographic (review): the same-second collision guard names asides
+        # `<TS>-1`, `<TS>-2`, ... and ASCII '-' < '.' sorts `<TS>-1.jsonl` BEFORE `<TS>.jsonl` —
+        # inverting oldest-first for the exact collision the guard exists to survive. Parse the
+        # stem into (timestamp, collision_n): the unsuffixed file is n=0 (the FIRST rename-aside
+        # in that second), `-N` files follow in N order. tsSuffix strips '-'/':' so the timestamp
+        # itself never contains '-'.
+        stem = p.name[len("captures.journal."):-len(".jsonl")]
+        ts, sep, n = stem.partition("-")
+        return (ts, int(n) if sep and n.isdigit() else 0)
+
+    paths_ = sorted(ddir.glob("captures.journal.*.jsonl"), key=_aside_key) \
+        + ([live] if live.exists() else [])
     for jp in paths_:
         try:
             lines = jp.read_text().splitlines()

@@ -89,6 +89,11 @@ _PRECIOUS_ALTERS = [
     "ALTER TABLE batch ADD COLUMN IF NOT EXISTS abandon_reason text",              # #168
     "ALTER TABLE batch ADD COLUMN IF NOT EXISTS first_approved_at text",           # #168 review (durable ever-approved)
     "ALTER TABLE batch ADD COLUMN IF NOT EXISTS discovery_scope text DEFAULT 'domain'",  # #164 (scope-pure batches: domain | geo)
+    # #164 review: per-district admission-source audit trail + geo render tokens. Without these the
+    # DB round-trip (create_batch -> to_working_doc) silently dropped both, and a geo batch ran
+    # UNSCOPED queries (#227 class). Nullable, additive, going-forward only.
+    "ALTER TABLE batch_district ADD COLUMN IF NOT EXISTS domain_source text",
+    "ALTER TABLE batch_district ADD COLUMN IF NOT EXISTS geo_json json",
     # Backfill: any currently-approved batch was approved at least once. Guarded (only fills NULLs) →
     # idempotent no-op on re-run. Covers pre-existing rows so the abandon guard + attempted-set logic
     # see their ever-approved history. (A row reopened-and-left-draft before this column existed can't

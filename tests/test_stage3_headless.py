@@ -204,10 +204,13 @@ class TestRetryPartial:
                 json.dumps([{"hash": "a", "url": "http://111.org/a", "ok": True}]))
             return types.SimpleNamespace(returncode=0, stdout="", stderr="")
 
+        plan_sha = H3._plan_sha256(tmp_path / "111_d111")   # BEFORE the run overwrites captures
         summary = H3.retry_partial(_batch("111", "222", "333"), _run=run)
         assert summary["todo"] == 1
         assert [c[4] for c in ran] == ["111_d111"]
-        assert ran[0][-1] == "retryable-only"           # the Node run gets the #116 mode flag
+        assert "retryable-only" in ran[0]               # the Node run gets the #116 mode flag
+        # review: the plan fingerprint rides along so Node can detect a concurrent Stage-2 rewrite
+        assert ran[0][-1] == f"plan-sha256={plan_sha}"
         assert summary["results"][0]["outcome"] == "captured_all"   # honest re-resolve
 
     def test_retryable_failure_off_the_capture_plan_does_not_trigger(
@@ -232,6 +235,41 @@ class TestRetryPartial:
         summary = H3.retry_partial(_batch("111"), _run=lambda *a, **k: (_ for _ in ()).throw(
             AssertionError("must not dispatch")))
         assert summary["todo"] == 0
+
+    def test_plan_sha_matches_the_node_side_pin(self, tmp_path):
+        """Cross-language parity (#116 review): _plan_sha256 must equal mjs planSha256 for the
+        same plan — the same literal is pinned in capture_records.test.mjs. Fragment-stripped,
+        sorted, deduped."""
+        d = tmp_path / "x"
+        d.mkdir()
+        (d / "candidates.json").write_text(json.dumps({"candidates": [
+            {"url": "https://x.org/a"}, {"url": "https://x.org/b"}, {"url": "https://x.org/b#other"}]}))
+        assert H3._plan_sha256(d) == \
+            "048ef948ceafd914c4c1fbbb1ca2f55820564573dfa5a5e2a19fe3914e216cef"
+
+    def test_unreadable_manifest_is_loud_not_nothing_to_retry(
+            self, tmp_path, monkeypatch, inmem_registry):
+        """Review (#267 convention): a corrupt/mis-shaped manifest must NEVER silently read as
+        'nothing retryable' — the district is reported `unreadable` (summary + event stream),
+        skipped, and the rest of the batch proceeds."""
+        monkeypatch.setattr(C3, "RAW_DIR", tmp_path)
+        monkeypatch.setattr(H3, "RAW_DIR", tmp_path)
+        d = self._seed_partial(tmp_path, "111", "D111",
+                               [{"hash": "a", "url": "http://111.org/a", "ok": False,
+                                 "err": "not_attempted (capture deadline reached)"}])
+        # top-level list where a dict is expected -> AttributeError inside _retryable_failures
+        (d / "candidates.json").write_text(json.dumps([{"url": "http://111.org/a"}]))
+        events = []
+        summary = H3.retry_partial(_batch("111"), on_event=lambda k, p: events.append((k, p)),
+                                   _run=lambda *a, **k: (_ for _ in ()).throw(
+                                       AssertionError("must not dispatch")))
+        assert summary["todo"] == 0
+        assert summary["unreadable"][0]["district_id"] == "111"
+        assert "AttributeError" in summary["unreadable"][0]["error"]
+        kinds = [k for k, _ in events]
+        assert "retry_unreadable" in kinds
+        reconciled = next(p for k, p in events if k == "retry_reconciled")
+        assert reconciled["unreadable"] == ["111"]
 
     def test_fragment_variants_still_match_the_plan(self, tmp_path, monkeypatch, inmem_registry):
         """URL matching uses _strip_fragment parity — a candidates.json URL with a #fragment must

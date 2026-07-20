@@ -703,6 +703,16 @@ def _backup_discovered_domains(con) -> int:
              "FROM discovered_domain ORDER BY district_id", paths.DISCOVERED_DOMAINS_JSON)
 
 
+def _backup_discovery_policy(con) -> int:
+    """Back the precious scope-policy event log (#164) to its tracked JSON twin. The twin path is
+    already in TRACKED_BACKUPS + the pre-commit sweep; this exporter was the missing piece
+    (review) — every future set_policy/advance_one_step caller (PR 3b's auto-advance, a console
+    endpoint) MUST call this after con.commit(), the sibling convention."""
+    return _backup_precious_table(
+        con, "SELECT event_id, policy, previous, actor, trigger, created_at "
+             "FROM discovery_policy_event ORDER BY event_id", paths.DISCOVERY_POLICY_JSON)
+
+
 @app.post("/api/discovered-domain")
 async def discovered_domain_confirm(payload: dict):
     """#164: confirm a geo run's derived-host PROPOSAL as the district's discovered domain (the
@@ -721,7 +731,8 @@ async def discovered_domain_confirm(payload: dict):
                                tally=payload.get("tally"), actor=actor)
             out = {"district_id": row.district_id, "domain": row.domain,
                    "confirmed_by": row.confirmed_by, "confirmed_at": row.confirmed_at}
-            _backup_discovered_domains(con)
+            con.commit()   # persist BEFORE the backup (review): a backup-write failure must not
+            _backup_discovered_domains(con)   # roll back the human's confirmation with it
     except ValueError as e:
         raise HTTPException(400, str(e))
     return out
@@ -1045,6 +1056,11 @@ async def queue_create(payload: dict):
         raise HTTPException(400, str(e))
     from infrastructure.acquisition.common import discovered_domain as DDOM
     from infrastructure.acquisition.common import discovery_policy as DPOL
+    # SNAPSHOT SEMANTICS (review, deliberate): policy + confirmed domains are read ONCE here and
+    # build_batch (pure by design) runs ~10-20s on that snapshot — a domain confirmed or a policy
+    # flipped mid-build is not reflected in THIS batch. Bounded + self-healing (the district is
+    # simply pooled per the snapshot for one compose; the next create sees the new state), so no
+    # lock. PR 3b's auto-advance writer inherits this contract knowingly.
     with gdb.session_scope() as con:
         policy = DPOL.get_policy(con)
         discovered = DDOM.all_confirmed(con)
@@ -2366,8 +2382,8 @@ async def aggregate_exclude(payload: dict):
         con.execute(text("INSERT INTO band_exclusion (district_id, band, norm_school, school, reason, "
                          "actor, created_at) VALUES (:d, :b, :n, :s, :r, :a, :t)"),
                     {"d": did, "b": band, "n": key, "s": school, "r": reason, "a": actor, "t": _u7()})
+        con.commit()   # persist BEFORE the backup (review): a backup failure must not roll back the decision
         _backup_band_exclusions(con)
-        con.commit()
     return {"ok": True, "district_id": did, "band": band, "norm_school": key}
 
 
@@ -2388,8 +2404,8 @@ async def aggregate_exclude_restore(payload: dict):
                         {"d": did, "b": band, "n": norm_school(school)}).rowcount
         if not n:
             raise HTTPException(404, f"no exclusion for {school!r} in {band} of {did}")
+        con.commit()   # persist BEFORE the backup (review): a backup failure must not roll back the decision
         _backup_band_exclusions(con)
-        con.commit()
     return {"ok": True}
 
 
@@ -2453,8 +2469,8 @@ async def aggregate_human_add(payload: dict):
                          "VALUES (:d, :b, :n, :s, :st, :en, :u, :r, :a, :t)"),
                     {"d": did, "b": band, "n": key, "s": school, "st": start, "en": end,
                      "u": source, "r": reason, "a": actor, "t": _u7()})
+        con.commit()   # persist BEFORE the backup (review): a backup failure must not roll back the decision
         _backup_human_added(con)
-        con.commit()
     return {"ok": True, "district_id": did, "band": band, "norm_school": key, "gross": gross}
 
 
@@ -2473,8 +2489,8 @@ async def aggregate_human_add_remove(payload: dict):
                         {"d": did, "b": band, "n": norm_school(school)}).rowcount
         if not n:
             raise HTTPException(404, f"no hand-added entry for {school!r} in {band} of {did}")
+        con.commit()   # persist BEFORE the backup (review): a backup failure must not roll back the decision
         _backup_human_added(con)
-        con.commit()
     return {"ok": True}
 
 
@@ -2532,8 +2548,8 @@ async def aggregate_slot_assign(payload: dict):
             "VALUES (:d, :b, :s, :n, :sc, :dp, :r, :a, :t)"),
             {"d": did, "b": band, "s": slot_id, "n": key, "sc": school, "dp": disposition,
              "r": reason, "a": actor, "t": _u7()})
+        con.commit()   # persist BEFORE the backup (review): a backup failure must not roll back the decision
         _backup_slot_assignments(con)
-        con.commit()
     return {"ok": True, "district_id": did, "band": band, "norm_school_fact": key,
             "disposition": disposition}
 
@@ -2555,8 +2571,8 @@ async def aggregate_slot_assign_remove(payload: dict):
                         {"d": did, "b": band, "s": slot_id, "n": norm_school(school)}).rowcount
         if not n:
             raise HTTPException(404, f"no slot disposition for {school!r} in {band} of {did}")
+        con.commit()   # persist BEFORE the backup (review): a backup failure must not roll back the decision
         _backup_slot_assignments(con)
-        con.commit()
     return {"ok": True}
 
 

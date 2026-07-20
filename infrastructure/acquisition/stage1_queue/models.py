@@ -76,6 +76,13 @@ class BatchDistrict(gdb.Base):
     # follow-up shaping (#161): per-district {"seed_urls": [...]} for a 7->3 recapture directive.
     # Nullable (only follow-up batches set it); additive column via common/db.py _PRECIOUS_ALTERS.
     followup_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    # #164 review: the dual-source admission audit trail ('nces' | 'discovered') and the geo
+    # render tokens {"city","zip"} — persisted so they survive the DB round-trip every stage view
+    # takes (_batch_from_db -> to_working_doc); without these columns a geo-scoped district lost
+    # its tokens on read-back and Stage 2 silently rendered UNSCOPED queries (the #227 class).
+    # Nullable (only dual-source/geo districts set them); additive via _PRECIOUS_ALTERS.
+    domain_source: Mapped[str | None] = mapped_column(String, nullable=True)
+    geo_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
 
 class BatchSchool(gdb.Base):

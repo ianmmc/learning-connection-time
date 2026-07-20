@@ -19,7 +19,7 @@
 //
 // Modes:
 //   node capture_discovery.mjs <ROOT> [CONC]                       -- capture every district under ROOT
-//   node capture_discovery.mjs district <ROOT> <DISTRICT_DIR> [CONC] [DEADLINE_S] [retryable-only]
+//   node capture_discovery.mjs district <ROOT> <DISTRICT_DIR> [CONC] [DEADLINE_S] [retryable-only] [plan-sha256=<hex>]
 //       -- capture ONE district dir (the console's batch-scoped, per-district runner -- never
 //       re-captures the rest of ROOT). DEADLINE_S>0 = node-owns-shutdown: write a partial manifest on
 //       the deadline, never orphan. `retryable-only` (#116 partial retry): seed from the prior manifest
@@ -576,7 +576,18 @@ async function htmlFingerprintFor(ctx, url) {
 }
 
 // ============================ NORMAL CAPTURE ============================
-async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly = false) {
+export function planSha256(candidates) {
+  // #116 review: the capture-plan fingerprint — sha256 over the SORTED UNIQUE fragment-stripped
+  // candidate URLs. Python's retry selection computes the same (headless._plan_sha256) over the
+  // candidates.json it decided on; this run recomputes over its own read. districts can sit in
+  // two batches at once (follow-ups re-include by design) with only per-batch run locks, so a
+  // concurrent Stage-2 rewrite between the two reads is reachable — mismatch must fail LOUDLY,
+  // never silently conflate two discovery rounds' plans in one manifest.
+  const urls = [...new Set(candidates.map((c) => stripFragment(c.url)))].sort();
+  return createHash('sha256').update(urls.join('\n')).digest('hex');
+}
+
+async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly = false, planSha = null) {
   // `only` (a Set of district-dir basenames) scopes the run to specific districts -- the console's
   // batch-scoped, per-district runner uses it so a capture run touches only the batch in flight, never
   // re-captures every district already under ROOT. null = capture every dir with a candidates.json.
@@ -592,6 +603,13 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
   const tasks = [];
   for (const did of dirs) {
     const meta = JSON.parse(readFileSync(path.join(ROOT, did, 'candidates.json')));
+    if (retryableOnly && planSha && planSha !== planSha256(meta.candidates)) {
+      // The plan changed between Python's retry selection and this read (a concurrent Stage-2
+      // rewrite from another batch) -- abort loudly; the runner records `failed` and a re-run
+      // re-selects against the current plan.
+      console.error(`${did}: candidates.json changed since retry selection (plan fingerprint mismatch) -- aborting; re-run retry`);
+      process.exit(3);
+    }
     const capDir = path.join(ROOT, did, 'captures');
     mkdirSync(capDir, { recursive: true });
     // #117: the per-task journal. One JSONL line per record as it COMPLETES, so a hard kill
@@ -1092,7 +1110,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     //   node capture_discovery.mjs district <ROOT> <DISTRICT_DIR> [CONC] [DEADLINE_S]
     // DEADLINE_S>0 enables node-owns-shutdown (partial manifest on deadline) — the console passes it.
     await runCapture(argv[1], parseInt(argv[3] || '5', 10), new Set([argv[2]]),
-      parseInt(argv[4] || '0', 10) * 1000, argv[5] === 'retryable-only');
+      parseInt(argv[4] || '0', 10) * 1000, argv[5] === 'retryable-only',
+      (argv[6] || '').startsWith('plan-sha256=') ? argv[6].slice('plan-sha256='.length) : null);
   } else {
     await runCapture(argv[0], parseInt(argv[1] || '5', 10));
   }

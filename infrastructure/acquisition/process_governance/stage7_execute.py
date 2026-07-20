@@ -32,6 +32,7 @@ from typing import NamedTuple
 
 from infrastructure.acquisition.common import budget as BUD
 from infrastructure.acquisition.common import db as gdb
+from infrastructure.acquisition.common import discovered_domain as DDOM
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import school_sampling as SS
 from infrastructure.acquisition.process_governance import stage6_dispatch as H6
@@ -530,7 +531,13 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
         plan["slot_targets"] = slot_targets
         batch_doc, skipped = Q1.build_followup_batch(year, g.batch_id, plan["targets"],
                                                      attempted_by_did=attempted, seed_urls_by_did=seed_urls,
-                                                     preferred_by_did=slot_targets)
+                                                     preferred_by_did=slot_targets,
+                                                     # #164 review: the dual-source guard is only as good
+                                                     # as its inputs — without this, a human-confirmed
+                                                     # discovered domain was invisible to every automatic
+                                                     # back-edge sweep and the district hit the #229 skip
+                                                     # forever.
+                                                     discovered_domains=DDOM.all_confirmed(s))
         if not batch_doc["districts"]:            # every target district was un-buildable (no coverage)
             return {**_empty_result(), "spilled": plan["spilled"], "blocked": plan["blocked"],
                     "deferred": plan["deferred"], "suppressed": plan["suppressed"], "skipped": skipped,

@@ -171,6 +171,21 @@ def select_schools(batch_id: str, district_id: str, district_school_index: dict,
     return order, result
 
 
+def resolve_scoping_domain(website: str, did: str, discovered_domains: dict) -> tuple[str, str]:
+    """(domain, source): the NCES website when usable, else a human-CONFIRMED discovered domain
+    (#164 — the second, clearly-labeled admission source; NCES itself is never modified), else
+    ('', ''). The ONE dual-source resolution rule — shared by build_batch and
+    build_followup_batch so the two composers can never drift (review: the follow-up path's
+    inline copy labeled source 'discovered' even when the lookup came back empty)."""
+    d = domain_of(website)
+    if is_scoping_domain(d):
+        return d, "nces"
+    dd = discovered_domains.get(did, "")
+    if is_scoping_domain(dd):
+        return dd, "discovered"
+    return "", ""
+
+
 def validate_scope_combo(scope: str, batch_type: str) -> None:
     """#569 review: scope-purity includes the TYPE axis — geo composes first-runs only.
     Benchmark is NEVER geo (a geo-scoped batch_00000 would carry derived-host discovery inside
@@ -200,19 +215,6 @@ def build_batch(year: str, n: int, batch_id: str, registry: dict, *, scope: str 
         raise ValueError(f"scope must be 'domain' or 'geo' (got {scope!r})")
     pool, sch_idx, gap_excluded = eligible_pool(year, registry)
     discovered_domains = discovered_domains or {}
-
-    def _scoping_domain(info, did) -> tuple[str, str]:
-        """(domain, source): the NCES website when usable, else a human-CONFIRMED discovered
-        domain (#164 — the third, clearly-labeled source; NCES itself is never modified),
-        else ('', '')."""
-        d = domain_of(info["website"])
-        if is_scoping_domain(d):
-            return d, "nces"
-        dd = discovered_domains.get(did, "")
-        if is_scoping_domain(dd):
-            return dd, "discovered"
-        return "", ""
-
     domain_excluded = []
     if scope == "domain":
         # #229 pre-flight guard: refuse any district with NO usable scoping domain from EITHER
@@ -224,7 +226,7 @@ def build_batch(year: str, n: int, batch_id: str, registry: dict, *, scope: str 
         # refused population is exactly the GEO draw pool below. Benchmark (batch_00000) is exempt
         # by structure: it calls eligible_pool directly (own build path) and never routes here.
         for did in list(pool):
-            if _scoping_domain(pool[did], did) == ("", ""):
+            if resolve_scoping_domain(pool[did]["website"], did, discovered_domains) == ("", ""):
                 info = pool.pop(did)
                 domain_excluded.append({"district_id": did, "name": info["name"],
                                         "state": info["state"], "website": info["website"]})
@@ -235,7 +237,7 @@ def build_batch(year: str, n: int, batch_id: str, registry: dict, *, scope: str 
         # nothing here is unscoped-kept.
         if geo_pool == "blank":
             for did in list(pool):
-                if _scoping_domain(pool[did], did) != ("", ""):
+                if resolve_scoping_domain(pool[did]["website"], did, discovered_domains) != ("", ""):
                     pool.pop(did)
     level_counts = S.school_level_counts(year)   # did -> {total, by_level} (the topology denominator)
     picked_ids = stratified_pick(pool, batch_id, n=n)
@@ -243,7 +245,7 @@ def build_batch(year: str, n: int, batch_id: str, registry: dict, *, scope: str 
     districts_out = []
     for did in picked_ids:
         info = pool[did]
-        domain, domain_source = _scoping_domain(info, did)
+        domain, domain_source = resolve_scoping_domain(info["website"], did, discovered_domains)
         order, schools_by_band = select_schools(batch_id, did, sch_idx.get(did, {}))
         d_out = {
             "district_id": did,
@@ -355,10 +357,8 @@ def build_followup_batch(year: str, batch_id: str, targets: dict, *,
         # hard refusal when neither exists — an unscoped rediscover is the #227 contamination.
         # A GEO-scoped follow-up (the #164 escalation loops) skips the guard by design: its
         # containment is the derive-and-re-gate, not site: scoping.
-        domain, domain_source = domain_of(info["website"]), "nces"
-        if not is_scoping_domain(domain):
-            domain, domain_source = discovered_domains.get(did, ""), "discovered"
-        if scope == "domain" and not is_scoping_domain(domain):
+        domain, domain_source = resolve_scoping_domain(info["website"], did, discovered_domains)
+        if scope == "domain" and not domain:
             skipped.append({"district_id": did, "reason": "no usable scoping domain -- would run UNSCOPED discovery (#229)"})
             continue
         dsi = sch_idx.get(did, {})
@@ -404,7 +404,7 @@ def build_followup_batch(year: str, batch_id: str, targets: dict, *,
             "schools_by_band": schools_by_band,
             "seed_urls": seed_urls_by_did.get(did, []),    # explicit 7->3 recapture URLs (#161)
         }
-        if scope == "domain" and is_scoping_domain(domain):
+        if scope == "domain" and domain_source:
             d_out["domain_source"] = domain_source   # 'nces' | 'discovered' — the audit trail (#164)
         if scope == "geo":
             d_out["geo"] = {"city": info.get("city", ""), "zip": info.get("zip", "")}

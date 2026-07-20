@@ -293,6 +293,12 @@ def discover_district(batch: dict, district: dict, registry: dict, *,
         # a derivation re-gates everything scoped AND becomes wave 2's scoping host below.
         derived, geo_receipt = D2.apply_geo_derivation(roster)
         domain = derived or ""
+        if derived:
+            # #164 review: write the derived host back onto the district dict — write_discovery
+            # builds discovery.json/candidates.json's top-level `domain` from district.get("domain")
+            # (blank at geo batch-composition time), and Stage 3/4 status views read that field;
+            # without this the live manifests showed domain="" beside a correct derived_host.
+            district["domain"] = derived
     residual = D2.residual_schools(roster)
     if residual and (not geo or domain):
         # geo without a derived host NEVER runs wave 2 (it would be an unscoped national

@@ -415,6 +415,24 @@ class TestDiscoveryScopeAxis:
         BS.create_batch(sess, _doc("batch_default_axis"), actor="t")
         assert BS.to_working_doc(sess, "batch_default_axis")["discovery_scope"] == "domain"
 
+    def test_geo_and_domain_source_survive_the_db_round_trip(self, sess):
+        """Review (#164): the per-district geo tokens + domain_source were silently DROPPED by
+        create_batch/_district_doc — a geo batch read back via to_working_doc (the console's only
+        resolve path) rendered UNSCOPED queries (#227 class). Round-trip every projection."""
+        doc = _doc("batch_geo_rt")
+        doc["discovery_scope"] = "geo"
+        doc["districts"][0]["geo"] = {"city": "OMAHA", "zip": "68137"}
+        doc["districts"][0]["domain_source"] = "discovered"
+        BS.create_batch(sess, doc, actor="t")
+        for proj in (BS.to_working_doc(sess, "batch_geo_rt"),
+                     BS.to_receipt_doc(sess, "batch_geo_rt"),
+                     BS.to_view(sess, "batch_geo_rt")):
+            d1 = next(d for d in proj["districts"] if d["district_id"] == "D1")
+            assert d1["geo"] == {"city": "OMAHA", "zip": "68137"}
+            assert d1["domain_source"] == "discovered"
+            d2 = next(d for d in proj["districts"] if d["district_id"] != "D1")
+            assert "geo" not in d2 and "domain_source" not in d2   # absent stays absent
+
 
 class TestFollowupRounds:
     """#164 — ladder position derived from batch history, never a stored counter."""
