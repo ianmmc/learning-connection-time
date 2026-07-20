@@ -33,6 +33,15 @@ logger = logging.getLogger(__name__)
 
 
 # Standard schema for normalized district data
+VALID_STATE_CODES = frozenset([
+    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+    'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+    'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+    'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+    'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY',
+    'DC', 'PR',
+])
+
 NORMALIZED_SCHEMA = {
     'district_id': str,          # Unique district identifier
     'district_name': str,        # District name
@@ -130,20 +139,31 @@ def normalize_state_data(df: pd.DataFrame, state: str, year: str) -> pd.DataFram
             'Teachers': 'instructional_staff',
         }
     else:
-        # Generic mapping attempt
+        # Generic mapping attempt — FIRST match per target only: mapping two
+        # source columns to the same name made rename() emit duplicate columns
+        # and broke every downstream selection (issues #311/#313)
         column_map = {}
+        taken = set()
         for col in df.columns:
             col_lower = col.lower()
-            if 'id' in col_lower or 'code' in col_lower:
+            if ('id' in col_lower or 'code' in col_lower) and 'district_id' not in taken:
                 column_map[col] = 'district_id'
-            elif 'name' in col_lower or 'district' in col_lower:
+            elif ('name' in col_lower or 'district' in col_lower) and 'district_name' not in taken:
                 column_map[col] = 'district_name'
-            elif 'enroll' in col_lower or 'student' in col_lower:
+            elif ('enroll' in col_lower or 'student' in col_lower) and 'enrollment' not in taken:
                 column_map[col] = 'enrollment'
-            elif 'teacher' in col_lower or 'staff' in col_lower:
+            elif ('teacher' in col_lower or 'staff' in col_lower) and 'instructional_staff' not in taken:
                 column_map[col] = 'instructional_staff'
-    
+            else:
+                continue
+            taken.add(column_map[col])
+
     normalized = df.rename(columns=column_map)
+    if 'district_id' not in normalized.columns:
+        raise ValueError(
+            f"Could not identify a district_id column in {state} data "
+            f"(columns: {list(df.columns)}) — add an explicit mapping"
+        )
     
     # Select available columns
     available_cols = [col for col in NORMALIZED_SCHEMA.keys() if col in normalized.columns]
@@ -188,11 +208,15 @@ def merge_grade_level_data(
         logger.info(f"Merging grade-level enrollment from {enrollment_file}")
         df_enrollment = pd.read_csv(enrollment_file)
 
+        # suffixes=('', '_grade_file'): an overlapping column name used to
+        # become enrollment_x/enrollment_y, losing the canonical name
+        # downstream (issue #312)
         result = pd.merge(
             result,
             df_enrollment,
             on='district_id',
-            how='left'
+            how='left',
+            suffixes=('', '_grade_file')
         )
 
         logger.info(f"  Added {len(df_enrollment.columns)} enrollment columns")
@@ -206,7 +230,8 @@ def merge_grade_level_data(
             result,
             df_staffing,
             on='district_id',
-            how='left'
+            how='left',
+            suffixes=('', '_grade_file')
         )
 
         logger.info(f"  Added {len(df_staffing.columns)} staffing columns")
@@ -231,20 +256,26 @@ def validate_normalized_data(df: pd.DataFrame) -> bool:
     if not validate_required_columns(df, required, "Normalized data"):
         return False
 
-    # Check for null values in key columns
-    for col in ['district_id', 'state']:
+    # Check for null values in key columns (district_name was omitted —
+    # issue #430; enrollment/staff nulls flow into LCT ratios downstream, so
+    # surface their counts too — issue #429)
+    for col in ['district_id', 'district_name', 'state', 'enrollment', 'instructional_staff']:
+        if col not in df.columns:
+            continue
         null_count = df[col].isna().sum()
         if null_count > 0:
             logger.warning(f"  {null_count:,} null values in {col}")
 
     # Check data types
+    # Accept ANY numeric dtype (float32/Int64/nullable were wrongly rejected
+    # by the ['float64','int64'] whitelist — issue #392)
     if 'enrollment' in df.columns:
-        if df['enrollment'].dtype not in ['float64', 'int64']:
+        if not pd.api.types.is_numeric_dtype(df['enrollment']):
             logger.error("enrollment column is not numeric")
             return False
 
     if 'instructional_staff' in df.columns:
-        if df['instructional_staff'].dtype not in ['float64', 'int64']:
+        if not pd.api.types.is_numeric_dtype(df['instructional_staff']):
             logger.error("instructional_staff column is not numeric")
             return False
     
@@ -319,6 +350,12 @@ def main():
     if args.source == 'state' and not args.state:
         logger.error("--state required for state data")
         return 1
+    if args.state:
+        args.state = args.state.upper()
+        if args.state not in VALID_STATE_CODES:
+            # A typo used to flow silently into filenames/data_source (issue #467)
+            logger.error(f"Invalid state code: {args.state}")
+            return 1
 
     # Load input data
     if not args.input_file.exists():
@@ -357,12 +394,19 @@ def main():
 
         if 'instructional_staff' not in normalized.columns:
             # Calculate total instructional staff from grade-level data
-            if all(col in normalized.columns for col in ['instructional_staff_elementary', 'instructional_staff_middle', 'instructional_staff_high']):
-                normalized['instructional_staff'] = (
-                    normalized['instructional_staff_elementary'].fillna(0) +
-                    normalized['instructional_staff_middle'].fillna(0) +
-                    normalized['instructional_staff_high'].fillna(0)
-                )
+            level_cols = ['instructional_staff_elementary', 'instructional_staff_middle', 'instructional_staff_high']
+            if all(col in normalized.columns for col in level_cols):
+                # Coerce to numeric FIRST (string cells would concatenate or
+                # crash the sum — issue #391), logging what got coerced away
+                # rather than silently NaN-ing it (issues #431/#432). min_count=1
+                # keeps an all-missing district as NaN instead of fabricating 0.
+                for col in level_cols:
+                    before_na = normalized[col].isna().sum()
+                    normalized[col] = pd.to_numeric(normalized[col], errors='coerce')
+                    coerced = normalized[col].isna().sum() - before_na
+                    if coerced:
+                        logger.warning(f"  {coerced:,} non-numeric values coerced to NaN in {col}")
+                normalized['instructional_staff'] = normalized[level_cols].sum(axis=1, min_count=1)
                 logger.info("Added total instructional_staff column from grade-level sum")
             elif 'teachers_total' in normalized.columns:
                 normalized['instructional_staff'] = normalized['teachers_total']

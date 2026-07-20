@@ -33,6 +33,7 @@ Examples:
 
 import argparse
 import logging
+import re
 import sys
 from pathlib import Path
 import pandas as pd
@@ -73,9 +74,11 @@ def extract_grade_level_staffing(
     df_staff = pd.read_csv(staff_file, low_memory=False)
 
     # Filter for target categories and Category Set A (most granular, non-derived)
+    # Whitespace-tolerant matching: stray spaces in a vintage's label made
+    # the exact == fail and silently dropped every staff row (issue #302)
     mask = (
-        (df_staff['STAFF'].isin(target_categories)) &
-        (df_staff['TOTAL_INDICATOR'] == 'Category Set A')
+        (df_staff['STAFF'].str.strip().isin(target_categories)) &
+        (df_staff['TOTAL_INDICATOR'].str.strip() == 'Category Set A')
     )
 
     df_staff = df_staff[mask].copy()
@@ -110,9 +113,16 @@ def extract_grade_level_staffing(
 
     # Merge staff and enrollment
     logger.info("Merging staff and enrollment data...")
+    # Dedup the enrollment side first — a duplicate district_id would
+    # Cartesian-multiply staff rows and inflate counts (issue #390)
+    enroll_cols = df_enrollment[['district_id', 'enrollment_elementary', 'enrollment_middle', 'enrollment_high', 'enrollment_total']]
+    dupes = enroll_cols['district_id'].duplicated().sum()
+    if dupes:
+        logger.warning(f"  Dropping {dupes} duplicate district_id rows from enrollment (keeping first)")
+        enroll_cols = enroll_cols.drop_duplicates(subset='district_id', keep='first')
     df = pd.merge(
         df_staff_wide,
-        df_enrollment[['district_id', 'enrollment_elementary', 'enrollment_middle', 'enrollment_high', 'enrollment_total']],
+        enroll_cols,
         on='district_id',
         how='left'
     )
@@ -151,6 +161,18 @@ def extract_grade_level_staffing(
 
     df['instructional_staff_middle'] = (df['Secondary Teachers'] * df['middle_proportion']).round(2)
     df['instructional_staff_high'] = (df['Secondary Teachers'] * df['high_proportion']).round(2)
+
+    # Visibility (issue #425): when a district reports secondary TEACHERS but
+    # zero secondary ENROLLMENT, both proportions are 0 and those teachers
+    # allocate nowhere. Any reallocation would be fabricated, so the loss is
+    # logged rather than papered over (minimize-bad-data).
+    lost = df[(df['Secondary Teachers'] > 0) & (df['enrollment_secondary'] == 0)]
+    if len(lost):
+        logger.warning(
+            f"  {len(lost):,} districts have secondary teachers but zero secondary "
+            f"enrollment — their {lost['Secondary Teachers'].sum():,.1f} FTE are "
+            f"unallocated (kept in the Secondary Teachers reference column)"
+        )
 
     # Select output columns
     output_columns = [
@@ -256,8 +278,10 @@ def main():
         output_file = args.output
     else:
         # Extract year from filename
-        filename = args.staff_file.name
-        year_match = filename.split('_')[3] if '_' in filename else 'unknown'
+        # Regex the year out of the filename — the positional split('_')[3]
+        # broke on any non-canonical name (issue #389)
+        m = re.search(r'(\d{4}[-_]\d{2})', args.staff_file.name)
+        year_match = m.group(1) if m else 'unknown'
         output_file = Path(f"data/processed/normalized/grade_level_staffing_{year_match}.csv")
 
     # Process the file
