@@ -291,6 +291,7 @@ def test_compose_zero_yield_ladder_rungs(gov_session, monkeypatch):
     assert out["ok"] and out["batch_id"] and out["scope"] == "geo"
     assert out["ladder"] == {"ZZ5L0": "geo+standard", "ZZ5L1": "geo+widened",
                              "ZZ5L2": "manual_flag"}
+    assert out["names"]["ZZ5L0"] == "D ZZ5L0"       # #572: human-readable modal labels
     assert set(calls[0]["targets"]) == {"ZZ5L0", "ZZ5L1"}
     assert calls[0]["scope"] == "geo" and calls[0]["force_widen_dids"] == {"ZZ5L1"}
     assert created and created[0][1]["batch_type"] == "follow-up"

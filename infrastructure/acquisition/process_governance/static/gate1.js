@@ -277,8 +277,9 @@
     const rung = (did) => esc((prev.ladder || {})[did] || "");
     const composable = Object.keys(prev.targets || {});
     const parts = [];
+    const dname = (did) => esc((prev.names || {})[did] || "");   // #572: human-readable labels
     if (composable.length) parts.push(`<p>Would compose <b>${prev.batch_id}</b> (GEO-scoped draft, reviewed here at gate@1 — never auto-flowed):</p>
-      <ul class="s7-compose-list">${composable.map((d) => `<li><b>${esc(d)}</b> — ${rung(d)}</li>`).join("")}</ul>`);
+      <ul class="s7-compose-list">${composable.map((d) => `<li><b>${dname(d) || esc(d)}</b> <span class="muted">(${esc(d)})</span> — ${rung(d)}</li>`).join("")}</ul>`);
     if ((prev.flagged || []).length) parts.push(`<p class="muted">Ladder-exhausted → manual flag: ${prev.flagged.map((f) => `${esc(f.district_id)} ${esc(f.name)}`).join(", ")}</p>`);
     if ((prev.ineligible || []).length) parts.push(`<details class="q-domain-excluded"><summary class="muted">${prev.ineligible.length} district(s) not zero-yield (expand)</summary>
       ${prev.ineligible.map((x) => `<div class="muted">${esc(x.district_id)} ${esc(x.name)} — ${esc(x.reason)}</div>`).join("")}</details>`);

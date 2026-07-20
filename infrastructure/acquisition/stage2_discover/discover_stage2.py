@@ -130,6 +130,19 @@ def build_roster(district: dict, *, geo: bool = False) -> list:
     return roster
 
 
+def _remediation_receipt(district_id: str):
+    """The newest on-disk decontamination restore point for a district
+    (data/acquisition/remediation/<district_id>_<ts>/, written by remediate_contamination before
+    it mutates anything), or None. This is the filesystem's own receipt that a district's capture
+    artifacts were REMOVED ON PURPOSE — the one sanctioned explanation for a registry that is
+    ahead of disk (#572: Millard NE's post-#227 redo)."""
+    rdir = paths.ACQUISITION / "remediation"
+    if not rdir.exists():
+        return None
+    hits = sorted(p for p in rdir.iterdir() if p.name.startswith(f"{district_id}_") and p.is_dir())
+    return hits[-1] if hits else None
+
+
 def reconcile(batch: dict, registry: dict) -> tuple[list, list]:
     """Filesystem is truth. For every district in the batch: if discovery.json already
     exists on disk, reconcile the registry up to match (skip -- already done, never redo
@@ -140,9 +153,14 @@ def reconcile(batch: dict, registry: dict) -> tuple[list, list]:
     FOLLOW-UP batches are the sanctioned exception (issue #174): a 7->2/7->3/7->1 follow-up
     exists precisely to REDO discovery for districts we already discovered, so 'discovery.json
     exists' must not skip them -- every included district is todo, and the redo merges with the
-    prior round downstream (write_discovery merge mode) instead of replacing it. The
-    registry-ahead-of-disk control failure still halts (a follow-up district missing its prior
-    discovery.json is exactly as alarming as in a first run)."""
+    prior round downstream (write_discovery merge mode) instead of replacing it.
+
+    The registry-ahead-of-disk control failure halts UNLESS the district has an on-disk
+    decontamination restore point (#572): remediate_contamination deliberately removes a
+    contaminated district's artifacts while PRESERVING its state history (auditability), so
+    registry-ahead-of-disk is that path's expected, receipted end state — the district simply
+    rediscovers fresh (write_discovery merge mode finds no prior file and writes anew). A
+    missing discovery.json with NO remediation receipt still halts the entire run."""
     todo, skipped = [], []
     followup = batch.get("batch_type") == "follow-up"
     for d in batch["districts"]:
@@ -151,6 +169,12 @@ def reconcile(batch: dict, registry: dict) -> tuple[list, list]:
         rec = registry["districts"].get(did)
         reg_says_done = rec is not None and rec.get("furthest_stage", 0) >= 2
         if not done_on_disk and reg_says_done:
+            receipt = _remediation_receipt(did)
+            if receipt is not None:
+                print(f"  [reconcile] {did} ({d['name']}): registry ahead of disk, EXPLAINED by "
+                      f"the decontamination restore point {receipt.name} — rediscovering fresh")
+                todo.append(d)
+                continue
             raise SystemExit(
                 f"CONTROL FAILURE: registry says {did} ({d['name']}) reached Stage 2+ but "
                 f"{lea_dir(did, d['name']) / 'discovery.json'} does not exist. Stopping the "

@@ -437,3 +437,12 @@ would be the #227 class). No derivation → everything stays refused → the dis
 manual_flag. The `geo_discovery` receipt block (raw + merged tallies, thresholds, outcome, the
 derived-host PROPOSAL awaiting human confirmation) lands in discovery.json. Millard 3173740 is the
 fixture acceptance (tests/test_discovery_geo_wiring.py); the LIVE run is a gate@1 action. REQ-157.
+
+**2026-07-20 — #572 follow-up: the remediation receipt sanctions a registry-ahead-of-disk redo.**
+`reconcile`'s CONTROL FAILURE halt (registry says Stage 2+ but discovery.json missing) now stands
+down when the district has an on-disk decontamination restore point
+(`data/acquisition/remediation/<district_id>_<ts>/`) — remediate_contamination deliberately
+removes artifacts while preserving state history, so registry-ahead-of-disk is that path's
+receipted end state, and the district rediscovers fresh (the live case: Millard NE's geo redo in
+batch_00021 halted on exactly this). A missing discovery.json with NO receipt still halts the run.
+The 5→1 zero-yield modal also gained human-readable district names (`names` in the composer result).
