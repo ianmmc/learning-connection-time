@@ -219,12 +219,74 @@ class TestReconcileRemediationReceipt:
         assert skipped == [] and quarantined == []
 
 
+# ---------------------------------------------------------------- proposal decisions (#572)
+@pytest.mark.govdb
+class TestProposalDecisions:
+    def test_record_decision_validates_and_appends(self, gov_session):
+        from infrastructure.acquisition.common import discovered_domain as DDOM
+        gdb.init_precious_schema()
+        s = gov_session
+        with pytest.raises(ValueError):
+            DDOM.record_decision(s, "ZZPD1", "x.org", "maybe", actor="zz")
+        with pytest.raises(ValueError):          # a rejection NEEDS a reason (the training signal)
+            DDOM.record_decision(s, "ZZPD1", "x.org", "reject", actor="zz")
+        DDOM.record_decision(s, "ZZPD1", "x.org", "reject", reason="aggregator site", actor="zz")
+        DDOM.record_decision(s, "ZZPD1", "y.org", "confirm", actor="zz",
+                             tally={"y.org": {"n": 9}})
+        latest = DDOM.latest_decisions(s, ["ZZPD1"])
+        assert latest["ZZPD1"]["decision"] == "confirm" and latest["ZZPD1"]["domain"] == "y.org"
+
+    def test_endpoint_reject_records_corpus_only(self, client, monkeypatch):
+        from infrastructure.acquisition.common import discovered_domain as DDOM
+        calls = {"decision": None, "confirmed": False, "twin": 0}
+        monkeypatch.setattr(DDOM, "record_decision",
+                            lambda con, did, dom, dec, **kw: calls.update(decision=(did, dom, dec, kw.get("reason"))) or
+                            type("R", (), {"decision": dec, "reason": kw.get("reason", ""),
+                                           "actor": kw.get("actor"), "created_at": "t"})())
+        monkeypatch.setattr(DDOM, "confirm",
+                            lambda *a, **k: calls.update(confirmed=True))
+        from infrastructure.acquisition.process_governance import server as SV
+        monkeypatch.setattr(SV, "_backup_discovered_domain_decisions",
+                            lambda con: calls.update(twin=calls["twin"] + 1) or 0)
+        r = client.post("/api/discovered-domain", json={
+            "district_id": "ZZPD2", "domain": "x.org", "decision": "reject",
+            "reason": "wrong district's site", "actor": "zz"})
+        assert r.status_code == 200, r.text
+        assert calls["decision"] == ("ZZPD2", "x.org", "reject", "wrong district's site")
+        assert calls["confirmed"] is False       # reject NEVER touches the operative store
+        assert calls["twin"] == 1
+
+    def test_endpoint_confirm_records_both(self, client, monkeypatch):
+        from infrastructure.acquisition.common import discovered_domain as DDOM
+        calls = {"confirmed": False}
+        monkeypatch.setattr(DDOM, "record_decision",
+                            lambda con, did, dom, dec, **kw:
+                            type("R", (), {"decision": dec, "reason": "", "actor": "zz",
+                                           "created_at": "t"})())
+        monkeypatch.setattr(DDOM, "confirm",
+                            lambda con, did, dom, **kw: calls.update(confirmed=True) or
+                            type("C", (), {"confirmed_by": "zz", "confirmed_at": "t"})())
+        from infrastructure.acquisition.process_governance import server as SV
+        monkeypatch.setattr(SV, "_backup_discovered_domain_decisions", lambda con: 0)
+        monkeypatch.setattr(SV, "_backup_discovered_domains", lambda con: 0)
+        r = client.post("/api/discovered-domain", json={
+            "district_id": "ZZPD3", "domain": "x.org", "actor": "zz"})   # decision defaults confirm
+        assert r.status_code == 200 and calls["confirmed"] is True
+
+
 # ---------------------------------------------------------------- UI-visibility source pins
 def test_settings_js_carries_the_policy_card():
     js = (STATIC / "settings.js").read_text()
     for marker in ("discovery-policy-card", "discovery-policy-set", "discovery-policy-history",
                    "/api/discovery-policy", "loadDiscoveryPolicy"):
         assert marker in js, f"settings.js lost the #572 policy-card marker {marker!r}"
+
+
+def test_stage2_js_carries_the_proposal_card():
+    js = (STATIC / "stage2.js").read_text()
+    for marker in ("s2-geo-proposal", "s2-confirm-domain", "s2-reject-domain", "s2-domain-decided",
+                   "geo_proposal", "/api/discovered-domain"):
+        assert marker in js, f"stage2.js lost the #572 proposal-card marker {marker!r}"
 
 
 def test_gate1_js_carries_scope_create_and_badges():

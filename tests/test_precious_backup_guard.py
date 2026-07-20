@@ -18,7 +18,8 @@ def test_tracked_backups_cover_all_precious_files():
         paths.STATUS_FILE, paths.LABELS_JSON, paths.CLUSTER_SPLITS_JSON, paths.FOLLOWUP_FLAGS_JSON,
         paths.GATE_MODE_JSON, paths.STAGE8_APPROVALS_JSON, paths.BAND_EXCLUSIONS_JSON,
         paths.HUMAN_ADDED_FACTS_JSON, paths.SLOT_ASSIGNMENTS_JSON,
-        paths.DISCOVERED_DOMAINS_JSON, paths.DISCOVERY_POLICY_JSON}
+        paths.DISCOVERED_DOMAINS_JSON, paths.DISCOVERED_DOMAIN_DECISIONS_JSON,
+        paths.DISCOVERY_POLICY_JSON}
 
 
 def test_guard_redirects_tracked_files_under_pytest():

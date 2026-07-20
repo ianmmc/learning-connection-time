@@ -3941,6 +3941,7 @@ requirements:
       - "The create dialog offers geo only when the policy allows it (the server 409 remains the law)"
       - "A targeted draw restricts AFTER the scope filters (never force-includes), reports misses, and a full miss 409s WITHOUT tripping the pool-drained auto-advance"
       - "GEO batches are visually unmistakable at gate@1 (badge + containment note); scope_draw and targeted meta render on the batch"
+      - "The derived-domain PROPOSAL renders on the Stage-2 readout (where the evidence lives — the decision governs FUTURE domain-scoped composition, never the batch's own capture): derived host, share, school count, top tally, Confirm / Reject-with-reason; BOTH decisions land in the append-only discovered_domain_decision corpus (git-twinned) with the tally receipt as evidence — the future auto-confirmation's training data, negative class included"
       - "UI presence is regression-pinned (JS source pins) per the UI-visibility rule"
     tests:
       - tests/test_discovery_policy_console.py

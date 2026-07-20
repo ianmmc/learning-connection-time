@@ -108,8 +108,51 @@
     }).join("");
     html += `</tbody></table>`;
 
+    // #572: the derived-domain PROPOSAL cards (GEO batches only) — the decision renders WHERE THE
+    // EVIDENCE LIVES (this run's tally), and governs FUTURE domain-scoped composition, never this
+    // batch's own capture. Confirm upserts the operative discovered domain; Reject (reason
+    // required) records the negative class — both land in the append-only decision corpus the
+    // future auto-confirmation trains on.
+    html += s.districts.filter((d) => d.geo_proposal).map((d) => {
+      const g = d.geo_proposal;
+      const pct = g.share != null ? (g.share * 100).toFixed(1) + "%" : "?";
+      const top = (g.top_tally || []).map(([h, n]) => `${esc(h)} <span class="muted">(${n})</span>`).join(" · ");
+      const decided = d.domain_decision
+        ? `<div class="s2-note" data-feat="s2-domain-decided">Latest decision: <b>${esc(d.domain_decision.decision)}</b> ${esc(d.domain_decision.domain)}${d.domain_decision.reason ? ` — “${esc(d.domain_decision.reason)}”` : ""} <span class="muted">by ${esc(d.domain_decision.actor)} ${esc(fmt(d.domain_decision.created_at))}</span>${d.confirmed_domain ? ` · operative discovered domain: <b>${esc(d.confirmed_domain)}</b>` : ""}</div>` : "";
+      const buttons = g.derived_host && !d.domain_decision
+        ? `<button class="btn btn-primary btn-mini" data-feat="s2-confirm-domain" data-did="${esc(d.district_id)}" data-domain="${esc(g.derived_host)}">Confirm discovered domain</button>
+           <button class="btn btn-secondary btn-mini" data-feat="s2-reject-domain" data-did="${esc(d.district_id)}" data-domain="${esc(g.derived_host)}">Reject…</button>`
+        : "";
+      const body = g.derived_host
+        ? `Derived <b>${esc(g.derived_host)}</b> — ${pct} of ${g.total_results} gate-eligible results across <b>${g.n_schools}</b> distinct schools. <span class="muted">Top hosts: ${top}</span>`
+        : `<span class="muted">No derivation (${esc(g.outcome || "below threshold")}) — fail-closed, nothing kept; the district resolves manual_flag.</span>`;
+      return `<div class="q-locked" data-feat="s2-geo-proposal"><b>${esc(d.name)}</b> — discovered-domain proposal (#164):<br/>
+        ${body}<br/>${decided}<div style="margin-top:.4em">${buttons}</div>
+        <span class="muted">Confirming returns this district to normal domain-scoped flow (source recorded as “discovered”; NCES never modified). This batch's own capture does not depend on it.</span></div>`;
+    }).join("");
+
     $g("#s2-detail").innerHTML = html;
     const run = $g("#s2-run"); if (run && canRun) run.onclick = runDiscovery;
+    $g("#s2-detail").querySelectorAll("[data-feat='s2-confirm-domain'],[data-feat='s2-reject-domain']").forEach((b) => {
+      b.onclick = async () => {
+        const reject = b.getAttribute("data-feat") === "s2-reject-domain";
+        const d = s.districts.find((x) => x.district_id === b.dataset.did) || {};
+        const tally = (d.geo_proposal || {}).tally || null;
+        let reason = "";
+        if (reject) {
+          reason = prompt(`Reject the proposal ${b.dataset.domain} for ${d.name || b.dataset.did}?\n\nReason (required — it is the training signal):`);
+          if (reason === null) return;
+          if (!reason.trim()) { alert("A rejection needs a reason."); return; }
+        } else if (!confirm(`Confirm ${b.dataset.domain} as the discovered domain for ${d.name || b.dataset.did}?\n\nThis returns the district to normal domain-scoped flow (audited; NCES unmodified).`)) return;
+        try {
+          await api("/api/discovered-domain", postJSON({
+            district_id: b.dataset.did, domain: b.dataset.domain,
+            decision: reject ? "reject" : "confirm", reason,
+            derived_in_batch: s.batch_id, tally, actor: "ian" }));
+        } catch (e) { alert("Decision failed: " + e.message); return; }
+        loadStatus(CURRENT);
+      };
+    });
 
     // Keep THIS batch's left-pane chip in sync with the header during a live run (the list is only
     // re-fetched on view-show; the detail polls). Same badge, same source; no extra /api/queue fetch.

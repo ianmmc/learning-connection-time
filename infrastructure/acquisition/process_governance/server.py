@@ -773,26 +773,47 @@ async def discovery_policy_set(payload: dict):
     return {"policy": policy, "previous": previous, "changed": policy != previous}
 
 
+def _backup_discovered_domain_decisions(con) -> int:
+    """Back the precious proposal-decision corpus (#572 — confirms AND rejects, the future
+    auto-confirmation's training data) to its tracked JSON twin."""
+    return _backup_precious_table(
+        con, "SELECT id, district_id, domain, decision, reason, derived_in_batch, tally_json, "
+             "actor, created_at FROM discovered_domain_decision ORDER BY id",
+        paths.DISCOVERED_DOMAIN_DECISIONS_JSON)
+
+
 @app.post("/api/discovered-domain")
-async def discovered_domain_confirm(payload: dict):
-    """#164: confirm a geo run's derived-host PROPOSAL as the district's discovered domain (the
-    third, clearly-labeled domain source — NCES data is never modified). The proposal + its full
-    host tally live in the deriving run's discovery.json `geo_discovery` block; this records the
-    human decision (propose-with-evidence / human-confirms, the CMS_HOSTS discipline)."""
+async def discovered_domain_decide(payload: dict):
+    """#164/#572: decide a geo run's derived-host PROPOSAL (propose-with-evidence / human-decides,
+    the CMS_HOSTS discipline). `decision` = 'confirm' (default — records the decision AND upserts
+    the operative discovered_domain row, the third clearly-labeled domain source; NCES never
+    modified) or 'reject' (+ required `reason` — recorded ONLY in the decision corpus, the
+    negative class the future auto-confirmation trains on). Every decision is append-only with
+    the tally receipt as its evidence."""
     from infrastructure.acquisition.common import discovered_domain as DDOM
     did = (payload.get("district_id") or "").strip()
     domain = (payload.get("domain") or "").strip()
+    decision = (payload.get("decision") or "confirm").strip()
     actor = payload.get("actor", "ian")
     if not did or not domain:
         raise HTTPException(400, "district_id and domain are required")
     try:
         with gdb.session_scope() as con:
-            row = DDOM.confirm(con, did, domain, derived_in_batch=payload.get("derived_in_batch", ""),
-                               tally=payload.get("tally"), actor=actor)
-            out = {"district_id": row.district_id, "domain": row.domain,
-                   "confirmed_by": row.confirmed_by, "confirmed_at": row.confirmed_at}
-            con.commit()   # persist BEFORE the backup (review): a backup-write failure must not
-            _backup_discovered_domains(con)   # roll back the human's confirmation with it
+            dec = DDOM.record_decision(con, did, domain, decision,
+                                       reason=payload.get("reason", ""),
+                                       derived_in_batch=payload.get("derived_in_batch", ""),
+                                       tally=payload.get("tally"), actor=actor)
+            out = {"district_id": did, "domain": domain, "decision": dec.decision,
+                   "reason": dec.reason, "actor": dec.actor, "created_at": dec.created_at}
+            if decision == "confirm":
+                row = DDOM.confirm(con, did, domain,
+                                   derived_in_batch=payload.get("derived_in_batch", ""),
+                                   tally=payload.get("tally"), actor=actor)
+                out.update(confirmed_by=row.confirmed_by, confirmed_at=row.confirmed_at)
+            con.commit()   # persist BEFORE the backups (review): a backup-write failure must not
+            _backup_discovered_domain_decisions(con)   # roll back the human's decision with it
+            if decision == "confirm":
+                _backup_discovered_domains(con)
     except ValueError as e:
         raise HTTPException(400, str(e))
     return out
@@ -1391,6 +1412,35 @@ def discover_status(batch_id: str):
     if batch is None:
         raise HTTPException(404, f"no such batch {batch_id}")
     districts = H2.status_for_batch(batch)
+    # #572: a GEO batch's per-district rows carry the derived-domain PROPOSAL (from the run's
+    # discovery.json geo_discovery receipt) + the latest human decision, so the Stage-2 readout —
+    # where the evidence lives — is where the confirm/reject control renders. The decision governs
+    # FUTURE domain-scoped composition, never this batch's own capture.
+    if batch.get("discovery_scope") == "geo":
+        from infrastructure.acquisition.common import discovered_domain as DDOM
+        by_did = {d["district_id"]: d for d in batch["districts"]}
+        with gdb.session_scope() as con:
+            decisions = DDOM.latest_decisions(con, [r["district_id"] for r in districts])
+            confirmed = DDOM.all_confirmed(con)
+        for row in districts:
+            did = row["district_id"]
+            bd = by_did.get(did) or {}
+            ddir = H2.D2.lea_dir(did, bd.get("name") or row.get("name") or "")
+            try:
+                g = json.loads((ddir / "discovery.json").read_text()).get("geo_discovery") or {}
+            except (OSError, json.JSONDecodeError):
+                g = {}
+            if g:
+                tally = g.get("tally") or {}
+                top = sorted(((h, v.get("n", 0)) for h, v in tally.items()),
+                             key=lambda kv: -kv[1])[:5]
+                row["geo_proposal"] = {
+                    "outcome": g.get("outcome"), "derived_host": g.get("derived_host"),
+                    "share": g.get("share"), "n_schools": g.get("n_schools"),
+                    "total_results": g.get("total_results"), "top_tally": top,
+                    "tally": tally}
+            row["domain_decision"] = decisions.get(did)
+            row["confirmed_domain"] = confirmed.get(did)
     return {"batch_id": batch_id, "batch_status": batch["batch_status"], "districts": districts,
             "rollup": H2.rollup(districts), "job": _job_view(batch_id)}
 
