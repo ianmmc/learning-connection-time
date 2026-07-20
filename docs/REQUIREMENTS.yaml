@@ -3951,3 +3951,33 @@ requirements:
       but no operator control did, and an untargeted stratified geo draw of the ~2,400-district
       blank pool would practically never contain Millard — path 4 targeting is what makes the
       designed acceptance run executable."
+  - id: REQ-159
+    github_issue: "#578"
+    description: "Stage 3 ENFORCES the one-attempt security-block rule (Critical Rule 3): per-response
+      WAF-challenge detection (the cf-mitigated: challenge header + a small explicit interstitial
+      body-marker list, bounded to the head of the text — CDN presence is never a block), a district
+      circuit breaker (3 consecutive challenges halt the district's remaining captures; skipped URLs
+      record a NON-retryable security_block variant so the #116 retry can never re-hammer a WAF),
+      and a pre-capture probe (one GET of the district's dominant planned host; a challenged probe
+      halts the district with exactly one request of IP exposure). A challenge interstitial is never
+      recorded as ok content and never emergent-scanned. Security-blocked districts are ineligible
+      for the 5->1 geo escalation (the domain was fine — the WAF said no; manual triage only)."
+    type: functional
+    priority: must
+    status: implemented
+    acceptance_criteria:
+      - "The Millard batch_00021 interstitial text is detected (the motivating 31/83-recorded-as-ok incident)"
+      - "cf-mitigated: challenge alone suffices; cloudflare CDN presence (cf-ray/server) alone never trips"
+      - "Breaker: 3 consecutive challenges halt; an ok resets the streak; a non-security err neither counts nor resets"
+      - "Skipped-after-halt URLs are security_block (non-retryable), never not_attempted"
+      - "A clean probe is necessary-not-sufficient — the in-run breaker remains the guarantee"
+      - "zero_yield_reason refuses security-blocked districts (no automatic re-pressure, ever)"
+    tests:
+      - "infrastructure/scraper/capture_security.test.mjs"
+      - "tests/test_escalation_ladders.py::test_zero_yield_reason_security_block_never_escalates"
+    created: "2026-07-20T00:00:00Z"
+    updated: "2026-07-20T00:00:00Z"
+    notes: "Surfaced live by Millard NE's batch_00021 capture: the security_block err class existed
+      on paper (retry classification) but no code ever assigned it — 31 of 83 captures were 266-byte
+      Cloudflare interstitials recorded ok while the run kept pressuring the WAF. Millard's 31
+      interstitial records await a separately-approved cleanup."

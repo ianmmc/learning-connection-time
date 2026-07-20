@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-20T07:23:21Z",
+  "last_updated": "2026-07-20T14:07:52Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -6132,8 +6132,8 @@
       "name": "MILLARD PUBLIC SCHOOLS",
       "state": "NE",
       "furthest_stage": 5,
-      "stage_name": "discover",
-      "outcome": "found_all",
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00021",
       "history": [
@@ -6236,6 +6236,40 @@
           "stage_name": "discover",
           "outcome": "found_all",
           "at": "2026-07-20T07:23:20Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-07-20T13:53:33Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-07-20T13:54:44Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-20T14:06:04Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-07-20T14:07:46Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-07-20T14:07:52Z"
         }
       ],
       "notes": "gate@1 approved batch_00021"

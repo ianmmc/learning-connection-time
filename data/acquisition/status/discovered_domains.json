@@ -1,0 +1,127 @@
+[
+  {
+    "district_id": "3173740",
+    "domain": "mpsomaha.org",
+    "derived_in_batch": "batch_00021",
+    "tally_json": {
+      "mpsomaha.org": {
+        "n": 141,
+        "n_schools": 21
+      },
+      "ops.org": {
+        "n": 5,
+        "n_schools": 5
+      },
+      "onondagacsd.org": {
+        "n": 5,
+        "n_schools": 1
+      },
+      "moonpreneur.com": {
+        "n": 2,
+        "n_schools": 2
+      },
+      "rockwell.lwsd.org": {
+        "n": 2,
+        "n_schools": 1
+      },
+      "app.smore.com": {
+        "n": 2,
+        "n_schools": 2
+      },
+      "hcpss.org": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "astate.edu": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "densho.org": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "limacampagnamortuaries.com": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "ualrexhibits.org": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "encyclopediaofarkansas.net": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "plainsongfarm.com": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "jefcoed.com": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "bryanisd.org": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "mortonschool.org": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "donorschoose.org": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "varsitytutors.com": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "wdes.centennialsd.org": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "bces.bryancountyschools.org": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "bryan.mcisd.net": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "sterlingmorton.mentorschools.net": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "nces.ed.gov": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "wdes.burbankusd.org": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "wdes.srvusd.net": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "lincoln.mtvernoncsd.org": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "mpsomaha.revtrak.net": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "files-backend.assets.thrillshare.com": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "bryan.k12.ga.us": {
+        "n": 1,
+        "n_schools": 1
+      }
+    },
+    "confirmed_by": "ian",
+    "confirmed_at": "2026-07-20T13:49:11Z"
+  }
+]

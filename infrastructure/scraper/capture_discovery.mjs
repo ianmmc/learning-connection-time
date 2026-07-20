@@ -173,6 +173,52 @@ export function cdnHints(headers) {
   return out;
 }
 
+// --- Security-block detection (#578 -- CLAUDE.md Critical Rule 3, the one-attempt WAF rule) ---
+// A WAF/bot-mitigation CHALLENGE is not content: recording the interstitial as `ok` poisons the
+// data AND means the run keeps hammering a host that has already said no (the Millard batch_00021
+// incident: 31/83 captures were 266-byte Cloudflare interstitials recorded ok). Detection is
+// deliberately two-signal: the `cf-mitigated: challenge` response header (Cloudflare's canonical
+// marker) plus a small explicit body-marker list -- presence of a CDN (cdnHints 'cloudflare') is
+// NOT a block and must never trip this.
+export const CHALLENGE_MARKERS = [
+  'performing security verification',
+  'checking your browser before accessing',
+  'just a moment...',
+  'challenge-platform',                       // the cf challenge script path
+  'verify you are human',
+  'attention required! | cloudflare',
+  'ddos protection by',
+];
+
+// Pure, unit-testable: headers (plain lowercase-keyed object) + rendered/served body text ->
+// the matched challenge signal, or null. Body scan is bounded to the head of the text --
+// interstitials are tiny; a real page quoting these phrases deep in an article must not trip.
+export function detectChallenge(headers, bodyText) {
+  const h = headers || {};
+  if (String(h['cf-mitigated'] || '').toLowerCase().includes('challenge')) return 'cf-mitigated header';
+  const t = String(bodyText || '').slice(0, 4000).toLowerCase();
+  if (!t) return null;
+  for (const m of CHALLENGE_MARKERS) if (t.includes(m)) return `body marker "${m}"`;
+  return null;
+}
+
+// The district circuit breaker's threshold: this many CONSECUTIVE challenges halts the district's
+// remaining captures (the un-attempted URLs record a non-retryable security_block variant --
+// deliberately NOT not_attempted, which the #116 retry would re-hammer).
+export const SECURITY_BREAKER_N = 3;
+
+// Fold one finished record into the district's breaker state ({secConsec, secHalted}); pure over
+// the small state object so the rule is unit-testable apart from the capture loop.
+export function updateSecurityState(state, rec) {
+  if (rec.err && String(rec.err).startsWith('security_block')) {
+    state.secConsec = (state.secConsec || 0) + 1;
+    if (state.secConsec >= SECURITY_BREAKER_N) state.secHalted = true;
+  } else if (rec.ok) {
+    state.secConsec = 0;
+  }
+  return state;
+}
+
 // Dot-boundary host-suffix predicate -- the JS twin of discover.py's `_host_matches` (#416/#34):
 // exact host or dot-boundary suffix ONLY (a dotless endsWith would let `myfinalsite.net` claim
 // `finalsite.net`). The RULE is parity-pinned across both languages by the shared golden-vector
@@ -649,6 +695,33 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
     }
   }
 
+  // #578: the PRE-CAPTURE security probe -- one lightweight GET of each district's dominant
+  // planned host BEFORE any capture pressure. A challenged probe halts the whole district with
+  // exactly one request of IP exposure. A clean probe is necessary-not-sufficient (rate-based
+  // rules can trigger mid-run) -- the in-run breaker remains the guarantee. A probe NETWORK
+  // failure is not a block signal: capture proceeds and surfaces its own errors.
+  for (const did of Object.keys(byDistrict)) {
+    const planned = tasks.filter((t) => t.did === did);
+    if (!planned.length) continue;
+    const hostCounts = {};
+    for (const t of planned) { const h = hostOf(t.url); if (h) hostCounts[h] = (hostCounts[h] || 0) + 1; }
+    const domHost = Object.entries(hostCounts).sort((a, b) => b[1] - a[1])[0];
+    if (!domHost) continue;
+    try {
+      const r = await fetch(`https://${domHost[0]}/`, { redirect: 'follow', signal: AbortSignal.timeout(15000) });
+      const body = (await r.text().catch(() => '')).slice(0, 8000).replace(/<[^>]+>/g, ' ');
+      const challenge = detectChallenge({ 'cf-mitigated': r.headers.get('cf-mitigated') || '' }, body);
+      if (challenge) {
+        byDistrict[did].secHalted = true;
+        byDistrict[did].secHaltReason = `pre-capture probe of ${domHost[0]} challenged (${challenge})`;
+        console.error(`  ${did}: SECURITY BLOCK -- pre-capture probe of ${domHost[0]} returned a `
+          + `challenge (${challenge}); skipping ALL ${planned.length} planned captures (one-attempt rule)`);
+      } else {
+        console.log(`  ${did}: security probe of ${domHost[0]} clean`);
+      }
+    } catch { /* probe network failure: proceed; the capture itself will surface real errors */ }
+  }
+
   const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
   const ctx = await browser.newContext({ ignoreHTTPSErrors: true, userAgent: 'Mozilla/5.0 (research; bell-schedule discovery)' });
 
@@ -699,6 +772,13 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
         ct = (r.headers.get('content-type') || '').toLowerCase();
         rec.final_url = r.url;
         noteFinalUrl(byDistrict[did], rec.final_url);
+        // #578: a challenged fetch is a security block, not content -- one-attempt (Rule 3).
+        const fetchChallenge = detectChallenge({ 'cf-mitigated': r.headers.get('cf-mitigated') || '' }, null);
+        if (fetchChallenge) {
+          rec.err = `security_block (${fetchChallenge})`;
+          rec.fetch_status = r.status;
+          return;
+        }
         const cls = classifyFetchKind(ct);
         if (cls.binary) {
           // #415 (folded into #518): never write a non-2xx body as original.* -- a 404/403 served
@@ -752,6 +832,20 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
               text += `\n${r.text || ''}`;
               hasPassword = hasPassword || r.hasPassword;
             } catch { /* cross-origin frame */ }
+          }
+          // #578: a rendered CHALLENGE interstitial is a security block, not content -- record the
+          // err, save NOTHING as ok, scan no anchors (one-attempt, Rule 3). Checked over the same
+          // frame-scoped text the fidelity flags read, plus the goto response's headers.
+          const challenge = detectChallenge(response ? response.headers() : {}, text);
+          if (challenge) {
+            rec.err = `security_block (${challenge})`;
+            if (response) rec.fetch_status = response.status();
+            rec.fingerprint = buildHtmlFingerprint({
+              finalHost: hostOf(rec.final_url),
+              headers: response ? response.headers() : {},
+              dom: {}, jsDependent: false, hasPassword: false,
+            });
+            return;
           }
           writeFileSync(path.join(recDir, 'page.txt'), text);
           rec.files.txt = 'page.txt'; // only after the write succeeded (a throw lands in processTask's catch)
@@ -829,6 +923,16 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
   async function processTask(t) {
     const rec = { url: t.url, tools: t.tools || [], source: t.source, found_on: t.found_on,
       hash: null, ok: false, files: {} };
+    // #578: the district circuit breaker -- once tripped (probe, or SECURITY_BREAKER_N
+    // consecutive challenges), the remaining URLs are recorded WITHOUT any network contact.
+    // Deliberately not `not_attempted`: the #116 retry must never re-hammer a WAF (Rule 3).
+    if (byDistrict[t.did].secHalted) {
+      rec.hash = createHash('md5').update(t.url).digest('hex').slice(0, 10);
+      rec.err = `security_block (district capture halted -- ${byDistrict[t.did].secHaltReason}; one-attempt rule)`;
+      byDistrict[t.did].records.push(rec);
+      try { appendFileSync(byDistrict[t.did].journalPath, `${JSON.stringify(rec)}\n`); } catch { /* best-effort */ }
+      return rec;
+    }
     try {
       // One subdirectory per captured URL (named by its hash) -- not flat hash-prefixed files
       // sharing the district's captures/ folder. The whole point of hashing the URL was so a
@@ -842,6 +946,15 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
     } catch (e) {
       if (!rec.err) rec.err = String(e).slice(0, 120);
     } finally {
+      // #578: fold this record into the breaker state; announce the halt once.
+      const st = byDistrict[t.did];
+      const wasHalted = st.secHalted;
+      updateSecurityState(st, rec);
+      if (st.secHalted && !wasHalted) {
+        st.secHaltReason = `${st.secConsec} consecutive challenges`;
+        console.error(`  ${t.did}: SECURITY BLOCK -- halting this district's remaining captures `
+          + `after ${st.secConsec} consecutive challenges (one-attempt rule, Rule 3)`);
+      }
       byDistrict[t.did].records.push(rec);
       // #117: journal the completed record NOW -- appendFileSync is per-line durable, so a
       // SIGKILL between tasks loses at most the in-flight page, never completed work. A journal
