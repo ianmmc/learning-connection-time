@@ -525,3 +525,14 @@ juvenile/detention/correctional/youth-center …) is computed at VIEW time in `b
 (never stored — a token tuning applies retroactively to every batch) and the gate@1 school row shows a
 "facility?" badge (`data-feat="s1-facility-flag"`, UI-visibility-pinned). METHODOLOGY Rule 6b records
 the methodology stance.
+
+**2026-07-19 — #164 PR 2: geo-scoped batch composition + dual-source #229 admission (epic #111
+Phase 5).** `build_batch` gains the scope axis (`scope="domain"|"geo"`, pure — the POLICY check and
+the confirmed-discovered-domains map are the caller's to supply): domain-scoped batches now admit on
+NCES domain OR a human-CONFIRMED discovered domain (`common/discovered_domain`, the third clearly-
+labeled source — per-district `domain_source: nces|discovered` in the doc; NCES data never modified),
+and the #229 refusal population is exactly the geo draw pool (`geo_pool="blank"`; `"all"` = the
+geo_all experiment position). Geo district docs carry `geo: {city, zip}` from the extended `lea_info`
+(LCITY/LZIP, mailing fallback). The console create endpoint gates geo composition on
+`discovery_scope_policy` (409 under domain_only) and threads the confirmed map; POST
+/api/discovered-domain records a confirmation (+ the git-twin backup). REQ-157.

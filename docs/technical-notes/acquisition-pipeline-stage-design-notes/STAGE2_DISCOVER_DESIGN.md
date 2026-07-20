@@ -423,3 +423,17 @@ a govdb regression test pins this. `load_batch_any` survives strictly as the CLI
 loader, enforced by the new `cli_only_loaders` fitness function in `arch-manifest.json` (#124): any
 reference to it under `process_governance/` fails the suite, so the receipt-as-transport edge can't
 quietly return.
+
+**2026-07-19 — #164 PR 2: the geo discovery run (epic #111 Phase 5).** For a batch with
+`discovery_scope: "geo"` (a BATCH axis — scope-pure by construction): `build_roster(geo=True)`
+renders the SAME vocabulary geo-scoped (`geo_queries`: city/zip tokens, widened per query_strategy,
+no `site:` — the provider gets a blank dhost); wave 1 runs un-scoped and lands FAIL-CLOSED
+(`gate_urls`' blank-domain refusal — the honest interim state); `apply_geo_derivation` then tallies
+the RAW result hosts across all schools (news/aggregators excluded), derives the family-merged
+majority host (`discover.derive_domain`, ≥40% share ∧ ≥3 distinct schools), and on success RE-GATES
+every school's raw URLs through the normal scoped gate (per-URL provider attribution preserved);
+wave 2 runs domain-scoped against the derived host, and NEVER runs without one (an unscoped wave 2
+would be the #227 class). No derivation → everything stays refused → the district honestly resolves
+manual_flag. The `geo_discovery` receipt block (raw + merged tallies, thresholds, outcome, the
+derived-host PROPOSAL awaiting human confirmation) lands in discovery.json. Millard 3173740 is the
+fixture acceptance (tests/test_discovery_geo_wiring.py); the LIVE run is a gate@1 action. REQ-157.

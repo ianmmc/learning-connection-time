@@ -29,6 +29,8 @@ from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.common import config_loader as CFG
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
+from infrastructure.acquisition.common.discover import (NEWS_AGG, _host_matches,
+                                                            derive_domain)
 from infrastructure.acquisition.common import paths
 
 from infrastructure.acquisition.common.discover import host_of, gate, is_scoping_domain, slugify
@@ -88,7 +90,7 @@ def find_district(batch: dict, district_id: str) -> dict:
     raise SystemExit(f"district {district_id} not found in batch {batch.get('batch_id')}")
 
 
-def build_roster(district: dict) -> list:
+def build_roster(district: dict, *, geo: bool = False) -> list:
     """Per-school targeting list from a Stage 1 batch district entry's schools_by_band --
     NEVER recomputed from NCES CSV. One row per distinct school_id (a school spanning
     multiple bands appears once, with all its bands listed). Each row carries `query` (the default
@@ -111,11 +113,20 @@ def build_roster(district: dict) -> list:
                 widen.add(s["school_id"])
     roster = list(by_school.values())
     state = district["state"]
+    geo_fields = district.get("geo") if geo else None
     for r in roster:
         r["query"] = query_for(r["school"], state)
-        r["queries"] = [r["query"]]
-        if r["school_id"] in widen:
-            r["queries"] += differentiated_queries(r["school"], state)
+        if geo:
+            # #164 geo mode: the SAME vocabulary, geo-rendered (city/zip tokens, no site: at the
+            # provider — the caller passes a blank dhost). Widen-strategy schools get the widened
+            # vocabulary geo-rendered too.
+            r["queries"] = geo_queries(r["school"], state, (geo_fields or {}).get("city", ""),
+                                       (geo_fields or {}).get("zip", ""),
+                                       widened=r["school_id"] in widen)
+        else:
+            r["queries"] = [r["query"]]
+            if r["school_id"] in widen:
+                r["queries"] += differentiated_queries(r["school"], state)
     return roster
 
 
@@ -277,6 +288,36 @@ def run_wave1(roster: list, domain: str, search_fn) -> list:
     return roster
 
 
+def apply_geo_derivation(roster: list) -> tuple:
+    """#164 geo mode, between wave 1 and wave 2: an un-scoped wave 1 leaves every school's
+    wave1_gated FAIL-CLOSED (gate_urls refuses everything on a blank domain — the correct
+    no-derivation outcome). This tallies the RAW result hosts across all schools (news/aggregators
+    excluded — they never scope), derives the majority host (discover.derive_domain: family-merged,
+    >=40% share AND >=3 distinct schools), and on success RE-GATES every school's raw URLs against
+    the derived host through the normal scoped gate, preserving per-URL provider attribution.
+    Returns (derived_host | None, receipt) — the receipt lands in discovery.json as the
+    `geo_discovery` block, and the derived host is the `discovered_domain` PROPOSAL a human
+    confirms (never an automatic write; NCES data is never touched)."""
+    tally: dict = {}
+    for r in roster:
+        for u in r.get("wave1_raw_urls", []):
+            h = host_of(u)
+            if not h or any(_host_matches(h, n) for n in NEWS_AGG):
+                continue
+            slot = tally.setdefault(h, {"n": 0, "schools": set()})
+            slot["n"] += 1
+            slot["schools"].add(r["school_id"])
+    derived, receipt = derive_domain(tally)
+    if derived:
+        for r in roster:
+            provider_by_url = {g["url"]: g.get("provider") for g in r.get("wave1_gated", [])}
+            r["wave1_gated"] = gate_urls(r.get("wave1_raw_urls", []), derived)
+            for g in r["wave1_gated"]:
+                if provider_by_url.get(g["url"]):
+                    g["provider"] = provider_by_url[g["url"]]
+    return derived, receipt
+
+
 def run_wave2(residual: list, domain: str, search_fn) -> None:
     """Mutates each residual row in place. Script-driven, never a subagent -- a SERP/API call, not
     agent judgment. `search_fn` is the provider and is REQUIRED (issue #41: the old default was the
@@ -372,7 +413,8 @@ def _prior_doc(d: Path, live: Path, stem: str) -> dict:
     return {}
 
 
-def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool = False) -> Path:
+def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool = False,
+                    geo_receipt: dict | None = None) -> Path:
     """Write discovery.json (full per-school audit trail) + candidates.json (flattened,
     capture-ready). Both writes are atomic (temp + os.replace, #265), and candidates.json is
     written FIRST: reconcile() keys "Stage 2 done" on discovery.json existing, so a crash
@@ -446,6 +488,10 @@ def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool 
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "schools": schools,
     }
+    if geo_receipt is not None:
+        # #164: the geo run's derivation receipt — the full host tally + thresholds + outcome,
+        # and (when derived) the discovered_domain PROPOSAL awaiting human confirmation.
+        discovery_doc["geo_discovery"] = geo_receipt
 
     new_candidates = flatten(roster)
     if merge:
@@ -479,12 +525,12 @@ def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool 
 
 
 def finish_district(district: dict, roster: list, batch_id: str, registry: dict,
-                    *, merge: bool = False) -> str:
+                    *, merge: bool = False, geo_receipt: dict | None = None) -> str:
     """Single registry write per district, at actual completion -- never from a subagent,
     never an interim 'started' marker (there's nothing meaningful to reconcile against a
     half-finished state, since the file write only happens once everything is assembled).
     `merge=True` = a follow-up redo (issue #174): write_discovery unions with the prior round."""
-    ddir = write_discovery(district, roster, batch_id, merge=merge)
+    ddir = write_discovery(district, roster, batch_id, merge=merge, geo_receipt=geo_receipt)
     outcome = district_outcome(roster)
     DS.record_stage(
         registry, district["district_id"], district["name"], district["state"],
