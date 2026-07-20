@@ -493,3 +493,27 @@ def sample_enrollment_complete():
     enrollment.enrollment_k12 = 1208
 
     return enrollment
+
+
+class TestScopeAllIncludesAllOtherSupportStaff:
+    """Issue #407: scope_all must include the CCD 'All Other Support Staff'
+    category (absent from StaffCountsEffective until migration 023)."""
+
+    def test_scope_all_includes_the_category(self):
+        from infrastructure.database.models import StaffCountsEffective
+        e = StaffCountsEffective(
+            district_id='0612345', effective_year='2024-25',
+            teachers_elementary=10.0, teachers_secondary=10.0,
+            other_staff=5.0, all_other_support_staff=7.5,
+        )
+        e.calculate_scopes()
+        assert e.scope_all == 32.5
+
+    def test_missing_category_does_not_zero_out(self):
+        from infrastructure.database.models import StaffCountsEffective
+        e = StaffCountsEffective(
+            district_id='0612345', effective_year='2024-25',
+            teachers_elementary=10.0,
+        )
+        e.calculate_scopes()
+        assert e.scope_all == 10.0

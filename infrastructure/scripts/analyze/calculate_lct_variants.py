@@ -142,40 +142,57 @@ def get_instructional_minutes(
     Get instructional minutes for a district.
 
     Priority (REQ-024):
-    1. Bell schedule for requested grade level (enriched data)
-    2. Bell schedule for any available grade level (K-8 districts, etc.)
-    3. State requirement (statutory fallback)
-    4. Default (360 minutes)
+    1. MEASURED bell schedule for requested grade level (gross bell-to-bell)
+    2. Measured bell schedule for any available grade level (K-8 districts, etc.)
+    3. Stage-9 statutory-fallback row stored in bell_schedules, if any
+    4. State requirement (statutory fallback)
+    5. Default (360 minutes)
 
     COVID-era bell rows (Rule #2) are never considered (issue #12). The caller enforces the
     blend window against staff/enrollment years and re-fetches statutory when a bell year
     can't form a coherent set (see calculate_all_variants).
 
+    Basis-aware (issue #582): rows written with method='statutory_fallback' or
+    minutes_basis='statutory' are NOT measured bell data — they must never be
+    labeled "bell_schedule" (which the write path maps to data tier 1/2 and a
+    real bell year). A stored statutory row is preferred over re-deriving from
+    state_requirements only when no measured row exists, and reports as
+    source='statutory_fallback' with year=None (statutory minutes carry no
+    school-year identity — issue #24).
+
     Returns:
         Tuple of (minutes, source, year) — year is None for statutory/default.
     """
-    # Try bell schedule for requested grade level first
-    bell = session.query(BellSchedule).filter(
-        BellSchedule.district_id == district_id,
-        BellSchedule.grade_level == grade_level,
-        ~BellSchedule.year.in_(COVID_EXCLUDED_YEARS),
-    ).order_by(BellSchedule.year.desc()).first()
+    def _is_statutory(row) -> bool:
+        return row.method == 'statutory_fallback' or row.minutes_basis == 'statutory'
 
-    if bell and bell.instructional_minutes:
-        return bell.instructional_minutes, "bell_schedule", bell.year
+    stored_statutory = None
 
-    # Try any available bell schedule (for K-8 districts, etc.)
-    # Priority: high > middle > elementary
-    for fallback_level in ["high", "middle", "elementary"]:
-        if fallback_level == grade_level:
-            continue  # Already tried this one
-        bell = session.query(BellSchedule).filter(
+    # Try bell schedules for the requested grade level, then the fallback
+    # levels (K-8 districts, etc.; priority high > middle > elementary) —
+    # taking the newest MEASURED row per level, remembering the first stored
+    # statutory row as a lower-priority candidate.
+    levels = [grade_level] + [
+        lvl for lvl in ["high", "middle", "elementary"] if lvl != grade_level
+    ]
+    for level in levels:
+        rows = session.query(BellSchedule).filter(
             BellSchedule.district_id == district_id,
-            BellSchedule.grade_level == fallback_level,
+            BellSchedule.grade_level == level,
             ~BellSchedule.year.in_(COVID_EXCLUDED_YEARS),
-        ).order_by(BellSchedule.year.desc()).first()
-        if bell and bell.instructional_minutes:
-            return bell.instructional_minutes, f"bell_schedule_{fallback_level}", bell.year
+        ).order_by(BellSchedule.year.desc()).all()
+        for bell in rows:
+            if not bell.instructional_minutes:
+                continue
+            if _is_statutory(bell):
+                if stored_statutory is None:
+                    stored_statutory = bell
+                continue
+            source = "bell_schedule" if level == grade_level else f"bell_schedule_{level}"
+            return bell.instructional_minutes, source, bell.year
+
+    if stored_statutory is not None:
+        return stored_statutory.instructional_minutes, "statutory_fallback", None
 
     return get_statutory_minutes(session, state, grade_level)
 

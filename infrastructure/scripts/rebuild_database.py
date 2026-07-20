@@ -55,9 +55,13 @@ SCRIPTS = {
     "reset": "infrastructure/scripts/reset_database.py",
     "import_all": "infrastructure/database/migrations/import_all_data.py",
     "import_district_urls": "infrastructure/scripts/import_district_urls.py",
+    "apply_ctc": "infrastructure/database/migrations/apply_ctc_classification.py",
     "import_staff_enrollment": "infrastructure/database/migrations/import_staff_and_enrollment.py",
     "import_sped_baseline": "infrastructure/database/migrations/import_sped_baseline.py",
     "apply_sped_estimates": "infrastructure/database/migrations/apply_sped_estimates.py",
+    "import_ca_lcff": "infrastructure/database/migrations/import_ca_lcff.py",
+    "import_ca_frpm": "infrastructure/database/migrations/import_ca_frpm.py",
+    "import_ca_sped": "infrastructure/database/migrations/import_ca_sped.py",
     "import_manual_schedules": "infrastructure/scripts/enrich/import_manual_bell_schedules.py",
     "calculate_lct": "infrastructure/scripts/analyze/calculate_lct_variants.py",
 }
@@ -171,6 +175,23 @@ def phase_2_foundation(dry_run: bool = False) -> bool:
     return run_script(SCRIPTS["import_district_urls"], url_args, dry_run=dry_run)
 
 
+def phase_2b_classifications(dry_run: bool = False, year: str = NCES_PRIMARY_YEAR) -> bool:
+    """Phase 2b: Re-apply district classifications lost by the reset.
+
+    apply_ctc_classification sets is_shared_service_entity / is_career_
+    technical_center (METHODOLOGY Rule 6 — CTCs are excluded from bell-schedule
+    and LCT populations). import_all_data never carries these flags, so a
+    rebuild without this phase silently dropped the exclusion (issue #589)."""
+    print("\n" + "=" * 60)
+    print("PHASE 2b: RE-APPLY DISTRICT CLASSIFICATIONS (Rule 6 CTC)")
+    print("=" * 60)
+
+    args = ["--year", year.replace("-", "_")]  # apply_ctc expects the NCES dir form (2024_25)
+    if dry_run:
+        args.append("--dry-run")
+    return run_script(SCRIPTS["apply_ctc"], args, dry_run=False)  # handles dry-run internally
+
+
 def phase_3_staff_enrollment(dry_run: bool = False, year: str = NCES_PRIMARY_YEAR) -> bool:
     """Phase 3: Load staff counts and enrollment."""
     print("\n" + "=" * 60)
@@ -179,6 +200,23 @@ def phase_3_staff_enrollment(dry_run: bool = False, year: str = NCES_PRIMARY_YEA
 
     args = ["--year", year]
     return run_script(SCRIPTS["import_staff_enrollment"], args, dry_run=dry_run)
+
+
+def phase_3b_state_layers(dry_run: bool = False) -> bool:
+    """Phase 3b: Re-import the state Phase-2 layers lost by the reset.
+
+    The CA actual-data layer (SPED environments, FRPM, LCFF) feeds the
+    documented CA-actual > federal-estimate SPED precedence; the 2026-07
+    rebuild dropped these tables because no phase re-imported them
+    (issue #594 — sev:critical, the already-fired sibling of #589)."""
+    print("\n" + "=" * 60)
+    print("PHASE 3b: RE-IMPORT STATE PHASE-2 LAYERS (CA)")
+    print("=" * 60)
+
+    for key in ("import_ca_sped", "import_ca_frpm", "import_ca_lcff"):
+        if not run_script(SCRIPTS[key], [], dry_run=dry_run):
+            return False
+    return True
 
 
 def phase_4_sped_baseline(dry_run: bool = False, sample: int = None) -> bool:
@@ -319,6 +357,14 @@ def main():
                         )
                     print_counts(counts, "Phase 2")
 
+    # Phase 2b: Classifications (Rule-6 CTC flags — issue #589)
+    if success and start_phase <= 2:
+        if not phase_2b_classifications(args.dry_run, args.year):
+            print("\nERROR: Phase 2b (Classifications) failed")
+            success = False
+        else:
+            phases_completed.append("2b-Classifications")
+
     # Phase 3: Staff/Enrollment
     if success and start_phase <= 3:
         if not phase_3_staff_enrollment(args.dry_run, args.year):
@@ -332,6 +378,14 @@ def main():
                 with session_scope() as session:
                     counts = verify_table_counts(session)
                     print_counts(counts, "Phase 3")
+
+    # Phase 3b: State Phase-2 layers (CA actual data — issue #594)
+    if success and start_phase <= 3:
+        if not phase_3b_state_layers(args.dry_run):
+            print("\nERROR: Phase 3b (State layers) failed")
+            success = False
+        else:
+            phases_completed.append("3b-StateLayers")
 
     # Phase 4: SPED Baseline
     if success and start_phase <= 4:

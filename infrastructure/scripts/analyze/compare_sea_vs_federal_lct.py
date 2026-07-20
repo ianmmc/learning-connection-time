@@ -81,6 +81,7 @@ def get_federal_data(session, state: str, nces_year: str) -> pd.DataFrame:
         WHERE d.state = :state
           AND sc.source_year = :year
           AND eg.source_year = :year
+          AND d.is_shared_service_entity = FALSE
     """)
 
     result = session.execute(query, {"state": state, "year": nces_year})
@@ -182,8 +183,20 @@ def compare_sources(federal_df: pd.DataFrame, sea_df: pd.DataFrame, state: str) 
             axis=1
         )
 
-    # Filter valid calculations only
-    valid = merged[(merged['lct_fed_teachers_only'].notna()) & (merged['lct_sea_teachers_only'].notna())]
+    # Filter valid calculations only — same validity band as the production
+    # pipeline (0 < LCT <= 360). Without it, intermediate units / cyber
+    # entities with tiny enrollments but real staff (implied LCT in the
+    # hundreds-to-thousands) dominated the unweighted state means and made
+    # PA/NY look absurd (issue #595 guardrail; Rule-6 CTC exclusion is also
+    # applied in get_federal_data's WHERE clause).
+    valid = merged[
+        (merged['lct_fed_teachers_only'].notna()) & (merged['lct_sea_teachers_only'].notna())
+        & (merged['lct_fed_teachers_only'] > 0) & (merged['lct_fed_teachers_only'] <= 360)
+        & (merged['lct_sea_teachers_only'] > 0) & (merged['lct_sea_teachers_only'] <= 360)
+    ]
+    dropped = len(merged) - len(valid)
+    if dropped:
+        print(f"  Excluded {dropped} district(s) outside the 0-360 validity band")
 
     if len(valid) == 0:
         return None

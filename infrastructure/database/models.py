@@ -840,6 +840,9 @@ class StaffCountsEffective(Base):
     lea_staff_total: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
     school_staff_total: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
     other_staff: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    # CCD "All Other Support Staff" — was absent here while present on
+    # StaffCounts, so scope_all undercounted (issue #407; migration 023)
+    all_other_support_staff: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
 
     # === TEACHER-LEVEL AGGREGATES (for level-based LCT) ===
     teachers_k12: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))  # elem + sec + kinder (NO prek, NO ungraded)
@@ -961,7 +964,8 @@ class StaffCountsEffective(Base):
             self.school_administrators,
             self.lea_admin_support,
             self.school_admin_support,
-            self.other_staff
+            self.other_staff,
+            self.all_other_support_staff
         )
 
 
