@@ -266,90 +266,10 @@ See `docs/METHODOLOGY.md` §Quality Assurance for detailed QA documentation.
 
 ### Enrich Scripts
 
-#### `enrich/interactive_enrichment.py` ⭐ NEW (December 2025)
+#### `enrich/interactive_enrichment.py` (RETIRED 2026-07-20)
 
-Interactive CLI for efficient bell schedule collection during state campaigns.
-
-**Usage:**
-```bash
-# Run state campaign (Option A protocol)
-python interactive_enrichment.py --state WI
-
-# Enrich single district
-python interactive_enrichment.py --district 5560580
-
-# Show campaign status
-python interactive_enrichment.py --status
-
-# Custom target and year
-python interactive_enrichment.py --state CA --year 2025-26 --target 5
-```
-
-**Arguments:**
-- `--state`: State code for campaign mode (e.g., WI)
-- `--district`: District NCES ID for single enrichment
-- `--year`: School year (default: 2025-26)
-- `--target`: Districts per state (default: 3)
-- `--status`: Show overall campaign status
-
-**Features:**
-- **Auto-query**: Fetches top 9 districts by enrollment from database
-- **Pre-populate**: Generates search queries automatically
-- **Interactive prompts**: Single-command data entry for elementary/middle/high
-- **Auto-commit**: Saves directly to database
-- **Progress tracking**: Shows enrichment progress in real-time
-- **Firewall detection**: Handles blocked districts gracefully
-
-**Workflow:**
-1. Script queries database for top unenriched districts in state
-2. For each district, displays info and search query
-3. User collects bell schedule data from web
-4. Interactive prompts for instructional minutes, start/end times
-5. Auto-saves to database
-6. Continues until 3 successful enrichments or user quits
-
-**Example Session:**
-```
-============================================================
-State Campaign: WI
-============================================================
-Current progress: 0/3 districts enriched
-
-Found 9 candidates (ranks 1-9 by enrollment)
-
-[Rank #1] Milwaukee Public Schools (WI)
-  NCES ID: 5560580
-  Enrollment: 75,568
-
-  Search query: "Milwaukee Public Schools" bell schedule 2025-26
-
-  [E]nrich, [S]kip, [B]locked, [Q]uit? e
-
-📋 Collecting schedule data for Milwaukee Public Schools...
-   Year: 2025-26
-   Enter 's' to skip a level, 'b' if blocked by firewall
-
-  ELEMENTARY:
-  Instructional minutes: 360
-  Start time (e.g., 8:00 AM): 8:00 AM
-  End time (e.g., 3:00 PM): 3:00 PM
-
-  MIDDLE:
-  Instructional minutes: 365
-  ...
-
-  Source URL (optional): https://mps.milwaukee.k12.wi.us/bell-schedule
-
-  ✓ Saved 3 schedule(s) to database
-
-  Progress: 1/3
-```
-
-See `docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md` for manual collection procedures.
-
----
-
-### Utility Scripts
+Archived to `data/archive/legacy-enrichment-layer-superseded-20260720/` —
+superseded by the 9-stage acquisition pipeline (`docs/ACQUISITION_PIPELINE.md`).
 
 #### `utilities/generate_data_dictionary.py` ⭐ NEW (December 2025)
 
@@ -708,7 +628,7 @@ if __name__ == "__main__":
 Seven new capabilities added to improve workflow efficiency:
 
 1. **`calculate_lct_variants.py`** - All 7 LCT variants with QA dashboard
-2. **`interactive_enrichment.py`** - Interactive CLI for state campaigns
+2. **`interactive_enrichment.py`** - Interactive CLI for state campaigns (retired 2026-07-20; archived)
 3. **`generate_data_dictionary.py`** - Auto-generate schema documentation
 4. **Materialized views** - Pre-computed queries for fast lookups
 5. **Parquet export** - 70-80% file size reduction for large datasets
