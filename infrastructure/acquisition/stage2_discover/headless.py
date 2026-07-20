@@ -282,14 +282,25 @@ def discover_district(batch: dict, district: dict, registry: dict, *,
     injectable for tests (no live HTTP / no `claude -p`)."""
     wave1_search = wave1_search or brightdata_then_serper
     wave2_runner = wave2_runner or _wave2_claude
-    domain = district.get("domain", "")
-    roster = D2.build_roster(district)
+    geo = batch.get("discovery_scope") == "geo"   # #164: scope is a BATCH axis (scope-pure)
+    domain = "" if geo else district.get("domain", "")
+    roster = D2.build_roster(district, geo=geo)
     D2.run_wave1(roster, domain, wave1_search)
+    geo_receipt = None
+    if geo:
+        # #164: tally -> derive -> re-gate. No derivation leaves every school fail-closed
+        # (gate_urls' blank-domain refusal) -> the district honestly resolves manual_flag;
+        # a derivation re-gates everything scoped AND becomes wave 2's scoping host below.
+        derived, geo_receipt = D2.apply_geo_derivation(roster)
+        domain = derived or ""
     residual = D2.residual_schools(roster)
-    if residual:
+    if residual and (not geo or domain):
+        # geo without a derived host NEVER runs wave 2 (it would be an unscoped national
+        # search — the #227 class); with one, wave 2 runs domain-scoped as normal.
         wave2_runner(district, residual, domain)
     return D2.finish_district(district, roster, batch["batch_id"], registry,
-                              merge=batch.get("batch_type") == "follow-up")
+                              merge=batch.get("batch_type") == "follow-up",
+                              geo_receipt=geo_receipt)
 
 
 def load_batch_any(batch_ref: str) -> dict:

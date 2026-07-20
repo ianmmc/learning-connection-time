@@ -694,6 +694,39 @@ def _backup_stage8_approvals(con) -> int:
         paths.STAGE8_APPROVALS_JSON)
 
 
+# ---- discovered domains (#164 — human-confirmed geo-derivation proposals) ----
+def _backup_discovered_domains(con) -> int:
+    """Back the precious confirmed-discovered-domain rows to a tracked JSON — confirming a
+    scoping domain for a blank-NCES district is an auditable governance decision."""
+    return _backup_precious_table(
+        con, "SELECT district_id, domain, derived_in_batch, tally_json, confirmed_by, confirmed_at "
+             "FROM discovered_domain ORDER BY district_id", paths.DISCOVERED_DOMAINS_JSON)
+
+
+@app.post("/api/discovered-domain")
+async def discovered_domain_confirm(payload: dict):
+    """#164: confirm a geo run's derived-host PROPOSAL as the district's discovered domain (the
+    third, clearly-labeled domain source — NCES data is never modified). The proposal + its full
+    host tally live in the deriving run's discovery.json `geo_discovery` block; this records the
+    human decision (propose-with-evidence / human-confirms, the CMS_HOSTS discipline)."""
+    from infrastructure.acquisition.common import discovered_domain as DDOM
+    did = (payload.get("district_id") or "").strip()
+    domain = (payload.get("domain") or "").strip()
+    actor = payload.get("actor", "ian")
+    if not did or not domain:
+        raise HTTPException(400, "district_id and domain are required")
+    try:
+        with gdb.session_scope() as con:
+            row = DDOM.confirm(con, did, domain, derived_in_batch=payload.get("derived_in_batch", ""),
+                               tally=payload.get("tally"), actor=actor)
+            out = {"district_id": row.district_id, "domain": row.domain,
+                   "confirmed_by": row.confirmed_by, "confirmed_at": row.confirmed_at}
+            _backup_discovered_domains(con)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return out
+
+
 # ---- per-gate manual/auto mode (the ramp-up control surface — REQ-108, #104) ----
 def _backup_gate_mode(con) -> int:
     """Back the precious per-gate mode rows to a tracked JSON — setting a gate auto is an auditable
@@ -1000,11 +1033,27 @@ async def queue_create(payload: dict):
     # computing the number without persisting anything let a second concurrent create draw the SAME
     # number. The committed 'reserving' placeholder makes a duplicate draw fail fast on the PK;
     # create_batch (inside persist_batch) upgrades it to the real draft row.
+    # #164: the batch's discovery scope. Geo composition is POLICY-GATED here (the caller-side
+    # check the pure build_batch deliberately doesn't do): domain_only refuses; geo_for_blank /
+    # geo_interleaved compose from the blank-domain pool; geo_all may compose from any district.
+    scope = payload.get("discovery_scope", "domain")
+    if scope not in ("domain", "geo"):
+        raise HTTPException(400, f"discovery_scope must be 'domain' or 'geo' (got {scope!r})")
+    from infrastructure.acquisition.common import discovered_domain as DDOM
+    from infrastructure.acquisition.common import discovery_policy as DPOL
+    with gdb.session_scope() as con:
+        policy = DPOL.get_policy(con)
+        discovered = DDOM.all_confirmed(con)
+    if scope == "geo" and policy == "domain_only":
+        raise HTTPException(409, "discovery_scope_policy is domain_only — geo first-run composition "
+                                 "is not enabled (#164)")
+    geo_pool = "all" if (scope == "geo" and policy == "geo_all") else "blank"
     with gdb.session_scope() as con:
         batch_id = BSTORE.reserve_next_batch(con, actor=actor)
     try:
         registry = DS.load()
-        batch_doc, _gap, _domain_excluded, _n_elig = Q1.build_batch(year, n, batch_id, registry)
+        batch_doc, _gap, _domain_excluded, _n_elig = Q1.build_batch(
+            year, n, batch_id, registry, scope=scope, discovered_domains=discovered, geo_pool=geo_pool)
         Q1.persist_batch(batch_doc, registry, batch_type=batch_type, actor=actor)
     except BaseException:
         with gdb.session_scope() as con:   # failed build — free the number (don't leave a dead placeholder)

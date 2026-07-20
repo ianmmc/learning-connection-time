@@ -744,6 +744,10 @@ def lea_info(year):
                 "status": row.get("SY_STATUS_TEXT",""),
                 "lea_type": row.get("LEA_TYPE_TEXT",""),
                 "claimed_bands": bands_for(row.get("GSLO"), row.get("GSHI")),
+                # #164: the geo-scoped discovery tokens (location fields, mailing fallback) —
+                # NCES-sourced facts, read-only like everything else in this row.
+                "city": (row.get("LCITY") or row.get("MCITY") or "").strip(),
+                "zip": (row.get("LZIP") or row.get("MZIP") or "").strip(),
             }
     return out
 

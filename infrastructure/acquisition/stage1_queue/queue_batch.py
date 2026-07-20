@@ -171,53 +171,96 @@ def select_schools(batch_id: str, district_id: str, district_school_index: dict,
     return order, result
 
 
-def build_batch(year: str, n: int, batch_id: str, registry: dict) -> tuple[dict, list, list, int]:
+def build_batch(year: str, n: int, batch_id: str, registry: dict, *, scope: str = "domain",
+                discovered_domains: dict | None = None,
+                geo_pool: str = "blank") -> tuple[dict, list, list, int]:
     """Pure batch construction: apply the pre-queue exclusions, stratified-pick, select per-band
     schools, and assemble the batch_doc. Does NO I/O -- no file write, no registry mutation, no
     printing (it only READS the registry, via eligible_pool's already-attempted filter). The caller
     (CLI main() or the gate@1 console 'create' action) persists via persist_batch().
 
+    #164 axes: `scope` ("domain" | "geo") is the batch's discovery scope — scope-pure by
+    construction. `discovered_domains` (district_id -> confirmed domain, from
+    discovered_domain.all_confirmed — passed IN so this stays pure) is the second admission
+    source for domain-scoped batches. `geo_pool` ("blank" | "all") is the geo draw population —
+    "all" is the geo_all experiment position; the POLICY check (may this caller compose a geo
+    batch at all?) belongs to the caller, which reads discovery_policy and maps it to these args.
+
     Returns (batch_doc, gap_excluded, domain_excluded, n_eligible)."""
+    if scope not in ("domain", "geo"):
+        raise ValueError(f"scope must be 'domain' or 'geo' (got {scope!r})")
     pool, sch_idx, gap_excluded = eligible_pool(year, registry)
-    # #229 pre-flight guard: refuse any district whose NCES WEBSITE yields no usable scoping domain.
-    # A blank/junk domain flips Stage 2 into its UNSCOPED, national-scope branch, which for common
-    # school names pulls same-named schools nationwide into the candidate set (the Millard cross-
-    # district contamination, #227). No usable alternate domain source exists, so this is a hard
-    # refusal, not a fallback -- the district is dropped from the pool and reported, exactly like the
-    # grade-span-gap exclusion, so a first-run batch of record never carries an unscoped district.
-    # Benchmark (batch_00000) is exempt by structure: it calls eligible_pool directly (own build path)
-    # and never routes through here.
+    discovered_domains = discovered_domains or {}
+
+    def _scoping_domain(info, did) -> tuple[str, str]:
+        """(domain, source): the NCES website when usable, else a human-CONFIRMED discovered
+        domain (#164 — the third, clearly-labeled source; NCES itself is never modified),
+        else ('', '')."""
+        d = domain_of(info["website"])
+        if is_scoping_domain(d):
+            return d, "nces"
+        dd = discovered_domains.get(did, "")
+        if is_scoping_domain(dd):
+            return dd, "discovered"
+        return "", ""
+
     domain_excluded = []
-    for did in list(pool):
-        if not is_scoping_domain(domain_of(pool[did]["website"])):
-            info = pool.pop(did)
-            domain_excluded.append({"district_id": did, "name": info["name"],
-                                    "state": info["state"], "website": info["website"]})
+    if scope == "domain":
+        # #229 pre-flight guard: refuse any district with NO usable scoping domain from EITHER
+        # source (NCES website, or a confirmed discovered domain — #164's second admission source).
+        # A blank/junk domain flips Stage 2 into its UNSCOPED, national-scope branch, which for
+        # common school names pulls same-named schools nationwide into the candidate set (the
+        # Millard cross-district contamination, #227). Hard refusal, reported like the grade-span
+        # exclusion — a domain-scoped batch of record never carries an unscoped district. The
+        # refused population is exactly the GEO draw pool below. Benchmark (batch_00000) is exempt
+        # by structure: it calls eligible_pool directly (own build path) and never routes here.
+        for did in list(pool):
+            if _scoping_domain(pool[did], did) == ("", ""):
+                info = pool.pop(did)
+                domain_excluded.append({"district_id": did, "name": info["name"],
+                                        "state": info["state"], "website": info["website"]})
+    else:
+        # GEO composition (#164): the draw population is the #229-refused class — districts with
+        # no usable domain from either source ("blank"), or every district under the geo_all
+        # experiment position ("all"). Discovery runs geo-rendered queries + derive-and-re-gate;
+        # nothing here is unscoped-kept.
+        if geo_pool == "blank":
+            for did in list(pool):
+                if _scoping_domain(pool[did], did) != ("", ""):
+                    pool.pop(did)
     level_counts = S.school_level_counts(year)   # did -> {total, by_level} (the topology denominator)
     picked_ids = stratified_pick(pool, batch_id, n=n)
 
     districts_out = []
     for did in picked_ids:
         info = pool[did]
-        domain = domain_of(info["website"])
-        order, schools_by_band = select_schools(batch_id, did, sch_idx.get(did, {}))
-        districts_out.append({
+        domain, domain_source = _scoping_domain(info, did)
+        d_out = {
             "district_id": did,
             "name": info["name"],
             "state": info["state"],
-            "domain": domain,
+            "domain": domain if scope == "domain" else "",
             "enrollment_k12": info["enrollment_k12"],
             "lea_claimed_bands": sorted(info["claimed_bands"]),
             "nces_school_counts": level_counts.get(did, {"total": 0, "by_level": {}}),
-            "band_processing_order": order,
-            "schools_by_band": schools_by_band,
-        })
+            "band_processing_order": None,
+            "schools_by_band": None,
+        }
+        order, schools_by_band = select_schools(batch_id, did, sch_idx.get(did, {}))
+        d_out["band_processing_order"] = order
+        d_out["schools_by_band"] = schools_by_band
+        if scope == "domain" and domain_source:
+            d_out["domain_source"] = domain_source   # 'nces' | 'discovered' — the audit trail
+        if scope == "geo":
+            d_out["geo"] = {"city": info.get("city", ""), "zip": info.get("zip", "")}
+        districts_out.append(d_out)
 
     batch_doc = {
         "batch_id": batch_id,
         "created": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "n": len(districts_out),
         "nces_year": year,
+        "discovery_scope": scope,   # #164: the second batch axis (scope-pure by construction)
         "nces_school_counts_criteria": ("count of ccd_sch schools meeting our eligibility (open, "
             "regular, non-virtual, not standalone-preschool), grouped by the RAW ccd_sch LEVEL "
             "field. The topology denominator -- NOT ccd_lea's reported figure. total == the distinct "
@@ -390,7 +433,11 @@ def main():
     batch_id = f"batch_{a.batch:05d}"
     registry = DS.load()
 
-    batch_doc, gap_excluded, domain_excluded, n_eligible = build_batch(a.year, a.n, batch_id, registry)
+    from infrastructure.acquisition.common import discovered_domain as DDOM
+    with gdb.session_scope() as con:
+        discovered = DDOM.all_confirmed(con)
+    batch_doc, gap_excluded, domain_excluded, n_eligible = build_batch(
+        a.year, a.n, batch_id, registry, discovered_domains=discovered)
 
     print(f"Eligible pool: {n_eligible:,} districts (excluded {len(gap_excluded)} for grade-span gap, "
           f"{len(domain_excluded)} for blank/unusable NCES domain)")
