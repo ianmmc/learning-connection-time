@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-20T14:07:52Z",
+  "last_updated": "2026-07-20T14:52:34Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -6270,9 +6270,37 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-20T14:07:52Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_partial",
+          "at": "2026-07-20T14:51:59Z",
+          "event_type": "security_block_reclassified",
+          "actor": "remediate:578"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-20T14:52:13Z",
+          "event_type": "dispatched",
+          "actor": "remediate:578"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-07-20T14:52:33Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-07-20T14:52:34Z"
         }
       ],
-      "notes": "gate@1 approved batch_00021"
+      "notes": "81/83 challenge interstitials reclassified ok->security_block; restore point 3173740_20260720T145158Z"
     },
     "3200480": {
       "name": "Washoe County",
