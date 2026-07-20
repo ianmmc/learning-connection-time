@@ -188,7 +188,10 @@ def import_districts(session, dry_run: bool = False) -> int:
                 except (ValueError, TypeError):
                     pass
 
-            nces_id = str(row["district_id"]).strip()
+            # zfill(7): an unpadded CSV id would MISS the padded row already in
+            # the DB and session.merge() would insert a duplicate district
+            # (issue #285; pad, never strip — migration 015 / issue #20)
+            nces_id = str(row["district_id"]).strip().zfill(7)
             district = District(
                 nces_id=nces_id,
                 name=row["district_name"].strip(),

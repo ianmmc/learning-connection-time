@@ -16,6 +16,7 @@ Options:
 """
 
 import argparse
+import re
 import subprocess
 import sys
 from datetime import datetime
@@ -100,16 +101,17 @@ def create_backup(backup_dir: Path) -> str:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     backup_file = backup_dir / f"backup_pre_reset_{timestamp}.sql"
 
-    # Extract database name from connection URL
-    db_url = get_database_url()
-    # Handle both formats: postgresql://user@host/db and postgresql://user:pass@host/db
-    db_name = db_url.split("/")[-1]
+    # Pass the FULL connection URL to pg_dump so host/port/user/password reach
+    # it — the old bare-dbname invocation only worked against a default local
+    # socket and silently ignored ?sslmode= query params (issues #305/#306).
+    # pg_dump accepts a libpq URI; strip any SQLAlchemy "+driver" suffix first.
+    db_url = re.sub(r'^postgresql\+[^:]+', 'postgresql', get_database_url())
 
     print(f"Creating backup to {backup_file}...")
 
     try:
         result = subprocess.run(
-            ["pg_dump", "-d", db_name, "-f", str(backup_file)],
+            ["pg_dump", "-d", db_url, "-f", str(backup_file)],
             capture_output=True,
             text=True,
             check=True
@@ -160,28 +162,28 @@ def truncate_all_tables(engine, existing_tables: set = None, verbose: bool = Tru
     results = {}
 
     with engine.connect() as conn:
-        # Use a single transaction for atomicity
+        # Use a single transaction for atomicity. No per-table swallow: after
+        # any error Postgres aborts the whole transaction, so continuing the
+        # loop just piles up "current transaction is aborted" errors while the
+        # results dict claims earlier tables were truncated — they were rolled
+        # back (issue #426). Fail loud and atomic instead.
         trans = conn.begin()
 
         try:
             for table in TRUNCATION_ORDER:
                 if table not in existing_tables:
                     continue  # Skip tables that don't exist
-                try:
-                    conn.execute(text(f"TRUNCATE {table} CASCADE"))
-                    results[table] = "truncated"
-                    if verbose:
-                        print(f"  ✓ {table}")
-                except Exception as e:
-                    error_msg = str(e).split('\n')[0]
-                    results[table] = f"error: {error_msg}"
-                    if verbose:
-                        print(f"  ✗ {table}: {error_msg}")
+                conn.execute(text(f"TRUNCATE {table} CASCADE"))
+                results[table] = "truncated"
+                if verbose:
+                    print(f"  ✓ {table}")
 
             trans.commit()
 
         except Exception as e:
             trans.rollback()
+            if verbose:
+                print(f"  ✗ truncation failed, rolled back: {str(e).splitlines()[0]}")
             raise
 
     return results
