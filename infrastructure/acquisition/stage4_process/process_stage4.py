@@ -165,11 +165,18 @@ def reconcile(districts: list[dict], registry: dict, *, redo: bool = False) -> t
         rec = registry["districts"].get(did)
         reg_says_done = rec is not None and rec.get("furthest_stage", 0) >= 4
         if not done_on_disk and reg_says_done:
-            raise SystemExit(
-                f"CONTROL FAILURE: registry says {did} ({d['name']}) reached Stage 4+ but "
-                f"{d['dir'] / 'processed.json'} does not exist. Stopping the entire run -- "
-                f"investigate before re-running anything."
-            )
+            # #572: same receipted exception as the Stage 2/3 reconciles — a decontaminated
+            # district processes fresh instead of halting (see DS.remediation_receipt).
+            receipt = DS.remediation_receipt(did)
+            if receipt is not None:
+                print(f"  [reconcile] {did} ({d['name']}): registry ahead of disk, EXPLAINED by "
+                      f"the decontamination restore point {receipt.name} — processing fresh")
+            else:
+                raise SystemExit(
+                    f"CONTROL FAILURE: registry says {did} ({d['name']}) reached Stage 4+ but "
+                    f"{d['dir'] / 'processed.json'} does not exist. Stopping the entire run -- "
+                    f"investigate before re-running anything."
+                )
         if done_on_disk and not redo:
             if not reg_says_done:
                 DS.record_stage(registry, did, d["name"], d["state"], stage=4,

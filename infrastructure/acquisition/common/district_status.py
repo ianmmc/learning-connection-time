@@ -144,6 +144,28 @@ def already_attempted(registry: dict, district_id: str) -> bool:
     return d is not None and (d.get("furthest_stage") or 0) >= ATTEMPTED_THRESHOLD_STAGE
 
 
+def remediation_receipt(district_id: str):
+    """The newest on-disk decontamination restore point for a district
+    (data/acquisition/remediation/<district_id>_<ts>/, written by remediate_contamination BEFORE it
+    mutates anything), or None. The ONE shared home (#572) for the check every stage reconcile
+    consults: remediation deliberately removes a district's artifacts while PRESERVING its state
+    history (auditability), so registry-ahead-of-disk is that path's expected, receipted end state
+    — the stage redoes the work fresh instead of halting.
+
+    KNOWN RESIDUAL (documented trade-off, #572): the receipt is not time-bound — if a
+    once-remediated district later loses artifacts for a BAD reason, its old receipt still
+    sanctions a redo instead of a halt. Bounded to redundant spend, never silent trust: the
+    sanctioned path always REDOES the stage (fresh receipts, merge mode), nothing missing is
+    assumed done. Tightening (compare the receipt timestamp against the district's latest
+    stage-N state_event) needs a DB read inside the deliberately DB-free reconciles — revisit if
+    remediation volume grows past the current single district."""
+    rdir = paths.ACQUISITION / "remediation"
+    if not rdir.exists():
+        return None
+    hits = sorted(p for p in rdir.iterdir() if p.name.startswith(f"{district_id}_") and p.is_dir())
+    return hits[-1] if hits else None
+
+
 def record_stage(
     registry: dict,
     district_id: str,

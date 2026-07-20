@@ -130,19 +130,6 @@ def build_roster(district: dict, *, geo: bool = False) -> list:
     return roster
 
 
-def _remediation_receipt(district_id: str):
-    """The newest on-disk decontamination restore point for a district
-    (data/acquisition/remediation/<district_id>_<ts>/, written by remediate_contamination before
-    it mutates anything), or None. This is the filesystem's own receipt that a district's capture
-    artifacts were REMOVED ON PURPOSE — the one sanctioned explanation for a registry that is
-    ahead of disk (#572: Millard NE's post-#227 redo)."""
-    rdir = paths.ACQUISITION / "remediation"
-    if not rdir.exists():
-        return None
-    hits = sorted(p for p in rdir.iterdir() if p.name.startswith(f"{district_id}_") and p.is_dir())
-    return hits[-1] if hits else None
-
-
 def reconcile(batch: dict, registry: dict) -> tuple[list, list]:
     """Filesystem is truth. For every district in the batch: if discovery.json already
     exists on disk, reconcile the registry up to match (skip -- already done, never redo
@@ -169,7 +156,7 @@ def reconcile(batch: dict, registry: dict) -> tuple[list, list]:
         rec = registry["districts"].get(did)
         reg_says_done = rec is not None and rec.get("furthest_stage", 0) >= 2
         if not done_on_disk and reg_says_done:
-            receipt = _remediation_receipt(did)
+            receipt = DS.remediation_receipt(did)
             if receipt is not None:
                 print(f"  [reconcile] {did} ({d['name']}): registry ahead of disk, EXPLAINED by "
                       f"the decontamination restore point {receipt.name} — rediscovering fresh")
