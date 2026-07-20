@@ -1,322 +1,150 @@
 # State Education Data Availability Assessment
 
-**Assessment Date:** January 11, 2026
-**Purpose:** Evaluate state education data portals for Learning Connection Time (LCT) metric integration
-**States Assessed:** 46 U.S. states (excluding CA, TX, FL, NY which are already planned) + 6 territories
+**Regenerated:** 2026-07-20 (auto-generated from `docs/state-integrations/state_data_catalog.yaml` — DO NOT hand-edit this file, edit the catalog and re-run `infrastructure/scripts/utilities/gen_state_assessment.py`)
+**Purpose:** Evaluate state education agency (SEA) data portals for Learning Connection Time (LCT) metric integration — enrollment, staffing, and SPED data at the district level, plus the state-ID<->NCES-LEAID crosswalk.
+**Entities assessed:** 56 (50 states + DC + 5 territories)
 
 ---
 
-## Data Requirements Summary
+## Precedence context (why this campaign matters, and where it doesn't)
 
-For LCT metric calculation, we need from each state:
-- **Enrollment Data:** District-level total enrollment, grade-level breakdowns, SPED enrollment
-- **Staffing Data:** Teachers (general education), SPED teachers, paraprofessionals/instructional aides
-- **Special Education Data:** SPED enrollment counts, educational environment/setting
-- **Identifiers:** State LEA IDs, NCES IDs (for crosswalk)
-- **Socioeconomic Data (Nice-to-Have):** FRPM eligibility, English Language Learners
+Verified against the live DB 2026-07-20: staff_counts_effective is 100% nces_ccd across all states and years — SEA staff/enrollment data wins REQ-023 precedence NOWHERE today, because year-matched NCES (2024-25 CCD, ingested 2026-07) beats year-matched SEA by design (REQ-022/023). SEA data currently pays off through: (1) SPED-actual data via REQ-025 (state-actual beats the 2017-18 federal estimate — CA contributes 2,036 LCT rows today), (2) SPED-teacher splits feeding SPED scopes, and (3) years NEWER than the NCES primary (2025-26+), where SEA wins until the next CCD lands. Probe priority follows this ranking. NOT a target: daily instructional minutes — verified dead end (docs/INSTRUCTIONAL_TIME_HARVEST.md).
 
 ---
 
-## State Data Availability Matrix
+## Summary
 
-| State | Data Portal URL | Enrollment | Staffing | SPED | Format | Data Year | Priority | Notes |
-|-------|----------------|------------|----------|------|--------|-----------|----------|-------|
-| **NORTHEAST** |
-| Connecticut | https://public-edsight.ct.gov/ | ✅ | ✅ | ✅ | CSV/Excel | 2024-25 | **High** | EdSight portal, excellent data quality, includes staffing FTE |
-| Delaware | https://data.delaware.gov/Education/ | ✅ | ✅ | ⚠️ | CSV/Excel | 2024-25 | **High** | Open Data Portal + Report Card, annual releases Feb |
-| Maine | https://www.maine.gov/doe/data-reporting/warehouse | ✅ | ✅ | ✅ | CSV/Excel | 2024 | **High** | Data Warehouse with FTE staff, SPED by environment |
-| Maryland | https://reportcard.msde.maryland.gov/ | ✅ | ⚠️ | ✅ | Excel/PDF | 2024-25 | **Medium** | Report Card portal, SPED Census available |
-| Massachusetts | https://profiles.doe.mass.edu/statereport/ | ✅ | ✅ | ✅ | CSV/Excel | 2024-25 | **High** | Comprehensive School & District Profiles, FTE data |
-| New Hampshire | https://www.education.nh.gov/data-reports | ✅ | ✅ | ✅ | Excel | 2024 | **Medium** | District Staff Reports, NHSEIS for SPED |
-| New Jersey | https://www.nj.gov/education/doedata/ | ✅ | ✅ | ⚠️ | Excel/CSV | 2024-25 | **High** | Data & Reports Portal, Certified Staff Reports |
-| Pennsylvania | https://www.pa.gov/agencies/education/data-and-reporting | ✅ | ✅ | ✅ | Excel/CSV | 2024-25 | **High** | PennData for SPED, Educator Workforce Reports |
-| Rhode Island | https://datacenter.ride.ri.gov/ | ✅ | ⚠️ | ✅ | Excel | 2023-24 | **Medium** | RIDE Data Center, 618 data collections |
-| Vermont | https://education.vermont.gov/data-and-reporting/vermont-education-dashboard | ✅ | ✅ | ✅ | Excel/Dashboard | 2024 | **High** | Dashboard with enrollment, staffing, SPED reports |
-| **SOUTHEAST** |
-| Alabama | https://www.alabamaachieves.org/reports-data/ | ✅ | ✅ | ✅ | Excel | 2024-25 | **High** | Reports & Data portal, Financial Reports with staffing |
-| Arkansas | https://adedata.arkansas.gov/ | ✅ | ⚠️ | ✅ | Excel | 2024 | **Medium** | ADE Data Center, ARKSPED Portal separate |
-| Georgia | https://georgiainsights.gadoe.org/ | ✅ | ⚠️ | ✅ | Excel/CSV | 2024 | **Medium** | Georgia Insights + GOSA downloadable data |
-| Kentucky | https://www.education.ky.gov/Open-House/data/ | ✅ | ✅ | ⚠️ | Excel | 2023-24 | **Medium** | School Report Card Dashboard, Personnel Info |
-| Louisiana | https://doe.louisiana.gov/data-and-reports | ✅ | ⚠️ | ✅ | Excel | 2024 | **Medium** | Enrollment Data + Special Ed Reporting pages |
-| Mississippi | https://newreports.mdek12.org/ | ✅ | ⚠️ | ⚠️ | Excel | 2023-24 | **Medium** | MDEReports with Data Explorer and Downloads |
-| North Carolina | https://www.dpi.nc.gov/data-reports | ✅ | ⚠️ | ✅ | Excel | 2024 | **High** | Data & Reports, Exceptional Children data |
-| South Carolina | https://ed.sc.gov/data/ | ✅ | ✅ | ⚠️ | Excel | 2024 | **Medium** | Student Counts, Educator Profession Reports |
-| Tennessee | https://tdepublicschools.ondemand.sas.com/ | ✅ | ✅ | ⚠️ | Excel/CSV | 2024-25 | **High** | State Report Card, Data Downloads page |
-| Virginia | https://www.doe.virginia.gov/data-policy-funding/data-reports | ✅ | ✅ | ✅ | Excel | 2024-25 | **High** | Statistics & Reports, Teacher Staffing Dashboard |
-| West Virginia | https://wvde.us/data-school-improvement/education-data | ✅ | ⚠️ | ⚠️ | Excel | 2024-25 | **Medium** | ZoomWV interactive portal, WVEIS system |
-| **MIDWEST** |
-| Illinois | https://www.illinoisreportcard.com/ | ✅ | ✅ | ✅ | Excel | 2024 | **High** | Illinois Report Card + Data Library, comprehensive |
-| Indiana | https://www.in.gov/doe/it/data-center-and-reports/ | ✅ | ⚠️ | ⚠️ | Excel | 2024 | **Medium** | DOE Data Center, GPS dashboard |
-| Iowa | https://reports.educateiowa.gov/COE/ | ✅ | ✅ | ✅ | Excel | 2024-25 | **High** | Condition of Education portal, staff by district |
-| Kansas | https://datacentral.ksde.org/ | ✅ | ⚠️ | ⚠️ | Excel | 2024-25 | **Medium** | Data Central, EDCS for educators, SPEDPro |
-| Michigan | https://mischooldata.org/ | ✅ | ✅ | ✅ | Excel | 2024 | **High** | MI School Data portal, comprehensive staffing |
-| Minnesota | https://education.mn.gov/MDE/Data/ | ✅ | ⚠️ | ✅ | Excel | 2023-24 | **Medium** | Data Center interactive tool, Special Ed Division |
-| Missouri | https://dese.mo.gov/school-data | ✅ | ⚠️ | ✅ | Excel | 2023-24 | **Medium** | School Data portal, Special Ed Data Collections |
-| Nebraska | https://www.education.ne.gov/dataservices/data-reports/ | ✅ | ✅ | ⚠️ | Excel | 2024-25 | **Medium** | NSSRS system, Staff Reporting due Sept 15 |
-| North Dakota | https://insights.nd.gov/ | ✅ | ⚠️ | ⚠️ | Excel | 2023-24 | **Medium** | Insights.nd.gov portal, Financial Facts publication |
-| Ohio | https://education.ohio.gov/Topics/Data | ✅ | ⚠️ | ✅ | Excel/CSV | 2024-25 | **High** | Enrollment Data, Special Education Profiles |
-| South Dakota | https://doe.sd.gov/data/ | ✅ | ✅ | ✅ | Excel | 2023-24 | **Medium** | Data Dashboards, Staffing Data, SPP reports |
-| Wisconsin | https://dpi.wi.gov/wisedash | ✅ | ⚠️ | ✅ | CSV/Excel | 2023-24 | **High** | WISEdash Public Portal, WISEdata warehouse |
-| **WEST** |
-| Alaska | https://education.alaska.gov/data-center | ✅ | ✅ | ✅ | Excel | 2023-24 | **Medium** | Data Center, SPED District Data Profile |
-| Arizona | https://www.azed.gov/data/public-data-sets/ | ✅ | ⚠️ | ✅ | Excel | 2024-25 | **High** | Public Data Sets, Accountability & Research Data |
-| Colorado | https://ed.cde.state.co.us/cdereval | ✅ | ✅ | ✅ | Excel | 2024-25 | **High** | Colorado Education Statistics, SchoolView portal |
-| Hawaii | https://arch.k12.hi.us/reports/hidoe-data-book | ✅ | ⚠️ | ⚠️ | Excel/PDF | 2023-24 | **Low** | ARCH data portal, single district state |
-| Idaho | https://boardofed.idaho.gov/k-12-education/isee-idaho-system-for-educational-excellence/ | ✅ | ✅ | ✅ | Excel | 2024-25 | **Medium** | ISEE system, Idaho Ed Trends portal |
-| Montana | https://opi.mt.gov/ | ✅ | ⚠️ | ⚠️ | Excel | 2023-24 | **Low** | OPI data services, limited online portal access |
-| Nevada | https://doe.nv.gov/DataCenter/Enrollment/ | ✅ | ✅ | ⚠️ | Excel | 2024-25 | **Medium** | Nevada Accountability Portal, new Educator Workforce portal |
-| New Mexico | https://webnew.ped.state.nm.us/ | ✅ | ⚠️ | ✅ | Excel | 2023-24 | **Medium** | NM Vistas, STARS system, District SPED data |
-| Oklahoma | https://oklahoma.gov/education/school-data | ✅ | ⚠️ | ✅ | Excel | 2024-25 | **Medium** | School Data portal, Special Ed Data page |
-| Oregon | https://www.ode.state.or.us/data/reportcard/reports.aspx | ✅ | ⚠️ | ✅ | Excel | 2024 | **High** | At-A-Glance Profiles, Special Ed District Profiles |
-| Utah | https://datagateway.schools.utah.gov/ | ✅ | ⚠️ | ⚠️ | Excel | 2024 | **Medium** | USBE Data Gateway, Reports section |
-| Washington | https://ospi.k12.wa.us/ | ✅ | ⚠️ | ⚠️ | Excel | 2023-24 | **Medium** | OSPI data (limited direct portal info), JLARC reports |
-| Wyoming | https://edu.wyoming.gov/data/ | ✅ | ✅ | ⚠️ | Excel | 2024 | **Medium** | School District Enrollment & Staffing Data |
-| **TERRITORIES** |
-| District of Columbia | https://osse.dc.gov/page/data-and-reports-0 | ✅ | ⚠️ | ✅ | Excel | 2024 | **High** | OSSE Data & Reports, SLED system |
-| Puerto Rico | NCES data only | ⚠️ | ⚠️ | ⚠️ | NCES | 2022-23 | **Low** | No dedicated PRDE data portal found, rely on NCES |
-| US Virgin Islands | https://www.vide.vi/ | ⚠️ | ⚠️ | ⚠️ | NCES | 2022-23 | **Low** | VIDE website, data primarily via NCES |
-| Guam | https://www.gdoe.net/ | ⚠️ | ⚠️ | ⚠️ | NCES | 2023-24 | **Low** | GOSDV data system, limited public access |
-| American Samoa | https://www.amsamoadoe.com/ | ⚠️ | ⚠️ | ⚠️ | NCES | 2023-24 | **Low** | ASDOE website, data primarily via NCES |
-| Northern Mariana Islands | https://slds.cnmipss.org/ | ⚠️ | ⚠️ | ⚠️ | SLDS | 2024-25 | **Low** | CNMI SLDS + EnVision PSS, limited public data |
+| Tier | Count | Meaning |
+|---|---|---|
+| Integrated — refresh available (newer year confirmed) | 3 | |
+| Tier 1 — ready to acquire now (2+ core categories, direct-download/API) | 32 | |
+| Tier 2 — data exists, needs manual/dashboard work | 9 | |
+| Tier 3 — blocked or largely unconfirmed | 6 | |
+| Integrated — current (no refresh needed) | 6 | |
 
-**Legend:**
-- ✅ = Data readily available in downloadable format
-- ⚠️ = Data partially available or format unclear
-- ❌ = Data not available or restricted access
+**Crosswalk correction (2026-07-20):** most SEA portals don't publish their own state-ID->NCES-LEAID crosswalk file, and the per-state Crosswalk column below reports exactly that, honestly. But this was never the right place to look — `state_district_crosswalk` (REQ-027, 17,842 rows) is already populated from the `ST_LEAID` column in NCES CCD's own LEA directory file, which we'd already ingested and which is 100% populated across all 56 jurisdictions. **A state's Crosswalk cell showing ❌ is not a gap** — see "Consolidated sources" below and the catalog's `meta.crosswalk_correction` for the full story. OK, WI, and KY are still worth noting as states with an independent SEA-published crosswalk (useful for cross-validation per REQ-021), just not as an acquisition target.
 
 ---
 
-## Top 10 High-Priority States for Integration
+## Integrated — refresh available (newer year confirmed) (3)
 
-Based on data availability, format quality, and recency, these states are the best candidates for next integration:
+| State | Enrollment | Staffing | SPED | Crosswalk | FRPM/ELL | Flags | Notes |
+|---|---|---|---|---|---|---|---|
+| **IL** Illinois | ✅ 2024-25 | ⚠️ 2024-25 | ⚠️ 2024-25 | ✅ 2025-26 | ⚠️ 2024-25 | refresh-candidate, follow-up-manual | Manual open of the 2024-25 Report Card Public Data Set needed to confirm SPED-teacher-split field before re-import (file too large for au... |
+| **MI** Michigan | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ✅ current-rolling | ⚠️ 2024-25 | refresh-candidate | Best-confirmed refresh of the three (IL/MI/NY): direct-download links in hand for enrollment/staffing/SPED at 2024-25, crosswalk confirme... |
+| **NY** New York | ✅ 2024-25 | ✅ 2024-25 | ⚠️ 2024-25 | 🚫 unchanged | ⚠️ 2024-25 (FRPM); 2023-24 (ELL, not advanced) | refresh-candidate, blocked, follow-up-manual | Enrollment/staffing refresh is clean; SPED bulk-file and crosswalk re-verification need manual follow-up (SEDREF login wall). |
 
-### Tier 1: Excellent Data Availability (Immediate Integration Candidates)
+## Tier 1 — ready to acquire now (2+ core categories, direct-download/API) (32)
 
-1. **Illinois** - Outstanding comprehensive data through Illinois Report Card Data Library
-   - **Why:** District staffing, finance, and special education data all in Excel format
-   - **Portal:** https://www.illinoisreportcard.com/
-   - **Data Year:** 2024
-   - **Similar to CA:** Yes, comprehensive API-like data access
+| State | Enrollment | Staffing | SPED | Crosswalk | FRPM/ELL | Flags | Notes |
+|---|---|---|---|---|---|---|---|
+| **AK** Alaska | ✅ 2025-26 | ✅ 2025-26 | ⚠️ 2024-25 | ❌ — | ✅ 2025-26 | api-available | Previously-undocumented ArcGIS REST API — strong new lead, not in the Jan-2026 assessment. |
+| **AL** Alabama | ✅ 2025-26 | ✅ 2026-27 (FY2027 enacted) | ✅ 2025-26 (Oct-1-2025 count) | ⚠️ unknown | ✅ 2025-26 | follow-up-manual | Enrollment/staffing/FRPM ready to acquire; SPED needs ~140 per-district PDF pulls. |
+| **AR** Arkansas | ✅ 2025-26 | ✅ 2025-26 | ✅ 2024-25 | ✅ 2025-26 | ⚠️ 2020-21 | follow-up-manual | Strong flat-file source with a confirmed crosswalk; FRPM/ELL data is stale/proxy only. |
+| **AS** American Samoa | ✅ 2020-21 | ✅ 2020-21 | ✅ 2024-25 | ✅ 2022-23 | ✅ 2020-21 | dashboard-only, follow-up-manual | Correction to Jan-2026 "NCES-only" — real SPED/LRE data exists and is current (FFY24); enrollment/staffing/FRPM stuck at 2020-21. |
+| **CO** Colorado | ✅ 2024-25 | ✅ 2025-26 | ⚠️ 2024-25 | ❌ — | ✅ 2024-25 | — | Strong enrollment/staffing/FRPM source; crosswalk file exists but has no NCES field. |
+| **CT** Connecticut | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ❌ — | ✅ 2024-25 | dashboard-only | Rich per-district PDFs (all 5 categories in one doc) but need per-district URL construction, not a bulk file. |
+| **DC** District of Columbia | ✅ 2024-25 | ✅ 2022-23 | ⚠️ 2024-25 | ❌ — | ✅ 2024-25 | dashboard-only, request-only | One file covers enrollment+SWD+EL+econ-disadvantaged together; staffing is headcount not FTE, no crosswalk found. |
+| **DE** Delaware | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ❌ — | ✅ 2024-25 | api-available | Best-in-batch: real Socrata API with a clean SPED-teacher-FTE split, ready to acquire programmatically. |
+| **GA** Georgia | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ❌ — | ✅ 2024-25 | dashboard-only, follow-up-manual, request-only | Portal moved (georgiainsights -> GOEWS) — update the seed URL in any future re-probe. |
+| **GU** Guam | ✅ 2023-24 | ✅ 2023-24 | ✅ 2024-25 | ✅ 2024-25 | ⚠️ 2023-24 | dashboard-only, follow-up-manual | Correction to Jan-2026 "limited public access" — SPED data reports page is genuinely current (Dec 2024 child count). |
+| **IA** Iowa | ✅ 2025-26 | ⚠️ 2025-26 | ✅ 2025-26 | ❌ — | ✅ 2025-26 | dashboard-only, follow-up-manual | Strong enrollment/SPED/FRPM source once past the Tableau dashboard; staffing FTE unresolved. |
+| **ID** Idaho | ✅ 2025-26 | ✅ 2023-24 | ✅ 2024-25 | ❌ — | ❌ — | follow-up-manual | Strong enrollment/SPED source; staffing lacks a SPED split, no crosswalk or FRPM/ELL found. |
+| **IN** Indiana | ✅ 2025-26 | ⚠️ 2021-22 | ✅ 2025-26 | ❌ — | ✅ 2025-26 | follow-up-manual | Strong enrollment/SPED/FRPM source; staffing needs a different/newer source. |
+| **KY** Kentucky | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | — | Best-in-class source: NCES ID column at district+school level makes this the reference model for a future importer. |
+| **LA** Louisiana | ✅ 2025-26 | ⚠️ 2024-25 | ✅ 2024-25 | ⚠️ 2025-26 | ✅ 2025-26 | — | Strong enrollment/SPED/FRPM source; staffing FTE-by-district is the gap. |
+| **MD** Maryland | ✅ 2023-24 | ✅ 2023-24 | ✅ 2025-26 (Oct 2025 count, published Apr 2026) | ⚠️ 2024-25 | ❌ — | dashboard-only, follow-up-manual | SPED census is newer than our NCES baseline (SY2025-26) — a real precedence win once acquired. |
+| **MO** Missouri | ✅ 2025-26 (no explicit label; refreshed weekly) | ✅ 2025-26 (no explicit label; refreshed weekly) | 🚫 unknown | ❌ — | ❌ — | blocked, follow-up-manual, login-required, request-only | Basic enrollment/staff totals confirmed via a real PDF directory; finer detail needs the MCDS login or a formal data request. |
+| **MS** Mississippi | ✅ 2024-25 | ✅ 2024-25 | ✅ 2022-23 | ❌ — | ❌ — | dashboard-only, follow-up-manual | Portal moved (newreports -> Superintendent Annual Report packet); no crosswalk or FRPM/ELL found. |
+| **ND** North Dakota | ✅ 2025-26 | ✅ 2024-25 | ⚠️ 2025 | ❌ — | ❌ — | follow-up-manual | Enrollment + aggregate staffing ready to acquire; SPED is state-level only, no crosswalk found. |
+| **NE** Nebraska | ✅ 2025-26 | ✅ 2024-25 | ⚠️ 2024-25 | ❌ — | ✅ 2025-26 | dashboard-only, follow-up-manual | Enrollment/staffing/FRPM ready to acquire now via real files; SPED needs the NEP dashboard. |
+| **NJ** New Jersey | ✅ 2025-26 | ✅ 2025-26 | ✅ 2024-25 (Oct 15 2024 count) | ❌ — | ✅ 2025-26 | follow-up-manual | Strong open portal; correction to seed note — staffing file does NOT split SPED vs general-ed teachers. |
+| **NM** New Mexico | ✅ 2024-25 | ❌ — | ✅ 2024-25 | ❌ — | ❌ — | blocked, follow-up-manual, login-required | Portal moved off the Jan-2026 seed URL; richer data confirmed behind a login wall. |
+| **NV** Nevada | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ❌ — | ✅ 2024-25 | blocked | Best small-state find: genuine SPED-teacher split in staffing, all 4 core categories confirmed. |
+| **OH** Ohio | ✅ 2025-26 | ⚠️ 2024-25 | ✅ 2024-25 | ✅ current | ❌ — | dashboard-only, follow-up-manual, request-only | Enrollment + SPED ready to acquire now; staffing needs a login, data.ohio.gov open-data catalog appears dead. |
+| **OR** Oregon | ✅ 2024-25 | ⚠️ — | ✅ 2024-25 | ❌ — | ⚠️ — | dashboard-only | Enrollment + SPED-by-environment confirmed strong; staffing needs a dropdown click-through. |
+| **SC** South Carolina | ✅ 2024-25 | ✅ 2024-25 | ✅ 2022-23 | ❌ — | ❌ — | follow-up-manual | SPED-teacher split derivable from position codes even without a pre-built column — worth building that aggregation in the importer. |
+| **SD** South Dakota | ✅ 2025-26 | ✅ 2024-25 | ✅ 2025 | ❌ — | ✅ 2025 | follow-up-manual | Genuinely strong flat-file source once the /ofm sub-pages are known — enrollment/staffing/SPED/FRPM all ready to acquire. |
+| **TN** Tennessee | ✅ 2024-25 | ✅ 2024-25 | ⚠️ 2023-24 | ✅ current (undated static reference) | ✅ 2024-25 | dashboard-only | Confirmed crosswalk file with explicit NCES.District.Number column; portal moved off the SAS seed URL. |
+| **UT** Utah | ✅ 2025-26 | ✅ 2024-25 | ❌ — | ❌ — | ⚠️ — | — | Genuine SPED-teacher-FTE column confirmed in staffing — a clean source once the real file location (schools.utah.gov, not the dashboard) ... |
+| **WA** Washington | ✅ 2025-26 | ✅ 2024-25 | ✅ FFY2024 (submitted 2026) | ❌ — | ✅ 2025-26 | api-available | One Socrata API call covers enrollment+FRPM+ELL+SPED-count together — an excellent acquisition target. |
+| **WI** Wisconsin | ✅ 2025-26 | ⚠️ 2025-26 | ✅ 2025-26 | ✅ 2025-26 | ✅ 2025-26 | dashboard-only, follow-up-manual | Best crosswalk found in this batch (real NCES-code column + dedicated crosswalk file); enrollment/SPED/FRPM/ELL all one bulk source, only... |
+| **WV** West Virginia | ✅ 2025-26 | ✅ 2025-26 | ✅ 2023-24 | ❌ — | ⚠️ 2024-25 | dashboard-only, follow-up-manual, request-only | Confirmed SPED-teacher split by county in the FTE file — a clean source for the SPED-teacher-split rubric goal. |
 
-2. **Michigan** - MI School Data portal is exemplary for multi-level analysis
-   - **Why:** Pre-K through postsecondary data, staffing by role, SPED by disability
-   - **Portal:** https://mischooldata.org/
-   - **Data Year:** 2024
-   - **Similar to CA:** Yes, well-structured downloadable datasets
+## Tier 2 — data exists, needs manual/dashboard work (9)
 
-3. **Pennsylvania** - PennData special education system + comprehensive workforce data
-   - **Why:** Detailed SPED statistics, educator workforce annual reports
-   - **Portal:** https://www.pa.gov/agencies/education/data-and-reporting
-   - **Data Year:** 2024-25
-   - **Similar to CA:** Yes, separate SPED reporting system like CA
+| State | Enrollment | Staffing | SPED | Crosswalk | FRPM/ELL | Flags | Notes |
+|---|---|---|---|---|---|---|---|
+| **KS** Kansas | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ⚠️ 2025-26 | ⚠️ 2024-25 | follow-up-manual | Real report-generator tool once past a tool-side TLS quirk; export each report to build the dataset. |
+| **ME** Maine | ⚠️ 2024-25 | ⚠️ unknown | ✅ 2024-25 | ❌ — | ⚠️ unknown | dashboard-only, follow-up-manual | SPED confirmed; enrollment/staffing/FRPM/ELL need a human browser session on the dashboards. |
+| **MP** Northern Mariana Islands | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ❌ — | ⚠️ unknown | dashboard-only, follow-up-manual | Correction to Jan-2026 "limited" — a real dashboard portal (EnVision PSS) with CSV-exportable sheets now exists. |
+| **MT** Montana | ✅ 2024-25 | ⚠️ unknown | ⚠️ 2024-25 | ❌ — | ⚠️ unknown | dashboard-only, request-only | OPI data services, limited online portal access |
+| **NC** North Carolina | ⚠️ current (multi-year selectable) | ⚠️ current | ✅ 2023-24 (FFY2023, submitted 2025) | ⚠️ current | ⚠️ post-2021-22 (Econ Disadvantaged, not raw FRPM) | dashboard-only, follow-up-manual | Real data exists behind an Oracle APEX app that blocks automated fetch — needs a human browser session to confirm CSV export. |
+| **OK** Oklahoma | ✅ 2024-25 | ❌ — | ⚠️ — | ✅ 2024-25 | ⚠️ 2024-25 | dashboard-only, follow-up-manual | One of the strongest crosswalk finds in the whole campaign — a real NCES-ID column in the enrollment CSV itself. |
+| **PR** Puerto Rico | ✅ 2024-25 | ⚠️ 2024-25 | ❌ — | ❌ — | ❌ — | dashboard-only, follow-up-manual | Correction to Jan-2026 "no portal found" — a real, current enrollment directory exists at perfilescolar.dde.pr. |
+| **RI** Rhode Island | ✅ 2024-25 | ✅ 2024-25 | ⚠️ 2024-25 | ❌ — | ❌ — | dashboard-only, request-only | RIDE Data Center, 618 data collections (format unclear) |
+| **VI** US Virgin Islands | ✅ 2024-25 | ⚠️ 2024-25 | ❌ — | ❌ — | ❌ — | follow-up-manual | Correction to Jan-2026 "no portal found" — real enrollment PDFs exist; SPED/FRPM/ELL/crosswalk still not found. |
 
-4. **Virginia** - Strong data infrastructure with teacher staffing dashboard
-   - **Why:** Statistics & Reports section, dedicated teacher/staff vacancy dashboard
-   - **Portal:** https://www.doe.virginia.gov/data-policy-funding/data-reports
-   - **Data Year:** 2024-25
-   - **Similar to CA:** Moderate, good organization but less granular
+## Tier 3 — blocked or largely unconfirmed (6)
 
-5. **Massachusetts** - School and District Profiles with FTE teacher data
-   - **Why:** Comprehensive enrollment by grade, FTE staffing, student/teacher ratios
-   - **Portal:** https://profiles.doe.mass.edu/statereport/
-   - **Data Year:** 2024-25
-   - **Similar to CA:** Yes, excellent data quality and accessibility
+| State | Enrollment | Staffing | SPED | Crosswalk | FRPM/ELL | Flags | Notes |
+|---|---|---|---|---|---|---|---|
+| **AZ** Arizona | ⚠️ 2024-25 | ⚠️ 2018-19 | ⚠️ 2018-19 | ❌ — | ⚠️ 2024-25 | blocked, follow-up-manual | Genuine Cloudflare block on a state marked "high priority" in the seed — worth a real browser session, likely rich data behind it. |
+| **HI** Hawaii | ⚠️ 2022-23 | ⚠️ 2022-23 | ⚠️ 2022-23 | ❌ — | ⚠️ 2022-23 | dashboard-only, follow-up-manual | SPA needs Playwright; only a 2022-23 ERIC-mirrored PDF confirmed so far. |
+| **MN** Minnesota | 🚫 — | 🚫 — | 🚫 — | ⚠️ 2025-26 | 🚫 — | blocked, dashboard-only, follow-up-manual | Genuine WAF block on the real data engine — needs a human browser visit, not a repeat automated attempt. |
+| **NH** New Hampshire | ⚠️ 2025-26 | ⚠️ 2021-22 | ⚠️ 2024-25 | ⚠️ 2024-25 | ⚠️ 2022-23 | blocked, dashboard-only, follow-up-manual | Entire domain WAF-blocked to automated tools — needs a human browser pass before any conclusion is trusted; findings here are unverified ... |
+| **VT** Vermont | ✅ 2025-26 | ⚠️ 2020-21 | ❌ — | ❌ — | ❌ — | blocked, follow-up-manual | Enrollment newer than NCES baseline (2025-26); staffing/SPED/FRPM need a human pass past the WAF. |
+| **WY** Wyoming | ⚠️ 2025-26 (unconfirmed) | ⚠️ 2025-26 (unconfirmed) | ⚠️ 2025-26 (unconfirmed) | ❌ — | ⚠️ 2025-26 (unconfirmed) | dashboard-only, follow-up-manual | Publicly viewable (no login needed) but needs Playwright/a browser to actually extract — good candidate for the acquisition phase. |
 
-### Tier 2: Very Good Data Availability (High Value, Minor Work Needed)
+## Integrated — current (no refresh needed) (6)
 
-6. **Iowa** - Condition of Education (COE) portal with staff by district
-   - **Why:** Interactive filters, staff data by position/salary/benefits, enrollment trends
-   - **Portal:** https://reports.educateiowa.gov/COE/
-   - **Data Year:** 2024-25
-   - **Integration Considerations:** Excel downloads require some parsing
-
-7. **Wisconsin** - WISEdash Public Portal backed by WISEdata warehouse
-   - **Why:** Multi-year dashboards, demographic disaggregation, special ed by environment
-   - **Portal:** https://dpi.wi.gov/wisedash
-   - **Data Year:** 2023-24
-   - **Integration Considerations:** Data sourced from WISEdata since 2016-17
-
-8. **Colorado** - Colorado Education Statistics portal + SchoolView
-   - **Why:** District dashboard, staff statistics by role, SPED child count data
-   - **Portal:** https://ed.cde.state.co.us/cdereval
-   - **Data Year:** 2024-25
-   - **Integration Considerations:** Multiple portals to integrate
-
-9. **Connecticut** - EdSight interactive portal with excellent usability
-   - **Why:** Visual multi-year reports, staffing levels FTE, PSIS data collection
-   - **Portal:** https://public-edsight.ct.gov/
-   - **Data Year:** 2024-25
-   - **Integration Considerations:** May need to scrape dashboard vs. direct downloads
-
-10. **Vermont** - Education Dashboard with comprehensive metrics
-    - **Why:** Student/teacher ratios, average teacher salary, SPED annual performance reports
-    - **Portal:** https://education.vermont.gov/data-and-reporting/vermont-education-dashboard
-    - **Data Year:** 2024
-    - **Integration Considerations:** Dashboard interface, need to identify download endpoints
-
----
-
-## Honorable Mentions (Next Tier)
-
-These states have good data but require slightly more work:
-
-- **Ohio** - Special Education Profiles + enrollment data (format variation)
-- **Tennessee** - State Report Card + Data Downloads (SAS-based portal)
-- **North Carolina** - Data & Reports + Exceptional Children data (good SPED data)
-- **Alabama** - Reports & Data portal (well-organized financial reports)
-- **Arizona** - Public Data Sets + Accountability data (good SPED dashboard)
-- **New Jersey** - Data & Reports Portal (excellent certified staff reports)
-- **Oregon** - At-A-Glance Profiles (strong SPED district profiles)
-- **Delaware** - Open Data Portal (modern API, data released annually in Feb)
+| State | Enrollment | Staffing | SPED | Crosswalk | FRPM/ELL | Flags | Notes |
+|---|---|---|---|---|---|---|---|
+| **CA** California | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ✅ — | — |  |
+| **FL** Florida | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ❓ — | — |  |
+| **MA** Massachusetts | ✅ 2025-26 | ✅ 2025-26 | ⚠️ 2025-26 | ✅ 2025-26 | ❓ — | — |  |
+| **PA** Pennsylvania | ✅ 2024-25 | ✅ 2024-25 | ⚠️ 2024-25 | ✅ 2024-25 | ❓ — | — |  |
+| **TX** Texas | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ❓ — | — |  |
+| **VA** Virginia | ✅ 2025-26 | ✅ 2025-26 | ✅ 2025-26 | ✅ 2025-26 | ❓ — | — |  |
 
 ---
 
-## States Requiring Special Approaches
+## Legend
 
-### API/Data Request Required
-- **Georgia** - GOSA Downloadable Data Repository exists but may require registration
-- **Kansas** - Data Central portal has security warnings, may need direct contact
-- **New Mexico** - District View requires login/password for unmasked data
+- ✅ `confirmed` — an actual downloadable file or API endpoint was fetched/verified
+- ⚠️ `reported-partial` — portal/category exists but format/download unclear, or only headcounts/percentages where raw FTE/counts were sought
+- ❌ `not-found` — looked, could not find
+- 🚫 `blocked` — Cloudflare/WAF/login wall encountered (one-attempt rule applied, not retried)
+- ❓ `unknown` — not yet probed
 
-### Limited SPED Data Specificity
-- **Indiana** - General enrollment good, SPED less detailed
-- **Kentucky** - Enrollment/staffing good, SPED reporting manual-heavy
-- **Mississippi** - Data Explorer available but SPED granularity unclear
-- **Missouri** - Good enrollment reports, SPED data collections less accessible
-- **Rhode Island** - 618 data collections available but format unclear
+## Consolidated (multi-state) sources
 
-### Single District States (Different Approach Needed)
-- **Hawaii** - Single district state, different organizational structure
-- **District of Columbia** - OSSE operates differently than traditional state education agencies
+### NCES CCD ST_LEAID (already in our own ingested data — the real crosswalk source)
+- **Outcome:** confirmed (probed 2026-07-20)
+- The state-ID<->NCES-LEAID crosswalk this campaign was probing SEA portals for already exists, for free, in data we ingested months ago: ccd_lea_052_*.csv (the NCES CCD LEA directory file) carries an ST_LEAID column (e.g. "NE-120056000", "WI-3862") 100% populated across all 3.8M rows / 56 jurisdictions in the 2024-25 file, paired 1:1 with the federal LEAID. `state_district_crosswalk` (REQ-027, 17,842 rows) is already sourced from exactly this field (source='nces_ccd', id_system='st_leaid'). See meta.crosswalk_correction for the full story — this superseded the per-state crosswalk_ids probing before it started; kept for the record so it isn't re-derived.
 
----
+### IDEA Section 618 LEA Part B Child Count (data.ed.gov)
+- **Outcome:** confirmed (probed 2026-07-20)
+- **URL:** https://data.ed.gov/dataset/16968dd3-87bd-4e4a-92ed-50f03e6c4941
+- District(LEA)-level SPED child counts by disability category, ALL states in one federal CSV per year, direct download URLs, current through 2024-25 (bchildcountdisabilitycategorylea2024-25.csv). State-reported actuals — a candidate to supersede the 2017-18 SPED baseline nationally under REQ-025, likely higher-yield than most per-state SEA probes. Note: 2021-22-and-earlier files bundled educational environment; 2022-23+ split it out — the LEA-level ed-environment companion dataset still needs locating.
 
-## States with Severe Data Limitations
+### CRDC (Civil Rights Data Collection), 2021-22 public-use files
+- **Outcome:** confirmed (probed 2026-07-20)
+- **URL:** https://civilrightsdata.ed.gov/data
+- 2021-22 CRDC public-use data files released January 2025 — the newest usable collection (2020-21 exists but is a COVID-excluded year). Refresh candidate for the 2017-18 CRDC-based SPED baseline (REQ-018), 4 years newer; VERIFY first that the 2021-22 elements include the staffing fields the baseline derivation used (SPED teachers / paraprofessionals). 2023-24 CRDC: submission closed 2025-04, release slipped from 'end of Dec 2025' to 'by 2026' (still N/A as of 2026-03 page review) — watch, do not wait.
 
-### Territories (Rely Primarily on NCES Federal Data)
-- **Puerto Rico** - No dedicated PRDE data portal found
-- **US Virgin Islands** - VIDE website exists but data primarily via NCES
-- **Guam** - GOSDV data system exists but limited public access
-- **American Samoa** - ASDOE website exists but data primarily via NCES
-- **Northern Mariana Islands** - CNMI SLDS exists but limited public downloadable data
+### Urban Institute Education Data Portal API
+- **Outcome:** confirmed (probed 2026-07-20)
+- **URL:** https://educationdata.urban.org/api/v1/
+- Clean REST API over CCD/CRDC/EDFacts. school-districts/ccd/directory returns state_leaid per district (verified 2023, e.g. NE-120056000) — useful to backfill/verify state_district_crosswalk (REQ-027) for every state without touching SEA portals, and as an independent validation source (REQ-021). Supplements, never substitutes for, SEA-actual data.
 
-### States with Portal Access Issues
-- **Montana** - OPI data services exist but limited online portal functionality
-- **Washington** - OSPI website exists but direct data portal unclear (found JLARC reports instead)
-
----
-
-## Data Integration Strategy Recommendations
-
-### Phase 1: Quick Wins (Months 1-3)
-Integrate the Tier 1 states (Illinois, Michigan, Pennsylvania, Virginia, Massachusetts) as they have:
-- Modern data portals with downloadable datasets
-- Similar structure to California's data organization
-- Current 2024-25 data available
-- All required data types (enrollment, staffing, SPED)
-
-### Phase 2: High-Value States (Months 4-6)
-Integrate Tier 2 states (Iowa, Wisconsin, Colorado, Connecticut, Vermont) which require:
-- Dashboard scraping or download endpoint identification
-- Format standardization work
-- Multiple portal integration in some cases
-
-### Phase 3: Fill Gaps (Months 7-9)
-Integrate Honorable Mentions states focusing on:
-- States with excellent SPED data (North Carolina, Arizona)
-- Large population states (Ohio, Tennessee, New Jersey)
-- States filling geographic gaps in coverage
-
-### Phase 4: Complete Coverage (Months 10-12)
-Address remaining states with:
-- API access or data request processes
-- Manual data collection where needed
-- Workarounds for limited portal access
-
-### Phase 5: Territories (As Resources Allow)
-- Focus on DC (high-quality OSSE data available)
-- Supplement with NCES federal data for other territories
+### CCSSO / AASA / NSBA / NAESP
+- **Outcome:** not-found (probed 2026-07-20)
+- Membership/policy organizations — publish aggregates and reports, not district-level FTE/enrollment/SPED files. Not acquisition sources.
 
 ---
 
-## Technical Considerations
+## Full detail
 
-### Data Format Patterns Observed
-- **Excel/CSV:** Most common (40+ states)
-- **Interactive Dashboards:** 15-20 states (may need scraping)
-- **PDF Reports:** 5-10 states (OCR/extraction needed)
-- **API Access:** 3-5 states (Delaware, potentially others)
+Per-state portal URLs, probe receipts (URLs tried, outcomes), and raw notes live in `state_data_catalog.yaml` — this document is a summary view. Acquisition candidates and sign-off status: `ACQUISITION_PLAN.md`.
 
-### Common Data Collection Cycles
-- **Fall Enrollment Count:** October 1 (most states)
-- **Staff Reporting:** September 15 - October 31 (varies by state)
-- **SPED Child Count:** December 1 (federal requirement)
-- **Public Release:** Typically February-April of following year
-
-### NCES ID Crosswalk Availability
-- Most states include NCES IDs in their data exports
-- States without NCES IDs will need crosswalk from federal CCD data
-- Our existing `infrastructure/utilities/nces_cds_crosswalk.py` can support this
-
-### Data Quality Flags to Watch For
-- **FTE vs. Headcount:** States vary in staff reporting (need standardization)
-- **District vs. School Level:** Some states only provide school-level (need aggregation)
-- **SPED Setting Definitions:** Educational environment classifications vary by state
-- **Charter School Inclusion:** Some states report charters separately
-
----
-
-## Integration Template Checklist
-
-For each state integration, ensure:
-
-1. **Data Download**
-   - [ ] Identify download URLs for enrollment, staffing, SPED
-   - [ ] Document data collection cycle and update schedule
-   - [ ] Verify data year matches our primary dataset (2023-24)
-
-2. **Field Mapping**
-   - [ ] Map state LEA ID to NCES ID
-   - [ ] Map enrollment fields (total, by grade, by SPED status)
-   - [ ] Map staffing fields (teachers, SPED teachers, paraprofessionals)
-   - [ ] Map SPED fields (count, setting/environment)
-
-3. **Script Development**
-   - [ ] Create `import_[state]_[datatype].py` scripts
-   - [ ] Follow pattern from `import_ca_*.py` existing scripts
-   - [ ] Include data lineage and source attribution
-
-4. **Database Integration**
-   - [ ] Add state-specific tables if needed (like ca_frpm, ca_lcff)
-   - [ ] Update `apply_layer2_migration.py` with state data
-   - [ ] Verify NCES ID crosswalk accuracy
-
-5. **Validation**
-   - [ ] Run `validate_[state]_integration.py` script
-   - [ ] Compare totals against NCES federal data
-   - [ ] Generate validation report
-
-6. **Documentation**
-   - [ ] Update `docs/DATA_SOURCES.md` with state portal info
-   - [ ] Add state-specific notes to methodology
-   - [ ] Document any data quality issues or limitations
-
----
-
-## Conclusion
-
-Of the 46 U.S. states assessed (excluding CA, TX, FL, NY), **10 states** are ready for immediate integration with excellent data availability:
-
-**Tier 1 (Immediate):** Illinois, Michigan, Pennsylvania, Virginia, Massachusetts
-**Tier 2 (High Value):** Iowa, Wisconsin, Colorado, Connecticut, Vermont
-
-These 10 states represent diverse geographic regions and provide high-quality, recent (2024-25) data across all required categories. They should serve as the foundation for expanding LCT metric calculation beyond California.
-
-An additional **8 states** (Honorable Mentions) are strong candidates once the first 10 are complete, providing good geographic coverage and data quality with minor additional work required.
-
-The remaining **28 states** range from medium priority (requiring API access or format work) to low priority (territories relying on NCES federal data). These can be integrated in later phases as resources and methodology mature.
-
----
-
-**Assessment Completed:** January 11, 2026
-**Next Step:** Begin Phase 1 integration with Illinois as pilot state (comprehensive data similar to California)

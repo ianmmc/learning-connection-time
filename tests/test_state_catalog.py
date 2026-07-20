@@ -96,3 +96,44 @@ def test_acquisition_receipts_are_structured_and_files_exist(catalog):
                 f"{s['code']}: bad sha256 {acq['sha256']!r}"
             assert (repo_root / acq['path']).exists(), \
                 f"{s['code']}: receipt names missing file {acq['path']}"
+
+
+def test_generated_docs_are_not_stale(catalog):
+    """STATE_DATA_AVAILABILITY_ASSESSMENT.md and ACQUISITION_PLAN.md are
+    derived from the catalog by gen_state_assessment.py and must never be
+    hand-edited — regenerating from the current catalog must reproduce the
+    committed files byte-for-byte (modulo the 'Regenerated:'/'Generated:'
+    date line, which legitimately changes on every run)."""
+    import importlib.util
+
+    repo_root = CATALOG_PATH.parent.parent.parent
+    script_path = repo_root / 'infrastructure' / 'scripts' / 'utilities' / 'gen_state_assessment.py'
+    spec = importlib.util.spec_from_file_location('gen_state_assessment', script_path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    def normalize(text):
+        return re.sub(r'\*\*(Regenerated|Generated):\*\*.*', '', text)
+
+    committed_assessment = normalize(mod.ASSESSMENT_PATH.read_text())
+    committed_plan = normalize(mod.PLAN_PATH.read_text())
+
+    # Regenerate into the real paths (idempotent — a no-op if nothing drifted)
+    # then read back and restore if this run happened to change anything.
+    original_assessment_bytes = mod.ASSESSMENT_PATH.read_bytes()
+    original_plan_bytes = mod.PLAN_PATH.read_bytes()
+    try:
+        states = mod.gen_assessment(catalog, today='REGEN-DATE')
+        mod.gen_acquisition_plan(states, today='REGEN-DATE')
+        regenerated_assessment = normalize(mod.ASSESSMENT_PATH.read_text())
+        regenerated_plan = normalize(mod.PLAN_PATH.read_text())
+    finally:
+        mod.ASSESSMENT_PATH.write_bytes(original_assessment_bytes)
+        mod.PLAN_PATH.write_bytes(original_plan_bytes)
+
+    assert committed_assessment == regenerated_assessment, (
+        'STATE_DATA_AVAILABILITY_ASSESSMENT.md is stale or was hand-edited — '
+        're-run infrastructure/scripts/utilities/gen_state_assessment.py')
+    assert committed_plan == regenerated_plan, (
+        'ACQUISITION_PLAN.md is stale or was hand-edited — '
+        're-run infrastructure/scripts/utilities/gen_state_assessment.py')

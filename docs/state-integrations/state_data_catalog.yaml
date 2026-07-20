@@ -13,10 +13,24 @@ meta:
     and years — SEA staff/enrollment data wins REQ-023 precedence NOWHERE today, because year-matched
     NCES (2024-25 CCD, ingested 2026-07) beats year-matched SEA by design (REQ-022/023). SEA data currently
     pays off through: (1) SPED-actual data via REQ-025 (state-actual beats the 2017-18 federal estimate
-    — CA contributes 2,036 LCT rows today), (2) state<->NCES ID crosswalks (REQ-027), (3) SPED-teacher
-    splits feeding SPED scopes, and (4) years NEWER than the NCES primary (2025-26+), where SEA wins until
-    the next CCD lands. Probe priority follows this ranking. NOT a target: daily instructional minutes
-    — verified dead end (docs/INSTRUCTIONAL_TIME_HARVEST.md).
+    — CA contributes 2,036 LCT rows today), (2) SPED-teacher splits feeding SPED scopes, and (3) years
+    NEWER than the NCES primary (2025-26+), where SEA wins until the next CCD lands. Probe priority
+    follows this ranking. NOT a target: daily instructional minutes — verified dead end
+    (docs/INSTRUCTIONAL_TIME_HARVEST.md).
+  crosswalk_correction: >-
+    CORRECTION (2026-07-20, post-probe, Ian caught this): the per-state `crosswalk_ids` probe results
+    below were answering the wrong question. They report whether a STATE PORTAL publishes its own
+    state-ID<->NCES-LEAID crosswalk file — most don't, which the probe agents correctly and honestly
+    reported as `not-found`/`reported-partial` for most states. But REQ-027's crosswalk is NOT sourced
+    from state portals at all: `state_district_crosswalk` (17,842 rows, id_system='st_leaid',
+    source='nces_ccd') is already populated from the ST_LEAID column in NCES CCD's own LEA directory
+    file (ccd_lea_052_*), which is 100% populated across all 3.8M rows / all 56 jurisdictions in the
+    already-ingested 2024-25 file — verified directly. Spot-checked coverage for states the probes
+    flagged crosswalk-not-found (CT 201 rows, GA 234, MO 564, NM 152, SC 94, MS 152, ND 170, ID 187,
+    RI 64, MT 397): all already have real crosswalk rows in the DB. The per-state crosswalk_ids field
+    below is kept for completeness (it may still matter if a state's own ID differs from what CCD
+    records, or for cross-validation per REQ-021) but is NOT a blocking gap for acquisition — do not
+    treat any state's crosswalk as unacquired just because its portal doesn't publish one.
   availability_vocab:
   - reported-yes
   - reported-partial
@@ -38,6 +52,20 @@ meta:
     plus DB-verified status for the 9 integrated states. reported-* values become confirmed / not-found
     / blocked only via probe receipts.
 consolidated_sources:
+- name: NCES CCD ST_LEAID (already in our own ingested data — the real crosswalk source)
+  url: null
+  probed: '2026-07-20'
+  outcome: confirmed
+  detail: >-
+    The state-ID<->NCES-LEAID crosswalk this campaign was probing SEA portals for already exists,
+    for free, in data we ingested months ago: ccd_lea_052_*.csv (the NCES CCD LEA directory file)
+    carries an ST_LEAID column (e.g. "NE-120056000", "WI-3862") 100% populated across all 3.8M rows /
+    56 jurisdictions in the 2024-25 file, paired 1:1 with the federal LEAID. `state_district_crosswalk`
+    (REQ-027, 17,842 rows) is already sourced from exactly this field (source='nces_ccd',
+    id_system='st_leaid'). See meta.crosswalk_correction for the full story — this superseded the
+    per-state crosswalk_ids probing before it started; kept for the record so it isn't re-derived.
+  urls:
+  - data/raw/federal/nces-ccd/2024_25/ccd_lea_052_2425_l_1a_073025.csv
 - name: IDEA Section 618 LEA Part B Child Count (data.ed.gov)
   url: https://data.ed.gov/dataset/16968dd3-87bd-4e4a-92ed-50f03e6c4941
   probed: '2026-07-20'
