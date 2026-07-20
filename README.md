@@ -155,17 +155,11 @@ psql -d learning_connection_time -c "SELECT refresh_all_materialized_views();"
 
 ### Enrichment & Analysis Tools
 
-**Interactive Bell Schedule Enrichment**
-```bash
-# State-by-state enrichment
-python infrastructure/scripts/enrich/interactive_enrichment.py --state WI
+**Bell Schedule Acquisition**
 
-# Specific district
-python infrastructure/scripts/enrich/interactive_enrichment.py --district 5560580
-
-# Check status
-python infrastructure/scripts/enrich/interactive_enrichment.py --status
-```
+Bell schedules are acquired by the 9-stage acquisition pipeline
+(`docs/ACQUISITION_PIPELINE.md`). The old interactive enrichment CLI was
+retired 2026-07-20 (`data/archive/legacy-enrichment-layer-superseded-20260720/`).
 
 **Calculate LCT with QA Dashboard**
 ```bash

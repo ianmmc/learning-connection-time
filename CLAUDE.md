@@ -227,9 +227,6 @@ with session_scope() as session:
 # Calculate LCT (recommended)
 python3 infrastructure/scripts/analyze/calculate_lct_variants.py
 
-# Interactive enrichment
-python3 infrastructure/scripts/enrich/interactive_enrichment.py --state WI
-
 # Run SEA integration tests
 pytest tests/test_*_integration.py -v
 
