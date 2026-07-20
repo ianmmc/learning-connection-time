@@ -54,8 +54,9 @@ def lookup_by_name(df, name, state=None, fuzzy=True):
     if not exact.empty:
         return exact
 
-    # Try contains match
-    contains = search_df[search_df['district_name'].str.contains(name, case=False, na=False)]
+    # Try contains match (regex=False: user input like '[' crashed the regex
+    # engine — issue #433)
+    contains = search_df[search_df['district_name'].str.contains(name, case=False, na=False, regex=False)]
     if not contains.empty:
         return contains
 
@@ -79,12 +80,16 @@ def format_output(df, verbose=False):
         print(f"ID: {row['district_id']}")
         print(f"Name: {row['district_name']}")
         print(f"State: {row['state']}")
+        # Empty CSV cells arrive as NaN — int(NaN) raised ValueError (issue #314)
         enrollment = row.get('enrollment_total', row.get('enrollment', 0))
-        print(f"Enrollment: {int(enrollment):,}")
+        if pd.notna(enrollment):
+            print(f"Enrollment: {int(enrollment):,}")
+        else:
+            print("Enrollment: Unknown")
 
         if verbose:
             print(f"Enriched: {row.get('enriched', 'Unknown')}")
-            if 'instructional_staff' in row:
+            if 'instructional_staff' in row and pd.notna(row['instructional_staff']):
                 print(f"Instructional Staff: {int(row['instructional_staff']):,}")
 
         print()  # Blank line between results
@@ -93,7 +98,7 @@ def format_output(df, verbose=False):
 def search_districts(df, search_term, state=None):
     """Search for districts matching a term."""
     search_df = df[df['state'] == state.upper()] if state else df
-    results = search_df[search_df['district_name'].str.contains(search_term, case=False, na=False)]
+    results = search_df[search_df['district_name'].str.contains(search_term, case=False, na=False, regex=False)]
     return results
 
 
