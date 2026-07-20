@@ -53,6 +53,20 @@ consolidated_sources:
   urls:
   - https://data.ed.gov/dataset/16968dd3-87bd-4e4a-92ed-50f03e6c4941/resource/00a5a1b6-835b-4f4e-9de6-bfb43f877087/download/bchildcountdisabilitycategorylea2024-25.csv
   - https://data.ed.gov/dataset/16968dd3-87bd-4e4a-92ed-50f03e6c4941/resource/5a208d37-564a-40c8-a91d-dd2874fed48c/download/bchildcountdisabilitycategorylea2023-24.csv
+- name: CRDC (Civil Rights Data Collection), 2021-22 public-use files
+  url: https://civilrightsdata.ed.gov/data
+  probed: '2026-07-20'
+  outcome: confirmed
+  detail: >-
+    2021-22 CRDC public-use data files released January 2025 — the newest usable
+    collection (2020-21 exists but is a COVID-excluded year). Refresh candidate for
+    the 2017-18 CRDC-based SPED baseline (REQ-018), 4 years newer; VERIFY first that
+    the 2021-22 elements include the staffing fields the baseline derivation used
+    (SPED teachers / paraprofessionals). 2023-24 CRDC: submission closed 2025-04,
+    release slipped from 'end of Dec 2025' to 'by 2026' (still N/A as of 2026-03
+    page review) — watch, do not wait.
+  urls:
+  - https://civilrightsdata.ed.gov/data
 - name: Urban Institute Education Data Portal API
   url: https://educationdata.urban.org/api/v1/
   probed: '2026-07-20'
