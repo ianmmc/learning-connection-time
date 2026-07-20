@@ -114,8 +114,17 @@ def copy_enrichment_to_bell_schedules(
     Returns:
         Tuple of (success: bool, message: str)
     """
-    # Get enrichment record
-    enrichment = session.query(EnrichmentQueue).filter_by(district_id=district_id).first()
+    # Normalize the district id up front — bell_schedules stores zero-padded
+    # NCES ids, and an unpadded caller value missed lookups / raised FK
+    # errors on insert (issue #284; pad, never strip — migration 015 / issue #20).
+    # The queue lookup matches raw OR padded (same pattern as
+    # queries.get_bell_schedule) since legacy queue rows may predate padding.
+    raw_district_id = district_id
+    district_id = district_id.zfill(7)
+
+    enrichment = session.query(EnrichmentQueue).filter(
+        EnrichmentQueue.district_id.in_([raw_district_id, district_id])
+    ).first()
 
     if not enrichment:
         return False, "District not found in enrichment queue"
