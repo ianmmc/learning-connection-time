@@ -39,11 +39,10 @@ Usage:
     # Target year mode: Enrollment anchored to target year, staff/bell blended
     python calculate_lct_variants.py --target-year 2023-24 [--output-dir path]
 
-Reference: docs/STAFFING_DATA_ENHANCEMENT_PLAN.md
+Reference: docs/METHODOLOGY.md (scope definitions, minutes-source cascade, SPED segmentation)
 """
 
 import argparse
-import hashlib
 import json
 import sys
 from datetime import datetime, timezone
@@ -72,22 +71,6 @@ def get_utc_timestamp() -> str:
     Example: 20251227T170900Z
     """
     return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-
-
-def compute_input_hash(session) -> str:
-    """
-    Compute hash of input data state for change detection.
-
-    Used to determine if incremental calculation is needed.
-    """
-    from infrastructure.database.models import StaffCountsEffective, EnrollmentByGrade
-
-    # Get counts and max update times as proxy for data state
-    staff_count = session.query(StaffCountsEffective).count()
-    enrollment_count = session.query(EnrollmentByGrade).count()
-
-    hash_input = f"{staff_count}:{enrollment_count}"
-    return hashlib.md5(hash_input.encode()).hexdigest()[:16]
 
 
 from infrastructure.database.connection import session_scope, get_engine
@@ -718,6 +701,13 @@ def calculate_all_variants(
             enrollment_confidence = sped_estimate.confidence
 
         # Teacher estimates: Always use 2017-18 federal ratios (we don't have CA actual teacher splits)
+        # When CA actual enrollment is paired with federal teacher ratios, the numerator and
+        # denominator come from different SPED splits — flag it so the mismatch is visible in
+        # QA output instead of silent (issue #419).
+        mixed_sources_note = (
+            "; WARN_MIXED_SPED_SOURCES: CA actual enrollment paired with 2017-18 federal teacher ratios"
+            if enrollment_source and enrollment_source.startswith("ca_actual") else ""
+        )
         if sped_estimate and sped_estimate.confidence != "low":
             sped_teachers = float(sped_estimate.estimated_sped_teachers) if sped_estimate.estimated_sped_teachers else None
             sped_instructional = float(sped_estimate.estimated_sped_instructional) if sped_estimate.estimated_sped_instructional else None
@@ -733,7 +723,7 @@ def calculate_all_variants(
                     lct_core_sped = 360.0  # Cap at school day maximum
                 if lct_core_sped is not None and lct_core_sped <= 360:
                     # Build notes, including cap flag if applicable
-                    core_sped_notes = f"Self-contained SPED enrollment: {enrollment_source}, confidence: {enrollment_confidence}"
+                    core_sped_notes = f"Self-contained SPED enrollment: {enrollment_source}, confidence: {enrollment_confidence}{mixed_sources_note}"
                     if sped_capped:
                         core_sped_notes += "; WARN_SPED_RATIO_CAP: LCT capped at 360 (high teacher-to-student ratio)"
                     sped_year = sped_years.get(staff.district_id, "2017-18")
@@ -785,7 +775,7 @@ def calculate_all_variants(
                         "enrollment_type": "gened",
                         "enrollment_source": enrollment_source,
                         "enrollment_year": _enroll_yr,
-                        "level_lct_notes": (f"GenEd enrollment: {enrollment_source}, confidence: {enrollment_confidence}"
+                        "level_lct_notes": (f"GenEd enrollment: {enrollment_source}, confidence: {enrollment_confidence}{mixed_sources_note}"
                                             + ("; WARN_SPED_RATIO_CAP: LCT capped at 360 (high teacher-to-student ratio)" if gened_capped else "")),
                     })
 
@@ -799,7 +789,7 @@ def calculate_all_variants(
                     lct_instr_sped = 360.0  # Cap at school day maximum
                 if lct_instr_sped is not None and lct_instr_sped <= 360:
                     # Build notes, including cap flag if applicable
-                    instr_sped_notes = f"Self-contained SPED enrollment: {enrollment_source}, instructional staff confidence: {enrollment_confidence}"
+                    instr_sped_notes = f"Self-contained SPED enrollment: {enrollment_source}, instructional staff confidence: {enrollment_confidence}{mixed_sources_note}"
                     if instr_sped_capped:
                         instr_sped_notes += "; WARN_SPED_RATIO_CAP: LCT capped at 360 (high instructional-to-student ratio)"
                     instr_sped_year = sped_years.get(staff.district_id, "2017-18")
@@ -1159,14 +1149,19 @@ def save_parquet(df: pd.DataFrame, filepath: Path) -> bool:
         return False
 
 
-def clear_lct_calculations(session, run_id: Optional[str] = None) -> int:
+def clear_lct_calculations(
+    session, run_id: Optional[str] = None, year: Optional[str] = None
+) -> int:
     """
     Clear existing LCT calculations.
 
     Args:
         session: Database session
         run_id: If provided, only clear calculations for this run.
-                If None, clear ALL calculations.
+        year: If provided (and no run_id), only clear calculations for this
+              year — a target-year recalculation must not destroy other years'
+              rows (issue #297). If both are None, clear ALL calculations
+              (blended mode rewrites the whole table).
 
     Returns:
         Number of records deleted
@@ -1174,6 +1169,10 @@ def clear_lct_calculations(session, run_id: Optional[str] = None) -> int:
     if run_id:
         deleted = session.query(LCTCalculation).filter(
             LCTCalculation.run_id == run_id
+        ).delete()
+    elif year:
+        deleted = session.query(LCTCalculation).filter(
+            LCTCalculation.year == year
         ).delete()
     else:
         deleted = session.query(LCTCalculation).delete()
@@ -1454,17 +1453,19 @@ Examples:
         # Convert DataFrame to list of dicts for database insertion
         results_list = df.to_dict('records')
 
-        # Clear existing calculations before writing (full DB-first recalculation).
+        # Clear existing calculations before writing (DB-first recalculation).
         # write_calculations_to_db appends, and the uq_lct_calculation_v2 unique
         # constraint (district_id, year, grade_level, staff_scope) makes a second run
-        # fail unless the table is cleared first. Clearing here makes a full run
-        # idempotent and safely repeatable.
-        cleared_count = clear_lct_calculations(session)
+        # fail unless the conflicting rows are cleared first. A target-year run
+        # clears only that year's rows (issue #297 — a full clear destroyed other
+        # years' calculations); blended mode writes rows across mixed staff_years,
+        # so it still clears the whole table.
+        year_for_db = args.target_year if args.target_year else 'blended'
+        cleared_count = clear_lct_calculations(
+            session, year=args.target_year if args.target_year else None
+        )
         if cleared_count:
             print(f"Cleared {cleared_count:,} existing calculations before recalculation")
-
-        # Write to database
-        year_for_db = args.target_year if args.target_year else 'blended'
         inserted_count = write_calculations_to_db(
             session, results_list, run_id, year_for_db
         )
