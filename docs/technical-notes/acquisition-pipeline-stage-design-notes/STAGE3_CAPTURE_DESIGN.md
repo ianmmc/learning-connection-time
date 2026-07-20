@@ -72,6 +72,11 @@ can't back up signals lost data or a bad migration, not a per-district problem).
 the default, but it is not the only mode: see CLAUDE.md's **three batch types** (`first-run`/`follow-up`/
 `benchmark`) — Stage 3 now genuinely branches on `batch_type`.
 
+**One bypass to that halt (#572):** before raising, `reconcile()` checks `DS.remediation_receipt(did)` — if
+a decontamination restore point exists on disk for the district (within its trust window), the halt is
+skipped and the district is queued to capture fresh instead. The full mechanism, including its time-bound
+window and known cross-stage residual: `PIPELINE_GOVERNANCE_AND_STATE.md` §11l.
+
 `reconcile(districts, registry, *, redo=False)` takes a `redo` flag; `headless.py`'s `run_batch()` passes
 `redo=batch.get("batch_type") == "follow-up"`. When `redo=True`, an existing `captures.json` no longer means
 skip — every district in a follow-up batch is `todo` regardless of on-disk state (issue #174, the
@@ -416,7 +421,7 @@ REQ-156.
 
 **2026-07-20 — #578 (REQ-159): the one-attempt security-block rule is now ENFORCED, not just
 classified.** Live finding (Millard NE, batch_00021): `security_block` existed only as a retry
-classification — nothing assigned it, so a Cloudflare-challenged run recorded 31/83 interstitials
+classification — nothing assigned it, so a Cloudflare-challenged run recorded 81/83 interstitials
 as `ok` while continuing to pressure the WAF. Now: `detectChallenge` (pure — `cf-mitigated:
 challenge` header + bounded interstitial body markers; CDN presence never trips) runs on the fetch
 branch AND the render branch (a challenge records `err='security_block'`, saves nothing as ok,
@@ -427,3 +432,10 @@ planned host first (a challenged probe halts the district at one request of IP e
 probe is necessary-not-sufficient — the breaker is the guarantee). Security-blocked districts are
 ineligible for the 5→1 geo escalation (stage5_followup): the domain was fine, the WAF said no —
 manual triage only. Tests: capture_security.test.mjs (the real Millard interstitial is the fixture).
+
+**2026-07-20 — doc correction: §2a's reconciliation halt has a bypass, now noted.** §2a described the
+registry-ahead-of-disk `SystemExit` as unconditional; it isn't — `reconcile()`'s `remediation_receipt`
+check (#572) has excused it since that PR landed. No code change; §2a now notes the bypass and
+cross-references `PIPELINE_GOVERNANCE_AND_STATE.md` §11l, now the canonical explanation of the mechanism
+(including its `REMEDIATION_RECEIPT_MAX_AGE_DAYS=30` time-bound and its documented not-stage-scoped
+residual).

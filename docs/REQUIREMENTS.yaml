@@ -3790,7 +3790,10 @@ requirements:
       - "Vocabulary additions are propose-with-evidence, human-approved (the CMS_HOSTS discipline): school-district CMS vendors only, never general hosts/CDNs; each addition names the observed signature and the districts it was seen on"
       - "cms_hint stays a GROUPING key (per-detector accuracy pooling, sibling families, dispatch selection), never a direct score input (REQ-115 unchanged)"
       - "Approved vendors so far: the REQ-115 launch set + Edlio (Ian, 2026-07-18, from #540's evidence)"
-    tests: []
+    tests:
+      - "tests/test_config_layer.py::test_loader_values_match_the_original_hardcoded_list"
+      - "tests/test_config_layer.py::test_discover_cms_hosts_unchanged_after_migration"
+      - "tests/test_config_layer.py::test_every_entry_carries_full_provenance"
     created: "2026-07-18T00:00:00Z"
     updated: "2026-07-18T00:00:00Z"
     notes: "Ian (2026-07-18): 'we should be profiling and building up fingerprints for all CMSes we
@@ -3823,6 +3826,7 @@ requirements:
       - infrastructure/scraper/capture_fidelity.test.mjs
       - tests/test_stage4_tools.py::TestTimeBlindFidelity
       - tests/test_cache_ingest.py::test_fidelity_flags_are_queryable_on_capture_and_processed_doc
+      - tests/test_fidelity_triage.py
     created: "2026-07-19T00:00:00Z"
     updated: "2026-07-19T00:00:00Z"
     notes: "Sized by the 2026-07-19 read-only corpus survey on #518 (1,471 live records: 92 visible
@@ -3916,12 +3920,23 @@ requirements:
       - tests/test_escalation_ladders.py
       - tests/test_queue_create_scope.py
     created: "2026-07-19T00:00:00Z"
-    updated: "2026-07-19T00:00:00Z"
+    updated: "2026-07-20T00:00:00Z"
     notes: "Full agreed design: issue #164's AGREED DESIGN comment (2026-07-19, Ian-approved after
       the planning debate — three escalation paths, the reversed 5->1/7->1 ladders, the toggle
       unification with interleave-as-mechanism). Millard 3173740 = the acceptance case; the live
       geo run is a gate@1 action for Ian after this PR. Sibling: #567 (the districts.website_url
-      vintage lag, epic #479)."
+      vintage lag, epic #479).
+      2026-07-20 review (max-effort combined review of PRs 570-581): the 5->1 and 7->1 composers
+      were found to DISAGREE on ladder exhaustion at exactly one approved geo round (7->1 exhausted
+      at geo>=1; 5->1 offered a geo+widened rung until geo>=2) — fixed by extracting the ONE shared
+      threshold (batch_store.geo_ladder_exhausted()/GEO_LADDER_EXHAUSTED_AT=2, governance §11e), now
+      the only exhaustion check either composer may use. Also fixed in the same pass:
+      compose_zero_yield's dry-run preview was built from the pre-build candidate set, not the
+      districts that actually survived build_followup_batch (a claimed band with zero NCES
+      school-level coverage could show as composable at the gate@1 preview then silently vanish);
+      and gate1.js's zero-yield preview was missing esc() on the interpolated batch_id (currently
+      unexploitable — batch_id is server-generated — but inconsistent with the rest of that
+      function)."
   - id: REQ-158
     github_issue: "#572 (follow-up to #164/#571)"
     description: "Console control surface for geo discovery (the ramp-up model demands the console,
@@ -3946,11 +3961,20 @@ requirements:
     tests:
       - tests/test_discovery_policy_console.py
     created: "2026-07-19T00:00:00Z"
-    updated: "2026-07-19T00:00:00Z"
+    updated: "2026-07-20T00:00:00Z"
     notes: "Surfaced by Ian's first attempt at the live Millard run: the #164 backend gating existed
       but no operator control did, and an untargeted stratified geo draw of the ~2,400-district
       blank pool would practically never contain Millard — path 4 targeting is what makes the
-      designed acceptance run executable."
+      designed acceptance run executable.
+      2026-07-20 review (max-effort combined review of PRs 570-581): GET /api/discovery-policy
+      ?pools=true was calling scope_pool_counts with a HARDCODED empty registry ({\"districts\": {}})
+      instead of DS.load() — the already-attempted filter was a complete no-op, overcounting every
+      eligible pool the Settings card displayed; fixed to load the real registry, same as
+      queue_create's draw. Also: district_status.remediation_receipt() (the ONE shared check Stage
+      2/3/4's reconciles consult, governance §11l) gained a 30-day trust window
+      (REMEDIATION_RECEIPT_MAX_AGE_DAYS) — narrowing, not closing, the documented known-residual
+      that a receipt from one remediation could otherwise excuse an unrelated future desync
+      indefinitely."
   - id: REQ-159
     github_issue: "#578"
     description: "Stage 3 ENFORCES the one-attempt security-block rule (Critical Rule 3): per-response
@@ -3966,7 +3990,7 @@ requirements:
     priority: must
     status: implemented
     acceptance_criteria:
-      - "The Millard batch_00021 interstitial text is detected (the motivating 31/83-recorded-as-ok incident)"
+      - "The Millard batch_00021 interstitial text is detected (the motivating 81/83-recorded-as-ok incident)"
       - "cf-mitigated: challenge alone suffices; cloudflare CDN presence (cf-ray/server) alone never trips"
       - "Breaker: 3 consecutive challenges halt; an ok resets the streak; a non-security err neither counts nor resets"
       - "Skipped-after-halt URLs are security_block (non-retryable), never not_attempted"
@@ -3978,9 +4002,18 @@ requirements:
     created: "2026-07-20T00:00:00Z"
     updated: "2026-07-20T00:00:00Z"
     notes: "Surfaced live by Millard NE's batch_00021 capture: the security_block err class existed
-      on paper (retry classification) but no code ever assigned it — 31 of 83 captures were 266-byte
-      Cloudflare interstitials recorded ok while the run kept pressuring the WAF. Millard's 31
-      interstitial records await a separately-approved cleanup."
+      on paper (retry classification) but no code ever assigned it — 81 of 83 captures were 266-byte
+      Cloudflare interstitials recorded ok while the run kept pressuring the WAF. Remediated the same
+      day: Millard's 81 interstitial records reclassified ok->security_block with a receipted restore
+      point (data/acquisition/remediation/3173740_20260720T145158Z/).
+      2026-07-20 review (max-effort combined review of PRs 570-581): CHALLENGE_MARKERS was
+      Cloudflare-only (the only vendor hit live) — broadened preemptively with the well-documented
+      challenge-page strings for Imperva/Incapsula, PerimeterX/HUMAN, Sucuri, and AWS
+      CloudFront/WAF, with an explicit doc note that a finite marker list can never claim exhaustive
+      WAF coverage. Also narrowed (did not eliminate) a TOCTOU race in the district circuit breaker:
+      with CONC concurrent workers, a sibling task already mid-flight on its fetch() when the
+      breaker trips can still complete one extra live request — added a re-check immediately before
+      the more expensive Playwright render fallback (the second network contact within one task)."
   - id: REQ-160
     github_issue: "#118 (epic #111)"
     description: "The measurement harness extended upstream (governance §11f): a fingerprinted
@@ -4011,4 +4044,39 @@ requirements:
       highest-yield non-GT discovery source (38.1% labeled-target rate vs brightdata 14.9% /
       claude-era 25.6% / serper 3.7%); pdftotext dominates stage-4 wins (172/382 target records).
       v1 limit (documented in-module): candidate holds each district's LATEST plan, so a
-      dual-scope district attributes to the latest run's tools — revisit if plans cycle."
+      dual-scope district attributes to the latest run's tools — revisit if plans cycle.
+      2026-07-20 review (max-effort combined review of PRs 570-581): 3 correctness fixes to this
+      exact module. stage2_attribution's capture join re-derived the hash via
+      split_part(rec_key,':',2) instead of using record.hash directly (a first-class column
+      populated at insert) — an avoidable, fragile duplication, now cap.hash = r.hash. district_axes'
+      dsource query was missing the SAME approval filter (b.first_approved_at IS NOT NULL AND
+      bd.included) its sibling runs query already had — a draft/abandoned batch with a higher
+      batch_id could win DISTINCT ON and misattribute a district's domain_source axis; now filtered
+      identically. GET /api/attribution was missing the schema-bootstrap self-check its sibling
+      /api/fidelity-triage already has, reintroducing the exact fresh-DB 500 that endpoint's own fix
+      was written to prevent — now self-bootstraps identically."
+  - id: REQ-161
+    github_issue: "#222"
+    description: "Facility-named schools (juvenile detention/correctional facilities and similar
+      non-conventional-instructional-day placements) get a gate@1 REVIEW FLAG, never a hard
+      exclude — NCES codes them Regular alongside ordinary schools, so a naming-pattern signal is
+      the only cheap way to surface them for human attention before they're silently sampled into
+      a batch. Computed at view time (batch_store, over school_sampling.facility_name_flags), never
+      stored, so a token-list tuning applies retroactively to every already-built batch."
+    type: functional
+    priority: should
+    status: implemented
+    acceptance_criteria:
+      - "A school name containing a facility token (juvenile, detention, correctional, corrections, …) gets review_flags: ['facility_name'] in its batch_store school dict; a normal name gets no review_flags key at all"
+      - "The flag is advisory only — the school is still sampled and included normally, review_flags is an attention cue for the human gate@1 reviewer, never a hard exclude"
+      - "The gate@1 console renders a visible facility badge/cue for a flagged school (gate1.js)"
+    tests:
+      - tests/test_gate1_api.py
+      - tests/test_school_sampling_files.py
+      - tests/test_stage1_batch_store.py
+    created: "2026-07-20T00:00:00Z"
+    updated: "2026-07-20T00:00:00Z"
+    notes: "Found and fixed 2026-07-19 (PR #566); previously undocumented in REQUIREMENTS.yaml — added
+      2026-07-20 during the epic #111 doc-tower + requirements-ledger audit. FACILITY_NAME_TOKENS
+      lives in common/school_sampling.py; `_school_dict` (stage1_queue/batch_store.py) is the one
+      place the flag is computed for the batch doc; gate1.js reads `review_flags` to render the cue."

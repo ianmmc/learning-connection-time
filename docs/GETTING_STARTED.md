@@ -129,11 +129,11 @@ details: [DATABASE_SETUP.md → "Two databases"](DATABASE_SETUP.md#two-databases
 ### 3. Run Tests
 
 ```bash
-# Fast, resource-free suite (what CI's first job runs; ~1450 tests — check CLAUDE.md's
-# resume-essentials for the live count, it grows with every merged PR)
+# Fast, resource-free suite (what CI's first job runs; ~1760 tests as of 2026-07-20 — check
+# CLAUDE.md's resume-essentials for the live count, it grows with every merged PR)
 pytest -q -m "not integration"
 
-# Governance-DB suite (needs Docker Postgres up; CI's second job; ~218 tests, same caveat)
+# Governance-DB suite (needs Docker Postgres up; CI's second job; ~296 tests as of 2026-07-20, same caveat)
 pytest -q -m govdb
 
 # Everything, verbose
@@ -214,7 +214,7 @@ What lives here now is a flat set of Playwright `.mjs` modules (`capture_discove
 ```bash
 cd infrastructure/scraper
 npm install            # playwright is the only dependency
-npm test               # node --test *.test.mjs
+npm test               # node --test *.test.mjs (~86 tests as of 2026-07-20)
 npm run lint:deps      # depcruise over the flat *.mjs (the Node side of the layering check)
 ```
 

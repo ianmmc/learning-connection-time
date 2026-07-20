@@ -20,7 +20,11 @@ This note is the architecture for three coupled decisions that span every stage:
 3. **The app's scope** — a single **stage-selectable governance console** at
    `infrastructure/acquisition/process_governance/`, the human-in-the-loop surface for every gate (§7, §11).
 
-**Current build state (2026-07-18):** REQ-098/099/103/094 (packaging, state-event log, Postgres governance
+**Current build state (2026-07-20):** since 2026-07-18, landed: the discovery-scope-policy/discovered-domain
+console control surface (#572/#164, §11j), `queue_create`'s scope-aware rewrite (§11k), the one-attempt
+security-block enforcement (#578), the #518 fidelity-triage consumer (§11f), the #118 attribution card
+(§11f), and the shared `geo_ladder_exhausted` threshold bug fix (#575, §11e). REQ-098/099/103/094
+(packaging, state-event log, Postgres governance
 DB, event-driven `filtered.json`) are all COMPLETE — see §1b, §3, §6. The console is built and run live
 **through `gate@8`** (the standalone Stage 8 / gate@8 shipped #89, 2026-07-14 — see below and
 `STAGE8_AGGREGATE_DESIGN.md` §0a). Through **`gate@7`**: gate@1 (REQ-102), Stage 2 (REQ-104), Stage 3 (REQ-110), Stage 4 + the Stage 4→5
@@ -181,8 +185,9 @@ sibling-variant dedup to Stage-6 dispatch and two `cms_hosts.json` entries; REQ-
 pending). **Stage-6 `district_release_input` now runs FOUR sequential hold-passes** (base `decide()` +
 `verified_only` downgrade → #107 prefer-recent → #540 sibling-variant → REQ-116 hub-priority; detail:
 `STAGE6_DISPATCH_DESIGN.md`). Still genuinely unbuilt downstream: the **Stage-9 write** (#93), the
-**8→1/8→6 back-edges**, and gate@8 **auto** mode. Other open tracks: **#518** (Stage 3/4 capture-fidelity
-recall leak — login walls, 0-byte PDFs, truncation), **#110** (Stage 7 cross-config cascade escalation on
+**8→1/8→6 back-edges**, and gate@8 **auto** mode. **#518 (the Stage 3/4 capture-fidelity recall leak — login walls,
+0-byte PDFs, security blocks, truncation) is now BUILT (2026-07-20):** `GET /api/fidelity-triage` is the
+consumer REQ-154's fidelity columns were missing — see §11f. Other open tracks: **#110** (Stage 7 cross-config cascade escalation on
 no-consensus, re-homed to epic #80 Council Lab — genuinely blocked on that lab producing a measured
 config), the rest of the Council Lab backlog (`cost_benchmark`, prompt A/B, #81); the charter-segmentation
 track (#243/#244/#245); #238 (deferred efficiency follow-ups). The live gate-mode (manual/auto) persistence
@@ -225,6 +230,30 @@ projection). Every **precious** class gets the **established backup pattern**: e
 JSON, re-importable after a DB wipe (exactly as `labels.json` / `cluster_splits.json` work today). Every
 **regenerable** class can be rebuilt from disk (the binaries + the receipts) at any time. We extend that
 pattern; we do not invent one. The DB is not a blob store: binaries stay on disk and are referenced by path.
+
+**`TRACKED_BACKUPS` — the current 12-file precious-JSON-twin roster (`common/paths.py`).** Every PRECIOUS
+DB table above gets exactly one git-tracked JSON twin, swept into every commit by `.githooks/pre-commit`
+(both lists verified 1:1, path-for-path, 2026-07-20 — no drift):
+
+| JSON twin (`data/acquisition/...`) | DB source table | what triggers the export |
+|---|---|---|
+| `status/district_status.json` | `state_event` (via `current_state`) | `district_status.save()`/`export()` on every state-event write |
+| `stage5_review/labels.json` | `label` | a label save / `build_signals` ingest |
+| `stage5_review/cluster_splits.json` | `cluster_split` | a cluster split action |
+| `stage5_review/followup_flags.json` | `followup_flag` | a flag create/resolve (#57) |
+| `status/gate_modes.json` | `gate_mode` | `POST /api/gate-mode` (#104/REQ-108) |
+| `status/stage8_approvals.json` | `stage8_approval` | gate@8 approve/send-back (#89) |
+| `status/band_exclusions.json` | `band_exclusion` | gate@8 band-exclude (#257) |
+| `status/human_added_facts.json` | `human_added_fact` | gate@8 human-add (#474) |
+| `status/slot_assignments.json` | `slot_assignment` | gate@8 slot disposition (#499/REQ-145) |
+| `status/discovered_domains.json` | `discovered_domain` | `POST /api/discovered-domain` confirm (#164/#572, §11j) |
+| `status/discovered_domain_decisions.json` | `discovered_domain_decision` | `POST /api/discovered-domain` confirm or reject (#572, §11j) |
+| `status/discovery_policy.json` | `discovery_policy_event` | `POST /api/discovery-policy`, or the pool-drained auto-advance at compose time (#164/#572, §11j/§11k) |
+
+This is a good machine-checkable ground-truth table for a future audit: `TRACKED_BACKUPS` (`common/paths.py`)
+and the `PRECIOUS_BACKUPS` array in `.githooks/pre-commit` should always be the same 12 paths — a drift
+between them means a precious table's export either never got wired to the hook or got wired without
+registering in `TRACKED_BACKUPS` (which also governs pytest's export quarantine, `guard_tracked_backup`).
 
 ---
 
@@ -297,6 +326,15 @@ and `paths.REVIEW_DB` have since been **retired** (#126) — the governance Post
 - **`infrastructure/acquisition/stage5_filter/models.py`** — precious `Label` + `ClusterSplit`
   models on `Base`. `init_precious_schema()` create_all's them (caller imports the models so
   `common/` stays stage-agnostic). Verified create_all stands up `label`+`cluster_split`.
+  **`init_precious_schema()` (`common/db.py:156-159`) now also imports the COMMON-level precious modules
+  itself** — `calibration`, `gate_mode`, `discovery_policy`, `discovered_domain` — so `calibration_event`,
+  `gate_mode`, `discovery_policy_event`, `discovered_domain`/`discovered_domain_decision` register on
+  `Base.metadata` regardless of which caller reaches `init_precious_schema()` first (a common→common
+  import is inside the base layer, so the layering contract permits it). A forgotten import used to
+  surface as a bare "relation does not exist" at first write — the #217 review's finding that
+  `calibration_event` was registered nowhere in the live app. STAGE-level precious models (like
+  `Label`/`ClusterSplit` above) stay each caller's own responsibility; `common/` still doesn't import a
+  stage module.
 
 ### ✅ As built
 - **103b — `build_signals.ingest()`** runs in one `session_scope` transaction (atomic re-ingest).
@@ -360,6 +398,10 @@ release event.** Content is reproducible; the decision-to-send is durable histor
 > JSON is now the regenerable, git-tracked **backup** (re-importable via `import_status_json`). Tests:
 > `tests/test_state_event.py`. The `event_type` vocabulary lands as: progression events use the
 > `outcome` as `event_type`; checkpoint events use `approved`/`released`/… with `checkpoint` set.
+> **A third shape (`remediate_contamination.py`, §11l):** `remediated`/`decontaminated` as the
+> `event_type`/`outcome` pair, with neither `stage` nor `checkpoint` set — recording a decontamination run
+> as its own distinct event kind, outside both the stage-progression and the gate vocabularies, so it can
+> never be mistaken for either.
 
 The user flagged that state "gets scattered" — a district can be *released for what we have* **and**
 *re-queued for more discovery* at once. A single status-per-district row breaks on that. Two options:
@@ -1203,6 +1245,19 @@ auto-flowed. The 7→1 compose has the matching SECOND-LOOP scope split (0 prior
 batch, ≥1 → geo+widened batch, geo already ran → flag): one compose can emit up to two scope-pure
 batches, each directive's `executed_ref` = its district's batch, one transaction.
 
+**The shared exhaustion threshold (#575).** Both composers' "ladder exhausted" branch — 5→1's `≥2 →
+manual flag` and 7→1's `geo already ran → flag` above — now read the SAME function,
+`stage1_queue/batch_store.geo_ladder_exhausted()` (`GEO_LADDER_EXHAUSTED_AT = 2` — ever-approved geo
+rounds, one standard + one widened attempt), not two independently-written inline checks. A #575 review
+found they used to disagree: 7→1 exhausted a district at `geo>=1`, while 5→1 offered a second
+"geo+widened" rung at `geo==1` — so a district sitting at exactly one approved geo round got a different
+verdict depending on which composer reached it first. The threshold was extracted into this one shared
+function precisely so the two composers can't diverge again. Both composers also call the same shared
+auto-flag writer, `process_governance/stage7_execute.py:_flag_escalation_exhausted` (lines 465–485): it
+dedupes on an already-open auto flag (`scope='district'`, `actor='auto:escalation-ladder'`, unresolved) so
+a re-compose never stacks a second marker, and a human resolving the flag re-arms it — a later exhaustion
+is a fresh event worth a fresh flag.
+
 ### 11f. Per-stage console notes
 - **Stage 3** — a thin **health / emergent readout**: emergent URLs, capture failures (WAF/security
   blocks), and the **CMS/host distribution** from the `capture` table's `final_host`/`fingerprint_json`
@@ -1215,6 +1270,15 @@ batches, each directive's `executed_ref` = its district's batch, one transaction
   counts + a **usable-representations-by-tool** readout; `no_usable_text_any`/`awaiting_capture` badges.
   A process run that **resolves the whole batch** then runs the **Stage 4→5 incremental handoff** (§12).
   See `STAGE4_PROCESS_DESIGN.md` §4a/§4b.
+- **Stage 3/4 capture-fidelity triage — BUILT (#518, REQ-154's missing consumer, 2026-07-20).**
+  `GET /api/fidelity-triage` is the queue the fidelity columns were write-only without: every `capture`
+  whose flags say `login_wall`/`soft_404`, or whose `err` is a `security_block` (#578), or every
+  `processed_doc` whose Stage-4 `time_blind` flag fired — each says "a real schedule may be hiding behind
+  this" — grouped per district with recovery-affordance context (an already-open `followup_flag` covering
+  the district, per-class counts, bounded per-district row listing). Before this surface existed, a
+  flagged capture degraded silently to `target_absent` — the exact recall leak #518 quantified.
+  Self-bootstraps to an honestly empty queue on a fresh DB rather than 500ing on a missing cache/signal
+  table.
 - **Stages 2 & 4 effectiveness** — the **measurement-harness pattern extended upstream**: attribute each
   target-labeled record back to its discovery tool (`candidate_tools_json`) and its winning representation's
   source (`representation.source`). Same fingerprinted-scorecard discipline as Stage 5, applied to discovery
@@ -1409,6 +1473,110 @@ This is NOT "follow-ups get weaker supervision" — it's the general principle t
 was already made upstream can auto-advance; a gate deciding something genuinely new cannot**, applied
 consistently. See `STAGE7_EXTRACT_DESIGN.md` §3F for the built auto-flow supervisor
 (`process_governance/server.py`'s `_autoflow_followup`) and its govdb tests.
+
+### 11j. Discovery-scope policy & discovered domains — the #164/#572 console control surface — BUILT 2026-07-20
+
+**`common/discovery_policy.py` — the 4-position discovery-scope policy state machine.** Governs FIRST-RUN
+batch composition ONLY — the 5→1/7→1 escalation ladders (§11e) are failure-driven follow-ups, individually
+gate@1'd, and are deliberately NOT gated by this policy: gating them would block the very repair mechanism
+that makes staying on the conservative default safe. Four positions, in escalation order:
+**`domain_only`** (geo first-run composition refused — the high-supervision default) →
+**`geo_for_blank`** (geo first-runs allowed for blank-domain districts; the operator picks per batch) →
+**`geo_interleaved`** (the standard draw picks each batch's scope probabilistically, weighted by the
+remaining blank-vs-domained eligible populations, recorded on the batch — §11k) → **`geo_all`** (geo
+composition allowed for ANY district — the measured geo-vs-domain comparison mode, feeding the #118
+attribution card, §11f). Stored as an **append-only `discovery_policy_event` audit log** (PRECIOUS,
+git-twinned to `discovery_policy.json` — §1) — the current policy is simply the latest row; an empty table
+reads as `domain_only`. `get_policy`/`set_policy` are the read/write pair; `set_policy` is **idempotent**
+(a no-op, no event row, when the requested policy already holds) and is **serialized via a
+transaction-scoped `pg_advisory_xact_lock`** (`hashtext('discovery_scope_policy')`) — a real design
+decision worth naming, because the pool-drained auto-advance (§11k) is a genuine SECOND writer alongside a
+human's console set, and an unserialized read-modify-append could fork the audit chain's `previous`
+linkage. `advance_one_step` is the #164 one-step auto-advance — exactly `domain_only → geo_for_blank`,
+never further, a no-op from any other position. The module's own header comment frames the whole design as
+issue #164's "AGREED DESIGN (2026-07-19)".
+
+**`common/discovered_domain.py` — the confirmed-domain store + its training corpus.** `DiscoveredDomain` is
+a **one-row-per-district** PRECIOUS table (git-twinned to `discovered_domains.json`) holding a
+human-confirmed scoping domain a geo discovery run derived — a **third domain source**, alongside NCES
+`WEBSITE` and the #229 admission guard, for a district whose NCES domain is blank or junk (the Millard
+`mpsomaha.org` motivating case, #227/#229). `DiscoveredDomainDecision` is the **append-only confirm/reject
+training corpus** (git-twinned to `discovered_domain_decisions.json`): every human decision on a geo run's
+derived-host PROPOSAL, `confirm` or `reject`, with a **reason required on reject** — the negative class a
+future auto-confirmation trains on, the same propose-with-evidence/human-decides discipline as
+`CMS_HOSTS` additions. `record_decision` appends one row (a changed mind is a NEW row, never an update, per
+the labeling-serves-learning principle — disagreement is the primary product); `confirm` upserts the
+operative `DiscoveredDomain` row (validated against `is_scoping_domain`); `all_confirmed` is the #229
+admission guard's second source; `latest_decisions` is the Stage-2 discovery card's "already decided"
+lookup.
+
+**Console surface (`process_governance/server.py`).** `GET /api/discovery-policy` returns the current
+policy, the 4 positions (with UI copy), and the recent event history; **`?pools=true`** additionally runs a
+**live blank-vs-domained eligible-count query** (`Q1.scope_pool_counts`, an NCES-corpus pass, seconds-scale)
+— best-effort, degrading to `null` when the CCD CSVs aren't on disk, and off by default (the batch-create
+dialog asks for it; the plain Settings card load does not, to stay cheap). `POST /api/discovery-policy`
+sets the policy — an audited governance decision — and refreshes the `discovery_policy.json` twin
+post-commit. `POST /api/discovered-domain` (`discovered_domain_decide`) records a confirm/reject decision
+and, on confirm, also upserts the operative `discovered_domain` row; both twins refresh post-commit,
+deliberately AFTER the decision transaction commits, so a backup-write failure can never roll back the
+human's decision.
+
+### 11k. `queue_create`'s scope-aware rewrite — BUILT 2026-07-19/20 (#164/#572)
+
+`POST /api/queue/create` (`queue_create`, `process_governance/server.py`) composes a batch under three
+scope-aware behaviors layered onto the #164 axes:
+- **`district_ids` operator targeting** — an optional explicit district-id list in the payload restricts
+  the draw to exactly those districts (#572 path 4: "dev/manual batches on direction," an exception path,
+  not the SOP). A targeted draw that matches nothing is reported as an operator-input miss (a 409 naming
+  the missing ids) rather than silently persisting an empty batch — and this path never trips the
+  pool-drained auto-advance below.
+- **The `geo_interleaved` weighted draw** — when the policy is `geo_interleaved` and the caller didn't pass
+  an explicit `discovery_scope`, the batch's scope is DRAWN (`Q1.draw_interleaved_scope`), weighted by the
+  remaining blank-vs-domained eligible populations (`Q1.scope_pool_counts`), and **seeded by `batch_id`**
+  — the same weights against the same batch id always draw the same scope, so the composition is
+  reproducible from the receipt's own terms, never a hidden coin flip. The draw + its weights are recorded
+  in `batch.meta_json` (`scope_draw`) for the audit trail.
+- **Pool-drained auto-advance at compose time** — a domain-scoped first-run batch that draws NOTHING while
+  blank-domain districts remain (`_domain_excluded` non-empty) is the moment the conservative `domain_only`
+  default stops meaning anything: the endpoint fires `DPOL.advance_one_step` (auto-advancing
+  `domain_only → geo_for_blank`) and returns a **409** whose notice names the auto-advance (or, if the
+  policy already allows geo, simply reports how many blank-domain districts remain). This passes the same
+  §11b risk-asymmetry test as gate@7's auto-withdraw and #229's fail-closed guard: observable (the event
+  row + the 409 notice), reversible (`set_policy`), and spend-conservative (it composes nothing by
+  itself — a human still composes the geo batch as a deliberate next action).
+
+Policy + the confirmed-domains snapshot are read **once**, before `build_batch`'s ~10–20s pure compose
+runs — deliberately un-locked (a domain confirmed or a policy flipped mid-build isn't reflected in *this*
+batch, only the next one — bounded and self-healing).
+
+### 11l. `district_status.remediation_receipt()` — the canonical registry-ahead-of-disk excuse — BUILT (#572)
+
+`common/district_status.py`'s `remediation_receipt(district_id)` is, per its own docstring, **"the ONE
+shared home (#572) for the check every stage reconcile consults"** — the function each stage's own
+`reconcile()` calls before treating a registry-says-done-but-disk-is-missing state as a CONTROL FAILURE
+halt. It looks for the newest on-disk decontamination restore point
+(`data/acquisition/remediation/<district_id>_<ts>/`, written by `remediate_contamination.py` BEFORE it
+mutates anything) and, if one exists within its trust window, excuses the halt: remediation deliberately
+strips a district's artifacts while PRESERVING its state history (auditability — §1's north star), so
+registry-ahead-of-disk is that path's expected, receipted end state — the stage redoes the work fresh
+(merge mode) instead of halting on an assumption that something is silently missing.
+
+**Now TIME-BOUND** (`REMEDIATION_RECEIPT_MAX_AGE_DAYS = 30`, #575 narrowing): a receipt older than 30 days
+no longer excuses a halt — parsed straight from the receipt directory's own timestamp (no DB read, so the
+deliberately DB-free reconciles stay DB-free). Past that window a desync surfaces as a genuine halt again,
+on the theory that a receipt this old is more likely coincidence than the explanation.
+
+**Documented KNOWN RESIDUAL:** the check is **not stage-scoped** — a receipt from a Stage-2 remediation
+still excuses a Stage-3/4 desync for the *same district*. This is a deliberate, bounded trade-off, not an
+oversight (bounded to redundant spend either way — the sanctioned path always REDOES the stage, nothing
+missing is ever assumed done — never silent trust). Full stage/recency tightening (compare the receipt
+timestamp against the district's latest stage-N `state_event`) would need a DB read inside the deliberately
+DB-free reconciles, and is deferred until remediation volume grows past a handful of districts.
+
+**3 call sites** — Stage 2 (`stage2_discover/discover_stage2.py`), Stage 3 (`stage3_capture/capture_stage3.py`),
+and Stage 4 (`stage4_process/process_stage4.py`), each in their own `reconcile()`. A stage's own design note
+should cross-reference back to `PIPELINE_GOVERNANCE_AND_STATE.md` §11l rather than re-explaining the
+mechanism.
 
 ---
 

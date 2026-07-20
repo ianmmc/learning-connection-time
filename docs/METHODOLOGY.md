@@ -93,10 +93,10 @@ See `docs/STAFFING_DATA_ENHANCEMENT_PLAN.md` for detailed scope definitions and 
 
 **Minutes-source priority** (see `docs/ACQUISITION_PIPELINE.md` for the current pipeline):
 
-> The earlier district-ranking tier system (manual top-districts / Firecrawl / Gemini) was retired in Jan 2026 and replaced by a single local-first pipeline plus a statutory fallback. Minutes now come from a priority cascade, not a per-district tier assignment.
+> The earlier district-ranking tier system (manual top-districts / Firecrawl / Gemini) was retired in Jan 2026 and replaced by a single acquisition pipeline plus a statutory fallback. Minutes now come from a priority cascade, not a per-district tier assignment.
 
 **1. Actual bell schedule (preferred)**:
-- Acquired automatically by the local-first Crawlee + Ollama pipeline: site mapping → Ollama URL ranking → PDF capture → Ollama triage → local time extraction
+- Acquired by the current acquisition pipeline: search-led discovery + tiered capture (Playwright text/screenshot/OCR) + cheap-cloud council extraction — see `docs/ACQUISITION_PIPELINE.md` for the authoritative, current description (the pipeline's design has changed twice since this doc was first written: the local-first Crawlee+Ollama design was retired Jan 2026, the manual-vs-automated tiering was retired June 2026 — do not re-describe the pipeline's mechanics here, it drifts; link out instead)
 - Or human-collected where the pipeline can't reach the schedule
 - Confidence levels track source quality (high / medium / low)
 
@@ -1179,6 +1179,14 @@ The current approach is **search-led discovery + tiered capture + cheap-cloud co
 - See `manual_followup_needed.json` for districts requiring offline research
 
 **Data Quality Tracking**:
+
+> **Open reconciliation for #92 (Stage 9) planning:** the source/confidence vocabulary below
+> (`method`, `source`, `confidence: high|medium|low|statutory`) predates the acquisition
+> pipeline's actual current schema (`discovery_scope` domain/geo, tier A-D records, `school_fact`
+> rows, per-band mode, `batch_type`, `run_kind`, Stage 8's `closing_argument`/`stage8_approval`
+> output). There is no documented mapping yet from what Stage 8 actually approves to this legacy
+> shape — that reconciliation needs to happen as part of #92's design, not retrofitted here.
+> Flagged, not solved, in this pass (2026-07-20 doc-tower refresh).
 
 Each enrichment record includes:
 ```json

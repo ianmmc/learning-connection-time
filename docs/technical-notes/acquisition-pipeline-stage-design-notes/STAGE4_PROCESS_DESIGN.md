@@ -66,7 +66,11 @@ is better at merged/spanning cells than deterministic code).
 ### 2a. Two reconciliation checks — tiered, not equal severity
 1. **Registry consistency** (same as Stage 2/3): `processed.json` on disk IS "Stage 4 done"; disk-ahead
    reconciles up silently, **registry-ahead-of-disk halts the whole run** (CONTROL FAILURE) — a registry
-   claiming completion the filesystem can't back up signals lost data or a bad migration.
+   claiming completion the filesystem can't back up signals lost data or a bad migration. **Bypassed by a
+   receipted exception (#572):** before raising, `reconcile()` checks `DS.remediation_receipt(did)` — the
+   same receipted exception Stage 2/3's reconciles use — and if a decontamination restore point exists for
+   that district, the halt is skipped and the district processes fresh instead (the full mechanism:
+   `PIPELINE_GOVERNANCE_AND_STATE.md` §11l).
 2. **File-existence consistency** (`check_file_consistency`): for every `ok: true` record in
    `captures.json`, every filename in its `files` map must exist on disk. **A mismatch QUARANTINES only
    that district** (`inconsistent`, a `failed` process state_event, retriable) — it no longer halts the
@@ -200,6 +204,7 @@ which Stage 4 reports honestly). Feeds straight into the `gate@5` (Filter) revie
 PDF text-harvesters and OCR tools are at yielding bell-schedule representations by the end of Stage 5** —
 i.e. the measurement-harness pattern extended upstream: attribute each target-labeled record back to its
 winning representation's `source` (governance §11f). Same fingerprinted-scorecard discipline as Stage 5.
+**BUILT — see §4c.**
 
 ### 4a. The Stage 4 console — AS BUILT (REQ-111, 2026-06-29)
 Built by copying the Stage 3 view; Stage 4 was the simplest case (no external worker, no browser, no
@@ -277,6 +282,19 @@ view is instant, with no full-corpus rebuild and no perceived lag (the design go
   ("done through Stage 4 / in Stage 5"), and a `stage5_ingested` job event surfaces it in the feed.
 - **Still manual elsewhere:** the full `python3 -m …stage5_filter.build_signals` remains the all-districts
   rebuild (schema changes, recovery). The console handoff is the batch-scoped fast path.
+
+### 4c. Tool-effectiveness attribution — AS BUILT (#118, 2026-07-20)
+The §4 user story is live: `process_governance/attribution.py`'s `stage4_attribution()` answers "which
+processing tool actually yields bell-schedule representations." For every human-labeled TARGET record, it
+takes `release.decide()`'s winning send-files and maps each one back to that representation row's `source`
+(`pdftotext`, `camelot_stream`, `camelot_hybrid`, `pdfplumber_lines`, `tesseract_screenshot`/
+`tesseract_image`/`tesseract_raster`, …) — a per-source **win rate** over target records — alongside a
+**corpus-wide usable-rate per source** (`n_reps`/`n_usable`/`usable_rate` from the `representation` table)
+for context, independent of labeling. Served at `GET /api/attribution`, rendered client-side by the shared
+`attributionPanel()` (`static/outcomes.js`, lazy-fetched on first expand) — mounted on both `stage2.js` and
+`stage4.js`, the same panel surfacing Stage 2's discovery-tool attribution alongside Stage 4's. Same
+fingerprinted-scorecard discipline as Stage 5 (`write_card()` persists a receipt beside the harness
+scorecards).
 
 ## 5. Open decisions
 - None blocking. Tool roster and the always-run model are settled by the spike (§3); the

@@ -344,14 +344,19 @@ flowchart TD
     CA_OUT --> G8 --> S9
 
     %% feedback loops — the acquisition pipeline is CYCLIC, not a DAG (dashed = back-edge).
-    %% Only TWO execution mechanisms (REQ-118, hardened epic #163): 7→6 re-routes EXISTING already-labeled
-    %% reps straight to a new Stage-6 dispatch as ONE BUNDLED round per district (no new capture, no gate@5);
-    %% 7→2/7→3/7→1 need NEW evidence (never labeled) so they wrap in a Stage-1 follow-up batch that AUTO-FLOWS
-    %% gate@1 -> 2 -> 3 -> 4 to gate@5 (#157 — a follow-up carries an already-approved gate@7 decision), then
-    %% walks 5->6->7 manually as usual. 8→1 / 8→6 are DESIGNED (governance §11e) but not built — gate@8's
+    %% THREE execution mechanisms now (REQ-118/epic #163 + the #164/#575 escalation-ladder family,
+    %% governance §11e): 7→6 re-routes EXISTING already-labeled reps straight to a new Stage-6 dispatch as
+    %% ONE BUNDLED round per district (no new capture, no gate@5); 7→2/7→3/7→1 need NEW evidence (never
+    %% labeled) so they wrap in a Stage-1 follow-up batch that AUTO-FLOWS gate@1 -> 2 -> 3 -> 4 to gate@5
+    %% (#157 — a follow-up carries an already-approved gate@7 decision), then walks 5->6->7 manually as
+    %% usual — 7→1 itself now SCOPE-SPLITS domain-vs-geo, ladder-position-derived from approval history
+    %% (#164/#575). 5→1 is the NEW zero-yield geo escalation (#164 PR 3b): a district landing at gate@5
+    %% with nothing dispatchable composes a geo-scoped DRAFT batch at gate@1 — individually gate@1'd,
+    %% NEVER auto-flowed (unlike 7→1). 8→1 / 8→6 are DESIGNED (governance §11e) but not built — gate@8's
     %% present remedies are same-district: #473 recover-band re-extraction, #474 human-add.
     X_EXEC -.->|"7→6: BUNDLE the district's approved alternate-rep set into ONE dispatch/round"| H_IN
-    X_EXEC -.->|"7→2/7→3/7→1: NEW discovery/capture -> SHAPED DRAFT follow-up batch, AUTO-FLOWS gate@1+2+3+4 to gate@5 (#157)"| Q_SRC
+    X_EXEC -.->|"7→2/7→3/7→1: NEW discovery/capture -> SHAPED DRAFT follow-up batch (7→1 SCOPE-SPLIT: domain vs geo-scoped, ladder-derived position, #164/#575), AUTO-FLOWS gate@1+2+3+4 to gate@5 (#157)"| Q_SRC
+    G5 -.->|"5→1: zero-yield geo escalation, draft at gate@1, never auto-flowed (nothing dispatchable at gate@5 -> geo-scoped DRAFT batch, #164 PR 3b, governance §11e)"| Q_SRC
     CA_OUT -.->|"NOT BUILT (§11e stub) — band-coverage gap -> follow-up batch (district×band)"| Q_SRC
     CA_OUT -.->|"NOT BUILT (§11e stub) — add an existing-rep URL to a new dispatch"| H_IN
 ```
@@ -367,6 +372,7 @@ flowchart TD
 - **`gate@1` (was Checkpoint A) — an in-band console approval, fully built 2026-06-28:** approval is a **batch-level** transition (`batch.status: draft → approved`) + per-district `gate@1` events; editing is **soft, reversible, audited** (reject/restore district & school, add school — `included` flips / inserts, locked once approved, `reopen` to edit). The **batch-of-record is created + advanced only through the console** (hand-run `queue_batch.py` = dev/test). Backend + the queue-review **frontend** are live (`process_governance/static/`, on the MMM Design System via DesignSync); validated end-to-end by `batch_00002`. The create path is **CWD-independent** (NCES + `.env` anchored to the repo). (governance §11h; STAGE1 §6.)
 - **Two batch types + completion grain = district × BAND** (governance §11d): **first-run** (excludes already-attempted) vs **follow-up** (re-includes, targeting unsatisfied bands); 12-district hard cap; schools are instrumental — a district is "satisfied" per *band*, not per school (Dunseith). Follow-ups are created at the return to Stage 1, reviewable at `gate@1`.
 - **A third batch type, `benchmark`** (2026-07-02): `batch_00000` injects the 27 curated-GT districts directly at the Stage-3 seam from frozen `gt_curation` artifacts (`gt://` URIs, no discovery/capture), giving Stage 7's first build 940 hand-verified per-school times to score against with zero site-drift confounding. Permanently walled off — never Stage-9-written, never counted in funnel/enrichment stats. Code: `stage1_queue/benchmark_batch.py`. See `STAGE1_QUEUE_DESIGN.md` §2h, `STAGE7_EXTRACT_DESIGN.md`.
+- **Discovery-scope policy (`discovery_scope`: domain vs geo) — #164/#572.** A 4-position state machine (`common/discovery_policy.py`) governs whether a FIRST-RUN batch may be composed geo-scoped (searching by district geography) rather than domain-scoped: `domain_only` (the high-supervision default) → `geo_for_blank` → `geo_interleaved` (a weighted draw) → `geo_all`. `queue_create` composes scope-aware and auto-advances one step when a domain-scoped batch draws nothing while blank-domain districts remain. The 5→1/7→1 escalation ladders (flow diagram above; governance §11e) are deliberately NOT gated by this policy. Full mechanics: governance §11j/§11k.
 - **Cross-stage state** lives in the Postgres `state_event` log (REQ-099); `district_status.json` is its regenerable backup; `already_attempted` = furthest stage ≥ 3.
 
 ### 2 · Discovery — built 2026-06-23; **re-architected to a deterministic SERP cascade + run live via the console 2026-06-28** · deep design: `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE2_DISCOVER_DESIGN.md` §7
@@ -381,6 +387,8 @@ flowchart TD
 - **Ungated** (no `gate@2`; Stages 2/3/4 are ungated) — the next human gate is `gate@5` (Filter). Outcomes: `found_all` / `found_partial` / `manual_flag_all`.
 - **Batch resolution: DB, not receipt (#526, closed 2026-07-18).** Stage 2 was the one stage whose console/autoflow batch read came from the on-disk receipt (`load_batch_any`) rather than the governance DB — the last exception to "the DB is the working store, disk holds receipts." Now `server._batch_from_db` → `batch_store.to_working_doc` resolves it for Stage 2 same as Stages 3/4; `load_batch_any` is CLI/offline-only, enforced by an `arch-manifest.json` fitness function.
 - **Run live:** batch_00002 (Bright Data Wave-1 found 28/30 schools; 2 residuals → Claude → recovered 0, genuine no-page cases) + batch_00003, both end-to-end through the console. **Cost reframe:** Stage 2 is cheap REAL cash now (~$0.001–0.0015/query, ~$17–21 / 17k pass), not subscription quota. Watch-items (design note §7d): is Claude-Wave-2 worth its latency; Serper-on-Bright-Data-misses; Claude timeout 420s→~60–90s.
+- **Discovered domains (`common/discovered_domain.py`) — #164/#572.** When a geo-scoped run derives a candidate scoping domain for a blank/junk-`WEBSITE` district, a human confirms or rejects it via the Stage-2 discovered-domain proposal card (confirm upserts the operative domain — a third domain source alongside NCES `WEBSITE` and the #229 admission guard; reject requires a reason). Every decision is appended to a training corpus, never overwritten. Full mechanics: governance §11j.
+- **Effectiveness attribution (#118/REQ-160).** `GET /api/attribution` (`process_governance/attribution.py`) attributes each target-labeled record back to its winning Stage-2 discovery tool and Stage-4 processing source over the human-labeled corpus, plus the #164 scope axes per district. First finding: emergent one-hop capture is the highest-yield non-GT discovery source (38.1% labeled-target rate). Full mechanics: governance §11f.
 
 ### 3 · Capture — *tiered* (local Playwright) — built 2026-06-23 · deep design + decision log: `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE3_CAPTURE_DESIGN.md`
 
@@ -391,6 +399,7 @@ flowchart TD
 - **De-chrome** (REQ-091, built+measured): `segmentChrome()` writes additive `page.main/header/footer/nav.txt` alongside the untouched `page.txt` — the fix must live here (render time) since only innerText is persisted. Measurement → Stage 5 note (category 0.43→0.60, topology 0.6→0.8).
 - **Reconcile** filesystem-authoritative (registry-ahead-of-disk = CONTROL FAILURE); **redo versioned**, never overwritten. **Ungated.** Outcome: `captured_all`/`captured_partial`/`capture_failed_all`. **Superseded, don't revive:** `mapper.ts`'s `PlaywrightCrawler`, `google_drive_handler.py`'s Playwright/Gemini tiers.
 - **Console + resilience (REQ-110, built + run live 2026-06-28/29):** ungated health/emergent readout (per-district outcome/counts, the `err` failure breakdown, CMS/host distribution — all from the **DB cross-stage cache**, the live working store maintained by each stage's finish hook in `common/cache_ingest.py`) + a per-district Node-capture run trigger (`stage3_capture/headless.py`; the Node `district` mode keeps a run batch-scoped). No-link districts skip Playwright; failures/timeouts surface + are retriable (`failed`/`timed_out`); shared labels + honest progress fractions (`static/outcomes.js`). **Node-owns-shutdown:** a capture timeout writes a PARTIAL manifest (`captured_partial`), never orphans completed work; Python's subprocess timeout is a backstop. **`capture_stage3 reconstruct`** rebuilds a manifest from on-disk folders for already-orphaned districts (+ the interim manual-follow-up path via `--manual-file`). Detail: `STAGE3_CAPTURE_DESIGN.md` §7.
+- **Security-block one-attempt rule, ENFORCED (#578/REQ-159, 2026-07-20).** `capture_discovery.mjs`'s `detectChallenge` (header + bounded interstitial-body markers) runs on both the fetch and render branches; `updateSecurityState` trips a per-district circuit breaker after 3 consecutive challenges, halting the district's remaining URLs as a non-retryable `security_block` — never silently recorded `ok`, the real gap a live Millard NE run (`batch_00021`) surfaced (81/83 interstitials had been landing `ok`). A security-blocked district is ineligible for the 5→1 geo escalation (flow diagram above) — the domain was fine, the WAF said no.
 
 ### 4 · Local processing — built + run live 2026-06-23 (150/150 records); **console view + Stage 4→5 handoff built 2026-06-29 (REQ-111)** · deep design + decision log: `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE4_PROCESS_DESIGN.md` §4a/§4b
 
@@ -428,13 +437,22 @@ scorecard series, segmented by config fingerprint; advisory "retune recommended"
 auto-retunes (the same shape that caught the 2026-06-30 V1 incident by hand, now automatic). **#517
 `schedule_link_only`** — a derived signal + attention chip for pages that NAME a bell schedule they don't
 contain (measured 78/78 census-labeled `target_absent`, zero collateral); `link_followup.py` emits the
-retry receipt for the Stage-3 one-hop revisit (executor deferred to epic #111/#518, whose Phase 1
-correctness sweep + Phase 2 DB-batch-read migration have since shipped — see the epic #111 callout
-after Stage 4, above). **#109** — the
+retry receipt for the Stage-3 one-hop revisit. **The consumer SHIPPED 2026-07-20 (#518, REQ-154's
+missing consumer)** — `GET /api/fidelity-triage` surfaces every flagged capture (login-wall/soft-404/
+`security_block`/Stage-4 `time_blind`) grouped per district with recovery-affordance context, closing
+the recall leak where a flagged capture used to degrade silently to `target_absent`. Full mechanics:
+governance §11f. **#109** — the
 harvest-slice basis now PREFERS the human-labeled page range (Axis-3 `_pages_list`) over the auto
 `is_handbook`/`harvest_pages` detection, and a human range alone can qualify a doc the auto classifier
 missed. **`lf_district_homepage`** (#532) joined the detector set — a rootish-URL + roster-breadth
 negative for many-schools landing pages, tier-A precision 0.8612→0.8701.
+
+> **5→1 zero-yield geo escalation (#164 PR 3b, 2026-07-19).** A district that lands at gate@5 with
+> nothing dispatchable — no send/hold records, no retryable capture errors, no fidelity-flagged
+> captures, no `security_block` captures (`stage5_followup.zero_yield_reason()`, checked live, never
+> stored) — escalates to a geo-scoped rediscovery batch, ladder-position-derived from prior approved
+> follow-up rounds, individually gate@1'd (never auto-flowed, unlike 7→1). Full mechanics: governance
+> §11e; the predicate itself: `STAGE5_FILTER_DESIGN.md` §7a.
 
 ### 6 · Dispatch — routing + release (`gate@6`) — BUILT to the seam (REQ-101, merged 2026-06-30) · authority: `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE6_DISPATCH_DESIGN.md` §0
 Extraction standardizes on **OpenRouter** (`google/gemini-2.5-flash` etc.). Stage 6 decides *which representation* goes to *which council* and performs the release/dispatch up to (not including) the paid call.
@@ -470,7 +488,9 @@ to epic #80 — blocked on the lab producing a measured escalation config: only 
 **BUILT** (`stage8_aggregate/aggregate.py` + `closing_argument.py` — see §"Stage 8 (Aggregate) BUILT" above and `STAGE8_AGGREGATE_DESIGN.md` §2 for the full design). Across the sampled schools in a district, the band value is the **modal** (most common) gross minutes; a genuine tie between distinct values falls back to the **arithmetic mean** for that band (`aggregate_band`). **Models extract per-school start/end rows; deterministic code computes the mode** — never ask the model to pick the "typical" schedule (REQ-054). Aggregation is CUMULATIVE across every production extraction run for a district (REQ-122's `merge_fact_runs`, with #254's year-precedence layered on top), draws its per-band denominator from the LIVE NCES-derived school roster (REQ-139/#253) rather than a frozen count, and is reviewable/correctable at **gate@8** (§ above) before anything reaches Stage 9 — a human override, exclusion, or hand-add changes the mode through the same canonical plausibility-gated arithmetic the council path uses, never a second, divergent code path.
 
 ### 9 · Incorporation — fail loud
-**DESIGNED, not built** (#93 — the one remaining seam in the 9-stage map; tracked as the next major build after epic #478's tail). Will write the district band values to the DB as a deterministic, re-approval-safe UPSERT off an approved gate@8 closing argument. A district where discovery finds nothing or the council can't agree lands as **`method=statutory_fallback`** — **labeled, never counted as enriched** (Rule #6, REQ-024). Coverage ≠ enrichment.
+**DESIGNED, not built** (#93 — tracked under epic #92; the one remaining seam in the 9-stage map — next major build after epic #478's tail). Will write the district band values to the DB as a deterministic, re-approval-safe UPSERT off an approved gate@8 closing argument. A district where discovery finds nothing or the council can't agree lands as **`method=statutory_fallback`** — **labeled, never counted as enriched** (Rule #6, REQ-024). Coverage ≠ enrichment.
+
+**Before Stage 9 build work starts:** #479/#480 (data-quality prerequisite work) — see `CLAUDE.md`'s current resume state for the live sequencing.
 
 ---
 
@@ -658,12 +678,15 @@ Two independent extractors disagree on a large share of districts; at <1 hr/week
 | **NCES classification: per-school bands, LEA claimed span, charter lookup** | `infrastructure/acquisition/common/school_sampling.py` |
 | **Cross-stage district status registry (all 9 stages)** — *migrating to a Postgres event log (governance DB), 2026-06-26* | `infrastructure/acquisition/common/district_status.py` |
 | **Stage 1 output / status registry schema references** | `data/acquisition/queue/batch.example.json`, `data/acquisition/status/district_status.example.json` |
+| **Discovery-scope policy: 4-position domain/geo state machine (#164/#572)** | `infrastructure/acquisition/common/discovery_policy.py`; design: `PIPELINE_GOVERNANCE_AND_STATE.md` §11j/§11k |
 | **CTC/shared-service classification backfill (Rule 6)** | `infrastructure/database/migrations/apply_ctc_classification.py` |
 | Archived: pre-redesign stratified batch picker (superseded by `queue_batch.py`) | `data/archive/training_batch_py-superseded-20260622/training_batch.py` |
 | **Discovery (Stage 2): deterministic half, built + tested 2026-06-23** | `infrastructure/acquisition/stage2_discover/discover_stage2.py` |
 | OBSOLETE (drove the retired agent Wave-1; the SERP cascade replaced it, REQ-104) | `.claude/skills/stage2-discover/SKILL.md` |
 | **Discovery: live Wave-1 SERP providers (`brightdata_search`/`serper_search`) + URL-gating helpers** — the deprecated non-streaming `openrouter_search`/`perplexity_search` (+ their dead `main()` bench) were removed 2026-07-06, #87 | `infrastructure/acquisition/common/discover.py` |
 | Archived 2026-06-24: GT-manifest-era per-school discovery (bypassed Stage 1's batch) | `data/archive/gt-benchmark-era-tools-superseded-20260624/per_school_run.py` |
+| **Discovered domains: confirmed-domain store + confirm/reject training corpus (#164/#572)** | `infrastructure/acquisition/common/discovered_domain.py`; design: `PIPELINE_GOVERNANCE_AND_STATE.md` §11j |
+| **Cross-stage discovery/processing effectiveness attribution (#118/REQ-160)** | `infrastructure/acquisition/process_governance/attribution.py`; design: `PIPELINE_GOVERNANCE_AND_STATE.md` §11f |
 | Superseded skills (built on the above, pre-Stage-1 design) | `.claude/skills/per-school-acquire/`, `.claude/skills/per-school-acquire-training/` |
 | **Capture (Stage 3): built + run live 2026-06-23, 150/150 captured** | `infrastructure/scraper/capture_discovery.mjs` (active) |
 | **Capture (Stage 3): orchestration (reconcile/outcome-rollup/registry + cache hook)** | `infrastructure/acquisition/stage3_capture/capture_stage3.py` |
@@ -675,6 +698,7 @@ Two independent extractors disagree on a large share of districts; at <1 hr/week
 | **Cross-stage DB cache (live working store): schema + per-district UPSERTs + per-stage hooks — REQ-103c/REQ-110** | `infrastructure/acquisition/common/cache_ingest.py` |
 | Drive Tier 1 export-URL handling (built, tested) | `infrastructure/scraper/capture_drive.mjs` |
 | Hosting/CMS fingerprint helpers + backfill mode (built, tested, run live 2026-06-24) | `infrastructure/scraper/capture_discovery.mjs`, `capture_fingerprint.test.mjs` |
+| **Security-block one-attempt enforcement: `detectChallenge`/`CHALLENGE_MARKERS` + the district circuit breaker (#578/REQ-159)** | `infrastructure/scraper/capture_discovery.mjs`; design: `STAGE3_CAPTURE_DESIGN.md` 2026-07-20 change-log entry |
 | Drive Tier 2 (OAuth) — deliberately deferred, not built (tracked: #115) | REQ-078 |
 | **Local processing (Stage 4): built + run live 2026-06-23, 150/150 records processed** | `infrastructure/acquisition/stage4_process/process_stage4.py` |
 | **Console: Stage 4 process view + run trigger (in-process) — REQ-111** | `infrastructure/acquisition/stage4_process/headless.py`, `process_governance/static/stage4.js`, `server.py` (`/api/process/*`), `tests/test_stage4_headless.py`, `tests/test_process_api.py` |
@@ -695,6 +719,7 @@ Two independent extractors disagree on a large share of districts; at <1 hr/week
 | **Stage 5 scoring V2: detectors + combiner → send/suppress/review (REQ-113)** | `infrastructure/acquisition/stage5_filter/{detectors,combiner}.py` |
 | **Stage 5 drift detector: CUSUM+Wilson two-gate over the fingerprinted scorecard series, advisory (REQ-097/#75)** | `infrastructure/acquisition/stage5_filter/drift.py`; design: `STAGE5_FILTER_DESIGN.md` §8/Change log |
 | **Stage 5 `schedule_link_only` detection + retry receipt (#517)** | `infrastructure/acquisition/stage5_filter/{build_signals,link_followup}.py`; design: `STAGE5_FILTER_DESIGN.md` Change log |
+| **Stage 5's zero-yield predicate + the 5→1 geo escalation composer (#164 PR 3b)** | `infrastructure/acquisition/process_governance/stage5_followup.py`; design: `STAGE5_FILTER_DESIGN.md` §7a, `PIPELINE_GOVERNANCE_AND_STATE.md` §11e |
 | **Stage 6 dispatch: routing/cost/immutable handoff/request assembly + gate@6 (REQ-101), incl. the four dispatch-hold passes (#107/#540/REQ-116)** | `infrastructure/acquisition/stage6_handoff/`, `process_governance/stage6_dispatch.py`; design: `STAGE6_DISPATCH_DESIGN.md` §0/§3G |
 | **gate@6 console: persisted draft dispatch (redesigned 2026-07-13, PR #256)** | `infrastructure/acquisition/stage6_handoff/draft_models.py`, `process_governance/stage6_draft_store.py`, `process_governance/static/stage6.js`; design: `STAGE6_DISPATCH_DESIGN.md` §0b |
 | **Stage 7 extraction: council calls, token sizing, truncation retry, run_kind (REQ-117, REQ-119)** | `infrastructure/acquisition/stage7_extract/{openrouter,models,parse,validate}.py`; design: `STAGE7_EXTRACT_DESIGN.md` §0 |

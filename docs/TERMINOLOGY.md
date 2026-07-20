@@ -1,6 +1,6 @@
 # Project Terminology Guide
 
-**Last Updated:** 2026-07-15
+**Last Updated:** 2026-07-20
 
 The canonical vocabulary for the Learning Connection Time (LCT) project — the file an auditor or new
 developer should read first. It standardizes the terms used across `docs/ACQUISITION_PIPELINE.md`,
@@ -101,6 +101,46 @@ commits by the pre-commit hook), not the working store. `already_attempted()` ex
 from first-run re-queue once it has reached **Stage 3 (Capture)+** — searched/queued-only
 districts stay eligible.
 
+### Discovery scope (`domain` vs `geo`) & the discovery-scope policy
+A batch's **`discovery_scope`** is `domain` (search anchored to the district's known/NCES
+website) or `geo` (search anchored to the district's geography — city/zip — with no domain
+assumed). Orthogonal to `batch_type` (first-run/follow-up/benchmark). Which scope a first-run
+batch may draw from is governed by the **discovery-scope policy**, a 4-position audited state
+machine: `domain_only` → `geo_for_blank` (geo allowed for blank-domain districts) →
+**`geo_interleaved`** (each batch's scope is DRAWN, weighted by the remaining blank-vs-domained
+pools, seeded by batch_id for reproducibility) → `geo_all` (the geo-vs-domain measured
+comparison mode). One-step auto-advance is a real, receipted event, never a silent default
+change. Full mechanism: `PIPELINE_GOVERNANCE_AND_STATE.md` §11j.
+
+### Discovered domain
+A district's website domain **derived** from a majority-host pattern in a geo-scoped discovery
+run (not from NCES, not human-typed) — a third domain source. Every derivation is a **proposal**
+requiring human confirm/reject (never auto-adopted); confirmed proposals become the operative
+`discovered_domain` row, and EVERY decision (confirm and reject alike) lands in the append-only
+`discovered_domain_decision` corpus — the future auto-confirmation feature's training data. Full
+mechanism: `PIPELINE_GOVERNANCE_AND_STATE.md` §11j.
+
+### Escalation ladder / zero-yield
+When a district reaches gate@5 with nothing dispatchable, no retryable errors, no fidelity flags,
+and no security block, it's **zero-yield** — the hypothesis is the DOMAIN was the bottleneck, not
+the data. The **5→1** back-edge (`stage5_followup.py`) composes a GEO-scoped follow-up draft at
+gate@1 for it (never auto-flowed); the **7→1** back-edge (`stage7_execute.py`) does the
+equivalent scope split for approved extraction-request follow-ups. Ladder **position is always
+DERIVED from ever-approved follow-up batch history** (`batch_store.followup_rounds`), never a
+stored counter, and BOTH back-edges share ONE exhaustion threshold
+(`batch_store.geo_ladder_exhausted`) so they can never disagree about the same district. Full
+mechanism: `PIPELINE_GOVERNANCE_AND_STATE.md` §11e.
+
+### Remediation receipt
+A decontamination restore point (`data/acquisition/remediation/<district_id>_<ts>/`) that
+sanctions a stage's `reconcile()` to REDO a district's work fresh instead of halting on a
+registry-ahead-of-disk **CONTROL FAILURE** — remediation deliberately removes artifacts while
+preserving state history, so this is that path's expected end state. Time-bound (30-day trust
+window); NOT stage-scoped (a receipt from any one stage's remediation excuses a desync at any
+other stage for that district — a documented, bounded trade-off). The ONE shared check consulted
+identically by Stage 2/3/4's own `reconcile()` functions. Full mechanism:
+`PIPELINE_GOVERNANCE_AND_STATE.md` §11l.
+
 ---
 
 ## 4 · Stage-specific vocabulary
@@ -123,6 +163,9 @@ districts stay eligible.
   meeting our eligibility (**open · regular · non-virtual · non-preschool**, the shared `_eligible()`
   predicate), grouped by **raw `ccd_sch` LEVEL**. The **topology denominator** — our-criteria count,
   *not* `ccd_lea`'s self-reported figure; captured at Stage 1 with `nces_year` for provenance.
+- **Discovery scope / discovered domain** — a batch's `domain`-vs-`geo` search anchor and the
+  4-position policy governing which scope a first-run batch may draw from; a **discovered domain**
+  is a third, human-confirmed domain source alongside NCES. See §3 above for the full definitions.
 
 ### Stage 2 — Discover (recall)
 - **Discovery = a recall problem** — find *a* schedule page; capture verifies it. A **deterministic
@@ -158,6 +201,14 @@ districts stay eligible.
   topology 0.6→0.8). **Landmark** — the semantic/ARIA selectors used to identify chrome. (Note:
   V2 scoring reads the time signal over the **max-evidence** source, not main-only — footer/OCR
   targets recovered, REQ-113.)
+- **Security block / one-attempt rule (#578, REQ-159)** — `detectChallenge` recognizes a
+  Cloudflare/WAF challenge page (a `cf-mitigated` response header or a body-text marker) and a
+  **district circuit breaker** halts the remaining un-captured URLs after `SECURITY_BREAKER_N`
+  (3) consecutive challenges, plus a **pre-capture probe** that can skip a district entirely
+  before any real capture begins. A `security_block` capture err is deliberately NOT
+  `not_attempted` — the #116 retry must never re-hammer a WAF. See §6 below and
+  `PIPELINE_GOVERNANCE_AND_STATE.md` §11e for how this disqualifies a district from the 5→1
+  geo-escalation ladder (the domain was fine, the WAF said no).
 
 ### Stage 4 — Local processing
 - **Representation** — one extracted view of a captured artifact: a text file from a tool, an image, a

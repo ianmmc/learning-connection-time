@@ -271,9 +271,6 @@ header during a run.
 
 **User stories (not yet built):**
 - Review search-query templates and propose new ones. (tracked: #102)
-- Insights into how effective combinations of search services + queries are at yielding bell-schedule
-  representations by the end of Stage 5 (the measurement-harness pattern extended upstream — attribute
-  each target-labeled record back to its discovery tool via `candidate_tools_json`). (tracked: #118)
 
 ---
 
@@ -445,6 +442,10 @@ down when the district has an on-disk decontamination restore point
 removes artifacts while preserving state history, so registry-ahead-of-disk is that path's
 receipted end state, and the district rediscovers fresh (the live case: Millard NE's geo redo in
 batch_00021 halted on exactly this). A missing discovery.json with NO receipt still halts the run.
+**Now time-bound** (`REMEDIATION_RECEIPT_MAX_AGE_DAYS=30`, #575 narrowing): a receipt older than 30
+days no longer excuses the halt, and the check is not stage-scoped — a receipt from ANY stage's
+remediation excuses a desync at ANY OTHER stage for the same district. Full mechanism (now the
+canonical explanation): `PIPELINE_GOVERNANCE_AND_STATE.md` §11l.
 The 5→1 zero-yield modal also gained human-readable district names (`names` in the composer result).
 
 **2026-07-20 — #572: the discovered-domain proposal card + decision corpus.** A GEO batch's Stage-2
@@ -457,3 +458,15 @@ Both decisions append to the new PRECIOUS `discovered_domain_decision` table (gi
 auto-confirmation (a gate_mode ramp-up candidate; rejections are the negative class). Confirm
 additionally upserts the operative `discovered_domain` row (unchanged semantics). First live
 proposal: Millard NE → mpsomaha.org, 78.3%/21 schools (batch_00021).
+
+**2026-07-20 — #118/REQ-160 shipped: Stage-2 discovery-tool attribution (the measurement-harness
+pattern extended upstream).** `process_governance/attribution.py`'s `stage2_attribution()` answers
+which DISCOVERY tool earns its keep: per discovery TOOL, candidates proposed → canonical records →
+human-labeled TARGET, over the same human-labeled corpus the Stage-5 harness scores. Attribution
+joins each canonical record back to the `candidate` plan row for its (district, url) and that row's
+`tools_json` (which SERP provider(s) proposed the URL — `"brightdata"`/`"serper"`/`"claude_websearch"`,
+§2c); a record with no plan row falls back to its capture `source` (`emergent`/`manual`/`benchmark_gt`).
+Live at `GET /api/attribution` (`server.py`), rendered via the shared `attributionPanel()`
+(`static/outcomes.js`) mounted on both `static/stage2.js` and `static/stage4.js` (Stage 4's own
+`stage4_attribution()` is the processing-tool counterpart, out of scope for this doc). First card:
+emergent one-hop is the highest-yield non-GT discovery source, 38.1% labeled-target rate.

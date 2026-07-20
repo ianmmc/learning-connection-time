@@ -875,6 +875,89 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 - **The DB is the working store; JSON files are receipts** (governance §1). Precious human data
   (`label` / `cluster_split` / `followup_flag`) is never dropped on re-ingest, keyed on stable `rec_key`,
   and JSON-backed. Signal tables are drop+rebuilt (full `ingest()`) or per-district DELETE+INSERT (`ingest_batch()`).
+  **`followup_flag` is no longer purely human-authored** — see §7a for the automated ladder-exhaustion
+  writer added by #164 PR 3b.
+
+---
+
+## 7a. Stage 5's escalation-adjacent surfaces (#164/#518/#578/#118) — the zero-yield predicate, the
+fidelity consumption boundary, `FollowupFlag`'s automated writer, and attribution
+
+**Scope note.** The 5→1/7→1 escalation-LADDER MECHANISM itself — ladder-position derivation from
+`batch_store.followup_rounds()`, the shared `geo_ladder_exhausted()`/`GEO_LADDER_EXHAUSTED_AT=2`
+threshold, "draft at gate@1, never auto-flowed," the shared `_flag_escalation_exhausted` auto-flag
+writer — is canonically documented in `PIPELINE_GOVERNANCE_AND_STATE.md` §11e; this section does not
+re-derive it. What belongs here is Stage 5's OWN domain-specific piece: the release/scoring-territory
+predicate that decides whether a district even counts as "zero yield" in the first place, plus three
+related consumption-boundary facts that live at Stage 5's boundary but aren't part of its scoring
+pipeline.
+
+**A naming trap.** The mechanism below, `stage5_followup.py`, lives at
+`infrastructure/acquisition/process_governance/stage5_followup.py` — the APP layer (it imports across
+stages, governance §11e), NOT `stage5_filter/`. `stage5_filter/` holds a different, older, unrelated
+file, `link_followup.py` (#517 — the `schedule_link_only` one-hop retry-receipt mechanism, §3/§8). Do
+not conflate the two.
+
+**`zero_yield_reason()` — Stage 5's own zero-yield predicate.** `stage5_followup.py:zero_yield_reason()`
+(lines 41–69) is checked LIVE (never a stored verdict) and disqualifies a district from the 5→1 geo
+escalation on any of four grounds:
+
+1. **Any dispatchable/held Stage-5 record.** `release.decide()` returns `send` OR `hold` for at least
+   one of the district's records. A `hold` — a maybe-target still awaiting a human label — blocks
+   escalation too, not just `send`: escalating past an unlabeled maybe-target would burn a geo
+   rediscovery on a district whose answer may already be sitting in the review queue, spend-conservatively.
+2. **Any retryable capture failure** (`err` matching `RETRYABLE_ERR_PREFIXES` from
+   `stage3_capture.headless`) — routes to the #116 capture retry instead of geo escalation; the domain
+   may be fine, the capture attempt just failed.
+3. **Any fidelity-flagged capture** — non-empty `capture.fidelity_json` (`login_wall`/`soft_404`, the
+   `_FIDELITY_FLAGGED_SQL` predicate) — routes to the #518 `/api/fidelity-triage` queue instead; a
+   flagged capture means a real schedule may be hiding behind the login wall or soft-404, not that the
+   domain is wrong.
+4. **Any `security_block` capture** — routes to manual triage, NEVER automatic geo re-pressure (#578):
+   the domain was fine, the WAF said no. The one-attempt rule (CLAUDE.md Critical Rule 3) means geo
+   rediscovery would just re-derive and re-pressure the same blocked hosts.
+
+Only a district with NONE of the four is eligible — `zero_yield_reason()` returns `None`, and the
+district is folded into the geo-scoped draft batch. What happens next (ladder position, batch
+composition) is the escalation composer's job, not this predicate's — see governance §11e.
+
+**The `fidelity_json` consumption boundary — a real architectural asymmetry.** `capture.fidelity_json`
+/ `processed_doc.fidelity_json` are produced upstream, at Stage 3/4. Grepping `fidelity` across Stage
+5's own scoring pipeline — `stage5_filter/build_signals.py`, `stage5_filter/harness.py`,
+`stage5_filter/release.py` — returns **zero hits in all three**. Stage 5's own
+combiner/detector/harness/release machinery never reads these flags: they never fold into a detector,
+a signal, a tier, or a release decision. The ONLY two consumers in the whole pipeline are
+`stage5_followup.py`'s raw SQL (`_FIDELITY_FLAGGED_SQL`, item 3 above) and the #518
+`GET /api/fidelity-triage` console endpoint (governance §11f). Fidelity data is produced by Stage 3/4,
+consumed by an escalation composer and a triage UI — and never folds into Stage 5's own
+attention/scoring model. Worth stating explicitly: it would be easy to assume a "fidelity" flag
+naturally feeds a "how confident is this record" score, and it deliberately does not.
+
+**`FollowupFlag` now has an automated writer, alongside the human one.** §7's "precious human data"
+characterization of `followup_flag` (never dropped on re-ingest, keyed on stable `rec_key`) is now
+INCOMPLETE, not wrong. As of #164 PR 3b (2026-07-19), `process_governance/stage7_execute.py`'s
+`_flag_escalation_exhausted` (lines 465–485) programmatically inserts `FollowupFlag` rows with
+`actor="auto:escalation-ladder"` when the shared `geo_ladder_exhausted()` threshold trips (either
+escalation composer — governance §11e). It dedupes on an existing UNRESOLVED auto flag
+(`scope='district'`, `actor='auto:escalation-ladder'`) so a re-compose never stacks a second marker; a
+human resolving the flag re-arms it — a later exhaustion is a fresh event worth a fresh flag. So
+`followup_flag` today carries two authorship lanes: the original human "needs manual follow-up"
+directive (gate@5's top attention tier), and this programmatic ladder-exhaustion marker. Full
+mechanism: governance §11e.
+
+**`security_block` as a Stage-5-adjacent triage category.** Worth restating alongside item 4 of the
+predicate above: `zero_yield_reason()` treats `security_block` captures as a disqualifier requiring
+manual triage, never automatic geo re-pressure (#578) — the same one-attempt-rule posture that governs
+Stage 3/4 capture (CLAUDE.md Critical Rule 3), now also respected at the Stage-5 escalation boundary.
+
+**`attribution.py` — a consumer of Stage 5's release/harness machinery, not Stage-5 code.**
+`process_governance/attribution.py` (#118/REQ-160, governance §11f) is built directly on top of Stage
+5's own release/harness machinery — it imports `stage5_filter.release` (`CANONICAL_RECORD_WHERE`,
+`decide()`) and `stage5_filter.harness`'s `_h` fingerprint helper — even though it is not itself
+Stage-5 code (it lives in `process_governance/`, the app/cross-stage layer, alongside
+`stage5_followup.py`). It measures Stage-2 discovery-tool hit rates and Stage-4 processing-source win
+rates over the same human-labeled corpus Stage 5's own harness scores against. Noted here only because
+it consumes Stage 5's machinery; the full description belongs in Stage 2/4's design docs, not here.
 
 ---
 
@@ -918,6 +1001,22 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 ---
 
 ## Change log
+
+- **2026-07-20 — added §7a, Stage 5's escalation-adjacent surfaces (#164/#518/#578/#118), documenting
+  code that landed 2026-07-19/20 but was missing from this note.** `stage5_followup.py`'s
+  `zero_yield_reason()` predicate (the domain-specific "does this district even count as zero-yield"
+  logic feeding the 5→1 geo escalation — dispatchable/held records, retryable capture errors,
+  fidelity-flagged captures, and `security_block` captures each disqualify, in that priority order);
+  the `capture.fidelity_json`/`processed_doc.fidelity_json` consumption-boundary fact (grep-confirmed
+  zero hits in `build_signals.py`/`harness.py`/`release.py` — Stage 5's own scoring never reads
+  fidelity flags; the only consumers are `stage5_followup.py` and the #518 fidelity-triage endpoint);
+  `FollowupFlag`'s new automated writer (`stage7_execute._flag_escalation_exhausted`,
+  `actor="auto:escalation-ladder"`, dedup + re-arm on resolve) alongside the pre-existing human one
+  (§7's characterization updated to point here); and a short note on `attribution.py` as a consumer of
+  Stage 5's `release.py`/`harness.py` machinery. The escalation-ladder MECHANISM itself (ladder
+  position, batch composition, the shared exhaustion threshold) stays documented canonically in
+  `PIPELINE_GOVERNANCE_AND_STATE.md` §11e, cross-referenced rather than re-derived. No code changed;
+  documentation-only.
 
 - **2026-07-18 (late) — max-effort review of PRs #543-#547 (10 angles + sweep, 7 findings, all fixed
   same-day; the severe one reproduced three ways before fixing).** (1) **`_sibling_variant_holds`

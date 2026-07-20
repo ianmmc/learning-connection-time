@@ -568,3 +568,38 @@ modal → compose; fuller gate@5 surfacing stays #518). Key operational fact thi
 NE (3173740) is already-attempted, so NO first-run draw can include it — its geo repair runs via
 the 5→1 button on batch_00013 (live-verified eligible, rung geo+standard, with Playwright).
 Tests: tests/test_discovery_policy_console.py.
+
+**2026-07-20 — five present-state items added to §1/§2/§6, verified against current code
+(`queue_batch.py`, `batch_store.py`, `server.py`), for the #164/#572 landing:**
+- **`resolve_scoping_domain(website, did, discovered_domains)`** (`queue_batch.py:174-186`) — the
+  ONE dual-source domain-resolution helper, shared by `build_batch` and `build_followup_batch`:
+  NCES `website` when usable, else a human-CONFIRMED discovered domain
+  (`common/discovered_domain`), else `("", "")`. Added to fix a drift bug where the follow-up
+  path's own inline copy could label a domain's source `"discovered"` even when the confirmed-domain
+  lookup came back empty.
+- **`validate_scope_combo(scope, batch_type)`** (`queue_batch.py:211-217`) — guards that
+  `scope="geo"` composes `batch_type="first-run"` batches only; benchmark and follow-up batches are
+  never geo-composed via this path (follow-up's geo loops are the #164 PR-3 escalation composers'
+  own job, not free-form `queue_create` composition). Wired into `server.py`'s `queue_create`
+  (governance §11k has the full `queue_create` picture).
+- **`geo_pool="all"` experiment mode** — `build_batch`'s `geo_pool` kwarg (default `"blank"`)
+  controls the geo draw population. Under `"blank"`, the geo draw is restricted to districts with
+  no usable domain from either source — the #229-refused class. Under `"all"` (the `geo_all`
+  discovery-scope policy position, governance §11j), the geo draw ignores whether a district
+  already has an NCES domain, drawing from the full eligible pool — the measured geo-vs-domain
+  comparison mode.
+- **`queue_create`'s snapshot semantics** (`server.py`, the `# SNAPSHOT SEMANTICS` comment ahead of
+  the policy/discovered-domains read) — the discovery-scope policy and the confirmed-domains map
+  are read ONCE at the start of the ~10-20s `build_batch` call; a policy flip or a domain
+  confirmation mid-build is not reflected in that specific batch. Deliberately bounded and
+  self-healing (the district is simply pooled per the snapshot for one compose; the next create
+  sees the new state) — no lock taken.
+- **The shared escalation-ladder threshold** — `batch_store.followup_rounds(sess, district_ids)`
+  (`batch_store.py:287-305`) derives each district's ladder position (ever-APPROVED follow-up
+  batches containing it, split by `discovery_scope`) straight from batch history, never a stored
+  counter. `GEO_LADDER_EXHAUSTED_AT = 2` + `geo_ladder_exhausted(rounds_row)`
+  (`batch_store.py:313-320`) is the ONE shared exhaustion check both escalation composers now call,
+  extracted after a #575 review found the 5→1 and 7→1 composers disagreeing on a district sitting
+  at exactly one approved geo round. This is Stage-1-owned code (`batch_store.py` lives in
+  `stage1_queue/`) even though the composers that consume it — the 5→1 zero-yield composer and the
+  7→1 scope-split — live in `process_governance/`; see governance §11e for how they actually use it.

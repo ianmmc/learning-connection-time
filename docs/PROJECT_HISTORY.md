@@ -787,6 +787,44 @@ survey opened: flagged captures are now reviewable decisions, not silent `target
 Authority: PRs #571/#573–#576/#579/#580/#581; issues #164/#572/#578/#118/#518/#111 (close
 comments); REQ-157…160; the `3173740_20260720T145158Z` remediation manifest.
 
+### 2026-07-20 — Doc-tower + requirements-ledger refresh: closing the epic-#111 documentation debt before the #479/#480 → #92 pivot
+
+Epic #111's 9 PRs landed docs inconsistently — some updated the tower, sibling PRs from the same
+48-hour window did not — so before a context clear ahead of Stage 9 prep, the whole tower (all 5
+Stage 1–5 design notes, `PIPELINE_GOVERNANCE_AND_STATE.md`, `ACQUISITION_PIPELINE.md` incl. its
+Mermaid diagram, `METHODOLOGY.md`, `TERMINOLOGY.md`, `GETTING_STARTED.md`) was brought back to
+current-code-as-ground-truth. Scoping principle used throughout: ACQUISITION_PIPELINE.md is the
+skeleton, the stage notes are the muscles, PIPELINE_GOVERNANCE_AND_STATE.md is the nervous
+system — cross-stage mechanisms (the escalation ladder's shared threshold, `remediation_receipt`,
+the discovery-scope policy) get ONE canonical home there, with stage docs cross-referencing
+instead of re-deriving.
+
+Two things found and fixed along the way worth remembering: **METHODOLOGY.md contradicted
+itself** — one section still described the retired (2026-06-13) Crawlee+Ollama pipeline as
+current, while a later section in the same doc correctly described today's search-led/tiered
+pipeline; reconciled to point at ACQUISITION_PIPELINE.md instead of re-describing mechanics that
+drift. **The Millard interstitial count (31/83 vs. 81/83) had silently forked** — CLAUDE.md and
+PROJECT_HISTORY.md already carried the corrected 81/83 figure from an earlier mid-session
+correction, but ACQUISITION_PIPELINE.md, STAGE3_CAPTURE_DESIGN.md, and REQUIREMENTS.yaml (both a
+test docstring and an acceptance criterion) still carried the original wrong estimate — a reminder
+that a correction made once in conversation needs to be swept across every doc it landed in, not
+just the ones touched at the time.
+
+**A parallel requirements-ledger audit** (prompted mid-session) found REQUIREMENTS.yaml itself was
+accurate but stale in the same inconsistent way: REQ-157/158/159/160's acceptance criteria and
+tests held up, but their `notes` didn't reflect a same-day, previously-uncommitted 12-finding
+review-fix pass (the shared `geo_ladder_exhausted` threshold, `remediation_receipt`'s new 30-day
+expiry, the `/api/discovery-policy` registry bug, the `/api/attribution` schema-bootstrap gap, and
+others) — now folded in. More consequentially, **8 of those 12 fixes had shipped with zero test
+coverage**; wrote the 7 missing regression tests (the 8th, a pure query-count optimization, is
+already covered transitively). Also found one genuinely undocumented capability three days old
+(#222's facility-named-school gate@1 review flag) and gave it REQ-161. The 12-finding fix session
+itself — verified passing but never committed — landed as its own `fix(#164/#111)` commit as part
+of closing this out.
+
+Authority: this doc-tower refresh commit + the `fix(#164/#111): address 12 findings...` commit
+immediately preceding it; REQ-153/154/157/158/159/160/161.
+
 ---
 
 ## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)
