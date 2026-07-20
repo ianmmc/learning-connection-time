@@ -46,7 +46,7 @@ import logging
 
 # Import shared SEA utilities
 from infrastructure.database.migrations.sea_import_utils import (
-    safe_float, safe_int,
+    safe_float, safe_int, format_state_id,
 )
 
 # Configure logging
@@ -180,8 +180,15 @@ def import_staff_to_database(session, staff_df: pd.DataFrame, crosswalk: dict, d
     for _, row in staff_df.iterrows():
         stats['total'] += 1
 
-        tea_code = str(row[DISTRICT_NO_COL]).strip()
-        district_name = row['District Name']
+        # format_state_id handles Excel float-casts like '227901.0' that
+        # missed the 6-digit crosswalk keys (issue #409); missing/NaN codes
+        # skip cleanly. Missing 'District Name' must not KeyError (issue #370).
+        try:
+            tea_code = format_state_id('TX', row[DISTRICT_NO_COL])
+        except (ValueError, TypeError, KeyError):
+            stats['skipped'] += 1
+            continue
+        district_name = row.get('District Name', '')
 
         # Get NCES ID from crosswalk
         nces_id = crosswalk.get(tea_code)
@@ -261,8 +268,10 @@ def import_staff_to_database(session, staff_df: pd.DataFrame, crosswalk: dict, d
         if stats['matched'] % 100 == 0:
             logger.info(f"  Processed {stats['matched']} districts...")
 
+    # No commit here: main() commits once after BOTH imports succeed, so a
+    # failed enrollment import can't leave committed staff-only state (issue #410)
     if not dry_run:
-        session.commit()
+        session.flush()
 
     return stats
 
@@ -278,7 +287,12 @@ def import_enrollment_to_database(session, student_df: pd.DataFrame, crosswalk: 
     for _, row in student_df.iterrows():
         stats['total'] += 1
 
-        tea_code = str(row[DISTRICT_NO_COL]).strip()
+        # Same Excel-float normalization as the staff loop (issue #409)
+        try:
+            tea_code = format_state_id('TX', row[DISTRICT_NO_COL])
+        except (ValueError, TypeError, KeyError):
+            stats['skipped'] += 1
+            continue
 
         # Get NCES ID from crosswalk
         nces_id = crosswalk.get(tea_code)
@@ -387,7 +401,7 @@ def import_enrollment_to_database(session, student_df: pd.DataFrame, crosswalk: 
             logger.info(f"  Processed {stats['matched']} districts...")
 
     if not dry_run:
-        session.commit()
+        session.flush()
 
     return stats
 
@@ -416,6 +430,12 @@ def main():
         # Load crosswalk
         logger.info("Loading TX crosswalk from database...")
         crosswalk = load_tx_crosswalk(session)
+        if not crosswalk:
+            # An empty crosswalk means EVERY district silently skips and the
+            # run reports success while importing nothing (issue #408)
+            raise RuntimeError(
+                "tx_district_identifiers is empty — run import_tx_crosswalk.py first"
+            )
         logger.info(f"  Loaded {len(crosswalk)} TEA → NCES mappings")
         logger.info("")
 
@@ -431,6 +451,11 @@ def main():
         logger.info("")
         logger.info("Enrollment Import Summary:")
         log_stats(enroll_stats)
+
+        # Single commit AFTER both imports — per-function commits could leave
+        # staff-only state when the enrollment import failed (issue #410)
+        if not args.dry_run:
+            session.commit()
 
     logger.info("")
     logger.info("=" * 70)

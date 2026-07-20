@@ -102,6 +102,7 @@ def main():
 
         charter_skipped = []
         ctc_matched = []
+        districts_by_id = {d.nces_id: d for d in all_districts}
         for d in all_districts:
             lea_type = lea_types.get(d.nces_id, "")
             if "charter" in lea_type.lower():
@@ -124,8 +125,10 @@ def main():
                 print(f"  [{state}] {name} ({did}) -- {lea_type} (matched via {reason})")
             return
 
+        # Reuse the objects already loaded above — a per-match re-query issued
+        # ~N redundant SELECTs (issue #457)
         for did, name, state, lea_type, reason in ctc_matched:
-            d = session.query(District).filter(District.nces_id == did).first()
+            d = districts_by_id[did]
             d.is_career_technical_center = True
             d.is_shared_service_entity = True
 

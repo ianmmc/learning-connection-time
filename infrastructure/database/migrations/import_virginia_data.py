@@ -38,7 +38,7 @@ import logging
 from infrastructure.database.migrations.sea_import_utils import (
     safe_float, safe_int,
     load_state_crosswalk, get_district_name,
-    log_import_summary,
+    format_state_id, log_import_summary,
 )
 
 # Configure logging
@@ -200,8 +200,14 @@ def create_va_tables():
 
 
 def format_division_number(div_num):
-    """Format Division Number to 3-digit zero-padded format for crosswalk."""
-    return str(int(div_num)).zfill(3)
+    """Format Division Number to 3-digit zero-padded format for crosswalk.
+
+    Returns None for missing/NaN/non-numeric input — a single blank Division
+    Number used to crash the whole import (issue #288)."""
+    try:
+        return format_state_id('VA', div_num)
+    except (ValueError, TypeError):
+        return None
 
 
 def import_district_identifiers(session, crosswalk, enrollment_df):

@@ -113,8 +113,14 @@ def import_crosswalk(df):
             lea_type_text = row['LEA_TYPE_TEXT']
             charter_text = row['CHARTER_LEA_TEXT']
 
-            # Extract state district ID from ST_LEAID (format: "TX-XXXXXX")
-            state_district_id = st_leaid.replace('TX-', '') if st_leaid.startswith('TX-') else tea_district_no
+            # Extract state district ID from ST_LEAID (format: "TX-XXXXXX").
+            # A NaN ST_LEAID arrives as float and .startswith() raised
+            # AttributeError, aborting the whole import (issue #371) — fall
+            # back to the TEA number instead.
+            if isinstance(st_leaid, str) and st_leaid.startswith('TX-'):
+                state_district_id = st_leaid.replace('TX-', '')
+            else:
+                state_district_id = tea_district_no
 
             # Use crosswalk table as source of truth for NCES ID
             db_nces_id = db_crosswalk.get(state_district_id)

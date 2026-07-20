@@ -36,7 +36,7 @@ import logging
 from infrastructure.database.migrations.sea_import_utils import (
     safe_float, safe_int,
     load_state_crosswalk, get_district_name,
-    log_import_summary,
+    format_state_id, log_import_summary,
 )
 
 # Configure logging
@@ -188,7 +188,11 @@ def import_district_identifiers(session, crosswalk, staffing_df, enrollment_df):
 
     # Use enrollment file for primary district info
     for _, row in enrollment_df.iterrows():
-        aun = str(safe_int(row.get('AUN')))
+        raw_aun = safe_int(row.get('AUN'))
+        if raw_aun is None:
+            continue  # str(None) flowed into the lookup (issue #287)
+        # 9-digit zero-padded AUN (issue #287: str(int) dropped leading zeros)
+        aun = format_state_id('PA', raw_aun)
 
         if aun not in crosswalk:
             skipped += 1
@@ -235,7 +239,11 @@ def import_staff_data(session, crosswalk, staffing_df):
     skipped = 0
 
     for _, row in staffing_df.iterrows():
-        aun = str(safe_int(row.get('AUN')))
+        raw_aun = safe_int(row.get('AUN'))
+        if raw_aun is None:
+            continue  # str(None) flowed into the lookup (issue #287)
+        # 9-digit zero-padded AUN (issue #287: str(int) dropped leading zeros)
+        aun = format_state_id('PA', raw_aun)
 
         if aun not in crosswalk:
             skipped += 1
@@ -283,7 +291,11 @@ def import_enrollment_data(session, crosswalk, enrollment_df):
     skipped = 0
 
     for _, row in enrollment_df.iterrows():
-        aun = str(safe_int(row.get('AUN')))
+        raw_aun = safe_int(row.get('AUN'))
+        if raw_aun is None:
+            continue  # str(None) flowed into the lookup (issue #287)
+        # 9-digit zero-padded AUN (issue #287: str(int) dropped leading zeros)
+        aun = format_state_id('PA', raw_aun)
 
         if aun not in crosswalk:
             skipped += 1

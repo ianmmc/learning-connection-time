@@ -248,6 +248,21 @@ def il_rcdts_to_state_id(rcdts) -> str:
     return f'{s[0:2]}-{s[2:5]}-{s[5:9]}-{s[9:11]}'
 
 
+def excel_digits(raw) -> str:
+    """Excel-mangled numeric id -> its digit string, safely.
+
+    Handles 13, '13', 13.0 and '13.0' (Excel float-casts are pervasive in
+    state files — issue #458's '13.0' crashed str(int(x))). NaN/non-numeric
+    raise a ValueError naming the offending value instead of a bare crash.
+    """
+    if pd.isna(raw):
+        raise ValueError(f"missing/NaN state district id: {raw!r}")
+    try:
+        return str(int(float(raw)))
+    except (ValueError, TypeError):
+        raise ValueError(f"non-numeric state district id: {raw!r}")
+
+
 def ma_district_code(raw) -> str:
     """DESE district code -> 4-digit zero-padded crosswalk format.
 
@@ -265,17 +280,22 @@ def ma_district_code(raw) -> str:
 
 
 SEA_ID_FORMATS: Dict[str, Dict[str, Any]] = {
+    # Converters below use excel_digits + zfill to the crosswalk's stored
+    # fixed width (verified against live state_district_crosswalk 2026-07-20:
+    # NY 12, PA 9, FL 2, TX 6 — all zero-padded). The old str(int(x)) forms
+    # dropped leading zeros and silently missed crosswalk rows
+    # (issues #286/#287/#409/#458).
     'FL': {
         'name': 'FLDOE District Number',
         'format': '2-digit county code (01-67)',
         'example': '13 (Miami-Dade)',
-        'converter': lambda x: str(int(x)).zfill(2),
+        'converter': lambda x: excel_digits(x).zfill(2),
     },
     'NY': {
         'name': 'NYSED BEDS Code',
         'format': '12-digit (RRCCDDDDTTTT)',
         'example': '310200010000 (NYC District 2)',
-        'converter': lambda x: str(int(x)).strip(),
+        'converter': lambda x: excel_digits(x).zfill(12),
     },
     'IL': {
         'name': 'ISBE RCDTS Code',
@@ -287,7 +307,7 @@ SEA_ID_FORMATS: Dict[str, Dict[str, Any]] = {
         'name': 'TEA District Number',
         'format': '6-digit',
         'example': '101912 (Houston ISD)',
-        'converter': lambda x: str(x).strip(),
+        'converter': lambda x: excel_digits(x).zfill(6),
     },
     'CA': {
         'name': 'CDE County-District Code',
@@ -305,7 +325,7 @@ SEA_ID_FORMATS: Dict[str, Dict[str, Any]] = {
         'name': 'PDE AUN',
         'format': '9-digit Administrative Unit Number',
         'example': '126515001 (Philadelphia)',
-        'converter': lambda x: str(int(x)).strip(),
+        'converter': lambda x: excel_digits(x).zfill(9),
     },
     'MA': {
         'name': 'DESE District Code',
@@ -317,7 +337,7 @@ SEA_ID_FORMATS: Dict[str, Dict[str, Any]] = {
         'name': 'VDOE Division Number',
         'format': '3-digit zero-padded',
         'example': '029 (Fairfax County)',
-        'converter': lambda x: str(int(x)).zfill(3),
+        'converter': lambda x: excel_digits(x).zfill(3),
     },
 }
 
