@@ -446,3 +446,14 @@ removes artifacts while preserving state history, so registry-ahead-of-disk is t
 receipted end state, and the district rediscovers fresh (the live case: Millard NE's geo redo in
 batch_00021 halted on exactly this). A missing discovery.json with NO receipt still halts the run.
 The 5→1 zero-yield modal also gained human-readable district names (`names` in the composer result).
+
+**2026-07-20 — #572: the discovered-domain proposal card + decision corpus.** A GEO batch's Stage-2
+readout now renders the derivation per district (host, share, schools, top tally from the
+`geo_discovery` receipt) with **Confirm / Reject (reason required)** — placed at the END of Stage 2
+deliberately: the evidence is this run's tally, and the decision governs FUTURE domain-scoped
+composition, never this batch's own capture (which proceeds on the re-gated candidates regardless).
+Both decisions append to the new PRECIOUS `discovered_domain_decision` table (git twin
+`discovered_domain_decisions.json`) with the tally as evidence — the training corpus for the future
+auto-confirmation (a gate_mode ramp-up candidate; rejections are the negative class). Confirm
+additionally upserts the operative `discovered_domain` row (unchanged semantics). First live
+proposal: Millard NE → mpsomaha.org, 78.3%/21 schools (batch_00021).
