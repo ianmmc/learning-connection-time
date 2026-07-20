@@ -30,7 +30,7 @@ from infrastructure.acquisition.common import config_loader as CFG
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common.discover import (NEWS_AGG, _host_matches,
-                                                            derive_domain, host_of)
+                                                            derive_domain)
 from infrastructure.acquisition.common import paths
 
 from infrastructure.acquisition.common.discover import host_of, gate, is_scoping_domain, slugify

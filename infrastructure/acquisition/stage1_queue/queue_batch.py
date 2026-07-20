@@ -171,6 +171,15 @@ def select_schools(batch_id: str, district_id: str, district_school_index: dict,
     return order, result
 
 
+def validate_scope_combo(scope: str, batch_type: str) -> None:
+    """#569 review: scope-purity includes the TYPE axis — geo composes first-runs only.
+    Benchmark is NEVER geo (a geo-scoped batch_00000 would carry derived-host discovery inside
+    the GT wall); follow-up geo loops are the #164 PR-3 escalation builders' job, not free-form
+    composition."""
+    if scope == "geo" and batch_type != "first-run":
+        raise ValueError(f"discovery_scope 'geo' composes first-run batches only (got batch_type={batch_type!r})")
+
+
 def build_batch(year: str, n: int, batch_id: str, registry: dict, *, scope: str = "domain",
                 discovered_domains: dict | None = None,
                 geo_pool: str = "blank") -> tuple[dict, list, list, int]:
@@ -235,6 +244,7 @@ def build_batch(year: str, n: int, batch_id: str, registry: dict, *, scope: str 
     for did in picked_ids:
         info = pool[did]
         domain, domain_source = _scoping_domain(info, did)
+        order, schools_by_band = select_schools(batch_id, did, sch_idx.get(did, {}))
         d_out = {
             "district_id": did,
             "name": info["name"],
@@ -243,12 +253,9 @@ def build_batch(year: str, n: int, batch_id: str, registry: dict, *, scope: str 
             "enrollment_k12": info["enrollment_k12"],
             "lea_claimed_bands": sorted(info["claimed_bands"]),
             "nces_school_counts": level_counts.get(did, {"total": 0, "by_level": {}}),
-            "band_processing_order": None,
-            "schools_by_band": None,
+            "band_processing_order": order,
+            "schools_by_band": schools_by_band,
         }
-        order, schools_by_band = select_schools(batch_id, did, sch_idx.get(did, {}))
-        d_out["band_processing_order"] = order
-        d_out["schools_by_band"] = schools_by_band
         if scope == "domain" and domain_source:
             d_out["domain_source"] = domain_source   # 'nces' | 'discovered' — the audit trail
         if scope == "geo":

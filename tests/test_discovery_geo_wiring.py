@@ -95,3 +95,15 @@ def test_build_batch_scope_validation():
     with pytest.raises(ValueError):
         from infrastructure.acquisition.stage1_queue import queue_batch as QB
         QB.build_batch("2024_25", 12, "batch_x", {"districts": {}}, scope="bogus")
+
+
+def test_scope_combo_validation_geo_composes_first_runs_only():
+    """#569 review: benchmark is NEVER geo (a geo batch_00000 would put derived-host discovery
+    inside the GT wall); follow-up geo loops arrive via the PR-3 escalation builders only."""
+    from infrastructure.acquisition.stage1_queue import queue_batch as QB
+    QB.validate_scope_combo("geo", "first-run")            # allowed
+    QB.validate_scope_combo("domain", "benchmark")         # allowed
+    with pytest.raises(ValueError):
+        QB.validate_scope_combo("geo", "benchmark")
+    with pytest.raises(ValueError):
+        QB.validate_scope_combo("geo", "follow-up")

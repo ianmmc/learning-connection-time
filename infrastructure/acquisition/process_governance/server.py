@@ -1039,6 +1039,10 @@ async def queue_create(payload: dict):
     scope = payload.get("discovery_scope", "domain")
     if scope not in ("domain", "geo"):
         raise HTTPException(400, f"discovery_scope must be 'domain' or 'geo' (got {scope!r})")
+    try:
+        Q1.validate_scope_combo(scope, batch_type)   # #569 review: benchmark/follow-up are never geo-composed
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     from infrastructure.acquisition.common import discovered_domain as DDOM
     from infrastructure.acquisition.common import discovery_policy as DPOL
     with gdb.session_scope() as con:
