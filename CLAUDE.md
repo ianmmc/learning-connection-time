@@ -120,33 +120,24 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-19): epic #111 (Stage 2-3 discovery & capture improvements) ships its first
-two phases — the crossfam correctness sweep + the #526 DB-batch-read migration — each with its own
-adversarial review round finding a real bug the green suites couldn't. The epic itself is NOT closed:
-those phases covered the crossfam-triage fallout attached to it, not its founding charter
-(discovery/capture robustness + recall), most of which is still open — see the reappraisal below.**
-**Phase 1** (post-triage, worked by dependency cluster same as #106's slate): five parallel correctness
-sweeps, one PR per module — Stage 2 (#265/#341/#452/#523/#524, PR #549), Stage 1 (#264/#338/#339, PR
-#550), the Node scraper (#375/#416, PR #551), Stage 3/4 (#267/#347/#348/#351/#454, PR #552), `common/`
-(#326/#328/#330, PR #553). A same-day 10-angle review of all five (15 findings) caught a bug invisible
-to any single PR's own tests: #553's `district_status.save()` fix had conflated clearing the event
-buffer (the real #330 fix) with swallowing `export_status()`'s exception (an unrelated side effect that
-silently broke `server.py`'s `stage5_bookkeeping_failed` signal) — separated, keeping both properties.
-13/15 findings fixed; 1 verified already-correct; 1 filed as follow-up (#554, atomic-write
-consolidation). **Phase 2** (#526, PR #555): Stage 2's console/autoflow batch read moved off the on-disk
-receipt onto the governance DB — the last exception to "the DB is the working store." The fix mattered
-beyond symmetry: the resolver's old basis filtered rejected districts but not rejected *schools within*
-an included district — harmless for Stage 3/4, roster-poisoning for Stage 2. #555's OWN review round
-found `_batch_from_db` double-fetching the Batch row; the naive fix would have leaked status into the
-receipt file (violating `batch_guard.py`'s documented invariant) — split into `to_working_doc`
-(DB-resolve, status included) vs `to_receipt_doc` (receipt-only, deliberately status-free). Doc tower
-(`ACQUISITION_PIPELINE.md`, `PIPELINE_GOVERNANCE_AND_STATE.md`, all four `STAGE*_DESIGN.md`) swept
-against current code same day — including a self-catch: STAGE1_QUEUE_DESIGN.md's own #526 write had
-gone stale within the session that wrote it, superseded by #555's `to_working_doc` split hours later.
-Full derivation: `docs/PROJECT_HISTORY.md` (the epic-#111-phases entry); `STAGE1-4_*_DESIGN.md` change
-logs; PRs #549–#553, #555.
+**Current status (2026-07-19): epic #111 code-complete (all phases + #164 through PR 3a) and hardened
+by a same-day retrospective review.** Phase 4 (#116/#117/#560/#561, PRs #562/#563/#564/#565 — partial
+retry, crash-recovery journaling, an ordering-invariant test, atomic-write consolidation) and #222
+(facility flag, PR #566) are merged; #164 is built through PR 3a (#568/#569/#570 — foundation, wiring,
+follow-up escalation). A same-session `/code-review max` across all eight of those merged PRs (10 finder
+angles → 37 candidates → 15 verified → 1 gap-sweep addition) then found, and fixed the same day, 12 real
+defects none of their own green suites had caught — the standout: `batch_store.create_batch()` silently
+dropped the new `geo`/`domain_source` fields on the DB round-trip, so the very first live geo-scoped
+discovery run (the queued Millard gate@1 action) would have degraded to an unscoped query with no error,
+live-confirmed by a verifier that round-tripped a synthetic district against real Postgres. All 12 fixed
+with 10 new regression tests, landed as `2153a91` directly on main (Ian: no branch/PR needed for a
+review-response fix already paper-trailed by this session's `ReportFindings`). Full account + the other
+11 findings: `docs/PROJECT_HISTORY.md`'s 2026-07-19 review entry. Same-session housekeeping also cleared
+12 stale local branches and confirmed the matching 12 remote branches were already GitHub-auto-deleted —
+nothing unlanded; working tree and both branch lists are clean.
 
-**Next (RESUME HERE — 2026-07-19): #164 PR 3b (the escalation surgery) → #118 → close epic #111.**
+**Next (RESUME HERE — 2026-07-19, unchanged by the review above — it touched none of PR 3b's scope):
+#164 PR 3b (the escalation surgery) → #118 → close epic #111.**
 The #164 AGREED DESIGN (Ian-approved planning debate, full spec = the issue's 2026-07-19 design
 comment) is built through PR 3a: **#568** (foundation: `Batch.discovery_scope` axis, 4-position
 `discovery_policy` event store + one-step auto-advance, `discovered_domain` precious store + twins,
@@ -163,7 +154,11 @@ the #229 guard by design, dual-source domain follow-ups return confirmed distric
 `stage7_execute` compose: districts with ≥1 prior follow-up round (use `followup_rounds`) escalate
 to geo+widened — scope-purity means the compose emits up to TWO batches (domain + geo), and the
 atomic directive-flip must set each directive's `executed_ref` to ITS district's batch (two
-reservations, one transaction); (2) the 5→1 zero-yield composer + back-edge (governance §11d list):
+reservations, one transaction). Reuse `queue_batch.resolve_scoping_domain` (hoisted module-level in the
+2026-07-19 review fix, shared by `build_batch`/`build_followup_batch`) for any new domain resolution
+here rather than a third inline copy. `compose_followup_batch` also now threads `discovered_domains`
+through (same review fix) — no further wiring needed there for the dual-source guard to reach this path.
+(2) the 5→1 zero-yield composer + back-edge (governance §11d list):
 predicate = zero dispatchable Stage-5 records for the district AND no retryable
 (`not_attempted*/not_recovered*`) errs AND no fidelity-flagged captures (route those to #116 retry /
 triage instead) — lives app-layer (process_governance may import stages); ladder from
@@ -180,7 +175,8 @@ guardrail's per-rep keyword/table attribution (needs a server payload change); J
 (no JS harness in repo — static-source pins only).
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
--m "not integration"` (expect **1738** pass) + `pytest -q -m govdb` (expect **254**, Postgres up).
+-m "not integration"` (expect **1744** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **264**,
+Postgres up).
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (the
 motivating ones: Huntington `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters).
 Full detail: `docs/PROJECT_HISTORY.md`, `STAGE1-4_*_DESIGN.md`, `PIPELINE_GOVERNANCE_AND_STATE.md`,

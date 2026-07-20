@@ -670,6 +670,89 @@ doc had captured hours earlier. Authority: `STAGE1-4_*_DESIGN.md` change logs (2
 
 ---
 
+### A retrospective max-effort review across two epics' already-merged PRs finds the one bug none of their green suites could have caught — a feature silently defeating its own purpose the moment it touched the DB (2026-07-19)
+
+With epic #111 code-complete except its two Ian-decision gates, the natural checkpoint before resuming
+#164 PR 3b was to turn a local max-effort review (`/code-review max`, not the cloud ultrareview) on the
+full merged span rather than any single PR: epic #111 Phase 4's partial-retry and crash-recovery work
+(#562/#563), its two small hardening PRs (#564/#565), the facility-flag feature (#566), and all three
+landed #164 geo-discovery PRs (#568/#569/#570) — eight PRs, 35 files, ~3,200 diff lines, all already on
+`main`. Unlike every prior max-effort review in this project's history, this one ran entirely against
+code that had already shipped and been checkpointed as done; the point was to ask the harder question —
+not "does this diff look right" but "did it actually work once it hit the real DB."
+
+**Scale matched the span:** 10 parallel finder angles (5 correctness, 3 cleanup, altitude, conventions)
+surfaced 37 raw candidates; a dedup pass collapsed clusters where independent angles converged on the
+same bug through different reasoning paths (three separate angles — reuse, altitude, simplification —
+independently flagged the same `_scoping_domain` closure duplication; two — removed-behavior and
+language-pitfall — independently found the same journal-filename sort bug by different routes); 15
+survivors went through one-vote adversarial verification each, and a final gap-sweep pass added one more
+the first round missed. Twelve findings survived to the report: eleven CONFIRMED, one PLAUSIBLE-but-low-
+severity (a narrow, self-healing `queue_create` snapshot race, inert until #164 PR 3b's auto-advance
+wiring exists).
+
+**The standout finding — and the reason this kind of review earns its keep — never would have surfaced
+from reading the diff.** `batch_store.create_batch()`'s `BatchDistrict` field list simply didn't include
+the two new per-district fields #164 PR 1 added (`geo`, `domain_source`); every projection built off it
+(`to_working_doc`, `to_receipt_doc`, `to_view`) silently dropped them the instant a geo-scoped or
+dual-source-admitted batch round-tripped through Postgres. The existing tests never caught it because
+they exercised `build_batch`'s in-memory `batch_doc` directly — nothing in the suite piped a geo district
+through `create_batch` and read it back. The verifying agent didn't stop at reading code: it wrote a
+disposable script against the live governance DB, round-tripped a synthetic geo district, and watched
+`geo`/`domain_source` come back `None`. Downstream, that meant any geo-scoped discovery run through the
+console (`_batch_from_db` → `to_working_doc`, the only production resolve path) would have rendered
+every SERP query with blank city/zip tokens — the exact unscoped, cross-district-contamination query
+class #164 exists to prevent — silently, with no error, the very first time the feature was used for
+real. The live Millard run Ian had queued as the next gate@1 action would have hit this on contact.
+
+**Two more genuine, independently-converged bugs, both born from the same class of failure — a fix that
+handles the common case but not the one the codebase had just built infrastructure to survive.** The
+#563 per-task journal's same-second rename-aside collision guard (added specifically so two crash-asides
+in one second wouldn't clobber each other) named its files with a `-N` suffix that ASCII-sorts *before*
+the unsuffixed file it followed — inverting "oldest first, latest wins" replay for the exact scenario the
+guard was written to handle, so a stale failure record could silently overwrite a newer successful retry
+during crash reconstruction. And `derive_domain`'s majority-host tiebreak picked by hostname string over
+school coverage, so a tied-on-volume 1-school host could beat a 4-school host, fail the min-schools
+check, and wrongly reject a Millard-class district that should have derived cleanly — reproduced live by
+the sweep agent with the exact tally that triggers it.
+
+**One finding stood out for what it revealed about deferred-work tracking, not just the bug itself.**
+`compose_followup_batch` (the automatic 7→2/7→3/7→1 back-edge sweep, the *only* production caller of
+`build_followup_batch`) never threaded confirmed discovered domains through, so the #164 PR 3a dual-source
+guard — built explicitly, per its own code comment, as "how a Millard-class district returns to normal
+domain-scoped follow-ups" — had no live path back into normal follow-ups at all. This wasn't on PR 3b's
+own tracked deferral list (the 7→1 scope split, the 5→1 zero-yield composer, the auto-advance trigger,
+the `geo_interleaved` draw) — a plain miss between what the guard was built to do and what its one caller
+actually exercised, the kind of gap that survives specifically *because* it's adjacent to, but not
+identical to, work everyone already knows is unfinished.
+
+**All twelve were fixed the same day, each pinned by a new regression test** (ten total: a govdb
+round-trip test for the persistence bug, a same-second collision test for the journal sort, a live-
+reproduced tiebreak test, a govdb threading test for the follow-up composer, a cross-language
+fingerprint-parity test spanning the new Python/JS plan-check pair, and five more). The `BatchDistrict`
+persistence fix needed two new nullable columns (`domain_source`, `geo_json`), added via the existing
+additive-migration convention. Verified clean afterward: `lint-imports` 4/0, 1744 DB-free + 264 govdb +
+13 Node tests, all passing (govdb's true pre-change baseline was 262, not the 254 CLAUDE.md had recorded
+— corrected in passing). Landed as a single commit (`2153a91`) directly on `main`, per Ian's call that a
+branch/PR round-trip added no value for a review-response fix already carrying its own paper trail via
+this session's `ReportFindings` output.
+
+**A same-session housekeeping pass then found the local and remote branch lists were almost entirely
+stale.** All 12 non-`main` local branches for prior, unrelated work (#120/#121/#246/#254/#537/#106/#119
+and four #499 sub-PRs) turned out to already be on `main` — landed via GitHub squash-merge, which stamps
+a *new* commit SHA and leaves the original branch pointer both un-fast-forwardable and invisible to
+`git branch --merged` (ancestry-based, blind to squash). Verified by exact git-tree-hash match, not just
+commit-message similarity, before deleting. The 12 remote branches for this review's own source PRs
+(#556-570) turned out to already be gone — GitHub's delete-branch-on-merge setting had removed them days
+earlier; the local `origin/*` refs were just stale until `git fetch --prune`. Worth remembering for this
+repo specifically: a local branch surviving `--no-merged` is not evidence the work is unlanded, and
+`origin/*` branch lists need a prune before they're trusted.
+
+Authority: this session's `ReportFindings` output (12 findings, verdicts, and per-finding fix mapping);
+PRs #562/#563/#564/#565/#566/#568/#569/#570; commit `2153a91`.
+
+---
+
 ## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)
 
 ### Strategy: shift from "automate everything" to "AI-assisted human efficiency"
