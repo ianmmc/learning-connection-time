@@ -32,7 +32,9 @@ Usage:
         print(format_validation_warning(result))
 """
 
-from datetime import datetime, timedelta
+import math
+import uuid
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Any, Tuple
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -40,11 +42,46 @@ from sqlalchemy.orm import Session
 from infrastructure.database.models import BellSchedule, DataLineage, District
 
 
+def _utcnow() -> datetime:
+    """Timezone-aware UTC now (datetime.utcnow is deprecated and naive)."""
+    return datetime.now(timezone.utc)
+
+
+# Below this count the normal approximation is too narrow and the exact
+# Poisson (Garwood) interval is used instead (issue #414).
+_NORMAL_APPROX_MIN_COUNT = 30
+
+
+def _poisson_cdf(k: int, mu: float) -> float:
+    """P(X <= k) for X ~ Poisson(mu), by direct summation (small k only)."""
+    term = math.exp(-mu)
+    total = term
+    for i in range(1, k + 1):
+        term *= mu / i
+        total += term
+    return min(total, 1.0)
+
+
+def _solve_mu(target_cdf: float, k: int, lo: float, hi: float) -> float:
+    """Find mu with _poisson_cdf(k, mu) == target_cdf by bisection.
+
+    The CDF is strictly decreasing in mu, so plain bisection converges."""
+    for _ in range(60):
+        mid = (lo + hi) / 2
+        if _poisson_cdf(k, mid) > target_cdf:
+            lo = mid
+        else:
+            hi = mid
+    return (lo + hi) / 2
+
+
 def _calculate_confidence_interval(count: int, confidence_level: float = 0.95) -> Tuple[int, int]:
     """
     Calculate Poisson-based confidence interval for count data.
 
-    Uses normal approximation for larger counts (n >= 30), exact Poisson for smaller.
+    Uses normal approximation for larger counts (n >= 30), exact Poisson
+    (Garwood) for smaller — the normal approximation is over-narrow at small
+    counts and produced false alerts (issue #414).
 
     Args:
         count: Observed count
@@ -53,16 +90,23 @@ def _calculate_confidence_interval(count: int, confidence_level: float = 0.95) -
     Returns:
         Tuple of (lower_bound, upper_bound)
     """
-    import math
-
     if count < 0:
         return (0, 0)
 
+    alpha = 1 - confidence_level
+
     if count == 0:
         # Special case: 0 observed, CI is [0, upper]
-        # Using Poisson: upper = -ln(1 - confidence_level)
-        upper = -math.log(1 - confidence_level)
+        # Using Poisson: upper = -ln(alpha)
+        upper = -math.log(alpha)
         return (0, int(math.ceil(upper)))
+
+    if count < _NORMAL_APPROX_MIN_COUNT:
+        # Exact Poisson (Garwood): lower solves P(X >= count | mu) = alpha/2,
+        # i.e. CDF(count-1, mu) = 1 - alpha/2; upper solves CDF(count, mu) = alpha/2.
+        lower = _solve_mu(1 - alpha / 2, count - 1, 0.0, float(count))
+        upper = _solve_mu(alpha / 2, count, float(count), 5.0 * count + 20.0)
+        return (int(lower), int(math.ceil(upper)))
 
     # Z-scores for confidence levels
     z_scores = {0.95: 1.96, 0.99: 2.576}
@@ -241,8 +285,8 @@ def generate_handoff_report(session: Optional[Session] = None) -> Dict:
         states_enriched = {row.state: row.count for row in state_counts}
 
         return {
-            'database_snapshot_at': datetime.utcnow().isoformat(),
-            'verified_at': datetime.utcnow().isoformat(),
+            'database_snapshot_at': _utcnow().isoformat(),
+            'verified_at': _utcnow().isoformat(),
             'enriched_districts': summary.get('enriched_districts', 0),
             'total_bell_schedules': summary.get('total_bell_schedules', 0),
             'states_with_enrichment': len(states_enriched),
@@ -325,8 +369,10 @@ def validate_handoff_claims(claims: Dict, session: Optional[Session] = None) -> 
                         f"No records created on {claimed_date} but {len(claimed_districts)} districts claimed"
                     )
                 details['date_records'] = date_count
-            except ValueError:
-                mismatches.append(f"Invalid date format: {claimed_date}")
+            except (ValueError, TypeError):
+                # TypeError: a non-string date claim (issue #373) is a bad
+                # claim, not a crash
+                mismatches.append(f"Invalid date format: {claimed_date!r}")
 
         return {
             'valid': len(mismatches) == 0,
@@ -334,7 +380,7 @@ def validate_handoff_claims(claims: Dict, session: Optional[Session] = None) -> 
             'details': details,
             'documented_count': claimed_total,
             'actual_count': actual_total,
-            'validated_at': datetime.utcnow().isoformat()
+            'validated_at': _utcnow().isoformat()
         }
     finally:
         if close_session:
@@ -377,6 +423,28 @@ def format_validation_warning(result: Dict) -> str:
     return "\n".join(lines)
 
 
+def _bell_lineage_ids(session: Session) -> set:
+    """All DataLineage entity_ids recorded for bell_schedules."""
+    return {
+        row[0] for row in session.query(DataLineage.entity_id).filter(
+            DataLineage.entity_type == 'bell_schedule'
+        ).all()
+    }
+
+
+def _bell_entity_keys(bell_row) -> Tuple[str, str]:
+    """The two entity_id conventions a bell_schedule row may be recorded under.
+
+    Legacy writers (import_all_data) log the numeric row id; add_bell_schedule
+    logs the composite "{district}/{year}/{grade}" key. The audit layer must
+    accept BOTH or every row written by one convention reads as a gap/orphan
+    under the other (found during the #294 fix)."""
+    bell_id, district_id, year, grade_level = (
+        bell_row.id, bell_row.district_id, bell_row.year, bell_row.grade_level
+    )
+    return str(bell_id), f"{district_id}/{year}/{grade_level}"
+
+
 def verify_audit_completeness(session: Session) -> Dict:
     """
     Verify audit trail completeness for bell_schedules.
@@ -387,18 +455,20 @@ def verify_audit_completeness(session: Session) -> Dict:
     Returns:
         Dict with completeness metrics
     """
-    # Count total bell_schedules
-    total_bell = session.query(func.count(BellSchedule.id)).scalar()
+    bells = session.query(
+        BellSchedule.id, BellSchedule.district_id,
+        BellSchedule.year, BellSchedule.grade_level
+    ).all()
+    total_bell = len(bells)
 
-    # Count bell_schedules with lineage entries
-    # Note: DataLineage uses entity_type and entity_id columns
-    with_lineage = session.query(func.count(func.distinct(DataLineage.entity_id))).filter(
-        DataLineage.entity_type == 'bell_schedule'
-    ).scalar()
+    lineage_ids = _bell_lineage_ids(session)
 
-    # Find missing
-    missing = total_bell - with_lineage if total_bell > with_lineage else 0
+    with_lineage = sum(
+        1 for b in bells
+        if lineage_ids.intersection(_bell_entity_keys(b))
+    )
 
+    missing = total_bell - with_lineage
     completeness = with_lineage / total_bell if total_bell > 0 else 1.0
 
     return {
@@ -406,7 +476,7 @@ def verify_audit_completeness(session: Session) -> Dict:
         'with_lineage': with_lineage,
         'missing_lineage': missing,
         'completeness_percent': completeness * 100,
-        'verified_at': datetime.utcnow().isoformat()
+        'verified_at': _utcnow().isoformat()
     }
 
 
@@ -420,25 +490,22 @@ def find_lineage_gaps(session: Session) -> List[Dict]:
     Returns:
         List of dicts with district_id and created_at for gaps
     """
-    # Get all bell_schedule IDs
-    all_bell_ids = session.query(BellSchedule.id, BellSchedule.district_id, BellSchedule.created_at).all()
+    all_bells = session.query(
+        BellSchedule.id, BellSchedule.district_id, BellSchedule.created_at,
+        BellSchedule.year, BellSchedule.grade_level
+    ).all()
 
-    # Get all lineage entity_ids for bell_schedules
-    # Note: DataLineage uses entity_type and entity_id columns
-    lineage_ids = set(
-        row[0] for row in session.query(DataLineage.entity_id).filter(
-            DataLineage.entity_type == 'bell_schedule'
-        ).all()
-    )
+    lineage_ids = _bell_lineage_ids(session)
 
-    # Find gaps
+    # A bell row is covered if EITHER of its entity_id conventions is recorded
     gaps = []
-    for bell_id, district_id, created_at in all_bell_ids:
-        if str(bell_id) not in lineage_ids:
+    for bell in all_bells:
+        keys = {str(bell.id), f"{bell.district_id}/{bell.year}/{bell.grade_level}"}
+        if not lineage_ids.intersection(keys):
             gaps.append({
-                'id': bell_id,
-                'district_id': district_id,
-                'created_at': created_at.isoformat() if created_at else None
+                'id': bell.id,
+                'district_id': bell.district_id,
+                'created_at': bell.created_at.isoformat() if bell.created_at else None
             })
 
     return gaps
@@ -456,18 +523,23 @@ def validate_date_range(session: Session, start_date: datetime, end_date: dateti
     Returns:
         Dict with daily counts and gap analysis
     """
-    from datetime import timedelta
-
-    daily_counts = {}
     current = start_date.date() if hasattr(start_date, 'date') else start_date
-
     end = end_date.date() if hasattr(end_date, 'date') else end_date
 
+    # One GROUP BY over the whole range — the per-day COUNT loop was an
+    # unbounded N+1 (issue #293); zero-days are filled in Python below.
+    rows = session.query(
+        func.date(BellSchedule.created_at).label('date'),
+        func.count(BellSchedule.id).label('count')
+    ).filter(
+        func.date(BellSchedule.created_at) >= current,
+        func.date(BellSchedule.created_at) <= end,
+    ).group_by(func.date(BellSchedule.created_at)).all()
+    counts_by_date = {str(row.date): row.count for row in rows}
+
+    daily_counts = {}
     while current <= end:
-        count = session.query(BellSchedule).filter(
-            func.date(BellSchedule.created_at) == current
-        ).count()
-        daily_counts[str(current)] = count
+        daily_counts[str(current)] = counts_by_date.get(str(current), 0)
         current += timedelta(days=1)
 
     # Identify gaps (dates with zero records)
@@ -512,7 +584,7 @@ def generate_audit_report(session: Session) -> Dict:
     total_records = session.query(func.count(BellSchedule.id)).scalar()
 
     return {
-        'generated_at': datetime.utcnow().isoformat(),
+        'generated_at': _utcnow().isoformat(),
         'total_enriched_districts': total_districts,
         'total_bell_schedule_records': total_records,
         'date_distribution': date_distribution,
@@ -545,9 +617,20 @@ def check_audit_integrity(session: Session) -> Dict:
             'message': f"{completeness['missing_lineage']} bell_schedules without DataLineage entries"
         })
 
-    # Check for orphaned lineage (lineage without bell_schedule)
-    # Note: This is a simplified check - orphan detection is complex due to ID types
-    orphan_count = 0  # Simplified - full orphan check would require type casting
+    # Check for orphaned lineage (lineage without bell_schedule). Compare
+    # against BOTH entity_id conventions (numeric row id and the composite
+    # "{district}/{year}/{grade}" key) — the old code hard-coded 0 here, so the
+    # check never fired (issue #294).
+    bells = session.query(
+        BellSchedule.id, BellSchedule.district_id,
+        BellSchedule.year, BellSchedule.grade_level
+    ).all()
+    valid_keys = set()
+    for b in bells:
+        valid_keys.update(_bell_entity_keys(b))
+    orphan_count = sum(
+        1 for eid in _bell_lineage_ids(session) if eid not in valid_keys
+    )
 
     if orphan_count and orphan_count > 0:
         violations.append({
@@ -563,7 +646,7 @@ def check_audit_integrity(session: Session) -> Dict:
         'violations': violations,
         'missing_lineage_count': completeness['missing_lineage'],
         'completeness_percent': completeness['completeness_percent'],
-        'checked_at': datetime.utcnow().isoformat()
+        'checked_at': _utcnow().isoformat()
     }
 
 
@@ -602,7 +685,11 @@ PLAUSIBLE_INSTRUCTIONAL_RANGE = (GROSS_MINUTES_MIN, GROSS_MINUTES_MAX)
 
 
 def _time_to_minutes(time_str: str) -> Optional[int]:
-    """Convert 'HH:MM AM/PM' or 24-hour 'HH:MM' to minutes from midnight."""
+    """Convert 'HH:MM AM/PM' or 24-hour 'HH:MM' to minutes from midnight.
+
+    Non-string input is unparseable, not a crash (issue #460)."""
+    if not isinstance(time_str, str):
+        return None
     time_str = time_str.strip()
 
     match = TIME_PATTERN.match(time_str)
@@ -659,8 +746,12 @@ def validate_schedule_plausibility(schedule: Dict) -> Dict:
     if end_time and end_minutes is None:
         errors.append(f"Invalid end_time format: '{end_time}'. Expected HH:MM AM/PM or 24-hour HH:MM")
 
-    # 2. Validate grade level
-    if grade_level not in VALID_GRADE_LEVELS:
+    # 2. Validate grade level. A missing value gets its own clear error rather
+    # than the confusing "Invalid grade_level: ''" the ''-default produced
+    # (issue #459).
+    if not grade_level:
+        errors.append("grade_level is required")
+    elif grade_level not in VALID_GRADE_LEVELS:
         errors.append(f"Invalid grade_level: '{grade_level}'. Valid: {VALID_GRADE_LEVELS}")
 
     # 3. Validate temporal order (start before end)
@@ -782,9 +873,12 @@ def _sanitize_reason(reason: str) -> str:
     # Truncate to max length
     sanitized = reason[:MAX_REASON_LENGTH]
 
-    # Remove potentially dangerous characters FIRST (SQL injection, XSS)
-    # Keep alphanumeric, spaces, basic punctuation (NO semicolons or dashes-dashes)
-    sanitized = re.sub(r'[^\w\s.,!?\'"()/]', '', sanitized)
+    # Remove potentially dangerous characters FIRST (SQL injection, XSS).
+    # Keep alphanumeric, spaces, basic punctuation, hyphens and colons —
+    # stripping hyphens mangled legitimate audit reasons like "non-compliant"
+    # (issue #292; values land in the ORM's parameterized JSON details, so
+    # this whole pass is defense-in-depth, not the actual injection barrier).
+    sanitized = re.sub(r'[^\w\s.,!?\'"()/:-]', '', sanitized)
 
     # Remove SQL-like keywords (case-insensitive)
     sql_keywords = ['DROP', 'DELETE', 'INSERT', 'UPDATE', 'SELECT', 'UNION', 'ALTER', 'CREATE', 'TRUNCATE']
@@ -821,7 +915,8 @@ class OverrideTracker:
         session: Session,
         override_type: str,
         reason: str,
-        context: Dict = None
+        context: Dict = None,
+        commit: bool = True
     ) -> Dict:
         """
         Log a manual verification override.
@@ -831,6 +926,10 @@ class OverrideTracker:
             override_type: Must be one of VALID_OVERRIDE_TYPES
             reason: User-provided reason (will be sanitized)
             context: Additional context dict
+            commit: Commit the session (default True for standalone use).
+                    Pass False when the caller owns the transaction — an
+                    unconditional commit here broke outer-transaction
+                    atomicity (issue #291).
 
         Returns:
             Dict with override record details and any alerts
@@ -849,29 +948,36 @@ class OverrideTracker:
         if override_type == 'other' and len(sanitized_reason) < 10:
             raise ValueError("Override type 'other' requires detailed reason (min 10 chars)")
 
-        self.override_count += 1
-
         # Create DataLineage entry for audit trail
         # Note: DataLineage uses 'source_file', 'details', 'created_by' (not metadata/source_system)
-        # Include microseconds in ID to ensure uniqueness across rapid calls
-        now = datetime.utcnow()
+        # entity_id carries a uuid suffix — the old timestamp+counter scheme
+        # could collide across concurrent trackers (issue #412).
+        now = _utcnow()
+        override_number = self.override_count + 1
         lineage = DataLineage(
             entity_type='verification_override',
-            entity_id=f"override_{now.strftime('%Y%m%d%H%M%S%f')}_{self.override_count}",
+            entity_id=f"override_{now.strftime('%Y%m%d%H%M%S%f')}_{uuid.uuid4().hex[:8]}",
             operation='manual_override',
             source_file='verification_cli',
-            created_at=datetime.utcnow(),
+            created_at=now,
             created_by='verification_system',
             details={
                 'override_type': override_type,
                 'reason': sanitized_reason,
                 'context': context or {},
-                'session_override_number': self.override_count,
+                'session_override_number': override_number,
                 'original_reason_length': len(reason) if reason else 0
             }
         )
         session.add(lineage)
-        session.commit()
+        if commit:
+            session.commit()
+        else:
+            session.flush()
+
+        # Increment only after the write succeeded — a failed commit used to
+        # leave the in-memory count out of sync with the DB (issue #413)
+        self.override_count = override_number
 
         # Check for excessive overrides
         alert = None
@@ -888,7 +994,7 @@ class OverrideTracker:
             'override_id': lineage.entity_id,
             'session_count': self.override_count,
             'alert': alert,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': _utcnow().isoformat()
         }
 
 
@@ -898,7 +1004,8 @@ def log_verification_override(
     override_type: str,
     reason: str,
     context: Dict = None,
-    tracker: OverrideTracker = None
+    tracker: OverrideTracker = None,
+    commit: bool = True
 ) -> Dict:
     """
     Log a manual verification override (REQ-039).
@@ -912,6 +1019,7 @@ def log_verification_override(
         reason: User-provided reason for override (will be sanitized)
         context: Additional context dict
         tracker: Optional OverrideTracker for session-scoped counting
+        commit: Pass False when the caller owns the transaction (issue #291)
 
     Returns:
         Dict with override record details and any alerts
@@ -919,7 +1027,7 @@ def log_verification_override(
     if tracker is None:
         tracker = OverrideTracker()
 
-    return tracker.log_override(session, override_type, reason, context)
+    return tracker.log_override(session, override_type, reason, context, commit=commit)
 
 
 def get_override_history(session: Session, days: int = 30) -> List[Dict]:
@@ -933,7 +1041,7 @@ def get_override_history(session: Session, days: int = 30) -> List[Dict]:
     Returns:
         List of override records
     """
-    cutoff = datetime.utcnow() - timedelta(days=days)
+    cutoff = _utcnow() - timedelta(days=days)
 
     overrides = session.query(DataLineage).filter(
         DataLineage.entity_type == 'verification_override',
