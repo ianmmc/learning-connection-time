@@ -257,12 +257,17 @@ def bulk_cds_to_nces(cds_codes: list[str], session: Session) -> dict[str, Option
         ...     mapping = bulk_cds_to_nces(["6275796", "1964733"], session)
         ...     print(mapping)  # {"6275796": "0622710", "1964733": "0612345"}
     """
-    # Normalize all CDS codes
-    normalized_codes = [normalize_cds_code(cds) for cds in cds_codes]
+    # An empty input would render "IN ()" — a SQL syntax error (issue #317)
+    if not cds_codes:
+        return {}
+
+    # Normalize each code ONCE and reuse for both the query and the result
+    # mapping (issue #396 — the return path re-normalized every code)
+    norm_by_orig = {cds: normalize_cds_code(cds) for cds in cds_codes}
 
     # Query crosswalk table for all at once
-    placeholders = ', '.join([f':cds_{i}' for i in range(len(normalized_codes))])
-    params = {f'cds_{i}': cds for i, cds in enumerate(normalized_codes)}
+    placeholders = ', '.join([f':cds_{i}' for i in range(len(norm_by_orig))])
+    params = {f'cds_{i}': cds for i, cds in enumerate(norm_by_orig.values())}
 
     result = session.execute(text(f"""
         SELECT state_district_id, nces_id
@@ -276,7 +281,7 @@ def bulk_cds_to_nces(cds_codes: list[str], session: Session) -> dict[str, Option
     cds_to_nces_map = {row[0]: row[1] for row in result.fetchall()}
 
     # Return with original keys
-    return {cds: cds_to_nces_map.get(normalize_cds_code(cds)) for cds in cds_codes}
+    return {cds: cds_to_nces_map.get(norm) for cds, norm in norm_by_orig.items()}
 
 
 def extract_county_code(cds_code: str) -> str:

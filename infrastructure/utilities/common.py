@@ -165,10 +165,15 @@ def setup_logging(
         datefmt='%Y-%m-%d %H:%M:%S'
     )
     
-    # Configure root logger
+    # Configure root logger. Idempotent: clear handlers from any prior call —
+    # unconditionally appending duplicated every log line once per call
+    # (issue #436; this is a shared library imported across the codebase).
     root_logger = logging.getLogger()
     root_logger.setLevel(numeric_level)
-    
+    for handler in root_logger.handlers[:]:
+        root_logger.removeHandler(handler)
+        handler.close()
+
     # Console handler
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(formatter)
