@@ -120,62 +120,43 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-19): epic #111 code-complete (all phases + #164 through PR 3a) and hardened
-by a same-day retrospective review.** Phase 4 (#116/#117/#560/#561, PRs #562/#563/#564/#565 — partial
-retry, crash-recovery journaling, an ordering-invariant test, atomic-write consolidation) and #222
-(facility flag, PR #566) are merged; #164 is built through PR 3a (#568/#569/#570 — foundation, wiring,
-follow-up escalation). A same-session `/code-review max` across all eight of those merged PRs (10 finder
-angles → 37 candidates → 15 verified → 1 gap-sweep addition) then found, and fixed the same day, 12 real
-defects none of their own green suites had caught — the standout: `batch_store.create_batch()` silently
-dropped the new `geo`/`domain_source` fields on the DB round-trip, so the very first live geo-scoped
-discovery run (the queued Millard gate@1 action) would have degraded to an unscoped query with no error,
-live-confirmed by a verifier that round-tripped a synthetic district against real Postgres. All 12 fixed
-with 10 new regression tests, landed as `2153a91` directly on main (Ian: no branch/PR needed for a
-review-response fix already paper-trailed by this session's `ReportFindings`). Full account + the other
-11 findings: `docs/PROJECT_HISTORY.md`'s 2026-07-19 review entry. Same-session housekeeping also cleared
-12 stale local branches and confirmed the matching 12 remote branches were already GitHub-auto-deleted —
-nothing unlanded; working tree and both branch lists are clean.
+**Current status (2026-07-19): #164 CLOSED — the full geo-discovery design is merged (PRs
+#568/#569/#570/#571).** PR 3b (#571, merged as `77fd00a`) landed the escalation surgery: the 7→1
+second-loop SCOPE SPLIT in `stage7_execute` compose (targets split by derived ladder position via
+`batch_store.followup_rounds` — 0 rounds → domain batch, ≥1 → geo+widened batch, geo already ran →
+auto-reject + deduped `followup_flag`; up to TWO scope-pure batches per compose, each directive's
+`executed_ref` = ITS district's batch, one transaction; only the domain batch auto-flows — a geo
+escalation batch stays a gate@1 draft); the 5→1 zero-yield composer
+(`process_governance/stage5_followup.py`, governance §11e back-edge: predicate = zero
+dispatchable/held Stage-5 records AND no retryable errs [#116] AND no fidelity flags [#518];
+ladder 0 geo → geo+standard, 1 → geo+widened, ≥2 → manual flag; `POST
+/api/filter/{batch}/compose-zero-yield` + CLI, never auto-flowed); the pool-drained policy
+auto-advance at queue-create (domain_only → geo_for_blank, exactly one step, event-logged + twin,
+409 notice); and the `geo_interleaved` seeded weighted draw (`scope_pool_counts` +
+`draw_interleaved_scope`, the draw recorded in `Batch.meta_json.scope_draw`).
+`build_followup_batch(force_widen_dids=…)` is the rung-forced vocabulary lever. REQ-157 →
+implemented. Live-verified: a dry-run over ran batch_00018 correctly laddered 3405970 (14 records,
+all release-rejected, no errs) to geo+standard and held Southern Lehigh on 6 dispatchable/held
+records. Earlier same day: the 12-finding retrospective review of #562–570 (fixed as `2153a91`) —
+full account in `docs/PROJECT_HISTORY.md`'s 2026-07-19 entries. **The LIVE Millard run remains
+Ian's gate@1 action** (flip `discovery_scope_policy` → geo_for_blank, compose a geo first-run,
+confirm the derived proposal).
 
-**Next (RESUME HERE — 2026-07-19, unchanged by the review above — it touched none of PR 3b's scope):
-#164 PR 3b (the escalation surgery) → #118 → close epic #111.**
-The #164 AGREED DESIGN (Ian-approved planning debate, full spec = the issue's 2026-07-19 design
-comment) is built through PR 3a: **#568** (foundation: `Batch.discovery_scope` axis, 4-position
-`discovery_policy` event store + one-step auto-advance, `discovered_domain` precious store + twins,
-`geo_queries` one-vocabulary rendering, `derive_domain` with host-FAMILY merge ≥40%/≥3-schools),
-**#569** (wiring: policy-gated geo first-run composition, dual-source #229 admission w/
-`domain_source`, the geo run: unscoped wave1→fail-closed→derive→re-gate, wave2 only on a derived
-host, `geo_discovery` receipt, POST /api/discovered-domain; benchmark/follow-up NEVER free-form
-geo-composed — `validate_scope_combo`), **#570** (PR 3a: `build_followup_batch(scope="geo")` skips
-the #229 guard by design, dual-source domain follow-ups return confirmed districts to normal flow,
-`batch_store.followup_rounds` derives ladder position from ever-approved batch history). Millard
-3173740 = the fixture acceptance end-to-end; **the LIVE Millard run is Ian's gate@1 action** (flip
-`discovery_scope_policy` → geo_for_blank, compose a geo first-run, confirm the derived proposal).
-**PR 3b (deliberately checkpointed — transactional surgery):** (1) 7→1 second-loop scope split in
-`stage7_execute` compose: districts with ≥1 prior follow-up round (use `followup_rounds`) escalate
-to geo+widened — scope-purity means the compose emits up to TWO batches (domain + geo), and the
-atomic directive-flip must set each directive's `executed_ref` to ITS district's batch (two
-reservations, one transaction). Reuse `queue_batch.resolve_scoping_domain` (hoisted module-level in the
-2026-07-19 review fix, shared by `build_batch`/`build_followup_batch`) for any new domain resolution
-here rather than a third inline copy. `compose_followup_batch` also now threads `discovered_domains`
-through (same review fix) — no further wiring needed there for the dual-source guard to reach this path.
-(2) the 5→1 zero-yield composer + back-edge (governance §11d list):
-predicate = zero dispatchable Stage-5 records for the district AND no retryable
-(`not_attempted*/not_recovered*`) errs AND no fidelity-flagged captures (route those to #116 retry /
-triage instead) — lives app-layer (process_governance may import stages); ladder from
-`followup_rounds` (0 geo → geo+standard, 1 → geo+widened, ≥2 → manual flag, no compose);
-(3) pool-drained auto-advance trigger at compose time (`discovery_policy.advance_one_step` + console
-notice); (4) `geo_interleaved` weighted draw at queue-create. Then REQ-157 → implemented,
-governance back-edge doc entry, close #164. **Then #118** (Ian: build in-epic, a CONDITION of
-closing #111): Stage 2/4 attribution recording `discovery_scope` + ladder position from day one.
-#518 remains open for its gate@5-consumer remainder (overlaps the 5→1 console surface). Two Ian
-decisions already banked: #112 → epic #128; #567 (websites vintage lag) → epic #479.
+**Next (RESUME HERE — 2026-07-19): #118 → close epic #111.**
+**#118** (Ian: build in-epic, a CONDITION of closing #111): Stage 2/4 effectiveness attribution —
+attribute each target-labeled record back to its discovery tool (`candidate_tools_json`) and its
+winning representation's source, recording `discovery_scope` + ladder position from day one (the
+geo-vs-domain comparison feeder; `geo_all` is the experiment position). Then close epic #111.
+#518 remains open for its gate@5-consumer remainder (overlaps the 5→1 console surface — the
+zero-yield composer currently has endpoint+CLI only, no gate@5 button). Two Ian decisions already
+banked: #112 → epic #128; #567 (websites vintage lag) → epic #479.
 After #111: **#479/#480** → **#92** (Stage 9); parked: #475/#476, #103/#80 (+#110).
 Documented-in-code deferrals: `_satisfied_bands_now` batching (revisit on volume); the #522
 guardrail's per-rep keyword/table attribution (needs a server payload change); JS behavioral tests
 (no JS harness in repo — static-source pins only).
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
--m "not integration"` (expect **1744** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **264**,
+-m "not integration"` (expect **1748** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **279**,
 Postgres up).
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (the
 motivating ones: Huntington `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters).
