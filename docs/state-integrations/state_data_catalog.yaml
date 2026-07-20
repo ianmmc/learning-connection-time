@@ -43,28 +43,26 @@ consolidated_sources:
   probed: '2026-07-20'
   outcome: confirmed
   detail: >-
-    District(LEA)-level SPED child counts by disability category, ALL states in one
-    federal CSV per year, direct download URLs, current through 2024-25
-    (bchildcountdisabilitycategorylea2024-25.csv). State-reported actuals — a
-    candidate to supersede the 2017-18 SPED baseline nationally under REQ-025,
-    likely higher-yield than most per-state SEA probes. Note: 2021-22-and-earlier
-    files bundled educational environment; 2022-23+ split it out — the LEA-level
-    ed-environment companion dataset still needs locating.
+    District(LEA)-level SPED child counts by disability category, ALL states in one federal CSV per year,
+    direct download URLs, current through 2024-25 (bchildcountdisabilitycategorylea2024-25.csv). State-reported
+    actuals — a candidate to supersede the 2017-18 SPED baseline nationally under REQ-025, likely higher-yield
+    than most per-state SEA probes. Note: 2021-22-and-earlier files bundled educational environment; 2022-23+
+    split it out — the LEA-level ed-environment companion dataset still needs locating.
   urls:
-  - https://data.ed.gov/dataset/16968dd3-87bd-4e4a-92ed-50f03e6c4941/resource/00a5a1b6-835b-4f4e-9de6-bfb43f877087/download/bchildcountdisabilitycategorylea2024-25.csv
-  - https://data.ed.gov/dataset/16968dd3-87bd-4e4a-92ed-50f03e6c4941/resource/5a208d37-564a-40c8-a91d-dd2874fed48c/download/bchildcountdisabilitycategorylea2023-24.csv
+  - >-
+    https://data.ed.gov/dataset/16968dd3-87bd-4e4a-92ed-50f03e6c4941/resource/00a5a1b6-835b-4f4e-9de6-bfb43f877087/download/bchildcountdisabilitycategorylea2024-25.csv
+  - >-
+    https://data.ed.gov/dataset/16968dd3-87bd-4e4a-92ed-50f03e6c4941/resource/5a208d37-564a-40c8-a91d-dd2874fed48c/download/bchildcountdisabilitycategorylea2023-24.csv
 - name: CRDC (Civil Rights Data Collection), 2021-22 public-use files
   url: https://civilrightsdata.ed.gov/data
   probed: '2026-07-20'
   outcome: confirmed
   detail: >-
-    2021-22 CRDC public-use data files released January 2025 — the newest usable
-    collection (2020-21 exists but is a COVID-excluded year). Refresh candidate for
-    the 2017-18 CRDC-based SPED baseline (REQ-018), 4 years newer; VERIFY first that
-    the 2021-22 elements include the staffing fields the baseline derivation used
-    (SPED teachers / paraprofessionals). 2023-24 CRDC: submission closed 2025-04,
-    release slipped from 'end of Dec 2025' to 'by 2026' (still N/A as of 2026-03
-    page review) — watch, do not wait.
+    2021-22 CRDC public-use data files released January 2025 — the newest usable collection (2020-21 exists
+    but is a COVID-excluded year). Refresh candidate for the 2017-18 CRDC-based SPED baseline (REQ-018),
+    4 years newer; VERIFY first that the 2021-22 elements include the staffing fields the baseline derivation
+    used (SPED teachers / paraprofessionals). 2023-24 CRDC: submission closed 2025-04, release slipped
+    from 'end of Dec 2025' to 'by 2026' (still N/A as of 2026-03 page review) — watch, do not wait.
   urls:
   - https://civilrightsdata.ed.gov/data
 - name: Urban Institute Education Data Portal API
@@ -72,19 +70,18 @@ consolidated_sources:
   probed: '2026-07-20'
   outcome: confirmed
   detail: >-
-    Clean REST API over CCD/CRDC/EDFacts. school-districts/ccd/directory returns
-    state_leaid per district (verified 2023, e.g. NE-120056000) — useful to
-    backfill/verify state_district_crosswalk (REQ-027) for every state without
-    touching SEA portals, and as an independent validation source (REQ-021).
-    Supplements, never substitutes for, SEA-actual data.
+    Clean REST API over CCD/CRDC/EDFacts. school-districts/ccd/directory returns state_leaid per district
+    (verified 2023, e.g. NE-120056000) — useful to backfill/verify state_district_crosswalk (REQ-027)
+    for every state without touching SEA portals, and as an independent validation source (REQ-021). Supplements,
+    never substitutes for, SEA-actual data.
   urls:
   - https://educationdata.urban.org/api/v1/school-districts/ccd/directory/2023/
 - name: CCSSO / AASA / NSBA / NAESP
   probed: '2026-07-20'
   outcome: not-found
   detail: >-
-    Membership/policy organizations — publish aggregates and reports, not
-    district-level FTE/enrollment/SPED files. Not acquisition sources.
+    Membership/policy organizations — publish aggregates and reports, not district-level FTE/enrollment/SPED
+    files. Not acquisition sources.
 states:
 - code: AK
   name: Alaska
@@ -97,39 +94,57 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2023-24
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2025-26
+      format: API (ArcGIS REST)
+      access: api
+      urls:
+      - >-
+        https://maps.commerce.alaska.gov/server/rest/services/Education_Related/Education_District_Data/MapServer/2/query
     staffing:
-      availability: reported-yes
-      year: 2023-24
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2025-26
+      format: API (ArcGIS REST)
+      access: api
+      urls:
+      - >-
+        https://maps.commerce.alaska.gov/server/rest/services/Education_Related/Education_District_Data/MapServer/0/query
     sped:
-      availability: reported-yes
-      year: 2023-24
-      format: Excel
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: 2024-25
+      format: Dashboard (no direct download found)
+      access: dashboard-export
+      urls:
+      - https://education.alaska.gov/rcsped/
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: 2025-26
+      format: API (ArcGIS REST)
+      access: api
+      urls:
+      - >-
+        https://maps.commerce.alaska.gov/server/rest/services/Education_Related/Education_District_Data/MapServer/1/query
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://education.alaska.gov/data-center
+    outcome: confirmed-strong-undocumented-api
+    notes: >-
+      Found an undocumented ArcGIS REST service ("Education_District_Data") behind the Data Center's GIS
+      links exposing district Teacher Counts (incl. SPEDTeacher/ESLTeacher fields), Enrollment by grade,
+      and FRL as live queryable layers through 2025-26 — verified via direct HTTP query returning real
+      district rows. No NCES-ID field in any layer (state uses its own EntityID scheme); no ELL student-count
+      field (only SPED/ESL teacher staffing).
   acquisitions: []
-  flags: []
-  notes: Data Center, SPED District Data Profile
+  flags:
+  - api-available
+  notes: Previously-undocumented ArcGIS REST API — strong new lead, not in the Jan-2026 assessment.
 - code: AL
   name: Alabama
   portals:
@@ -141,39 +156,67 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2024-25
+      availability: confirmed
+      year: 2025-26
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://www.alabamaachieves.org/wp-content/uploads/2025/12/RD_FR_2025124_SY2025-2026ADMReport_v1.xlsx
     staffing:
-      availability: reported-yes
-      year: 2024-25
+      availability: confirmed
+      year: 2026-27 (FY2027 enacted)
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://www.alabamaachieves.org/wp-content/uploads/2026/05/RD_FIN_FR_2026518_FY2027SummaryofTeacherType_v1.xlsx
     sped:
-      availability: reported-yes
-      year: 2024-25
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2025-26 (Oct-1-2025 count)
+      format: PDF (by system, by age/exceptionality)
+      access: direct-download
+      urls:
+      - >-
+        https://www.alabamaachieves.org/wp-content/uploads/2026/06/RD_SPECED_20260602_2025ChildCountbySystem_v1.pdf
+      - >-
+        https://www.alabamaachieves.org/wp-content/uploads/2026/06/RD_SPECED_20260610_2025ChildCountbyExcept_v1.pdf
     crosswalk_ids:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: unknown
+      format: Dashboard (no direct download found)
+      access: dashboard-export
+      urls:
+      - https://eddir.alsde.edu/siteinfo/
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: 2025-26
+      format: Excel
+      access: direct-download
+      urls:
+      - >-
+        https://www.alabamaachieves.org/wp-content/uploads/2025/12/RD_FR_2025124_SY2025-2026FreeLunchBySystemandSchool_v1.xlsx
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://www.alabamaachieves.org/reports-data/
+    - https://reportcard.alsde.edu/SupportingData_StudentDemographics.aspx
+    - https://eddir.alsde.edu/siteinfo/
+    outcome: confirmed-strong-flat-files
+    notes: >-
+      Live WordPress portal, verified HTTP 200 + correct spreadsheet content-type. FY2027 Teacher Type
+      file opened and confirmed a "Total Special Education Teachers" column split from Regular/Career
+      Tech, by system code and school. SPED IDEA-618 Child Count PDFs are the freshest confirmed artifact
+      for any category — Oct-1-2025 count (SY2025-26), verified real per-district numbers (e.g. Autauga
+      County 8,675 total, 15.33% disabled). A second dashboard system, reportcard.alsde.edu (ASP.NET/DevExpress),
+      also has System-level 2024-25 export buttons for demographics but needs a browser session to drive
+      the per-district postback. eddir.alsde.edu/siteinfo (AL's own directory) confirmed to have an "NCES
+      ID" column header but the grid needs a JS/postback search — no bulk export link found, hence reported-partial
+      not confirmed. No blocks.
   acquisitions: []
-  flags: []
-  notes: Reports & Data portal, Financial Reports with staffing
+  flags:
+  - follow-up-manual
+  notes: Enrollment/staffing/FRPM ready to acquire; SPED needs ~140 per-district PDF pulls.
 - code: AR
   name: Arkansas
   portals:
@@ -185,39 +228,57 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: '2024'
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2025-26
+      format: CSV/Excel/PDF/XML
+      access: direct-download
+      urls:
+      - https://adedata.arkansas.gov/statewide/reportlist/districts/EnrollmentCount.aspx
     staffing:
-      availability: reported-partial
-      year: '2024'
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2025-26
+      format: CSV/Excel/PDF/XML
+      access: direct-download
+      urls:
+      - https://adedata.arkansas.gov/statewide/reportlist/districts/CertifiedPersonnel.aspx
     sped:
-      availability: reported-yes
-      year: '2024'
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25
+      format: PDF
+      access: direct-download
+      urls:
+      - >-
+        https://arksped.ade.arkansas.gov/documents/data_n_research/PublicReporting/LEAprofiles/SAProfiles2425.pdf
     crosswalk_ids:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2025-26
+      format: Excel
+      access: direct-download
+      urls:
+      - https://adedata.arkansas.gov/NID/Home/ExceliseDistrict?schoolYear=2025
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: reported-partial
+      year: 2020-21
+      format: CSV/Excel/PDF/XML
+      access: direct-download
+      urls:
+      - https://adedata.arkansas.gov/statewide/reportlist/districts/FreeReducedPaidLunch.aspx
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://adedata.arkansas.gov/
+    outcome: confirmed-strong-flat-files
+    notes: >-
+      Live ASP.NET reporting system distinct from the ARKSPED portal; every district report exports CSV/Excel/PDF/XML
+      with a year selector back to 2004-05. Free/Reduced/Paid Lunch stops at 2020-21 (likely superseded
+      by CEP universal-free-meal eligibility); no direct ELL count, only a Student Home Language proxy
+      through 2025-26. SPED is a single combined statewide PDF of per-district Dec-1 child-count profiles,
+      no environment breakdown, no personnel data. A genuine SPED-teacher split from staffing would need
+      decoding numeric job/assignment codes — not yet done.
   acquisitions: []
-  flags: []
-  notes: ADE Data Center, ARKSPED Portal separate
+  flags:
+  - follow-up-manual
+  notes: Strong flat-file source with a confirmed crosswalk; FRPM/ELL data is stale/proxy only.
 - code: AS
   name: American Samoa
   portals:
@@ -229,39 +290,61 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-partial
-      year: 2023-24
-      format: NCES
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2020-21
+      format: PDF
+      access: direct-download
+      urls:
+      - https://www.amsamoadoe.com/_files/ugd/bcdca0_49f0ddf237e5483cbf29a32ab2d69ea2.pdf
     staffing:
-      availability: reported-partial
-      year: 2023-24
-      format: NCES
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2020-21
+      format: PDF
+      access: direct-download
+      urls:
+      - https://www.amsamoadoe.com/_files/ugd/bcdca0_49f0ddf237e5483cbf29a32ab2d69ea2.pdf
     sped:
-      availability: reported-partial
-      year: 2023-24
-      format: NCES
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25
+      format: PDF (IDEA Part B SPP/APR)
+      access: direct-download
+      urls:
+      - https://www.amsamoadoe.com/_files/ugd/b063e1_397eb282fee6457a84e7e7f612cba147.pdf
     crosswalk_ids:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2022-23
+      format: NCES CCD School Search (single statewide LEA, ID 6000030)
+      access: dashboard-export
+      urls:
+      - https://nces.ed.gov/ccd/schoolsearch/school_list.asp
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: 2020-21
+      format: PDF
+      access: direct-download
+      urls:
+      - https://www.amsamoadoe.com/_files/ugd/bcdca0_49f0ddf237e5483cbf29a32ab2d69ea2.pdf
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://www.amsamoadoe.com/
+    outcome: confirmed-partial-correction-to-seed
+    notes: >-
+      Corrects the Jan-2026 "NCES-only" note — ASDOE publishes real IDEA Part B SPP/APR PDFs annually
+      back to FFY15; the FFY24 report has hard SPED child-count/LRE-environment data (453 children with
+      IEPs aged 5-21; 336 in regular class 80%+ of day, 19 in <40%, 0 in separate settings). AS confirmed
+      a single statewide LEA — NCES School Search shows all ~28-29 schools sharing LEA ID 6000030 — no
+      local-to-NCES crosswalk file, just a 1:1 territory-wide ID. Enrollment/staffing/FRPM/ELL figures
+      come from the one Territorial Report Card located (SY2020-21); a newer edition may exist but wasn't
+      found within bounded effort. A live JS dashboard (ascews-public.doe.as) likely has more current
+      stats but needs a headless browser to inspect — not exercised.
   acquisitions: []
-  flags: []
-  notes: ASDOE website; data primarily via NCES
+  flags:
+  - dashboard-only
+  - follow-up-manual
+  notes: >-
+    Correction to Jan-2026 "NCES-only" — real SPED/LRE data exists and is current (FFY24); enrollment/staffing/FRPM
+    stuck at 2020-21.
 - code: AZ
   name: Arizona
   portals:
@@ -273,39 +356,57 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
+      availability: reported-partial
       year: 2024-25
-      format: Excel
-      access: unknown
+      format: Excel (implied)
+      access: blocked
       urls: []
     staffing:
       availability: reported-partial
-      year: 2024-25
-      format: Excel
-      access: unknown
+      year: 2018-19
+      format: Excel (implied)
+      access: blocked
       urls: []
     sped:
-      availability: reported-yes
-      year: 2024-25
-      format: Excel
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: 2018-19
+      format: PDF
+      access: blocked
+      urls:
+      - >-
+        https://www.azed.gov/sites/default/files/2022/05/Special%20Education%20Phase%20I%20Report%20-%20Issued%20-%205.12.2022%20(002)%20acc_0.pdf
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
+      availability: reported-partial
+      year: 2024-25
+      format: Excel (implied)
+      access: blocked
       urls: []
-  probes: []
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://www.azed.gov/data/public-data-sets/
+    - https://www.azed.gov/accountability-research/data
+    outcome: blocked-genuine-cloudflare
+    notes: >-
+      azed.gov returns Cloudflare 403 (cf-mitigated:challenge) to both WebFetch and curl — blocked the
+      seed URL and the Accountability & Research Data page. A web search confirmed that page's own description
+      promises LEA-level enrollment broken out by Gender/Ethnicity/EL/Income-Eligibility/Students-with-Disabilities
+      (enrollment+FRPM/ELL+SPED likely in one file) but no live URL could be captured through the block.
+      Only recoverable file: a stale 2022 PDF referencing 2018-19 SPED staffing. CTDS is AZ's own ID scheme;
+      no CTDS-to-NCES crosswalk found. Needs a real-browser follow-up, not curl/WebFetch.
   acquisitions: []
-  flags: []
-  notes: Public Data Sets, Accountability & Research Data; good SPED dashboard
+  flags:
+  - blocked
+  - follow-up-manual
+  notes: >-
+    Genuine Cloudflare block on a state marked "high priority" in the seed — worth a real browser session,
+    likely rich data behind it.
 - code: CA
   name: California
   portals:
@@ -363,39 +464,56 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
+      availability: confirmed
       year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://resources.finalsite.net/files/t_file_download/v1772753505/cdestatecous/ns2kiu2qdjjy7iexxh4j/2024-25_District_Trends.xlsx
     staffing:
-      availability: reported-yes
-      year: 2024-25
+      availability: confirmed
+      year: 2025-26
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - https://ed.cde.state.co.us/cdereval/staffstatistics
     sped:
-      availability: reported-yes
+      availability: reported-partial
       year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://ed.cde.state.co.us/cdereval/pupilmembership-statistics/data-insights-resources-archives
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: 2024-25
+      format: Excel
+      access: direct-download
+      urls:
+      - >-
+        https://resources.finalsite.net/files/t_file_download/v1772753512/cdestatecous/yojvjlftzs3etobhzksd/2024-25_PK12_FRL_byDistrict-Suppressed_0.xlsx
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://ed.cde.state.co.us/cdereval
+    outcome: confirmed-strong-source-moved
+    notes: >-
+      Seed URL works; the old SchoolView portal appears superseded by "Colorado Education Statistics"
+      (cdereval). Two files downloaded and byte-verified (real xlsx). SPED student counts likely live
+      in "Instructional Program Membership by LEA" (page confirmed, file not opened, hence reported-partial).
+      An Organization Codes xlsx was downloaded but contains only CDE's own codes, no NCES field — crosswalk
+      not found despite a real file existing.
   acquisitions: []
   flags: []
-  notes: Colorado Education Statistics + SchoolView (multiple portals)
+  notes: Strong enrollment/staffing/FRPM source; crosswalk file exists but has no NCES field.
 - code: CT
   name: Connecticut
   portals:
@@ -407,39 +525,57 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
+      availability: confirmed
       year: 2024-25
-      format: CSV/Excel
-      access: unknown
-      urls: []
+      format: PDF (per-district profile)
+      access: direct-download
+      urls:
+      - https://edsight.ct.gov/Output/District/HighSchool/2040012_202425.pdf
     staffing:
-      availability: reported-yes
+      availability: confirmed
       year: 2024-25
-      format: CSV/Excel
-      access: unknown
-      urls: []
+      format: PDF (per-district profile)
+      access: direct-download
+      urls:
+      - https://edsight.ct.gov/Output/District/HighSchool/2040012_202425.pdf
     sped:
-      availability: reported-yes
+      availability: confirmed
       year: 2024-25
-      format: CSV/Excel
-      access: unknown
-      urls: []
+      format: PDF (per-district profile)
+      access: direct-download
+      urls:
+      - https://edsight.ct.gov/Output/District/HighSchool/2040012_202425.pdf
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: 2024-25
+      format: PDF (per-district profile)
+      access: direct-download
+      urls:
+      - https://edsight.ct.gov/Output/District/HighSchool/2040012_202425.pdf
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://public-edsight.ct.gov/
+    outcome: confirmed-per-district-only
+    notes: >-
+      Interactive EdSight is a Power BI dashboard with no bulk statewide CSV, only manual per-chart export.
+      EdSight also publishes a per-district "District Profile and Performance Report" PDF (URL keyed by
+      district_code_year), verified via pdftotext, containing all 5 categories in one document — enrollment,
+      FTE staff incl. "Special Education Teachers/Instructors" and paraprofessionals, disability/environment
+      breakdowns, FRPM %, EL/ML counts. Requires knowing each district's state code to build the URL;
+      no statewide bulk file found. No NCES-ID crosswalk file found.
   acquisitions: []
-  flags: []
-  notes: EdSight portal, excellent data quality, includes staffing FTE
+  flags:
+  - dashboard-only
+  notes: >-
+    Rich per-district PDFs (all 5 categories in one doc) but need per-district URL construction, not a
+    bulk file.
 - code: DC
   name: District of Columbia
   portals:
@@ -451,39 +587,64 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: '2024'
+      availability: confirmed
+      year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://osse.dc.gov/sites/default/files/dc/sites/osse/page_content/attachments/DC%20School%20Report%20Card%20Aggregate%20Enrollment%20Data%20%282025%29.xlsx
     staffing:
-      availability: reported-partial
-      year: '2024'
+      availability: confirmed
+      year: 2022-23
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://osse.dc.gov/sites/default/files/dc/sites/osse/page_content/attachments/2022-23%20DC%20Educator%20Workforce%20Data%20File%20%28Counts%20and%20Demographics%29.xlsx
     sped:
-      availability: reported-yes
-      year: '2024'
+      availability: reported-partial
+      year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://osse.dc.gov/sites/default/files/dc/sites/osse/page_content/attachments/DC%20School%20Report%20Card%20Aggregate%20Enrollment%20Data%20%282025%29.xlsx
+      - https://osse.dc.gov/page/lea-special-education-performance-reports-sepr
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: 2024-25
+      format: Excel
+      access: direct-download
+      urls:
+      - >-
+        https://osse.dc.gov/sites/default/files/dc/sites/osse/page_content/attachments/DC%20School%20Report%20Card%20Aggregate%20Enrollment%20Data%20%282025%29.xlsx
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://osse.dc.gov/page/data-and-reports-0
+    outcome: confirmed-partial
+    notes: >-
+      The DC School Report Card Resource Library's "Aggregate Enrollment Data" file (verified download)
+      gives per-school/LEA/grade enrollment plus Students-with-Disabilities, English-Learner, and Economically-Disadvantaged
+      subgroup counts in one file. Educator Workforce files give LEA/school teacher headcounts by grade
+      band but are headcounts, not true FTE, with no dedicated SPED-teacher split. No 7-digit NCES LEA
+      ID field found anywhere; DC's own directories carry only internal LEA/School codes — a crosswalk
+      would need a manual OSSE Data Request or name-matching against NCES CCD. True per-school SPED child-count/environment
+      data (vs. the SEPR compliance scorecard) also not confirmed as a direct download.
   acquisitions: []
-  flags: []
-  notes: OSSE Data & Reports, SLED system; operates unlike a traditional SEA
+  flags:
+  - dashboard-only
+  - request-only
+  notes: >-
+    One file covers enrollment+SWD+EL+econ-disadvantaged together; staffing is headcount not FTE, no crosswalk
+    found.
 - code: DE
   name: Delaware
   portals:
@@ -495,39 +656,55 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
+      availability: confirmed
       year: 2024-25
-      format: CSV/Excel
-      access: unknown
-      urls: []
+      format: CSV/API (Socrata)
+      access: api
+      urls:
+      - https://data.delaware.gov/resource/6i7v-xnmf.json
     staffing:
-      availability: reported-yes
+      availability: confirmed
       year: 2024-25
-      format: CSV/Excel
-      access: unknown
-      urls: []
+      format: CSV/API (Socrata)
+      access: api
+      urls:
+      - https://data.delaware.gov/resource/rv4m-vy79.json
     sped:
-      availability: reported-partial
+      availability: confirmed
       year: 2024-25
-      format: CSV/Excel
-      access: unknown
-      urls: []
+      format: CSV/API (Socrata)
+      access: api
+      urls:
+      - https://data.delaware.gov/resource/6i7v-xnmf.json
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: 2024-25
+      format: CSV/API (Socrata)
+      access: api
+      urls:
+      - https://data.delaware.gov/resource/6i7v-xnmf.json
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://data.delaware.gov/Education/
+    outcome: confirmed-strong-api
+    notes: >-
+      Socrata Open Data Portal is strong. "Student Enrollment" dataset (6i7v-xnmf) covers enrollment,
+      SPED counts (specialdemo="Students with Disabilities"), ELL, and low-income counts by district+grade,
+      live-verified through year "2025". "Educator Average Salary" (rv4m-vy79) gives FTE by job classification
+      with a clean SPED-teacher split. SPED is child-count only, no environment breakdown found on this
+      portal (Report Card not checked). No NCES-ID field in DE's own district directory dataset.
   acquisitions: []
-  flags: []
-  notes: Open Data Portal + Report Card, annual releases Feb; modern API
+  flags:
+  - api-available
+  notes: >-
+    Best-in-batch: real Socrata API with a clean SPED-teacher-FTE split, ready to acquire programmatically.
 - code: FL
   name: Florida
   portals:
@@ -584,39 +761,58 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: '2024'
-      format: Excel/CSV
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25
+      format: CSV
+      access: direct-download
+      urls:
+      - https://download.gosa.ga.gov/2025/Enrollment_by_Grade_2024-25_2026-02-19_00_31_56.csv
     staffing:
-      availability: reported-partial
-      year: '2024'
-      format: Excel/CSV
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25
+      format: CSV
+      access: direct-download
+      urls:
+      - https://download.gosa.ga.gov/2025/CERTIFIED_PERSONNEL_2024-25_2026-02-19_00_32_04.csv
     sped:
-      availability: reported-yes
-      year: '2024'
-      format: Excel/CSV
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25
+      format: CSV
+      access: direct-download
+      urls:
+      - >-
+        https://download.gosa.ga.gov/2025/Enrollment_by_Subgroup_Metrics_2024-25_2026-02-19_00_31_56.csv
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: 2024-25
+      format: Excel
+      access: direct-download
+      urls:
+      - https://download.gosa.ga.gov/2025/2025_directly_certified_district.xls
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://georgiainsights.gadoe.org/
+    - https://goews.georgia.gov/dashboards-data-report-card/downloadable-data
+    outcome: confirmed-strong-source-moved
+    notes: >-
+      Jan-2026 seed (georgiainsights.gadoe.org) is now dashboard-only/JS with no extractable links; the
+      real portal is GOSA, now at goews.georgia.gov (GOSA folded into GOEWS). All confirmed URLs HTTP
+      200. Enrollment-by-Subgroup CSV has SWD count/percent (sped need covered) but no IDEA environment/setting
+      data (lives on spedpublic.gadoe.org JS dashboard, no direct download found). GA district IDs are
+      3-digit state codes, not NCES LEAIDs; no crosswalk file found.
   acquisitions: []
-  flags: []
-  notes: Georgia Insights + GOSA downloadable data; GOSA may require registration
+  flags:
+  - dashboard-only
+  - follow-up-manual
+  - request-only
+  notes: Portal moved (georgiainsights -> GOEWS) — update the seed URL in any future re-probe.
 - code: GU
   name: Guam
   portals:
@@ -628,39 +824,62 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-partial
+      availability: confirmed
       year: 2023-24
-      format: NCES
-      access: unknown
-      urls: []
+      format: PDF
+      access: direct-download
+      urls:
+      - http://files.eric.ed.gov/fulltext/ED671519.pdf
     staffing:
-      availability: reported-partial
+      availability: confirmed
       year: 2023-24
-      format: NCES
-      access: unknown
-      urls: []
+      format: PDF (headcount, no true FTE)
+      access: direct-download
+      urls:
+      - http://files.eric.ed.gov/fulltext/ED671519.pdf
     sped:
+      availability: confirmed
+      year: 2024-25
+      format: Excel/Google Sheets
+      access: direct-download
+      urls:
+      - https://www.gdoe.net/District/Department/2-Special-Education/2689-Data-reports.html
+    crosswalk_ids:
+      availability: confirmed
+      year: 2024-25
+      format: NCES CCD web lookup (single statewide LEA, ID 6600002)
+      access: dashboard-export
+      urls:
+      - https://nces.ed.gov/ccd/districtsearch/district_detail.asp
+    frpm_ell:
       availability: reported-partial
       year: 2023-24
-      format: NCES
-      access: unknown
-      urls: []
-    crosswalk_ids:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-    frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      format: PDF
+      access: direct-download
+      urls:
+      - http://files.eric.ed.gov/fulltext/ED671519.pdf
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://www.gdoe.net/
+    outcome: confirmed-partial-correction-to-seed
+    notes: >-
+      GDOE is a single statewide LEA (NCES ID 6600002), so the crosswalk is trivial/confirmed via NCES
+      CCD directly (GDOE publishes no crosswalk file itself). The Annual State of Public Education Report
+      (SY23-24, mirrored on ERIC since direct gdoe.net fetches got Cloudflare 403 for non-browser clients)
+      has grade-level enrollment, district-wide ELL/SPED program counts, and total-employee headcounts
+      (not true FTE, no SPED split); a separate SPED-teacher PDF is dated March 2022 (stale). The Special
+      Education "Data reports" page is the strongest hit — live per-school Official Child Count by disability
+      category as of 12/1/2024, plus IEP/related-services/Indicator Google Sheets. No FRPM/meal-eligibility
+      counts found; Guam likely runs under USDA Community Eligibility Provision (universal free meals),
+      inferred not confirmed.
   acquisitions: []
-  flags: []
-  notes: GOSDV data system, limited public access
+  flags:
+  - dashboard-only
+  - follow-up-manual
+  notes: >-
+    Correction to Jan-2026 "limited public access" — SPED data reports page is genuinely current (Dec
+    2024 child count).
 - code: HI
   name: Hawaii
   portals:
@@ -672,39 +891,55 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2023-24
-      format: Excel/PDF
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: 2022-23
+      format: PDF
+      access: direct-download
+      urls:
+      - https://files.eric.ed.gov/fulltext/ED652698.pdf
     staffing:
       availability: reported-partial
-      year: 2023-24
-      format: Excel/PDF
-      access: unknown
-      urls: []
+      year: 2022-23
+      format: PDF
+      access: direct-download
+      urls:
+      - https://files.eric.ed.gov/fulltext/ED652698.pdf
     sped:
       availability: reported-partial
-      year: 2023-24
-      format: Excel/PDF
-      access: unknown
-      urls: []
+      year: 2022-23
+      format: PDF
+      access: direct-download
+      urls:
+      - https://files.eric.ed.gov/fulltext/ED652698.pdf
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: reported-partial
+      year: 2022-23
+      format: PDF
+      access: direct-download
+      urls:
+      - https://files.eric.ed.gov/fulltext/ED652698.pdf
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://arch.k12.hi.us/reports/hidoe-data-book
+    outcome: confirmed-partial-spa-blocked
+    notes: >-
+      HI is a single statewide LEA — "district-level" here effectively means complex-area level. Seed
+      ARCH portal loads but is a pure client-side SPA (WebFetch only gets the empty shell); no JSON API
+      found. Located a real, live HIDOE Data Book PDF mirrored on ERIC (2023 edition, ~2022-23 data) as
+      the closest analog — verified downloadable but not opened to confirm exact table contents. No NCES
+      crosswalk found. Needs Playwright to read the SPA.
   acquisitions: []
-  flags: []
-  notes: ARCH data portal; single-district state
+  flags:
+  - dashboard-only
+  - follow-up-manual
+  notes: SPA needs Playwright; only a 2022-23 ERIC-mirrored PDF confirmed so far.
 - code: IA
   name: Iowa
   portals:
@@ -716,39 +951,58 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2024-25
+      availability: confirmed
+      year: 2025-26
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - https://educate.iowa.gov/media/12227/download?inline
     staffing:
-      availability: reported-yes
-      year: 2024-25
-      format: Excel
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: 2025-26
+      format: Dashboard (Tableau, no direct download)
+      access: dashboard-export
+      urls:
+      - https://reports.educateiowa.gov/COE/Home/staffPositionsByDistrict?Length=4
     sped:
-      availability: reported-yes
-      year: 2024-25
+      availability: confirmed
+      year: 2025-26
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - https://educate.iowa.gov/media/12231/download?inline
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: 2025-26
+      format: Excel
+      access: direct-download
+      urls:
+      - https://educate.iowa.gov/media/12310/download?inline
+      - https://educate.iowa.gov/media/12223/download?inline
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://reports.educateiowa.gov/COE/
+    - https://educate.iowa.gov/pk-12/data/education-statistics
+    outcome: confirmed-strong-flat-files
+    notes: >-
+      The seed COE portal is a Tableau-embedded dashboard with no static export for staffing. Clean data
+      lives at educate.iowa.gov/pk-12/data/: verified working xlsx (HTTP 200) for enrollment-by-grade,
+      SPED-IEP child counts, FRL, and EL, current through 2025-26. SPED environment/placement detail exists
+      only as ~330 separate per-district FFY24 PDFs. No state-published district-code-to-NCES-LEAID crosswalk
+      found (IA uses its own 4-digit codes).
   acquisitions: []
-  flags: []
-  notes: Condition of Education portal, staff by district/position
+  flags:
+  - dashboard-only
+  - follow-up-manual
+  notes: >-
+    Strong enrollment/SPED/FRPM source once past the Tableau dashboard; staffing FTE unresolved.
 - code: ID
   name: Idaho
   portals:
@@ -760,39 +1014,56 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2024-25
+      availability: confirmed
+      year: 2025-26
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://www.sde.idaho.gov/wp-content/uploads/2025/12/Historical-Enrollment-by-District-or-Charter.xlsx
     staffing:
-      availability: reported-yes
-      year: 2024-25
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2023-24
+      format: PDF
+      access: direct-download
+      urls:
+      - >-
+        https://www.sde.idaho.gov/wp-content/uploads/2025/04/All-Staff-Salary-by-District-Charter.pdf
     sped:
-      availability: reported-yes
+      availability: confirmed
       year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - https://www.sde.idaho.gov/wp-content/uploads/2026/02/2024-2025-Child-Count-Ages-3-21.xlsx
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
-  probes: []
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://boardofed.idaho.gov/k-12-education/isee-idaho-system-for-educational-excellence/
+    outcome: confirmed-strong-source-moved
+    notes: >-
+      Seed ISEE portal is a data-submission system, not a public download page; real files are static
+      uploads on sde.idaho.gov / boardofed.idaho.gov, found via search. Enrollment file verified through
+      2025-26. Staffing PDF (1140-page, per-district FTE) is 2023-24 and does not split out SPED teachers
+      separately. A "NCES Reference Sheet" uses Idaho's own ID-### codes, not true NCES IDs — not a real
+      crosswalk. FRPM/ELL not located within budget.
   acquisitions: []
-  flags: []
-  notes: ISEE system, Idaho Ed Trends portal
+  flags:
+  - follow-up-manual
+  notes: >-
+    Strong enrollment/SPED source; staffing lacks a SPED split, no crosswalk or FRPM/ELL found.
 - code: IL
   name: Illinois
   portals:
@@ -806,39 +1077,58 @@ states:
   data:
     enrollment:
       availability: confirmed
-      year: 2023-24
-      format: varies
+      year: 2024-25
+      format: Excel
       access: direct-download
-      urls: []
+      urls:
+      - https://www.isbe.net/pages/illinois-state-report-card-data.aspx
     staffing:
-      availability: confirmed
-      year: 2023-24
-      format: varies
+      availability: reported-partial
+      year: 2024-25
+      format: Excel
       access: direct-download
-      urls: []
+      urls:
+      - https://www.isbe.net/pages/illinois-state-report-card-data.aspx
     sped:
       availability: reported-partial
-      year: 2023-24
-      format: varies
-      access: unknown
-      urls: []
+      year: 2024-25
+      format: Excel
+      access: direct-download
+      urls:
+      - https://www.isbe.net/pages/illinois-state-report-card-data.aspx
+      - https://www.illinoisreportcard.com/State.aspx?source2=iep&Stateid=IL
     crosswalk_ids:
       availability: confirmed
-      year: 2023-24
-      format: varies
+      year: 2025-26
+      format: Excel
       access: direct-download
-      urls: []
+      urls:
+      - https://www.isbe.net/pages/data-analysis-directories.aspx
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: reported-partial
+      year: 2024-25
+      format: Excel
+      access: direct-download
+      urls:
+      - https://www.isbe.net/pages/illinois-state-report-card-data.aspx
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://www.isbe.net/pages/illinois-state-report-card-data.aspx
+    - https://www.isbe.net/pages/data-analysis-directories.aspx
+    outcome: refresh-year-confirmed
+    notes: >-
+      2024-25 ("2025" in ISBE naming) is published, a year newer than our integrated 2023-24. Enrollment/staffing/SPED/FRPM/ELL
+      now consolidated into one large Report Card Public Data Set Excel workbook that exceeded WebFetch's
+      size limit — field-level confirmation (e.g. whether teacher FTE still splits out SPED-specific teachers)
+      needs a manual open. The RCDTS<->NCES crosswalk is a separate, always-current file, confirmed present.
   acquisitions: []
   flags:
   - refresh-candidate
-  notes: null
+  - follow-up-manual
+  notes: >-
+    Manual open of the 2024-25 Report Card Public Data Set needed to confirm SPED-teacher-split field
+    before re-import (file too large for automated fetch in the probe pass).
 - code: IN
   name: Indiana
   portals:
@@ -850,39 +1140,58 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: '2024'
+      availability: confirmed
+      year: 2025-26
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - https://www.in.gov/doe/files/corporation-enrollment-grade-2006-26.xlsx
+      - https://www.in.gov/doe/files/corporation-enrollment-grade-gender-2006-26.xlsx
     staffing:
       availability: reported-partial
-      year: '2024'
-      format: Excel
-      access: unknown
-      urls: []
+      year: 2021-22
+      format: Excel/PDF
+      access: direct-download
+      urls:
+      - https://www.in.gov/doe/files/SY2020-21-Teacher-Statistics-Report.xlsx
     sped:
-      availability: reported-partial
-      year: '2024'
+      availability: confirmed
+      year: 2025-26
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - https://www.in.gov/doe/files/corporation-enrollment-ell-special-education-2006-26-3.xlsx
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: 2025-26
+      format: Excel
+      access: direct-download
+      urls:
+      - >-
+        https://www.in.gov/doe/files/corporation-enrollment-ethnicity-free-reduced-price-meal-status-2006-26.xlsx
+      - https://www.in.gov/doe/files/corporation-enrollment-ell-special-education-2006-26-3.xlsx
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://www.in.gov/doe/it/data-center-and-reports/
+    - https://eddata.doe.in.gov
+    outcome: confirmed-strong-flat-files
+    notes: >-
+      Clean direct-download xlsx at the corporation level for enrollment/FRPM/SPED-child-count, current
+      to SY2025-26. Staffing FTE is stale (narrative statutory disclosure, not a tabular FTE-by-corporation
+      file; SY2020-21). Richer "EdData" source sits behind an OIDC login wall, not pursued. No state-published
+      district-to-NCES crosswalk file found (IN LEAIDs derivable from NCES CCD directly: FIPS 18 + corp
+      code).
   acquisitions: []
-  flags: []
-  notes: DOE Data Center, GPS dashboard; SPED less detailed
+  flags:
+  - follow-up-manual
+  notes: Strong enrollment/SPED/FRPM source; staffing needs a different/newer source.
 - code: KS
   name: Kansas
   portals:
@@ -894,39 +1203,60 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
+      availability: confirmed
       year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: dashboard-export
+      urls:
+      - https://datacentral.ksde.gov/report_gen.aspx
     staffing:
-      availability: reported-partial
+      availability: confirmed
       year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: dashboard-export
+      urls:
+      - https://datacentral.ksde.gov/report_gen.aspx
     sped:
+      availability: confirmed
+      year: 2024-25
+      format: Excel
+      access: dashboard-export
+      urls:
+      - https://datacentral.ksde.gov/report_gen.aspx
+    crosswalk_ids:
+      availability: reported-partial
+      year: 2025-26
+      format: HTML (per-district lookup)
+      access: dashboard-export
+      urls:
+      - https://nces.ed.gov/ccd/districtsearch/district_detail.asp
+    frpm_ell:
       availability: reported-partial
       year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
-    crosswalk_ids:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-    frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      access: dashboard-export
+      urls:
+      - https://datacentral.ksde.gov/report_gen.aspx
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://datacentral.ksde.org/
+    - https://datacentral.ksde.gov/report_gen.aspx
+    outcome: confirmed-tool-artifact-resolved
+    notes: >-
+      datacentral.ksde.org now 301-redirects to .gov, HTTP 200 via curl — not Cloudflare/WAF-blocked,
+      WebFetch had a spurious TLS cert-verify quirk, worked around via curl. The K-12 Report Generator
+      (report_gen.aspx) is a real interactive tool with confirmed report topics: Headcount Enrollment
+      by Grade/Race, Personnel by Type (Licensed/Nonlicensed), IDEA & Gifted Student Totals, Free/Reduced-Price
+      Lunch — years through 2024-25, Excel/PDF/Word/HTML export. No specific SPED-teacher-FTE split or
+      ELL-count report confirmed among visible categories. No KSDE-hosted bulk crosswalk file found; NCES
+      CCD per-district lookup shows the KS state ID (e.g. "KS-D0500") next to the NCES ID, confirming
+      the mapping exists publicly, just not as a bulk file from a KS-hosted source.
   acquisitions: []
-  flags: []
-  notes: Data Central (security warnings noted Jan-2026), EDCS for educators, SPEDPro
+  flags:
+  - follow-up-manual
+  notes: >-
+    Real report-generator tool once past a tool-side TLS quirk; export each report to build the dataset.
 - code: KY
   name: Kentucky
   portals:
@@ -938,39 +1268,64 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2023-24
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25
+      format: CSV
+      access: direct-download
+      urls:
+      - >-
+        https://www.education.ky.gov/Open-House/data/HistoricalDatasets/KYRC25_OVW_Student_Membership.csv
     staffing:
-      availability: reported-yes
-      year: 2023-24
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25
+      format: CSV
+      access: direct-download
+      urls:
+      - >-
+        https://www.education.ky.gov/Open-House/data/HistoricalDatasets/KYRC25_OVW_Teachers_Full_Time_Equivalent_FTE.csv
     sped:
-      availability: reported-partial
-      year: 2023-24
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25
+      format: CSV
+      access: direct-download
+      urls:
+      - >-
+        https://www.education.ky.gov/Open-House/data/HistoricalDatasets/KYRC25_OVW_Students_with_Disabilities_IEP.csv
     crosswalk_ids:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25
+      format: CSV
+      access: direct-download
+      urls:
+      - >-
+        https://www.education.ky.gov/Open-House/data/HistoricalDatasets/KYRC25_OVW_District_School_List.csv
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: 2024-25
+      format: CSV
+      access: direct-download
+      urls:
+      - >-
+        https://www.education.ky.gov/Open-House/data/HistoricalDatasets/KYRC25_OVW_Economically_Disadvantaged.csv
+      - >-
+        https://www.education.ky.gov/Open-House/data/HistoricalDatasets/KYRC25_OVW_English_Learners.csv
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://www.education.ky.gov/Open-House/data/Pages/Historical-SRC-Datasets.aspx
+    outcome: confirmed-best-of-batch
+    notes: >-
+      Seed URL live and correct; actual data one hop deeper at Historical-SRC-Datasets.aspx (717+ CSVs).
+      Every confirmed file carries an "NCES ID" column at both district and school rows — the strongest
+      crosswalk field of any state checked in this campaign so far. SPED child-count file has no environment/placement
+      data (PDF-only, through 2020-21). Staffing FTE is district-total only, no SPED-teacher split. FRPM/ELL
+      fully satisfied via dedicated files. Gotcha: file server 403s a bare curl with no User-Agent/Referer,
+      works fine with a normal browser header — not a real block.
   acquisitions: []
   flags: []
-  notes: School Report Card Dashboard, Personnel Info; SPED reporting manual-heavy
+  notes: >-
+    Best-in-class source: NCES ID column at district+school level makes this the reference model for a
+    future importer.
 - code: LA
   name: Louisiana
   portals:
@@ -982,39 +1337,64 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: '2024'
+      availability: confirmed
+      year: 2025-26
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://doe.louisiana.gov/docs/default-source/fiscal-data/oct-2025-multi-stats-(total-by-site-and-school-system)-web.xlsx
     staffing:
       availability: reported-partial
-      year: '2024'
-      format: Excel
-      access: unknown
-      urls: []
+      year: 2024-25
+      format: Excel/PDF
+      access: direct-download
+      urls:
+      - >-
+        https://doe.louisiana.gov/docs/default-source/teaching/2024-2025-state-educator-workforce-report.pdf
     sped:
-      availability: reported-yes
-      year: '2024'
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25
+      format: Excel (LEA rates) + PDF (district detail)
+      access: direct-download
+      urls:
+      - >-
+        https://doe.louisiana.gov/docs/default-source/academics/oct-2025-idea-student-with-disabilities_public.xlsx
+      - https://doe.louisiana.gov/docs/default-source/academics/2024-2025-spedbook-profile.pdf
     crosswalk_ids:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: 2025-26
+      format: Excel
+      access: direct-download
+      urls:
+      - >-
+        https://doe.louisiana.gov/docs/default-source/data-management/2025-2026-school-directory.xlsx
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: 2025-26
+      format: Excel (%) + PDF (EL profile)
+      access: direct-download
+      urls:
+      - >-
+        https://doe.louisiana.gov/docs/default-source/fiscal-data/oct-2025-multi-stats-(total-by-site-and-school-system)-web.xlsx
+      - >-
+        https://doe.louisiana.gov/docs/default-source/english-learners/el-data-profile-2024-2025.pdf
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://doe.louisiana.gov/data-and-reports
+    outcome: confirmed-strong-flat-files
+    notes: >-
+      Seed portal accurate. "Multi Stats" enrollment file is the richest single file — verified to carry
+      LEA-level enrollment, grade, gender, race, %-econ-disadvantaged, %-LEP together. SpedBook Profile
+      PDF (verified via pdftotext) has real district-level breakouts by disability/age/gender/race/environment
+      — download for placement detail since the Excel gives only an SWD rate. Staffing is the weak category:
+      no current teacher-FTE-by-district file with a SPED split found (true FTE workbooks stop at SY2010-11).
+      School Directory has an NCES school-ID field, not confirmed as the explicit 7-digit federal LEA
+      ID. No blocks.
   acquisitions: []
   flags: []
-  notes: Enrollment Data + Special Ed Reporting pages
+  notes: Strong enrollment/SPED/FRPM source; staffing FTE-by-district is the gap.
 - code: MA
   name: Massachusetts
   portals:
@@ -1070,39 +1450,61 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2024-25
-      format: Excel/PDF
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2023-24
+      format: CSV
+      access: direct-download
+      urls:
+      - https://opendata.maryland.gov/api/views/9ju3-j8k6/rows.csv?accessType=DOWNLOAD
     staffing:
+      availability: confirmed
+      year: 2023-24
+      format: PDF
+      access: direct-download
+      urls:
+      - >-
+        https://www.marylandpublicschools.org/about/Documents/DCAA/SSP/20232024Staff/2024-Staff-Employed-at-School-and-Central-Office-A.pdf
+    sped:
+      availability: confirmed
+      year: 2025-26 (Oct 2025 count, published Apr 2026)
+      format: PDF
+      access: direct-download
+      urls:
+      - >-
+        https://marylandpublicschools.org/about/Documents/DCAA/SSP/20252026Student/2025-Census-Publication-A.pdf
+    crosswalk_ids:
       availability: reported-partial
       year: 2024-25
-      format: Excel/PDF
-      access: unknown
-      urls: []
-    sped:
-      availability: reported-yes
-      year: 2024-25
-      format: Excel/PDF
-      access: unknown
-      urls: []
-    crosswalk_ids:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
+      format: PDF
+      access: direct-download
+      urls:
+      - https://www.ed.gov/media/document/mdpfpdf-97242.pdf
     frpm_ell:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
-  probes: []
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://reportcard.msde.maryland.gov/
+    - https://www.marylandpublicschools.org/
+    outcome: confirmed-partial-seed-blocked
+    notes: >-
+      Seed portal (reportcard.msde.maryland.gov) is a JS SPA that 403s automated tools — a real WAF, not
+      a login wall; a human browser could likely use its Data Downloads export. Bypassed via marylandpublicschools.org's
+      official annual publications: "Staff Employed" report has a per-LEA SPED-instruction-related-positions
+      table; the SPED Census (Oct 2025 count, published Apr 2026) is genuinely SY2025-26, newer than NCES,
+      with per-LEA LRE/environment tables. Both PDFs 403'd WebFetch but succeeded via curl with a browser
+      UA. Crosswalk only partial: an ed.gov file maps District Name + NCES LEA ID but not MD's own 2-digit
+      LEA code, so joining requires name-matching. No FRPM/ELL file located.
   acquisitions: []
-  flags: []
-  notes: Report Card portal, SPED Census available
+  flags:
+  - dashboard-only
+  - follow-up-manual
+  notes: >-
+    SPED census is newer than our NCES baseline (SY2025-26) — a real precedence win once acquired.
 - code: ME
   name: Maine
   portals:
@@ -1114,39 +1516,57 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: '2024'
-      format: CSV/Excel
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: 2024-25
+      format: Dashboard (no direct download found)
+      access: dashboard-export
+      urls:
+      - https://www.maine.gov/doe/data-warehouse/reporting/enrollment
     staffing:
-      availability: reported-yes
-      year: '2024'
-      format: CSV/Excel
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: unknown
+      format: Dashboard (no direct download found)
+      access: dashboard-export
+      urls:
+      - https://www.maine.gov/doe/data-warehouse/reporting/staff
     sped:
-      availability: reported-yes
-      year: '2024'
-      format: CSV/Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25
+      format: Excel
+      access: direct-download
+      urls:
+      - >-
+        https://www.maine.gov/doe/sites/maine.gov.doe/files/inline-files/DATA%20-%20Special%20Education%20Student%20Groups%20-%207.18.2025.xlsx
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: reported-partial
+      year: unknown
+      format: Dashboard (no direct download found)
+      access: dashboard-export
+      urls:
+      - https://www.maine.gov/doe/Multilinguallearnerdatadashboard
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://www.maine.gov/doe/data-reporting/warehouse
+    outcome: confirmed-partial-dashboard
+    notes: >-
+      Data Warehouse hub confirms enrollment/staffing exist at SAU level but render through an embedded
+      JS dashboard with no recoverable CSV export via automated fetch. SPED "Student Groups" Excel file
+      is real, verified, broken down by district/school. No FRPM source found; ELL only as dashboard.
+      No SAU-to-NCES-LEA-ID crosswalk found. A human should try the dashboards' Export/Download-crosstab
+      buttons directly.
   acquisitions: []
-  flags: []
-  notes: Data Warehouse with FTE staff, SPED by environment
+  flags:
+  - dashboard-only
+  - follow-up-manual
+  notes: >-
+    SPED confirmed; enrollment/staffing/FRPM/ELL need a human browser session on the dashboards.
 - code: MI
   name: Michigan
   portals:
@@ -1161,39 +1581,63 @@ states:
   data:
     enrollment:
       availability: confirmed
-      year: 2023-24
-      format: varies
+      year: 2024-25
+      format: Excel
       access: direct-download
-      urls: []
+      urls:
+      - >-
+        https://www.michigan.gov/cepi/-/media/Project/Websites/cepi/MISchoolData/2024-25/District-FTE-Count---Spring-2025.xlsx
+      - >-
+        https://www.michigan.gov/cepi/-/media/Project/Websites/cepi/MISchoolData/2024-25/Spring_2025_FullAuditFile.xlsx
     staffing:
       availability: confirmed
-      year: 2023-24
-      format: varies
+      year: 2024-25
+      format: Excel
       access: direct-download
-      urls: []
+      urls:
+      - >-
+        https://www.michigan.gov/cepi/-/media/Project/Websites/cepi/MISchoolData/2024-25/2024-25-Dec2024-REP.xlsx
     sped:
       availability: confirmed
-      year: 2023-24
-      format: varies
-      access: unknown
-      urls: []
+      year: 2024-25
+      format: Excel
+      access: direct-download
+      urls:
+      - >-
+        https://www.michigan.gov/cepi/-/media/Project/Websites/cepi/MISchoolData/2024-25/2024_25-Special-Ed-Count-data.xlsx
     crosswalk_ids:
       availability: confirmed
-      year: 2023-24
-      format: varies
-      access: direct-download
-      urls: []
+      year: current-rolling
+      format: CSV/Excel/XML
+      access: dashboard-export
+      urls:
+      - https://cepi.state.mi.us/eem/publicdatasets.aspx
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: reported-partial
+      year: 2024-25
+      format: Excel
+      access: direct-download
+      urls:
+      - >-
+        https://www.michigan.gov/cepi/-/media/Project/Websites/cepi/MISchoolData/2024-25/Fall_2024_EcoDis_District.xlsx
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://www.michigan.gov/cepi/-/media/Project/Websites/cepi/MISchoolData/2024-25/
+    - https://cepi.state.mi.us/eem/publicdatasets.aspx
+    outcome: refresh-year-confirmed
+    notes: >-
+      Fully current at 2024-25 for enrollment/staffing/SPED (Special-Ed-Count-data.xlsx), each superseding
+      the integrated 2023-24 files; 2025-26 partial-year files already appearing for several categories.
+      mischooldata.org itself 403-blocks WebFetch (Cloudflare/WAF) but curl with a standard user-agent
+      reaches it fine. FRPM confirmed via EcoDis 2024-25; a standalone ELL count file was not located
+      in the time available.
   acquisitions: []
   flags:
   - refresh-candidate
-  notes: null
+  notes: >-
+    Best-confirmed refresh of the three (IL/MI/NY): direct-download links in hand for enrollment/staffing/SPED
+    at 2024-25, crosswalk confirmed current.
 - code: MN
   name: Minnesota
   portals:
@@ -1205,39 +1649,60 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2023-24
-      format: Excel
-      access: unknown
+      availability: blocked
+      year: null
+      format: null
+      access: dashboard-export
       urls: []
     staffing:
-      availability: reported-partial
-      year: 2023-24
-      format: Excel
-      access: unknown
+      availability: blocked
+      year: null
+      format: null
+      access: dashboard-export
       urls: []
     sped:
-      availability: reported-yes
-      year: 2023-24
-      format: Excel
-      access: unknown
+      availability: blocked
+      year: null
+      format: null
+      access: dashboard-export
       urls: []
     crosswalk_ids:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: 2025-26
+      format: HTML (per-district lookup)
+      access: dashboard-export
+      urls:
+      - https://nces.ed.gov/ccd/districtsearch/district_detail.asp
     frpm_ell:
-      availability: unknown
+      availability: blocked
       year: null
       format: null
-      access: unknown
+      access: dashboard-export
       urls: []
-  probes: []
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://education.mn.gov/MDE/Data/
+    - https://pub.education.mn.gov/MDEAnalytics/Data.jsp
+    - https://pub.education.mn.gov/MDEAnalytics/DataTopic.jsp?TOPICID=99
+    - https://rc.education.mn.gov/
+    outcome: blocked-genuine-waf
+    notes: >-
+      MDE's real data-download engine (pub.education.mn.gov/MDEAnalytics/*) 302-redirects to a Radware
+      bot-manager challenge (validate.perfdrive.com) — reproduced via both WebFetch and curl with a browser
+      UA; a genuine WAF block, not pursued further per the one-attempt rule. Every other MDE page ultimately
+      points back to that same blocked domain. One unblocked alternative: MN Report Card (rc.education.mn.gov,
+      HTTP 200) — JS dashboard, no direct export link found, logged as dashboard-only lead not a confirmed
+      source. A state demography page has a working population-by-district Excel, but that's population,
+      not enrollment/staffing/SPED/FRPM. Recommend a human revisit MDEAnalytics from a real browser before
+      writing this state off — the WAF may selectively challenge automated clients.
   acquisitions: []
-  flags: []
-  notes: Data Center interactive tool, Special Ed Division
+  flags:
+  - blocked
+  - dashboard-only
+  - follow-up-manual
+  notes: >-
+    Genuine WAF block on the real data engine — needs a human browser visit, not a repeat automated attempt.
 - code: MO
   name: Missouri
   portals:
@@ -1249,39 +1714,62 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2023-24
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2025-26 (no explicit label; refreshed weekly)
+      format: PDF
+      access: direct-download
+      urls:
+      - >-
+        https://apps.dese.mo.gov/MCDS/FileDownloadWebHandler.ashx?filename=16262384-5e2cMissouri%20School%20Directory%20by%20District.pdf
     staffing:
-      availability: reported-partial
-      year: 2023-24
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2025-26 (no explicit label; refreshed weekly)
+      format: PDF
+      access: direct-download
+      urls:
+      - >-
+        https://apps.dese.mo.gov/MCDS/FileDownloadWebHandler.ashx?filename=16262384-5e2cMissouri%20School%20Directory%20by%20District.pdf
     sped:
-      availability: reported-yes
-      year: 2023-24
-      format: Excel
-      access: unknown
+      availability: blocked
+      year: unknown
+      format: unknown
+      access: request-only
       urls: []
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
-  probes: []
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://dese.mo.gov/school-data
+    - https://apps.dese.mo.gov/MCDS/Home.aspx
+    - https://mcds.dese.mo.gov
+    outcome: confirmed-partial-login-wall
+    notes: >-
+      Verified by downloading the actual 1,095-page "Missouri School Directory (All Districts)" PDF: real
+      per-district Enrollment (Prior Year) and Cert. Staff counts, refreshed weekly, no explicit school-year
+      label, no SPED-teacher split. Finer-grained SPED child-count/environment, per-district enrollment-by-grade,
+      and FRPM sit behind the MCDS login wall (apps.dese.mo.gov/MCDS/Home.aspx) or a formal Data Request
+      Form — no login bypass attempted. No NCES-LEAID crosswalk found (MO uses its own County-District
+      Code, e.g. 048-914).
   acquisitions: []
-  flags: []
-  notes: School Data portal; SPED data collections less accessible
+  flags:
+  - blocked
+  - follow-up-manual
+  - login-required
+  - request-only
+  notes: >-
+    Basic enrollment/staff totals confirmed via a real PDF directory; finer detail needs the MCDS login
+    or a formal data request.
 - code: MP
   name: Northern Mariana Islands
   portals:
@@ -1293,39 +1781,62 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-partial
+      availability: confirmed
       year: 2024-25
-      format: SLDS
-      access: unknown
-      urls: []
+      format: Dashboard (Google Sheets, CSV-exportable) + PDF
+      access: dashboard-export
+      urls:
+      - https://envisioncnmipss.org/district-data
+      - https://opa.cnmi.gov/storage/2026/03/CNMI-Public-School-System-FY-2025-CCR.pdf
     staffing:
-      availability: reported-partial
+      availability: confirmed
       year: 2024-25
-      format: SLDS
-      access: unknown
-      urls: []
+      format: Dashboard (Teacher-Student Ratio chart) + PDF summary
+      access: dashboard-export
+      urls:
+      - https://envisioncnmipss.org/district-data
     sped:
-      availability: reported-partial
+      availability: confirmed
       year: 2024-25
-      format: SLDS
-      access: unknown
-      urls: []
+      format: >-
+        Dashboard (Enrollment, LRE/setting charts, assessment participation) + PDF (total count only)
+      access: dashboard-export
+      urls:
+      - https://envisioncnmipss.org/sped-data-1
+      - https://envisioncnmipss.org/program-data-1
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
-      format: null
+      format: n/a (single statewide LEA)
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: reported-partial
+      year: unknown
+      format: Dashboard
+      access: dashboard-export
+      urls:
+      - https://envisioncnmipss.org/ell-data
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://slds.cnmipss.org/
+    - https://envisioncnmipss.org/
+    outcome: confirmed-partial-correction-to-seed
+    notes: >-
+      The Jan-2026 "limited/NCES-only" assessment is outdated — CNMI PSS now runs a real public data portal,
+      EnVision PSS (distinct from the login-walled slds.cnmipss.org), with enrollment-by-grade, teacher-student
+      ratio, and SPED/LRE dashboards backed by CSV-exportable Google Sheets, plus an annual Citizen Centric
+      Report PDF with SY2024-25 topline counts. CNMI PSS is a single statewide LEA, so no local NCES-LEA-ID
+      crosswalk exists or is expected on-site. slds.cnmipss.org and www.cnmipss.org returned HTTP 403
+      (likely bot-blocking) but wasn't needed since EnVision PSS covered everything.
   acquisitions: []
-  flags: []
-  notes: CNMI SLDS + EnVision PSS, limited public downloadable data
+  flags:
+  - dashboard-only
+  - follow-up-manual
+  notes: >-
+    Correction to Jan-2026 "limited" — a real dashboard portal (EnVision PSS) with CSV-exportable sheets
+    now exists.
 - code: MS
   name: Mississippi
   portals:
@@ -1337,39 +1848,61 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2023-24
+      availability: confirmed
+      year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - https://mdek12.org/wp-content/uploads/sites/29/2025/12/2024-2025-MTH1-NET-MEMBERSHIP.xlsx
     staffing:
-      availability: reported-partial
-      year: 2023-24
+      availability: confirmed
+      year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://mdek12.org/wp-content/uploads/sites/29/2025/12/2024-2025-CLASSROOM-TEACHERS-COUNTS-AVERAGE-SALARIES.xlsx
+      - >-
+        https://mdek12.org/wp-content/uploads/sites/29/2025/12/2024-2025-INSTRUCTIONAL-PERSONNEL-REPORT.xlsx
     sped:
-      availability: reported-partial
-      year: 2023-24
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2022-23
+      format: PDF
+      access: direct-download
+      urls:
+      - >-
+        https://www.mdek12.org/sites/default/files/Offices/MDE/OAE/OSE/SPP-APR/Districts-2022/v1/4100_lee_county_school_district.pdf
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
-  probes: []
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://newreports.mdek12.org/
+    outcome: confirmed-partial-source-relocated
+    notes: >-
+      Seed (newreports.mdek12.org) is live but enrollment-only via a JS dashboard; richer district-level
+      files actually live in MDE's annual "Superintendent Annual Report" Excel packet (mdek12.org/MBE/superintendentYYYY)
+      — enrollment and staffing verified real there. Staffing has no SPED-teacher-split column. SPED child-count
+      only as per-district PDFs (2022-23), no bulk file, SPP-APR index 502'd on retry. No NCES crosswalk
+      field found (MS uses an internal 4-digit code). FRPM/ELL not found in DataExplorer filters or accountability
+      archive. Note: mdek12.org intermittently 403s under WAF without a browser UA/request spacing — not
+      a hard block.
   acquisitions: []
-  flags: []
-  notes: MDEReports with Data Explorer and Downloads; SPED granularity unclear
+  flags:
+  - dashboard-only
+  - follow-up-manual
+  notes: >-
+    Portal moved (newreports -> Superintendent Annual Report packet); no crosswalk or FRPM/ELL found.
 - code: MT
   name: Montana
   portals:
@@ -1381,38 +1914,54 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2023-24
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25
+      format: PDF
+      access: direct-download
+      urls:
+      - >-
+        https://opifiles.mt.gov/Portals/182/Page%20Files/School%20Finance/12.Student%20Count%20ANB/Student%20Count%20for%20ANB%20Reports/FY2025%20District%20Summary.pdf
     staffing:
       availability: reported-partial
-      year: 2023-24
-      format: Excel
-      access: unknown
-      urls: []
+      year: unknown
+      format: Dashboard (Excel export via UI)
+      access: dashboard-export
+      urls:
+      - https://gems.opi.mt.gov/school-district-data
     sped:
       availability: reported-partial
-      year: 2023-24
-      format: Excel
-      access: unknown
-      urls: []
+      year: 2024-25
+      format: Dashboard (no direct file download found)
+      access: dashboard-export
+      urls:
+      - https://gems.opi.mt.gov/student-data
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: reported-partial
+      year: unknown
+      format: Dashboard (no direct file download found)
+      access: dashboard-export
+      urls:
+      - https://gems.opi.mt.gov/student-data
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://opi.mt.gov/
+    outcome: confirmed-partial-dashboard
+    notes: >-
+      Seed opi.mt.gov has no files itself; everything routes to GEMS, a Power BI/Tableau-style dashboard
+      suite that CAN export to Excel per-query but has no static file URLs. SPED dashboard masks counts
+      <=10 unless a secure account is requested (3-week turnaround). Enrollment is the one genuine static
+      PDF (FY2025 = 2024-25). No NCES crosswalk found on any OPI page.
   acquisitions: []
-  flags: []
+  flags:
+  - dashboard-only
+  - request-only
   notes: OPI data services, limited online portal access
 - code: NC
   name: North Carolina
@@ -1425,39 +1974,65 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: '2024'
-      format: Excel
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: current (multi-year selectable)
+      format: CSV (Dashboard export)
+      access: dashboard-export
+      urls:
+      - https://www.dpi.nc.gov/data-reports
     staffing:
       availability: reported-partial
-      year: '2024'
-      format: Excel
-      access: unknown
-      urls: []
+      year: current
+      format: CSV (Dashboard export)
+      access: dashboard-export
+      urls:
+      - >-
+        https://www.dpi.nc.gov/districts-schools/district-operations/financial-and-business-services/demographics-and-finances
     sped:
-      availability: reported-yes
-      year: '2024'
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2023-24 (FFY2023, submitted 2025)
+      format: PDF
+      access: direct-download
+      urls:
+      - https://dpi.nc.gov/documents/ec/ffy-2023-sppapr-part-b-report-final/download?attachment=
     crosswalk_ids:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: current
+      format: Dashboard (no direct download)
+      access: dashboard-export
+      urls:
+      - >-
+        https://www.dpi.nc.gov/districts-schools/district-operations/financial-and-business-services/demographics-and-finances/eddie
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: reported-partial
+      year: post-2021-22 (Econ Disadvantaged, not raw FRPM)
+      format: Dashboard/restricted
+      access: request-only
+      urls:
+      - https://www.dpi.nc.gov/data-reports/economically-disadvantaged
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://www.dpi.nc.gov/data-reports
+    - https://apps.schools.nc.gov/ords/f?p=145:1
+    outcome: partial-blocked-oracle-app
+    notes: >-
+      Seed URL still resolves and is the correct hub. Actual enrollment/staffing/finance data lives in
+      the "Statistical Profile Online" Oracle APEX app, which per public docs supports CSV export per
+      table — but returned HTTP 403 to direct fetch (one retry per one-attempt rule); treating as reported-partial/needs-a-real-browser
+      rather than a hard block, since write-ups describe it as a normal working tool. EDDIE confirmed
+      to contain an "NCES number/Federal ID" field per LEA (the crosswalk) but no direct download/export
+      confirmed. Post-2021-22 "Economically Disadvantaged" underlying NSLP files are described as access-restricted
+      via an inter-office MOA — may not be public even in aggregate. SPED is the strongest confirmed category
+      (FFY2023 SPP/APR Part B, LEA-disaggregated PDF). No Cloudflare/WAF on the main site; the 403 was
+      specific to the Oracle APEX subdomain.
   acquisitions: []
-  flags: []
-  notes: Data & Reports, Exceptional Children data (good SPED)
+  flags:
+  - dashboard-only
+  - follow-up-manual
+  notes: >-
+    Real data exists behind an Oracle APEX app that blocks automated fetch — needs a human browser session
+    to confirm CSV export.
 - code: ND
   name: North Dakota
   portals:
@@ -1469,39 +2044,57 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2023-24
+      availability: confirmed
+      year: 2025-26
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://www.nd.gov/dpi/sites/www/files/documents/Data/EnrollmentHistoryPublicSchoolDistrict.xlsx
     staffing:
-      availability: reported-partial
-      year: 2023-24
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25
+      format: PDF
+      access: direct-download
+      urls:
+      - https://www.nd.gov/dpi/sites/www/files/documents/SFO/2025FinFacts.pdf
     sped:
       availability: reported-partial
-      year: 2023-24
-      format: Excel
-      access: unknown
-      urls: []
+      year: '2025'
+      format: PDF
+      access: direct-download
+      urls:
+      - https://www.nd.gov/dpi/sites/www/files/documents/SpeEd/Childcountby%20disability.pdf
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
-  probes: []
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://insights.nd.gov/
+    - https://www.nd.gov/dpi/
+    outcome: confirmed-strong-flat-files
+    notes: >-
+      The "School Finance Facts" PDF (verified) has per-district Fall 2024-25 enrollment by grade AND
+      teacher/other-licensed/admin FTE by district, but the Teachers FTE figure bundles general-ed and
+      some SPED-category teachers together — no clean SPED-teacher split. Districts keyed by ND's own
+      County-District code, not a 7-digit NCES LEA ID — no crosswalk page found. SPED child-count PDF
+      is state-level totals by disability category only, not district-broken-out. No district-level FRPM/ELL
+      file found.
   acquisitions: []
-  flags: []
-  notes: Insights.nd.gov portal, Financial Facts publication
+  flags:
+  - follow-up-manual
+  notes: >-
+    Enrollment + aggregate staffing ready to acquire; SPED is state-level only, no crosswalk found.
 - code: NE
   name: Nebraska
   portals:
@@ -1513,39 +2106,62 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2024-25
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2025-26
+      format: CSV/PDF
+      access: direct-download
+      urls:
+      - >-
+        https://www.education.ne.gov/wp-content/uploads/2025/12/MembershipByGradeRaceAndGender_20252026.csv
+      - https://www.education.ne.gov/wp-content/uploads/2026/01/Statsfacts_20252026.pdf
     staffing:
-      availability: reported-yes
+      availability: confirmed
       year: 2024-25
-      format: Excel
-      access: unknown
-      urls: []
+      format: PDF
+      access: direct-download
+      urls:
+      - https://www.education.ne.gov/wp-content/uploads/2025/02/Statsfacts_20242025.pdf
     sped:
       availability: reported-partial
       year: 2024-25
-      format: Excel
-      access: unknown
-      urls: []
+      format: Dashboard (no direct download found)
+      access: dashboard-export
+      urls:
+      - https://nep.education.ne.gov/
+      - >-
+        https://www.education.ne.gov/wp-content/uploads/2026/04/FFY2024-SPP-APR-District-Public-Reporting.pdf
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: 2025-26
+      format: Excel
+      access: direct-download
+      urls:
+      - >-
+        https://www.education.ne.gov/wp-content/uploads/2025/12/2025-2026_Free_and_Reduced_Lunch_Counts_by_School.xlsx
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://www.education.ne.gov/dataservices/data-reports/
+    outcome: confirmed-strong-flat-files
+    notes: >-
+      Data Reports page is genuinely rich — real direct-download CSV/XLSX/PDF, not a login wall. Best
+      source: "Statistics and Facts about Nebraska Schools" annual PDF (Table 8, District Ranking by Membership),
+      verified via pdftotext, gives per-district membership by grade band + Staff FTE split Elem/Sec +
+      pupil-teacher ratio. FRPM is by-school (aggregable), no standalone ELL file located. SPED child-count/environment
+      exists per-district only via the Nebraska Education Profile (NEP) dashboard, no confirmed bulk download.
+      No state-to-NCES crosswalk file published on the NDE portal itself.
   acquisitions: []
-  flags: []
-  notes: NSSRS system, Staff Reporting due Sept 15
+  flags:
+  - dashboard-only
+  - follow-up-manual
+  notes: >-
+    Enrollment/staffing/FRPM ready to acquire now via real files; SPED needs the NEP dashboard.
 - code: NH
   name: New Hampshire
   portals:
@@ -1557,39 +2173,65 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: '2024'
-      format: Excel
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: 2025-26
+      format: Dashboard (no direct download confirmed)
+      access: dashboard-export
+      urls:
+      - https://my.doe.nh.gov/iPlatform
     staffing:
-      availability: reported-yes
-      year: '2024'
-      format: Excel
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: 2021-22
+      format: CSV/PDF/XLSX
+      access: direct-download
+      urls:
+      - >-
+        https://www.education.nh.gov/sites/g/files/ehbemt326/files/inline-documents/sonh/fte-district21-22.csv
     sped:
-      availability: reported-yes
-      year: '2024'
-      format: Excel
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: 2024-25
+      format: PDF/Dashboard
+      access: dashboard-export
+      urls:
+      - >-
+        https://www.education.nh.gov/sites/g/files/ehbemt326/files/inline-documents/sonh/indicator-10-data-fact-sheet.pdf
     crosswalk_ids:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: 2024-25
+      format: Dashboard
+      access: dashboard-export
+      urls:
+      - https://my.doe.nh.gov/profiles/profile.aspx
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: reported-partial
+      year: 2022-23
+      format: PDF
+      access: direct-download
+      urls:
+      - >-
+        https://www.education.nh.gov/sites/g/files/ehbemt326/files/inline-documents/sonh/lunch-school22-23.pdf
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://www.education.nh.gov/data-reports
+    - https://my.doe.nh.gov/iPlatform
+    outcome: blocked-genuine-waf
+    notes: >-
+      The entire education.nh.gov / my.doe.nh.gov domain returns an Akamai WAF 403 to automated fetches,
+      confirmed on multiple paths incl. live direct-file URLs. A human browser would likely succeed where
+      tools could not — treat this state as probably better than reported pending manual follow-up. Findings
+      reconstructed via Wayback Machine snapshots and search-result snippets, NOT live-verified downloads.
+      Static fte-district series confirmed historically only through SY2021-22; per-district Profile pages
+      reportedly show NCES District/School ID alongside NH's own ID, but bulk export is WAF-blocked or
+      per-record only.
   acquisitions: []
-  flags: []
-  notes: District Staff Reports, NHSEIS for SPED
+  flags:
+  - blocked
+  - dashboard-only
+  - follow-up-manual
+  notes: >-
+    Entire domain WAF-blocked to automated tools — needs a human browser pass before any conclusion is
+    trusted; findings here are unverified (Wayback/search snippets only).
 - code: NJ
   name: New Jersey
   portals:
@@ -1601,39 +2243,59 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2024-25
-      format: Excel/CSV
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2025-26
+      format: Excel (in ZIP)
+      access: direct-download
+      urls:
+      - https://www.nj.gov/education/doedata/enr/enr26/Enrollment_2526.zip
     staffing:
-      availability: reported-yes
-      year: 2024-25
-      format: Excel/CSV
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2025-26
+      format: Excel (in ZIP)
+      access: direct-download
+      urls:
+      - https://www.nj.gov/education/doedata/cs/cs26/Certificated%20Staff%202026.zip
     sped:
-      availability: reported-partial
-      year: 2024-25
-      format: Excel/CSV
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25 (Oct 15 2024 count)
+      format: Excel
+      access: direct-download
+      urls:
+      - >-
+        https://www.nj.gov/education/specialed/monitor/ideapublicdata/docs/2025_618data/2025IDEA618PublicReporting_StudentCountandEducationalEnvironment.xlsx
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: 2025-26
+      format: Excel (in ZIP)
+      access: direct-download
+      urls:
+      - https://www.nj.gov/education/doedata/enr/enr26/Enrollment_2526.zip
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://www.nj.gov/education/doedata/
+    outcome: confirmed-strong-flat-files
+    notes: >-
+      DOE Data & Reports portal is fully open, no WAF issues. Enrollment workbook (inspected directly)
+      bundles %Free/Reduced Lunch, %Multilingual Learners, %Migrant/Military/Homeless in the same District
+      tab as enrollment (percentages only, not raw counts). Certificated Staff workbook reports FTE by
+      category but does NOT split Teachers into SPED vs general-ed — the SPED-teacher-FTE split this project
+      wants is not cleanly available here, despite the seed note describing "Certified Staff Reports".
+      IDEA 618 public reporting is excellent: district counts/% by disability, educational environment,
+      age, race, ML status. No file pairing NJ's own county+district code directly to the 7-digit NCES
+      LEA ID found; the school-directory tool that plausibly carries it 403/404'd.
   acquisitions: []
-  flags: []
-  notes: Data & Reports Portal, Certified Staff Reports
+  flags:
+  - follow-up-manual
+  notes: >-
+    Strong open portal; correction to seed note — staffing file does NOT split SPED vs general-ed teachers.
 - code: NM
   name: New Mexico
   portals:
@@ -1645,39 +2307,59 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2023-24
+      availability: confirmed
+      year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://web.ped.nm.gov/wp-content/uploads/_legacy/2025/02/SY2024_2025_40D_Enrollment_By_School_By_Grade.xlsx
     staffing:
-      availability: reported-partial
-      year: 2023-24
-      format: Excel
+      availability: not-found
+      year: null
+      format: null
       access: unknown
       urls: []
     sped:
-      availability: reported-yes
-      year: 2023-24
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25
+      format: PDF
+      access: direct-download
+      urls:
+      - >-
+        https://web.ped.nm.gov/wp-content/uploads/2025/08/Published-24-25-School-Age-Child-Counts.pdf
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
-  probes: []
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://webnew.ped.state.nm.us/
+    - https://web.ped.nm.gov/
+    - https://webed.ped.state.nm.us/
+    outcome: confirmed-partial-login-wall
+    notes: >-
+      Seed URL (webnew.ped.state.nm.us) is dead; current portal is web.ped.nm.gov. Enrollment file is
+      by-school-by-grade with a district field, not pre-aggregated totals. SPED child-count PDF is real;
+      the district LRE/educational-environment breakdown on the same page is stale (last posted SY2015-16).
+      The richer District Profile Report system (webed.ped.state.nm.us) was unreachable — TLS/connection
+      errors — consistent with the seed note that unmasked District View needs login. No NCES crosswalk
+      found.
   acquisitions: []
-  flags: []
-  notes: NM Vistas, STARS system; District View unmasked data needs login
+  flags:
+  - blocked
+  - follow-up-manual
+  - login-required
+  notes: Portal moved off the Jan-2026 seed URL; richer data confirmed behind a login wall.
 - code: NV
   name: Nevada
   portals:
@@ -1689,39 +2371,59 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
+      availability: confirmed
       year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://webapp-strapi-paas-prod-nde-001.azurewebsites.net/uploads/2024_2025_school_year_validation_day_student_counts_16036836ca.xlsx
     staffing:
-      availability: reported-yes
+      availability: confirmed
       year: 2024-25
-      format: Excel
-      access: unknown
-      urls: []
+      format: PDF
+      access: direct-download
+      urls:
+      - >-
+        https://www.leg.state.nv.us/Division/Research/Documents/RTTL_NRS387.303_2024_Statewide_Revised.pdf
     sped:
-      availability: reported-partial
+      availability: confirmed
       year: 2024-25
-      format: Excel
-      access: unknown
-      urls: []
+      format: PDF
+      access: direct-download
+      urls:
+      - >-
+        https://webapp-strapi-paas-prod-nde-001.azurewebsites.net/uploads/october_2024_nevada_idea_child_count_1426a218a7.pdf
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: 2024-25
+      format: PDF
+      access: direct-download
+      urls:
+      - https://nevadareportcard.nv.gov/PDF/2025/00.E.pdf
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://doe.nv.gov/DataCenter/Enrollment/
+    outcome: confirmed-strong-flat-files
+    notes: >-
+      Strongest of the small states — real per-LEA files for every core category. Seed URL moved to a
+      doe.nv.gov enrollment sub-page. Staffing file (NRS 387/388A) breaks out FTE by Program 100 (Regular)
+      vs Program 200 (Special Ed) — a genuine SPED-teacher split. FRPM file lives on agri.nv.gov (school
+      nutrition run by Dept of Agriculture, not DOE) which runs a bot-challenge that blocked plain curl
+      but succeeded via browser-like fetch — flagged blocked as a caution for an automated scraper even
+      though the file is real. No NCES crosswalk found; NV districts use simple 2-digit state numbers.
   acquisitions: []
-  flags: []
-  notes: Nevada Accountability Portal, new Educator Workforce portal
+  flags:
+  - blocked
+  notes: >-
+    Best small-state find: genuine SPED-teacher split in staffing, all 4 core categories confirmed.
 - code: NY
   name: New York
   portals:
@@ -1736,39 +2438,61 @@ states:
   data:
     enrollment:
       availability: confirmed
-      year: 2023-24
-      format: varies
+      year: 2024-25
+      format: CSV (zip)
       access: direct-download
-      urls: []
+      urls:
+      - https://data.nysed.gov/files/enrollment/24-25/ENROLLMENT_2025.zip
     staffing:
       availability: confirmed
-      year: 2023-24
-      format: varies
+      year: 2024-25
+      format: CSV (zip)
       access: direct-download
-      urls: []
+      urls:
+      - https://data.nysed.gov/files/studed/24-25/STUDED2025.zip
     sped:
       availability: reported-partial
-      year: 2023-24
-      format: varies
-      access: unknown
-      urls: []
+      year: 2024-25
+      format: web-report/Excel
+      access: dashboard-export
+      urls:
+      - https://data.nysed.gov/specialed/
+      - https://www.p12.nysed.gov/sedcar/state.htm
     crosswalk_ids:
-      availability: confirmed
-      year: 2023-24
-      format: varies
-      access: direct-download
-      urls: []
+      availability: blocked
+      year: unchanged
+      format: unknown
+      access: request-only
+      urls:
+      - https://data.nysed.gov/lists.php?type=district
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: reported-partial
+      year: 2024-25 (FRPM); 2023-24 (ELL, not advanced)
+      format: CSV (zip)
+      access: direct-download
+      urls:
+      - https://data.nysed.gov/downloads.php
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://data.nysed.gov/downloads.php
+    - https://portal.nysed.gov (SEDREF crosswalk query)
+    outcome: refresh-year-confirmed-partial-block
+    notes: >-
+      Enrollment and staffing fully current at 2024-25, real zip files confirmed live, superseding the
+      integrated 2023-24 data. SPED available but as a per-district web dashboard, not a confirmed bulk
+      file (may be embeddable in STUDED2025.zip, unverified). Standalone ELL Database has NOT advanced
+      past 2023-24 (confirmed on the Downloads page) — a real lag, distinct from FRPM which is current
+      via STUDED. SEDREF crosswalk query tool redirected to a login gate on both attempts; BEDS codes
+      are stable so the existing 2023-24 crosswalk method likely still applies without a new pull.
   acquisitions: []
   flags:
   - refresh-candidate
-  notes: null
+  - blocked
+  - follow-up-manual
+  notes: >-
+    Enrollment/staffing refresh is clean; SPED bulk-file and crosswalk re-verification need manual follow-up
+    (SEDREF login wall).
 - code: OH
   name: Ohio
   portals:
@@ -1780,39 +2504,62 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2024-25
-      format: Excel/CSV
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2025-26
+      format: Excel (.xls)
+      access: direct-download
+      urls:
+      - >-
+        https://education.ohio.gov/getattachment/Topics/Data/Frequently-Requested-Data/Enrollment-Data/oct_hdcnt_fy26.xls.aspx?lang=en-US
     staffing:
       availability: reported-partial
       year: 2024-25
-      format: Excel/CSV
-      access: unknown
+      format: unclear
+      access: request-only
       urls: []
     sped:
-      availability: reported-yes
+      availability: confirmed
       year: 2024-25
-      format: Excel/CSV
-      access: unknown
-      urls: []
+      format: Excel
+      access: direct-download
+      urls:
+      - >-
+        https://education.ohio.gov/getattachment/Topics/Special-Education/Special-Education-Data-and-Funding/Special-Education-Accountability-Resources/Ohio-s-Special-Education-Profiles/Public-Indicator-Report-2024-2025.xlsx.aspx?lang=en-US
     crosswalk_ids:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: current
+      format: CSV/Excel (custom extract)
+      access: dashboard-export
+      urls:
+      - https://oeds.education.ohio.gov/dataextract
     frpm_ell:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
-  probes: []
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://education.ohio.gov/Topics/Data
+    - https://data.ohio.gov/
+    outcome: confirmed-partial-decommissioned-source
+    notes: >-
+      ODE's own staff-FTE-by-district links point to data.ohio.gov, which now 404s from a stale S3/CloudFront
+      origin (last-modified 2023) — that open-data catalog appears decommissioned; full FTE-with-SPED-split
+      explicitly requires an OH|ID login to a "Secured" dataset. SPED indicator data is solid and current
+      (verified downloadable, released May 2026). Crosswalk confirmed available as an exportable "NCES
+      District ID" field alongside IRN in the OEDS DataExtract tool — an interactive query builder, not
+      a static file. Main Report Card download page is a JS SPA, FRPM/econ-disadvantaged file not confirmed
+      despite likely existing behind it.
   acquisitions: []
-  flags: []
-  notes: Enrollment Data, Special Education Profiles; large-population state
+  flags:
+  - dashboard-only
+  - follow-up-manual
+  - request-only
+  notes: >-
+    Enrollment + SPED ready to acquire now; staffing needs a login, data.ohio.gov open-data catalog appears
+    dead.
 - code: OK
   name: Oklahoma
   portals:
@@ -1824,39 +2571,58 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
+      availability: confirmed
       year: 2024-25
-      format: Excel
-      access: unknown
-      urls: []
+      format: CSV
+      access: direct-download
+      urls:
+      - https://oklaschools.com/archive/2025/districts.csv
     staffing:
-      availability: reported-partial
-      year: 2024-25
-      format: Excel
+      availability: not-found
+      year: null
+      format: null
       access: unknown
       urls: []
     sped:
-      availability: reported-yes
-      year: 2024-25
-      format: Excel
+      availability: reported-partial
+      year: null
+      format: null
       access: unknown
       urls: []
     crosswalk_ids:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25
+      format: CSV
+      access: direct-download
+      urls:
+      - https://oklaschools.com/archive/2025/districts.csv
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: reported-partial
+      year: 2024-25
+      format: CSV
+      access: direct-download
+      urls:
+      - https://oklaschools.com/archive/2025/rc-english-learner-proficiency-rates.csv
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://oklahoma.gov/education/school-data
+    - https://oklaschools.com/archive.html
+    outcome: confirmed-strong-crosswalk-find
+    notes: >-
+      Seed URL 404s. Real portal is oklaschools.com's Cloudflare-protected SPA, but it also publishes
+      a documented static CSV archive (years 2018-2025). districts.csv was downloaded and inspected: it
+      has both an Enrollment column and an NCESID/NCESGeoID column with real 7-digit federal LEA IDs (e.g.
+      4002370 for Ada) — a strong two-birds-one-file find. No bulk teacher-FTE-by-district file found
+      anywhere. SPED: OSDE references APR/monitoring data but no downloadable child-count file was located.
+      The ELL file found is a proficiency-RATE file, not raw headcounts; no FRPM file found.
   acquisitions: []
-  flags: []
-  notes: School Data portal, Special Ed Data page
+  flags:
+  - dashboard-only
+  - follow-up-manual
+  notes: >-
+    One of the strongest crosswalk finds in the whole campaign — a real NCES-ID column in the enrollment
+    CSV itself.
 - code: OR
   name: Oregon
   portals:
@@ -1868,39 +2634,57 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: '2024'
+      availability: confirmed
+      year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://www.oregon.gov/ode/reports-and-data/students/Documents/fallmembershipreport_20242025.xlsx
     staffing:
       availability: reported-partial
-      year: '2024'
-      format: Excel
-      access: unknown
-      urls: []
+      year: null
+      format: Dashboard (no direct download found)
+      access: dashboard-export
+      urls:
+      - http://www.ode.state.or.us/data/reportcard/Media.aspx
     sped:
-      availability: reported-yes
-      year: '2024'
+      availability: confirmed
+      year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://www.oregon.gov/ode/reports-and-data/SpEdReports/Documents/SECCMediaFiles/2024samediafile.xlsx
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
+      availability: reported-partial
       year: null
       format: null
       access: unknown
       urls: []
-  probes: []
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://www.ode.state.or.us/data/reportcard/reports.aspx
+    outcome: confirmed-strong-source-moved
+    notes: >-
+      Seed URL works and is a good entry point, but most files now live on oregon.gov. Enrollment (Fall
+      Membership Report) and SPED child-count-by-educational-environment-by-district (December SECC file)
+      both HTTP-200-verified direct downloads. Teacher/EA/Counselor FTE by district exists but only via
+      an ASP.NET dropdown flow (Media.aspx) with no resolvable static URL — human click-through needed.
+      FRPM report page 404'd on direct fetch. No NCES crosswalk found; Oregon's own Institution Lookup
+      exposes only an Oregon-specific ID.
   acquisitions: []
-  flags: []
-  notes: At-A-Glance Profiles, strong Special Ed District Profiles
+  flags:
+  - dashboard-only
+  notes: >-
+    Enrollment + SPED-by-environment confirmed strong; staffing needs a dropdown click-through.
 - code: PA
   name: Pennsylvania
   portals:
@@ -1955,39 +2739,62 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-partial
-      year: 2022-23
-      format: NCES
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25
+      format: Excel
+      access: direct-download
+      urls:
+      - https://perfilescolar.dde.pr/files/download/directorio_esc_2024-2025.xlsx?download=True
     staffing:
       availability: reported-partial
-      year: 2022-23
-      format: NCES
-      access: unknown
-      urls: []
+      year: 2024-25
+      format: Dashboard (no direct download found)
+      access: dashboard-export
+      urls:
+      - https://perfilescolar.dde.pr/staff
     sped:
-      availability: reported-partial
-      year: 2022-23
-      format: NCES
+      availability: not-found
+      year: null
+      format: null
       access: unknown
       urls: []
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
-      format: null
+      format: NCES-only (PR is a single unified LEA, 1:1 mapping)
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
-  probes: []
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://perfilescolar.dde.pr/directory
+    - https://de.pr.gov/edata/
+    - https://datos.pr.gov/
+    - https://datos.estadisticas.pr/
+    - https://indicadores.pr/
+    outcome: confirmed-partial-correction-to-seed
+    notes: >-
+      The Jan-2026 "NCES-only" conclusion is partially overturned: perfilescolar.dde.pr (PRDE's Illuminate
+      "School Report Card" platform) publishes a real, current, directly-downloadable school directory
+      (870 schools, 2024-25, enrollment by grade PK-12), verified by download and inspection (columns
+      REGION/DISTRITO/CODIGO/ESCUELA/grade columns/lat-long), plus per-school Staff and Certified-Enrollment
+      dashboards with an export utility (bulk download not confirmed). PR is a single unified statewide
+      LEA under NCES (7-digit LEA crosswalk is trivial, 1:1), but no school-level PR-code-to-NCES-ID mapping
+      file was found. Legacy datos.pr.gov now redirects to a maintenance page; datos.estadisticas.pr's
+      CKAN dataset only reposts stale 2004-2008 NCES CCD data (redundant). indicadores.pr was 503 (down,
+      not blocked) at check time. No WAF/Cloudflare block encountered anywhere in this jurisdiction.
   acquisitions: []
-  flags: []
-  notes: No dedicated PRDE data portal found; rely on NCES
+  flags:
+  - dashboard-only
+  - follow-up-manual
+  notes: >-
+    Correction to Jan-2026 "no portal found" — a real, current enrollment directory exists at perfilescolar.dde.pr.
 - code: RI
   name: Rhode Island
   portals:
@@ -1999,38 +2806,56 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2023-24
+      availability: confirmed
+      year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: dashboard-export
+      urls:
+      - https://datacenter.ride.ri.gov/Data/EnrollmentDashboard
     staffing:
-      availability: reported-partial
-      year: 2023-24
+      availability: confirmed
+      year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - https://datacenter.ride.ri.gov/Home/FileDetail?fileid=1104
     sped:
-      availability: reported-yes
-      year: 2023-24
-      format: Excel
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: 2024-25
+      format: unclear
+      access: request-only
+      urls:
+      - >-
+        https://ride.ri.gov/students-families/special-education/special-education-data-618-data-collections
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
-  probes: []
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://datacenter.ride.ri.gov/
+    outcome: confirmed-partial
+    notes: >-
+      RIDE Data Center is a working portal with a real per-file download form. Verified "teacher stats
+      2024-25.xlsx" downloads — SCHOOL-level with LEA_NAME and total teacher FTE plus PK/K/elem/secondary
+      counts, no explicit SPED-teacher-FTE column, but aggregable to district. Enrollment dashboard is
+      a Tableau embed; a per-district Excel export exists via the ESSA Report Card but no single statewide
+      bulk file found. SPED 618/child-count data referenced with 2024-25 totals but no downloadable district-level
+      file found (older FRED files only go to 2009-10). "NCES Code" field exists in RIDE's school directory
+      schema but was blank on the sampled record.
   acquisitions: []
-  flags: []
+  flags:
+  - dashboard-only
+  - request-only
   notes: RIDE Data Center, 618 data collections (format unclear)
 - code: SC
   name: South Carolina
@@ -2043,39 +2868,60 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: '2024'
+      availability: confirmed
+      year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://ed.sc.gov/data/other/student-counts/active-student-headcounts/2024-25-active-student-headcounts/45-day-district-headcount-by-grade/
     staffing:
-      availability: reported-yes
-      year: '2024'
+      availability: confirmed
+      year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://ed.sc.gov/data/other/teacher-data/2024-25-sc-staff-by-school-position-codes-01-105/
     sped:
-      availability: reported-partial
-      year: '2024'
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2022-23
+      format: PDF
+      access: direct-download
+      urls:
+      - >-
+        https://ed.sc.gov/districts-schools/special-education-services/data-and-technology-d-t/data-collection-and-reporting/sc-data-collection-history/idea-child-count-data/2022-2023-child-count-data/ages-3-to-21-state-child-count-summary-22-23-pdf/
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
-  probes: []
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://ed.sc.gov/data/
+    outcome: confirmed-strong-flat-files
+    notes: >-
+      Enrollment and staffing are strong current-year direct-download Excel, verified by opening the workbooks
+      — staffing lists explicit SPED position codes (Itinerant, Self-Contained, Resource, Speech Therapist,
+      SPED Aide) keyed by district BEDS code, so a SPED-teacher split is derivable by aggregation even
+      without a pre-built column. SPED child-count/LRE confirmed but newest located is 2022-23 (newer
+      years likely exist, URL patterns tried 404'd). No SC-to-NCES crosswalk file found (SC uses its own
+      7-digit BEDS code). No FRPM/poverty-index or ELL-by-district page found — SC funding formula uses
+      a Poverty Index rather than raw FRPM counts.
   acquisitions: []
-  flags: []
-  notes: Student Counts, Educator Profession Reports
+  flags:
+  - follow-up-manual
+  notes: >-
+    SPED-teacher split derivable from position codes even without a pre-built column — worth building
+    that aggregation in the importer.
 - code: SD
   name: South Dakota
   portals:
@@ -2087,39 +2933,59 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2023-24
+      availability: confirmed
+      year: 2025-26
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - https://doe.sd.gov/ofm/documents/Pubdisgr-2025.xlsx
     staffing:
-      availability: reported-yes
-      year: 2023-24
+      availability: confirmed
+      year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - https://doe.sd.gov/ofm/documents/25-Profile.xlsx
     sped:
-      availability: reported-yes
-      year: 2023-24
+      availability: confirmed
+      year: '2025'
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - https://doe.sd.gov/ofm/documents/25-PublicCC-Dst.xlsx
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: '2025'
+      format: Excel
+      access: direct-download
+      urls:
+      - https://doe.sd.gov/ofm/documents/PubdisFRL-25.xlsx
+      - https://doe.sd.gov/ofm/documents/PubdisEL-2025.xlsx
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://doe.sd.gov/data/dashboards.aspx
+    - https://doe.sd.gov/ofm/statdigest.aspx
+    outcome: confirmed-strong-flat-files
+    notes: >-
+      Data lives under several /ofm sub-pages rather than one central portal; all links tested return
+      live 200 Excel files. The district-level "Statistical Digest" profile workbook has one row per district
+      with FTE, FRPM %, SPED % of enrollment, and finance data, but staffing is NOT split SPED-teacher
+      vs general-teacher (aggregate certified/non-certified only). Child count file gives IDEA-style counts
+      by district but not environment breakdown. No SD-published crosswalk file found — worth a follow-up
+      at doe.sd.gov/ofm/edudir.aspx.
   acquisitions: []
-  flags: []
-  notes: Data Dashboards, Staffing Data, SPP reports
+  flags:
+  - follow-up-manual
+  notes: >-
+    Genuinely strong flat-file source once the /ofm sub-pages are known — enrollment/staffing/SPED/FRPM
+    all ready to acquire.
 - code: TN
   name: Tennessee
   portals:
@@ -2131,39 +2997,61 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
+      availability: confirmed
       year: 2024-25
-      format: Excel/CSV
-      access: unknown
-      urls: []
+      format: Excel
+      access: direct-download
+      urls:
+      - https://www.tn.gov/content/dam/tn/education/data/district-profile-2024-2025.xlsx
     staffing:
-      availability: reported-yes
+      availability: confirmed
       year: 2024-25
-      format: Excel/CSV
-      access: unknown
-      urls: []
+      format: Excel
+      access: direct-download
+      urls:
+      - https://www.tn.gov/content/dam/tn/education/data/staff-2024-25.xlsx
     sped:
       availability: reported-partial
-      year: 2024-25
-      format: Excel/CSV
-      access: unknown
-      urls: []
+      year: 2023-24
+      format: Excel (state-level) / PDF (district indicators)
+      access: direct-download
+      urls:
+      - >-
+        https://www.tn.gov/content/dam/tn/education/students/EC_Child_Count_23-24_Final_Suppressed.xlsx
     crosswalk_ids:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: current (undated static reference)
+      format: Excel
+      access: direct-download
+      urls:
+      - https://www.tn.gov/content/dam/tn/education/data/data_interdepartmental_crosswalk.xlsx
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: 2024-25
+      format: Excel
+      access: direct-download
+      urls:
+      - https://www.tn.gov/content/dam/tn/education/data/district-profile-2024-2025.xlsx
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://tdepublicschools.ondemand.sas.com/
+    - >-
+      https://www.tn.gov/education/districts/federal-programs-and-oversight/data/data-downloads.html
+    outcome: confirmed-strong-source-moved
+    notes: >-
+      Seed SAS portal is a JS Report Card front end, not the download source — real source is a plain
+      data-downloads page. district-profile file has enrollment-by-grade plus district-level econ-disadvantaged-pct
+      and LEP-pct (percentages only). staff file only splits Administrator/Teacher/Other — no SPED-teacher
+      sub-split. data_interdepartmental_crosswalk confirmed to contain a 7-digit "NCES.District.Number"
+      column — a genuine crosswalk. Clean SPED child-count-by-environment Excel is state-level only; district-level
+      SPED detail only as PDF indicator scores, not raw counts.
   acquisitions: []
-  flags: []
-  notes: State Report Card, Data Downloads page (SAS-based portal)
+  flags:
+  - dashboard-only
+  notes: >-
+    Confirmed crosswalk file with explicit NCES.District.Number column; portal moved off the SAS seed
+    URL.
 - code: TX
   name: Texas
   portals:
@@ -2221,39 +3109,56 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: '2024'
+      availability: confirmed
+      year: 2025-26
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://schools.utah.gov/datastatistics/_datastatisticsfiles_/_reports_/_enrollmentmembership_/2026EnrollmentLEA.xlsx
     staffing:
-      availability: reported-partial
-      year: '2024'
+      availability: confirmed
+      year: 2024-25
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://schools.utah.gov/datastatistics/_datastatisticsfiles_/_reports_/_educators_/2025LicensedStaffFTESchoolYear.xlsx
     sped:
-      availability: reported-partial
-      year: '2024'
-      format: Excel
+      availability: not-found
+      year: null
+      format: null
       access: unknown
       urls: []
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
+      availability: reported-partial
       year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      format: Dashboard (no direct download found)
+      access: dashboard-export
+      urls:
+      - https://datagateway.schools.utah.gov/
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://datagateway.schools.utah.gov/
+    outcome: confirmed-strong-source-moved
+    notes: >-
+      Seed URL (datagateway.schools.utah.gov) is a login-gated/dashboard front door with no visible downloads.
+      Real files live at schools.utah.gov/datastatistics — verified real xlsx (correct MIME, real per-district
+      rows). Staffing file has an explicit "Special Education Teachers" FTE column by district (satisfies
+      the staffing SPED-split ask). ELL shows up only as a WIDA ACCESS dashboard, not raw counts; no FRPM
+      data or NCES crosswalk found within budget — USBE offers a manual data-request desk as fallback.
   acquisitions: []
   flags: []
-  notes: USBE Data Gateway, Reports section
+  notes: >-
+    Genuine SPED-teacher-FTE column confirmed in staffing — a clean source once the real file location
+    (schools.utah.gov, not the dashboard) is known.
 - code: VA
   name: Virginia
   portals:
@@ -2309,39 +3214,56 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-partial
-      year: 2022-23
-      format: NCES
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25
+      format: PDF
+      access: direct-download
+      urls:
+      - https://www.vide.vi/uploaded/PRE/Enroll/2024-2025_Enrollment_by_Grade.pdf
     staffing:
       availability: reported-partial
-      year: 2022-23
-      format: NCES
-      access: unknown
-      urls: []
+      year: 2024-25
+      format: PDF (student-teacher ratio only, not raw FTE)
+      access: direct-download
+      urls:
+      - https://www.vide.vi/divisions/planning-research-and-evaluation
     sped:
-      availability: reported-partial
-      year: 2022-23
-      format: NCES
+      availability: not-found
+      year: null
+      format: null
       access: unknown
       urls: []
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
-  probes: []
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://www.vide.vi/
+    outcome: confirmed-partial-correction-to-seed
+    notes: >-
+      Correction to the Jan-2026 assessment — VIDE's Planning, Research & Evaluation division page publishes
+      real downloadable PDFs (enrollment by grade/gender/ethnicity/program, back to 2005; verified the
+      2024-25 enrollment-by-grade PDF resolves at HTTP 200). Only a student-teacher RATIO report was found
+      for staffing (not raw FTE counts), and no downloadable SPED child-count, FRPM, or ELL data or any
+      NCES-ID crosswalk was found on-site — SPED figures exist only as numbers cited in legislative testimony/news
+      coverage, not a published dataset. VI operates two districts (St. Croix; St. Thomas-St. John), each
+      presumably its own LEA, but no local ID scheme or crosswalk to NCES was located.
   acquisitions: []
-  flags: []
-  notes: VIDE website; data primarily via NCES
+  flags:
+  - follow-up-manual
+  notes: >-
+    Correction to Jan-2026 "no portal found" — real enrollment PDFs exist; SPED/FRPM/ELL/crosswalk still
+    not found.
 - code: VT
   name: Vermont
   portals:
@@ -2353,39 +3275,57 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: '2024'
-      format: Excel/Dashboard
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2025-26
+      format: Excel
+      access: direct-download
+      urls:
+      - >-
+        https://education.vermont.gov/sites/aoe/files/documents/edu-ved-enrollment-dataset-20251125.xlsx
     staffing:
-      availability: reported-yes
-      year: '2024'
-      format: Excel/Dashboard
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: 2020-21
+      format: Excel
+      access: direct-download
+      urls:
+      - https://education.vermont.gov/sites/aoe/files/documents/StaffInformation.xlsx
     sped:
-      availability: reported-yes
-      year: '2024'
-      format: Excel/Dashboard
+      availability: not-found
+      year: null
+      format: null
       access: unknown
       urls: []
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
-  probes: []
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://education.vermont.gov/data-and-reporting/vermont-education-dashboard
+    outcome: confirmed-partial-waf
+    notes: >-
+      education.vermont.gov (Drupal/CloudFront) 403s default fetchers — required a browser UA + matching
+      Referer to get real files through; a WAF, not a login wall. Verified enrollment file downloads (school-level,
+      SchoolYear up to 2025-26, aggregable to Supervisory Union) — beats current NCES vintage. StaffInformation.xlsx
+      downloads but stops at SY2020-21 and has only ratios/salary, no FTE headcounts or SPED split. A
+      "Student Characteristics" dataset (likely FRPM/ELL/SPED) exists but the only file found is a stale
+      2021 zip that 403'd on retry — not verified, marked not-found rather than cited unverified/stale.
+      VT's Socrata "Organization Information" dataset has SU/school IDs but no NCES ID field.
   acquisitions: []
-  flags: []
-  notes: Dashboard with enrollment, staffing, SPED reports; need download endpoints
+  flags:
+  - blocked
+  - follow-up-manual
+  notes: >-
+    Enrollment newer than NCES baseline (2025-26); staffing/SPED/FRPM need a human pass past the WAF.
 - code: WA
   name: Washington
   portals:
@@ -2397,39 +3337,58 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2023-24
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2025-26
+      format: API (Socrata; CSV export also available)
+      access: api
+      urls:
+      - https://data.wa.gov/resource/wvqy-yp3m.json
     staffing:
-      availability: reported-partial
-      year: 2023-24
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2024-25
+      format: PDF
+      access: direct-download
+      urls:
+      - https://ospi.k12.wa.us/sites/default/files/2025-02/allpersonnelsummaryreport2024-25.pdf
     sped:
-      availability: reported-partial
-      year: 2023-24
+      availability: confirmed
+      year: FFY2024 (submitted 2026)
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - >-
+        https://ospi.k12.wa.us/sites/default/files/2026-05/perf_data_profiles_ffy2024_subm2026-public.xlsx
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: 2025-26
+      format: API (Socrata; CSV export also available)
+      access: api
+      urls:
+      - https://data.wa.gov/resource/wvqy-yp3m.json
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://ospi.k12.wa.us/
+    - https://data.wa.gov/
+    outcome: confirmed-strong-api
+    notes: >-
+      Seed URL (ospi.k12.wa.us) is just the agency homepage. Real district-level data lives on the Washington
+      Open Data Portal (data.wa.gov, Socrata) — the "Report Card Enrollment" dataset (id wvqy-yp3m) is
+      district-level, by-grade, and carries low_income + english_language_learners + students_with_disabilities
+      columns in one file, verified via live JSON query. S-275 Personnel Summary PDF (Tables 39/40) breaks
+      out state-funded special-ed instructional FTE by district. No WA-code-to-NCES-LEAID crosswalk found
+      despite checking OSPI's directory tool and data.wa.gov's catalog.
   acquisitions: []
-  flags: []
-  notes: OSPI direct data portal unclear (Jan-2026 found JLARC reports instead)
+  flags:
+  - api-available
+  notes: >-
+    One Socrata API call covers enrollment+FRPM+ELL+SPED-count together — an excellent acquisition target.
 - code: WI
   name: Wisconsin
   portals:
@@ -2441,39 +3400,63 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2023-24
-      format: CSV/Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2025-26
+      format: CSV (zipped)
+      access: direct-download
+      urls:
+      - https://dpi.wi.gov/sites/default/files/wise/downloads/enrollment_certified_2025-26.zip
     staffing:
       availability: reported-partial
-      year: 2023-24
-      format: CSV/Excel
-      access: unknown
-      urls: []
+      year: 2025-26
+      format: Dashboard (Excel export button, per-district)
+      access: dashboard-export
+      urls:
+      - https://publicstaffreports.dpi.wi.gov/PubStaffReport/Public/PublicReport/AggregateReport
     sped:
-      availability: reported-yes
-      year: 2023-24
-      format: CSV/Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2025-26
+      format: CSV (zipped)
+      access: direct-download
+      urls:
+      - >-
+        https://dpi.wi.gov/sites/default/files/wise/downloads/oct1_child_count_certified_2025-26.zip
     crosswalk_ids:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2025-26
+      format: CSV (zipped)
+      access: direct-download
+      urls:
+      - https://dpi.wi.gov/sites/default/files/wise/downloads/agency_ICS_crosswalk.zip
+      - https://dpi.wi.gov/sites/default/files/wise/downloads/agency_certified_2025-26.zip
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: confirmed
+      year: 2025-26
+      format: CSV (zipped)
+      access: direct-download
+      urls:
+      - https://dpi.wi.gov/sites/default/files/wise/downloads/enrollment_certified_2025-26.zip
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://dpi.wi.gov/wisedash/public/download-files
+    outcome: confirmed-strong-flat-files
+    notes: >-
+      WISEdash "Data Files by Topic" hub verified by downloading and inspecting actual CSVs. The enrollment
+      file itself carries Economic Status (WI's post-CEP FRPM proxy) and EL Status breakdowns by district/school,
+      so one file covers enrollment+FRPM+ELL together. The Oct-1 Child Count file has an EDUCATION_ENVIRONMENT
+      field by district — genuinely richer than a bare count. Crosswalk is unusually strong: the Agency
+      directory has a FULL_NCES_CODE column per school/district, plus a dedicated crosswalk zip (DPI code
+      <-> 12-digit NCES code, incl. Independent-Charter code-change history). Staffing is the weak spot:
+      WISEstaff/Public Staff Reports is confirmed public/no-login with an Excel export button, but it's
+      an interactive per-district tool, not a bulk statewide file.
   acquisitions: []
-  flags: []
-  notes: WISEdash Public Portal, WISEdata warehouse (since 2016-17)
+  flags:
+  - dashboard-only
+  - follow-up-manual
+  notes: >-
+    Best crosswalk found in this batch (real NCES-code column + dedicated crosswalk file); enrollment/SPED/FRPM/ELL
+    all one bulk source, only staffing is per-district manual.
 - code: WV
   name: West Virginia
   portals:
@@ -2485,39 +3468,61 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: 2024-25
-      format: Excel
-      access: unknown
-      urls: []
+      availability: confirmed
+      year: 2025-26
+      format: PDF (district table); Excel via dashboard
+      access: direct-download
+      urls:
+      - https://wvde.us/sites/default/files/2025-11/Education%20Snapshot%20Booklet%202024-2025.pdf
     staffing:
-      availability: reported-partial
-      year: 2024-25
+      availability: confirmed
+      year: 2025-26
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - https://wvde.us/media/9183/fte-teachers-26accxlsx
     sped:
-      availability: reported-partial
-      year: 2024-25
+      availability: confirmed
+      year: 2023-24
       format: Excel
-      access: unknown
-      urls: []
+      access: direct-download
+      urls:
+      - https://wvde.us/media/7663/wv-local-annual-performance-reports-2023-24
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: reported-partial
+      year: 2024-25
+      format: Dashboard (no direct download)
+      access: request-only
+      urls:
+      - >-
+        https://wvde.us/student-support-wellness/child-nutrition/eligibility-free-reduced-price-meals
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://wvde.us/data-school-improvement/education-data
+    - https://zoomwv.k12.wv.us/
+    outcome: confirmed-strong-flat-files
+    notes: >-
+      No blocks. Best district-level data is static Excel/PDF under wvde.us/media/* and wvde.us/sites/default/files/*,
+      not the ZoomWV dashboard itself (unreadable via fetch, but per its user guide supports per-graph
+      Excel/PDF export). FTE-Teachers file (verified content) has a "Teacher, Special Education" row giving
+      the SPED-teacher split by county. WV's 55 counties are the LEAs; WVDE does not publish its own crosswalk
+      file, though NCES's own district-search tool carries WV's State District ID. FRPM exists via WVDE
+      Child Nutrition but no direct file found; district-level ELL counts not found at all.
   acquisitions: []
-  flags: []
-  notes: ZoomWV interactive portal, WVEIS system
+  flags:
+  - dashboard-only
+  - follow-up-manual
+  - request-only
+  notes: >-
+    Confirmed SPED-teacher split by county in the FTE file — a clean source for the SPED-teacher-split
+    rubric goal.
 - code: WY
   name: Wyoming
   portals:
@@ -2529,36 +3534,54 @@ states:
     detail: null
   data:
     enrollment:
-      availability: reported-yes
-      year: '2024'
-      format: Excel
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: 2025-26 (unconfirmed)
+      format: Dashboard (no direct download found)
+      access: dashboard-export
+      urls:
+      - https://reporting.edu.wyo.gov/ibi_apps/run.bip
     staffing:
-      availability: reported-yes
-      year: '2024'
-      format: Excel
-      access: unknown
-      urls: []
+      availability: reported-partial
+      year: 2025-26 (unconfirmed)
+      format: Dashboard (no direct download found)
+      access: dashboard-export
+      urls:
+      - https://edu.wyoming.gov/data/school-district-enrollment-and-staffing-data/
     sped:
       availability: reported-partial
-      year: '2024'
-      format: Excel
-      access: unknown
-      urls: []
+      year: 2025-26 (unconfirmed)
+      format: Dashboard (no direct download found)
+      access: dashboard-export
+      urls:
+      - https://edu.wyoming.gov/data/school-district-enrollment-and-staffing-data/
     crosswalk_ids:
-      availability: unknown
+      availability: not-found
       year: null
       format: null
       access: unknown
       urls: []
     frpm_ell:
-      availability: unknown
-      year: null
-      format: null
-      access: unknown
-      urls: []
-  probes: []
+      availability: reported-partial
+      year: 2025-26 (unconfirmed)
+      format: Dashboard (no direct download found)
+      access: dashboard-export
+      urls:
+      - https://edu.wyoming.gov/data/school-district-enrollment-and-staffing-data/
+  probes:
+  - date: '2026-07-20'
+    urls_tried:
+    - https://edu.wyoming.gov/data/
+    outcome: confirmed-partial-js-dashboard-no-playwright
+    notes: >-
+      Seed page confirms all four categories exist by name, but only years 2000-2007 have direct PDF/Excel
+      downloads — 2008-present routes through a WebFOCUS JS dashboard. The dashboard root redirects to
+      SSO login, but a specific "Public" report path returned HTTP 200 without a login redirect, suggesting
+      current data is publicly viewable but not fetchable as flat text via WebFetch/curl (no Playwright
+      available to this probe). A human with a browser could likely export it. No NCES crosswalk found.
   acquisitions: []
-  flags: []
-  notes: School District Enrollment & Staffing Data
+  flags:
+  - dashboard-only
+  - follow-up-manual
+  notes: >-
+    Publicly viewable (no login needed) but needs Playwright/a browser to actually extract — good candidate
+    for the acquisition phase.
