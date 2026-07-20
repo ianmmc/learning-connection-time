@@ -3818,7 +3818,7 @@ requirements:
       - "Flags are derived ONLY from persisted facts (url/final_url, page.txt head, fingerprint.has_password), so `recompute-fidelity` re-derives them after a regex tuning without re-capture — the recompute-cms-hint discipline"
       - "time_blind gates on USABLE reps only (a spurious time in a garbled below-bar rep must not suppress the flag) and asserts on the URL, never text content (the Stage-4/5 aboutness boundary)"
       - "The DB carries the queryable flags (fidelity_json columns, cache_ingest DDL+ALTERs+UPSERTs); the JSON receipts are never the downstream transport"
-      - "DEFERRED (remaining #518 scope): a Stage-5 consumer surfacing the flags at gate@5 — the columns are written but unread until that lands"
+      - "The flag CONSUMER (built 2026-07-20, closes #518): GET /api/fidelity-triage — every fidelity-flagged capture (login_wall/soft_404), security_block err (#578), and Stage-4 time_blind doc, grouped per district with class counts and open-followup context; the shared fidelityTriagePanel renders it on the Stage 3 view (governance §11f capture-health home) AND the gate@5 left pane (where labeling happens), with a flag-district recovery affordance (POST /api/followup). Listing bounded at 12 rows/district (the Millard-81 case); retryable errs remain #116's batch retry; security blocks are one-attempt, never re-pressured"
     tests:
       - infrastructure/scraper/capture_fidelity.test.mjs
       - tests/test_stage4_tools.py::TestTimeBlindFidelity

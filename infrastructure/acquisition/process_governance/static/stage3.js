@@ -25,6 +25,7 @@
         <div id="s3-list" class="q-list"><div class="empty">Loading…</div></div>
       </nav>
       <section id="s3-detail" class="col col-center"><div class="empty">Select a batch to view Stage 3 capture status.</div></section>`;
+    window.fidelityTriagePanel($g("#stage3view").querySelector(".q-left"));   // #518
   }
 
   // ----------------------------- batch list -----------------------------

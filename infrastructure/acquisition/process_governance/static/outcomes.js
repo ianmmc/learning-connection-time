@@ -113,4 +113,54 @@
     });
     container.appendChild(det);
   };
+
+  // #518: the capture-fidelity TRIAGE panel — the flag CONSUMER (login_wall / soft_404 /
+  // time_blind / security_block), lazy-fetched. Mounted on Stage 3 (governance §11f: capture
+  // health lives there) AND the gate@5 left pane (the reviewer must see "capture suspect"
+  // where labeling happens). Recovery affordance: flag the district for manual follow-up
+  // (the existing gate@5 top attention tier); retryable errs stay #116's batch-level retry.
+  window.fidelityTriagePanel = function (container) {
+    const { esc, api, postJSON, safeUrl } = window.LCT;
+    const det = document.createElement("details");
+    det.className = "q-domain-excluded s-attr";
+    det.setAttribute("data-feat", "fidelity-triage-panel");
+    det.innerHTML = `<summary class="muted">Capture-fidelity triage — suspect captures (#518, expand)</summary>
+      <div class="s-triage-body muted" style="overflow-x:auto">Loading…</div>`;
+    const render = (d) => {
+      if (!d.n_districts) return `<p class="muted">No suspect captures — nothing to triage.</p>`;
+      const sum = Object.entries(d.summary).map(([c, n]) => `${esc(c)}: <b>${n}</b>`).join(" · ");
+      const blocks = d.districts.map((b) => {
+        const cls = Object.entries(b.classes).map(([c, n]) => `${esc(c)}×${n}`).join(", ");
+        const rows = b.rows.map((r) => `<div class="q-smeta">${r.classes.map(esc).join("+")} — ${
+          safeUrl(r.url) ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.url)}</a>` : esc(r.url || r.hash)}</div>`).join("");
+        const more = b.n_total > b.rows.length ? `<div class="q-smeta muted">…and ${b.n_total - b.rows.length} more</div>` : "";
+        const flag = b.open_followup_flag
+          ? `<span class="badge badge-lavender">already flagged</span>`
+          : `<button class="btn btn-mini" data-feat="triage-flag" data-did="${esc(b.district_id)}" data-name="${esc(b.name)}">Flag district…</button>`;
+        return `<details class="s-triage-d"><summary><b>${esc(b.name)}</b> <span class="muted">(${esc(b.district_id)})</span> — ${cls} ${flag}</summary>${rows}${more}</details>`;
+      }).join("");
+      return `<p class="muted">${sum} across <b>${d.n_districts}</b> district(s). A suspect capture may
+        hide a real schedule (the #518 recall leak) — review, then flag for manual follow-up or use the
+        Stage-3 retry for retryable errs (#116). Security blocks are one-attempt (Rule 3): never re-pressure.</p>${blocks}`;
+    };
+    det.addEventListener("toggle", async () => {
+      if (!det.open || det.getAttribute("data-loaded")) return;
+      det.setAttribute("data-loaded", "1");
+      const body = det.querySelector(".s-triage-body");
+      let d;
+      try { d = await api("/api/fidelity-triage"); }
+      catch (e) { body.textContent = "Triage unavailable: " + e.message; return; }
+      body.innerHTML = render(d);
+      body.querySelectorAll('[data-feat="triage-flag"]').forEach((btn) => btn.onclick = async () => {
+        const directive = prompt(`Flag ${btn.dataset.name} (${btn.dataset.did}) for manual follow-up?\n\nDirective (what should be done):`);
+        if (directive === null) return;
+        try {
+          await api("/api/followup", postJSON({ scope: "district", target_id: btn.dataset.did,
+            directive: directive || "capture-fidelity triage (#518)", actor: "ian" }));
+          btn.outerHTML = `<span class="badge badge-lavender">flagged</span>`;
+        } catch (e) { alert("Flag failed: " + e.message); }
+      });
+    });
+    container.appendChild(det);
+  };
 })();
