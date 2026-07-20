@@ -67,6 +67,18 @@ def test_stage7_js_renders_the_scope_split():
 
 
 # ---------------------------------------------------------------- govdb helpers
+def _ensure_compose_tables(s):
+    """Fresh-CI bootstrap: compose reads district_target (the SIGNAL schema, not precious) and the
+    predicate reads capture (the cross-stage cache) — neither is created by init_precious_schema,
+    and this file sorts before the suites that happen to create them locally/in CI order."""
+    from infrastructure.acquisition.common import cache_ingest as CI
+    from infrastructure.acquisition.stage5_filter import build_signals as BS
+    from infrastructure.acquisition.stage5_filter import models as _S5M  # noqa: F401  (registers followup_flag on Base)
+    gdb.init_precious_schema()
+    BS.ensure_signal_schema(s)
+    CI.ensure_cache_schema(s)
+
+
 def _seed_round(s, bid, did, scope, *, approved=True):
     """One ever-approved follow-up batch containing `did` — a ladder rung in the derived history."""
     now = _M7.utcnow()
@@ -100,8 +112,8 @@ def test_compose_scope_split_emits_two_batches_with_per_district_refs(gov_sessio
     """A fresh district composes into the domain batch (loop 1); a district with an ever-approved
     follow-up round escalates to the GEO batch with forced-widened vocabulary (loop 2). Each
     directive's executed_ref is ITS district's batch — two reservations, one transaction."""
-    gdb.init_precious_schema()
     s = gov_session
+    _ensure_compose_tables(s)
     hh = "zz3bsplit"
     _seed_req(s, hh, "ZZ3B0")                       # 0 prior rounds -> domain batch
     _seed_req(s, hh, "ZZ3B1")                       # 1 prior domain round -> geo batch
@@ -132,8 +144,8 @@ def test_compose_scope_split_emits_two_batches_with_per_district_refs(gov_sessio
 def test_compose_draft_round_does_not_advance_the_ladder(gov_session, monkeypatch):
     """Only an EVER-APPROVED follow-up batch is a ladder rung — a draft/abandoned compose never
     escalates the next one (followup_rounds gates on first_approved_at)."""
-    gdb.init_precious_schema()
     s = gov_session
+    _ensure_compose_tables(s)
     hh = "zz3bdraft"
     _seed_req(s, hh, "ZZ3BD")
     _seed_round(s, "batch_zz3b_dr", "ZZ3BD", "domain", approved=False)
@@ -148,8 +160,8 @@ def test_compose_exhausted_ladder_flags_and_rejects(gov_session, monkeypatch):
     """A district whose GEO round already ran is past the ladder's end: its directive is
     auto-rejected (human-reversible, note carries the story) and the district gets ONE unresolved
     followup_flag — deduped across re-composes."""
-    gdb.init_precious_schema()
     s = gov_session
+    _ensure_compose_tables(s)
     hh = "zz3bexh"
     _seed_req(s, hh, "ZZ3BX")
     _seed_round(s, "batch_zz3b_x1", "ZZ3BX", "domain")
@@ -180,8 +192,8 @@ def test_compose_exhausted_ladder_flags_and_rejects(gov_session, monkeypatch):
 
 @govdb
 def test_compose_dry_run_split_neither_flags_nor_rejects(gov_session, monkeypatch):
-    gdb.init_precious_schema()
     s = gov_session
+    _ensure_compose_tables(s)
     hh = "zz3bdry"
     _seed_req(s, hh, "ZZ3BY")
     _seed_round(s, "batch_zz3b_y1", "ZZ3BY", "domain")
@@ -257,8 +269,8 @@ def _seed_source_batch(s, bid, dids, *, batch_type="first-run", approved=True):
 def test_compose_zero_yield_ladder_rungs(gov_session, monkeypatch):
     """0 geo rounds -> geo+standard; 1 -> geo+widened; >=2 -> manual flag, no compose. One
     geo-scoped draft; ladder positions derived from history."""
-    gdb.init_precious_schema()
     s = gov_session
+    _ensure_compose_tables(s)
     _seed_source_batch(s, "batch_zz5y_src", ["ZZ5L0", "ZZ5L1", "ZZ5L2"])
     _seed_round(s, "batch_zz5y_g1", "ZZ5L1", "geo")
     _seed_round(s, "batch_zz5y_g2a", "ZZ5L2", "geo")
@@ -290,8 +302,8 @@ def test_compose_zero_yield_ladder_rungs(gov_session, monkeypatch):
 
 @govdb
 def test_compose_zero_yield_skips_ineligible_districts(gov_session, monkeypatch):
-    gdb.init_precious_schema()
     s = gov_session
+    _ensure_compose_tables(s)
     _seed_source_batch(s, "batch_zz5y_mix", ["ZZ5M0", "ZZ5M1"])
     monkeypatch.setattr(S5F, "zero_yield_reason",
                         lambda sess, did: None if did == "ZZ5M0" else "2 dispatchable record(s)")
@@ -307,8 +319,8 @@ def test_compose_zero_yield_skips_ineligible_districts(gov_session, monkeypatch)
 
 @govdb
 def test_compose_zero_yield_refuses_benchmark_and_never_approved(gov_session):
-    gdb.init_precious_schema()
     s = gov_session
+    _ensure_compose_tables(s)
     _seed_source_batch(s, "batch_zz5y_bm", ["ZZ5B0"], batch_type="benchmark")
     _seed_source_batch(s, "batch_zz5y_nv", ["ZZ5B1"], approved=False)
     out = S5F.compose_zero_yield("batch_zz5y_bm", session=s)
