@@ -89,7 +89,17 @@ def normalize_nces_ccd(df: pd.DataFrame, year: str) -> pd.DataFrame:
 
     # Rename columns
     normalized = df.rename(columns=column_map)
-    
+    if 'district_id' not in normalized.columns:
+        # The state path (normalize_state_data) gets a hard error here
+        # (issue #311/#313); this path lacked the equivalent check and would
+        # only fail later, indirectly, through validate_normalized_data's
+        # generic required-columns message with no source-column diagnostics
+        # (found in max-effort review — inconsistent fix coverage).
+        raise ValueError(
+            f"Could not identify a district_id column in NCES CCD data "
+            f"(columns: {list(df.columns)}) — expected LEAID/leaid"
+        )
+
     # Select and order columns
     available_cols = [col for col in NORMALIZED_SCHEMA.keys() if col in normalized.columns]
     normalized = normalized[available_cols].copy()

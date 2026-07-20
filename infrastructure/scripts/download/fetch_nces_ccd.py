@@ -102,44 +102,58 @@ def download_file(url: str, output_path: Path) -> bool:
     Returns:
         True if successful, False otherwise
     """
+    # NOTE: tmp_path is deterministic (no PID/UUID), so two CONCURRENT
+    # invocations downloading the same table would race on this path with no
+    # lock. Not fixed: this is a manual one-shot CLI (never invoked from a
+    # cron/CI/pipeline context per ACQUISITION_PIPELINE.md — the acquisition
+    # pipeline's own discovery/capture is a separate, unrelated code path),
+    # so concurrent self-invocation isn't a realistic scenario today (noted
+    # in max-effort review).
     tmp_path = output_path.with_suffix(output_path.suffix + '.part')
     try:
-        logger.info(f"Downloading: {url}")
-
-        response = requests.get(url, stream=True, timeout=60)
-        response.raise_for_status()
-
-        # Malformed Content-Length must not crash the download (issue #381)
         try:
-            total_size = int(response.headers.get('content-length', 0))
-        except (ValueError, TypeError):
-            total_size = 0
+            logger.info(f"Downloading: {url}")
 
-        # ALWAYS stream in chunks — response.content buffered the whole file
-        # in memory when Content-Length was missing (issue #382). Write to a
-        # .part temp file and rename on success so a failed download never
-        # leaves a corrupt file at the final path (issue #383). Progress logs
-        # at ~5% steps, not every 8KB chunk (issue #462).
-        downloaded = 0
-        next_log_percent = 5.0
-        with open(tmp_path, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-                downloaded += len(chunk)
-                if total_size > 0:
-                    percent = (downloaded / total_size) * 100
-                    if percent >= next_log_percent:
-                        logger.info(f"  Progress: {percent:.1f}%")
-                        next_log_percent += 5.0
+            response = requests.get(url, stream=True, timeout=60)
+            response.raise_for_status()
 
-        tmp_path.replace(output_path)
-        logger.info(f"✓ Saved to: {output_path}")
-        return True
+            # Malformed Content-Length must not crash the download (issue #381)
+            try:
+                total_size = int(response.headers.get('content-length', 0))
+            except (ValueError, TypeError):
+                total_size = 0
 
-    except requests.exceptions.RequestException as e:
-        logger.error(f"✗ Download failed: {e}")
+            # ALWAYS stream in chunks — response.content buffered the whole file
+            # in memory when Content-Length was missing (issue #382). Write to a
+            # .part temp file and rename on success so a failed download never
+            # leaves a corrupt file at the final path (issue #383). Progress logs
+            # at ~5% steps, not every 8KB chunk (issue #462).
+            downloaded = 0
+            next_log_percent = 5.0
+            with open(tmp_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+                    downloaded += len(chunk)
+                    if total_size > 0:
+                        percent = (downloaded / total_size) * 100
+                        if percent >= next_log_percent:
+                            logger.info(f"  Progress: {percent:.1f}%")
+                            next_log_percent += 5.0
+
+            tmp_path.replace(output_path)
+            logger.info(f"✓ Saved to: {output_path}")
+            return True
+
+        except requests.exceptions.RequestException as e:
+            logger.error(f"✗ Download failed: {e}")
+            return False
+    finally:
+        # Cleanup runs on EVERY exit path, not just RequestException — a
+        # disk-full/permission OSError from f.write(), or a KeyboardInterrupt
+        # mid-download, previously skipped cleanup and left the .part file
+        # behind (found in max-effort review). missing_ok=True: a no-op once
+        # tmp_path.replace() has already moved it to output_path.
         tmp_path.unlink(missing_ok=True)
-        return False
 
 
 def create_metadata_file(output_dir: Path, year: str, tables: List[str]):

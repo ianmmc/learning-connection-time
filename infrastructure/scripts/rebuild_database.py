@@ -189,7 +189,15 @@ def phase_2b_classifications(dry_run: bool = False, year: str = NCES_PRIMARY_YEA
     args = ["--year", year.replace("-", "_")]  # apply_ctc expects the NCES dir form (2024_25)
     if dry_run:
         args.append("--dry-run")
-    return run_script(SCRIPTS["apply_ctc"], args, dry_run=False)  # handles dry-run internally
+    # Unlike phase_2_foundation's import_all (which handles --dry-run
+    # internally and so is called with dry_run=False here), apply_ctc has no
+    # internal no-op path other than the --dry-run flag itself — passing
+    # dry_run=False through run_script() previously spawned the real
+    # subprocess (real CSV read, real DB query) under a top-level --dry-run,
+    # unlike every other phase (found in max-effort review). Every other
+    # phase's dry_run flows straight through to run_script's own
+    # `if dry_run: return True` short-circuit; match that here.
+    return run_script(SCRIPTS["apply_ctc"], args, dry_run=dry_run)
 
 
 def phase_3_staff_enrollment(dry_run: bool = False, year: str = NCES_PRIMARY_YEAR) -> bool:

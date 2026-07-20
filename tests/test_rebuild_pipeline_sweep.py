@@ -55,3 +55,19 @@ class TestRebuildThresholdConstant:
     def test_no_inline_literal_left(self):
         src = Path('infrastructure/scripts/rebuild_database.py').read_text()
         assert 'counts.get("districts", 0) < 17000' not in src
+
+
+class TestPhase2bDryRun:
+    def test_dry_run_short_circuits_before_subprocess(self):
+        """Max-effort review: phase_2b_classifications hardcoded
+        dry_run=False to run_script(), so a top-level --dry-run still spawned
+        the real apply_ctc_classification.py subprocess (real CSV read, real
+        DB query) instead of just printing the command like every other
+        phase. run_script's own dry_run branch must fire."""
+        from infrastructure.scripts import rebuild_database as rd
+
+        with patch.object(rd, 'run_script', return_value=True) as run_script:
+            rd.phase_2b_classifications(dry_run=True, year='2024-25')
+
+        assert run_script.call_args.kwargs.get('dry_run') is True \
+            or (len(run_script.call_args.args) >= 3 and run_script.call_args.args[2] is True)

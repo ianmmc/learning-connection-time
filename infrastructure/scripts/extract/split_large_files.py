@@ -86,11 +86,27 @@ def concatenate_csv_files(file_list, output_path):
     logger.info(f"Concatenating {len(file_list)} CSV files...")
     
     # Append part-by-part — building a list of every part's DataFrame held
-    # the whole multi-GB dataset in memory at once (issue #464)
+    # the whole multi-GB dataset in memory at once (issue #464). Appending by
+    # raw file position (no header, mode='a') silently transposed data if a
+    # later part's columns weren't in the SAME ORDER as part 1's — a real
+    # risk for split government CSV exports (found in max-effort review).
+    # Reindex every part onto part 1's column order before writing so the
+    # append is by NAME, matching what pd.concat(dfs) guaranteed before.
     total_rows = 0
+    columns = None
     for i, file in enumerate(file_list):
         try:
             df = pd.read_csv(file, low_memory=False)
+            if columns is None:
+                columns = list(df.columns)
+            elif set(df.columns) != set(columns):
+                raise ValueError(
+                    f"{file.name} has columns {list(df.columns)}, expected "
+                    f"{columns} (from {file_list[0].name}) — refusing to "
+                    f"concatenate mismatched schemas"
+                )
+            else:
+                df = df[columns]  # align to part 1's column order
             df.to_csv(output_path, index=False, mode='w' if i == 0 else 'a',
                       header=(i == 0))
             total_rows += len(df)

@@ -34,6 +34,15 @@ class TestNormalizeDistricts:
         with pytest.raises(ValueError, match='district_id'):
             normalize_state_data(df, 'OH', '2024-25')
 
+    def test_nces_ccd_missing_leaid_raises_clear_error(self):
+        """Max-effort review: the state path got a missing-district_id guard
+        but the NCES path didn't — added for consistency (fast, diagnosable
+        failure instead of a later opaque validate_normalized_data error)."""
+        from infrastructure.scripts.transform.normalize_districts import normalize_nces_ccd
+        df = pd.DataFrame({'LEA_NAME': ['A'], 'MEMBER': [10]})
+        with pytest.raises(ValueError, match='district_id'):
+            normalize_nces_ccd(df, '2024-25')
+
     def test_merge_keeps_canonical_names(self, tmp_path):
         """#312: overlapping columns must not become enrollment_x/_y."""
         base = pd.DataFrame({'district_id': [100001], 'enrollment': [100]})
@@ -95,6 +104,49 @@ class TestSplitLargeFiles:
         assert n == 3
         assert len(pd.read_csv(out)) == 3
 
+    def test_csv_concat_aligns_shuffled_column_order(self, tmp_path):
+        """Max-effort review: appending by raw file position (no header,
+        mode='a') silently transposed values when a later part's columns
+        were the same NAMES but a different ORDER — a realistic risk for
+        split government CSV exports. Must align by name, not position."""
+        from infrastructure.scripts.extract.split_large_files import concatenate_csv_files
+        f1 = tmp_path / 'a_1.csv'
+        f2 = tmp_path / 'a_2.csv'
+        pd.DataFrame({'x': [1, 2], 'y': ['a', 'b']}).to_csv(f1, index=False)
+        pd.DataFrame({'y': ['c'], 'x': [3]}).to_csv(f2, index=False)  # order swapped
+        out = tmp_path / 'combined.csv'
+        concatenate_csv_files([f1, f2], out)
+        result = pd.read_csv(out)
+        row3 = result.iloc[2]
+        assert row3['x'] == 3
+        assert row3['y'] == 'c'
+
+    def test_csv_concat_rejects_mismatched_schema(self, tmp_path):
+        from infrastructure.scripts.extract.split_large_files import concatenate_csv_files
+        f1 = tmp_path / 'a_1.csv'
+        f2 = tmp_path / 'a_2.csv'
+        pd.DataFrame({'x': [1], 'y': [2]}).to_csv(f1, index=False)
+        pd.DataFrame({'x': [1], 'z': [2]}).to_csv(f2, index=False)  # different column
+        out = tmp_path / 'combined.csv'
+        with pytest.raises(ValueError, match='columns'):
+            concatenate_csv_files([f1, f2], out)
+
+
+class TestExtractGradeLevelStaffingYearRegex:
+    def test_year_extracted_from_real_ccd_filename(self):
+        """Max-effort review: the '#389 fix' regex r'(\\d{4}[-_]\\d{2})' does
+        NOT match this project's own documented canonical filename
+        (ccd_lea_059_2324_l_1a_073124.csv — year is one 4-digit token, not
+        NNNN-NN), so every real run fell through to 'unknown', silently
+        clobbering prior years' output on repeat runs. Must match the same
+        pattern the sibling enrollment extractor already uses correctly."""
+        import re
+        # exact pattern currently in extract_grade_level_staffing.py's main()
+        pattern = r'_(\d{4})_'
+        m = re.search(pattern, 'ccd_lea_059_2324_l_1a_073124.csv')
+        assert m is not None
+        assert m.group(1) == '2324'
+
 
 class TestFetchNcesCcdDownload:
     def test_malformed_content_length_streams_anyway(self, tmp_path, monkeypatch):
@@ -131,3 +183,38 @@ class TestFetchNcesCcdDownload:
         assert mod.download_file('http://x', out) is False
         assert not out.exists()
         assert not out.with_suffix('.zip.part').exists()
+
+    def test_non_network_write_failure_still_cleans_up_part_file(self, tmp_path, monkeypatch):
+        """Max-effort review: the old except clause only caught
+        requests.exceptions.RequestException, so an OSError from f.write()
+        (disk full, permission denied) skipped cleanup and left the .part
+        file behind. Cleanup must run on every exit path (finally)."""
+        from infrastructure.scripts.download import fetch_nces_ccd as mod
+
+        class FakeResponse:
+            headers = {'content-length': '100'}
+            def raise_for_status(self): pass
+            def iter_content(self, chunk_size):
+                raise OSError("No space left on device")
+
+        monkeypatch.setattr(mod.requests, 'get', lambda *a, **k: FakeResponse())
+        out = tmp_path / 'file.zip'
+        with pytest.raises(OSError):
+            mod.download_file('http://x', out)
+        assert not out.with_suffix('.zip.part').exists()
+
+    def test_successful_download_does_not_delete_final_file(self, tmp_path, monkeypatch):
+        """The finally-block cleanup must be a no-op once tmp_path has
+        already been renamed to output_path on success."""
+        from infrastructure.scripts.download import fetch_nces_ccd as mod
+
+        class FakeResponse:
+            headers = {'content-length': '3'}
+            def raise_for_status(self): pass
+            def iter_content(self, chunk_size):
+                yield b'abc'
+
+        monkeypatch.setattr(mod.requests, 'get', lambda *a, **k: FakeResponse())
+        out = tmp_path / 'file.zip'
+        assert mod.download_file('http://x', out) is True
+        assert out.read_bytes() == b'abc'

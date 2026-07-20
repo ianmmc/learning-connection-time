@@ -185,6 +185,18 @@ class TestSanitizeReason:
     def test_semicolons_still_stripped(self):
         assert ';' not in v._sanitize_reason('a; b')
 
+    def test_sql_comment_syntax_stripped(self):
+        """Max-effort review regression: preserving hyphens for 'non-compliant'
+        (#292) let SQL comment syntax '--' survive intact through the
+        character whitelist, since '-' alone is now an allowed char. Must
+        still be removed as its own token."""
+        assert '--' not in v._sanitize_reason('a -- DROP TABLE x')
+        assert '--' not in v._sanitize_reason('Normal text; DROP TABLE users;--')
+
+    def test_hyphens_still_preserved_after_comment_fix(self):
+        """The comment-stripping fix must not regress #292 itself."""
+        assert v._sanitize_reason('non-compliant district') == 'non-compliant district'
+
 
 class TestHandoffClaimDate:
     def test_non_string_date_is_mismatch_not_crash(self):

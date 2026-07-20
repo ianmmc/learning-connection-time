@@ -261,12 +261,19 @@ class ContentParser:
                 minutes = self._calculate_minutes(start, end)
 
                 if minutes and plausible_gross_minutes(minutes):  # REQ-055 band (240-510)
+                    # schools_sampled must be the rows that actually SUPPORT
+                    # the reported (start, end) pair, not just the first 5
+                    # rows for this level — those could be a different pair
+                    # entirely once the mode (not times[0]) decides the value
+                    # (found in max-effort review of issue #422's fix; the
+                    # full evidence remains in raw_data regardless).
+                    supporting = [t for t in times if (t['start'], t['end']) == (start, end)]
                     results.append(BellScheduleData(
                         start_time=start,
                         end_time=end,
                         instructional_minutes=minutes,
                         grade_level=level,
-                        schools_sampled=[t['raw'] for t in times[:5]],
+                        schools_sampled=[t['raw'] for t in supporting[:5]],
                         raw_data={'times_by_level': {level: times_by_level[level]}}
                     ))
 
