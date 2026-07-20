@@ -1,7 +1,7 @@
 {
-  "_comment": "Cross-boundary architecture manifest (#124; governance PIPELINE_GOVERNANCE_AND_STATE \u00a710). The DECLARED ground truth for the couplings NO import tool sees \u2014 external-process invocations, cross-language dispatch, guarded entry points, and client<->server rule boundaries. tests/test_arch_manifest.py asserts the real code matches this manifest; a NEW undeclared edge (program OR caller) FAILS the suite. This complements import-linter (intra-Python) + dependency-cruiser (intra-Node), which see imports only. Update this file DELIBERATELY when you add such an edge \u2014 that edit is the review surface for a new cross-boundary coupling. HONEST LIMITS (#206 review): the detectors are static heuristics \u2014 an argv assembled dynamically (a helper-built list, string concatenation) or dispatched through an unlisted runner name is invisible to the scan (the research doc's conclusion: these are semantic couplings only a declared manifest + convention can cover), and the guard check is syntactic presence, not runtime reachability (dead code containing the call still passes \u2014 vulture's domain).",
+  "_comment": "Cross-boundary architecture manifest (#124; governance PIPELINE_GOVERNANCE_AND_STATE §10). The DECLARED ground truth for the couplings NO import tool sees — external-process invocations, cross-language dispatch, guarded entry points, and client<->server rule boundaries. tests/test_arch_manifest.py asserts the real code matches this manifest; a NEW undeclared edge (program OR caller) FAILS the suite. This complements import-linter (intra-Python) + dependency-cruiser (intra-Node), which see imports only. Update this file DELIBERATELY when you add such an edge — that edit is the review surface for a new cross-boundary coupling. HONEST LIMITS (#206 review): the detectors are static heuristics — an argv assembled dynamically (a helper-built list, string concatenation) or dispatched through an unlisted runner name is invisible to the scan (the research doc's conclusion: these are semantic couplings only a declared manifest + convention can cover), and the guard check is syntactic presence, not runtime reachability (dead code containing the call still passes — vulture's domain).",
   "scan": {
-    "_comment": "The scan scope for the external-program fitness functions (#206 review \u2014 the scope was previously implicit and acquisition-only, silently missing scripts/ callers of declared programs). data/ is excluded deliberately: it holds stored artifacts + archived spikes (e.g. benchmark_results/*/run_spike.py), not live code. tests/ is excluded (the scanner + fixtures would self-trigger).",
+    "_comment": "The scan scope for the external-program fitness functions (#206 review — the scope was previously implicit and acquisition-only, silently missing scripts/ callers of declared programs). data/ is excluded deliberately: it holds stored artifacts + archived spikes (e.g. benchmark_results/*/run_spike.py), not live code. tests/ is excluded (the scanner + fixtures would self-trigger).",
     "python_roots": [
       "infrastructure",
       "scripts"
@@ -14,7 +14,7 @@
   "external_programs": {
     "_comment": "Every external program the live Python trees shell out to (argv[0] of a subprocess argv-list, whether via subprocess.* directly or an injectable runner seam). BOTH directions are enforced: an undeclared program fails, and an undeclared CALLER of a declared program fails (callers lists are load-bearing, not documentation).",
     "claude": {
-      "why": "Stage 2 Wave-2 discovery \u2014 `claude -p` print mode with WebSearch (the speculative residual index); plus the Stage-2 CLI reliability/smoke harnesses.",
+      "why": "Stage 2 Wave-2 discovery — `claude -p` print mode with WebSearch (the speculative residual index); plus the Stage-2 CLI reliability/smoke harnesses.",
       "callers": [
         "infrastructure/acquisition/stage2_discover/headless.py",
         "scripts/stage2_cli_reliability.py",
@@ -22,7 +22,7 @@
       ]
     },
     "node": {
-      "why": "Stage 3 capture \u2014 Python->Node Playwright dispatch (the cross-LANGUAGE edge).",
+      "why": "Stage 3 capture — Python->Node Playwright dispatch (the cross-LANGUAGE edge).",
       "callers": [
         "infrastructure/acquisition/stage3_capture/headless.py"
       ],
@@ -60,12 +60,6 @@
         "infrastructure/database/connection.py"
       ]
     },
-    "docker-compose": {
-      "why": "LCT-DB side: container lifecycle for the import-to-docker flow.",
-      "callers": [
-        "infrastructure/database/docker/import_to_docker.py"
-      ]
-    },
     "pg_dump": {
       "why": "LCT-DB reset script's pre-reset backup.",
       "callers": [
@@ -93,9 +87,9 @@
   },
   "entry_point_guards": [
     {
-      "_comment": "An invariant guard that MUST be reached by every listed entry point \u2014 the fix for the class of bug where a rule is enforced at one entry point but a sibling skips it. #198 review finding #2 (headless CLIs) + #206 review (the OLDER per-district CLIs were still unguarded). The console inherits these guards by calling the same run_batch functions (server.py has no parallel implementation). Batch-grain: whole-batch runners + the Stage-2 legacy CLI.",
+      "_comment": "An invariant guard that MUST be reached by every listed entry point — the fix for the class of bug where a rule is enforced at one entry point but a sibling skips it. #198 review finding #2 (headless CLIs) + #206 review (the OLDER per-district CLIs were still unguarded). The console inherits these guards by calling the same run_batch functions (server.py has no parallel implementation). Batch-grain: whole-batch runners + the Stage-2 legacy CLI.",
       "guard": "assert_runnable",
-      "why": "#168: never run a pipeline stage on a terminal `abandoned` batch (its schools are excluded from the attempted-set; running it re-queues them \u2014 the #162 poison).",
+      "why": "#168: never run a pipeline stage on a terminal `abandoned` batch (its schools are excluded from the attempted-set; running it re-queues them — the #162 poison).",
       "must_be_called_in": [
         "infrastructure/acquisition/stage2_discover/headless.py::run_batch",
         "infrastructure/acquisition/stage3_capture/headless.py::run_batch",
@@ -104,7 +98,7 @@
       ]
     },
     {
-      "_comment": "District-grain twin (#206 review): the Stage-3/4 legacy CLIs (finish/reconstruct/run) take a district dir, not a batch \u2014 the dir's discovery.json records the producing batch, and assert_district_runnable refuses if THAT batch is abandoned.",
+      "_comment": "District-grain twin (#206 review): the Stage-3/4 legacy CLIs (finish/reconstruct/run) take a district dir, not a batch — the dir's discovery.json records the producing batch, and assert_district_runnable refuses if THAT batch is abandoned.",
       "guard": "assert_district_runnable",
       "why": "#168: the per-district CLI recovery/write ops must not resurrect a district whose artifacts belong to a terminal abandoned batch.",
       "must_be_called_in": [
@@ -114,7 +108,7 @@
     }
   ],
   "client_server_boundaries": {
-    "_comment": "Rules about the browser-JS <-> server boundary \u2014 a class the import graphs can't see at all. Scans are RECURSIVE over the scope dir and whole-file (multi-line safe), #206 review.",
+    "_comment": "Rules about the browser-JS <-> server boundary — a class the import graphs can't see at all. Scans are RECURSIVE over the scope dir and whole-file (multi-line safe), #206 review.",
     "forbidden_client_comparisons": [
       {
         "_comment": "A server-authoritative rule literal must NOT be re-decided in client JS (it duplicates a server truth and drifts). #198 review finding #3: the gate@6 benchmark badge keyed on `c.batch_id === 'batch_00000'` instead of the server-computed `is_benchmark` (batch_type='benchmark'). Flagged forms (#206 review widened these): (in)equality comparisons, .includes/.startsWith/.endsWith predicates, switch-case labels, and assigning the literal to a variable (the indirection vector). A purely-display template string (`benchmark-walled (batch_00000)`) is allowed.",
@@ -125,7 +119,7 @@
     ],
     "single_definition_helpers": [
       {
-        "_comment": "A shared client helper must be defined in exactly ONE file (common.js) so its behavior can't fork across the stage views. #198 review finding #5. Detected forms (#206 review widened): function/const/let/var definitions AND property assignments (window.LCT.name = / LCT.name =). A behavioral duplicate under a DIFFERENT name is beyond static reach \u2014 that's what review + the shared-helper convention are for.",
+        "_comment": "A shared client helper must be defined in exactly ONE file (common.js) so its behavior can't fork across the stage views. #198 review finding #5. Detected forms (#206 review widened): function/const/let/var definitions AND property assignments (window.LCT.name = / LCT.name =). A behavioral duplicate under a DIFFERENT name is beyond static reach — that's what review + the shared-helper convention are for.",
         "name": "statusBadge",
         "home": "infrastructure/acquisition/process_governance/static/common.js",
         "scope": "infrastructure/acquisition/process_governance/static"
@@ -133,7 +127,7 @@
     ]
   },
   "file_dispatches": {
-    "_comment": "The file-based stage handoffs \u2014 regenerable, auditable RECEIPTS (the DB is the working store; governance \u00a71). Declared here for provenance; test_file_dispatch_producers_reference_artifact asserts each producer module actually references its artifact filename (a light contract that the declared producer is the real one). NOT the transport between stages.",
+    "_comment": "The file-based stage handoffs — regenerable, auditable RECEIPTS (the DB is the working store; governance §1). Declared here for provenance; test_file_dispatch_producers_reference_artifact asserts each producer module actually references its artifact filename (a light contract that the declared producer is the real one). NOT the transport between stages.",
     "receipts": [
       {
         "artifact": "discovery.json",
@@ -171,7 +165,7 @@
     ]
   },
   "shared_config": {
-    "_comment": "#205 part 1 (governance \u00a710): the config-as-data knobs are a CROSS-LANGUAGE edge \u2014 Python reads them via common/config_loader.py, Node reads the same JSON natively (capture_discovery.mjs), so a malformed/renamed key fails a stage at runtime, invisible to every import tool. Each knob file is declared here with its JSON Schema (under schemas_dir); tests/test_config_schemas.py validates every file against its schema AND enforces coverage both ways (an undeclared knob file fails; a declared-but-missing file fails). Adding a knob = add the file, its schema (or reuse a shape schema), and this declaration \u2014 the declaration is the review surface. Part 2 of #205 (datacontract-cli on the stage receipt artifacts above) is deferred until #478 stabilizes the Stage 8 artifacts.",
+    "_comment": "#205 part 1 (governance §10): the config-as-data knobs are a CROSS-LANGUAGE edge — Python reads them via common/config_loader.py, Node reads the same JSON natively (capture_discovery.mjs), so a malformed/renamed key fails a stage at runtime, invisible to every import tool. Each knob file is declared here with its JSON Schema (under schemas_dir); tests/test_config_schemas.py validates every file against its schema AND enforces coverage both ways (an undeclared knob file fails; a declared-but-missing file fails). Adding a knob = add the file, its schema (or reuse a shape schema), and this declaration — the declaration is the review surface. Part 2 of #205 (datacontract-cli on the stage receipt artifacts above) is deferred until #478 stabilizes the Stage 8 artifacts.",
     "dir": "infrastructure/acquisition/common/config",
     "schemas_dir": "infrastructure/acquisition/common/config/schemas",
     "files": [

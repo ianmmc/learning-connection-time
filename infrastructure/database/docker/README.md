@@ -44,15 +44,10 @@ docker-compose logs postgres
 
 ### 3. Import Existing Data
 
-**If you have Homebrew PostgreSQL with data:**
-
-```bash
-# Export from Homebrew (already done - see backup/ directory)
-python3 infrastructure/database/docker/export_database.py
-
-# Import to Docker
-python3 infrastructure/database/docker/import_to_docker.py
-```
+The one-time Homebrew→Docker migration is complete; its export/import scripts
+were archived 2026-07-20 to
+`data/archive/homebrew-docker-migration-tools-superseded-20260720/`.
+To restore data, load a SQL backup with `psql` (see Manual Backups below).
 
 **For fresh start:**
 ```bash
@@ -75,9 +70,8 @@ python3 infrastructure/database/test_infrastructure.py
 ## Files in This Directory
 
 - **README.md** - This file
-- **export_database.py** - Export Homebrew PostgreSQL to SQL
-- **import_to_docker.py** - Import SQL dump into Docker container
 - **backup/** - Database backups and exports
+- (the Homebrew-era export/import scripts were archived 2026-07-20)
 
 ---
 
@@ -273,10 +267,7 @@ The `backup/` directory contains SQL exports. You can create cron jobs to automa
 ### Manual Backups
 
 ```bash
-# Using export script
-python3 infrastructure/database/docker/export_database.py
-
-# Using pg_dump directly
+# Using pg_dump inside the container
 docker-compose exec postgres pg_dump -U lct_user -d learning_connection_time -f /backup/manual_backup.sql
 ```
 
