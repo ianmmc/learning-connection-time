@@ -65,6 +65,38 @@ def _host_matches(h, suffix):
     A bare endswith() lets halifax.com match x.com and evilschoolwires.com match schoolwires.com."""
     return h == suffix or h.endswith("." + suffix)
 
+# #164: the derive-and-re-gate thresholds for a GEO-scoped discovery run. The majority host must
+# carry >=40% of the gate-eligible (non-news) results AND appear for >=3 distinct schools' queries;
+# below that the run keeps NOTHING and resolves manual_flag — never unscoped-keep-all (the #227
+# contamination class). Conservative on purpose; tune by measurement (#118 attribution).
+DERIVE_MIN_SHARE = 0.40
+DERIVE_MIN_SCHOOLS = 3
+
+
+def derive_domain(host_tally: dict) -> tuple:
+    """The #164 majority-host derivation, pure over a geo run's result tally.
+
+    `host_tally`: host -> {"n": result_count, "schools": iterable of school_ids whose queries
+    produced it} — news/aggregator hosts already excluded by the caller (they never scope).
+    Returns (derived_host | None, receipt) where the receipt carries the full tally + thresholds
+    for the discovery.json receipt and the discovered_domain proposal — the auditor sees exactly
+    why the host was (or wasn't) derived."""
+    total = sum(v.get("n", 0) for v in host_tally.values())
+    receipt = {"total_results": total, "min_share": DERIVE_MIN_SHARE, "min_schools": DERIVE_MIN_SCHOOLS,
+               "tally": {h: {"n": v.get("n", 0), "n_schools": len(set(v.get("schools", ())))}
+                         for h, v in sorted(host_tally.items(), key=lambda kv: -kv[1].get("n", 0))}}
+    if not total:
+        return None, {**receipt, "outcome": "no results"}
+    top_host, top = max(host_tally.items(), key=lambda kv: (kv[1].get("n", 0), kv[0]))
+    share = top.get("n", 0) / total
+    n_schools = len(set(top.get("schools", ())))
+    if share >= DERIVE_MIN_SHARE and n_schools >= DERIVE_MIN_SCHOOLS and is_scoping_domain(top_host):
+        return top_host, {**receipt, "outcome": "derived", "derived_host": top_host,
+                          "share": round(share, 3), "n_schools": n_schools}
+    return None, {**receipt, "outcome": "below threshold", "top_host": top_host,
+                  "share": round(share, 3), "n_schools": n_schools}
+
+
 def gate(url, dhost, slug, scoped):
     h=host_of(url)
     if not h: return False,"no-host"

@@ -28,6 +28,10 @@ class Batch(gdb.Base):
 
     batch_id: Mapped[str] = mapped_column(String, primary_key=True)        # e.g. batch_00002
     batch_type: Mapped[str] = mapped_column(String, default="first-run")   # first-run | follow-up | benchmark
+    # #164: the SECOND batch axis (orthogonal to batch_type) — a batch is scope-pure by construction:
+    # every district in it is discovered domain-scoped OR geo-scoped, never mixed. Benchmark is never geo.
+    # Additive column via common/db.py _PRECIOUS_ALTERS.
+    discovery_scope: Mapped[str] = mapped_column(String, default="domain")   # domain | geo
     status: Mapped[str] = mapped_column(String, default="draft")           # draft | approved | abandoned | reserving
     nces_year: Mapped[str] = mapped_column(String)
     created_at: Mapped[str] = mapped_column(String, default=utcnow)

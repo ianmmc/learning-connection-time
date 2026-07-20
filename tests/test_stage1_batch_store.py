@@ -399,3 +399,18 @@ class TestFacilityReviewFlag:
                    for bd in d["schools_by_band"].values() for s in bd["schools"]}
         assert schools["Jackson County Juvenile Ctr."]["review_flags"] == ["facility_name"]
         assert "review_flags" not in schools["Alpha High"]   # normal names carry no key at all
+
+
+class TestDiscoveryScopeAxis:
+    """#164 — the second batch axis: scope-pure batches (domain | geo), orthogonal to batch_type."""
+
+    def test_scope_roundtrips_through_working_doc_and_view(self, sess):
+        doc = _doc("batch_geo_axis")
+        doc["discovery_scope"] = "geo"
+        BS.create_batch(sess, doc, actor="t")
+        assert BS.to_working_doc(sess, "batch_geo_axis")["discovery_scope"] == "geo"
+        assert BS.to_view(sess, "batch_geo_axis")["discovery_scope"] == "geo"
+
+    def test_scope_defaults_to_domain(self, sess):
+        BS.create_batch(sess, _doc("batch_default_axis"), actor="t")
+        assert BS.to_working_doc(sess, "batch_default_axis")["discovery_scope"] == "domain"

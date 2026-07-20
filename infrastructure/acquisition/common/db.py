@@ -88,6 +88,7 @@ _PRECIOUS_ALTERS = [
     "ALTER TABLE batch ADD COLUMN IF NOT EXISTS abandoned_by text",                # #168
     "ALTER TABLE batch ADD COLUMN IF NOT EXISTS abandon_reason text",              # #168
     "ALTER TABLE batch ADD COLUMN IF NOT EXISTS first_approved_at text",           # #168 review (durable ever-approved)
+    "ALTER TABLE batch ADD COLUMN IF NOT EXISTS discovery_scope text DEFAULT 'domain'",  # #164 (scope-pure batches: domain | geo)
     # Backfill: any currently-approved batch was approved at least once. Guarded (only fills NULLs) →
     # idempotent no-op on re-run. Covers pre-existing rows so the abandon guard + attempted-set logic
     # see their ever-approved history. (A row reopened-and-left-draft before this column existed can't
@@ -149,6 +150,8 @@ def init_precious_schema() -> None:
     from sqlalchemy import text as _text
     from infrastructure.acquisition.common import calibration  # noqa: F401  (registers calibration_event; local: calibration imports this module)
     from infrastructure.acquisition.common import gate_mode  # noqa: F401  (registers gate_mode, #104; local: gate_mode imports this module)
+    from infrastructure.acquisition.common import discovery_policy  # noqa: F401  (registers discovery_policy_event, #164)
+    from infrastructure.acquisition.common import discovered_domain  # noqa: F401  (registers discovered_domain, #164)
     eng = get_engine()
     Base.metadata.create_all(eng)
     with eng.begin() as con:
