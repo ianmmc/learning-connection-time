@@ -210,8 +210,11 @@ def test_compose_threads_confirmed_discovered_domains_into_the_builder(gov_sessi
     gdb.init_precious_schema()
     s = gov_session
     hh = "zzddom"
-    _seed_req(s, hh, "3173740", "7->2", "high")
-    DDOM.confirm(s, "3173740", "mpsomaha.org", derived_in_batch="batch_00099", actor="zz")
+    # SYNTHETIC id (#572 lesson): this used to use the real 3173740, and the moment the LIVE DB
+    # gained an approved geo follow-up for Millard, followup_rounds routed the test district into
+    # the escalation path and the assertion went dark. Tests must not depend on live batch history.
+    _seed_req(s, hh, "ZZDDOM1", "7->2", "high")
+    DDOM.confirm(s, "ZZDDOM1", "mpsomaha.org", derived_in_batch="batch_00099", actor="zz")
     s.flush()
     seen = {}
 
@@ -222,7 +225,7 @@ def test_compose_threads_confirmed_discovered_domains_into_the_builder(gov_sessi
     monkeypatch.setattr(EX.Q1, "build_followup_batch", fake_build)
     monkeypatch.setattr(EX.BSTORE, "create_batch", lambda sess, doc, **k: None)
     EX.compose_followup_batch(handoff_hash=hh, actor="zz", session=s)
-    assert seen["discovered_domains"].get("3173740") == "mpsomaha.org"
+    assert seen["discovered_domains"].get("ZZDDOM1") == "mpsomaha.org"
 
 
 @govdb

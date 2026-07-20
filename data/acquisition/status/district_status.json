@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-15T05:50:16Z",
+  "last_updated": "2026-07-20T06:48:10Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -3339,10 +3339,10 @@
       "name": "County of Union Sch Dist No43",
       "state": "IL",
       "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": "batch_00013",
+      "batch_id": "batch_00021",
       "history": [
         {
           "stage": 1,
@@ -3406,9 +3406,24 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-11T06:04:25Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-20T06:46:58Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-20T06:47:29Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00013"
+      "notes": "reject district 1720640"
     },
     "1724390": {
       "name": "Manteno CUSD 5",
@@ -5523,10 +5538,10 @@
       "name": "DELASALLE CHARTER SCHOOL",
       "state": "MO",
       "furthest_stage": 2,
-      "stage_name": "discover",
-      "outcome": "manual_flag_all",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": "batch_00013",
+      "batch_id": "batch_00021",
       "history": [
         {
           "stage": 1,
@@ -5565,9 +5580,24 @@
           "stage_name": "discover",
           "outcome": "manual_flag_all",
           "at": "2026-07-11T03:39:19Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-20T06:46:58Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-20T06:47:27Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00013"
+      "notes": "reject district 2900593"
     },
     "2900601": {
       "name": "HOPE LEADERSHIP ACADEMY",
@@ -6102,10 +6132,10 @@
       "name": "MILLARD PUBLIC SCHOOLS",
       "state": "NE",
       "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "decontaminated",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": "batch_00013",
+      "batch_id": "batch_00021",
       "history": [
         {
           "stage": 1,
@@ -6177,9 +6207,24 @@
           "at": "2026-07-12T06:53:04Z",
           "event_type": "remediated",
           "actor": "remediate_contamination"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-20T06:46:58Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-20T06:47:36Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "unscoped-discovery contamination purged (#227 class); domain set to mpsomaha.org; 8 labels reset to unlabeled; awaiting scoped re-run at the console."
+      "notes": "gate@1 approved batch_00021"
     },
     "3200480": {
       "name": "Washoe County",
@@ -8728,10 +8773,10 @@
       "name": "JOHN REX CHARTER SCHOOL",
       "state": "OK",
       "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": "batch_00013",
+      "batch_id": "batch_00021",
       "history": [
         {
           "stage": 1,
@@ -8795,9 +8840,24 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-11T06:04:25Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-20T06:46:58Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-20T06:47:31Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00013"
+      "notes": "reject district 4000787"
     },
     "4006330": {
       "name": "CAMERON",

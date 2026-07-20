@@ -154,6 +154,45 @@ def test_queue_create_targeted_miss_409s_without_pool_advance(client, monkeypatc
     assert "ZZMISS" in r.json()["detail"]            # the miss is named, the policy untouched
 
 
+# ---------------------------------------------------------------- reconcile × remediation (#572)
+class TestReconcileRemediationReceipt:
+    """The registry-ahead-of-disk CONTROL FAILURE must stand down when the missing artifacts are
+    EXPLAINED by an on-disk decontamination restore point (remediate_contamination preserves state
+    history while removing artifacts — Millard NE's post-#227 redo hit exactly this halt)."""
+
+    def _setup(self, tmp_path, monkeypatch):
+        from infrastructure.acquisition.common import district_status as DS
+        from infrastructure.acquisition.stage2_discover import discover_stage2 as D2
+        monkeypatch.setattr(D2, "RAW_DIR", tmp_path / "captures")
+        # Patch the paths module object D2 actually holds (D2.paths), NOT a fresh import —
+        # test_acquisition_paths pops `paths` from sys.modules, so a re-import here can be a
+        # DIFFERENT object than D2's (the test_remediate_contamination pattern).
+        monkeypatch.setattr(D2.paths, "ACQUISITION", tmp_path / "acq")
+        d = {"district_id": "9999999", "name": "Test District", "state": "ZZ"}
+        registry = {"schema_version": 1, "last_updated": None, "districts": {}}
+        DS.record_stage(registry, d["district_id"], d["name"], d["state"],
+                        stage=2, stage_name="discover", outcome="found_all")
+        return D2, d, registry
+
+    def test_without_receipt_still_halts(self, tmp_path, monkeypatch):
+        D2, d, registry = self._setup(tmp_path, monkeypatch)
+        with pytest.raises(SystemExit, match="CONTROL FAILURE"):
+            D2.reconcile({"batch_id": "b", "batch_type": "follow-up", "districts": [d]}, registry)
+
+    def test_receipt_sanctions_a_fresh_rediscover(self, tmp_path, monkeypatch):
+        D2, d, registry = self._setup(tmp_path, monkeypatch)
+        (tmp_path / "acq" / "remediation" / "9999999_20260712T000000Z").mkdir(parents=True)
+        todo, skipped = D2.reconcile(
+            {"batch_id": "b", "batch_type": "follow-up", "districts": [d]}, registry)
+        assert [x["district_id"] for x in todo] == ["9999999"] and skipped == []
+
+    def test_other_districts_receipt_does_not_sanction(self, tmp_path, monkeypatch):
+        D2, d, registry = self._setup(tmp_path, monkeypatch)
+        (tmp_path / "acq" / "remediation" / "1111111_20260712T000000Z").mkdir(parents=True)
+        with pytest.raises(SystemExit, match="CONTROL FAILURE"):
+            D2.reconcile({"batch_id": "b", "batch_type": "follow-up", "districts": [d]}, registry)
+
+
 # ---------------------------------------------------------------- UI-visibility source pins
 def test_settings_js_carries_the_policy_card():
     js = (STATIC / "settings.js").read_text()
@@ -166,5 +205,5 @@ def test_gate1_js_carries_scope_create_and_badges():
     js = (STATIC / "gate1.js").read_text()
     for marker in ("q-create-scope-geo", "q-create-targets", "q-scope-badge", "q-scope-draw",
                    "q-targeted", "q-geo-tokens", "discovery-policy?pools=true",
-                   "q-zero-yield", "compose-zero-yield"):
+                   "q-zero-yield", "compose-zero-yield", "prev.names"):
         assert marker in js, f"gate1.js lost the #572 scope-surface marker {marker!r}"

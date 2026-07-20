@@ -97,6 +97,7 @@ def compose_zero_yield(batch_id: str, *, actor: str = "ian", session=None, dry_r
         rounds = BSTORE.followup_rounds(s, [d.district_id for d in eligible])
         compose_rows, widen_dids, flagged = [], set(), []
         ladder = {}
+        names = {d.district_id: d.name for d in eligible}   # #572: human-readable modal labels
         for d in eligible:
             n_geo = rounds[d.district_id]["geo"]
             if n_geo == 0:
@@ -115,7 +116,7 @@ def compose_zero_yield(batch_id: str, *, actor: str = "ian", session=None, dry_r
             _flag_escalation_exhausted(s, [f["district_id"] for f in flagged], rounds)
         if not compose_rows:
             return {"ok": True, "batch_id": None, "n_districts": 0, "ineligible": ineligible,
-                    "flagged": flagged, "skipped": [], "ladder": ladder}
+                    "flagged": flagged, "skipped": [], "ladder": ladder, "names": names}
 
         targets = {d.district_id: list(d.lea_claimed_bands or []) for d in compose_rows}
         new_bid = f"batch_{BSTORE.next_batch_number(s):05d}"
@@ -123,15 +124,15 @@ def compose_zero_yield(batch_id: str, *, actor: str = "ian", session=None, dry_r
                                                scope="geo", force_widen_dids=widen_dids)
         if not doc["districts"]:
             return {"ok": True, "batch_id": None, "n_districts": 0, "ineligible": ineligible,
-                    "flagged": flagged, "skipped": skipped, "ladder": ladder}
+                    "flagged": flagged, "skipped": skipped, "ladder": ladder, "names": names}
         if dry_run:
             return {"ok": True, "batch_id": new_bid, "dry_run": True, "scope": "geo",
-                    "n_districts": len(doc["districts"]), "ladder": ladder,
+                    "n_districts": len(doc["districts"]), "ladder": ladder, "names": names,
                     "ineligible": ineligible, "flagged": flagged, "skipped": skipped,
                     "targets": targets}
         BSTORE.create_batch(s, doc, batch_type="follow-up", actor=actor)
         return {"ok": True, "batch_id": new_bid, "scope": "geo",
-                "n_districts": len(doc["districts"]), "ladder": ladder,
+                "n_districts": len(doc["districts"]), "ladder": ladder, "names": names,
                 "ineligible": ineligible, "flagged": flagged, "skipped": skipped,
                 "targets": targets,
                 "_batch_districts": [{"district_id": d["district_id"], "name": d.get("name", ""),
