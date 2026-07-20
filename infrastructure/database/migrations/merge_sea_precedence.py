@@ -301,9 +301,12 @@ def merge_sea_into_effective(
             logger.warning(f"No SEA data loaded for {state_code}, skipping...")
             continue
 
-        # Get all effective records for this state using raw SQL
+        # Get the district ids for this state. Select the column EXPLICITLY —
+        # the old SELECT * + row[0] assumed district_id was the table's first
+        # column; any schema reordering made the IN() filter match nothing and
+        # the merge silently no-op for every state (issue #289).
         query = text("""
-            SELECT staff_counts_effective.*
+            SELECT staff_counts_effective.district_id
             FROM staff_counts_effective
             JOIN districts ON staff_counts_effective.district_id = districts.nces_id
             WHERE districts.state = :state_code
@@ -311,7 +314,7 @@ def merge_sea_into_effective(
         """)
 
         result = session.execute(query, {"state_code": state_code, "nces_year": nces_year})
-        district_ids = [row[0] for row in result]  # Get district_id column
+        district_ids = [row[0] for row in result]
 
         # Now fetch the ORM objects (year-scoped to match the raw-SQL prefilter above —
         # staff_counts_effective is multi-year since migration 017)

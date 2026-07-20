@@ -189,9 +189,14 @@ def import_staff_data(df):
 
     count = 0
     for _, row in df.iterrows():
+        # district_code defined BEFORE the try: the except clause logs it, and
+        # a conversion failure inside the try left it undefined (NameError) or
+        # holding the previous row's value (issue #369)
+        district_code = row.get('Dist #')
         try:
-            # Extract district code from 'Dist #'
-            district_code = str(int(row.get('Dist #', 0))).strip().zfill(2)
+            # Codes like '53D' raise a clean ValueError from excel_digits and
+            # are logged+skipped rather than crashing (issue #369)
+            district_code = format_state_id('FL', district_code)
 
             # Look up NCES ID from crosswalk
             nces_id = florida_crosswalk.get(district_code)

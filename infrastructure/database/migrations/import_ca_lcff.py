@@ -83,9 +83,11 @@ def import_lcff_record(row: pd.Series, session, year: str = "2023-24") -> Tuple[
     if not nces_id:
         return None, None
 
-    # Parse numeric values
+    # Parse numeric values. Zero is a REAL value for LCFF components (e.g. a
+    # district below the concentration-grant threshold receives $0) — mapping
+    # 0 to None made it indistinguishable from missing data (issue #406).
     def safe_float(value):
-        if pd.isna(value) or value == 0:
+        if pd.isna(value):
             return None
         return float(value)
 

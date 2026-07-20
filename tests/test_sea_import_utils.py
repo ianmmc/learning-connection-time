@@ -359,3 +359,33 @@ class TestSuppressedValues:
     def test_suppressed_values_is_tuple(self):
         """SUPPRESSED_VALUES is a tuple (immutable)."""
         assert isinstance(SUPPRESSED_VALUES, tuple)
+
+
+class TestConverterSweepFixes:
+    """WP-7 sweep (epic #479): excel_digits + fixed-width padding, verified
+    against the live crosswalk widths (NY 12, PA 9, FL 2, TX 6)."""
+
+    def test_florida_excel_float_string(self):
+        """#458: '13.0' (Excel float-cast) must convert, not ValueError."""
+        assert format_state_id('FL', '13.0') == '13'
+        assert format_state_id('FL', 13.0) == '13'
+
+    def test_florida_nan_raises_clean_valueerror(self):
+        with pytest.raises(ValueError, match='state district id'):
+            format_state_id('FL', float('nan'))
+
+    def test_new_york_leading_zero_restored(self):
+        """#286: BEDS '010100010000' loses its zero via int(); zfill(12)
+        restores the crosswalk's stored form."""
+        assert format_state_id('NY', 10100010000) == '010100010000'
+        assert format_state_id('NY', '010100010000') == '010100010000'
+
+    def test_pennsylvania_aun_padded_to_9(self):
+        """#287: AUNs pad to the crosswalk's 9-digit form."""
+        assert format_state_id('PA', 126515001) == '126515001'
+        assert format_state_id('PA', 26515001) == '026515001'
+
+    def test_texas_excel_float_padded_to_6(self):
+        """#409: '227901.0' must hit the 6-digit crosswalk key."""
+        assert format_state_id('TX', '227901.0') == '227901'
+        assert format_state_id('TX', 1902) == '001902'

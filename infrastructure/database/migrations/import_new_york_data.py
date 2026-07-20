@@ -249,7 +249,9 @@ def import_staff_data(df):
             if raw_id is None:
                 skipped += 1
                 continue
-            state_district_id = str(raw_id).strip()
+            # 12-digit zero-padded BEDS code — str(raw_id) dropped leading
+            # zeros and silently missed crosswalk rows (issue #286)
+            state_district_id = format_state_id('NY', raw_id)
 
             # Look up NCES ID from crosswalk
             nces_id = ny_crosswalk.get(state_district_id)
