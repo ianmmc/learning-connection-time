@@ -536,3 +536,21 @@ geo_all experiment position). Geo district docs carry `geo: {city, zip}` from th
 (LCITY/LZIP, mailing fallback). The console create endpoint gates geo composition on
 `discovery_scope_policy` (409 under domain_only) and threads the confirmed map; POST
 /api/discovered-domain records a confirmation (+ the git-twin backup). REQ-157.
+
+**2026-07-19 — #164 PR 3b: the escalation ladders land (epic #111 Phase 5, closes #164).**
+`build_followup_batch` gains `force_widen_dids` (a ladder rung forces `query_strategy=
+'widen_queries'` on every band of a listed district — vocabulary by rung, school selection
+untouched). New pure helpers: `scope_pool_counts` (the blank-vs-domained eligible split, the
+geo_interleaved draw weights) and `draw_interleaved_scope` (seeded per-batch scope draw; the
+recorded `{policy, weights, drawn}` lands in `Batch.meta_json.scope_draw` via queue-create).
+Queue-create also detects the POOL-DRAINED moment (a domain-scoped first-run drawing zero
+districts while blank-domain districts remain) and auto-advances `discovery_scope_policy` exactly
+one step (domain_only → geo_for_blank, event-logged + twin-backed, 409 notice to the operator).
+Composers: stage7_execute's compose now SCOPE-SPLITS 7→1 targets by derived ladder position
+(`batch_store.followup_rounds`): 0 rounds → domain batch (unchanged), ≥1 → geo+widened batch,
+geo already ran → auto-reject + `followup_flag` (manual); up to TWO batches per compose, each
+directive's `executed_ref` = its district's batch, one transaction. New app-layer
+`process_governance/stage5_followup.py` = the 5→1 zero-yield geo composer (predicate: zero
+dispatchable/held Stage-5 records AND no retryable errs AND no fidelity flags; ladder 0 geo →
+geo+standard, 1 → geo+widened, ≥2 → manual flag; draft at gate@1, never auto-flowed).
+Tests: tests/test_escalation_ladders.py + tests/test_queue_create_scope.py. REQ-157 implemented.

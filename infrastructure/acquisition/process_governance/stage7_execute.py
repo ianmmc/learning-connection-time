@@ -462,6 +462,29 @@ def _reject_suppressed(session, suppressed: list) -> None:
             {"t": now, "n": f"compose-suppressed: {sp['reason']}", "id": sp["request_id"]})
 
 
+def _flag_escalation_exhausted(session, district_ids: list, rounds: dict) -> None:
+    """#164 PR 3b: mark a ladder-exhausted district with ONE unresolved district-scoped
+    followup_flag — the manual-review marker the ladder ends on (5->1 and 7->1 both end here).
+    Deduped on an existing UNRESOLVED auto flag so a re-compose never stacks markers; a human
+    resolving the flag re-arms it (a later exhaustion is a fresh event worth a fresh flag)."""
+    from infrastructure.acquisition.stage5_filter.models import FollowupFlag
+    now = M7.utcnow()
+    for did in district_ids:
+        open_auto = session.execute(text(
+            "SELECT 1 FROM followup_flag WHERE district_id = :d AND scope = 'district' "
+            "AND actor = 'auto:escalation-ladder' AND resolved_at IS NULL LIMIT 1"),
+            {"d": did}).first()
+        if open_auto:
+            continue
+        session.add(FollowupFlag(
+            scope="district", target_id=did, district_id=did,
+            directive=(f"#164 escalation ladder exhausted ({rounds[did]['domain']} domain + "
+                       f"{rounds[did]['geo']} geo follow-up round(s) approved, still unsatisfied) — "
+                       "needs manual discovery/triage"),
+            actor="auto:escalation-ladder", created_at=now))
+    session.flush()
+
+
 def _preview_districts(batch_doc: dict) -> list:
     """A compact per-district preview of a would-be follow-up batch (#154 compose modal): the target
     bands, each band's query_strategy (#160 new_schools|widen_queries) + school count, and seed URLs."""
@@ -478,19 +501,29 @@ def _preview_districts(batch_doc: dict) -> list:
 
 def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff_hash: str = None,
                            cap: int = 12, session=None, dry_run: bool = False) -> dict:
-    """Sweep APPROVED 7->2/7->3/7->1 directives into ONE targeted, DRAFT Stage-1 follow-up batch
-    (reviewable at gate@1), flipping the swept directives to 'executed' with the batch_id as their
-    `executed_ref`. Benchmark (batch_00000) districts are EXCLUDED — the wall (#134). Scope to one
-    run with `handoff_hash`, else all approved NEW-work directives.
+    """Sweep APPROVED 7->2/7->3/7->1 directives into targeted, DRAFT Stage-1 follow-up batch(es)
+    (reviewable at gate@1), flipping the swept directives to 'executed' with THEIR district's
+    batch_id as `executed_ref`. Benchmark (batch_00000) districts are EXCLUDED — the wall (#134).
+    Scope to one run with `handoff_hash`, else all approved NEW-work directives.
 
-    ATOMICITY (#139): the batch rows + the directive flip commit in ONE transaction (batch_store on
-    the same session), so a crash can never leave a batch persisted with its directives still
-    'approved' (the duplicate-batch hazard). Only directives whose district actually made it into the
-    batch are flipped — a district build_followup_batch skips stays 'approved' and re-sweepable
-    (#136). The regenerable receipt file + the registry updates happen AFTER commit (file-last, like
-    dispatch_handoff), best-effort. `session` = the inject-or-own idiom: an injected (test) session
-    does the DB work only — no receipt/registry side effects escape a rollback.
-    Returns {batch_id, n_requests, n_districts, targets, spilled, blocked, skipped, benchmark_excluded}."""
+    #164 PR 3b — the 7->1 second-loop scope split: a target district's ladder position is derived
+    from its ever-approved follow-up history (`batch_store.followup_rounds`): 0 rounds -> the
+    domain-scoped batch (loop 1, unchanged); >=1 round, no geo yet -> a GEO-scoped batch with
+    forced-widened vocabulary (loop 2); a geo round already approved -> ladder exhausted: the
+    directive is auto-rejected + the district gets an unresolved followup_flag (manual review).
+    Scope-purity means one compose can emit up to TWO batches (`batches` in the result); the
+    legacy top-level batch_id/n_* fields carry the first batch id + the totals.
+
+    ATOMICITY (#139): every batch's rows + every per-batch directive flip commit in ONE transaction
+    (batch_store on the same session), so a crash can never leave a batch persisted with its
+    directives still 'approved' (the duplicate-batch hazard). Only directives whose district
+    actually made it into its scope's batch are flipped — a district build_followup_batch skips
+    stays 'approved' and re-sweepable (#136). The regenerable receipt files + the registry updates
+    happen AFTER commit (file-last, like dispatch_handoff), best-effort. `session` = the
+    inject-or-own idiom: an injected (test) session does the DB work only — no receipt/registry
+    side effects escape a rollback.
+    Returns {batch_id, n_requests, n_districts, batches, targets, spilled, blocked, skipped,
+    escalation_exhausted, benchmark_excluded}."""
     b = BUD.load_budget()
 
     def _work(s) -> dict:
@@ -517,57 +550,106 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
                     "deferred": plan["deferred"], "suppressed": plan["suppressed"],
                     "benchmark_excluded": g.benchmark_excluded}
 
-        # Follow-up shaping inputs (#162 untried schools, #161 seed URLs), scoped to the plan's targets.
+        # ------- #164 PR 3b: the 7->1 second-loop SCOPE SPLIT (the escalation ladder's compose leg).
+        # Ladder position is DERIVED from ever-approved follow-up batch history (never a stored
+        # counter): 0 prior rounds -> domain-scoped follow-up (loop 1, current behavior); >=1 prior
+        # round with no geo round yet -> escalate to GEO + widened vocabulary (loop 2 — hypothesis:
+        # page-finding, not the domain, was fine; now try the open web around the district's
+        # geography); a geo round already ran -> the ladder is exhausted: manual flag, no compose.
+        # Scope-purity (a batch is domain XOR geo by construction) means one compose can emit up to
+        # TWO batches; each directive's executed_ref is ITS district's batch — two reservations,
+        # ONE transaction.
         target_dids = list(plan["targets"])
-        attempted = _attempted_schools(s, target_dids)
-        seed_urls = _seed_urls_by_district([r for r in g.rows if r["district_id"] in set(target_dids)])
+        rounds = BSTORE.followup_rounds(s, target_dids)
+        exhausted_dids = [d for d in target_dids if rounds[d]["geo"] >= 1]
+        geo_dids = [d for d in target_dids
+                    if d not in exhausted_dids and (rounds[d]["domain"] + rounds[d]["geo"]) >= 1]
+        domain_dids = [d for d in target_dids if d not in exhausted_dids and d not in geo_dids]
+        did_by_id = {r["request_id"]: r["district_id"] for r in g.rows}
+        escalation_exhausted = [
+            {"request_id": rid, "district_id": did_by_id[rid], "band": None, "route": None,
+             "reason": (f"7->1 escalation exhausted: {rounds[did_by_id[rid]]['domain']} domain + "
+                        f"{rounds[did_by_id[rid]]['geo']} geo follow-up round(s) already approved — "
+                        "manually flagged for review")}
+            for rid in plan["swept_ids"] if did_by_id[rid] in exhausted_dids]
+        if not dry_run and escalation_exhausted:
+            # Same resolution mechanism as the coverage gate: reject (human-reversible at gate@7,
+            # note carries the story) + ONE unresolved district-scoped followup_flag as the manual
+            # ladder-end marker (deduped — a re-compose must not stack flags).
+            _reject_suppressed(s, escalation_exhausted)
+            _flag_escalation_exhausted(s, exhausted_dids, rounds)
+
+        # Follow-up shaping inputs (#162 untried schools, #161 seed URLs), scoped to the plan's targets.
+        buildable = domain_dids + geo_dids
+        attempted = _attempted_schools(s, buildable)
+        seed_urls = _seed_urls_by_district([r for r in g.rows if r["district_id"] in set(buildable)])
         # #499 REQ-150: slot-grain pursuit — the live projection's unfilled slots, restricted to
         # the plan's target bands, ride into selection as the preferred set.
-        unfilled = _unfilled_slots_now(s, target_dids, ca_cache=ca_cache)
+        unfilled = _unfilled_slots_now(s, buildable, ca_cache=ca_cache)
         slot_targets = {did: {b: unfilled[did][b] for b in bands
                               if b in unfilled.get(did, {})}
                         for did, bands in plan["targets"].items() if unfilled.get(did)}
         slot_targets = {did: m for did, m in slot_targets.items() if m}
         plan["slot_targets"] = slot_targets
-        batch_doc, skipped = Q1.build_followup_batch(year, g.batch_id, plan["targets"],
-                                                     attempted_by_did=attempted, seed_urls_by_did=seed_urls,
-                                                     preferred_by_did=slot_targets,
-                                                     # #164 review: the dual-source guard is only as good
-                                                     # as its inputs — without this, a human-confirmed
-                                                     # discovered domain was invisible to every automatic
-                                                     # back-edge sweep and the district hit the #229 skip
-                                                     # forever.
-                                                     discovered_domains=DDOM.all_confirmed(s))
-        if not batch_doc["districts"]:            # every target district was un-buildable (no coverage)
+        # #164 review: the dual-source guard is only as good as its inputs — without this, a
+        # human-confirmed discovered domain was invisible to every automatic back-edge sweep and
+        # the district hit the #229 skip forever.
+        dd = DDOM.all_confirmed(s)
+
+        base_n = int(g.batch_id[6:])              # _gather reserved the first free number
+        composed, skipped = [], []
+        for scope, dids in (("domain", domain_dids), ("geo", geo_dids)):
+            if not dids:
+                continue
+            bid = f"batch_{base_n + len(composed):05d}"
+            doc, skipped_g = Q1.build_followup_batch(
+                year, bid, {d: plan["targets"][d] for d in dids},
+                attempted_by_did=attempted, seed_urls_by_did=seed_urls,
+                preferred_by_did=slot_targets, scope=scope, discovered_domains=dd,
+                force_widen_dids=(set(dids) if scope == "geo" else None))
+            skipped.extend(skipped_g)
+            if not doc["districts"]:              # every district of this scope was un-buildable
+                continue
+            built = {d["district_id"] for d in doc["districts"]}
+            flip_ids = [i for i in plan["swept_ids"] if did_by_id[i] in built]
+            composed.append({"batch_id": bid, "scope": scope, "doc": doc, "flip_ids": flip_ids})
+        if not composed:                          # nothing buildable in either scope
             return {**_empty_result(), "spilled": plan["spilled"], "blocked": plan["blocked"],
                     "deferred": plan["deferred"], "suppressed": plan["suppressed"], "skipped": skipped,
+                    "escalation_exhausted": escalation_exhausted,
                     "benchmark_excluded": g.benchmark_excluded}
 
+        common = {"targets": plan["targets"], "spilled": plan["spilled"], "blocked": plan["blocked"],
+                  "deferred": plan["deferred"], "suppressed": plan["suppressed"], "skipped": skipped,
+                  "escalation_exhausted": escalation_exhausted,
+                  "benchmark_excluded": g.benchmark_excluded}
         if dry_run:                               # #154 modal preview — NO create_batch, NO flip
-            built = {d["district_id"] for d in batch_doc["districts"]}
-            did_by_id = {r["request_id"]: r["district_id"] for r in g.rows}
-            return {"batch_id": g.batch_id, "dry_run": True,
-                    "n_requests": len([i for i in plan["swept_ids"] if did_by_id[i] in built]),
-                    "n_districts": len(batch_doc["districts"]), "targets": plan["targets"],
-                    "preview": _preview_districts(batch_doc), "spilled": plan["spilled"],
-                    "blocked": plan["blocked"], "deferred": plan["deferred"],
-                    "suppressed": plan["suppressed"], "skipped": skipped,
-                    "benchmark_excluded": g.benchmark_excluded}
+            return {"batch_id": composed[0]["batch_id"], "dry_run": True,
+                    "n_requests": sum(len(c["flip_ids"]) for c in composed),
+                    "n_districts": sum(len(c["doc"]["districts"]) for c in composed),
+                    "batches": [{"batch_id": c["batch_id"], "scope": c["scope"],
+                                 "n_requests": len(c["flip_ids"]),
+                                 "n_districts": len(c["doc"]["districts"]),
+                                 "preview": _preview_districts(c["doc"])} for c in composed],
+                    "preview": [p for c in composed for p in _preview_districts(c["doc"])],
+                    **common}
 
-        # Rows + flip on ONE session (atomic, #139). Flip ONLY the directives whose district made it
-        # into the batch (#136) — a skipped district's directive stays 'approved', re-sweepable.
-        BSTORE.create_batch(s, batch_doc, batch_type="follow-up", actor=actor)
-        built = {d["district_id"] for d in batch_doc["districts"]}
-        did_by_id = {r["request_id"]: r["district_id"] for r in g.rows}
-        flip_ids = [i for i in plan["swept_ids"] if did_by_id[i] in built]
-        _flip(s, flip_ids, g.batch_id)
-        return {"batch_id": g.batch_id, "n_requests": len(flip_ids),
-                "n_districts": len(batch_doc["districts"]), "targets": plan["targets"],
-                "spilled": plan["spilled"], "blocked": plan["blocked"], "deferred": plan["deferred"],
-                "suppressed": plan["suppressed"], "skipped": skipped,
-                "benchmark_excluded": g.benchmark_excluded,
+        # Rows + flips on ONE session (atomic, #139): both batches' rows and BOTH per-batch directive
+        # flips commit together. Flip ONLY the directives whose district made it into ITS scope's
+        # batch (#136) — a skipped district's directive stays 'approved', re-sweepable.
+        for c in composed:
+            BSTORE.create_batch(s, c["doc"], batch_type="follow-up", actor=actor)
+            _flip(s, c["flip_ids"], c["batch_id"])
+        return {"batch_id": composed[0]["batch_id"],
+                "n_requests": sum(len(c["flip_ids"]) for c in composed),
+                "n_districts": sum(len(c["doc"]["districts"]) for c in composed),
+                "batches": [{"batch_id": c["batch_id"], "scope": c["scope"],
+                             "n_requests": len(c["flip_ids"]),
+                             "n_districts": len(c["doc"]["districts"])} for c in composed],
+                **common,
                 "_batch_districts": [{"district_id": d["district_id"], "name": d.get("name", ""),
-                                      "state": d.get("state", "")} for d in batch_doc["districts"]]}
+                                      "state": d.get("state", ""), "batch_id": c["batch_id"]}
+                                     for c in composed for d in c["doc"]["districts"]]}
 
     if session is not None:
         out = _work(session)                      # DB-only; a rolling-back test session leaks nothing
@@ -579,16 +661,18 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
         out = _work(s)
     batch_districts = out.pop("_batch_districts", None)
     if out["batch_id"] and batch_districts:
-        # Post-commit, best-effort (file-last, like dispatch_handoff): the receipt is regenerable
-        # FROM the committed rows; the registry backup is regenerable from the DB.
+        # Post-commit, best-effort (file-last, like dispatch_handoff): the receipts are regenerable
+        # FROM the committed rows; the registry backup is regenerable from the DB. One receipt per
+        # composed batch (#164 PR 3b: the scope split can emit two).
         try:
             with gdb.session_scope() as s:
-                BSTORE.write_receipt(s, out["batch_id"])
+                for c in out.get("batches") or [{"batch_id": out["batch_id"]}]:
+                    BSTORE.write_receipt(s, c["batch_id"])
             registry = DS.load()
             for d in batch_districts:
                 DS.record_stage(registry, d["district_id"], d["name"], d["state"],
                                 stage=1, stage_name="queue", outcome="queued",
-                                batch_id=out["batch_id"])
+                                batch_id=d.get("batch_id") or out["batch_id"])
             DS.save(registry)
         except Exception as e:  # noqa: BLE001 — receipts/registry are regenerable; the DB committed
             print(f"[warn] follow-up receipt/registry refresh failed ({type(e).__name__}: {e}); "
@@ -597,9 +681,9 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
 
 
 def _empty_result() -> dict:
-    return {"batch_id": None, "n_requests": 0, "n_districts": 0, "targets": {},
+    return {"batch_id": None, "n_requests": 0, "n_districts": 0, "targets": {}, "batches": [],
             "spilled": [], "blocked": [], "deferred": [], "suppressed": [], "skipped": [],
-            "benchmark_excluded": []}
+            "escalation_exhausted": [], "benchmark_excluded": []}
 
 
 # ===========================================================================
@@ -920,8 +1004,12 @@ def main():
         if not out["batch_id"]:
             print("No approved NEW-work directives to compose.")
         else:
-            print(f"Draft follow-up {out['batch_id']}: {out['n_districts']} district(s), "
-                  f"{out['n_requests']} directive(s) executed. Review at gate@1.")
+            for c in out.get("batches") or []:
+                print(f"Draft follow-up {c['batch_id']} ({c['scope']}-scoped): "
+                      f"{c['n_districts']} district(s), {c['n_requests']} directive(s) executed. "
+                      f"Review at gate@1.")
+        for ex in out.get("escalation_exhausted", []):
+            print(f"  ladder exhausted: req {ex['request_id']} {ex['district_id']} ({ex['reason']})")
         for sp in out.get("spilled", []):
             print(f"  spilled: {sp['district_id']} ({sp['reason']})")
         for su in out.get("suppressed", []):      # #176 gate — auto-rejected, human-reversible at gate@7

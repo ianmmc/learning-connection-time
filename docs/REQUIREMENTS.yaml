@@ -3895,21 +3895,26 @@ requirements:
       source; NCES data is never modified); domain-scoped batches then admit on NCES OR discovered
       domain with the source recorded per district. First-run geo composition is gated by the
       4-position discovery_scope_policy (domain_only -> geo_for_blank -> geo_interleaved -> geo_all),
-      an append-only audited event store with a one-step pool-drained auto-advance."
+      an append-only audited event store with a one-step pool-drained auto-advance. The 5->1 and
+      7->1 escalation ladders (PR 3b) escalate zero-yield / repeat-follow-up districts to geo,
+      ladder position derived from ever-approved batch history."
     type: functional
     priority: should
-    status: in_progress
+    status: implemented
     acceptance_criteria:
       - "Scope-pure batches: discovery_scope is a single batch-level field; benchmark is never geo"
       - "ONE query vocabulary, two scoping renderings (site: vs geo tokens) — no second vocabulary knob (REQ-089 anti-drift)"
       - "A geo run without a derivation keeps NOTHING (fail-closed) and resolves manual_flag; wave 2 never runs unscoped"
       - "Derivation: family-merged majority host (www stripped, observed-ancestor folding only — no registrable-domain guessing), >=40% share AND >=3 distinct schools, full raw+merged tally receipt in discovery.json"
       - "discovered_domain rows are human-confirmed only (propose-with-evidence), git-twinned, and never modify NCES/lea_info"
-      - "REMAINING (PR 3): the 5->1 and 7->1 escalation ladders (loop position derived from batch history), the pool-drained auto-advance trigger, geo_interleaved's weighted draw, Stage-5/console surfacing of the proposal"
+      - "Escalation ladders (PR 3b), position always DERIVED from ever-approved follow-up history (batch_store.followup_rounds), never a stored counter: 5->1 zero-yield (no dispatchable/held records, no retryable errs, no fidelity flags) -> geo+standard -> geo+widened -> manual followup_flag; 7->1 second loop scope-splits the compose (0 rounds -> domain, >=1 -> geo+widened, geo ran -> flag) into up to two scope-pure batches, each directive's executed_ref = its district's batch, one transaction"
+      - "Escalation batches are DRAFTS at gate@1, never auto-flowed; the pool-drained moment auto-advances the policy exactly one step (domain_only -> geo_for_blank, event-logged + twin) with a console notice; geo_interleaved draws scope per batch, seeded and weighted by the blank-vs-domained pools, the draw recorded in batch meta"
     tests:
       - tests/test_discovery_geo_foundation.py
       - tests/test_discovery_geo_wiring.py
       - "tests/test_stage1_batch_store.py::TestDiscoveryScopeAxis"
+      - tests/test_escalation_ladders.py
+      - tests/test_queue_create_scope.py
     created: "2026-07-19T00:00:00Z"
     updated: "2026-07-19T00:00:00Z"
     notes: "Full agreed design: issue #164's AGREED DESIGN comment (2026-07-19, Ian-approved after

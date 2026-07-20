@@ -47,6 +47,7 @@ from infrastructure.acquisition.stage3_capture import headless as H3       # noq
 from infrastructure.acquisition.stage4_process import headless as H4       # noqa: E402  (Stage 4 process runner + DB-cache status)
 from infrastructure.acquisition.process_governance import stage6_dispatch as H6  # noqa: E402  (Stage 6 routing/release bridge — REQ-101)
 from infrastructure.acquisition.process_governance import stage6_draft_store as DSTORE6  # noqa: E402  (Stage 6 draft-dispatch working store)
+from infrastructure.acquisition.process_governance import stage5_followup as S5F  # noqa: E402  (5->1 zero-yield geo escalation — #164 PR 3b)
 from infrastructure.acquisition.process_governance import stage7_execute as EX  # noqa: E402  (Stage 7 request-more-evidence execution — REQ-118)
 from infrastructure.acquisition.process_governance import stage7_run as R7      # noqa: E402  (Stage 7 council extraction runner — #152)
 from infrastructure.acquisition.stage6_handoff import handoff as HND6       # noqa: E402  (immutable handoff filename helper)
@@ -1047,6 +1048,7 @@ async def queue_create(payload: dict):
     # #164: the batch's discovery scope. Geo composition is POLICY-GATED here (the caller-side
     # check the pure build_batch deliberately doesn't do): domain_only refuses; geo_for_blank /
     # geo_interleaved compose from the blank-domain pool; geo_all may compose from any district.
+    scope_given = "discovery_scope" in payload   # explicit operator choice vs the interleave draw
     scope = payload.get("discovery_scope", "domain")
     if scope not in ("domain", "geo"):
         raise HTTPException(400, f"discovery_scope must be 'domain' or 'geo' (got {scope!r})")
@@ -1072,8 +1074,42 @@ async def queue_create(payload: dict):
         batch_id = BSTORE.reserve_next_batch(con, actor=actor)
     try:
         registry = DS.load()
+        # #164 PR 3b (4): under geo_interleaved, an unspecified scope is DRAWN per batch, weighted
+        # by the remaining blank-vs-domained eligible populations; the draw + weights are recorded
+        # on the batch (meta) so the composition is auditable. An explicit discovery_scope in the
+        # payload is the operator's override and skips the draw. Seeded by batch_id: same pools →
+        # same draw, reproducible in the receipt's terms.
+        scope_draw = None
+        if not scope_given and batch_type == "first-run" and policy == "geo_interleaved":
+            weights = Q1.scope_pool_counts(year, registry, discovered)
+            scope = Q1.draw_interleaved_scope(weights, batch_id)
+            scope_draw = {"policy": policy, "weights": weights, "drawn": scope}
         batch_doc, _gap, _domain_excluded, _n_elig = Q1.build_batch(
             year, n, batch_id, registry, scope=scope, discovered_domains=discovered, geo_pool=geo_pool)
+        # #164 PR 3b (3): the pool-drained auto-advance, detected AT COMPOSE TIME — a domain-scoped
+        # first-run that can draw NOTHING while blank-domain districts remain is the moment the
+        # conservative default stops meaning anything. Auto-act (observable: the event row + this
+        # 409 notice; reversible: set_policy; spend-conservative: composes nothing by itself).
+        if scope == "domain" and batch_type == "first-run" and not batch_doc["districts"]:
+            notice = "domain-scoped eligible pool is EXHAUSTED (0 drawable districts)"
+            if _domain_excluded:
+                with gdb.session_scope() as con:
+                    advanced = DPOL.advance_one_step(
+                        con, actor=f"auto:{actor}",
+                        trigger=(f"domain-scoped eligible pool exhausted at compose; "
+                                 f"{len(_domain_excluded)} blank-domain district(s) remain"))
+                if advanced:
+                    with gdb.session_scope() as con:
+                        _backup_discovery_policy(con)   # the twin, post-commit (sibling convention)
+                    notice += (f"; discovery_scope_policy AUTO-ADVANCED domain_only → geo_for_blank "
+                               f"(#164) — compose a geo batch for the {len(_domain_excluded)} "
+                               f"blank-domain district(s)")
+                else:
+                    notice += (f"; {len(_domain_excluded)} blank-domain district(s) remain — "
+                               f"compose a geo batch (policy already allows it)")
+            raise HTTPException(409, notice)
+        if scope_draw:
+            batch_doc["scope_draw"] = scope_draw   # -> Batch.meta_json (audit trail of the draw)
         Q1.persist_batch(batch_doc, registry, batch_type=batch_type, actor=actor)
     except BaseException:
         with gdb.session_scope() as con:   # failed build — free the number (don't leave a dead placeholder)
@@ -2824,10 +2860,36 @@ async def extract_compose_followup(payload: dict):
             handoff_hash=payload.get("handoff_hash"), cap=int(payload.get("cap", 12)))
     except Exception as e:  # noqa: BLE001 — surface the failure to the operator, don't 500 opaquely
         raise HTTPException(400, f"compose-followup failed: {type(e).__name__}: {e}")
-    if out.get("batch_id") and payload.get("autoflow", True):
-        threading.Thread(target=_autoflow_followup, args=(out["batch_id"], payload.get("actor", "ian")),
-                         name=f"autoflow-{out['batch_id']}", daemon=True).start()
+    # #164 PR 3b: the scope split can emit TWO batches. Only the DOMAIN batch auto-flows — it
+    # carries an already-approved gate@7 decision on the established scope. A GEO escalation batch
+    # is a scope CHANGE and stays individually gate@1'd (agreed design: the escalation loops are
+    # failure-driven follow-ups + gate@1'd), like the 5->1 composer's output.
+    autoflow_ids = [c["batch_id"] for c in (out.get("batches") or []) if c["scope"] == "domain"]
+    if autoflow_ids and payload.get("autoflow", True):
+        for bid in autoflow_ids:
+            threading.Thread(target=_autoflow_followup, args=(bid, payload.get("actor", "ian")),
+                             name=f"autoflow-{bid}", daemon=True).start()
         out["autoflow_started"] = True
+        out["autoflow_batch_ids"] = autoflow_ids
+    return out
+
+
+@app.post("/api/filter/{batch_id}/compose-zero-yield")
+async def filter_compose_zero_yield(batch_id: str, payload: dict):
+    """#164 PR 3b — the 5->1 back-edge (governance §11d): evaluate the batch's included districts
+    for ZERO YIELD (no dispatchable/held Stage-5 records, no retryable capture errs, no fidelity
+    flags) and compose the eligible ones into ONE geo-scoped DRAFT follow-up batch at gate@1
+    (ladder-rung'd: 0 geo rounds -> standard vocabulary, 1 -> widened, >=2 -> manual flag).
+    NEVER auto-flows — escalation batches are individually gate@1'd. `dry_run` previews.
+    Fuller gate@5 surfacing of this composer is #518's remainder."""
+    payload = payload or {}
+    try:
+        out = S5F.compose_zero_yield(batch_id, actor=payload.get("actor", "ian"),
+                                     dry_run=bool(payload.get("dry_run")))
+    except Exception as e:  # noqa: BLE001 — surface, don't 500 opaquely
+        raise HTTPException(400, f"compose-zero-yield failed: {type(e).__name__}: {e}")
+    if not out.get("ok"):
+        raise HTTPException(409, out.get("reason", "compose refused"))
     return out
 
 
