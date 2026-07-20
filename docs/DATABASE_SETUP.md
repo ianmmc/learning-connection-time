@@ -1,6 +1,6 @@
 # PostgreSQL Database Setup Guide
 
-**Last Updated**: December 28, 2025
+**Last Updated**: July 20, 2026
 
 This guide covers the complete setup and usage of the PostgreSQL database for the Learning Connection Time project.
 
@@ -398,10 +398,11 @@ with session_scope() as session:
         district_id="5560580",
         year="2025-26",
         grade_level="elementary",
-        instructional_minutes=360,
+        instructional_minutes=420,   # GROSS bell-to-bell (end - start), REQ-055
         start_time="8:00 AM",
         end_time="3:00 PM",
         method="web_scraping",
+        minutes_basis="gross_bell_to_bell",  # default; pass "statutory" for fallbacks
         confidence="high",
         source_urls=["https://example.com/schedule"]
     )
@@ -486,10 +487,10 @@ COPY (
 
 ```bash
 # Backup entire database
-docker exec postgres pg_dump -U lct_user learning_connection_time > backup_$(date +%Y%m%d).sql
+docker exec lct_postgres pg_dump -U lct_user learning_connection_time > backup_$(date +%Y%m%d).sql
 
 # Backup specific table
-docker exec postgres pg_dump -U lct_user -t bell_schedules learning_connection_time > bell_schedules_backup.sql
+docker exec lct_postgres pg_dump -U lct_user -t bell_schedules learning_connection_time > bell_schedules_backup.sql
 
 # Restore from backup
 docker exec -i postgres psql -U lct_user learning_connection_time < backup_20251228.sql
@@ -568,7 +569,7 @@ docker logs postgres
 docker-compose restart
 
 # Connect directly to container
-docker exec -it postgres psql -U lct_user -d learning_connection_time
+docker exec -it lct_postgres psql -U lct_user -d learning_connection_time
 ```
 
 ### Common Errors
@@ -577,7 +578,7 @@ docker exec -it postgres psql -U lct_user -d learning_connection_time
 
 **Solution**: Create database first:
 ```bash
-docker exec -it postgres psql -U lct_user -c "CREATE DATABASE learning_connection_time;"
+docker exec -it lct_postgres psql -U lct_user -c "CREATE DATABASE learning_connection_time;"
 ```
 
 **Error**: `relation "districts" does not exist`
@@ -671,6 +672,6 @@ with session_scope() as session:
 
 ---
 
-**Last Updated**: December 28, 2025
+**Last Updated**: July 20, 2026
 **Database Version**: PostgreSQL 16
 **Schema Version**: 2.0 (with materialized views and calculation tracking)

@@ -141,36 +141,35 @@ reconcile guards stand down for a receipted decontamination restore point (the r
 exception, `district_status.remediation_receipt`). Filed: #577 (stale left-pane progress chips —
 NULL batch_id on 246 old stage events; parked under #92's epic per Ian, non-blocking).
 
-**2026-07-20 checkpoint: doc tower + requirements ledger refreshed, a pending 12-finding review-fix
-committed.** Two commits landed after epic #111's close: `fix(#164/#111)` — the max-effort
-ultrareview of PRs 570–581, verified passing but left uncommitted at the time — addressed 12
-findings (the shared `geo_ladder_exhausted`/`GEO_LADDER_EXHAUSTED_AT=2` threshold fixing a
-7→1-vs-5→1 disagreement at geo==1; `remediation_receipt`'s new 30-day expiry; the
-`/api/discovery-policy?pools=true` hardcoded-empty-registry bug; the `/api/attribution`
-schema-bootstrap gap; `district_axes`'/`stage2_attribution`'s join fixes; a narrowed capture-
-breaker TOCTOU; `CHALLENGE_MARKERS` broadened past Cloudflare) plus 7 new regression tests closing
-a coverage gap the same review found (8 of the 12 fixes had shipped untested). Then `docs: revise
-the doc tower...` brought PIPELINE_GOVERNANCE_AND_STATE.md, all 5 Stage 1–5 design notes,
-ACQUISITION_PIPELINE.md (incl. the Mermaid diagram — the 5→1/7→1 back-edges were entirely absent
-from it), METHODOLOGY.md (fixed a genuine internal contradiction), TERMINOLOGY.md, and
-GETTING_STARTED.md back to current-code-as-ground-truth, plus a requirements-ledger audit (REQ-153/
-154 test-list gaps closed, REQ-157–160 notes updated, new REQ-161 for a previously-undocumented
-capability). Full narrative: `docs/PROJECT_HISTORY.md`'s two 2026-07-20 entries.
+**2026-07-20 (later): EPICS #479/#480 EXECUTED — the LCT-core hygiene sweeps, PRs #583–#596.**
+All 120 crossfam findings dispositioned in ten Stage-9-relevance-ordered work packages: 90 fixed
+(LCT core incl. #297's year-scoped recalc clear + #419's WARN_MIXED_SPED_SOURCES; verification.py's
+audit layer incl. the implemented orphan check + dual lineage entity_id conventions; the bell
+parse/validate seam; shared utilities; rebuild steps; the SEA importers' `excel_digits`/fixed-width
+converter registry verified against the live crosswalk; all 7 NCES ETL files + first
+characterization tests; analysis/reporting), 21 closed superseded-by-retirement (legacy enrichment
+layer + Homebrew-era docker tools → `data/archive/*-superseded-20260720/` w/ evidence manifests),
+8 no-change with rationale, 1 open. **Decisions waiting on Ian:** #407 (add
+`all_other_support_staff` to StaffCountsEffective — schema migration; scope_all currently
+undercounts) and **#594 (sev:critical): the CA Phase-2 tables are EMPTY in the live DB** (SPED
+environments/FRPM/LCFF lost in the 2026-07 rebuild; CA-actual SPED precedence silently inert;
+remediation plan on the issue). Latent sibling #589 (rebuild drops CTC flags). Stage-9 loop-closing
+dependency filed as #582 (LCT reader is minutes_basis-blind). Full narrative:
+`docs/PROJECT_HISTORY.md` 2026-07-20 (third entry).
 
-**Next (RESUME HERE — 2026-07-20, unchanged): #479/#480 → #92 (Stage 9).**
-Banked routing: #112 → epic #128; #567 (websites vintage lag) → epic #479; #577 (chips) rides
-with #92. Parked: #475/#476, #103/#80 (+#110).
+**Next (RESUME HERE — 2026-07-20): #92 (Stage 9 — Incorporate), with #582 landing before/with its
+write path.** Pending-decision queue for Ian first: #407 · #594 remediation · close #479/#480.
+Banked routing: #112 → epic #128; #577 (chips) rides with #92. Parked: #475/#476, #103/#80 (+#110).
 Documented-in-code deferrals: `_satisfied_bands_now` batching (revisit on volume); the #522
 guardrail's per-rep keyword/table attribution (needs a server payload change); JS behavioral tests
 (no JS harness in repo — static-source pins only); the remediation-receipt exception is not
-STAGE-scoped (a receipt from one stage's remediation excuses a desync at any other stage — now
-time-bound, 30-day expiry, since the 2026-07-20 fix, but still not stage-scoped; revisit if
-remediation volume grows); attribution v1 reads each district's LATEST candidate plan (documented
-in-module — revisit if plans cycle per district).
+STAGE-scoped (time-bound 30-day expiry since 2026-07-20; revisit if remediation volume grows);
+attribution v1 reads each district's LATEST candidate plan (documented in-module).
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
--m "not integration"` (expect **1760** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **305**,
-Postgres up) + `cd infrastructure/scraper && npm test` (expect **90**).
+-m "not integration"` (expect **1822** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **305**,
+Postgres up) + `pytest tests/test_*_integration.py` (expect **308**, live DB) + `cd
+infrastructure/scraper && npm test` (expect **90**).
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (the
 motivating ones: Huntington `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters).
 Full detail: `docs/PROJECT_HISTORY.md`, `STAGE1-5_*_DESIGN.md`, `PIPELINE_GOVERNANCE_AND_STATE.md`,
