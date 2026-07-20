@@ -294,7 +294,8 @@ def build_batch(year: str, n: int, batch_id: str, registry: dict, *, scope: str 
 
 def build_followup_batch(year: str, batch_id: str, targets: dict, *,
                          attempted_by_did: dict = None, seed_urls_by_did: dict = None,
-                         preferred_by_did: dict = None) -> tuple[dict, list]:
+                         preferred_by_did: dict = None, scope: str = "domain",
+                         discovered_domains: dict | None = None) -> tuple[dict, list]:
     """Build a TARGETED follow-up batch (batch_type='follow-up') from explicit district×band targets —
     the Stage-1 landing point for the request-more-evidence back-edges 7->2/7->3/7->1 (governance §11d:
     any NEW capture/discovery routes through a reviewable Stage-1 batch, never straight to discovery).
@@ -331,9 +332,12 @@ def build_followup_batch(year: str, batch_id: str, targets: dict, *,
         skipping discovery. Dormant plumbing today (no producer of target_urls yet, per Ian) but wired.
 
     Returns (batch_doc, skipped) where skipped = [{district_id, reason}]."""
+    if scope not in ("domain", "geo"):
+        raise ValueError(f"scope must be 'domain' or 'geo' (got {scope!r})")
     attempted_by_did = attempted_by_did or {}
     seed_urls_by_did = seed_urls_by_did or {}
     preferred_by_did = preferred_by_did or {}
+    discovered_domains = discovered_domains or {}
     lea = S.lea_info(year)
     sch_idx = S.school_index(year)
     level_counts = S.school_level_counts(year)
@@ -345,13 +349,16 @@ def build_followup_batch(year: str, batch_id: str, targets: dict, *,
         if not info:
             skipped.append({"district_id": did, "reason": "not in NCES lea_info for the year"})
             continue
-        # #229 guard applies here too: a 7->2 rediscover for a blank/junk-domain district would run
-        # UNSCOPED national-scope discovery. lea_info is NCES (not the batch_district row), so a
-        # genuinely domain-less district stays domain-less across follow-ups -- skip rather than
-        # contaminate. (Millard's #227 remediation re-runs its EXISTING batch with a hand-set domain,
-        # not through here, so this guard does not block that path.)
-        domain = domain_of(info["website"])
+        # #229 guard, dual-source since #164: a DOMAIN-scoped rediscover admits on the NCES
+        # website OR a human-CONFIRMED discovered domain (the geo path's confirmed output — this
+        # is how a Millard-class district returns to normal domain-scoped follow-ups). Still a
+        # hard refusal when neither exists — an unscoped rediscover is the #227 contamination.
+        # A GEO-scoped follow-up (the #164 escalation loops) skips the guard by design: its
+        # containment is the derive-and-re-gate, not site: scoping.
+        domain, domain_source = domain_of(info["website"]), "nces"
         if not is_scoping_domain(domain):
+            domain, domain_source = discovered_domains.get(did, ""), "discovered"
+        if scope == "domain" and not is_scoping_domain(domain):
             skipped.append({"district_id": did, "reason": "no usable scoping domain -- would run UNSCOPED discovery (#229)"})
             continue
         dsi = sch_idx.get(did, {})
@@ -385,24 +392,30 @@ def build_followup_batch(year: str, batch_id: str, targets: dict, *,
         order, schools_by_band = select_schools(batch_id, did, restricted)
         for b in schools_by_band:                          # #162/#160: the per-band signal Stage 2 reads
             schools_by_band[b]["query_strategy"] = query_strategy.get(b)
-        districts_out.append({
+        d_out = {
             "district_id": did,
             "name": info["name"],
             "state": info["state"],
-            "domain": domain,
+            "domain": domain if scope == "domain" else "",
             "enrollment_k12": enrollment.get(did),   # may be None for a follow-up; not a filter here
             "lea_claimed_bands": sorted(info["claimed_bands"]),
             "nces_school_counts": level_counts.get(did, {"total": 0, "by_level": {}}),
             "band_processing_order": order,
             "schools_by_band": schools_by_band,
             "seed_urls": seed_urls_by_did.get(did, []),    # explicit 7->3 recapture URLs (#161)
-        })
+        }
+        if scope == "domain" and is_scoping_domain(domain):
+            d_out["domain_source"] = domain_source   # 'nces' | 'discovered' — the audit trail (#164)
+        if scope == "geo":
+            d_out["geo"] = {"city": info.get("city", ""), "zip": info.get("zip", "")}
+        districts_out.append(d_out)
 
     batch_doc = {
         "batch_id": batch_id,
         "created": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "n": len(districts_out),
         "nces_year": year,
+        "discovery_scope": scope,   # #164: scope-pure follow-ups too (the escalation loops)
         "districts": districts_out,
     }
     return batch_doc, skipped
