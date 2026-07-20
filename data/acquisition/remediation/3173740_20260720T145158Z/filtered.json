@@ -1,0 +1,1390 @@
+{
+  "district_id": "3173740",
+  "district_dir": "3173740_millard_public_schools",
+  "generated_at": "2026-07-20T14:16:18Z",
+  "label": "gross_bell_to_bell",
+  "fingerprints": {
+    "config": "f77ddb950061",
+    "labels": "5988e19793c6",
+    "data": "05fbc5d448f9"
+  },
+  "topology": "per_school",
+  "nces_denominator": {
+    "total": 34,
+    "by_level": {
+      "Elementary": 25,
+      "Middle": 6,
+      "High": 3
+    }
+  },
+  "completeness": {
+    "n_canonical": 83,
+    "n_send": 1,
+    "n_reject": 82,
+    "n_hold": 0
+  },
+  "cost_estimate": {
+    "n_records": 1,
+    "n_files": 1,
+    "note": "council $ is finalized at Stage 6 dispatch (depends on the model set)"
+  },
+  "records": [
+    {
+      "rec_key": "3173740:b5df3972b7",
+      "url": "https://blackelk.mpsomaha.org/parents/school-hours",
+      "tier": "A",
+      "category": "school_start_end_list",
+      "label": "school_start_end_prose",
+      "emergent": false,
+      "intended_schools": [
+        "BLACK ELK ELEMENTARY SCHOOL",
+        "EZRA MILLARD ELEMENTARY SCH"
+      ],
+      "decision": "send",
+      "reason": "target-label:school_start_end_prose",
+      "send": [
+        {
+          "file": "pdftotext.txt",
+          "kind": "text"
+        }
+      ],
+      "alternates": [
+        {
+          "file": "page.txt",
+          "kind": "text"
+        },
+        {
+          "file": "pdfplumber_lines.txt",
+          "kind": "text"
+        },
+        {
+          "file": "camelot_stream.txt",
+          "kind": "text"
+        },
+        {
+          "file": "camelot_hybrid.txt",
+          "kind": "text"
+        },
+        {
+          "file": "tesseract_screenshot.txt",
+          "kind": "text"
+        },
+        {
+          "file": "tesseract_raster.txt",
+          "kind": "text"
+        },
+        {
+          "file": "page.png",
+          "kind": "image"
+        },
+        {
+          "file": "page.pdf",
+          "kind": "pdf"
+        },
+        {
+          "file": "raster_p-1.png",
+          "kind": "image"
+        },
+        {
+          "file": "raster_p-2.png",
+          "kind": "image"
+        },
+        {
+          "file": "raster_p-3.png",
+          "kind": "image"
+        },
+        {
+          "file": "page.main.txt",
+          "kind": "text"
+        }
+      ]
+    },
+    {
+      "rec_key": "3173740:6a1990da8b",
+      "url": "https://blackelk.mpsomaha.org/",
+      "tier": "C",
+      "category": "target_absent",
+      "label": "target_absent",
+      "emergent": false,
+      "intended_schools": [
+        "BLACK ELK ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:target_absent",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:0c41c052df",
+      "url": "https://sandoz.mpsomaha.org/parents/lunch-schedules",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "SANDOZ ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:d4a51a4ebb",
+      "url": "https://willowdale.mpsomaha.org/about/news",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WILLOWDALE ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:c8fd101100",
+      "url": "https://willowdale.mpsomaha.org/parents/school-hours",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WILLOWDALE ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:a43e8736aa",
+      "url": "https://blackelk.mpsomaha.org/announcements",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "BLACK ELK ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:20694bee0d",
+      "url": "https://blackelk.mpsomaha.org/contact-us",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "BLACK ELK ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:db1a640e0b",
+      "url": "https://kms.mpsomaha.org/kiewit-middle-school-activities-and-athletics",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "KIEWIT MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:f567add074",
+      "url": "https://bms.mpsomaha.org/about/announcements",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "BEADLE MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:1bc93329f3",
+      "url": "https://bms.mpsomaha.org/about/daily-announcements",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "BEADLE MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:c9eca5a7b3",
+      "url": "https://rms.mpsomaha.org/about/announcements",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "RUSSELL MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:25c98b4a9a",
+      "url": "https://rms.mpsomaha.org/students",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "RUSSELL MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:22efc9493e",
+      "url": "https://ezra.mpsomaha.org/parents/school-hours",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "EZRA MILLARD ELEMENTARY SCH"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:52d28ad19f",
+      "url": "https://ezra.mpsomaha.org/schedules",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "EZRA MILLARD ELEMENTARY SCH"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:b39820fef2",
+      "url": "https://morton.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "J STERLING MORTON ELEM SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:b2977849e3",
+      "url": "https://morton.mpsomaha.org/contact-us",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "J STERLING MORTON ELEM SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:6ff9e87a4a",
+      "url": "https://cather.mpsomaha.org/students/e-learning-information",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WILLA CATHER ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:87668e77fd",
+      "url": "https://cather.mpsomaha.org/parents/cather-newsletters",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WILLA CATHER ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:bb7221ec70",
+      "url": "https://bryan.mpsomaha.org/about/news",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "BRYAN ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:2b2c719f55",
+      "url": "https://wheeler.mpsomaha.org/student-links",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WHEELER ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:8209e5fe0a",
+      "url": "https://rockwell.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WHEELER ELEMENTARY SCHOOL",
+        "NORMAN ROCKWELL ELEM SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:904155f874",
+      "url": "https://www.mpsomaha.org/about/school-hours",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "BLACK ELK ELEMENTARY SCHOOL",
+        "WHEELER ELEMENTARY SCHOOL",
+        "WILLA CATHER ELEMENTARY SCHOOL",
+        "J STERLING MORTON ELEM SCHOOL",
+        "SANDOZ ELEMENTARY SCHOOL",
+        "REEDER ELEMENTARY SCHOOL",
+        "EZRA MILLARD ELEMENTARY SCH",
+        "RUSSELL MIDDLE SCHOOL",
+        "BEADLE MIDDLE SCHOOL",
+        "MILLARD CENTRAL MIDDLE SCHOOL",
+        "MILLARD NORTH MIDDLE SCHOOL",
+        "HARRY ANDERSEN MIDDLE SCHOOL",
+        "KIEWIT MIDDLE SCHOOL",
+        "MILLARD WEST HIGH SCHOOL",
+        "MILLARD SOUTH HIGH SCHOOL",
+        "MILLARD NORTH HIGH SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:a4825f2e79",
+      "url": "https://mnhs.mpsomaha.org/about/news/campus-hours",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "MILLARD NORTH HIGH SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:945d375467",
+      "url": "https://kms.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "KIEWIT MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:393673bb9a",
+      "url": "https://kms.mpsomaha.org/about/calendars-and-schedules",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "KIEWIT MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:1f536290ae",
+      "url": "https://mnhs.mpsomaha.org/schedules-and-general-information",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "MILLARD NORTH MIDDLE SCHOOL",
+        "MILLARD SOUTH HIGH SCHOOL",
+        "MILLARD NORTH HIGH SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:14b876ae85",
+      "url": "https://mshs.mpsomaha.org/students/bell-schedules",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WHEELER ELEMENTARY SCHOOL",
+        "SANDOZ ELEMENTARY SCHOOL",
+        "REEDER ELEMENTARY SCHOOL",
+        "BEADLE MIDDLE SCHOOL",
+        "MILLARD NORTH MIDDLE SCHOOL",
+        "KIEWIT MIDDLE SCHOOL",
+        "MILLARD WEST HIGH SCHOOL",
+        "MILLARD SOUTH HIGH SCHOOL",
+        "MILLARD NORTH HIGH SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:d65fd0ef79",
+      "url": "https://willowdale.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WILLOWDALE ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:4ac21be190",
+      "url": "https://kms.mpsomaha.org/about/news",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "KIEWIT MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:fd61b98dda",
+      "url": "https://ams.mpsomaha.org/students",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "HARRY ANDERSEN MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:67709ecaa1",
+      "url": "https://rockwell.mpsomaha.org/about/school-hours",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "NORMAN ROCKWELL ELEM SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:b7b1df30d2",
+      "url": "https://disney.mpsomaha.org/preschool",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WALT DISNEY ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:e80da95da9",
+      "url": "https://blackelk.mpsomaha.org/about/staff",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "BLACK ELK ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:957768d08a",
+      "url": "https://blackelk.mpsomaha.org/about",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "BLACK ELK ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:cded06ab90",
+      "url": "https://rohwer.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "ROHWER ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:591251fff3",
+      "url": "https://mwhs.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "J STERLING MORTON ELEM SCHOOL",
+        "MILLARD CENTRAL MIDDLE SCHOOL",
+        "MILLARD NORTH MIDDLE SCHOOL",
+        "MILLARD WEST HIGH SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:892dec82d2",
+      "url": "https://mnhs.mpsomaha.org/mnhs-life/school-day-schedules",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "MILLARD CENTRAL MIDDLE SCHOOL",
+        "MILLARD NORTH MIDDLE SCHOOL",
+        "MILLARD WEST HIGH SCHOOL",
+        "MILLARD SOUTH HIGH SCHOOL",
+        "MILLARD NORTH HIGH SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:335aff2e0c",
+      "url": "https://mshs.mpsomaha.org/about/calendarsbell-schedule",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "SANDOZ ELEMENTARY SCHOOL",
+        "MILLARD CENTRAL MIDDLE SCHOOL",
+        "MILLARD NORTH MIDDLE SCHOOL",
+        "HARRY ANDERSEN MIDDLE SCHOOL",
+        "MILLARD WEST HIGH SCHOOL",
+        "MILLARD SOUTH HIGH SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:fe9a7b6c36",
+      "url": "https://mshs.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "MILLARD SOUTH HIGH SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:b4b8e9fe80",
+      "url": "https://mwhs.mpsomaha.org/bell-schedule",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "BLACK ELK ELEMENTARY SCHOOL",
+        "REEDER ELEMENTARY SCHOOL",
+        "HARRY ANDERSEN MIDDLE SCHOOL",
+        "MILLARD WEST HIGH SCHOOL",
+        "MILLARD SOUTH HIGH SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:fe6b6f8f31",
+      "url": "https://kms.mpsomaha.org/about",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "KIEWIT MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:9ca49c7b01",
+      "url": "https://ams.mpsomaha.org/about/calendars-and-schedules",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "REEDER ELEMENTARY SCHOOL",
+        "HARRY ANDERSEN MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:9a7afa8198",
+      "url": "https://ams.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "HARRY ANDERSEN MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:da3655821b",
+      "url": "https://wheeler.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WHEELER ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:4d45e649b2",
+      "url": "https://cather.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WILLA CATHER ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:26c07036ed",
+      "url": "https://cather.mpsomaha.org/about-willa-cather-elementary",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WILLA CATHER ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:ad1c5898d9",
+      "url": "https://disney.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WALT DISNEY ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:f3611c3256",
+      "url": "https://rms.mpsomaha.org/about/calendars-and-schedules",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "RUSSELL MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:9a5e479063",
+      "url": "https://rms.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "RUSSELL MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:7611bd9078",
+      "url": "https://bms.mpsomaha.org/students",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "BEADLE MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:8f124e8a7a",
+      "url": "https://bms.mpsomaha.org/beadle-middle-school-activities-and-athletics",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "BEADLE MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:4756ac3dbb",
+      "url": "https://cms.mpsomaha.org/about/about/cms-bell-schedule",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "RUSSELL MIDDLE SCHOOL",
+        "MILLARD CENTRAL MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:19ca595de3",
+      "url": "https://www.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WHEELER ELEMENTARY SCHOOL",
+        "SANDOZ ELEMENTARY SCHOOL",
+        "REEDER ELEMENTARY SCHOOL",
+        "EZRA MILLARD ELEMENTARY SCH",
+        "HARRY ANDERSEN MIDDLE SCHOOL",
+        "MILLARD SOUTH HIGH SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:ae083a8104",
+      "url": "https://nms.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "MILLARD NORTH MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:15c0f8b79e",
+      "url": "https://bryan.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "BRYAN ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:52595259fd",
+      "url": "https://wheeler.mpsomaha.org/about/announcements",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WHEELER ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:81c7c19cd2",
+      "url": "https://cather.mpsomaha.org/parents",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WILLA CATHER ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:5f8afb2952",
+      "url": "https://cather.mpsomaha.org/welcome-cather",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WILLA CATHER ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:ec6c33d53f",
+      "url": "https://sandoz.mpsomaha.org/about/school-hours",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "SANDOZ ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:b3936f4ccd",
+      "url": "https://sandoz.mpsomaha.org/about/announcements/no-school",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "SANDOZ ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:b36463822a",
+      "url": "https://rms.mpsomaha.org/parents",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "RUSSELL MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:9e894a818e",
+      "url": "https://rms.mpsomaha.org/attendance-information",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "RUSSELL MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:1cede0237d",
+      "url": "https://rms.mpsomaha.org/about",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "RUSSELL MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:f8097551cc",
+      "url": "https://neihardt.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "EZRA MILLARD ELEMENTARY SCH"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:5eda08b474",
+      "url": "https://ezra.mpsomaha.org/ezra-millard-elementary",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "EZRA MILLARD ELEMENTARY SCH"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:5ee7879806",
+      "url": "https://ezra.mpsomaha.org/parents/breakfast-lunch-information",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "EZRA MILLARD ELEMENTARY SCH"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:41e4a34e7b",
+      "url": "https://ezra.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "EZRA MILLARD ELEMENTARY SCH"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:7b0027fc51",
+      "url": "https://reagan.mpsomaha.org/about/school-hours",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "REEDER ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:b29f0c17fc",
+      "url": "https://reeder.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "REEDER ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:3fff53eab5",
+      "url": "https://www.mpsomaha.org/schools",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "REEDER ELEMENTARY SCHOOL",
+        "EZRA MILLARD ELEMENTARY SCH",
+        "HARRY ANDERSEN MIDDLE SCHOOL",
+        "MILLARD SOUTH HIGH SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:1689946308",
+      "url": "https://bms.mpsomaha.org/parents",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "BEADLE MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:a22c9ba864",
+      "url": "https://kms.mpsomaha.org/parents/parent-information-page",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "KIEWIT MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:9583d9af43",
+      "url": "https://ams.mpsomaha.org/parents",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "HARRY ANDERSEN MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:073e9d0cb7",
+      "url": "https://cms.mpsomaha.org/about",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "MILLARD CENTRAL MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:00a2728326",
+      "url": "https://wheeler.mpsomaha.org/welcome-wheeler-elementary-school-0",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WHEELER ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:029080381c",
+      "url": "https://disney.mpsomaha.org/information",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "WALT DISNEY ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:01ed3639f4",
+      "url": "https://reagan.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "REEDER ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:7d6c9e3bd2",
+      "url": "https://bms.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "BEADLE MIDDLE SCHOOL",
+        "MILLARD CENTRAL MIDDLE SCHOOL",
+        "MILLARD NORTH MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:89e3bd5b45",
+      "url": "https://bms.mpsomaha.org/about",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "BEADLE MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:1c7df4384a",
+      "url": "https://cms.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "MILLARD CENTRAL MIDDLE SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:be36d0159c",
+      "url": "https://mwhs.mpsomaha.org/about/announcements/senior-sunrise-922",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "MILLARD WEST HIGH SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:513379707b",
+      "url": "https://mnhs.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "MILLARD CENTRAL MIDDLE SCHOOL",
+        "MILLARD NORTH MIDDLE SCHOOL",
+        "MILLARD WEST HIGH SCHOOL",
+        "MILLARD NORTH HIGH SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    },
+    {
+      "rec_key": "3173740:53a4907c52",
+      "url": "https://sandoz.mpsomaha.org/",
+      "tier": "D",
+      "category": "target_absent",
+      "label": "unusable",
+      "emergent": false,
+      "intended_schools": [
+        "SANDOZ ELEMENTARY SCHOOL"
+      ],
+      "decision": "reject",
+      "reason": "non-target:unusable",
+      "send": [],
+      "alternates": []
+    }
+  ]
+}

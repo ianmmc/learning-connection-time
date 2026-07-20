@@ -65,4 +65,52 @@
     if (done >= denom) return chip(`✓ ${verb}${flagNote}`, "badge-success");
     return chip(`${done}/${denom} ${verb}${flagNote}`, "badge-lavender");
   };
+
+  // #118 (REQ-160): the shared Stage-2/4 effectiveness panel — labeled-corpus attribution,
+  // lazy-fetched from /api/attribution on first expand (the card takes a few seconds; a view
+  // load must never pay for it). ONE home for both stages, like outcomeBadge itself.
+  window.attributionPanel = function (container, kind) {
+    const { esc, api } = window.LCT;
+    const det = document.createElement("details");
+    det.className = "q-domain-excluded s-attr";
+    det.setAttribute("data-feat", `attr-panel-${kind}`);
+    det.innerHTML = `<summary class="muted">Effectiveness — labeled-corpus attribution (#118, expand)</summary>
+      <div class="s-attr-body muted" style="overflow-x:auto">Loading…</div>`;
+    const pct = (v) => (v == null ? "—" : `${(v * 100).toFixed(1)}%`);
+    const render2 = (card) => {
+      const rows = Object.entries(card.stage2.per_tool).map(([t, b]) =>
+        `<tr><td>${esc(t)}</td><td>${b.n_candidates}</td><td>${b.n_records}</td>
+         <td>${b.n_labeled}</td><td>${b.n_target}</td><td>${pct(b.target_rate_labeled)}</td></tr>`).join("");
+      const geo = Object.values(card.district_axes).filter((a) =>
+        Object.keys(a.runs).some((k) => k.endsWith(":geo"))).length;
+      const disc = Object.values(card.district_axes).filter((a) => a.domain_source === "discovered").length;
+      return `<table class="s2-table"><thead><tr><th>Discovery tool</th><th>Cand</th><th>Rec</th>
+          <th>Labeled</th><th>Target</th><th>Target rate</th></tr></thead><tbody>${rows}</tbody></table>
+        <p class="muted">Axes (#164): ${Object.keys(card.district_axes).length} attributed district(s) ·
+          ${geo} with a geo-scoped run · ${disc} scoped by a discovered domain ·
+          fingerprints ${esc(card.fingerprints.label_set)}/${esc(card.fingerprints.plan)}</p>`;
+    };
+    const render4 = (card) => {
+      const win = Object.entries(card.stage4.winning_source).map(([s, n]) =>
+        `<tr><td>${esc(s)}</td><td>${n}</td></tr>`).join("");
+      const use = Object.entries(card.stage4.usable_by_source)
+        .sort((a, b) => b[1].n_reps - a[1].n_reps).slice(0, 12).map(([s, u]) =>
+        `<tr><td>${esc(s)}</td><td>${u.n_usable}/${u.n_reps}</td><td>${pct(u.usable_rate)}</td></tr>`).join("");
+      return `<p class="muted">Winning representation source over <b>${card.stage4.n_target_records}</b>
+          human-labeled TARGET records (release.decide()'s send files):</p>
+        <table class="s2-table"><thead><tr><th>Source</th><th>Wins</th></tr></thead><tbody>${win}</tbody></table>
+        <p class="muted">Usable rate by source (corpus-wide):</p>
+        <table class="s2-table"><thead><tr><th>Source</th><th>Usable</th><th>Rate</th></tr></thead><tbody>${use}</tbody></table>`;
+    };
+    det.addEventListener("toggle", async () => {
+      if (!det.open || det.getAttribute("data-loaded")) return;
+      det.setAttribute("data-loaded", "1");
+      const body = det.querySelector(".s-attr-body");
+      let card;
+      try { card = await api("/api/attribution"); }
+      catch (e) { body.textContent = "Attribution unavailable: " + e.message; return; }
+      body.innerHTML = kind === "stage2" ? render2(card) : render4(card);
+    });
+    container.appendChild(det);
+  };
 })();

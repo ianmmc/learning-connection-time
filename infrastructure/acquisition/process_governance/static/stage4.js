@@ -26,6 +26,7 @@
         <div id="s4-list" class="q-list"><div class="empty">Loading…</div></div>
       </nav>
       <section id="s4-detail" class="col col-center"><div class="empty">Select a batch to view Stage 4 processing status.</div></section>`;
+    window.attributionPanel($g("#stage4view").querySelector(".q-left"), "stage4");   // #118
   }
 
   // ----------------------------- batch list -----------------------------

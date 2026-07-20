@@ -1218,7 +1218,12 @@ batches, each directive's `executed_ref` = its district's batch, one transaction
 - **Stages 2 & 4 effectiveness** — the **measurement-harness pattern extended upstream**: attribute each
   target-labeled record back to its discovery tool (`candidate_tools_json`) and its winning representation's
   source (`representation.source`). Same fingerprinted-scorecard discipline as Stage 5, applied to discovery
-  and processing (tracked: #118).
+  and processing. **BUILT (#118/REQ-160, 2026-07-20):** `process_governance/attribution.py` (app layer —
+  cross-stage by definition) + `GET /api/attribution` + lazy Effectiveness panels on the Stage 2/4 views;
+  the card also carries the **#164 axes** per district (every ever-approved batch_type × discovery_scope
+  run, derived ladder position, scoping-domain source) so the geo-vs-domain comparison has attribution
+  from day one. First card's headline: emergent one-hop capture is the highest-yield non-GT discovery
+  source (38.1% labeled-target rate).
 - **Stage 5** — the district-driven, attention-first labeling console (REQ-112/REQ-114); the default
   stage view. **Console trio SHIPPED 2026-07-16/17 (the labeling-that-drives-learning surface,
   per `project-stage5-labeling-serves-learning`):** **#516** (PR #534) — FP/FN **error-review lanes**

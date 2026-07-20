@@ -47,6 +47,7 @@ from infrastructure.acquisition.stage3_capture import headless as H3       # noq
 from infrastructure.acquisition.stage4_process import headless as H4       # noqa: E402  (Stage 4 process runner + DB-cache status)
 from infrastructure.acquisition.process_governance import stage6_dispatch as H6  # noqa: E402  (Stage 6 routing/release bridge — REQ-101)
 from infrastructure.acquisition.process_governance import stage6_draft_store as DSTORE6  # noqa: E402  (Stage 6 draft-dispatch working store)
+from infrastructure.acquisition.process_governance import attribution as ATTR  # noqa: E402  (Stage 2/4 effectiveness attribution — #118)
 from infrastructure.acquisition.process_governance import stage5_followup as S5F  # noqa: E402  (5->1 zero-yield geo escalation — #164 PR 3b)
 from infrastructure.acquisition.process_governance import stage7_execute as EX  # noqa: E402  (Stage 7 request-more-evidence execution — REQ-118)
 from infrastructure.acquisition.process_governance import stage7_run as R7      # noqa: E402  (Stage 7 council extraction runner — #152)
@@ -1401,6 +1402,19 @@ def _job_view(batch_id: str) -> dict | None:
     return {"state": j["state"], "started_at": j["started_at"], "finished_at": j.get("finished_at"),
             "actor": j["actor"], "events": j["events"][-50:], "summary": j.get("summary"),
             "error": j.get("error")}
+
+
+@app.get("/api/attribution")
+def attribution_card(write: bool = False):
+    """#118 (REQ-160): the Stage 2/4 effectiveness attribution card over the labeled corpus —
+    per-discovery-tool candidate→record→target rates, per-processing-source winning
+    representations, and the #164 per-district scope/ladder axes. Computed on demand (a few
+    seconds — the console panels lazy-load it); `?write=true` persists the fingerprinted
+    receipt beside the harness scorecards."""
+    card = ATTR.build_card()
+    if write:
+        card["receipt"] = str(ATTR.write_card(card))
+    return card
 
 
 @app.get("/api/discover/{batch_id}")

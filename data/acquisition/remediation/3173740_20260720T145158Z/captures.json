@@ -1,0 +1,3184 @@
+[
+  {
+    "url": "https://willowdale.mpsomaha.org/",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "d65fd0ef79",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://willowdale.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "willowdale.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://willowdale.mpsomaha.org/about/news",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "d4a51a4ebb",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://willowdale.mpsomaha.org/about/news",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "willowdale.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://willowdale.mpsomaha.org/parents/school-hours",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "c8fd101100",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://willowdale.mpsomaha.org/parents/school-hours",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "willowdale.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://blackelk.mpsomaha.org/parents/school-hours",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "b5df3972b7",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://blackelk.mpsomaha.org/parents/school-hours",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 12,
+    "fingerprint": {
+      "final_host": "blackelk.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": "Drupal 10 (https://www.drupal.org)",
+      "resource_hosts": [
+        "www.google-analytics.com",
+        "www.googletagmanager.com",
+        "kit.fontawesome.com",
+        "use.fontawesome.com",
+        "static.cloudflareinsights.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://blackelk.mpsomaha.org/",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "6a1990da8b",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://blackelk.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 3,
+    "fingerprint": {
+      "final_host": "blackelk.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": "Drupal 10 (https://www.drupal.org)",
+      "resource_hosts": [
+        "www.google-analytics.com",
+        "www.googletagmanager.com",
+        "connect.facebook.net",
+        "kit.fontawesome.com",
+        "use.fontawesome.com",
+        "static.cloudflareinsights.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [
+        "feed.mikle.com",
+        "www.facebook.com"
+      ],
+      "embed_hosts": [
+        "other",
+        "social"
+      ],
+      "embed_present": true,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://blackelk.mpsomaha.org/announcements",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "a43e8736aa",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://blackelk.mpsomaha.org/announcements",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "blackelk.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://blackelk.mpsomaha.org/about/staff",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "e80da95da9",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://blackelk.mpsomaha.org/about/staff",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "blackelk.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://www.mpsomaha.org/about/school-hours",
+    "tools": [
+      "brightdata",
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "904155f874",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://www.mpsomaha.org/about/school-hours",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "www.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://blackelk.mpsomaha.org/contact-us",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "20694bee0d",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://blackelk.mpsomaha.org/contact-us",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "blackelk.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://blackelk.mpsomaha.org/about",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "957768d08a",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://blackelk.mpsomaha.org/about",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "blackelk.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://wheeler.mpsomaha.org/",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "da3655821b",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://wheeler.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "wheeler.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://rohwer.mpsomaha.org/",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "cded06ab90",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://rohwer.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "rohwer.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://rockwell.mpsomaha.org/",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "8209e5fe0a",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://rockwell.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "rockwell.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://mwhs.mpsomaha.org/bell-schedule",
+    "tools": [
+      "brightdata",
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "b4b8e9fe80",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://mwhs.mpsomaha.org/bell-schedule",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "mwhs.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://wheeler.mpsomaha.org/welcome-wheeler-elementary-school-0",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "00a2728326",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://wheeler.mpsomaha.org/welcome-wheeler-elementary-school-0",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "wheeler.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://www.mpsomaha.org/",
+    "tools": [
+      "brightdata",
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "19ca595de3",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://www.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "www.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://wheeler.mpsomaha.org/about/announcements",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "52595259fd",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://wheeler.mpsomaha.org/about/announcements",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "wheeler.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://wheeler.mpsomaha.org/student-links",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "2b2c719f55",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://wheeler.mpsomaha.org/student-links",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "wheeler.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://mshs.mpsomaha.org/students/bell-schedules",
+    "tools": [
+      "brightdata",
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "14b876ae85",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://mshs.mpsomaha.org/students/bell-schedules",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "mshs.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://bryan.mpsomaha.org/",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "15c0f8b79e",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://bryan.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "bryan.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://cather.mpsomaha.org/",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "4d45e649b2",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://cather.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "cather.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://bryan.mpsomaha.org/about/news",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "bb7221ec70",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://bryan.mpsomaha.org/about/news",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "bryan.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://cather.mpsomaha.org/about-willa-cather-elementary",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "26c07036ed",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://cather.mpsomaha.org/about-willa-cather-elementary",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "cather.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://cather.mpsomaha.org/parents/cather-newsletters",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "87668e77fd",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://cather.mpsomaha.org/parents/cather-newsletters",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "cather.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://cather.mpsomaha.org/parents",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "81c7c19cd2",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://cather.mpsomaha.org/parents",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "cather.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://cather.mpsomaha.org/students/e-learning-information",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "6ff9e87a4a",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://cather.mpsomaha.org/students/e-learning-information",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "cather.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://cather.mpsomaha.org/welcome-cather",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "5f8afb2952",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://cather.mpsomaha.org/welcome-cather",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "cather.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://morton.mpsomaha.org/contact-us",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "b2977849e3",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://morton.mpsomaha.org/contact-us",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "morton.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://morton.mpsomaha.org/",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "b39820fef2",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://morton.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "morton.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://mwhs.mpsomaha.org/",
+    "tools": [
+      "brightdata",
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "591251fff3",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://mwhs.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "mwhs.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://sandoz.mpsomaha.org/about/announcements/no-school",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "b3936f4ccd",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://sandoz.mpsomaha.org/about/announcements/no-school",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "sandoz.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://sandoz.mpsomaha.org/parents/lunch-schedules",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "0c41c052df",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://sandoz.mpsomaha.org/parents/lunch-schedules",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "sandoz.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://mshs.mpsomaha.org/about/calendarsbell-schedule",
+    "tools": [
+      "serper",
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "335aff2e0c",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://mshs.mpsomaha.org/about/calendarsbell-schedule",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "mshs.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://sandoz.mpsomaha.org/about/school-hours",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "ec6c33d53f",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://sandoz.mpsomaha.org/about/school-hours",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "sandoz.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://sandoz.mpsomaha.org/",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "53a4907c52",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://sandoz.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "sandoz.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://disney.mpsomaha.org/preschool",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "b7b1df30d2",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://disney.mpsomaha.org/preschool",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "disney.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://disney.mpsomaha.org/information",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "029080381c",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://disney.mpsomaha.org/information",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "disney.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://www.mpsomaha.org/schools",
+    "tools": [
+      "brightdata",
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "3fff53eab5",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://www.mpsomaha.org/schools",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "www.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://reeder.mpsomaha.org/",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "b29f0c17fc",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://reeder.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "reeder.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://disney.mpsomaha.org/",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "ad1c5898d9",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://disney.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "disney.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://rockwell.mpsomaha.org/about/school-hours",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "67709ecaa1",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://rockwell.mpsomaha.org/about/school-hours",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "rockwell.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://reagan.mpsomaha.org/about/school-hours",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "7b0027fc51",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://reagan.mpsomaha.org/about/school-hours",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "reagan.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://ezra.mpsomaha.org/",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "41e4a34e7b",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://ezra.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "ezra.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://reagan.mpsomaha.org/",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "01ed3639f4",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://reagan.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "reagan.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://ams.mpsomaha.org/about/calendars-and-schedules",
+    "tools": [
+      "brightdata",
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "9ca49c7b01",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://ams.mpsomaha.org/about/calendars-and-schedules",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "ams.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://ezra.mpsomaha.org/schedules",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "52d28ad19f",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://ezra.mpsomaha.org/schedules",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "ezra.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://ezra.mpsomaha.org/parents/breakfast-lunch-information",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "5ee7879806",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://ezra.mpsomaha.org/parents/breakfast-lunch-information",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "ezra.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://ezra.mpsomaha.org/parents/school-hours",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "22efc9493e",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://ezra.mpsomaha.org/parents/school-hours",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "ezra.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://ezra.mpsomaha.org/ezra-millard-elementary",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "5eda08b474",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://ezra.mpsomaha.org/ezra-millard-elementary",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "ezra.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://neihardt.mpsomaha.org/",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "f8097551cc",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://neihardt.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "neihardt.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://rms.mpsomaha.org/about/calendars-and-schedules",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "f3611c3256",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://rms.mpsomaha.org/about/calendars-and-schedules",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "rms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://rms.mpsomaha.org/",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "9a5e479063",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://rms.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "rms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://rms.mpsomaha.org/students",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "25c98b4a9a",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://rms.mpsomaha.org/students",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "rms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://rms.mpsomaha.org/about",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "1cede0237d",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://rms.mpsomaha.org/about",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "rms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://cms.mpsomaha.org/about/about/cms-bell-schedule",
+    "tools": [
+      "brightdata",
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "4756ac3dbb",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://cms.mpsomaha.org/about/about/cms-bell-schedule",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "cms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://rms.mpsomaha.org/attendance-information",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "9e894a818e",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://rms.mpsomaha.org/attendance-information",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "rms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://rms.mpsomaha.org/about/announcements",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "c9eca5a7b3",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://rms.mpsomaha.org/about/announcements",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "rms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://rms.mpsomaha.org/parents",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "b36463822a",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://rms.mpsomaha.org/parents",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "rms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://bms.mpsomaha.org/",
+    "tools": [
+      "serper",
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "7d6c9e3bd2",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://bms.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "bms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://bms.mpsomaha.org/about",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "89e3bd5b45",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://bms.mpsomaha.org/about",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "bms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://bms.mpsomaha.org/about/daily-announcements",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "1bc93329f3",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://bms.mpsomaha.org/about/daily-announcements",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "bms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://bms.mpsomaha.org/beadle-middle-school-activities-and-athletics",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "8f124e8a7a",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://bms.mpsomaha.org/beadle-middle-school-activities-and-athletics",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "bms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://bms.mpsomaha.org/parents",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "1689946308",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://bms.mpsomaha.org/parents",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "bms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://bms.mpsomaha.org/students",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "7611bd9078",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://bms.mpsomaha.org/students",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "bms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://bms.mpsomaha.org/about/announcements",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "f567add074",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://bms.mpsomaha.org/about/announcements",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "bms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://cms.mpsomaha.org/",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "1c7df4384a",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://cms.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "cms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://cms.mpsomaha.org/about",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "073e9d0cb7",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://cms.mpsomaha.org/about",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "cms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://mnhs.mpsomaha.org/mnhs-life/school-day-schedules",
+    "tools": [
+      "serper",
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "892dec82d2",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://mnhs.mpsomaha.org/mnhs-life/school-day-schedules",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "mnhs.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://mnhs.mpsomaha.org/",
+    "tools": [
+      "serper",
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "513379707b",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://mnhs.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "mnhs.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://nms.mpsomaha.org/",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "ae083a8104",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://nms.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "nms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://ams.mpsomaha.org/students",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "fd61b98dda",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://ams.mpsomaha.org/students",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "ams.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://kms.mpsomaha.org/",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "945d375467",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://kms.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "kms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://ams.mpsomaha.org/parents",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "9583d9af43",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://ams.mpsomaha.org/parents",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "ams.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://mnhs.mpsomaha.org/schedules-and-general-information",
+    "tools": [
+      "brightdata",
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "1f536290ae",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://mnhs.mpsomaha.org/schedules-and-general-information",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "mnhs.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://ams.mpsomaha.org/",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "9a7afa8198",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://ams.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "ams.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://kms.mpsomaha.org/about",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "fe6b6f8f31",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://kms.mpsomaha.org/about",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "kms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://kms.mpsomaha.org/about/calendars-and-schedules",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "393673bb9a",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://kms.mpsomaha.org/about/calendars-and-schedules",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "kms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://kms.mpsomaha.org/parents/parent-information-page",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "a22c9ba864",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://kms.mpsomaha.org/parents/parent-information-page",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "kms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://kms.mpsomaha.org/kiewit-middle-school-activities-and-athletics",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "db1a640e0b",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://kms.mpsomaha.org/kiewit-middle-school-activities-and-athletics",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "kms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://kms.mpsomaha.org/about/news",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "4ac21be190",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://kms.mpsomaha.org/about/news",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "kms.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://mshs.mpsomaha.org/",
+    "tools": [
+      "serper"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "fe9a7b6c36",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://mshs.mpsomaha.org/",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "mshs.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://mwhs.mpsomaha.org/about/announcements/senior-sunrise-922",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "be36d0159c",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://mwhs.mpsomaha.org/about/announcements/senior-sunrise-922",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "mwhs.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  },
+  {
+    "url": "https://mnhs.mpsomaha.org/about/news/campus-hours",
+    "tools": [
+      "brightdata"
+    ],
+    "source": "discovered",
+    "found_on": null,
+    "hash": "a4825f2e79",
+    "ok": true,
+    "files": {
+      "txt": "page.txt",
+      "png": "page.png",
+      "pdf": "page.pdf"
+    },
+    "final_url": "https://mnhs.mpsomaha.org/about/news/campus-hours",
+    "modals_dismissed": true,
+    "kind": "html",
+    "text_times": 0,
+    "fingerprint": {
+      "final_host": "mnhs.mpsomaha.org",
+      "server": "cloudflare",
+      "powered_by": null,
+      "cdn_hints": [
+        "cloudflare"
+      ],
+      "meta_generator": null,
+      "resource_hosts": [
+        "challenges.cloudflare.com"
+      ],
+      "js_dependent": false,
+      "cms_hint": null,
+      "iframe_hosts": [],
+      "embed_hosts": [],
+      "embed_present": false,
+      "has_password": false
+    },
+    "segmented": true
+  }
+]
