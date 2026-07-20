@@ -12,6 +12,7 @@ Run: pytest tests/test_lct_calculation.py -v
 """
 
 import inspect
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
@@ -191,3 +192,83 @@ class TestLCTWriteIdempotency:
                 "clear_lct_calculations in main() must pass year= so a "
                 "target-year run doesn't destroy other years' calculations"
             )
+
+
+class TestBasisAwareReader:
+    """Issue #582: get_instructional_minutes must never label a stored
+    statutory-fallback bell row as measured bell data."""
+
+    def _session_with_rows(self, rows_by_call):
+        session = MagicMock()
+        q = session.query.return_value.filter.return_value.order_by.return_value
+        q.all.side_effect = rows_by_call
+        return session
+
+    def _row(self, minutes, method='council_extraction', basis='gross_bell_to_bell',
+             year='2024-25'):
+        return SimpleNamespace(instructional_minutes=minutes, method=method,
+                               minutes_basis=basis, year=year)
+
+    def test_measured_row_wins(self):
+        from infrastructure.scripts.analyze.calculate_lct_variants import get_instructional_minutes
+        session = self._session_with_rows([[self._row(400)], [], []])
+        minutes, source, year = get_instructional_minutes(session, '0612345', 'CA', 'high')
+        assert (minutes, source, year) == (400, 'bell_schedule', '2024-25')
+
+    def test_statutory_fallback_row_not_labeled_bell(self):
+        from infrastructure.scripts.analyze.calculate_lct_variants import get_instructional_minutes
+        stat = self._row(360, method='statutory_fallback', basis='statutory')
+        session = self._session_with_rows([[stat], [], []])
+        minutes, source, year = get_instructional_minutes(session, '0612345', 'CA', 'high')
+        assert minutes == 360
+        assert source == 'statutory_fallback'
+        assert year is None  # statutory minutes carry no school-year identity (#24)
+
+    def test_measured_preferred_over_stored_statutory(self):
+        from infrastructure.scripts.analyze.calculate_lct_variants import get_instructional_minutes
+        stat = self._row(360, method='statutory_fallback', basis='statutory')
+        measured = self._row(410, year='2023-24')
+        session = self._session_with_rows([[stat, measured], [], []])
+        minutes, source, year = get_instructional_minutes(session, '0612345', 'CA', 'high')
+        assert (minutes, source, year) == (410, 'bell_schedule', '2023-24')
+
+    def test_fallback_level_measured_beats_requested_level_statutory(self):
+        from infrastructure.scripts.analyze.calculate_lct_variants import get_instructional_minutes
+        stat = self._row(360, method='statutory_fallback', basis='statutory')
+        measured_middle = self._row(395, year='2024-25')
+        session = self._session_with_rows([[stat], [measured_middle], []])
+        minutes, source, year = get_instructional_minutes(session, '0612345', 'CA', 'high')
+        assert (minutes, source, year) == (395, 'bell_schedule_middle', '2024-25')
+
+    def test_statutory_basis_alone_also_excluded(self):
+        """A row with minutes_basis='statutory' is statutory even if method
+        says otherwise."""
+        from infrastructure.scripts.analyze.calculate_lct_variants import get_instructional_minutes
+        odd = self._row(360, method='human_provided', basis='statutory')
+        session = self._session_with_rows([[odd], [], []])
+        _, source, year = get_instructional_minutes(session, '0612345', 'CA', 'high')
+        assert source == 'statutory_fallback'
+        assert year is None
+
+
+class TestComparisonGuardrails:
+    """Issue #595: the SEA-vs-federal comparison must exclude entities outside
+    the 0-360 validity band before aggregating (intermediate units with tiny
+    enrollments dominated the unweighted state means)."""
+
+    def test_out_of_band_entity_excluded(self):
+        import pandas as pd
+        from infrastructure.scripts.analyze.compare_sea_vs_federal_lct import compare_sources
+
+        federal = pd.DataFrame([
+            {'district_id': '1', 'teachers': 100.0, 'enrollment_k12': 1800, 'enrollment_k5': 900},
+            # 50 teachers / 10 students -> implied LCT 1800: an intermediate-unit shape
+            {'district_id': '2', 'teachers': 50.0, 'enrollment_k12': 10, 'enrollment_k5': 5},
+        ])
+        sea = pd.DataFrame([
+            {'district_id': '1', 'teachers': 105.0, 'enrollment_k12': 1800},
+            {'district_id': '2', 'teachers': 50.0, 'enrollment_k12': 10},
+        ])
+        result = compare_sources(federal, sea, 'PA')
+        assert result['districts_compared'] == 1
+        assert result['teachers_only_fed_mean'] == pytest.approx(360 * 100 / 1800)

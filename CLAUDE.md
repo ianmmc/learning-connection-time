@@ -157,8 +157,24 @@ remediation plan on the issue). Latent sibling #589 (rebuild drops CTC flags). S
 dependency filed as #582 (LCT reader is minutes_basis-blind). Full narrative:
 `docs/PROJECT_HISTORY.md` 2026-07-20 (third entry).
 
-**Next (RESUME HERE — 2026-07-20): #92 (Stage 9 — Incorporate), with #582 landing before/with its
-write path.** Pending-decision queue for Ian first: #407 · #594 remediation · close #479/#480.
+**2026-07-20 (final): the sweep's decision queue EXECUTED (Ian's go).** #407 done (migrations
+023/024 add+backfill `all_other_support_staff` on StaffCountsEffective, NaN-safe scope_all
+recompute; 'all'-scope LCT now includes the category). #582 done (basis-aware reader:
+statutory-fallback bell rows report `statutory_fallback`/tier-3/year-None, never "bell_schedule").
+#589 done (rebuild Phase 2b re-applies Rule-6 CTC classification; Ian's ruling: preserve the
+exclusion for bell/LCT populations, staffing needs no change — CTC staff already sit inside the
+scope definitions). #594 done (CA Phase-2 restored: 990 SPED-env / 997 FRPM / 996 LCFF rows;
+rebuild Phase 3b now re-imports them). Full LCT recalc (run `20260720T212608Z`, 163,238 rows, QA
+PASS 99.62%; 2,036 CA-actual SPED rows all carrying WARN_MIXED_SPED_SOURCES). #595 root-caused:
+TX's tx_enrollment_data was one-column-shifted (populated by the pre-#17 iloc importer and never
+re-imported after the fix — re-imported, now sane) + the comparison lacked Rule-6/validity-band
+guardrails (added); all nine states now within ±13%.
+
+**Next (RESUME HERE — 2026-07-20): BEFORE #92, per Ian — revisit
+`docs/state-integrations/STATE_DATA_AVAILABILITY_ASSESSMENT.md` + `data/raw/state/` contents,
+then a state-data collection campaign (update assessments, collect from every state that has
+data). Discuss scope with Ian first. #92 (Stage 9) follows; #582's reader is already in place
+for it.**
 Banked routing: #112 → epic #128; #577 (chips) rides with #92. Parked: #475/#476, #103/#80 (+#110).
 Documented-in-code deferrals: `_satisfied_bands_now` batching (revisit on volume); the #522
 guardrail's per-rep keyword/table attribution (needs a server payload change); JS behavioral tests

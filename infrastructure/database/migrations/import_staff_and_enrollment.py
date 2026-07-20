@@ -413,6 +413,7 @@ def populate_effective_staff_counts(session, year: str) -> int:
             lea_staff_total=sc.lea_staff_total,
             school_staff_total=sc.school_staff_total,
             other_staff=sc.other_staff,
+            all_other_support_staff=sc.all_other_support_staff,  # issue #407
         )
 
         # Calculate scope values
