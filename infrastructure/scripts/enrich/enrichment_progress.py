@@ -81,7 +81,8 @@ class EnrichmentProgressTracker:
             "total_districts": total,
             "enriched": enriched,
             "pending": pending,
-            "enrichment_rate": enriched / total * 100,
+            # An empty reference CSV divided by zero (issue #424)
+            "enrichment_rate": (enriched / total * 100) if total else 0.0,
             "manual_followup": len(self.manual_followup['districts'])
         }
 

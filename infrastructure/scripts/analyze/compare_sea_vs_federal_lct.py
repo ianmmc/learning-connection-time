@@ -99,42 +99,47 @@ def get_federal_data(session, state: str, nces_year: str) -> pd.DataFrame:
 def get_sea_data(session, state: str, config: dict) -> pd.DataFrame:
     """Get SEA state data for a state."""
     # State-specific queries (simplified - just get teachers and enrollment)
+    # Every query filters on the state's configured vintage — unfiltered
+    # queries mixed all stored school years against year-filtered federal
+    # data, making the comparison meaningless (issue #298). All *_staff_data /
+    # *_enrollment_data tables carry a `year` column (verified 2026-07-20).
+    yr = config['year']
     if state == 'CA':
-        staff_query = "SELECT nces_id, teachers_fte FROM ca_staff_data"
-        enroll_query = "SELECT nces_id, total_k12 FROM ca_enrollment_data"
+        staff_query = "SELECT nces_id, teachers_fte FROM ca_staff_data WHERE year = :year"
+        enroll_query = "SELECT nces_id, total_k12 FROM ca_enrollment_data WHERE year = :year"
     elif state == 'FL':
-        staff_query = "SELECT nces_id, classroom_teachers FROM fl_staff_data"
-        enroll_query = "SELECT nces_id, total_enrollment FROM fl_enrollment_data"
+        staff_query = "SELECT nces_id, classroom_teachers FROM fl_staff_data WHERE year = :year"
+        enroll_query = "SELECT nces_id, total_enrollment FROM fl_enrollment_data WHERE year = :year"
     elif state == 'IL':
-        staff_query = "SELECT nces_id, total_teacher_fte FROM il_staff_data"
-        enroll_query = "SELECT nces_id, total_enrollment FROM il_enrollment_data"
+        staff_query = "SELECT nces_id, total_teacher_fte FROM il_staff_data WHERE year = :year"
+        enroll_query = "SELECT nces_id, total_enrollment FROM il_enrollment_data WHERE year = :year"
     elif state == 'MA':
-        staff_query = "SELECT nces_id, teachers_fte FROM ma_staff_data"
-        enroll_query = "SELECT nces_id, total_enrollment FROM ma_enrollment_data"
+        staff_query = "SELECT nces_id, teachers_fte FROM ma_staff_data WHERE year = :year"
+        enroll_query = "SELECT nces_id, total_enrollment FROM ma_enrollment_data WHERE year = :year"
     elif state == 'MI':
-        staff_query = "SELECT nces_id, total_teacher_fte FROM mi_staff_data"
-        enroll_query = "SELECT nces_id, total_k12 FROM mi_enrollment_data"
+        staff_query = "SELECT nces_id, total_teacher_fte FROM mi_staff_data WHERE year = :year"
+        enroll_query = "SELECT nces_id, total_k12 FROM mi_enrollment_data WHERE year = :year"
     elif state == 'NY':
-        staff_query = "SELECT nces_id, SUM(fte) FROM ny_staff_data WHERE staff_category = 'Classroom Teacher' GROUP BY nces_id"
-        enroll_query = "SELECT nces_id, SUM(enrollment_prek12) FROM ny_enrollment_data GROUP BY nces_id"
+        staff_query = "SELECT nces_id, SUM(fte) FROM ny_staff_data WHERE staff_category = 'Classroom Teacher' AND year = :year GROUP BY nces_id"
+        enroll_query = "SELECT nces_id, SUM(enrollment_prek12) FROM ny_enrollment_data WHERE year = :year GROUP BY nces_id"
     elif state == 'PA':
-        staff_query = "SELECT nces_id, classroom_teachers_fte FROM pa_staff_data"
-        enroll_query = "SELECT nces_id, total_k12 FROM pa_enrollment_data"
+        staff_query = "SELECT nces_id, classroom_teachers_fte FROM pa_staff_data WHERE year = :year"
+        enroll_query = "SELECT nces_id, total_k12 FROM pa_enrollment_data WHERE year = :year"
     elif state == 'TX':
-        staff_query = "SELECT nces_id, teachers_total_fte FROM tx_staff_data"
-        enroll_query = "SELECT nces_id, total_enrollment FROM tx_enrollment_data"
+        staff_query = "SELECT nces_id, teachers_total_fte FROM tx_staff_data WHERE year = :year"
+        enroll_query = "SELECT nces_id, total_enrollment FROM tx_enrollment_data WHERE year = :year"
     elif state == 'VA':
-        staff_query = "SELECT nces_id, teachers_fte FROM va_staff_data"
-        enroll_query = "SELECT nces_id, total_enrollment FROM va_enrollment_data"
+        staff_query = "SELECT nces_id, teachers_fte FROM va_staff_data WHERE year = :year"
+        enroll_query = "SELECT nces_id, total_enrollment FROM va_enrollment_data WHERE year = :year"
     else:
         return pd.DataFrame()
 
     # Get staff
-    staff_result = session.execute(text(staff_query))
+    staff_result = session.execute(text(staff_query), {"year": yr})
     staff_data = {row[0]: row[1] for row in staff_result}
 
     # Get enrollment
-    enroll_result = session.execute(text(enroll_query))
+    enroll_result = session.execute(text(enroll_query), {"year": yr})
     enroll_data = {row[0]: row[1] for row in enroll_result}
 
     # Merge
@@ -164,8 +169,10 @@ def compare_sources(federal_df: pd.DataFrame, sea_df: pd.DataFrame, state: str) 
     # Calculate LCT for teachers_only and all scopes
     results = {}
 
-    for scope in ['teachers_only', 'all']:
-        # For this comparison, teachers_only = teachers, all = teachers (we don't have full staff breakdown in SEA)
+    # Only teachers_only is honestly computable — SEA tables carry no full
+    # staff breakdown, and the old 'all_*' columns silently duplicated the
+    # teacher numbers under a misleading name (issue #379)
+    for scope in ['teachers_only']:
         merged[f'lct_fed_{scope}'] = merged.apply(
             lambda row: calculate_lct(DEFAULT_MINUTES, row['teachers_fed'], row['enrollment_k12_fed']),
             axis=1
@@ -187,15 +194,14 @@ def compare_sources(federal_df: pd.DataFrame, sea_df: pd.DataFrame, state: str) 
         'districts_compared': len(valid),
         'teachers_only_fed_mean': valid['lct_fed_teachers_only'].mean(),
         'teachers_only_sea_mean': valid['lct_sea_teachers_only'].mean(),
-        'all_fed_mean': valid['lct_fed_all'].mean(),
-        'all_sea_mean': valid['lct_sea_all'].mean(),
     }
 
-    # Calculate differences
-    comparison['teachers_only_diff'] = comparison['teachers_only_sea_mean'] - comparison['teachers_only_fed_mean']
-    comparison['teachers_only_pct_diff'] = (comparison['teachers_only_diff'] / comparison['teachers_only_fed_mean']) * 100
-    comparison['all_diff'] = comparison['all_sea_mean'] - comparison['all_fed_mean']
-    comparison['all_pct_diff'] = (comparison['all_diff'] / comparison['all_fed_mean']) * 100
+    # Calculate differences (zero/NaN-safe denominator — issue #378)
+    fed_mean = comparison['teachers_only_fed_mean']
+    comparison['teachers_only_diff'] = comparison['teachers_only_sea_mean'] - fed_mean
+    comparison['teachers_only_pct_diff'] = (
+        (comparison['teachers_only_diff'] / fed_mean) * 100 if fed_mean else None
+    )
 
     return comparison
 
