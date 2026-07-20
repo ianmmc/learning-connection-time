@@ -389,3 +389,31 @@ class TestConverterSweepFixes:
         """#409: '227901.0' must hit the 6-digit crosswalk key."""
         assert format_state_id('TX', '227901.0') == '227901'
         assert format_state_id('TX', 1902) == '001902'
+
+
+class TestExcelDigitsRejectsFractional:
+    """Max-effort review: excel_digits() must REJECT a genuinely fractional
+    value ('13.5') rather than silently truncate it via int(float(x)) — for
+    an identifier used as a crosswalk lookup key, silent truncation risks
+    matching a different, wrong district rather than a caught bad-input skip."""
+
+    def test_fractional_string_raises(self):
+        from infrastructure.database.migrations.sea_import_utils import excel_digits
+        with pytest.raises(ValueError, match='non-integer'):
+            excel_digits('13.5')
+
+    def test_fractional_float_raises(self):
+        from infrastructure.database.migrations.sea_import_utils import excel_digits
+        with pytest.raises(ValueError, match='non-integer'):
+            excel_digits(13.5)
+
+    def test_dot_zero_still_accepted(self):
+        """The original issue #458 case ('13.0') must keep working."""
+        from infrastructure.database.migrations.sea_import_utils import excel_digits
+        assert excel_digits('13.0') == '13'
+        assert excel_digits(13.0) == '13'
+
+    def test_plain_int_and_str_still_accepted(self):
+        from infrastructure.database.migrations.sea_import_utils import excel_digits
+        assert excel_digits(13) == '13'
+        assert excel_digits('13') == '13'

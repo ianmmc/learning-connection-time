@@ -477,6 +477,28 @@ class TestContentParserSweepFixes:
         assert elem and elem[0].start_time == '8:00 AM'
         assert elem[0].end_time == '2:30 PM'
 
+    def test_schools_sampled_matches_the_reported_modal_pair(self):
+        """Max-effort review: schools_sampled must be the rows that actually
+        SUPPORT the reported (start, end) pair, not just the first 5 rows for
+        the level — those could be a different, non-modal pair entirely."""
+        parser = self._parser()
+        markdown = """
+        | School | Hours |
+        |--------|-------|
+        | Adams Elementary | 9:00 AM - 3:00 PM |
+        | Baker Elementary | 9:05 AM - 3:05 PM |
+        | Custer Elementary | 9:10 AM - 3:10 PM |
+        | Douglas Elementary | 8:00 AM - 2:30 PM |
+        | Elm Elementary | 8:00 AM - 2:30 PM |
+        """
+        results = parser._parse_markdown_tables_all(markdown)
+        elem = [r for r in results if r.grade_level == 'elementary'][0]
+        assert elem.start_time == '8:00 AM'
+        assert elem.end_time == '2:30 PM'
+        # every sampled row must actually show the reported pair
+        for raw in elem.schools_sampled:
+            assert '8:00' in raw and '2:30' in raw
+
     def test_llm_fallback_reachable_with_default_levels(self):
         """#385: expected_levels=None must still hand missing levels to the
         LLM step (stubbed today, but the wiring must not dead-end)."""

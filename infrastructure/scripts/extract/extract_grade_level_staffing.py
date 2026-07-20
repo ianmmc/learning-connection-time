@@ -277,10 +277,15 @@ def main():
     if args.output:
         output_file = args.output
     else:
-        # Extract year from filename
-        # Regex the year out of the filename — the positional split('_')[3]
-        # broke on any non-canonical name (issue #389)
-        m = re.search(r'(\d{4}[-_]\d{2})', args.staff_file.name)
+        # Extract year from filename. Regex, not the positional split('_')[3]
+        # that broke on any non-canonical name (issue #389). CCD staff files
+        # encode the year as a single 4-digit token (e.g. '2324' in
+        # ccd_lea_059_2324_l_1a_073124.csv) — same convention the sibling
+        # enrollment extractor's fix uses; the '-'/'_'-separated form this
+        # regex originally looked for doesn't appear in real filenames and
+        # every real run fell through to 'unknown', silently clobbering
+        # prior years' output on repeat runs (found in max-effort review).
+        m = re.search(r'_(\d{4})_', args.staff_file.name)
         year_match = m.group(1) if m else 'unknown'
         output_file = Path(f"data/processed/normalized/grade_level_staffing_{year_match}.csv")
 

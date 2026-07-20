@@ -873,11 +873,18 @@ def _sanitize_reason(reason: str) -> str:
     # Truncate to max length
     sanitized = reason[:MAX_REASON_LENGTH]
 
-    # Remove potentially dangerous characters FIRST (SQL injection, XSS).
-    # Keep alphanumeric, spaces, basic punctuation, hyphens and colons —
-    # stripping hyphens mangled legitimate audit reasons like "non-compliant"
-    # (issue #292; values land in the ORM's parameterized JSON details, so
-    # this whole pass is defense-in-depth, not the actual injection barrier).
+    # Strip SQL comment syntax BEFORE the character whitelist below — once
+    # hyphens are individually allowed (issue #292), "--" (a SQL line
+    # comment) survives character-class filtering intact unless removed as
+    # its own token first (found in max-effort review; regression on a
+    # pre-existing test). Values land in the ORM's parameterized JSON
+    # details, so this whole pass is defense-in-depth, not the actual
+    # injection barrier — but the intended behavior is that it blocks this.
+    sanitized = sanitized.replace('--', '')
+
+    # Remove potentially dangerous characters (SQL injection, XSS). Keep
+    # alphanumeric, spaces, basic punctuation, hyphens and colons — stripping
+    # hyphens mangled legitimate audit reasons like "non-compliant" (issue #292).
     sanitized = re.sub(r'[^\w\s.,!?\'"()/:-]', '', sanitized)
 
     # Remove SQL-like keywords (case-insensitive)

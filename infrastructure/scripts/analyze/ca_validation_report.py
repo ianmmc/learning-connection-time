@@ -160,6 +160,13 @@ def generate_frpm_summary():
         # Calculate statistics
         poverty_rates = [d.poverty_percent for d in ca_frpm if d.poverty_percent is not None]
 
+        if not poverty_rates:
+            # Every row present but every poverty_percent NULL — a real
+            # possibility distinct from "no rows" (found in max-effort
+            # review; the len(ca_frpm)==0 guard above didn't cover this)
+            print("ERROR: FRPM rows exist but none have a poverty_percent value")
+            return
+
         print(f"\nFRPM Percentage Statistics:")
         print(f"  Mean: {sum(poverty_rates) / len(poverty_rates):.1%}")
         print(f"  Median: {median(poverty_rates):.1%}")
@@ -207,6 +214,12 @@ def generate_lcff_summary():
         supp_grants = [d.supplemental_grant for d in ca_lcff if d.supplemental_grant is not None]
         conc_grants = [d.concentration_grant for d in ca_lcff if d.concentration_grant is not None]
 
+        if not total_funding:
+            # LCFF rows exist but none have total_lcff — distinct from "no
+            # rows" (found in max-effort review)
+            print("ERROR: LCFF rows exist but none have a total_lcff value")
+            return
+
         print(f"\nTotal LCFF Funding:")
         print(f"  Statewide total: ${sum(total_funding):,.0f}")
         print(f"  Mean per district: ${sum(total_funding) / len(total_funding):,.0f}")
@@ -226,6 +239,11 @@ def generate_lcff_summary():
                 equity_grants.append((supp + conc) / d.total_lcff)
 
         print(f"\nEquity Funding (Supplemental + Concentration as % of total):")
+        if not equity_grants:
+            # No district had total_lcff > 0 — distinct from the "rows
+            # exist" case already guarded above (found in max-effort review)
+            print("  ERROR: No districts with total_lcff > 0")
+            return
         print(f"  Mean: {sum(equity_grants) / len(equity_grants):.1%}")
         print(f"  Median: {median(equity_grants):.1%}")
         print(f"  Min: {min(equity_grants):.1%}")

@@ -254,13 +254,22 @@ def excel_digits(raw) -> str:
     Handles 13, '13', 13.0 and '13.0' (Excel float-casts are pervasive in
     state files — issue #458's '13.0' crashed str(int(x))). NaN/non-numeric
     raise a ValueError naming the offending value instead of a bare crash.
+
+    Rejects (does not silently truncate) a genuinely fractional value like
+    '13.5' — int(float(x)) would otherwise floor it to '13', and for an
+    IDENTIFIER used as a crosswalk lookup key that's a silent match against a
+    different, wrong district rather than a caught bad-input skip (found in
+    max-effort review of issue #458's fix).
     """
     if pd.isna(raw):
         raise ValueError(f"missing/NaN state district id: {raw!r}")
     try:
-        return str(int(float(raw)))
+        f = float(raw)
     except (ValueError, TypeError):
         raise ValueError(f"non-numeric state district id: {raw!r}")
+    if f != int(f):
+        raise ValueError(f"non-integer state district id: {raw!r}")
+    return str(int(f))
 
 
 def ma_district_code(raw) -> str:
