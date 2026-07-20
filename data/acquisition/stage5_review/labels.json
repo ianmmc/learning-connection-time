@@ -5000,6 +5000,670 @@
     "updated_at": "2026-07-04T05:12:05Z"
   },
   {
+    "rec_key": "3173740:00a2728326",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:15:28Z"
+  },
+  {
+    "rec_key": "3173740:01ed3639f4",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:15:41Z"
+  },
+  {
+    "rec_key": "3173740:029080381c",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:15:36Z"
+  },
+  {
+    "rec_key": "3173740:073e9d0cb7",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:13Z"
+  },
+  {
+    "rec_key": "3173740:0c41c052df",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:19Z"
+  },
+  {
+    "rec_key": "3173740:14b876ae85",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:12:39Z"
+  },
+  {
+    "rec_key": "3173740:15c0f8b79e",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:46Z"
+  },
+  {
+    "rec_key": "3173740:1689946308",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:18Z"
+  },
+  {
+    "rec_key": "3173740:19ca595de3",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:16:12Z"
+  },
+  {
+    "rec_key": "3173740:1bc93329f3",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:22Z"
+  },
+  {
+    "rec_key": "3173740:1c7df4384a",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:16:09Z"
+  },
+  {
+    "rec_key": "3173740:1cede0237d",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:33Z"
+  },
+  {
+    "rec_key": "3173740:1f536290ae",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:15:18Z"
+  },
+  {
+    "rec_key": "3173740:20694bee0d",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:12:12Z"
+  },
+  {
+    "rec_key": "3173740:22efc9493e",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:46Z"
+  },
+  {
+    "rec_key": "3173740:25c98b4a9a",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:36Z"
+  },
+  {
+    "rec_key": "3173740:26c07036ed",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:15:33Z"
+  },
+  {
+    "rec_key": "3173740:2b2c719f55",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:49Z"
+  },
+  {
+    "rec_key": "3173740:335aff2e0c",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:12:45Z"
+  },
+  {
+    "rec_key": "3173740:393673bb9a",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:15:10Z"
+  },
+  {
+    "rec_key": "3173740:3fff53eab5",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:07Z"
+  },
+  {
+    "rec_key": "3173740:41e4a34e7b",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:56Z"
+  },
+  {
+    "rec_key": "3173740:4756ac3dbb",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:16:06Z"
+  },
+  {
+    "rec_key": "3173740:4ac21be190",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:12:54Z"
+  },
+  {
+    "rec_key": "3173740:4d45e649b2",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:15:31Z"
+  },
+  {
+    "rec_key": "3173740:513379707b",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:16:18Z"
+  },
+  {
+    "rec_key": "3173740:52595259fd",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:53Z"
+  },
+  {
+    "rec_key": "3173740:52d28ad19f",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:53Z"
+  },
+  {
+    "rec_key": "3173740:53a4907c52",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:14Z"
+  },
+  {
+    "rec_key": "3173740:591251fff3",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:12:32Z"
+  },
+  {
+    "rec_key": "3173740:5eda08b474",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:44Z"
+  },
+  {
+    "rec_key": "3173740:5ee7879806",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:50Z"
+  },
+  {
+    "rec_key": "3173740:5f8afb2952",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:31Z"
+  },
+  {
+    "rec_key": "3173740:67709ecaa1",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:02Z"
+  },
+  {
+    "rec_key": "3173740:6a1990da8b",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:11:50Z"
+  },
+  {
+    "rec_key": "3173740:6ff9e87a4a",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:34Z"
+  },
+  {
+    "rec_key": "3173740:7611bd9078",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:15:58Z"
+  },
+  {
+    "rec_key": "3173740:7b0027fc51",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:59Z"
+  },
+  {
+    "rec_key": "3173740:7d6c9e3bd2",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:15:54Z"
+  },
+  {
+    "rec_key": "3173740:81c7c19cd2",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:36Z"
+  },
+  {
+    "rec_key": "3173740:8209e5fe0a",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:12:23Z"
+  },
+  {
+    "rec_key": "3173740:87668e77fd",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:39Z"
+  },
+  {
+    "rec_key": "3173740:892dec82d2",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:12:42Z"
+  },
+  {
+    "rec_key": "3173740:89e3bd5b45",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:16:01Z"
+  },
+  {
+    "rec_key": "3173740:8f124e8a7a",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:16:04Z"
+  },
+  {
+    "rec_key": "3173740:904155f874",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:12:26Z"
+  },
+  {
+    "rec_key": "3173740:945d375467",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:15:05Z"
+  },
+  {
+    "rec_key": "3173740:957768d08a",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:12:20Z"
+  },
+  {
+    "rec_key": "3173740:9583d9af43",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:05Z"
+  },
+  {
+    "rec_key": "3173740:9a5e479063",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:15:49Z"
+  },
+  {
+    "rec_key": "3173740:9a7afa8198",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:15:15Z"
+  },
+  {
+    "rec_key": "3173740:9ca49c7b01",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:15:12Z"
+  },
+  {
+    "rec_key": "3173740:9e894a818e",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:29Z"
+  },
+  {
+    "rec_key": "3173740:a22c9ba864",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:03Z"
+  },
+  {
+    "rec_key": "3173740:a43e8736aa",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:12:05Z"
+  },
+  {
+    "rec_key": "3173740:a4825f2e79",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:55Z"
+  },
+  {
+    "rec_key": "3173740:ad1c5898d9",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:15:39Z"
+  },
+  {
+    "rec_key": "3173740:ae083a8104",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:16:14Z"
+  },
+  {
+    "rec_key": "3173740:b2977849e3",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:28Z"
+  },
+  {
+    "rec_key": "3173740:b29f0c17fc",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:04Z"
+  },
+  {
+    "rec_key": "3173740:b36463822a",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:24Z"
+  },
+  {
+    "rec_key": "3173740:b3936f4ccd",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:23Z"
+  },
+  {
+    "rec_key": "3173740:b39820fef2",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:26Z"
+  },
+  {
+    "rec_key": "3173740:b4b8e9fe80",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:15:00Z"
+  },
+  {
+    "rec_key": "3173740:b5df3972b7",
+    "primary_label": "school_start_end_prose",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:10:18Z"
+  },
+  {
+    "rec_key": "3173740:b7b1df30d2",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:11Z"
+  },
+  {
+    "rec_key": "3173740:bb7221ec70",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:41Z"
+  },
+  {
+    "rec_key": "3173740:be36d0159c",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:12:57Z"
+  },
+  {
+    "rec_key": "3173740:c8fd101100",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:12:02Z"
+  },
+  {
+    "rec_key": "3173740:c9eca5a7b3",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:27Z"
+  },
+  {
+    "rec_key": "3173740:cded06ab90",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:12:29Z"
+  },
+  {
+    "rec_key": "3173740:d4a51a4ebb",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:11:57Z"
+  },
+  {
+    "rec_key": "3173740:d65fd0ef79",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:12:51Z"
+  },
+  {
+    "rec_key": "3173740:da3655821b",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:15:25Z"
+  },
+  {
+    "rec_key": "3173740:db1a640e0b",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:00Z"
+  },
+  {
+    "rec_key": "3173740:e80da95da9",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:12:08Z"
+  },
+  {
+    "rec_key": "3173740:ec6c33d53f",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:17Z"
+  },
+  {
+    "rec_key": "3173740:f3611c3256",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:15:44Z"
+  },
+  {
+    "rec_key": "3173740:f567add074",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:16Z"
+  },
+  {
+    "rec_key": "3173740:f8097551cc",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:39Z"
+  },
+  {
+    "rec_key": "3173740:fd61b98dda",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:13:09Z"
+  },
+  {
+    "rec_key": "3173740:fe6b6f8f31",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:15:07Z"
+  },
+  {
+    "rec_key": "3173740:fe9a7b6c36",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-20T14:14:58Z"
+  },
+  {
     "rec_key": "3200480:3bdae9db41",
     "primary_label": "district_hub_by_school",
     "facets_json": "{}",

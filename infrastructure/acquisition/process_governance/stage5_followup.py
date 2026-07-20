@@ -57,6 +57,15 @@ def zero_yield_reason(session, district_id: str) -> str | None:
         {"d": district_id}).scalar()
     if n_fid:
         return f"{n_fid} fidelity-flagged capture(s) (login_wall/soft_404) — triage those first (#518)"
+    # #578: a security-blocked district must NOT geo-escalate — the domain was fine, the WAF said
+    # no (Rule 3: one attempt, respected). Geo rediscovery would re-derive the same blocked hosts
+    # and re-pressure them. Manual triage is the only honest next step.
+    n_sec = session.execute(text(
+        "SELECT COUNT(*) FROM capture WHERE district_id = :d AND err LIKE 'security_block%'"),
+        {"d": district_id}).scalar()
+    if n_sec:
+        return (f"{n_sec} security-blocked capture(s) (WAF challenge, one-attempt rule) — "
+                "manual triage, never automatic re-pressure (#578)")
     return None
 
 

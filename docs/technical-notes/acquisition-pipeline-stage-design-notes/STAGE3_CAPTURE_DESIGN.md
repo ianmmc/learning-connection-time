@@ -413,3 +413,17 @@ beyond the capture plan bring back the EMERGENT captures the pre-#117 reconstruc
 (md5 is one-way; their URL only ever existed in Node's memory). The folder scan remains the fallback
 for pre-#117 orphans and lost journal lines; a torn final line (SIGKILL mid-append) is tolerated.
 REQ-156.
+
+**2026-07-20 — #578 (REQ-159): the one-attempt security-block rule is now ENFORCED, not just
+classified.** Live finding (Millard NE, batch_00021): `security_block` existed only as a retry
+classification — nothing assigned it, so a Cloudflare-challenged run recorded 31/83 interstitials
+as `ok` while continuing to pressure the WAF. Now: `detectChallenge` (pure — `cf-mitigated:
+challenge` header + bounded interstitial body markers; CDN presence never trips) runs on the fetch
+branch AND the render branch (a challenge records `err='security_block'`, saves nothing as ok,
+scans no anchors); `updateSecurityState` implements the district circuit breaker (3 consecutive
+challenges → halt; remaining URLs record a NON-retryable security_block variant — deliberately not
+`not_attempted`, which #116 would re-hammer); and a pre-capture probe GETs each district's dominant
+planned host first (a challenged probe halts the district at one request of IP exposure; a clean
+probe is necessary-not-sufficient — the breaker is the guarantee). Security-blocked districts are
+ineligible for the 5→1 geo escalation (stage5_followup): the domain was fine, the WAF said no —
+manual triage only. Tests: capture_security.test.mjs (the real Millard interstitial is the fixture).

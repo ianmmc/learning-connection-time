@@ -252,6 +252,20 @@ def test_zero_yield_reason_fidelity_flag_routes_to_triage(gov_session, monkeypat
     assert reason and "fidelity" in reason
 
 
+@govdb
+def test_zero_yield_reason_security_block_never_escalates(gov_session, monkeypatch):
+    """#578: a security-blocked district must not geo-escalate — the WAF said no (Rule 3);
+    geo rediscovery would re-derive and re-pressure the same blocked hosts."""
+    from infrastructure.acquisition.common import cache_ingest as CI
+    CI.ensure_cache_schema(gov_session)
+    monkeypatch.setattr(S5F.REL, "load_district_records", lambda s, d: [])
+    gov_session.execute(text(
+        "INSERT INTO capture (district_id, hash, url, err) VALUES "
+        "('ZZ5Y4', 'h1', 'https://x', 'security_block (body marker \"just a moment...\")')"))
+    reason = S5F.zero_yield_reason(gov_session, "ZZ5Y4")
+    assert reason and "security-blocked" in reason and "manual triage" in reason
+
+
 # ---------------------------------------------------------------- 5->1 composer + ladder
 def _seed_source_batch(s, bid, dids, *, batch_type="first-run", approved=True):
     now = _M7.utcnow()
