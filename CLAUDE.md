@@ -138,9 +138,17 @@ auto-advance at queue-create (domain_only → geo_for_blank, exactly one step, e
 implemented. Live-verified: a dry-run over ran batch_00018 correctly laddered 3405970 (14 records,
 all release-rejected, no errs) to geo+standard and held Southern Lehigh on 6 dispatchable/held
 records. Earlier same day: the 12-finding retrospective review of #562–570 (fixed as `2153a91`) —
-full account in `docs/PROJECT_HISTORY.md`'s 2026-07-19 entries. **The LIVE Millard run remains
-Ian's gate@1 action** (flip `discovery_scope_policy` → geo_for_blank, compose a geo first-run,
-confirm the derived proposal).
+full account in `docs/PROJECT_HISTORY.md`'s 2026-07-19 entries. **Same-day follow-up #572 (PR
+#573, REQ-158): the console control surface** — Settings policy card (`GET/POST
+/api/discovery-policy`), scope-aware gate@1 create (geo when policy allows; path-4 target
+district IDs; drawn-by-policy under interleave), scope badges/`scope_draw`/`targeted` visibility,
+and the **5→1 zero-yield check button** on ran gate@1 batches. Operational fact it surfaced:
+Millard NE (3173740) is already-attempted, so NO first-run draw can include it. **The LIVE
+Millard run is therefore: gate@1 → batch_00013 → "5→1 zero-yield check…" → compose the geo
+escalation draft (live-verified: 4 eligible districts incl. Millard NE at geo+standard) → review/
+approve the draft → after discovery, confirm the derived discovered-domain proposal.** No policy
+flip needed — escalation loops are deliberately not policy-gated (the policy governs first-runs
+only; two audited `claude:verify-572` set/revert events sit in the log from live verification).
 
 **Next (RESUME HERE — 2026-07-19): #118 → close epic #111.**
 **#118** (Ian: build in-epic, a CONDITION of closing #111): Stage 2/4 effectiveness attribution —
