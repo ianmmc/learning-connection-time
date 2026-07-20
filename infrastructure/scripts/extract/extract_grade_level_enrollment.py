@@ -26,6 +26,7 @@ Examples:
 
 import argparse
 import logging
+import re
 import sys
 from pathlib import Path
 import pandas as pd
@@ -74,6 +75,7 @@ def extract_grade_level_enrollment(membership_file: Path, output_file: Path):
     # This file is very large, so we'll use chunking
     chunks = []
     chunksize = 100000
+    rows_read = 0
 
     for chunk in pd.read_csv(membership_file, chunksize=chunksize, low_memory=False):
         # Filter for records we care about
@@ -104,7 +106,10 @@ def extract_grade_level_enrollment(membership_file: Path, output_file: Path):
 
             chunks.append(district_grade)
 
-        logger.info(f"  Processed {len(chunks) * chunksize:,} rows...")
+        rows_read += len(chunk)
+        # Actual rows read — len(chunks)*chunksize counted only chunks that
+        # produced output and overstated by the chunk size (issue #387)
+        logger.info(f"  Processed {rows_read:,} rows...")
 
     if not chunks:
         logger.error("No valid enrollment data found")
@@ -213,8 +218,12 @@ def main():
         output_file = args.output
     else:
         # Extract year from filename (e.g., "2324" from ccd_lea_052_2324_l_1a_073124.csv)
+        # Regex, not a positional split — split('_')[3] broke/IndexError'd on
+        # any non-canonical filename (issue #388). CCD names carry the year as
+        # a 4-digit token (e.g. '2324' in ccd_lea_052_2324_l_1a_073124.csv).
         filename = args.membership_file.name
-        year_match = filename.split('_')[3] if '_' in filename else 'unknown'
+        m = re.search(r'_(\d{4})_', filename)
+        year_match = m.group(1) if m else 'unknown'
         output_file = Path(f"data/processed/normalized/grade_level_enrollment_{year_match}.csv")
 
     # Process the file

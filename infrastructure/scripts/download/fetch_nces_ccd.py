@@ -17,6 +17,7 @@ Available tables:
 
 import argparse
 import logging
+from datetime import datetime, timezone
 from pathlib import Path
 import sys
 import requests
@@ -101,31 +102,43 @@ def download_file(url: str, output_path: Path) -> bool:
     Returns:
         True if successful, False otherwise
     """
+    tmp_path = output_path.with_suffix(output_path.suffix + '.part')
     try:
         logger.info(f"Downloading: {url}")
-        
+
         response = requests.get(url, stream=True, timeout=60)
         response.raise_for_status()
-        
-        # Get file size if available
-        total_size = int(response.headers.get('content-length', 0))
-        
-        with open(output_path, 'wb') as f:
-            if total_size == 0:
-                f.write(response.content)
-            else:
-                downloaded = 0
-                for chunk in response.iter_content(chunk_size=8192):
-                    f.write(chunk)
-                    downloaded += len(chunk)
+
+        # Malformed Content-Length must not crash the download (issue #381)
+        try:
+            total_size = int(response.headers.get('content-length', 0))
+        except (ValueError, TypeError):
+            total_size = 0
+
+        # ALWAYS stream in chunks — response.content buffered the whole file
+        # in memory when Content-Length was missing (issue #382). Write to a
+        # .part temp file and rename on success so a failed download never
+        # leaves a corrupt file at the final path (issue #383). Progress logs
+        # at ~5% steps, not every 8KB chunk (issue #462).
+        downloaded = 0
+        next_log_percent = 5.0
+        with open(tmp_path, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+                downloaded += len(chunk)
+                if total_size > 0:
                     percent = (downloaded / total_size) * 100
-                    logger.info(f"  Progress: {percent:.1f}%")
-        
+                    if percent >= next_log_percent:
+                        logger.info(f"  Progress: {percent:.1f}%")
+                        next_log_percent += 5.0
+
+        tmp_path.replace(output_path)
         logger.info(f"✓ Saved to: {output_path}")
         return True
-        
+
     except requests.exceptions.RequestException as e:
         logger.error(f"✗ Download failed: {e}")
+        tmp_path.unlink(missing_ok=True)
         return False
 
 
@@ -159,7 +172,7 @@ https://nces.ed.gov/ccd/
     
     content += f"""
 ## Download Information
-- **Date**: {Path(__file__).stat().st_mtime}
+- **Date**: {datetime.now(timezone.utc).isoformat()}
 - **Script**: fetch_nces_ccd.py
 
 ## Next Steps
@@ -254,7 +267,12 @@ def main():
         action="store_true",
         help="Download sample data only for testing"
     )
-    
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Re-download files that already exist without prompting"
+    )
+
     args = parser.parse_args()
     
     # Get output directory
@@ -294,10 +312,18 @@ def main():
         # Check if already exists
         if output_path.exists():
             logger.warning(f"File already exists: {output_path.name}")
-            response = input("Re-download? (y/n): ").strip().lower()
-            if response != 'y':
-                logger.info("Skipping...")
+            if args.overwrite:
+                logger.info("--overwrite set; re-downloading")
+            elif not sys.stdin.isatty():
+                # Non-interactive (CI/cron/Docker): input() hung or raised
+                # EOFError (issue #299) — default to keeping the existing file
+                logger.info("Non-interactive session; keeping existing file (use --overwrite)")
                 continue
+            else:
+                response = input("Re-download? (y/n): ").strip().lower()
+                if response != 'y':
+                    logger.info("Skipping...")
+                    continue
         
         # Download
         success = download_file(info['url'], output_path)

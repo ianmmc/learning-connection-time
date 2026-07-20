@@ -85,21 +85,22 @@ def concatenate_csv_files(file_list, output_path):
     """
     logger.info(f"Concatenating {len(file_list)} CSV files...")
     
-    dfs = []
-    for file in file_list:
+    # Append part-by-part — building a list of every part's DataFrame held
+    # the whole multi-GB dataset in memory at once (issue #464)
+    total_rows = 0
+    for i, file in enumerate(file_list):
         try:
             df = pd.read_csv(file, low_memory=False)
-            dfs.append(df)
+            df.to_csv(output_path, index=False, mode='w' if i == 0 else 'a',
+                      header=(i == 0))
+            total_rows += len(df)
             logger.info(f"  ✓ Read {file.name}: {len(df):,} rows")
         except Exception as e:
             logger.error(f"  ✗ Error reading {file.name}: {e}")
             raise
-    
-    combined = pd.concat(dfs, ignore_index=True)
-    combined.to_csv(output_path, index=False)
-    
-    logger.info(f"✓ Combined file created: {len(combined):,} rows → {output_path.name}")
-    return len(combined)
+
+    logger.info(f"✓ Combined file created: {total_rows:,} rows → {output_path.name}")
+    return total_rows
 
 
 def concatenate_text_files(file_list, output_path):
@@ -116,17 +117,23 @@ def concatenate_text_files(file_list, output_path):
     logger.info(f"Concatenating {len(file_list)} text files...")
     
     total_lines = 0
-    
+    header_line = None
+
     with open(output_path, 'w', encoding='utf-8') as outfile:
         for i, file in enumerate(file_list):
             try:
                 with open(file, 'r', encoding='utf-8') as infile:
                     lines = infile.readlines()
-                    
-                    # Skip header for all but first file
-                    if i > 0 and lines and not lines[0].strip().isdigit():
+
+                    if i == 0:
+                        header_line = lines[0] if lines else None
+                    # Skip a repeated header in later parts ONLY if it matches
+                    # the first file's header — the old isdigit() guess dropped
+                    # the first DATA row of any part whose leading field wasn't
+                    # purely numeric (issue #304)
+                    elif lines and header_line is not None and lines[0] == header_line:
                         lines = lines[1:]
-                    
+
                     outfile.writelines(lines)
                     total_lines += len(lines)
                     logger.info(f"  ✓ Read {file.name}: {len(lines):,} lines")
@@ -161,6 +168,10 @@ def process_multipart_set(base_name, files, output_dir):
     # Check if output already exists
     if output_path.exists():
         logger.warning(f"Output file already exists: {output_path.name}")
+        if not sys.stdin.isatty():
+            # Non-interactive: input() hung or raised EOFError (issue #303)
+            logger.info("Non-interactive session; keeping existing file")
+            return None
         response = input("Overwrite? (y/n): ").strip().lower()
         if response != 'y':
             logger.info("Skipping...")

@@ -33,32 +33,35 @@ def merge_nces_ccd_files(directory_file, membership_file, staff_file, output_fil
     """
     logger.info(f"Merging NCES CCD files for {year}")
 
-    # Read directory file
+    # Read directory file. NCES publishes UTF-8; make it explicit rather than
+    # inheriting the locale default (issue #310).
     logger.info(f"Reading directory: {directory_file}")
-    directory = pd.read_csv(directory_file)
+    directory = pd.read_csv(directory_file, encoding='utf-8')
     logger.info(f"  Loaded {len(directory):,} districts")
 
     # Read membership file and get total enrollment
     logger.info(f"Reading membership: {membership_file}")
-    membership = pd.read_csv(membership_file)
+    membership = pd.read_csv(membership_file, encoding='utf-8')
     logger.info(f"  Loaded {len(membership):,} membership records")
 
-    # Filter for total enrollment (Education Unit Total)
+    # Filter for total enrollment (Education Unit Total). Strip the indicator
+    # first — stray whitespace in the vintage files made the exact match fail
+    # and silently dropped every district's enrollment (issue #308).
     total_enrollment = membership[
-        membership['TOTAL_INDICATOR'] == 'Education Unit Total'
+        membership['TOTAL_INDICATOR'].str.strip() == 'Education Unit Total'
     ][['LEAID', 'STUDENT_COUNT']].copy()
     total_enrollment.columns = ['LEAID', 'enrollment']
     logger.info(f"  Found {len(total_enrollment):,} districts with enrollment data")
 
     # Read staff file and get total teachers
     logger.info(f"Reading staff: {staff_file}")
-    staff = pd.read_csv(staff_file)
+    staff = pd.read_csv(staff_file, encoding='utf-8')
     logger.info(f"  Loaded {len(staff):,} staff records")
 
-    # Filter for teachers (Derived - Major Staffing Category)
+    # Filter for teachers — whitespace-tolerant, same as enrollment (issue #309)
     teachers = staff[
-        (staff['STAFF'] == 'Teachers') &
-        (staff['TOTAL_INDICATOR'] == 'Derived - Major Staffing Category')
+        (staff['STAFF'].str.strip() == 'Teachers') &
+        (staff['TOTAL_INDICATOR'].str.strip() == 'Derived - Major Staffing Category')
     ][['LEAID', 'STAFF_COUNT']].copy()
     teachers.columns = ['LEAID', 'instructional_staff']
     logger.info(f"  Found {len(teachers):,} districts with teacher data")
@@ -67,7 +70,15 @@ def merge_nces_ccd_files(directory_file, membership_file, staff_file, output_fil
     district_info = directory[['LEAID', 'LEA_NAME', 'ST']].copy()
     district_info.columns = ['district_id', 'district_name', 'state']
 
-    # Merge all together
+    # Merge all together. Dedup the right-hand keys first: a duplicate LEAID
+    # in membership/staff would Cartesian-multiply districts (issue #427).
+    for name, frame in (('enrollment', total_enrollment), ('teachers', teachers)):
+        dupes = frame['LEAID'].duplicated().sum()
+        if dupes:
+            logger.warning(f"  Dropping {dupes} duplicate LEAID rows from {name} (keeping first)")
+    total_enrollment = total_enrollment.drop_duplicates(subset='LEAID', keep='first')
+    teachers = teachers.drop_duplicates(subset='LEAID', keep='first')
+
     logger.info("Merging datasets...")
     result = district_info.merge(total_enrollment, left_on='district_id', right_on='LEAID', how='left')
     result = result.merge(teachers, left_on='district_id', right_on='LEAID', how='left')
@@ -82,10 +93,14 @@ def merge_nces_ccd_files(directory_file, membership_file, staff_file, output_fil
     # Reorder columns
     result = result[['district_id', 'district_name', 'state', 'enrollment', 'instructional_staff', 'year', 'data_source']]
 
-    # Filter out districts with no enrollment or staff data
-    before_filter = len(result)
+    # Filter out districts with no enrollment or staff data. Log WHICH ids
+    # dropped (sample) so a data-vintage problem is diagnosable (issue #307).
+    dropped = result[result['enrollment'].isna() | result['instructional_staff'].isna()]
     result = result[result['enrollment'].notna() & result['instructional_staff'].notna()]
-    logger.info(f"  Filtered {before_filter - len(result):,} districts with missing data")
+    logger.info(f"  Filtered {len(dropped):,} districts with missing data")
+    if len(dropped):
+        sample_ids = dropped['district_id'].head(20).tolist()
+        logger.info(f"  Dropped district_ids (first 20): {sample_ids}")
 
     # Save
     output_file.parent.mkdir(parents=True, exist_ok=True)

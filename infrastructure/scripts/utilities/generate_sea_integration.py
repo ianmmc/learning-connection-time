@@ -95,13 +95,15 @@ def analyze_excel_file(file_path: Path) -> Dict:
         sheet_names = xl.sheet_names
 
         for sheet_name in sheet_names:
-            df = pd.read_excel(file_path, sheet_name=sheet_name, nrows=5)
+            # ONE full read per sheet — the row count previously re-read the
+            # whole sheet a second time (issue #315)
+            df = pd.read_excel(file_path, sheet_name=sheet_name)
             columns = list(df.columns)
 
             sheet_info = {
                 'name': sheet_name,
                 'columns': columns,
-                'row_count': len(pd.read_excel(file_path, sheet_name=sheet_name)),
+                'row_count': len(df),
                 'sample_data': df.head(3).to_dict(),
             }
             results['sheets'].append(sheet_info)
@@ -112,13 +114,14 @@ def analyze_excel_file(file_path: Path) -> Dict:
                 results['suggested_mappings'][sheet_name] = mappings
 
     elif file_path.suffix.lower() == '.csv':
-        df = pd.read_csv(file_path, nrows=5)
+        # ONE full read (issue #316)
+        df = pd.read_csv(file_path)
         columns = list(df.columns)
 
         results['sheets'].append({
             'name': 'CSV',
             'columns': columns,
-            'row_count': len(pd.read_csv(file_path)),
+            'row_count': len(df),
             'sample_data': df.head(3).to_dict(),
         })
 
@@ -557,7 +560,10 @@ def main():
 
     state_code = args.state.upper()
     if state_code not in STATE_NAMES:
-        print(f"Warning: {state_code} not in known state codes")
+        # Generation names files/dirs after the code — a typo produced junk
+        # scaffolding under the raw code (issue #434)
+        print(f"Error: {state_code} is not a known state code")
+        sys.exit(1)
 
     state_name = STATE_NAMES.get(state_code, state_code)
     state_lower = state_name.lower().replace(' ', '_')
@@ -588,7 +594,8 @@ def main():
         data_dir.mkdir(parents=True, exist_ok=True)
         print(f"✅ Created: {data_dir}/")
 
-        # Write test file
+        # Write test file (ensure the parent exists — issue #393)
+        test_file.parent.mkdir(parents=True, exist_ok=True)
         if not test_file.exists():
             test_file.write_text(test_content)
             print(f"✅ Created: {test_file}")
@@ -596,6 +603,7 @@ def main():
             print(f"⚠️  Skipped (exists): {test_file}")
 
         # Write import script
+        import_file.parent.mkdir(parents=True, exist_ok=True)
         if not import_file.exists():
             import_file.write_text(import_content)
             print(f"✅ Created: {import_file}")
@@ -604,10 +612,10 @@ def main():
 
     print(f"\n{'='*60}")
     print("NEXT STEPS:")
-    print("1. Download {agency} data files to data/raw/state/{state_lower}/")
-    print("2. Run: python generate_sea_integration.py --analyze data/raw/state/{state_lower}/")
+    print(f"1. Download {args.agency} data files to data/raw/state/{state_lower}/")
+    print(f"2. Run: python generate_sea_integration.py --analyze data/raw/state/{state_lower}/")
     print("3. Update TODO sections in generated files with actual column mappings")
-    print("4. Query database for crosswalk: SELECT * FROM state_district_crosswalk WHERE state = '{state_code}'")
+    print(f"4. Query database for crosswalk: SELECT * FROM state_district_crosswalk WHERE state = '{state_code}'")
     print("5. Run tests: pytest tests/test_{state_lower}_integration.py -v")
     print(f"{'='*60}\n")
 
