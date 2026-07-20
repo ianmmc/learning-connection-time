@@ -1,0 +1,2550 @@
+# State SEA data catalog — source of truth for the state-data campaign.
+# STATE_DATA_AVAILABILITY_ASSESSMENT.md is regenerated from this file.
+# Probe/acquisition agents append receipt records here; humans review diffs.
+meta:
+  version: '1'
+  updated: '2026-07-20'
+  purpose: >-
+    Source of truth for the SEA data collection campaign: what each state education agency publishes,
+    probe results, and acquisition receipts. STATE_DATA_AVAILABILITY_ASSESSMENT.md is REGENERATED from
+    this file — edit here, not there.
+  precedence_context: >-
+    Verified against the live DB 2026-07-20: staff_counts_effective is 100% nces_ccd across all states
+    and years — SEA staff/enrollment data wins REQ-023 precedence NOWHERE today, because year-matched
+    NCES (2024-25 CCD, ingested 2026-07) beats year-matched SEA by design (REQ-022/023). SEA data currently
+    pays off through: (1) SPED-actual data via REQ-025 (state-actual beats the 2017-18 federal estimate
+    — CA contributes 2,036 LCT rows today), (2) state<->NCES ID crosswalks (REQ-027), (3) SPED-teacher
+    splits feeding SPED scopes, and (4) years NEWER than the NCES primary (2025-26+), where SEA wins until
+    the next CCD lands. Probe priority follows this ranking. NOT a target: daily instructional minutes
+    — verified dead end (docs/INSTRUCTIONAL_TIME_HARVEST.md).
+  availability_vocab:
+  - reported-yes
+  - reported-partial
+  - reported-no
+  - unknown
+  - confirmed
+  - not-found
+  - blocked
+  flags_vocab:
+  - refresh-candidate
+  - blocked
+  - follow-up-manual
+  - login-required
+  - api-available
+  - dashboard-only
+  - request-only
+  seed_provenance: >-
+    Seeded 2026-07-20 from the 2026-01-11 assessment matrix (availability values reported-*, unverified)
+    plus DB-verified status for the 9 integrated states. reported-* values become confirmed / not-found
+    / blocked only via probe receipts.
+consolidated_sources:
+- name: IDEA Section 618 LEA Part B Child Count (data.ed.gov)
+  url: https://data.ed.gov/dataset/16968dd3-87bd-4e4a-92ed-50f03e6c4941
+  probed: '2026-07-20'
+  outcome: confirmed
+  detail: >-
+    District(LEA)-level SPED child counts by disability category, ALL states in one
+    federal CSV per year, direct download URLs, current through 2024-25
+    (bchildcountdisabilitycategorylea2024-25.csv). State-reported actuals — a
+    candidate to supersede the 2017-18 SPED baseline nationally under REQ-025,
+    likely higher-yield than most per-state SEA probes. Note: 2021-22-and-earlier
+    files bundled educational environment; 2022-23+ split it out — the LEA-level
+    ed-environment companion dataset still needs locating.
+  urls:
+  - https://data.ed.gov/dataset/16968dd3-87bd-4e4a-92ed-50f03e6c4941/resource/00a5a1b6-835b-4f4e-9de6-bfb43f877087/download/bchildcountdisabilitycategorylea2024-25.csv
+  - https://data.ed.gov/dataset/16968dd3-87bd-4e4a-92ed-50f03e6c4941/resource/5a208d37-564a-40c8-a91d-dd2874fed48c/download/bchildcountdisabilitycategorylea2023-24.csv
+- name: Urban Institute Education Data Portal API
+  url: https://educationdata.urban.org/api/v1/
+  probed: '2026-07-20'
+  outcome: confirmed
+  detail: >-
+    Clean REST API over CCD/CRDC/EDFacts. school-districts/ccd/directory returns
+    state_leaid per district (verified 2023, e.g. NE-120056000) — useful to
+    backfill/verify state_district_crosswalk (REQ-027) for every state without
+    touching SEA portals, and as an independent validation source (REQ-021).
+    Supplements, never substitutes for, SEA-actual data.
+  urls:
+  - https://educationdata.urban.org/api/v1/school-districts/ccd/directory/2023/
+- name: CCSSO / AASA / NSBA / NAESP
+  probed: '2026-07-20'
+  outcome: not-found
+  detail: >-
+    Membership/policy organizations — publish aggregates and reports, not
+    district-level FTE/enrollment/SPED files. Not acquisition sources.
+states:
+- code: AK
+  name: Alaska
+  portals:
+  - https://education.alaska.gov/data-center
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Data Center, SPED District Data Profile
+- code: AL
+  name: Alabama
+  portals:
+  - https://www.alabamaachieves.org/reports-data/
+  priority_seed: high
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Reports & Data portal, Financial Reports with staffing
+- code: AR
+  name: Arkansas
+  portals:
+  - https://adedata.arkansas.gov/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: ADE Data Center, ARKSPED Portal separate
+- code: AS
+  name: American Samoa
+  portals:
+  - https://www.amsamoadoe.com/
+  priority_seed: low
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-partial
+      year: 2023-24
+      format: NCES
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2023-24
+      format: NCES
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2023-24
+      format: NCES
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: ASDOE website; data primarily via NCES
+- code: AZ
+  name: Arizona
+  portals:
+  - https://www.azed.gov/data/public-data-sets/
+  priority_seed: high
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Public Data Sets, Accountability & Research Data; good SPED dashboard
+- code: CA
+  name: California
+  portals:
+  - https://www.cde.ca.gov/ds/
+  priority_seed: integrated
+  integration:
+    status: integrated
+    db_verified: '2026-07-20'
+    detail: >-
+      ca_staff_data + ca_enrollment_data (997 rows, 2024-25) + SPED environments / FRPM / LCFF layers.
+      CA-actual SPED wins REQ-025 precedence (2,036 LCT rows).
+  data:
+    enrollment:
+      availability: confirmed
+      year: 2024-25
+      format: varies
+      access: direct-download
+      urls: []
+    staffing:
+      availability: confirmed
+      year: 2024-25
+      format: varies
+      access: direct-download
+      urls: []
+    sped:
+      availability: confirmed
+      year: 2024-25
+      format: varies
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: confirmed
+      year: 2024-25
+      format: varies
+      access: direct-download
+      urls: []
+    frpm_ell:
+      availability: confirmed
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: null
+- code: CO
+  name: Colorado
+  portals:
+  - https://ed.cde.state.co.us/cdereval
+  priority_seed: high
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Colorado Education Statistics + SchoolView (multiple portals)
+- code: CT
+  name: Connecticut
+  portals:
+  - https://public-edsight.ct.gov/
+  priority_seed: high
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2024-25
+      format: CSV/Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-yes
+      year: 2024-25
+      format: CSV/Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: 2024-25
+      format: CSV/Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: EdSight portal, excellent data quality, includes staffing FTE
+- code: DC
+  name: District of Columbia
+  portals:
+  - https://osse.dc.gov/page/data-and-reports-0
+  priority_seed: high
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: OSSE Data & Reports, SLED system; operates unlike a traditional SEA
+- code: DE
+  name: Delaware
+  portals:
+  - https://data.delaware.gov/Education/
+  priority_seed: high
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2024-25
+      format: CSV/Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-yes
+      year: 2024-25
+      format: CSV/Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2024-25
+      format: CSV/Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Open Data Portal + Report Card, annual releases Feb; modern API
+- code: FL
+  name: Florida
+  portals:
+  - >-
+    https://www.fldoe.org/accountability/data-sys/edu-info-accountability-services/pk-12-public-school-data-pubs-reports/
+  priority_seed: integrated
+  integration:
+    status: integrated
+    db_verified: '2026-07-20'
+    detail: fl_staff_data + fl_enrollment_data (76 districts, 2024-25) incl. ESE/SPED teacher split.
+  data:
+    enrollment:
+      availability: confirmed
+      year: 2024-25
+      format: varies
+      access: direct-download
+      urls: []
+    staffing:
+      availability: confirmed
+      year: 2024-25
+      format: varies
+      access: direct-download
+      urls: []
+    sped:
+      availability: confirmed
+      year: 2024-25
+      format: varies
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: confirmed
+      year: 2024-25
+      format: varies
+      access: direct-download
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: null
+- code: GA
+  name: Georgia
+  portals:
+  - https://georgiainsights.gadoe.org/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: '2024'
+      format: Excel/CSV
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: '2024'
+      format: Excel/CSV
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: '2024'
+      format: Excel/CSV
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Georgia Insights + GOSA downloadable data; GOSA may require registration
+- code: GU
+  name: Guam
+  portals:
+  - https://www.gdoe.net/
+  priority_seed: low
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-partial
+      year: 2023-24
+      format: NCES
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2023-24
+      format: NCES
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2023-24
+      format: NCES
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: GOSDV data system, limited public access
+- code: HI
+  name: Hawaii
+  portals:
+  - https://arch.k12.hi.us/reports/hidoe-data-book
+  priority_seed: low
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel/PDF
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2023-24
+      format: Excel/PDF
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2023-24
+      format: Excel/PDF
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: ARCH data portal; single-district state
+- code: IA
+  name: Iowa
+  portals:
+  - https://reports.educateiowa.gov/COE/
+  priority_seed: high
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Condition of Education portal, staff by district/position
+- code: ID
+  name: Idaho
+  portals:
+  - https://boardofed.idaho.gov/k-12-education/isee-idaho-system-for-educational-excellence/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: ISEE system, Idaho Ed Trends portal
+- code: IL
+  name: Illinois
+  portals:
+  - https://www.illinoisreportcard.com/
+  priority_seed: integrated
+  integration:
+    status: integrated
+    db_verified: '2026-07-20'
+    detail: >-
+      il_staff_data + il_enrollment_data (864 districts, 2023-24). REFRESH CANDIDATE: seek 2024-25+.
+  data:
+    enrollment:
+      availability: confirmed
+      year: 2023-24
+      format: varies
+      access: direct-download
+      urls: []
+    staffing:
+      availability: confirmed
+      year: 2023-24
+      format: varies
+      access: direct-download
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2023-24
+      format: varies
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: confirmed
+      year: 2023-24
+      format: varies
+      access: direct-download
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags:
+  - refresh-candidate
+  notes: null
+- code: IN
+  name: Indiana
+  portals:
+  - https://www.in.gov/doe/it/data-center-and-reports/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: DOE Data Center, GPS dashboard; SPED less detailed
+- code: KS
+  name: Kansas
+  portals:
+  - https://datacentral.ksde.org/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Data Central (security warnings noted Jan-2026), EDCS for educators, SPEDPro
+- code: KY
+  name: Kentucky
+  portals:
+  - https://www.education.ky.gov/Open-House/data/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: School Report Card Dashboard, Personnel Info; SPED reporting manual-heavy
+- code: LA
+  name: Louisiana
+  portals:
+  - https://doe.louisiana.gov/data-and-reports
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Enrollment Data + Special Ed Reporting pages
+- code: MA
+  name: Massachusetts
+  portals:
+  - https://profiles.doe.mass.edu/statereport/
+  priority_seed: integrated
+  integration:
+    status: integrated
+    db_verified: '2026-07-20'
+    detail: ma_staff_data + ma_enrollment_data (396 districts, 2025-26).
+  data:
+    enrollment:
+      availability: confirmed
+      year: 2025-26
+      format: varies
+      access: direct-download
+      urls: []
+    staffing:
+      availability: confirmed
+      year: 2025-26
+      format: varies
+      access: direct-download
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2025-26
+      format: varies
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: confirmed
+      year: 2025-26
+      format: varies
+      access: direct-download
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: null
+- code: MD
+  name: Maryland
+  portals:
+  - https://reportcard.msde.maryland.gov/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel/PDF
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2024-25
+      format: Excel/PDF
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel/PDF
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Report Card portal, SPED Census available
+- code: ME
+  name: Maine
+  portals:
+  - https://www.maine.gov/doe/data-reporting/warehouse
+  priority_seed: high
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: '2024'
+      format: CSV/Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-yes
+      year: '2024'
+      format: CSV/Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: '2024'
+      format: CSV/Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Data Warehouse with FTE staff, SPED by environment
+- code: MI
+  name: Michigan
+  portals:
+  - https://mischooldata.org/
+  priority_seed: integrated
+  integration:
+    status: integrated
+    db_verified: '2026-07-20'
+    detail: >-
+      mi_staff_data + mi_enrollment_data (836 districts, 2023-24) + mi_special_ed_data. REFRESH CANDIDATE:
+      seek 2024-25+.
+  data:
+    enrollment:
+      availability: confirmed
+      year: 2023-24
+      format: varies
+      access: direct-download
+      urls: []
+    staffing:
+      availability: confirmed
+      year: 2023-24
+      format: varies
+      access: direct-download
+      urls: []
+    sped:
+      availability: confirmed
+      year: 2023-24
+      format: varies
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: confirmed
+      year: 2023-24
+      format: varies
+      access: direct-download
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags:
+  - refresh-candidate
+  notes: null
+- code: MN
+  name: Minnesota
+  portals:
+  - https://education.mn.gov/MDE/Data/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Data Center interactive tool, Special Ed Division
+- code: MO
+  name: Missouri
+  portals:
+  - https://dese.mo.gov/school-data
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: School Data portal; SPED data collections less accessible
+- code: MP
+  name: Northern Mariana Islands
+  portals:
+  - https://slds.cnmipss.org/
+  priority_seed: low
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-partial
+      year: 2024-25
+      format: SLDS
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2024-25
+      format: SLDS
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2024-25
+      format: SLDS
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: CNMI SLDS + EnVision PSS, limited public downloadable data
+- code: MS
+  name: Mississippi
+  portals:
+  - https://newreports.mdek12.org/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: MDEReports with Data Explorer and Downloads; SPED granularity unclear
+- code: MT
+  name: Montana
+  portals:
+  - https://opi.mt.gov/
+  priority_seed: low
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: OPI data services, limited online portal access
+- code: NC
+  name: North Carolina
+  portals:
+  - https://www.dpi.nc.gov/data-reports
+  priority_seed: high
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Data & Reports, Exceptional Children data (good SPED)
+- code: ND
+  name: North Dakota
+  portals:
+  - https://insights.nd.gov/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Insights.nd.gov portal, Financial Facts publication
+- code: NE
+  name: Nebraska
+  portals:
+  - https://www.education.ne.gov/dataservices/data-reports/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: NSSRS system, Staff Reporting due Sept 15
+- code: NH
+  name: New Hampshire
+  portals:
+  - https://www.education.nh.gov/data-reports
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: District Staff Reports, NHSEIS for SPED
+- code: NJ
+  name: New Jersey
+  portals:
+  - https://www.nj.gov/education/doedata/
+  priority_seed: high
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel/CSV
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel/CSV
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2024-25
+      format: Excel/CSV
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Data & Reports Portal, Certified Staff Reports
+- code: NM
+  name: New Mexico
+  portals:
+  - https://webnew.ped.state.nm.us/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: NM Vistas, STARS system; District View unmasked data needs login
+- code: NV
+  name: Nevada
+  portals:
+  - https://doe.nv.gov/DataCenter/Enrollment/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Nevada Accountability Portal, new Educator Workforce portal
+- code: NY
+  name: New York
+  portals:
+  - https://data.nysed.gov/
+  priority_seed: integrated
+  integration:
+    status: integrated
+    db_verified: '2026-07-20'
+    detail: >-
+      ny_staff_data (9,298 rows by category) + ny_enrollment_data (2023-24); NYC as 33 sub-districts.
+      REFRESH CANDIDATE: seek 2024-25+.
+  data:
+    enrollment:
+      availability: confirmed
+      year: 2023-24
+      format: varies
+      access: direct-download
+      urls: []
+    staffing:
+      availability: confirmed
+      year: 2023-24
+      format: varies
+      access: direct-download
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2023-24
+      format: varies
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: confirmed
+      year: 2023-24
+      format: varies
+      access: direct-download
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags:
+  - refresh-candidate
+  notes: null
+- code: OH
+  name: Ohio
+  portals:
+  - https://education.ohio.gov/Topics/Data
+  priority_seed: high
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel/CSV
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2024-25
+      format: Excel/CSV
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel/CSV
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Enrollment Data, Special Education Profiles; large-population state
+- code: OK
+  name: Oklahoma
+  portals:
+  - https://oklahoma.gov/education/school-data
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: School Data portal, Special Ed Data page
+- code: OR
+  name: Oregon
+  portals:
+  - https://www.ode.state.or.us/data/reportcard/reports.aspx
+  priority_seed: high
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: At-A-Glance Profiles, strong Special Ed District Profiles
+- code: PA
+  name: Pennsylvania
+  portals:
+  - https://www.pa.gov/agencies/education/data-and-reporting
+  priority_seed: integrated
+  integration:
+    status: integrated
+    db_verified: '2026-07-20'
+    detail: pa_staff_data + pa_enrollment_data (777 districts, 2024-25).
+  data:
+    enrollment:
+      availability: confirmed
+      year: 2024-25
+      format: varies
+      access: direct-download
+      urls: []
+    staffing:
+      availability: confirmed
+      year: 2024-25
+      format: varies
+      access: direct-download
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2024-25
+      format: varies
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: confirmed
+      year: 2024-25
+      format: varies
+      access: direct-download
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: null
+- code: PR
+  name: Puerto Rico
+  portals: []
+  priority_seed: low
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-partial
+      year: 2022-23
+      format: NCES
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2022-23
+      format: NCES
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2022-23
+      format: NCES
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: No dedicated PRDE data portal found; rely on NCES
+- code: RI
+  name: Rhode Island
+  portals:
+  - https://datacenter.ride.ri.gov/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: RIDE Data Center, 618 data collections (format unclear)
+- code: SC
+  name: South Carolina
+  portals:
+  - https://ed.sc.gov/data/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Student Counts, Educator Profession Reports
+- code: SD
+  name: South Dakota
+  portals:
+  - https://doe.sd.gov/data/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Data Dashboards, Staffing Data, SPP reports
+- code: TN
+  name: Tennessee
+  portals:
+  - https://tdepublicschools.ondemand.sas.com/
+  priority_seed: high
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel/CSV
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel/CSV
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2024-25
+      format: Excel/CSV
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: State Report Card, Data Downloads page (SAS-based portal)
+- code: TX
+  name: Texas
+  portals:
+  - https://rptsvr1.tea.texas.gov/perfreport/tapr/
+  priority_seed: integrated
+  integration:
+    status: integrated
+    db_verified: '2026-07-20'
+    detail: >-
+      tx_staff_data + tx_enrollment_data (1,190 districts, 2024-25; re-imported 2026-07-20 post-#595)
+      + tx_sped_district_data + NCES crosswalk.
+  data:
+    enrollment:
+      availability: confirmed
+      year: 2024-25
+      format: varies
+      access: direct-download
+      urls: []
+    staffing:
+      availability: confirmed
+      year: 2024-25
+      format: varies
+      access: direct-download
+      urls: []
+    sped:
+      availability: confirmed
+      year: 2024-25
+      format: varies
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: confirmed
+      year: 2024-25
+      format: varies
+      access: direct-download
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: null
+- code: UT
+  name: Utah
+  portals:
+  - https://datagateway.schools.utah.gov/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: USBE Data Gateway, Reports section
+- code: VA
+  name: Virginia
+  portals:
+  - https://www.doe.virginia.gov/data-policy-funding/data-reports
+  priority_seed: integrated
+  integration:
+    status: integrated
+    db_verified: '2026-07-20'
+    detail: va_staff_data + va_enrollment_data (131 divisions, 2025-26) + va_special_ed_data.
+  data:
+    enrollment:
+      availability: confirmed
+      year: 2025-26
+      format: varies
+      access: direct-download
+      urls: []
+    staffing:
+      availability: confirmed
+      year: 2025-26
+      format: varies
+      access: direct-download
+      urls: []
+    sped:
+      availability: confirmed
+      year: 2025-26
+      format: varies
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: confirmed
+      year: 2025-26
+      format: varies
+      access: direct-download
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: null
+- code: VI
+  name: US Virgin Islands
+  portals:
+  - https://www.vide.vi/
+  priority_seed: low
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-partial
+      year: 2022-23
+      format: NCES
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2022-23
+      format: NCES
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2022-23
+      format: NCES
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: VIDE website; data primarily via NCES
+- code: VT
+  name: Vermont
+  portals:
+  - https://education.vermont.gov/data-and-reporting/vermont-education-dashboard
+  priority_seed: high
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: '2024'
+      format: Excel/Dashboard
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-yes
+      year: '2024'
+      format: Excel/Dashboard
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: '2024'
+      format: Excel/Dashboard
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: Dashboard with enrollment, staffing, SPED reports; need download endpoints
+- code: WA
+  name: Washington
+  portals:
+  - https://ospi.k12.wa.us/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2023-24
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: OSPI direct data portal unclear (Jan-2026 found JLARC reports instead)
+- code: WI
+  name: Wisconsin
+  portals:
+  - https://dpi.wi.gov/wisedash
+  priority_seed: high
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2023-24
+      format: CSV/Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2023-24
+      format: CSV/Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-yes
+      year: 2023-24
+      format: CSV/Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: WISEdash Public Portal, WISEdata warehouse (since 2016-17)
+- code: WV
+  name: West Virginia
+  portals:
+  - https://wvde.us/data-school-improvement/education-data
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-partial
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: 2024-25
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: ZoomWV interactive portal, WVEIS system
+- code: WY
+  name: Wyoming
+  portals:
+  - https://edu.wyoming.gov/data/
+  priority_seed: medium
+  integration:
+    status: none
+    db_verified: '2026-07-20'
+    detail: null
+  data:
+    enrollment:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    staffing:
+      availability: reported-yes
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    sped:
+      availability: reported-partial
+      year: '2024'
+      format: Excel
+      access: unknown
+      urls: []
+    crosswalk_ids:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+    frpm_ell:
+      availability: unknown
+      year: null
+      format: null
+      access: unknown
+      urls: []
+  probes: []
+  acquisitions: []
+  flags: []
+  notes: School District Enrollment & Staffing Data
