@@ -1413,8 +1413,14 @@ def fidelity_triage():
     Until this surface existed the fidelity columns were write-only — flagged captures degraded to
     silent target_absent, the exact recall leak #518 quantified."""
     from collections import Counter
+    from infrastructure.acquisition.common import cache_ingest as CI
     _NONEMPTY = "IS NOT NULL AND {c} NOT IN ('', '[]', '{{}}', 'null')"
     with gdb.session_scope() as con:
+        # Self-bootstrap (the status_for_batch precedent): on a fresh DB the queue is honestly
+        # empty, never a 500 on a missing cache/signal table (the CI lesson, third time: the
+        # `district` join needs the signal schema).
+        CI.ensure_cache_schema(con)
+        BS.ensure_signal_schema(con)
         cap = con.execute(text(f"""
             SELECT c.district_id, d.name, c.hash, c.url, c.fidelity_json, c.err
             FROM capture c LEFT JOIN district d ON d.district_id = c.district_id
