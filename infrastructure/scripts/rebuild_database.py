@@ -43,6 +43,12 @@ from infrastructure.database.connection import session_scope, get_engine
 from infrastructure.database.school_year import NCES_PRIMARY_YEAR
 from sqlalchemy import text
 
+# Sanity floor for the Phase-2 checkpoint: the CCD universe under our criteria
+# has held ~17.8k LEAs for years. Re-check against the live count when a new
+# CCD vintage is ingested (the same data event that bumps NCES_PRIMARY_YEAR) —
+# a hardcoded inline literal went stale unnoticed (issue #466).
+EXPECTED_MIN_DISTRICTS = 17000
+
 
 # Script paths (relative to project root)
 SCRIPTS = {
@@ -306,8 +312,11 @@ def main():
             if not args.dry_run:
                 with session_scope() as session:
                     counts = verify_table_counts(session)
-                    if counts.get("districts", 0) < 17000:
-                        print(f"\nWARNING: Expected ~17,842 districts, got {counts.get('districts', 0)}")
+                    if counts.get("districts", 0) < EXPECTED_MIN_DISTRICTS:
+                        print(
+                            f"\nWARNING: Expected at least {EXPECTED_MIN_DISTRICTS:,} "
+                            f"districts, got {counts.get('districts', 0):,}"
+                        )
                     print_counts(counts, "Phase 2")
 
     # Phase 3: Staff/Enrollment

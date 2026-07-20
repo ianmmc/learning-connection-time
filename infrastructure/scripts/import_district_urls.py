@@ -140,13 +140,13 @@ def import_urls(dry_run: bool = False):
             else:
                 not_found += 1
 
-        # Execute batch update
+        # Execute batch update — one executemany round-trip, not a per-row
+        # UPDATE loop (issue #465)
         if not dry_run and updates:
-            for url, nces_id in updates:
-                session.execute(
-                    text("UPDATE districts SET website_url = :url WHERE nces_id = :id"),
-                    {"url": url, "id": nces_id}
-                )
+            session.execute(
+                text("UPDATE districts SET website_url = :url WHERE nces_id = :id"),
+                [{"url": url, "id": nces_id} for url, nces_id in updates],
+            )
             session.commit()
             print(f"Committed {len(updates)} updates")
         elif dry_run:
