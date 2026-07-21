@@ -85,17 +85,49 @@ def test_probe_receipts_are_structured(catalog):
             assert not missing, f"{s['code']} probe: missing {missing}"
 
 
-def test_acquisition_receipts_are_structured_and_files_exist(catalog):
-    """Every acquisition receipt must name an existing file with a sha256."""
-    repo_root = CATALOG_PATH.parent.parent.parent
+def test_acquisition_receipts_are_structured(catalog):
+    """Every acquisition receipt must be well-formed: required fields, a
+    valid-shaped sha256, and a path under data/raw/state/.
+
+    Does NOT assert the file exists on disk: data/raw/ is entirely
+    gitignored (718MB+ of regenerable government downloads has no business
+    in git — see .gitignore and CLAUDE.md's DB-is-working-store/JSON-is-
+    receipts principle), so a clean CI checkout will never have these files.
+    The receipt itself (source_url + sha256 + size) IS the committed audit
+    trail; the binary is a local-machine concern. See
+    test_acquisition_receipts_that_exist_locally_match_their_sha256 for the
+    integrity check that DOES run when the file happens to be present."""
     for s in catalog['states']:
         for acq in s['acquisitions']:
             missing = {'source_url', 'retrieved', 'path', 'sha256'} - set(acq)
             assert not missing, f"{s['code']} acquisition: missing {missing}"
             assert re.fullmatch(r'[0-9a-f]{64}', acq['sha256']), \
                 f"{s['code']}: bad sha256 {acq['sha256']!r}"
-            assert (repo_root / acq['path']).exists(), \
-                f"{s['code']}: receipt names missing file {acq['path']}"
+            assert acq['path'].startswith('data/raw/state/'), \
+                f"{s['code']}: acquisition path outside data/raw/state/: {acq['path']!r}"
+
+
+def test_acquisition_receipts_that_exist_locally_match_their_sha256(catalog):
+    """For whichever acquired files happen to be present in this checkout
+    (a dev machine that ran the acquisition script, not CI), verify the
+    on-disk content still matches the recorded hash — catches silent
+    corruption or someone re-running acquisition against a changed source
+    without updating the receipt."""
+    import hashlib
+
+    repo_root = CATALOG_PATH.parent.parent.parent
+    checked = 0
+    for s in catalog['states']:
+        for acq in s['acquisitions']:
+            fpath = repo_root / acq['path']
+            if not fpath.exists():
+                continue
+            checked += 1
+            actual = hashlib.sha256(fpath.read_bytes()).hexdigest()
+            assert actual == acq['sha256'], \
+                f"{s['code']} {acq['path']}: on-disk sha256 {actual} != receipt {acq['sha256']}"
+    if checked == 0:
+        pytest.skip('no acquired files present in this checkout (expected in CI — data/raw/ is gitignored)')
 
 
 def test_generated_docs_are_not_stale(catalog):
