@@ -99,6 +99,9 @@ class District(Base):
     enrollment_by_grade: Mapped[List["EnrollmentByGrade"]] = relationship(
         back_populates="district", cascade="all, delete-orphan"
     )
+    district_grade_minutes: Mapped[List["DistrictGradeMinutes"]] = relationship(
+        back_populates="district", cascade="all, delete-orphan"
+    )
 
     # Layer 2: State-level enhancements
     ca_sped_environments: Mapped[List["CASpedDistrictEnvironments"]] = relationship(
@@ -370,11 +373,14 @@ class DistrictGradeMinutes(Base):
         DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
-    district: Mapped["District"] = relationship()
+    district: Mapped["District"] = relationship(back_populates="district_grade_minutes")
 
     __table_args__ = (
         UniqueConstraint("district_id", "grade", name="uq_district_grade_minutes"),
         CheckConstraint("source_band IN ('elementary', 'middle', 'high')", name="chk_dgm_source_band"),
+        CheckConstraint(
+            "method IN ('council_extraction', 'statutory_fallback')", name="chk_dgm_method"
+        ),
         CheckConstraint(
             "minutes_basis IN ('gross_bell_to_bell', 'statutory') OR minutes_basis IS NULL",
             name="chk_dgm_minutes_basis",

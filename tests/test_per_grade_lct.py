@@ -1,7 +1,9 @@
 """Per-grade → scope minutes weighting (#606) — PURE unit tests (no DB, no marker).
 
 `weighted_scope_minutes` takes an injected `get_statutory` callable and a plain enrollment object,
-so it exercises with zero DB.
+so it exercises with zero DB. Covers the PR #607 review fixes: stored-statutory reuse (a grade's
+statutory value is Stage 9's, resolved against its REAL serving band — never re-derived from the
+canonical band), the ALL-years blend window (not just the modal year), and statutory memoization.
 """
 from types import SimpleNamespace
 
@@ -23,8 +25,11 @@ def _enr(**counts):
     return SimpleNamespace(**base)
 
 
-def _gm(minutes_by_grade, *, basis="gross_bell_to_bell", year="2024-25"):
-    return {g: (m, "council_extraction", basis, year) for g, m in minutes_by_grade.items()}
+def _gm(minutes_by_grade, *, basis="gross_bell_to_bell", year="2024-25", bands=None):
+    """5-tuples (minutes, method, basis, year, source_band); source_band defaults canonical."""
+    method = "council_extraction" if basis == "gross_bell_to_bell" else "statutory_fallback"
+    return {g: (m, method, basis, year, (bands or {}).get(g, PGL._CANON_BAND[g]))
+            for g, m in minutes_by_grade.items()}
 
 
 def test_secondary_weights_mid_and_high():
@@ -52,12 +57,26 @@ def test_mixed_when_some_grades_fall_back_to_statutory():
     assert minutes == round((3 * 330 + 4 * 450) / 7)   # middle→statutory 330, high→450
 
 
-def test_all_statutory_scope_is_labeled_and_yearless():
-    gm = _gm({g: 350 for g in PGL.SEC_GRADES}, basis="statutory")   # statutory rows → per-grade canon band
+def test_statutory_rows_are_reused_verbatim():
+    # PR #607 fix: a statutory projection row's stored minutes (resolved by Stage 9 against the
+    # grade's REAL band) are reused verbatim — never recomputed from the canonical band.
+    gm = _gm({g: 333 for g in PGL.SEC_GRADES}, basis="statutory")   # a value no canon band has
     minutes, source, year = PGL.weighted_scope_minutes(None, "XX", PGL.SEC_GRADES, _enr(), gm, ["2024-25"], _get_statutory)
     assert source == "per_grade_statutory" and year is None
-    # each grade falls back to ITS canonical band: middle 6-8→330, high 9-12→350
-    assert minutes == round((3 * 330 + 4 * 350) / 7)   # 341
+    assert minutes == 333   # stored value wins — not 330/350 canonical recomputes
+
+
+def test_floating_band_statutory_grade_keeps_its_real_bands_value():
+    # THE motivating case: a floating 7-9 middle whose schedule fell to statutory. Grade 09's
+    # stored row carries the MIDDLE rate (330) with source_band='middle' — the old code
+    # substituted the canonical high rate (350).
+    gm = _gm({g: 450 for g in ["10", "11", "12"]}) | _gm(
+        {g: 330 for g in ["07", "08", "09"]}, basis="statutory",
+        bands={"07": "middle", "08": "middle", "09": "middle"})
+    enr = _enr(**{"06": 0})   # elementary KG-06 district: grade 6 not in secondary population
+    minutes, source, _ = PGL.weighted_scope_minutes(None, "XX", PGL.SEC_GRADES, enr, gm, ["2024-25"], _get_statutory)
+    assert source == "per_grade_mixed"
+    assert minutes == round((3 * 330 + 3 * 450) / 6)   # grade 09 contributes 330, NOT 350
 
 
 def test_empty_projection_falls_back_to_statutory():
@@ -66,12 +85,22 @@ def test_empty_projection_falls_back_to_statutory():
 
 
 def test_temporal_window_drops_measured_to_statutory():
-    # measured year 2024-25 can't form a ≤3-consecutive-year set with staff/enroll 2018-19 → statutory
+    # measured year 2024-25 can't form a ≤3-consecutive-year set with staff/enroll 2018-19 →
+    # statutory, resolved per grade against its REAL source_band (canonical here)
     gm = _gm({g: 450 for g in PGL.SEC_GRADES}, year="2024-25")
     minutes, source, year = PGL.weighted_scope_minutes(None, "XX", PGL.SEC_GRADES, _enr(), gm, ["2018-19"], _get_statutory)
     assert source == "per_grade_statutory" and year is None
-    # fell back to per-grade statutory (mid 330, high 350), not the measured 450
     assert minutes == round((3 * 330 + 4 * 350) / 7)   # 341
+
+
+def test_temporal_window_checks_every_measured_year_not_just_modal():
+    # PR #607 fix: majority of grades in-window (2024-25), one minority grade from an
+    # out-of-window year — the WHOLE scope must drop to statutory, not blend the stale value.
+    gm = (_gm({g: 430 for g in ["06", "07", "08", "09", "10", "11"]}, year="2024-25")
+          | _gm({"12": 450}, year="2018-19"))
+    minutes, source, year = PGL.weighted_scope_minutes(None, "XX", PGL.SEC_GRADES, _enr(), gm, ["2024-25"], _get_statutory)
+    assert source == "per_grade_statutory" and year is None
+    assert minutes == round((3 * 330 + 4 * 350) / 7)   # all statutory, per real band
 
 
 def test_zero_enrollment_returns_none():
@@ -83,3 +112,15 @@ def test_elementary_scope_covers_k5():
     gm = _gm({g: 380 for g in PGL.ELEM_GRADES})
     minutes, source, _ = PGL.weighted_scope_minutes(None, "XX", PGL.ELEM_GRADES, _enr(), gm, ["2024-25"], _get_statutory)
     assert minutes == 380 and source == "per_grade_bell"
+
+
+def test_cached_statutory_memoizes_per_state_band():
+    calls = []
+    def counting(session, state, band):
+        calls.append((state, band))
+        return _STAT[band], "state_requirement", None
+    cached = PGL.cached_statutory(counting)
+    for _ in range(5):
+        cached(None, "XX", "middle")
+        cached(None, "XX", "high")
+    assert calls == [("XX", "middle"), ("XX", "high")]   # one underlying call per (state, band)

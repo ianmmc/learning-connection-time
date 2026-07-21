@@ -95,7 +95,8 @@ from infrastructure.scripts.analyze.per_grade_lct import (
     ELEM_GRADES,
     K12_GRADES,
     SEC_GRADES,
-    get_district_grade_minutes,
+    cached_statutory,
+    get_all_district_grade_minutes,
     weighted_scope_minutes,
 )
 
@@ -536,6 +537,12 @@ def calculate_all_variants(
     for d in districts:
         district_map[d.nces_id] = d
 
+    # #606: Stage-9 per-grade projections, bulk-fetched ONCE like every sibling lookup above
+    # (PR #607 review: the per-district variant inside the loop was an N+1 query pattern).
+    dgm_by_district = get_all_district_grade_minutes(session)
+    if dgm_by_district:
+        print(f"  Found {len(dgm_by_district):,} districts with Stage-9 per-grade minutes")
+
     results = []
     processed = 0
     qa_issues = 0
@@ -574,15 +581,14 @@ def calculate_all_variants(
         if not grade_enrollment:
             continue  # Skip districts without grade-level enrollment data
 
-        # Track years used for this district
+        # Track years used for this district (minutes years are added AFTER the #606 per-grade
+        # override below, so a superseded legacy year never lands in all_years_used — PR #607 review)
         enroll_year = enrollment_years.get(staff.district_id)
         staff_eff_year = staff.effective_year
         if enroll_year:
             all_years_used.add(enroll_year)
         if staff_eff_year:
             all_years_used.add(staff_eff_year)
-        if minutes_year:
-            all_years_used.add(minutes_year)
 
         # ALL scopes now use K-12 enrollment (exclude Pre-K)
         k12_enrollment = grade_enrollment.enrollment_k12 or 0
@@ -598,24 +604,37 @@ def calculate_all_variants(
         # merged shapes handled at the grade grain). Non-incorporated districts keep the legacy band
         # cascade unchanged (minutes = high band, elem_minutes = elementary band). The secondary
         # variant no longer reuses the high-band value (issue #13-era stopgap) — it weights mid+high.
+        # NOTE the SPED variants (core_sped/teachers_gened/instructional_sped) deliberately follow
+        # `minutes` too, per the standing "base scopes use the K-12-wide value" convention — so an
+        # incorporated district's SPED LCT uses the per-grade-weighted K-12 value (documented in
+        # STAGE9_INCORPORATE_DESIGN.md §4; PR #607 review made this explicit rather than implicit).
         sec_minutes, sec_minutes_source, sec_minutes_year = minutes, minutes_source, minutes_year
-        _gm_map = get_district_grade_minutes(session, staff.district_id)
+        _gm_map = dgm_by_district.get(staff.district_id) or {}
         if _gm_map:
             _blend = [staff.effective_year, _enroll_yr]
+            _stat = cached_statutory(get_statutory_minutes)   # ≤3 lookups/district, shared by all 3 scopes
             _wk = weighted_scope_minutes(session, district.state, K12_GRADES, grade_enrollment,
-                                         _gm_map, _blend, get_statutory_minutes)
+                                         _gm_map, _blend, _stat)
             _we = weighted_scope_minutes(session, district.state, ELEM_GRADES, grade_enrollment,
-                                         _gm_map, _blend, get_statutory_minutes)
+                                         _gm_map, _blend, _stat)
             _ws = weighted_scope_minutes(session, district.state, SEC_GRADES, grade_enrollment,
-                                         _gm_map, _blend, get_statutory_minutes)
+                                         _gm_map, _blend, _stat)
             if _wk:
                 minutes, minutes_source, minutes_year = _wk
-                if minutes_year:
-                    all_years_used.add(minutes_year)
             if _we:
                 elem_minutes, elem_minutes_source, elem_minutes_year = _we
-            sec_minutes, sec_minutes_source, sec_minutes_year = (
-                _ws if _ws else (minutes, minutes_source, minutes_year))
+            if _ws:
+                # When _ws is None (no per-grade secondary enrollment), sec_minutes KEEPS the
+                # legacy high-band value captured above — never the per-grade K12 blend, which
+                # would be elementary-diluted (PR #607 review finding #1).
+                sec_minutes, sec_minutes_source, sec_minutes_year = _ws
+
+        # Minutes years enter all_years_used only in their FINAL (post-override) form, one add per
+        # distinct scope-year actually used (PR #607 review: the legacy year used to be added before
+        # the override and never purged; elem/sec years were never tracked at all).
+        for _y in (minutes_year, elem_minutes_year, sec_minutes_year):
+            if _y:
+                all_years_used.add(_y)
 
         # Get teacher counts for level variants
         teachers_k12 = float(staff.teachers_k12) if staff.teachers_k12 else None
@@ -1294,7 +1313,11 @@ def write_calculations_to_db(
                 staff_source_year=result['staff_year'],
                 bell_schedule_source_year=(
                     result['instructional_minutes_year']
-                    if result['instructional_minutes_source'].startswith('bell_schedule')
+                    # #606 sources carry a real measured bell year too — the migration-008 temporal
+                    # trigger must see it (PR #607 review: the prefix test alone silently nulled it)
+                    if (result['instructional_minutes_source'].startswith('bell_schedule')
+                        or result['instructional_minutes_source'] in ('per_grade_bell',
+                                                                      'per_grade_mixed'))
                     else None
                 ),
             )

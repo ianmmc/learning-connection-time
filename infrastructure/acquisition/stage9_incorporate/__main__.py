@@ -21,7 +21,9 @@ from infrastructure.acquisition.stage9_incorporate.incorporate import (
 
 def _load_ids(path: str) -> list:
     with open(path) as fh:
-        return [ln.strip() for ln in fh if ln.strip() and not ln.startswith("#")]
+        lines = [ln.strip() for ln in fh]
+    # comment test runs on the STRIPPED line — an indented "# comment" is a comment, not an id
+    return [ln for ln in lines if ln and not ln.startswith("#")]
 
 
 def main(argv=None) -> int:
@@ -31,7 +33,9 @@ def main(argv=None) -> int:
     ap.add_argument("--actor", default="auto:stage9", help="attribution actor (default auto:stage9)")
     ap.add_argument("--dry-run", action="store_true", help="plan the writes, write nothing")
     ap.add_argument("--force", action="store_true", help="re-write even if the fingerprint is unchanged")
-    ap.add_argument("--strict", action="store_true", help="fail on an ineligible district (single-id)")
+    ap.add_argument("--strict", action="store_true",
+                    help="treat an ineligible district as a failure (single-id: raises; "
+                         "batch: recorded as an error result, nonzero exit)")
     args = ap.parse_args(argv)
 
     ids = list(args.district_ids)
@@ -45,7 +49,8 @@ def main(argv=None) -> int:
                                    force=args.force, strict=args.strict)
         results = [res]
     else:
-        results = incorporate_batch(ids, actor=args.actor, dry_run=args.dry_run, force=args.force)
+        results = incorporate_batch(ids, actor=args.actor, dry_run=args.dry_run,
+                                    force=args.force, strict=args.strict)
 
     for r in results:
         line = f"{r.district_id}: {r.status}"
@@ -55,6 +60,9 @@ def main(argv=None) -> int:
             line += " — " + ", ".join(
                 f"{w['grade_level']}={w['minutes']}[{w['method']}/{w['minutes_basis']}]"
                 for w in r.written)
+        if r.protected:
+            line += " — PROTECTED (not overwritten): " + ", ".join(
+                f"{p['grade_level']}@{p['year']}[{p['existing_method']}]" for p in r.protected)
         if r.status == "incorporated":
             line += f"; {r.grades} grade rows" + (f" ({r.overlaps} overlap-flagged)" if r.overlaps else "")
         print(line)

@@ -110,6 +110,26 @@ fingerprint.
   nothing, missing-LCT-district fails loud). The governance READ half is patched at a documented seam
   (it is unit-tested in `test_closing_argument`/`test_stage8_approval` and exercised by the live-DB smoke).
 
+## 2g. Standing walls (PR #607 max-effort review, 2026-07-21)
+- **Benchmark wall.** batch_00000 (`batch_type='benchmark'`) districts are REFUSED — "Stage 9
+  (non-benchmark only) is the sole promoter to `bell_schedules`" (CLAUDE.md's permanent wall).
+  `_is_benchmark_district` mirrors Stage 7's `_benchmark_district_ids` (which Stage 9 cannot import —
+  process_governance sits above this layer).
+- **Legacy-row protection.** A `bell_schedules` row whose `method` is NOT Stage-9-authored
+  (`human_provided`, `tier_*`, …) is never overwritten and — unrelabeled — never orphan-deleted; its
+  band is reported in `IncorporationResult.protected` and contributes no per-grade projection row.
+- **TOCTOU re-check.** The receipt Stage 9 writes from is re-validated (still approved, same
+  `approval_id`) against the decision the eligibility gate saw — a concurrent gate@8 action between the
+  two governance reads cannot smuggle a different determination into production (the PR #252 class).
+- **Retract-on-empty.** An approved receipt that carries zero bands, for a previously-incorporated
+  district, falls through to Phase C so the prior rows are reconciled away (an empty re-approval
+  retracts, it doesn't linger).
+- Misc: district-id normalized before every governance read (id-drop → wrong verdict fixed);
+  `_statutory_minutes` uses the canonical case-normalized lookup and treats only NULL (not 0) as absent;
+  `init_precious_schema()` on entry so a standalone/cron run against a fresh governance DB doesn't crash;
+  council→statutory flip clears the retracted council clock times; `--dry-run` resolves statutory
+  minutes read-only so the preview shows real numbers.
+
 ## 3. Standing comparison obligation — the 18-district holdback (Ian, 2026-07-02)
 `data/benchmark/benchmark_holdback_18.json` records the ORIGINAL band-level findings for the 18 districts
 of the 41-district benchmark manifest NOT in batch_00000's 27. When they flow through the FULL pipeline to
@@ -126,10 +146,13 @@ exist). All LEA-grain, no new data.
 `project()` maps **grade → owning band** from the live `raw_import.band_grade_span` (`gslo..gshi` per
 band), falling back to the band's canonical range only when a span is absent. Each grade takes its
 band's modal minutes (council or statutory, label preserved). Non-clean LEAs (a grade served by ≥2
-bands — e.g. a floating 7-9 middle overlapping a 9-12 high at grade 9) → a deterministic tie-rule (the
-band whose `LEVEL` cleanly owns the grade wins) recorded in `overlap_flag` (never silent). Materialized
-into **`district_grade_minutes`** (one current row per district×grade, `KG`..`12`) in the LCT DB,
-written + reconciled inside Stage 9's write transaction. Reproject = re-incorporate (`--force`).
+bands — e.g. a floating 7-9 middle overlapping a 9-12 high at grade 9) → a deterministic tie-rule: the
+grade's canonical band wins when it is among the serving set; when it is NOT (a noisy-span shape), the
+fallback deterministically prefers the lowest band (arbitrary but stable), honestly recorded as such in
+`overlap_flag` (never silent). Materialized into **`district_grade_minutes`** (one current row per
+district×grade, `KG`..`12`; `method` chk-constrained per migration 026) in the LCT DB, written +
+reconciled AND **verified-in-DB (Rule #6, like bell_schedules)** inside Stage 9's write transaction.
+Reproject = re-incorporate (`--force`).
 
 **#606 — LCT consumption (`scripts/analyze/per_grade_lct.py`).** `calculate_lct_variants.py` now derives
 each scope's minutes as `minutes_scope = Σ_g (minutes[g]·enroll[g]) / Σ_g enroll[g]` over the scope's
@@ -137,8 +160,19 @@ grades (base K-12, elementary K-5, secondary 6-12), weighting by `EnrollmentByGr
 The secondary variant no longer reuses the high-band value — it weights mid+high. **Guarded:** only
 districts with a projection change; the legacy band cascade is untouched for everyone else, so the
 recompute is a no-op until real districts are incorporated. Sources: `per_grade_bell` /
-`per_grade_mixed` (tier 2) / `per_grade_statutory` (tier 3, year=None — stays distinguishable, #582).
-Temporal window (REQ-026) still drops a scope to statutory when its measured year can't blend.
+`per_grade_mixed` (tier 2, and they populate `bell_schedule_source_year` so the migration-008 temporal
+trigger sees the bell year) / `per_grade_statutory` (tier 3, year=None — stays distinguishable, #582).
+Temporal window (REQ-026): **every** distinct measured year in a scope (not just the modal one) must
+form a ≤3-consecutive-year set with staff/enrollment, else the whole scope drops to statutory. A grade's
+statutory value is Stage 9's stored value (resolved against its REAL serving band) — never re-derived
+from the canonical band.
+
+**SPED scope consequence (documented, not a separate override).** The SPED-segmented variants
+(`core_sped` / `teachers_gened` / `instructional_sped`) follow the shared K-12 `minutes` value by the
+standing "base scopes use the K-12-wide value" convention — so an incorporated district's SPED LCT uses
+the per-grade-weighted K-12 minutes. This is intentional and consistent with every other base scope; the
+`per_grade_lct_sample` before/after surfaces the secondary scope specifically, but the K-12 delta it
+reports is the same value SPED inherits.
 
 **Sign-off gate:** the methodology change recomputes every secondary value once districts are
 incorporated. `python -m infrastructure.scripts.analyze.per_grade_lct_sample` prints the legacy-vs-

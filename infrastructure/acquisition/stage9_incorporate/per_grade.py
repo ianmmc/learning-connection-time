@@ -10,8 +10,11 @@ Grade → band, per district:
     when a band has no live span (CCD files absent), it falls back to its canonical range (`BANDS`);
   - exactly one serving band → the grade takes that band's minutes;
   - ≥2 serving bands (overlap: e.g. a 7-9 middle and a 9-12 high both serving grade 9) → a
-    deterministic LEA-level tie-rule (the band whose `LEVEL` cleanly owns the grade wins), recorded
-    in `overlap_flag` (never silent). No per-school headcount split — all LEA-grain.
+    deterministic LEA-level tie-rule: the grade's CANONICAL band wins when it is among the serving
+    set; when it is NOT (a noisy-span shape where no serving band cleanly owns the grade), the
+    fallback deterministically prefers the lowest band (elementary < middle < high) — an arbitrary
+    but stable choice, honestly recorded as such in `overlap_flag` (never silent). No per-school
+    headcount split — all LEA-grain.
 
 No DB import. `writes` are the resolved `mapping.BandWrite`s (statutory minutes already filled in).
 """

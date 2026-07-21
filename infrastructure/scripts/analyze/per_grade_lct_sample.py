@@ -5,6 +5,13 @@ For every INCORPORATED district (one with a Stage-9 `district_grade_minutes` pro
 enrollment-weighted** secondary minutes, plus the resulting `teachers_secondary` LCT delta. Read-only:
 it computes nothing into `lct_calculations` — it is the artifact to review BEFORE the recompute lands.
 
+Selection fidelity (PR #607 review): the sample reuses the REAL pipeline's pickers —
+`get_most_recent_enrollment` / `get_most_recent_staff` (COVID exclusion + zero-staff fallback
+included) — and applies the same REQ-026 blend-window downgrade to the legacy value that
+`calculate_all_variants` applies, so the reviewed deltas match what the recompute would produce.
+Districts are listed in a stable order (district_id ascending) so a `--limit N` sample is the same
+N districts on every run.
+
     python -m infrastructure.scripts.analyze.per_grade_lct_sample [--limit N]
 """
 from __future__ import annotations
@@ -12,40 +19,57 @@ from __future__ import annotations
 import argparse
 
 from infrastructure.database.connection import session_scope
-from infrastructure.database.models import (
-    DistrictGradeMinutes, District, EnrollmentByGrade, StaffCountsEffective)
+from infrastructure.database.models import District, DistrictGradeMinutes
+from infrastructure.database.school_year import within_blend_window
 from infrastructure.scripts.analyze.calculate_lct_variants import (
-    calculate_lct, get_instructional_minutes, get_statutory_minutes)
+    calculate_lct,
+    get_instructional_minutes,
+    get_most_recent_enrollment,
+    get_most_recent_staff,
+    get_statutory_minutes,
+)
 from infrastructure.scripts.analyze.per_grade_lct import (
-    SEC_GRADES, get_district_grade_minutes, weighted_scope_minutes)
+    SEC_GRADES,
+    cached_statutory,
+    get_district_grade_minutes,
+    weighted_scope_minutes,
+)
 
 
 def sample(limit: int | None = None) -> list:
     rows = []
     with session_scope() as s:
-        dids = [r[0] for r in s.query(DistrictGradeMinutes.district_id).distinct().all()]
+        dids = [r[0] for r in (s.query(DistrictGradeMinutes.district_id).distinct()
+                               .order_by(DistrictGradeMinutes.district_id).all())]
+        if limit:
+            dids = dids[:limit]
+        # The REAL pipeline's pickers (COVID exclusion, zero-staff fallback), bulk dicts
+        enrollment_with_years = get_most_recent_enrollment(s)
+        staff_with_years = get_most_recent_staff(s)
         for did in dids:
             d = s.query(District).filter(District.nces_id == did).first()
-            enr = (s.query(EnrollmentByGrade).filter(EnrollmentByGrade.district_id == did)
-                   .order_by(EnrollmentByGrade.source_year.desc()).first())
-            staff = (s.query(StaffCountsEffective).filter(StaffCountsEffective.district_id == did)
-                     .order_by(StaffCountsEffective.effective_year.desc()).first())
+            enr, enroll_yr = enrollment_with_years.get(did, (None, None))
+            staff, staff_yr = staff_with_years.get(did, (None, None))
             if not (d and enr):
                 continue
-            legacy_min = get_instructional_minutes(s, did, d.state, "high")[0]
+            # Legacy value with the same REQ-026 downgrade the real calc applies
+            legacy_min, legacy_src, legacy_yr = get_instructional_minutes(s, did, d.state, "high")
+            if legacy_yr and not within_blend_window([legacy_yr, staff_yr, enroll_yr]):
+                legacy_min, legacy_src, legacy_yr = get_statutory_minutes(s, d.state, "high")
             gm = get_district_grade_minutes(s, did)
-            blend = [staff.effective_year if staff else None, enr.source_year]
-            pg = weighted_scope_minutes(s, d.state, SEC_GRADES, enr, gm, blend, get_statutory_minutes)
+            pg = weighted_scope_minutes(s, d.state, SEC_GRADES, enr, gm,
+                                        [staff_yr, enroll_yr],
+                                        cached_statutory(get_statutory_minutes))
             pg_min, pg_src = (pg[0], pg[1]) if pg else (None, None)
             sec_enr = enr.enrollment_secondary or 0
-            t_sec = float(staff.teachers_secondary_6_12) if staff and staff.teachers_secondary_6_12 else None
+            t_sec = (float(staff.teachers_secondary_6_12)
+                     if staff is not None and staff.teachers_secondary_6_12 else None)
             legacy_lct = calculate_lct(legacy_min, t_sec, sec_enr) if t_sec and sec_enr else None
             pg_lct = calculate_lct(pg_min, t_sec, sec_enr) if (pg_min and t_sec and sec_enr) else None
             rows.append({"district_id": did, "name": d.name, "state": d.state,
-                         "legacy_sec_min": legacy_min, "per_grade_sec_min": pg_min, "source": pg_src,
+                         "legacy_sec_min": legacy_min, "legacy_source": legacy_src,
+                         "per_grade_sec_min": pg_min, "source": pg_src,
                          "legacy_sec_lct": legacy_lct, "per_grade_sec_lct": pg_lct})
-            if limit and len(rows) >= limit:
-                break
     return rows
 
 

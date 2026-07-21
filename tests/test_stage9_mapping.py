@@ -137,3 +137,11 @@ def test_band_grade_span_from_slot_projection():
 def test_band_grade_span_absent_projection_is_empty():
     span = P.band_grade_span({"bands": {}}, "high")   # no slot_projection (CCD files absent)
     assert span["slot_spans"] == []
+
+
+# ----------------------------- CLI _load_ids (#607 review: comment filter) -----------------------------
+def test_load_ids_ignores_indented_comments(tmp_path):
+    from infrastructure.acquisition.stage9_incorporate.__main__ import _load_ids
+    f = tmp_path / "ids.txt"
+    f.write_text("0100810\n  # an indented comment\n# top comment\n\n  3620580  \n")
+    assert _load_ids(str(f)) == ["0100810", "3620580"]

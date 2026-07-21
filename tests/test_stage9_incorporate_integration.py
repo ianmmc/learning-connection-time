@@ -45,15 +45,21 @@ def _fake_ca(did, *, council=None, unsatisfied=()):
             "slot_projection": {}, "provenance": {}}
 
 
-def _patch_gov(monkeypatch, ca, *, approved=True, approval_id=1, disposition="approved"):
-    """Patch the governance READ seam so the orchestrator sees `ca` as the approved+fresh receipt."""
+def _patch_gov(monkeypatch, ca, *, approved=True, approval_id=1, disposition="approved",
+               latest_disposition=None, latest_approval_id=None):
+    """Patch the governance READ seam so the orchestrator sees `ca` as the approved+fresh receipt.
+    `latest_disposition`/`latest_approval_id` override ONLY the second read (latest_decision) to
+    simulate a concurrent gate@8 action landing between the two governance reads (the TOCTOU case)."""
     monkeypatch.setattr(CA, "load_closing_argument", lambda gs, did, **kw: ca)
     fp = CA.fingerprint(ca)
     monkeypatch.setattr(APV, "decision_status", lambda gs, did, current_fingerprint=None: {
         "decided": True, "disposition": disposition,
-        "is_approved": approved, "is_stale": not approved, "latest": None})
+        "is_approved": approved, "is_stale": not approved,
+        "latest": {"approval_id": approval_id, "disposition": disposition}})
+    ld_disp = latest_disposition or disposition
+    ld_id = latest_approval_id if latest_approval_id is not None else approval_id
     monkeypatch.setattr(APV, "latest_decision", lambda gs, did, with_receipt=False: {
-        "approval_id": approval_id, "district_id": did, "disposition": disposition,
+        "approval_id": ld_id, "district_id": did, "disposition": ld_disp,
         "facts_fingerprint": fp, "receipt_json": json.dumps(ca)})
     return fp
 
@@ -81,6 +87,12 @@ def _cleanup():
     with gdb.session_scope() as gs:
         gs.execute(text("DELETE FROM state_event WHERE district_id = ANY(:d) AND stage = 9"),
                    {"d": list(dids)})
+        # benchmark-guard test seeds a batch/batch_district row (tolerate missing tables on a fresh DB)
+        for tbl, col in (("batch_district", "batch_id"), ("batch", "batch_id")):
+            try:
+                gs.execute(text(f"DELETE FROM {tbl} WHERE {col} = 'zz_bench_test'"))
+            except Exception:
+                gs.rollback()
 
 
 def _bell_rows(did):
@@ -295,3 +307,103 @@ def test_missing_lct_district_fails_loud(env, monkeypatch):
     with pytest.raises(ValueError, match="not found in LCT"):
         INC.incorporate_district(MISSING_DID)
     assert _bell_rows(MISSING_DID) == []
+
+
+# ----------------------------- PR #607 review fixes -----------------------------
+def test_benchmark_district_refused(env, monkeypatch):
+    # A batch_00000-style benchmark membership walls the district off from Stage-9 writes.
+    with gdb.session_scope() as gs:
+        gs.execute(text(
+            "INSERT INTO batch (batch_id, batch_type, status, nces_year, created_at, created_by, "
+            "meta_json) VALUES ('zz_bench_test', 'benchmark', 'approved', '2024-25', 'now', "
+            "'zz-test', '{}') ON CONFLICT (batch_id) DO NOTHING"))
+        gs.execute(text(
+            "INSERT INTO batch_district (batch_id, district_id, ord, name, state, domain, "
+            "lea_claimed_bands, nces_school_counts, band_processing_order, band_meta, included) "
+            "VALUES ('zz_bench_test', :d, 0, 'Stage9 Test', 'ZZ', 'zz.test', '[]', '{}', '[]', "
+            "'{}', true)"), {"d": env})
+    _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 420}}))
+    res = INC.incorporate_district(env)
+    assert res.status == "not_eligible" and "benchmark" in res.reason
+    assert _bell_rows(env) == [] and _grade_rows(env) == {}
+
+
+def test_legacy_human_row_protected(env, monkeypatch):
+    from infrastructure.database.connection import session_scope as lct_scope
+    from infrastructure.database import queries as Q
+    # a hand-verified row already occupies (env, 2024-25, elementary)
+    with lct_scope() as s:
+        Q.add_bell_schedule(s, env, "2024-25", "elementary", 390, start_time="8:00 AM",
+                            end_time="2:30 PM", method="human_provided", confidence="high",
+                            notes="hand-verified from the district calendar", created_by="ian")
+    _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 400}, "high": {"gross": 450}}))
+    res = INC.incorporate_district(env)
+    assert res.status == "incorporated"
+    rows = {r["grade_level"]: r for r in _bell_rows(env)}
+    # the human row is untouched (method + minutes preserved), the council high still lands
+    assert rows["elementary"]["method"] == "human_provided" and rows["elementary"]["minutes"] == 390
+    assert rows["high"]["method"] == "council_extraction"
+    assert any(p["grade_level"] == "elementary" and p["existing_method"] == "human_provided"
+               for p in res.protected)
+    # the protected band contributes NO Stage-9 grade-minutes rows
+    assert "03" not in _grade_rows(env) and "10" in _grade_rows(env)
+
+
+def test_statutory_flip_clears_council_times(env, monkeypatch):
+    from infrastructure.database.connection import session_scope as lct_scope
+    from infrastructure.database.models import BellSchedule
+
+    def _elem_row():
+        with lct_scope() as s:
+            r = s.query(BellSchedule).filter(BellSchedule.district_id == env,
+                                             BellSchedule.grade_level == "elementary").first()
+            return {"method": r.method, "start_time": r.start_time, "end_time": r.end_time}
+
+    # v1: council elementary with real times
+    _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 420}}), approval_id=1)
+    INC.incorporate_district(env)
+    assert _elem_row()["start_time"] == "08:00"
+    # v2: elementary loses consensus -> statutory fallback; stale council times must be cleared
+    _patch_gov(monkeypatch, _fake_ca(env, council={}, unsatisfied=["elementary"]), approval_id=2)
+    INC.incorporate_district(env)
+    row = _elem_row()
+    assert row["method"] == "statutory_fallback"
+    assert row["start_time"] is None and row["end_time"] is None
+
+
+def test_toctou_decision_changed_between_reads_writes_nothing(env, monkeypatch):
+    # eligibility gate sees 'approved', but the receipt fetch reads a NEWER 'sent_back' decision
+    _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 420}}),
+               approval_id=1, latest_disposition="sent_back", latest_approval_id=2)
+    res = INC.incorporate_district(env)
+    assert res.status == "not_eligible" and res.reason == "decision_changed_during_read"
+    assert _bell_rows(env) == []
+    with gdb.session_scope() as gs:
+        assert LEDGER.latest_incorporation(gs, env) is None
+
+
+def test_dry_run_resolves_statutory_minutes(env, monkeypatch):
+    # dry-run must preview the RESOLVED statutory number, not literal None
+    _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 400}}, unsatisfied=["high"]))
+    res = INC.incorporate_district(env, dry_run=True)
+    assert res.status == "dry_run" and _bell_rows(env) == []
+    hi = next(w for w in res.written if w["grade_level"] == "high")
+    assert hi["minutes"] == 350 and hi["method"] == "statutory_fallback"   # ZZ high, not None
+
+
+def test_grade_minutes_verified_in_db(env, monkeypatch):
+    # the projection table gets a Rule #6 verify too (happy path: rows match what was projected)
+    _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 400}, "high": {"gross": 450}}))
+    res = INC.incorporate_district(env)
+    assert res.status == "incorporated" and res.grades == len(_grade_rows(env))
+
+
+def test_statutory_minutes_case_insensitive_and_zero_safe(env):
+    from infrastructure.acquisition.stage9_incorporate.incorporate import _statutory_minutes
+    from infrastructure.database.connection import session_scope as lct_scope
+    with lct_scope() as s:
+        # lowercase state resolves via the canonical (uppercasing) lookup — PR #607 review
+        assert _statutory_minutes(s, "zz", "high") == 350
+        assert _statutory_minutes(s, "ZZ", "middle") == 330
+        # an unknown state falls to the 360 default
+        assert _statutory_minutes(s, "QQ", "high") == 360
