@@ -178,7 +178,9 @@ State-specific instructional time requirements.
 | updated_at | TIMESTAMP | Last update time |
 
 #### **bell_schedules**
-Actual bell schedule data collected from districts.
+Bell schedule / instructional-minute data. This is the **acquisition pipeline's Stage-9 landing zone**
+(migration 019) — `stage9_incorporate` writes the approved per-band minutes here (BUILT 2026-07-21,
+`STAGE9_INCORPORATE_DESIGN.md`), and legacy hand-enrichment writes here too.
 
 | Column | Type | Description |
 |--------|------|-------------|
@@ -186,24 +188,27 @@ Actual bell schedule data collected from districts.
 | district_id | VARCHAR(20) | Foreign key to districts |
 | year | VARCHAR(10) | School year (e.g., "2025-26") |
 | grade_level | VARCHAR(20) | elementary, middle, or high |
-| instructional_minutes | INTEGER | Daily instructional minutes |
+| instructional_minutes | INTEGER | Daily instructional minutes (gross bell-to-bell, or statutory for a fallback) |
 | start_time | VARCHAR(20) | School start time |
 | end_time | VARCHAR(20) | School end time |
 | lunch_duration | INTEGER | Lunch period in minutes |
 | passing_periods | INTEGER | Passing period time |
-| method | VARCHAR(50) | Collection method |
-| confidence | VARCHAR(20) | Data confidence level |
-| schools_sampled | JSONB | Array of school names |
+| method | VARCHAR(30) | Collection method (Stage 9: `council_extraction` or `statutory_fallback`) |
+| minutes_basis | VARCHAR(30) | What the minutes measure: `gross_bell_to_bell` \| `statutory` \| NULL (migration 019) |
+| confidence | VARCHAR(10) | Data confidence level (high / medium / low) |
+| schools_sampled | JSONB | Array of sampled schools (Stage 9: per-school evidence) |
 | source_urls | JSONB | Array of source URLs |
+| raw_import | JSONB | Stage 9: the `#95` re-verify bundle (facts_fingerprint, approval_id, receipt_band, band_grade_span) |
 | notes | TEXT | Additional context |
 | created_at | TIMESTAMP | Record creation time |
-| created_by | VARCHAR(100) | Who collected the data |
 
 **Constraints**:
 - Foreign key to `districts(nces_id)`
 - Check constraint: `instructional_minutes BETWEEN 100 AND 600` (the DB's outer sanity bound;
   the REQ-055 plausibility gate 240–510 lives in `infrastructure/database/school_year.py`)
-- Unique constraint: `(district_id, year, grade_level)`
+- Check constraints: `grade_level IN ('elementary','middle','high')`, `method IN (BELL_SCHEDULE_METHODS)`,
+  `minutes_basis IN ('gross_bell_to_bell','statutory') OR NULL`
+- Unique constraint: `(district_id, year, grade_level)` — the Stage-9 UPSERT / idempotency key
 
 #### **grade_level_enrollment**
 K-12 enrollment by grade level.

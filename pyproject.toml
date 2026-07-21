@@ -19,10 +19,15 @@ root_packages = ["infrastructure"]
 include_external_packages = true   # needed to forbid the external `openai` SDK below (REQ-119, #148)
 
 [[tool.importlinter.contracts]]
-name = "Layering: process_governance (app) > stages (independent) > common (base)"
+name = "Layering: process_governance (app) > stage9 incorporate (downstream consumer) > stages 1-8 (independent) > common (base)"
 type = "layers"
+# Stage 9 is the pipeline's terminal step — it CONSUMES the gate@8 determination (stage8_aggregate's
+# approval + closing_argument: the canonical readers of that state, whose fingerprint logic Stage 9
+# must match exactly rather than duplicate). So it sits ABOVE the independent stage group: a higher
+# layer may import a lower one, and nothing earlier may import Stage 9 (it is terminal).
 layers = [
     "process_governance",
+    "stage9_incorporate",
     "stage1_queue | stage2_discover | stage3_capture | stage4_process | stage5_filter | stage6_handoff | stage7_extract | stage8_aggregate",
     "common",
 ]
@@ -33,10 +38,15 @@ name = "Acquisition must not import the LCT database layer (except the sanctione
 type = "forbidden"
 source_modules = ["infrastructure.acquisition"]
 forbidden_modules = ["infrastructure.database"]
-# Stage 1 reads enrollment for the queue; Stage 9 (not built yet) will write minutes back.
+# Stage 1 reads enrollment for the queue; Stage 9 writes the approved minutes back into the LCT DB
+# (the two sanctioned crossings — THE POINT of the pipeline). The hole stays ONE FILE wide on each
+# side: stage1_queue.queue_batch (read) and stage9_incorporate.incorporate (write).
 ignore_imports = [
     "infrastructure.acquisition.stage1_queue.queue_batch -> infrastructure.database.connection",
     "infrastructure.acquisition.stage1_queue.queue_batch -> infrastructure.database.models",
+    "infrastructure.acquisition.stage9_incorporate.incorporate -> infrastructure.database.connection",
+    "infrastructure.acquisition.stage9_incorporate.incorporate -> infrastructure.database.queries",
+    "infrastructure.acquisition.stage9_incorporate.incorporate -> infrastructure.database.models",
 ]
 
 [[tool.importlinter.contracts]]

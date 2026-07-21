@@ -47,8 +47,9 @@ a first-class `run_kind` column (STAGE7 §0/§6) so a second vision-council prob
 district's production run. Dead code + test drift (#125/#87/#126/#166) also retired. Full mechanism/
 measurement detail: `STAGE7_EXTRACT_DESIGN.md` §6 (decision log).
 **Stage 8 gate@8 BUILT (#89, 2026-07-14; console + approve/send-back + the 4 human-judgment tables + frozen
-receipt — `STAGE8_AGGREGATE_DESIGN.md` §0a/§0b). Still unbuilt: the Stage-9 write (#93), the 8→1/8→6
-back-edges, and gate@8 auto mode.** **Gates are stage-numbered (§11):**
+receipt — `STAGE8_AGGREGATE_DESIGN.md` §0a/§0b). **Stage-9 write BUILT (#93/#94/#95, 2026-07-21 —
+`STAGE9_INCORPORATE_DESIGN.md`).** Still unbuilt: the 8→1/8→6 back-edges and gate@8 auto mode.**
+**Gates are stage-numbered (§11):**
 `gate@1` (queue) · `gate@5` (per-URL review) · `gate@6` (dispatch) · `gate@7` (council requests) · `gate@8`
 (results) — **1/5/8 structural (permanent), 6/7 supervision (first to relax) — §11i.** §8, §9, and §9a
 below are **historical** — fully executed planning/sequencing docs kept in place because their section
@@ -184,8 +185,8 @@ expectation** — profile and fingerprint every CMS encountered; Edlio is the fi
 sibling-variant dedup to Stage-6 dispatch and two `cms_hosts.json` entries; REQ-153 `approved`, tests
 pending). **Stage-6 `district_release_input` now runs FOUR sequential hold-passes** (base `decide()` +
 `verified_only` downgrade → #107 prefer-recent → #540 sibling-variant → REQ-116 hub-priority; detail:
-`STAGE6_DISPATCH_DESIGN.md`). Still genuinely unbuilt downstream: the **Stage-9 write** (#93), the
-**8→1/8→6 back-edges**, and gate@8 **auto** mode. **#518 (the Stage 3/4 capture-fidelity recall leak — login walls,
+`STAGE6_DISPATCH_DESIGN.md`). The **Stage-9 write** is now **BUILT** (#93/#94/#95, 2026-07-21). Still
+genuinely unbuilt downstream: the **8→1/8→6 back-edges** and gate@8 **auto** mode. **#518 (the Stage 3/4 capture-fidelity recall leak — login walls,
 0-byte PDFs, security blocks, truncation) is now BUILT (2026-07-20):** `GET /api/fidelity-triage` is the
 consumer REQ-154's fidelity columns were missing — see §11f. Other open tracks: **#110** (Stage 7 cross-config cascade escalation on
 no-consensus, re-homed to epic #80 Council Lab — genuinely blocked on that lab producing a measured
@@ -842,10 +843,12 @@ The only new setup step is a one-time `pip install -e .`.
 
 **import-linter contracts to encode (step 4):**
 - **Layers/forbidden:** `common` is the base — stages may import it; `common` must NOT import any stage.
-- **Independence:** the stage packages do not import each other.
+- **Independence:** the stage packages 1–8 do not import each other. **Stage 9 is the exception:** it is a
+  layer *above* the independent group (it consumes gate@8's `approval`/`closing_argument` — the canonical
+  readers whose `fingerprint` logic it must match, not duplicate); nothing earlier may import it.
 - **Forbidden + exceptions:** `infrastructure.acquisition` must not import `infrastructure.database` internals
-  *except* the sanctioned `stage1_queue` enrollment read (and future `stage9` write) — encode via
-  `ignore_imports`.
+  *except* the sanctioned `stage1_queue` enrollment read and the `stage9_incorporate.incorporate` write
+  (BUILT 2026-07-21) — encode via `ignore_imports`.
 - **Forbidden (reverse):** the LCT side (`infrastructure.database`, `infrastructure.scripts`) must not import
   `infrastructure.acquisition` — keeps the two clusters decoupled (the separation confirmed in the
   requirements review).
@@ -1316,7 +1319,13 @@ is a fresh event worth a fresh flag.
 - **Stage 8** — aggregation + the "closing argument"; **BUILT (#89, 2026-07-14)**: the gate@8 console
   (review queue, per-school override, band-exclusion / human-add / slot-assignment, the approve/send-back
   verdict with a frozen fingerprinted receipt). This is where fact/band editing lives. Still unbuilt: the
-  Stage-9 write (#93) and the 8→1/8→6 back-edges. See `STAGE8_AGGREGATE_DESIGN.md` §0a/§0b.
+  8→1/8→6 back-edges. See `STAGE8_AGGREGATE_DESIGN.md` §0a/§0b.
+- **Stage 9** — the sanctioned write of the approved per-band minutes into the LCT `bell_schedules` DB;
+  **BUILT (#93/#94/#95, 2026-07-21)**: reads the frozen gate@8 receipt, UPSERTs per band (council or
+  statutory-fallback), verifies-in-DB, reconciles year-change orphans, and stamps an `incorporated`
+  `state_event`. The one cross-DB crossing (a layer above stages 1–8; only `incorporate.py` touches
+  `infrastructure.database`). See `STAGE9_INCORPORATE_DESIGN.md`. Follow-up: the LEA-level per-grade
+  projection that lets LCT consume the 3-band minutes.
 
 ### 11g. Implications for what's built
 - `state_event.checkpoint` vocabulary: **`gate@1` | `gate@5` | `gate@6` | `gate@7` | `gate@8`** (was
@@ -1428,8 +1437,8 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
   hardening passes: the 2026-07-04 review (epic #133, children #134–#146, all closed; root theme: the new
   execution path had re-implemented invariants instead of inheriting them) and epic #163 (2026-07-04/05,
   PR #167, 21 commits — the console-maturation + loop-correctness pass, each commit adversarially
-  reviewed before the next). #147/#148 (cleanup/efficiency) remain open. **Not yet built:** Stage 8/9
-  (tracked: #89, #93). **Not yet run:** a clean live non-benchmark end-to-end pass of the fully-corrected
+  reviewed before the next). #147/#148 (cleanup/efficiency) remain open. **Now built:** Stage 8 (#89) and
+  the Stage-9 write (#93/#94/#95). **Not yet run:** a clean live non-benchmark end-to-end pass of the fully-corrected
   loop in one sitting (#122) — exercised repeatedly in pieces against real districts during epic #163's
   shakedown, which is what surfaced most of what it then fixed.
 - **Council Lab BUILT, first experiment MEASURED (2026-07-04)** — its own note now,
