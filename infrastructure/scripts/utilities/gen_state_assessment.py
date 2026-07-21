@@ -14,12 +14,17 @@ receipts). This script derives two human-facing summaries from it:
     The concrete list of files a Phase D acquisition pass could pull
     today (2+ of enrollment/staffing/SPED confirmed via a direct-download
     or API URL) — the sign-off artifact before any bulk downloading.
+  - docs/state-integrations/MANUAL_WORK_QUEUE.md + .csv
+    Every (state, category) that still needs a human — a real browser
+    session, a login, or fresh discovery — sorted easiest-first. The CSV
+    is meant to be opened in Numbers/Excel/VisiData for filtering/sorting.
 
-Do NOT hand-edit either output file — edit the catalog and re-run this.
+Do NOT hand-edit any output file — edit the catalog and re-run this.
 
 Usage:
     python infrastructure/scripts/utilities/gen_state_assessment.py
 """
+import csv
 import datetime
 from collections import Counter
 from pathlib import Path
@@ -30,6 +35,8 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 CATALOG_PATH = REPO_ROOT / 'docs' / 'state-integrations' / 'state_data_catalog.yaml'
 ASSESSMENT_PATH = REPO_ROOT / 'docs' / 'state-integrations' / 'STATE_DATA_AVAILABILITY_ASSESSMENT.md'
 PLAN_PATH = REPO_ROOT / 'docs' / 'state-integrations' / 'ACQUISITION_PLAN.md'
+QUEUE_MD_PATH = REPO_ROOT / 'docs' / 'state-integrations' / 'MANUAL_WORK_QUEUE.md'
+QUEUE_CSV_PATH = REPO_ROOT / 'docs' / 'state-integrations' / 'MANUAL_WORK_QUEUE.csv'
 
 CORE_TYPES = ('enrollment', 'staffing', 'sped')
 EASY_ACCESS = {'direct-download', 'api'}
@@ -76,6 +83,142 @@ def fmt_cell(rec):
     icon = AVAILABILITY_ICONS.get(rec['availability'], '❓')
     year = rec.get('year') or '—'
     return f'{icon} {year}'
+
+
+QUEUE_PRIORITY = {
+    'confirmed-manual': (1, 'Confirmed — just needs a browser/login',
+                          'A real file/export is known to exist; access is dashboard-export or '
+                          'request-only. Lowest-uncertainty manual work — the destination is known, '
+                          'just needs a human to click through or request access.'),
+    'partial-manual': (2, 'Reported-partial — probably exists, needs verification',
+                        'The probe found the portal/category but couldn\'t pin a specific file or '
+                        'confirm the format. Worth a look before assuming it\'s not there.'),
+    'blocked': (3, 'Blocked — needs a real browser past a WAF/Cloudflare wall',
+                'An automated probe hit a real block (not a tool artifact). A human browser session '
+                'will likely get through where the probe couldn\'t.'),
+    'not-found': (4, 'Not found — needs fresh discovery',
+                  'The probe looked and came up empty. Might genuinely not exist, or might need a '
+                  'different search angle than the probe tried.'),
+    'unknown': (5, 'Unprobed', 'No probe data recorded for this category at all.'),
+}
+
+
+def queue_bucket_for(rec):
+    if rec['availability'] == 'confirmed':
+        if rec['access'] in ('dashboard-export', 'request-only'):
+            return 'confirmed-manual'
+        return None  # direct-download/api and already acquirable — not manual work
+    if rec['availability'] == 'reported-partial':
+        return 'partial-manual'
+    if rec['availability'] == 'blocked':
+        return 'blocked'
+    if rec['availability'] == 'not-found':
+        return 'not-found'
+    if rec['availability'] == 'unknown':
+        return 'unknown'
+    return None
+
+
+def build_manual_queue(states):
+    acquired = {
+        (s['code'], a['category'])
+        for s in states for a in (s.get('acquisitions') or [])
+    }
+    rows = []
+    for s in states:
+        for dtype in ('enrollment', 'staffing', 'sped', 'crosswalk_ids', 'frpm_ell'):
+            if (s['code'], dtype) in acquired:
+                continue
+            rec = s['data'][dtype]
+            bucket = queue_bucket_for(rec)
+            if bucket is None:
+                continue
+            rank, _, _ = QUEUE_PRIORITY[bucket]
+            rows.append({
+                'priority_rank': rank,
+                'priority': bucket,
+                'state_code': s['code'],
+                'state_name': s['name'],
+                'category': dtype,
+                'availability': rec['availability'],
+                'access': rec.get('access') or '',
+                'year': rec.get('year') or '',
+                'format': rec.get('format') or '',
+                'urls': '; '.join(rec.get('urls') or s.get('portals') or []),
+                'state_flags': '; '.join(s.get('flags') or []),
+                'notes': (s.get('notes') or '').replace('\n', ' ').strip(),
+            })
+    rows.sort(key=lambda r: (r['priority_rank'], r['state_code'], r['category']))
+    return rows
+
+
+def gen_manual_work_queue(states, today):
+    rows = build_manual_queue(states)
+
+    # --- CSV: flat, sortable/filterable in Numbers/Excel/VisiData ---
+    fieldnames = ['priority_rank', 'priority', 'state_code', 'state_name', 'category',
+                  'availability', 'access', 'year', 'format', 'urls', 'state_flags', 'notes']
+    with open(QUEUE_CSV_PATH, 'w', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+    # --- Markdown: grouped by priority bucket, easiest first ---
+    lines = []
+    lines.append('# Manual SEA Data Work Queue')
+    lines.append('')
+    lines.append(f'**Regenerated:** {today} (auto-generated from `state_data_catalog.yaml` — DO '
+                  'NOT hand-edit, edit the catalog and re-run '
+                  '`infrastructure/scripts/utilities/gen_state_assessment.py`)')
+    lines.append(f'**{len(rows)} (state, category) pairs** still need a human — not already '
+                  'auto-acquired (Phase D) and not scriptable without one. A flat, filterable '
+                  'version of this same data: `MANUAL_WORK_QUEUE.csv` (open in Numbers/Excel/'
+                  'VisiData, sort/filter by any column).')
+    lines.append('')
+    lines.append('Sorted easiest-first: confirmed-but-manual, then reported-partial, then blocked, '
+                  'then not-found, then unprobed.')
+    lines.append('')
+    lines.append('---')
+    lines.append('')
+
+    by_bucket = {}
+    for r in rows:
+        by_bucket.setdefault(r['priority'], []).append(r)
+
+    for bucket, (rank, label, desc) in sorted(QUEUE_PRIORITY.items(), key=lambda kv: kv[1][0]):
+        bucket_rows = by_bucket.get(bucket, [])
+        if not bucket_rows:
+            continue
+        lines.append(f'## {rank}. {label} ({len(bucket_rows)})')
+        lines.append('')
+        lines.append(desc)
+        lines.append('')
+        lines.append('| State | Category | Year | Format | Access | URL(s) | Flags | Notes |')
+        lines.append('|---|---|---|---|---|---|---|---|')
+        for r in bucket_rows:
+            notes = r['notes']
+            if len(notes) > 130:
+                notes = notes[:127] + '...'
+            lines.append(
+                f"| **{r['state_code']}** {r['state_name']} | {r['category']} | "
+                f"{r['year'] or '—'} | {r['format'] or '—'} | {r['access'] or '—'} | "
+                f"{r['urls'] or '—'} | {r['state_flags'] or '—'} | {notes} |"
+            )
+        lines.append('')
+
+    lines.append('---')
+    lines.append('')
+    lines.append('## Notes')
+    lines.append('')
+    lines.append('- A row disappears from this queue once its category gets an `acquisitions[]` '
+                  'receipt in the catalog — re-run this generator after adding one manually.')
+    lines.append('- "Confirmed" rows already have a real, verified file/endpoint recorded — the '
+                  'URL(s) column is where to start, not a guess.')
+    lines.append('- Full probe history (what was tried, what the raw findings were) lives in each '
+                  "state's `probes[]` block in `state_data_catalog.yaml`.")
+    lines.append('')
+
+    QUEUE_MD_PATH.write_text('\n'.join(lines) + '\n')
 
 
 def gen_assessment(catalog, today):
@@ -281,8 +424,11 @@ def main():
     today = datetime.date.today().isoformat()
     states = gen_assessment(catalog, today)
     gen_acquisition_plan(states, today)
+    gen_manual_work_queue(states, today)
     print(f'Wrote {ASSESSMENT_PATH}')
     print(f'Wrote {PLAN_PATH}')
+    print(f'Wrote {QUEUE_MD_PATH}')
+    print(f'Wrote {QUEUE_CSV_PATH}')
 
 
 if __name__ == '__main__':

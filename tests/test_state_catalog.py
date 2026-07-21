@@ -117,23 +117,34 @@ def test_generated_docs_are_not_stale(catalog):
 
     committed_assessment = normalize(mod.ASSESSMENT_PATH.read_text())
     committed_plan = normalize(mod.PLAN_PATH.read_text())
+    committed_queue_md = normalize(mod.QUEUE_MD_PATH.read_text())
+    committed_queue_csv = mod.QUEUE_CSV_PATH.read_text()  # no date line to strip
 
     # Regenerate into the real paths (idempotent — a no-op if nothing drifted)
     # then read back and restore if this run happened to change anything.
-    original_assessment_bytes = mod.ASSESSMENT_PATH.read_bytes()
-    original_plan_bytes = mod.PLAN_PATH.read_bytes()
+    original_bytes = {p: p.read_bytes() for p in
+                       (mod.ASSESSMENT_PATH, mod.PLAN_PATH, mod.QUEUE_MD_PATH, mod.QUEUE_CSV_PATH)}
     try:
         states = mod.gen_assessment(catalog, today='REGEN-DATE')
         mod.gen_acquisition_plan(states, today='REGEN-DATE')
+        mod.gen_manual_work_queue(states, today='REGEN-DATE')
         regenerated_assessment = normalize(mod.ASSESSMENT_PATH.read_text())
         regenerated_plan = normalize(mod.PLAN_PATH.read_text())
+        regenerated_queue_md = normalize(mod.QUEUE_MD_PATH.read_text())
+        regenerated_queue_csv = mod.QUEUE_CSV_PATH.read_text()
     finally:
-        mod.ASSESSMENT_PATH.write_bytes(original_assessment_bytes)
-        mod.PLAN_PATH.write_bytes(original_plan_bytes)
+        for path, data in original_bytes.items():
+            path.write_bytes(data)
 
     assert committed_assessment == regenerated_assessment, (
         'STATE_DATA_AVAILABILITY_ASSESSMENT.md is stale or was hand-edited — '
         're-run infrastructure/scripts/utilities/gen_state_assessment.py')
     assert committed_plan == regenerated_plan, (
         'ACQUISITION_PLAN.md is stale or was hand-edited — '
+        're-run infrastructure/scripts/utilities/gen_state_assessment.py')
+    assert committed_queue_md == regenerated_queue_md, (
+        'MANUAL_WORK_QUEUE.md is stale or was hand-edited — '
+        're-run infrastructure/scripts/utilities/gen_state_assessment.py')
+    assert committed_queue_csv == regenerated_queue_csv, (
+        'MANUAL_WORK_QUEUE.csv is stale or was hand-edited — '
         're-run infrastructure/scripts/utilities/gen_state_assessment.py')
