@@ -1,6 +1,6 @@
 # SEA Data Acquisition Plan — Phase C
 
-**Generated:** 2026-07-20 from `state_data_catalog.yaml` (Phase B probe results, PR #601/#602).
+**Generated:** 2026-07-21 from `state_data_catalog.yaml` (Phase B probe results, PR #601/#602).
 **Status: AWAITING IAN'S SIGN-OFF.** Nothing in this list has been downloaded. Per the campaign plan, this is the hard human gate before any bulk acquisition (Phase D) begins.
 
 ## What's in scope

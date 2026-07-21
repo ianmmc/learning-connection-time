@@ -1,6 +1,6 @@
 # Manual SEA Data Work Queue
 
-**Regenerated:** 2026-07-20 (auto-generated from `state_data_catalog.yaml` — DO NOT hand-edit, edit the catalog and re-run `infrastructure/scripts/utilities/gen_state_assessment.py`)
+**Regenerated:** 2026-07-21 (auto-generated from `state_data_catalog.yaml` — DO NOT hand-edit, edit the catalog and re-run `infrastructure/scripts/utilities/gen_state_assessment.py`)
 **143 (state, category) pairs** still need a human — not already auto-acquired (Phase D) and not scriptable without one. A flat, filterable version of this same data: `MANUAL_WORK_QUEUE.csv` (open in Numbers/Excel/VisiData, sort/filter by any column).
 
 Sorted easiest-first: confirmed-but-manual, then reported-partial, then blocked, then not-found, then unprobed.
