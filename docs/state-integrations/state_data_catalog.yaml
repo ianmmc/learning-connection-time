@@ -31,6 +31,18 @@ meta:
     below is kept for completeness (it may still matter if a state's own ID differs from what CCD
     records, or for cross-validation per REQ-021) but is NOT a blocking gap for acquisition — do not
     treat any state's crosswalk as unacquired just because its portal doesn't publish one.
+  format_preference: >-
+    POLICY (Ian, 2026-07-20): when a state offers the SAME data in multiple formats, acquire only
+    the single best format — never all of them. Preference order: (1) CSV — by far the most common
+    here, and matches our existing importer/pandas tooling, so it beats JSON/XML on practicality even
+    though those are more "structured"; (2) JSON; (3) XML; (4) XLSX; (5) XLS; (6) SAS (kept only
+    because NCES itself sometimes uses it — no state in this campaign actually offers a real SAS file,
+    confirmed by audit); (7) PDF — last resort, use pdftotext/pdfplumber/camelot depending on
+    structure; (8) anything else. This does NOT apply when formats carry genuinely different data
+    (e.g. LA's SPED Excel = rates, PDF = raw district counts; MP's live dashboard vs. an annual PDF
+    snapshot) — those need both, not a pick-one. Never fabricate a "better format" URL that wasn't
+    actually found/verified (see AR/NE/WV 2026-07-20 probe entries for the audit that applied this
+    policy retroactively to Phase B's results).
   availability_vocab:
   - reported-yes
   - reported-partial
@@ -258,15 +270,15 @@ states:
     enrollment:
       availability: confirmed
       year: 2025-26
-      format: CSV/Excel/PDF/XML
-      access: direct-download
+      format: CSV (via ASP.NET postback export, not a plain URL)
+      access: dashboard-export
       urls:
       - https://adedata.arkansas.gov/statewide/reportlist/districts/EnrollmentCount.aspx
     staffing:
       availability: confirmed
       year: 2025-26
-      format: CSV/Excel/PDF/XML
-      access: direct-download
+      format: CSV (via ASP.NET postback export, not a plain URL)
+      access: dashboard-export
       urls:
       - https://adedata.arkansas.gov/statewide/reportlist/districts/CertifiedPersonnel.aspx
     sped:
@@ -303,10 +315,26 @@ states:
       through 2025-26. SPED is a single combined statewide PDF of per-district Dec-1 child-count profiles,
       no environment breakdown, no personnel data. A genuine SPED-teacher split from staffing would need
       decoding numeric job/assignment codes — not yet done.
+  - date: '2026-07-20'
+    urls_tried:
+    - https://adedata.arkansas.gov/statewide/reportlist/districts/EnrollmentCount.aspx
+    - https://adedata.arkansas.gov/statewide/reportlist/districts/CertifiedPersonnel.aspx
+    outcome: format-policy-audit-reclassified
+    notes: >-
+      Ian's format-preference audit: the CSV export on both report pages is an ASP.NET WebForms
+      postback control (__doPostBack('...lnkCsv','')), not a static URL or a resolvable query-string
+      pattern — confirmed via curl+grep of the raw page (found lnkCsv/lnkPdf/lnkXlsx/lnkXml postback
+      targets, no direct href). Cannot be fetched without simulating the postback (VIEWSTATE token)
+      or a real browser. Reclassified access from direct-download to dashboard-export so Tier
+      placement reflects reality; do not attempt an automated download of these two without
+      Playwright. The crosswalk_ids NID/ExceliseDistrict endpoint is a distinct, differently-built
+      controller and was not affected by this finding.
   acquisitions: []
   flags:
   - follow-up-manual
-  notes: Strong flat-file source with a confirmed crosswalk; FRPM/ELL data is stale/proxy only.
+  - dashboard-only
+  notes: Strong flat-file source with a confirmed crosswalk; enrollment/staffing CSV needs a browser
+    (ASP.NET postback export, not a plain URL) — FRPM/ELL data is stale/proxy only.
 - code: AS
   name: American Samoa
   portals:
@@ -2136,12 +2164,11 @@ states:
     enrollment:
       availability: confirmed
       year: 2025-26
-      format: CSV/PDF
+      format: CSV
       access: direct-download
       urls:
       - >-
         https://www.education.ne.gov/wp-content/uploads/2025/12/MembershipByGradeRaceAndGender_20252026.csv
-      - https://www.education.ne.gov/wp-content/uploads/2026/01/Statsfacts_20252026.pdf
     staffing:
       availability: confirmed
       year: 2024-25
@@ -2184,6 +2211,15 @@ states:
       pupil-teacher ratio. FRPM is by-school (aggregable), no standalone ELL file located. SPED child-count/environment
       exists per-district only via the Nebraska Education Profile (NEP) dashboard, no confirmed bulk download.
       No state-to-NCES crosswalk file published on the NDE portal itself.
+  - date: '2026-07-20'
+    urls_tried: []
+    outcome: format-policy-audit-pruned
+    notes: >-
+      Ian's format-preference audit: enrollment had both a CSV and a PDF URL recorded for the same
+      data (the MembershipByGradeRaceAndGender CSV plus the Statsfacts PDF). Per the agreed CSV-first
+      preference, dropped the redundant PDF URL — CSV is the sole enrollment source now. (Staffing's
+      Statsfacts PDF stays: it is the source for Staff FTE, a different data element the CSV doesn't
+      carry.)
   acquisitions: []
   flags:
   - dashboard-only
@@ -3543,6 +3579,18 @@ states:
       the SPED-teacher split by county. WV's 55 counties are the LEAs; WVDE does not publish its own crosswalk
       file, though NCES's own district-search tool carries WV's State District ID. FRPM exists via WVDE
       Child Nutrition but no direct file found; district-level ELL counts not found at all.
+  - date: '2026-07-20'
+    urls_tried:
+    - https://zoomwv.k12.wv.us/Dashboard/dashboard/28116
+    outcome: format-policy-audit-confirmed-pdf-is-best-available
+    notes: >-
+      Ian's format-preference audit: checked whether enrollment's Excel-via-dashboard alternative
+      (mentioned in the original probe) is a static, scriptable URL. It is not — ZoomWV serves a
+      client-side-rendered JS shell (curl returns only the empty app skeleton), matching the earlier
+      finding that it "supports per-graph Excel/PDF export" only through interactive use. No
+      fabricated URL added. The Education Snapshot Booklet PDF stays as the confirmed enrollment
+      source (genuinely the best scriptable option today); Excel-via-ZoomWV remains a
+      follow-up-manual target for whoever has a browser session, not an automated download candidate.
   acquisitions: []
   flags:
   - dashboard-only
@@ -3550,7 +3598,8 @@ states:
   - request-only
   notes: >-
     Confirmed SPED-teacher split by county in the FTE file — a clean source for the SPED-teacher-split
-    rubric goal.
+    rubric goal. Enrollment's Excel-via-ZoomWV alternative is JS-dashboard-only, not scriptable; PDF
+    remains the actual acquisition source.
 - code: WY
   name: Wyoming
   portals:

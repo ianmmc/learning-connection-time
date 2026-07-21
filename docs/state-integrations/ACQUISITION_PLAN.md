@@ -5,7 +5,7 @@
 
 ## What's in scope
 
-35 entities have at least 2 of 3 core categories (enrollment/staffing/SPED) confirmed via a direct-download file or API endpoint — genuinely ready to acquire without further manual portal work. This list is everything a Phase D acquisition agent could pull today.
+34 entities have at least 2 of 3 core categories (enrollment/staffing/SPED) confirmed via a direct-download file or API endpoint — genuinely ready to acquire without further manual portal work. This list is everything a Phase D acquisition agent could pull today.
 
 Explicitly OUT of scope for this list (Tier 2/3, need manual/dashboard work first, or blocked): see the assessment doc's Tier 2/3 tables. Nothing there should be bulk-downloaded yet.
 
@@ -33,16 +33,6 @@ Explicitly OUT of scope for this list (Tier 2/3, need manual/dashboard work firs
 | staffing | 2026-27 (FY2027 enacted) | Excel | direct-download | https://www.alabamaachieves.org/wp-content/uploads/2026/05/RD_FIN_FR_2026518_FY2027SummaryofTeacherType_v1.xlsx |
 | sped | 2025-26 (Oct-1-2025 count) | PDF (by system, by age/exceptionality) | direct-download | https://www.alabamaachieves.org/wp-content/uploads/2026/06/RD_SPECED_20260602_2025ChildCountbySystem_v1.pdf<br>https://www.alabamaachieves.org/wp-content/uploads/2026/06/RD_SPECED_20260610_2025ChildCountbyExcept_v1.pdf |
 | frpm_ell | 2025-26 | Excel | direct-download | https://www.alabamaachieves.org/wp-content/uploads/2025/12/RD_FR_2025124_SY2025-2026FreeLunchBySystemandSchool_v1.xlsx |
-
-## AR — Arkansas
-> Strong flat-file source with a confirmed crosswalk; FRPM/ELL data is stale/proxy only.
-
-| Category | Year | Format | Access | URL(s) |
-|---|---|---|---|---|
-| enrollment | 2025-26 | CSV/Excel/PDF/XML | direct-download | https://adedata.arkansas.gov/statewide/reportlist/districts/EnrollmentCount.aspx |
-| staffing | 2025-26 | CSV/Excel/PDF/XML | direct-download | https://adedata.arkansas.gov/statewide/reportlist/districts/CertifiedPersonnel.aspx |
-| sped | 2024-25 | PDF | direct-download | https://arksped.ade.arkansas.gov/documents/data_n_research/PublicReporting/LEAprofiles/SAProfiles2425.pdf |
-| crosswalk_ids | 2025-26 | Excel | direct-download | https://adedata.arkansas.gov/NID/Home/ExceliseDistrict?schoolYear=2025 |
 
 ## AS — American Samoa
 > Correction to Jan-2026 "NCES-only" — real SPED/LRE data exists and is current (FFY24); enrollment/staffing/FRPM stuck at 2020-21.
@@ -219,7 +209,7 @@ Explicitly OUT of scope for this list (Tier 2/3, need manual/dashboard work firs
 
 | Category | Year | Format | Access | URL(s) |
 |---|---|---|---|---|
-| enrollment | 2025-26 | CSV/PDF | direct-download | https://www.education.ne.gov/wp-content/uploads/2025/12/MembershipByGradeRaceAndGender_20252026.csv<br>https://www.education.ne.gov/wp-content/uploads/2026/01/Statsfacts_20252026.pdf |
+| enrollment | 2025-26 | CSV | direct-download | https://www.education.ne.gov/wp-content/uploads/2025/12/MembershipByGradeRaceAndGender_20252026.csv |
 | staffing | 2024-25 | PDF | direct-download | https://www.education.ne.gov/wp-content/uploads/2025/02/Statsfacts_20242025.pdf |
 | frpm_ell | 2025-26 | Excel | direct-download | https://www.education.ne.gov/wp-content/uploads/2025/12/2025-2026_Free_and_Reduced_Lunch_Counts_by_School.xlsx |
 
@@ -335,7 +325,7 @@ Explicitly OUT of scope for this list (Tier 2/3, need manual/dashboard work firs
 | frpm_ell | 2025-26 | CSV (zipped) | direct-download | https://dpi.wi.gov/sites/default/files/wise/downloads/enrollment_certified_2025-26.zip |
 
 ## WV — West Virginia
-> Confirmed SPED-teacher split by county in the FTE file — a clean source for the SPED-teacher-split rubric goal.
+> Confirmed SPED-teacher split by county in the FTE file — a clean source for the SPED-teacher-split rubric goal. Enrollment's Excel-via-ZoomWV alternative is JS-dashboard-only, not scriptable; PDF remains the actual acquisition source.
 
 | Category | Year | Format | Access | URL(s) |
 |---|---|---|---|---|
@@ -354,5 +344,5 @@ Explicitly OUT of scope for this list (Tier 2/3, need manual/dashboard work firs
 
 ## Not in this list — flagged for manual follow-up
 
-15 entities need a human browser session (WAF blocks, JS-only dashboards, login walls) or more manual investigation before any file can be reliably acquired. Full detail in the assessment doc's Tier 2/Tier 3 tables — notably: **AZ, MN, NH, VT** are genuine WAF blocks (not tool artifacts); **HI, WY, KS** are JS-rendered dashboards a probe without Playwright could not read; **MO, NM, GA** (crosswalk/deeper data) need a login or formal data request.
+16 entities need a human browser session (WAF blocks, JS-only dashboards, login walls) or more manual investigation before any file can be reliably acquired. Full detail in the assessment doc's Tier 2/Tier 3 tables — notably: **AZ, MN, NH, VT** are genuine WAF blocks (not tool artifacts); **HI, WY, KS** are JS-rendered dashboards a probe without Playwright could not read; **MO, NM, GA** (crosswalk/deeper data) need a login or formal data request.
 

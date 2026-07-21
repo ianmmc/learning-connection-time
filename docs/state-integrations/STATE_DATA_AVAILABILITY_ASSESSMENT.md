@@ -12,13 +12,19 @@ Verified against the live DB 2026-07-20: staff_counts_effective is 100% nces_ccd
 
 ---
 
+## Format preference policy
+
+POLICY (Ian, 2026-07-20): when a state offers the SAME data in multiple formats, acquire only the single best format — never all of them. Preference order: (1) CSV — by far the most common here, and matches our existing importer/pandas tooling, so it beats JSON/XML on practicality even though those are more "structured"; (2) JSON; (3) XML; (4) XLSX; (5) XLS; (6) SAS (kept only because NCES itself sometimes uses it — no state in this campaign actually offers a real SAS file, confirmed by audit); (7) PDF — last resort, use pdftotext/pdfplumber/camelot depending on structure; (8) anything else. This does NOT apply when formats carry genuinely different data (e.g. LA's SPED Excel = rates, PDF = raw district counts; MP's live dashboard vs. an annual PDF snapshot) — those need both, not a pick-one. Never fabricate a "better format" URL that wasn't actually found/verified (see AR/NE/WV 2026-07-20 probe entries for the audit that applied this policy retroactively to Phase B's results).
+
+---
+
 ## Summary
 
 | Tier | Count | Meaning |
 |---|---|---|
 | Integrated — refresh available (newer year confirmed) | 3 | |
-| Tier 1 — ready to acquire now (2+ core categories, direct-download/API) | 32 | |
-| Tier 2 — data exists, needs manual/dashboard work | 9 | |
+| Tier 1 — ready to acquire now (2+ core categories, direct-download/API) | 31 | |
+| Tier 2 — data exists, needs manual/dashboard work | 10 | |
 | Tier 3 — blocked or largely unconfirmed | 6 | |
 | Integrated — current (no refresh needed) | 6 | |
 
@@ -34,13 +40,12 @@ Verified against the live DB 2026-07-20: staff_counts_effective is 100% nces_ccd
 | **MI** Michigan | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ✅ current-rolling | ⚠️ 2024-25 | refresh-candidate | Best-confirmed refresh of the three (IL/MI/NY): direct-download links in hand for enrollment/staffing/SPED at 2024-25, crosswalk confirme... |
 | **NY** New York | ✅ 2024-25 | ✅ 2024-25 | ⚠️ 2024-25 | 🚫 unchanged | ⚠️ 2024-25 (FRPM); 2023-24 (ELL, not advanced) | refresh-candidate, blocked, follow-up-manual | Enrollment/staffing refresh is clean; SPED bulk-file and crosswalk re-verification need manual follow-up (SEDREF login wall). |
 
-## Tier 1 — ready to acquire now (2+ core categories, direct-download/API) (32)
+## Tier 1 — ready to acquire now (2+ core categories, direct-download/API) (31)
 
 | State | Enrollment | Staffing | SPED | Crosswalk | FRPM/ELL | Flags | Notes |
 |---|---|---|---|---|---|---|---|
 | **AK** Alaska | ✅ 2025-26 | ✅ 2025-26 | ⚠️ 2024-25 | ❌ — | ✅ 2025-26 | api-available | Previously-undocumented ArcGIS REST API — strong new lead, not in the Jan-2026 assessment. |
 | **AL** Alabama | ✅ 2025-26 | ✅ 2026-27 (FY2027 enacted) | ✅ 2025-26 (Oct-1-2025 count) | ⚠️ unknown | ✅ 2025-26 | follow-up-manual | Enrollment/staffing/FRPM ready to acquire; SPED needs ~140 per-district PDF pulls. |
-| **AR** Arkansas | ✅ 2025-26 | ✅ 2025-26 | ✅ 2024-25 | ✅ 2025-26 | ⚠️ 2020-21 | follow-up-manual | Strong flat-file source with a confirmed crosswalk; FRPM/ELL data is stale/proxy only. |
 | **AS** American Samoa | ✅ 2020-21 | ✅ 2020-21 | ✅ 2024-25 | ✅ 2022-23 | ✅ 2020-21 | dashboard-only, follow-up-manual | Correction to Jan-2026 "NCES-only" — real SPED/LRE data exists and is current (FFY24); enrollment/staffing/FRPM stuck at 2020-21. |
 | **CO** Colorado | ✅ 2024-25 | ✅ 2025-26 | ⚠️ 2024-25 | ❌ — | ✅ 2024-25 | — | Strong enrollment/staffing/FRPM source; crosswalk file exists but has no NCES field. |
 | **CT** Connecticut | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ❌ — | ✅ 2024-25 | dashboard-only | Rich per-district PDFs (all 5 categories in one doc) but need per-district URL construction, not a bulk file. |
@@ -69,12 +74,13 @@ Verified against the live DB 2026-07-20: staff_counts_effective is 100% nces_ccd
 | **UT** Utah | ✅ 2025-26 | ✅ 2024-25 | ❌ — | ❌ — | ⚠️ — | — | Genuine SPED-teacher-FTE column confirmed in staffing — a clean source once the real file location (schools.utah.gov, not the dashboard) ... |
 | **WA** Washington | ✅ 2025-26 | ✅ 2024-25 | ✅ FFY2024 (submitted 2026) | ❌ — | ✅ 2025-26 | api-available | One Socrata API call covers enrollment+FRPM+ELL+SPED-count together — an excellent acquisition target. |
 | **WI** Wisconsin | ✅ 2025-26 | ⚠️ 2025-26 | ✅ 2025-26 | ✅ 2025-26 | ✅ 2025-26 | dashboard-only, follow-up-manual | Best crosswalk found in this batch (real NCES-code column + dedicated crosswalk file); enrollment/SPED/FRPM/ELL all one bulk source, only... |
-| **WV** West Virginia | ✅ 2025-26 | ✅ 2025-26 | ✅ 2023-24 | ❌ — | ⚠️ 2024-25 | dashboard-only, follow-up-manual, request-only | Confirmed SPED-teacher split by county in the FTE file — a clean source for the SPED-teacher-split rubric goal. |
+| **WV** West Virginia | ✅ 2025-26 | ✅ 2025-26 | ✅ 2023-24 | ❌ — | ⚠️ 2024-25 | dashboard-only, follow-up-manual, request-only | Confirmed SPED-teacher split by county in the FTE file — a clean source for the SPED-teacher-split rubric goal. Enrollment's Excel-via-Zo... |
 
-## Tier 2 — data exists, needs manual/dashboard work (9)
+## Tier 2 — data exists, needs manual/dashboard work (10)
 
 | State | Enrollment | Staffing | SPED | Crosswalk | FRPM/ELL | Flags | Notes |
 |---|---|---|---|---|---|---|---|
+| **AR** Arkansas | ✅ 2025-26 | ✅ 2025-26 | ✅ 2024-25 | ✅ 2025-26 | ⚠️ 2020-21 | follow-up-manual, dashboard-only | Strong flat-file source with a confirmed crosswalk; enrollment/staffing CSV needs a browser (ASP.NET postback export, not a plain URL) — ... |
 | **KS** Kansas | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ⚠️ 2025-26 | ⚠️ 2024-25 | follow-up-manual | Real report-generator tool once past a tool-side TLS quirk; export each report to build the dataset. |
 | **ME** Maine | ⚠️ 2024-25 | ⚠️ unknown | ✅ 2024-25 | ❌ — | ⚠️ unknown | dashboard-only, follow-up-manual | SPED confirmed; enrollment/staffing/FRPM/ELL need a human browser session on the dashboards. |
 | **MP** Northern Mariana Islands | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ❌ — | ⚠️ unknown | dashboard-only, follow-up-manual | Correction to Jan-2026 "limited" — a real dashboard portal (EnVision PSS) with CSV-exportable sheets now exists. |
