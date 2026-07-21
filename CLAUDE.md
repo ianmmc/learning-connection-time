@@ -120,62 +120,34 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-20): EPIC #111 CLOSED — every sub-issue done, live-proven end to end on
-Millard NE.** The 2026-07-19/20 run landed, in order: #164 complete (PRs #568–#571 — geo scope
-axis, audited 4-position policy, derive-and-re-gate, `discovered_domain`, the 5→1/7→1 escalation
-ladders with derived positions); **#572/REQ-158** (PRs #573–#576 — the console control surface:
-Settings policy card, scope-aware gate@1 create w/ path-4 targeting, the 5→1 zero-yield button,
-the Stage-2 discovered-domain proposal card + the append-only `discovered_domain_decision`
-training corpus [confirm AND reject-with-reason, git-twinned]); **#578/REQ-159** (PR #579 — the
-one-attempt security-block rule ENFORCED: `detectChallenge` on both capture branches, the
-3-consecutive district circuit breaker, the pre-capture probe; surfaced live when Millard's
-capture recorded 81/83 Cloudflare interstitials as ok — remediated with receipts, restore point
-`3173740_20260720T145158Z`); **#118/REQ-160** (PR #580 — Stage 2/4 attribution w/ the #164 axes;
-first card: emergent one-hop = the highest-yield non-GT discovery source, 38.1% labeled-target
-rate); **#518/REQ-154 complete** (PR #581 — the fidelity-triage consumer on Stage 3 + gate@5 with
-the flag-district affordance). **The Millard NE live fire proved the whole design**: 5→1 button →
-geo draft → discovery derived mpsomaha.org (78.3%/21 schools) → Ian confirmed via the card →
-domain-scoped again; its 2 real captures (blackelk school-hours + homepage) sit at gate@5; the 81
-blocked URLs are one-attempt-final in the triage queue. Unified along the way: the Stage-2/3/4
-reconcile guards stand down for a receipted decontamination restore point (the remediation
-exception, `district_status.remediation_receipt`). Filed: #577 (stale left-pane progress chips —
-NULL batch_id on 246 old stage events; parked under #92's epic per Ian, non-blocking).
+**Current status (2026-07-21): SEA data-collection campaign CLOSED — catalog → probe → acquire →
+inspect, all four phases done (PRs #601/#602/#603), swinging back to #92.** Built a structured
+YAML catalog (`docs/state-integrations/state_data_catalog.yaml`) covering all 56 jurisdictions,
+corrected an early misconception (NCES CCD's own `ST_LEAID` already *is* the state↔NCES
+crosswalk — no gap there), acquired 300 files across 52 jurisdictions (96 automated + Ian's
+manual Tier-2/3 downloads), then ran a file-by-file inspection pass (every file opened and read,
+not just filename-classified) that wrote a `MANIFEST.md` per state and rolled the findings into
+`STATE_DATA_AVAILABILITY_ASSESSMENT.md`'s new "Campaign findings" section (added as a literal
+constant in `gen_state_assessment.py` so the doc's staleness fitness test still holds). **The
+answer to "was this worth integrating": no, not as a blanket 45-state push** — only 20/52 have a
+genuinely clean district-level raw-count SPED file (the one real edge over NCES, since the
+federal SPED baseline is 2017-18), enrollment/staffing recency gains are mostly 0–1yr (a nudge
+REQ-026's blend window already absorbs), and integration would be ~45 bespoke small ETL jobs, not
+one importer, with most files carrying no recorded source URL. A narrow follow-up scoped to the
+~9 net-new clean-trio states (CA, OH, TX, NJ, NE, MO, KY, SD, KS) is a bounded backlog item, not
+a blocker. One surprise survived the skeptical read: Minnesota publishes real per-school×grade
+instructional-minutes data (`data/raw/state/minnesota/`, filed as its own exploratory issue #604)
+— a narrow exception to, not a reversal of, `INSTRUCTIONAL_TIME_HARVEST.md`'s SEA-dead-end
+finding. Full narrative: `docs/PROJECT_HISTORY.md` 2026-07-20/21 (SEA campaign entry).
 
-**2026-07-20 (later): EPICS #479/#480 EXECUTED — the LCT-core hygiene sweeps, PRs #583–#596.**
-All 120 crossfam findings dispositioned in ten Stage-9-relevance-ordered work packages: 90 fixed
-(LCT core incl. #297's year-scoped recalc clear + #419's WARN_MIXED_SPED_SOURCES; verification.py's
-audit layer incl. the implemented orphan check + dual lineage entity_id conventions; the bell
-parse/validate seam; shared utilities; rebuild steps; the SEA importers' `excel_digits`/fixed-width
-converter registry verified against the live crosswalk; all 7 NCES ETL files + first
-characterization tests; analysis/reporting), 21 closed superseded-by-retirement (legacy enrichment
-layer + Homebrew-era docker tools → `data/archive/*-superseded-20260720/` w/ evidence manifests),
-8 no-change with rationale, 1 open. **Decisions waiting on Ian:** #407 (add
-`all_other_support_staff` to StaffCountsEffective — schema migration; scope_all currently
-undercounts) and **#594 (sev:critical): the CA Phase-2 tables are EMPTY in the live DB** (SPED
-environments/FRPM/LCFF lost in the 2026-07 rebuild; CA-actual SPED precedence silently inert;
-remediation plan on the issue). Latent sibling #589 (rebuild drops CTC flags). Stage-9 loop-closing
-dependency filed as #582 (LCT reader is minutes_basis-blind). Full narrative:
-`docs/PROJECT_HISTORY.md` 2026-07-20 (third entry).
-
-**2026-07-20 (final): the sweep's decision queue EXECUTED (Ian's go).** #407 done (migrations
-023/024 add+backfill `all_other_support_staff` on StaffCountsEffective, NaN-safe scope_all
-recompute; 'all'-scope LCT now includes the category). #582 done (basis-aware reader:
-statutory-fallback bell rows report `statutory_fallback`/tier-3/year-None, never "bell_schedule").
-#589 done (rebuild Phase 2b re-applies Rule-6 CTC classification; Ian's ruling: preserve the
-exclusion for bell/LCT populations, staffing needs no change — CTC staff already sit inside the
-scope definitions). #594 done (CA Phase-2 restored: 990 SPED-env / 997 FRPM / 996 LCFF rows;
-rebuild Phase 3b now re-imports them). Full LCT recalc (run `20260720T212608Z`, 163,238 rows, QA
-PASS 99.62%; 2,036 CA-actual SPED rows all carrying WARN_MIXED_SPED_SOURCES). #595 root-caused:
-TX's tx_enrollment_data was one-column-shifted (populated by the pre-#17 iloc importer and never
-re-imported after the fix — re-imported, now sane) + the comparison lacked Rule-6/validity-band
-guardrails (added); all nine states now within ±13%.
-
-**Next (RESUME HERE — 2026-07-20): BEFORE #92, per Ian — revisit
-`docs/state-integrations/STATE_DATA_AVAILABILITY_ASSESSMENT.md` + `data/raw/state/` contents,
-then a state-data collection campaign (update assessments, collect from every state that has
-data). Discuss scope with Ian first. #92 (Stage 9) follows; #582's reader is already in place
-for it.**
-Banked routing: #112 → epic #128; #577 (chips) rides with #92. Parked: #475/#476, #103/#80 (+#110).
+**Next (RESUME HERE — 2026-07-21): #92 (Stage 9) is next**, per Ian's go-ahead to swing back to
+it now that the SEA campaign is closed out. #582's minutes_basis-aware reader is already in place
+for it (done 2026-07-20, see the prior PROJECT_HISTORY entries). Start by reviewing
+`docs/ACQUISITION_PIPELINE.md`'s Stage 9 section and the #92 epic/issue for current scope before
+writing code.
+Banked routing: #112 → epic #128; #577 (chips) rides with #92. Parked: #475/#476, #103/#80 (+#110);
+SEA integration follow-up (the ~9-state list above) is a new opt-in backlog item, not yet filed as
+an issue — ask Ian before filing if it should be tracked now or deferred.
 Documented-in-code deferrals: `_satisfied_bands_now` batching (revisit on volume); the #522
 guardrail's per-rep keyword/table attribution (needs a server payload change); JS behavioral tests
 (no JS harness in repo — static-source pins only); the remediation-receipt exception is not
@@ -183,8 +155,8 @@ STAGE-scoped (time-bound 30-day expiry since 2026-07-20; revisit if remediation 
 attribution v1 reads each district's LATEST candidate plan (documented in-module).
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
--m "not integration"` (expect **1822** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **305**,
-Postgres up) + `pytest tests/test_*_integration.py` (expect **308**, live DB) + `cd
+-m "not integration"` (expect **1853** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **305**,
+Postgres up) + `pytest tests/test_*_integration.py` (expect **226** pass, 149 skipped, live DB) + `cd
 infrastructure/scraper && npm test` (expect **90**).
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (the
 motivating ones: Huntington `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters).

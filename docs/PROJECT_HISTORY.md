@@ -853,6 +853,66 @@ epic checklists.
 
 ---
 
+### 2026-07-20/21 — SEA data-collection campaign: catalog → probe → acquire → inspect, and an objective "was it worth it" answer
+
+Before Stage 9 (#92), Ian directed a full refresh-plus-new-states pass over every state education
+agency's data availability — the last assessment was six months stale. Four phases in ~36 hours:
+**Phase A** (PR #601) designed a structured YAML catalog (`state_data_catalog.yaml`) as the
+source of truth, replacing the old hand-maintained markdown assessment, with a fitness-test suite
+(`tests/test_state_catalog.py`) keeping it honest. **Phase B** (PR #602) probed all 50
+non-current entities via a fleet of parallel agents (Bright Data/Serper SERP + Playwright),
+correcting a real misconception along the way: NCES CCD's own `ST_LEAID` column already *is* a
+state-ID↔NCES crosswalk for every state, so the campaign's early "most states don't publish a
+crosswalk" framing was a non-problem, not a gap (`meta.crosswalk_correction`). **Phase C** (PR
+#603) regenerated the assessment doc and acquisition plan, added a CSV>JSON>XML>XLSX>XLS>SAS>PDF
+format-preference policy (Ian's call, after a "download the single best format, not all of them"
+discussion), and ran the automated Phase D acquisition (96 files, 32 states) — a pre-flight
+`requests.head()` validation pass over all 102 candidate URLs caught 7 catalog bugs (wrong ArcGIS
+params, several states' files recorded as `direct-download` when they were actually HTML landing
+pages) before any real downloads happened. Ian did the remaining ~30 states' Tier-2/3 manual
+downloads himself in parallel, dropping files straight into `data/raw/state/{state}/` with no
+recorded provenance — by the time Phase D finished, the tree held 300 files across 52 of 56
+jurisdictions (only Maine/Montana/North Carolina/Vermont remained fully unacquired).
+
+The campaign's last act — and the one that actually answers "was this worth it" — was a
+file-by-file inspection pass (13 parallel agents, every file opened and read, not just
+filename-classified) writing/revising a `MANIFEST.md` per state and rolling the aggregate into a
+new "Campaign findings" section of `STATE_DATA_AVAILABILITY_ASSESSMENT.md` (added as a literal
+constant inside `gen_state_assessment.py` so the doc's staleness fitness test still holds — this
+section can't be derived from the catalog's structured fields, since it's synthesis over file
+*content*, not catalog metadata). The finding: only 20 of 52 jurisdictions have a genuinely clean,
+district-level, raw-count SPED file as acquired (the one input where SEA data has a real
+structural edge over NCES, since the federal SPED baseline is 2017-18 — eight years stale);
+enrollment/staffing recency gains are mostly 0–1 year, a precision nudge the project's own
+REQ-026 blend window already absorbs; and integration would be ~45 bespoke small ETL jobs (name-
+only join keys, multi-sheet cover pages, mislabeled encodings, silent Socrata pagination
+truncation, differing FERPA-suppression conventions), not one templated importer, with most files
+carrying no recorded source URL. **Verdict: a blanket 45-state integration push doesn't clear the
+bar against this project's own commandments (auditability, minimize-bad-data-at-scale, tight cash
+spend, one human's time) — Ian's stated skepticism was borne out by the data, not just a hunch.**
+A narrow follow-up scoped to the ~9 net-new states with a clean enrollment+staffing+SPED trio (CA,
+OH, TX, NJ, NE, MO, KY, SD, KS) remains a bounded, opt-in backlog item, not a blocker on anything.
+
+One genuine surprise survived the skeptical read: Minnesota publishes a file
+(`Average Length of Instructional Days by Sch and Grade K-12 FY25.xlsx`) that reports actual
+gross bell-to-bell instructional minutes per school×grade — found by Ian manually browsing MDE,
+not by the automated discovery cascade, and independently arithmetic-verified twice. This is a
+narrow exception to `docs/INSTRUCTIONAL_TIME_HARVEST.md`'s "SEA central-data harvest is a dead end
+for daily minutes" conclusion, not a reversal of it — filed as its own exploratory issue (#604)
+rather than folded into the enrollment/staffing/SPED assessment, since it's a different kind of
+input with its own precedence questions.
+
+Durable lesson: a systematic inspection pass earns its keep even after a campaign already "looks"
+complete by file count — the Phase D pre-flight catches (landing pages recorded as downloads) and
+this closing pass's catches (mislabeled provenance, false negatives from earlier phases reversed,
+a truncation bug in the acquisition script itself) were each invisible from the catalog's own
+structured fields; only opening the files found them.
+
+Authority: PRs #601, #602, #603; issue #604; `docs/state-integrations/state_data_catalog.yaml`,
+`STATE_DATA_AVAILABILITY_ASSESSMENT.md`, `data/raw/state/*/MANIFEST.md` (gitignored, local-only).
+
+---
+
 ## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)
 
 ### Strategy: shift from "automate everything" to "AI-assisted human efficiency"
