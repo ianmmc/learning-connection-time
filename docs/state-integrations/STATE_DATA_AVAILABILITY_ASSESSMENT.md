@@ -23,8 +23,8 @@ POLICY (Ian, 2026-07-20): when a state offers the SAME data in multiple formats,
 | Tier | Count | Meaning |
 |---|---|---|
 | Integrated — refresh available (newer year confirmed) | 3 | |
-| Tier 1 — ready to acquire now (2+ core categories, direct-download/API) | 31 | |
-| Tier 2 — data exists, needs manual/dashboard work | 10 | |
+| Tier 1 — ready to acquire now (2+ core categories, direct-download/API) | 30 | |
+| Tier 2 — data exists, needs manual/dashboard work | 11 | |
 | Tier 3 — blocked or largely unconfirmed | 6 | |
 | Integrated — current (no refresh needed) | 6 | |
 
@@ -36,23 +36,22 @@ POLICY (Ian, 2026-07-20): when a state offers the SAME data in multiple formats,
 
 | State | Enrollment | Staffing | SPED | Crosswalk | FRPM/ELL | Flags | Notes |
 |---|---|---|---|---|---|---|---|
-| **IL** Illinois | ✅ 2024-25 | ⚠️ 2024-25 | ⚠️ 2024-25 | ✅ 2025-26 | ⚠️ 2024-25 | refresh-candidate, follow-up-manual | Manual open of the 2024-25 Report Card Public Data Set needed to confirm SPED-teacher-split field before re-import (file too large for au... |
+| **IL** Illinois | ✅ 2024-25 | ⚠️ 2024-25 | ⚠️ 2024-25 | ✅ 2025-26 | ⚠️ 2024-25 | refresh-candidate, follow-up-manual | Manual open of the 2024-25 Report Card Public Data Set needed to confirm SPED-teacher-split field before re-import — every recorded URL i... |
 | **MI** Michigan | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ✅ current-rolling | ⚠️ 2024-25 | refresh-candidate | Best-confirmed refresh of the three (IL/MI/NY): direct-download links in hand for enrollment/staffing/SPED at 2024-25, crosswalk confirme... |
 | **NY** New York | ✅ 2024-25 | ✅ 2024-25 | ⚠️ 2024-25 | 🚫 unchanged | ⚠️ 2024-25 (FRPM); 2023-24 (ELL, not advanced) | refresh-candidate, blocked, follow-up-manual | Enrollment/staffing refresh is clean; SPED bulk-file and crosswalk re-verification need manual follow-up (SEDREF login wall). |
 
-## Tier 1 — ready to acquire now (2+ core categories, direct-download/API) (31)
+## Tier 1 — ready to acquire now (2+ core categories, direct-download/API) (30)
 
 | State | Enrollment | Staffing | SPED | Crosswalk | FRPM/ELL | Flags | Notes |
 |---|---|---|---|---|---|---|---|
 | **AK** Alaska | ✅ 2025-26 | ✅ 2025-26 | ⚠️ 2024-25 | ❌ — | ✅ 2025-26 | api-available | Previously-undocumented ArcGIS REST API — strong new lead, not in the Jan-2026 assessment. |
 | **AL** Alabama | ✅ 2025-26 | ✅ 2026-27 (FY2027 enacted) | ✅ 2025-26 (Oct-1-2025 count) | ⚠️ unknown | ✅ 2025-26 | follow-up-manual | Enrollment/staffing/FRPM ready to acquire; SPED needs ~140 per-district PDF pulls. |
 | **AS** American Samoa | ✅ 2020-21 | ✅ 2020-21 | ✅ 2024-25 | ✅ 2022-23 | ✅ 2020-21 | dashboard-only, follow-up-manual | Correction to Jan-2026 "NCES-only" — real SPED/LRE data exists and is current (FFY24); enrollment/staffing/FRPM stuck at 2020-21. |
-| **CO** Colorado | ✅ 2024-25 | ✅ 2025-26 | ⚠️ 2024-25 | ❌ — | ✅ 2024-25 | — | Strong enrollment/staffing/FRPM source; crosswalk file exists but has no NCES field. |
 | **CT** Connecticut | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ❌ — | ✅ 2024-25 | dashboard-only | Rich per-district PDFs (all 5 categories in one doc) but need per-district URL construction, not a bulk file. |
 | **DC** District of Columbia | ✅ 2024-25 | ✅ 2022-23 | ⚠️ 2024-25 | ❌ — | ✅ 2024-25 | dashboard-only, request-only | One file covers enrollment+SWD+EL+econ-disadvantaged together; staffing is headcount not FTE, no crosswalk found. |
 | **DE** Delaware | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ❌ — | ✅ 2024-25 | api-available | Best-in-batch: real Socrata API with a clean SPED-teacher-FTE split, ready to acquire programmatically. |
 | **GA** Georgia | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ❌ — | ✅ 2024-25 | dashboard-only, follow-up-manual, request-only | Portal moved (georgiainsights -> GOEWS) — update the seed URL in any future re-probe. |
-| **GU** Guam | ✅ 2023-24 | ✅ 2023-24 | ✅ 2024-25 | ✅ 2024-25 | ⚠️ 2023-24 | dashboard-only, follow-up-manual | Correction to Jan-2026 "limited public access" — SPED data reports page is genuinely current (Dec 2024 child count). |
+| **GU** Guam | ✅ 2023-24 | ✅ 2023-24 | ⚠️ 2024-25 | ✅ 2024-25 | ⚠️ 2023-24 | dashboard-only, follow-up-manual | Correction to Jan-2026 "limited public access" — SPED data reports page is genuinely current (Dec 2024 child count), but needs the specif... |
 | **IA** Iowa | ✅ 2025-26 | ⚠️ 2025-26 | ✅ 2025-26 | ❌ — | ✅ 2025-26 | dashboard-only, follow-up-manual | Strong enrollment/SPED/FRPM source once past the Tableau dashboard; staffing FTE unresolved. |
 | **ID** Idaho | ✅ 2025-26 | ✅ 2023-24 | ✅ 2024-25 | ❌ — | ❌ — | follow-up-manual | Strong enrollment/SPED source; staffing lacks a SPED split, no crosswalk or FRPM/ELL found. |
 | **IN** Indiana | ✅ 2025-26 | ⚠️ 2021-22 | ✅ 2025-26 | ❌ — | ✅ 2025-26 | follow-up-manual | Strong enrollment/SPED/FRPM source; staffing needs a different/newer source. |
@@ -76,11 +75,12 @@ POLICY (Ian, 2026-07-20): when a state offers the SAME data in multiple formats,
 | **WI** Wisconsin | ✅ 2025-26 | ⚠️ 2025-26 | ✅ 2025-26 | ✅ 2025-26 | ✅ 2025-26 | dashboard-only, follow-up-manual | Best crosswalk found in this batch (real NCES-code column + dedicated crosswalk file); enrollment/SPED/FRPM/ELL all one bulk source, only... |
 | **WV** West Virginia | ✅ 2025-26 | ✅ 2025-26 | ✅ 2023-24 | ❌ — | ⚠️ 2024-25 | dashboard-only, follow-up-manual, request-only | Confirmed SPED-teacher split by county in the FTE file — a clean source for the SPED-teacher-split rubric goal. Enrollment's Excel-via-Zo... |
 
-## Tier 2 — data exists, needs manual/dashboard work (10)
+## Tier 2 — data exists, needs manual/dashboard work (11)
 
 | State | Enrollment | Staffing | SPED | Crosswalk | FRPM/ELL | Flags | Notes |
 |---|---|---|---|---|---|---|---|
 | **AR** Arkansas | ✅ 2025-26 | ✅ 2025-26 | ✅ 2024-25 | ✅ 2025-26 | ⚠️ 2020-21 | follow-up-manual, dashboard-only | Strong flat-file source with a confirmed crosswalk; enrollment/staffing CSV needs a browser (ASP.NET postback export, not a plain URL) — ... |
+| **CO** Colorado | ✅ 2024-25 | ⚠️ 2025-26 | ⚠️ 2024-25 | ❌ — | ✅ 2024-25 | dashboard-only, follow-up-manual | Strong enrollment/FRPM source; staffing is a dashboard landing page not a real file link; crosswalk file exists but has no NCES field. |
 | **KS** Kansas | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ⚠️ 2025-26 | ⚠️ 2024-25 | follow-up-manual | Real report-generator tool once past a tool-side TLS quirk; export each report to build the dataset. |
 | **ME** Maine | ⚠️ 2024-25 | ⚠️ unknown | ✅ 2024-25 | ❌ — | ⚠️ unknown | dashboard-only, follow-up-manual | SPED confirmed; enrollment/staffing/FRPM/ELL need a human browser session on the dashboards. |
 | **MP** Northern Mariana Islands | ✅ 2024-25 | ✅ 2024-25 | ✅ 2024-25 | ❌ — | ⚠️ unknown | dashboard-only, follow-up-manual | Correction to Jan-2026 "limited" — a real dashboard portal (EnVision PSS) with CSV-exportable sheets now exists. |

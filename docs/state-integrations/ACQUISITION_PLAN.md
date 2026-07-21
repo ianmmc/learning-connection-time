@@ -5,7 +5,7 @@
 
 ## What's in scope
 
-34 entities have at least 2 of 3 core categories (enrollment/staffing/SPED) confirmed via a direct-download file or API endpoint — genuinely ready to acquire without further manual portal work. This list is everything a Phase D acquisition agent could pull today.
+33 entities have at least 2 of 3 core categories (enrollment/staffing/SPED) confirmed via a direct-download file or API endpoint — genuinely ready to acquire without further manual portal work. This list is everything a Phase D acquisition agent could pull today.
 
 Explicitly OUT of scope for this list (Tier 2/3, need manual/dashboard work first, or blocked): see the assessment doc's Tier 2/3 tables. Nothing there should be bulk-downloaded yet.
 
@@ -20,9 +20,9 @@ Explicitly OUT of scope for this list (Tier 2/3, need manual/dashboard work firs
 
 | Category | Year | Format | Access | URL(s) |
 |---|---|---|---|---|
-| enrollment | 2025-26 | API (ArcGIS REST) | api | https://maps.commerce.alaska.gov/server/rest/services/Education_Related/Education_District_Data/MapServer/2/query |
-| staffing | 2025-26 | API (ArcGIS REST) | api | https://maps.commerce.alaska.gov/server/rest/services/Education_Related/Education_District_Data/MapServer/0/query |
-| frpm_ell | 2025-26 | API (ArcGIS REST) | api | https://maps.commerce.alaska.gov/server/rest/services/Education_Related/Education_District_Data/MapServer/1/query |
+| enrollment | 2025-26 | API (ArcGIS REST) | api | https://maps.commerce.alaska.gov/server/rest/services/Education_Related/Education_District_Data/MapServer/2/query?where=1=1&outFields=*&returnGeometry=false&f=json |
+| staffing | 2025-26 | API (ArcGIS REST) | api | https://maps.commerce.alaska.gov/server/rest/services/Education_Related/Education_District_Data/MapServer/0/query?where=1=1&outFields=*&returnGeometry=false&f=json |
+| frpm_ell | 2025-26 | API (ArcGIS REST) | api | https://maps.commerce.alaska.gov/server/rest/services/Education_Related/Education_District_Data/MapServer/1/query?where=1=1&outFields=*&returnGeometry=false&f=json |
 
 ## AL — Alabama
 > Enrollment/staffing/FRPM ready to acquire; SPED needs ~140 per-district PDF pulls.
@@ -44,15 +44,6 @@ Explicitly OUT of scope for this list (Tier 2/3, need manual/dashboard work firs
 | sped | 2024-25 | PDF (IDEA Part B SPP/APR) | direct-download | https://www.amsamoadoe.com/_files/ugd/b063e1_397eb282fee6457a84e7e7f612cba147.pdf |
 | crosswalk_ids | 2022-23 | NCES CCD School Search (single statewide LEA, ID 6000030) | dashboard-export | https://nces.ed.gov/ccd/schoolsearch/school_list.asp |
 | frpm_ell | 2020-21 | PDF | direct-download | https://www.amsamoadoe.com/_files/ugd/bcdca0_49f0ddf237e5483cbf29a32ab2d69ea2.pdf |
-
-## CO — Colorado
-> Strong enrollment/staffing/FRPM source; crosswalk file exists but has no NCES field.
-
-| Category | Year | Format | Access | URL(s) |
-|---|---|---|---|---|
-| enrollment | 2024-25 | Excel | direct-download | https://resources.finalsite.net/files/t_file_download/v1772753505/cdestatecous/ns2kiu2qdjjy7iexxh4j/2024-25_District_Trends.xlsx |
-| staffing | 2025-26 | Excel | direct-download | https://ed.cde.state.co.us/cdereval/staffstatistics |
-| frpm_ell | 2024-25 | Excel | direct-download | https://resources.finalsite.net/files/t_file_download/v1772753512/cdestatecous/yojvjlftzs3etobhzksd/2024-25_PK12_FRL_byDistrict-Suppressed_0.xlsx |
 
 ## CT — Connecticut
 > Rich per-district PDFs (all 5 categories in one doc) but need per-district URL construction, not a bulk file.
@@ -94,13 +85,12 @@ Explicitly OUT of scope for this list (Tier 2/3, need manual/dashboard work firs
 | frpm_ell | 2024-25 | Excel | direct-download | https://download.gosa.ga.gov/2025/2025_directly_certified_district.xls |
 
 ## GU — Guam
-> Correction to Jan-2026 "limited public access" — SPED data reports page is genuinely current (Dec 2024 child count).
+> Correction to Jan-2026 "limited public access" — SPED data reports page is genuinely current (Dec 2024 child count), but needs the specific Google Sheet links resolved before it's acquirable.
 
 | Category | Year | Format | Access | URL(s) |
 |---|---|---|---|---|
 | enrollment | 2023-24 | PDF | direct-download | http://files.eric.ed.gov/fulltext/ED671519.pdf |
 | staffing | 2023-24 | PDF (headcount, no true FTE) | direct-download | http://files.eric.ed.gov/fulltext/ED671519.pdf |
-| sped | 2024-25 | Excel/Google Sheets | direct-download | https://www.gdoe.net/District/Department/2-Special-Education/2689-Data-reports.html |
 | crosswalk_ids | 2024-25 | NCES CCD web lookup (single statewide LEA, ID 6600002) | dashboard-export | https://nces.ed.gov/ccd/districtsearch/district_detail.asp |
 
 ## IA — Iowa
@@ -123,12 +113,12 @@ Explicitly OUT of scope for this list (Tier 2/3, need manual/dashboard work firs
 
 ## IL — Illinois
 *Refresh of existing integration: il_staff_data + il_enrollment_data (864 districts, 2023-24). REFRESH CANDIDATE: seek 2024-25+.*
-> Manual open of the 2024-25 Report Card Public Data Set needed to confirm SPED-teacher-split field before re-import (file too large for automated fetch in the probe pass).
+> Manual open of the 2024-25 Report Card Public Data Set needed to confirm SPED-teacher-split field before re-import — every recorded URL is a landing page, not a direct file link.
 
 | Category | Year | Format | Access | URL(s) |
 |---|---|---|---|---|
-| enrollment | 2024-25 | Excel | direct-download | https://www.isbe.net/pages/illinois-state-report-card-data.aspx |
-| crosswalk_ids | 2025-26 | Excel | direct-download | https://www.isbe.net/pages/data-analysis-directories.aspx |
+| enrollment | 2024-25 | Excel (linked from a landing page, not a direct file) | dashboard-export | https://www.isbe.net/pages/illinois-state-report-card-data.aspx |
+| crosswalk_ids | 2025-26 | Excel (linked from a landing page, not a direct file) | dashboard-export | https://www.isbe.net/pages/data-analysis-directories.aspx |
 
 ## IN — Indiana
 > Strong enrollment/SPED/FRPM source; staffing needs a different/newer source.
@@ -344,5 +334,5 @@ Explicitly OUT of scope for this list (Tier 2/3, need manual/dashboard work firs
 
 ## Not in this list — flagged for manual follow-up
 
-16 entities need a human browser session (WAF blocks, JS-only dashboards, login walls) or more manual investigation before any file can be reliably acquired. Full detail in the assessment doc's Tier 2/Tier 3 tables — notably: **AZ, MN, NH, VT** are genuine WAF blocks (not tool artifacts); **HI, WY, KS** are JS-rendered dashboards a probe without Playwright could not read; **MO, NM, GA** (crosswalk/deeper data) need a login or formal data request.
+17 entities need a human browser session (WAF blocks, JS-only dashboards, login walls) or more manual investigation before any file can be reliably acquired. Full detail in the assessment doc's Tier 2/Tier 3 tables — notably: **AZ, MN, NH, VT** are genuine WAF blocks (not tool artifacts); **HI, WY, KS** are JS-rendered dashboards a probe without Playwright could not read; **MO, NM, GA** (crosswalk/deeper data) need a login or formal data request.
 
