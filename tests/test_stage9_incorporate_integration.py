@@ -74,6 +74,7 @@ def _cleanup():
     dids = (TEST_DID, MISSING_DID)
     with lct_scope() as s:
         s.execute(text("DELETE FROM bell_schedules WHERE district_id = ANY(:d)"), {"d": list(dids)})
+        s.execute(text("DELETE FROM district_grade_minutes WHERE district_id = ANY(:d)"), {"d": list(dids)})
         s.execute(text("DELETE FROM lct_calculations WHERE district_id = ANY(:d)"), {"d": list(dids)})
         s.execute(text("DELETE FROM districts WHERE nces_id = ANY(:d)"), {"d": list(dids)})
         s.execute(text("DELETE FROM state_requirements WHERE state = :st"), {"st": TEST_STATE})
@@ -91,6 +92,16 @@ def _bell_rows(did):
         return [{"grade_level": r.grade_level, "year": r.year, "minutes": r.instructional_minutes,
                  "method": r.method, "minutes_basis": r.minutes_basis,
                  "raw_import": r.raw_import} for r in rows]
+
+
+def _grade_rows(did):
+    from infrastructure.database.connection import session_scope as lct_scope
+    from infrastructure.database.models import DistrictGradeMinutes
+    with lct_scope() as s:
+        rows = (s.query(DistrictGradeMinutes)
+                .filter(DistrictGradeMinutes.district_id == did.zfill(7)).all())
+        return {r.grade: {"minutes": r.instructional_minutes, "band": r.source_band,
+                          "method": r.method} for r in rows}
 
 
 @pytest.fixture
@@ -196,6 +207,34 @@ def test_reapproval_correction_updates_in_place(env, monkeypatch):
     assert len(rows) == 1 and rows[0]["minutes"] == 430
 
 
+# ----------------------------- #605 per-grade projection -----------------------------
+def test_per_grade_projection_written(env, monkeypatch):
+    # council elementary + high (fake CA has empty slot_projection -> canonical fallback:
+    # elementary=KG-05, high=09-12). Grades 6-8 have no serving band -> no rows.
+    ca = _fake_ca(env, council={"elementary": {"gross": 400}, "high": {"gross": 450}})
+    _patch_gov(monkeypatch, ca)
+    res = INC.incorporate_district(env)
+    g = _grade_rows(env)
+    assert set(g) == {"KG", "01", "02", "03", "04", "05", "09", "10", "11", "12"}
+    assert g["03"] == {"minutes": 400, "band": "elementary", "method": "council_extraction"}
+    assert g["10"] == {"minutes": 450, "band": "high", "method": "council_extraction"}
+    assert "07" not in g
+    assert res.grades == 10 and res.overlaps == 0
+
+
+def test_per_grade_reprojects_and_reconciles_on_reapproval(env, monkeypatch):
+    _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 400}, "high": {"gross": 450}}),
+               approval_id=1)
+    INC.incorporate_district(env)
+    assert "10" in _grade_rows(env)
+    # v2: high band drops out -> its grades (09-12) must be reconciled away
+    _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 400}}), approval_id=2)
+    INC.incorporate_district(env)
+    g = _grade_rows(env)
+    assert set(g) == {"KG", "01", "02", "03", "04", "05"}
+    assert "09" not in g and "12" not in g
+
+
 def test_council_to_statutory_flip_reconciles_orphan(env, monkeypatch):
     # v1: elementary is a council band (year 2024-25)
     _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 420, "year": "2024-25"}}))
@@ -208,6 +247,35 @@ def test_council_to_statutory_flip_reconciles_orphan(env, monkeypatch):
     rows = [r for r in _bell_rows(env) if r["grade_level"] == "elementary"]
     assert len(rows) == 1
     assert rows[0]["method"] == "statutory_fallback" and rows[0]["minutes"] == 300  # ZZ elem
+
+
+# ----------------------------- #606 per-grade weighting (real table read) -----------------------------
+def test_per_grade_weighted_secondary_minutes(env, monkeypatch):
+    from infrastructure.database.connection import session_scope as lct_scope
+    from infrastructure.database.models import EnrollmentByGrade
+    from infrastructure.scripts.analyze.calculate_lct_variants import get_statutory_minutes
+    from infrastructure.scripts.analyze.per_grade_lct import (
+        SEC_GRADES, get_district_grade_minutes, weighted_scope_minutes)
+
+    # seed equal per-grade enrollment (100 each, K-12)
+    with lct_scope() as s:
+        cols = {"enrollment_kindergarten": 100, **{f"enrollment_grade_{n}": 100 for n in range(1, 13)}}
+        s.add(EnrollmentByGrade(district_id=env, source_year="2024-25", data_source="nces_ccd", **cols))
+
+    # incorporate all three bands -> per-grade projection covers K-12 (canonical fallback ranges)
+    _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 400},
+                                                   "middle": {"gross": 430}, "high": {"gross": 450}}))
+    INC.incorporate_district(env)
+
+    with lct_scope() as s:
+        gm = get_district_grade_minutes(s, env.zfill(7))
+        enr = s.query(EnrollmentByGrade).filter(EnrollmentByGrade.district_id == env.zfill(7)).first()
+        minutes, source, year = weighted_scope_minutes(
+            s, TEST_STATE, SEC_GRADES, enr, gm, ["2024-25"], get_statutory_minutes)
+
+    # secondary = enrollment-weighted middle(6-8)=430 + high(9-12)=450 → NOT high-only, NOT 450
+    assert minutes == round((3 * 430 + 4 * 450) / 7)   # 441
+    assert source == "per_grade_bell" and year == "2024-25"
 
 
 # ----------------------------- eligibility + fail-loud -----------------------------

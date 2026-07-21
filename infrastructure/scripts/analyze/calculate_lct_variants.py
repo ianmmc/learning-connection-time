@@ -91,6 +91,13 @@ from infrastructure.database.models import (
     CASpedDistrictEnvironments,
     LCTCalculation,
 )
+from infrastructure.scripts.analyze.per_grade_lct import (
+    ELEM_GRADES,
+    K12_GRADES,
+    SEC_GRADES,
+    get_district_grade_minutes,
+    weighted_scope_minutes,
+)
 
 
 # LCT scope definitions - base scopes
@@ -585,6 +592,31 @@ def calculate_all_variants(
         if k12_enrollment <= 0:
             continue  # Skip districts with no K-12 enrollment
 
+        # #606: when this district has a Stage-9 per-grade projection, derive each scope's minutes as
+        # an enrollment-weighted sum over its grades — base K-12, elementary K-5, secondary 6-12. This
+        # is what lets the pipeline's 3-band minutes flow into 2-band-staffing LCT (floating bands and
+        # merged shapes handled at the grade grain). Non-incorporated districts keep the legacy band
+        # cascade unchanged (minutes = high band, elem_minutes = elementary band). The secondary
+        # variant no longer reuses the high-band value (issue #13-era stopgap) — it weights mid+high.
+        sec_minutes, sec_minutes_source, sec_minutes_year = minutes, minutes_source, minutes_year
+        _gm_map = get_district_grade_minutes(session, staff.district_id)
+        if _gm_map:
+            _blend = [staff.effective_year, _enroll_yr]
+            _wk = weighted_scope_minutes(session, district.state, K12_GRADES, grade_enrollment,
+                                         _gm_map, _blend, get_statutory_minutes)
+            _we = weighted_scope_minutes(session, district.state, ELEM_GRADES, grade_enrollment,
+                                         _gm_map, _blend, get_statutory_minutes)
+            _ws = weighted_scope_minutes(session, district.state, SEC_GRADES, grade_enrollment,
+                                         _gm_map, _blend, get_statutory_minutes)
+            if _wk:
+                minutes, minutes_source, minutes_year = _wk
+                if minutes_year:
+                    all_years_used.add(minutes_year)
+            if _we:
+                elem_minutes, elem_minutes_source, elem_minutes_year = _we
+            sec_minutes, sec_minutes_source, sec_minutes_year = (
+                _ws if _ws else (minutes, minutes_source, minutes_year))
+
         # Get teacher counts for level variants
         teachers_k12 = float(staff.teachers_k12) if staff.teachers_k12 else None
         teachers_elem = float(staff.teachers_elementary_k5) if staff.teachers_elementary_k5 else None
@@ -592,7 +624,7 @@ def calculate_all_variants(
 
         # Calculate level LCT values for validation — each band uses ITS OWN minutes (issue #13)
         lct_elementary = calculate_lct(elem_minutes, teachers_elem, elem_enrollment) if teachers_elem and elem_enrollment else None
-        lct_secondary = calculate_lct(minutes, teachers_sec, sec_enrollment) if teachers_sec and sec_enrollment else None
+        lct_secondary = calculate_lct(sec_minutes, teachers_sec, sec_enrollment) if teachers_sec and sec_enrollment else None
         lct_teachers = calculate_lct(minutes, teachers_k12, k12_enrollment) if teachers_k12 else None
 
         # Validate level calculations
@@ -673,9 +705,9 @@ def calculate_all_variants(
                 "state": district.state,
                 "staff_scope": "teachers_secondary",
                 "lct_value": lct_secondary,
-                "instructional_minutes": minutes,
-                "instructional_minutes_source": minutes_source,
-                "instructional_minutes_year": minutes_year,
+                "instructional_minutes": sec_minutes,
+                "instructional_minutes_source": sec_minutes_source,
+                "instructional_minutes_year": sec_minutes_year,
                 "staff_count": teachers_sec,
                 "staff_source": staff.primary_source,
                 "staff_year": staff.effective_year,
@@ -1222,6 +1254,10 @@ def write_calculations_to_db(
         if minutes_source == "bell_schedule":
             return 1
         elif minutes_source.startswith("bell_schedule_"):
+            return 2
+        # #606: a per-grade enrollment-weighted scope value derived from measured bell rows is
+        # aggregated (not a single measured row) → tier 2; an all-statutory weighting → tier 3.
+        elif minutes_source in ("per_grade_bell", "per_grade_mixed"):
             return 2
         else:
             return 3

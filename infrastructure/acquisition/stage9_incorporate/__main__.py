@@ -55,6 +55,8 @@ def main(argv=None) -> int:
             line += " — " + ", ".join(
                 f"{w['grade_level']}={w['minutes']}[{w['method']}/{w['minutes_basis']}]"
                 for w in r.written)
+        if r.status == "incorporated":
+            line += f"; {r.grades} grade rows" + (f" ({r.overlaps} overlap-flagged)" if r.overlaps else "")
         print(line)
 
     return 0 if all(r.status not in ("error",) for r in results) else 1

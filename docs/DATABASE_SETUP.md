@@ -210,6 +210,16 @@ Bell schedule / instructional-minute data. This is the **acquisition pipeline's 
   `minutes_basis IN ('gross_bell_to_bell','statutory') OR NULL`
 - Unique constraint: `(district_id, year, grade_level)` — the Stage-9 UPSERT / idempotency key
 
+#### **district_grade_minutes**
+The Stage-9 **per-grade projection** (migration 025, #605/#606): each band's modal minutes projected DOWN
+to the individual grade (`grade → owning band → minutes`, via the band's live `GSLO`/`GSHI` span), so the
+LCT calc can weight per-grade minutes × per-grade enrollment to any staffing scope. One current row per
+(district_id, grade); `grade ∈ 'KG','01'..'12'`. Columns: `instructional_minutes`, `source_band`
+(elementary/middle/high), `method` (`council_extraction`/`statutory_fallback`), `minutes_basis`, `year`,
+`overlap_flag` (NULL, or the tie-rule note when ≥2 bands serve a grade), `provenance` (JSONB). Derived +
+regenerable from `bell_schedules` + the live roster — not a source of truth. FK `districts(nces_id)` ON
+DELETE CASCADE.
+
 #### **grade_level_enrollment**
 K-12 enrollment by grade level.
 

@@ -10,10 +10,11 @@
 > DB). Upstream: `STAGE8_AGGREGATE_DESIGN.md` (`merge_fact_runs`, §1a below).
 > **Update this when:** Stage 9 behavior changes, or the per-grade projection (§4) is built.
 
-**Status: BUILT (the write) — 2026-07-21 (epic #92; sub-issues #93 write, #94 never-fabricate, #95
-provenance).** The one remaining seam in the 9-stage map is closed for the write path. The **LEA-level
-per-grade minutes projection** that lets LCT actually consume 3-band minutes against 2-band staffing is the
-scoped follow-up (§4). Seeded from the APGA console user stories (migrated here 2026-06-27).
+**Status: BUILT — 2026-07-21 (epic #92; #93 write, #94 never-fabricate, #95 provenance, #605 per-grade
+projection, #606 LCT consumption).** The 9-stage map is closed end to end: Stage 9 writes the approved
+minutes AND projects them to per-grade so LCT consumes them (§4). Remaining is the one-time methodology
+recompute, gated on human sign-off of the before/after sample (§4). Seeded from the APGA console user
+stories (migrated here 2026-06-27).
 
 ---
 
@@ -116,23 +117,33 @@ Stage 9, compare final per-band gross minutes against those recorded values (dri
 re-capture, different school years). Frozen-era sources survive in
 `data/archive/gt-benchmark-20260622T152627Z/raw_bell_schedule_pdfs/`.
 
-## 4. Follow-up (SCOPED, NOT built): the LEA-level per-grade minutes projection
-The write stores all three bands faithfully; it does **not** yet change any LCT number, because instructional
-minutes come in 3 bands (elementary/middle/high) while staffing+enrollment+LCT collapse to 2 (elementary
-K-5 / secondary 6-12), and the bands float per district (a "middle" may be 5-8 or 7-9; merged K-8 shapes
-exist). Ian's chosen resolution (2026-07-21) — all LEA-grain, no new data:
-1. For each district, map **grade → owning band** from the persisted `raw_import.band_grade_span`
-   (`gslo..gshi` per band) — no NCES re-join; fall back to the pure `effective_level_band` /
-   `recursive_band_groups` / `bands_for_rescue` helpers only if a span is missing. Non-clean LEAs (a grade
-   in ≥2 bands) → a deterministic LEA-level tie-rule (grade → the band whose `LEVEL` cleanly owns it) + a flag.
-2. Assign each grade its band's modal minutes → **LEA-level instructional minutes by grade**; materialize
-   into a new `district_grade_minutes` table (computed IN Stage 9 — the helpers are acquisition-layer, walled
-   off from the LCT side).
-3. In `calculate_lct_variants.py`, replace the secondary variant's high-only minutes with an
-   enrollment-weighted sum of per-grade minutes over the scope's grade range, weighted by
-   `EnrollmentByGrade.enrollment_grade_*` — collapsing to any scope (K-5, 6-12, K-12, a future middle scope)
-   by `Σ_g (minutes[g]·enroll[g]) / Σ_g enroll[g]`.
+## 4. The LEA-level per-grade minutes projection — BUILT (#605/#606, 2026-07-21)
+The link that makes approved minutes actually move LCT numbers, dissolving the 3-band-minutes vs
+2-band-staffing mismatch (bands float per district — a "middle" may be 5-8 or 7-9; merged K-8 shapes
+exist). All LEA-grain, no new data.
 
-Caveats to document when built: both minutes and enrollment are LEA-grain (within-LEA school variation is a
-deliberate, documented simplification — not a per-school split); `band_grade_span` is live-at-incorporation,
-so a persisted span can lag a later roster change — acceptable for a weight, flag if it drifts.
+**#605 — projection + table (`stage9_incorporate/per_grade.py`, migration 025).** For each district,
+`project()` maps **grade → owning band** from the live `raw_import.band_grade_span` (`gslo..gshi` per
+band), falling back to the band's canonical range only when a span is absent. Each grade takes its
+band's modal minutes (council or statutory, label preserved). Non-clean LEAs (a grade served by ≥2
+bands — e.g. a floating 7-9 middle overlapping a 9-12 high at grade 9) → a deterministic tie-rule (the
+band whose `LEVEL` cleanly owns the grade wins) recorded in `overlap_flag` (never silent). Materialized
+into **`district_grade_minutes`** (one current row per district×grade, `KG`..`12`) in the LCT DB,
+written + reconciled inside Stage 9's write transaction. Reproject = re-incorporate (`--force`).
+
+**#606 — LCT consumption (`scripts/analyze/per_grade_lct.py`).** `calculate_lct_variants.py` now derives
+each scope's minutes as `minutes_scope = Σ_g (minutes[g]·enroll[g]) / Σ_g enroll[g]` over the scope's
+grades (base K-12, elementary K-5, secondary 6-12), weighting by `EnrollmentByGrade.enrollment_grade_*`.
+The secondary variant no longer reuses the high-band value — it weights mid+high. **Guarded:** only
+districts with a projection change; the legacy band cascade is untouched for everyone else, so the
+recompute is a no-op until real districts are incorporated. Sources: `per_grade_bell` /
+`per_grade_mixed` (tier 2) / `per_grade_statutory` (tier 3, year=None — stays distinguishable, #582).
+Temporal window (REQ-026) still drops a scope to statutory when its measured year can't blend.
+
+**Sign-off gate:** the methodology change recomputes every secondary value once districts are
+incorporated. `python -m infrastructure.scripts.analyze.per_grade_lct_sample` prints the legacy-vs-
+per-grade before/after (minutes + secondary LCT) for review before a full recompute.
+
+**Caveats (documented):** both minutes and enrollment are LEA-grain — within-LEA school-to-school
+variation is a deliberate simplification, not a per-school split; `band_grade_span` is
+live-at-incorporation, so a persisted span can lag a later roster change (acceptable for a weight).

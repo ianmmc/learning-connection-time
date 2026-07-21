@@ -114,11 +114,14 @@ acquisition pipeline produces per-band **gross bell-to-bell** minutes in **three
 (elementary/middle/high). Once a district is approved at gate@8, Stage 9 writes them into `bell_schedules`
 (`method=council_extraction` / `minutes_basis=gross_bell_to_bell`); a **claimed-but-unsatisfied** band lands
 `method=statutory_fallback` / `minutes_basis=statutory` — labeled, never counted as enriched (the reader's
-`_is_statutory` keeps it `source=statutory_fallback, year=None`). **Note the band grain:** the LCT calc today
-consumes **two** bands (elementary K-5 / secondary 6-12), so writing 3-band minutes does not yet move any LCT
-number. Reconciling them is the scoped **LEA-level per-grade projection** follow-up — project each band's modal
-minutes down to the grade (via the band's live `GSLO`/`GSHI` span), then sum per-grade minutes × per-grade
-enrollment to any staffing scope. See `ACQUISITION_PIPELINE.md` §9 and `STAGE9_INCORPORATE_DESIGN.md` §4.
+`_is_statutory` keeps it `source=statutory_fallback, year=None`). **Band grain — reconciled by the per-grade
+projection (BUILT, #605/#606):** the LCT calc consumes **two** bands (elementary K-5 / secondary 6-12), so
+Stage 9 projects each band's modal minutes DOWN to the individual grade (via its live `GSLO`/`GSHI` span,
+handling floating/merged bands + overlaps) into a `district_grade_minutes` table, and `calculate_lct_variants.py`
+sums per-grade minutes × per-grade enrollment (`enrollment_grade_*`) to any staffing scope — the secondary
+variant now weights mid+high instead of high-only (`source=per_grade_bell|per_grade_mixed|per_grade_statutory`).
+Guarded to incorporated districts; the one-time recompute is gated on sign-off of the `per_grade_lct_sample`
+before/after. See `ACQUISITION_PIPELINE.md` §9 and `STAGE9_INCORPORATE_DESIGN.md` §4.
 
 **Example Values (Statutory)**:
 ```

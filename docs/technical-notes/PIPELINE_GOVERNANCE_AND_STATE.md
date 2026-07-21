@@ -1324,8 +1324,10 @@ is a fresh event worth a fresh flag.
   **BUILT (#93/#94/#95, 2026-07-21)**: reads the frozen gate@8 receipt, UPSERTs per band (council or
   statutory-fallback), verifies-in-DB, reconciles year-change orphans, and stamps an `incorporated`
   `state_event`. The one cross-DB crossing (a layer above stages 1–8; only `incorporate.py` touches
-  `infrastructure.database`). See `STAGE9_INCORPORATE_DESIGN.md`. Follow-up: the LEA-level per-grade
-  projection that lets LCT consume the 3-band minutes.
+  `infrastructure.database`). The **per-grade projection** (#605/#606) is also BUILT: Stage 9 writes
+  `district_grade_minutes` and the LCT calc weights per-grade minutes × per-grade enrollment to any scope
+  (secondary = mid+high, not high-only) — the one-time recompute gated on sign-off. See
+  `STAGE9_INCORPORATE_DESIGN.md` §4.
 
 ### 11g. Implications for what's built
 - `state_event.checkpoint` vocabulary: **`gate@1` | `gate@5` | `gate@6` | `gate@7` | `gate@8`** (was

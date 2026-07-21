@@ -329,7 +329,7 @@ flowchart TD
         CA_MERGE --> CA_ROSTER --> CA_BUILD --> CA_FLAGS --> CA_EDIT --> CA_OUT
     end
     G8{{"gate@8 — BUILT (manual). Approve -> Stage 9 writes mechanically (BUILT, #93/#94/#95).<br/>Send-back requires a reason; back-edges 8-&gt;1/8-&gt;6 DESIGNED AS STUBS, not built<br/>(governance §11e) — today the fix is a same-district re-extraction (#473) or<br/>human-add (#474), not a re-queue. epic #209 ordering constraint SATISFIED:<br/>gate@8 exists (still manual) before gates 6/7 may relax supervision"}}
-    S9[9. Incorporate — BUILT -> LCT bell_schedules DB — #93/#94/#95<br/>per-grade projection is the scoped follow-up]
+    S9[9. Incorporate — BUILT -> LCT bell_schedules + district_grade_minutes<br/>#93/#94/#95 write · #605/#606 per-grade projection→LCT<br/>recompute gated on sign-off]
 
     Q_OUT --> CPA --> D_RECON
     D_REG --> C_RECON
@@ -491,7 +491,7 @@ to epic #80 — blocked on the lab producing a measured escalation config: only 
 ### 9 · Incorporation — fail loud
 **BUILT** (2026-07-21; #93/#94/#95 under epic #92 — `infrastructure/acquisition/stage9_incorporate/`, `STAGE9_INCORPORATE_DESIGN.md`). Writes the approved per-band values into the LCT `bell_schedules` DB as a deterministic, re-approval-safe UPSERT off the **frozen** gate@8 closing argument (the `merge_fact_runs` product — never a live re-derivation). Council bands land `method=council_extraction`/`minutes_basis=gross_bell_to_bell`; a **claimed** band with no accepted facts / no consensus lands **`method=statutory_fallback`**/`minutes_basis=statutory` — **labeled, never counted as enriched** (Rule #6, REQ-024; the reader's `_is_statutory` keeps it `source=statutory_fallback, year=None`). Verify-in-DB before commit; a Stage-9 orphan reconcile handles year-changes; an `incorporated` `state_event` (stage=9) closes the per-band lifecycle. The cross-DB write is the second sanctioned import-linter exception (Stage 9 is a layer *above* the independent stages; only `incorporate.py` reaches `infrastructure.database`). Full `#95` provenance rides in `raw_import`, including a live-roster `band_grade_span` (the grade→band substrate).
 
-**Scoped follow-up (NOT built):** the **LEA-level per-grade minutes projection** — the write stores all 3 bands faithfully but does not yet change any LCT number; the 3-band-minutes → 2-band-staffing mismatch is resolved by projecting each band's modal minutes down to the grade (via `band_grade_span`), materializing a `district_grade_minutes` table, and having `calculate_lct_variants.py` sum per-grade minutes × per-grade enrollment to any scope. See `STAGE9_INCORPORATE_DESIGN.md` §4.
+**Per-grade projection — BUILT** (2026-07-21, #605/#606): the 3-band-minutes → 2-band-staffing mismatch is dissolved by projecting each band's modal minutes down to the grade (via the live `band_grade_span`; floating/merged shapes + an overlap tie-rule), materializing a `district_grade_minutes` table (migration 025), and `calculate_lct_variants.py` summing per-grade minutes × per-grade enrollment to any scope (secondary now weights mid+high, not high-only). The one-time methodology recompute is gated on human sign-off of the before/after sample (`per_grade_lct_sample`). See `STAGE9_INCORPORATE_DESIGN.md` §4.
 
 ---
 

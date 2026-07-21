@@ -21,11 +21,12 @@ from infrastructure.acquisition.stage8_aggregate import approval as APV
 from infrastructure.acquisition.stage8_aggregate import closing_argument as CA
 from infrastructure.acquisition.stage9_incorporate import ledger as LEDGER
 from infrastructure.acquisition.stage9_incorporate import mapping as MAP
+from infrastructure.acquisition.stage9_incorporate import per_grade as PG
 
 # The sanctioned cross-DB imports (import-linter ignore_imports #2, pyproject.toml):
 from infrastructure.database import queries as Q
 from infrastructure.database.connection import session_scope as lct_session_scope
-from infrastructure.database.models import BellSchedule, StateRequirement
+from infrastructure.database.models import BellSchedule, DistrictGradeMinutes, StateRequirement
 
 # Methods that mark a `bell_schedules` row as Stage-9-authored (there is no created_by column) — the
 # orphan-reconcile scope. Legacy rows (human_provided / tier_*) are never touched.
@@ -41,6 +42,8 @@ class IncorporationResult:
     written: list = field(default_factory=list)
     fingerprint: Optional[str] = None
     reason: Optional[str] = None
+    grades: int = 0                  # #605: per-grade projection rows written
+    overlaps: int = 0                # grades resolved by the overlap tie-rule (flagged)
 
 
 def _norm_did(did: str) -> str:
@@ -69,6 +72,37 @@ def _reconcile_stage9_orphans(session, stored_did: str, keep: set) -> None:
     for r in rows:
         if (r.year, r.grade_level) not in keep:
             session.delete(r)
+    session.flush()
+
+
+def _write_grade_minutes(session, stored_did: str, grade_minutes: list, fingerprint, approval_id,
+                         actor: str) -> None:
+    """UPSERT the per-grade projection (#605) on (district_id, grade), then reconcile grades that
+    dropped out (a band removed at re-approval). One current row per (district, grade)."""
+    keep = set()
+    for gm in grade_minutes:
+        keep.add(gm.grade)
+        prov = PG.provenance(gm, fingerprint=fingerprint, approval_id=approval_id, actor=actor)
+        row = (session.query(DistrictGradeMinutes)
+               .filter(DistrictGradeMinutes.district_id == stored_did,
+                       DistrictGradeMinutes.grade == gm.grade).first())
+        if row:
+            row.instructional_minutes = gm.minutes
+            row.source_band = gm.source_band
+            row.method = gm.method
+            row.minutes_basis = gm.minutes_basis
+            row.year = gm.year
+            row.overlap_flag = gm.overlap_flag
+            row.provenance = prov
+        else:
+            session.add(DistrictGradeMinutes(
+                district_id=stored_did, grade=gm.grade, instructional_minutes=gm.minutes,
+                source_band=gm.source_band, method=gm.method, minutes_basis=gm.minutes_basis,
+                year=gm.year, overlap_flag=gm.overlap_flag, provenance=prov))
+    for row in (session.query(DistrictGradeMinutes)
+                .filter(DistrictGradeMinutes.district_id == stored_did).all()):
+        if row.grade not in keep:
+            session.delete(row)
     session.flush()
 
 
@@ -152,6 +186,11 @@ def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, for
         ls.flush()
         _reconcile_stage9_orphans(ls, stored_did, keep={(w.year, w.grade_level) for w in writes})
         _verify_written(ls, stored_did, writes)
+        # #605: project the approved bands DOWN to per-grade minutes (the LCT-consumable artifact)
+        grade_minutes = PG.project(writes, fingerprint=fp_live, approval_id=approval_id, actor=actor)
+        _write_grade_minutes(ls, stored_did, grade_minutes, fp_live, approval_id, actor)
+        n_grades = len(grade_minutes)
+        n_overlaps = sum(1 for gm in grade_minutes if gm.overlap_flag)
         # commit on context-manager exit
 
     # ---- Phase D: governance stamp (after the LCT commit) ----
@@ -161,7 +200,8 @@ def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, for
                                     bands=bands, actor=actor)
 
     return IncorporationResult(district_id, "incorporated",
-                               written=[w.summary() for w in writes], fingerprint=fp_live)
+                               written=[w.summary() for w in writes], fingerprint=fp_live,
+                               grades=n_grades, overlaps=n_overlaps)
 
 
 def incorporate_batch(district_ids: Iterable, *, actor="auto:stage9", dry_run=False,
