@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-22T01:26:58Z",
+  "last_updated": "2026-07-22T03:34:02Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -594,6 +594,14 @@
           "stage_name": "capture",
           "outcome": "captured_all",
           "at": "2026-07-22T01:26:57Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-22T01:27:05Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
       "notes": "gate@1 auto-approved (follow-up autoflow) batch_00027"
@@ -3610,8 +3618,8 @@
       "name": "Northwestern CUSD 2",
       "state": "IL",
       "furthest_stage": 7,
-      "stage_name": "capture",
-      "outcome": "captured_all",
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -3752,6 +3760,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-22T03:34:02Z"
         }
       ],
       "notes": "74456449e8db"
@@ -4750,8 +4764,8 @@
       "name": "Old Sturbridge Academy Charter Public School",
       "state": "MA",
       "furthest_stage": 7,
-      "stage_name": "capture",
-      "outcome": "captured_all",
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -4895,6 +4909,12 @@
           "at": "2026-07-22T01:26:29Z",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-22T03:33:35Z"
         }
       ],
       "notes": "9b2d32b7d21f"
@@ -7702,8 +7722,8 @@
     "3601002": {
       "name": "BROWNSVILLE ASCEND CHARTER SCHOOL",
       "state": "NY",
-      "furthest_stage": 8,
-      "stage_name": "aggregate",
+      "furthest_stage": 9,
+      "stage_name": "incorporate",
       "outcome": null,
       "topology": null,
       "batch_id": null,
@@ -7881,9 +7901,18 @@
           "checkpoint": "gate@8",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": 9,
+          "stage_name": "incorporate",
+          "outcome": null,
+          "at": "2026-07-22T02:25:07Z",
+          "checkpoint": "incorporated",
+          "event_type": "incorporated",
+          "actor": "ian"
         }
       ],
-      "notes": "27b64cab58a9"
+      "notes": "wrote 2 band(s): elementary=council_extraction,middle=council_extraction"
     },
     "3601175": {
       "name": "CYPRESS HILLS ASCEND CHARTER SCHOOL",
@@ -10013,9 +10042,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-22T01:19:06Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-22T03:22:07Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 auto-approved (follow-up autoflow) batch_00019"
+      "notes": "gate@1 approved batch_00025"
     },
     "4222350": {
       "name": "Southern Lehigh SD",
@@ -11064,9 +11102,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-22T01:19:06Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-22T03:22:07Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "27b64cab58a9"
+      "notes": "gate@1 approved batch_00025"
     },
     "4900025": {
       "name": "North Star Academy",
