@@ -120,37 +120,43 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-22): Stage 9 campaign IN PROGRESS — 3 of 22 gate@8-approved districts
-incorporated (Brownsville Ascend NY, Lincoln MA, Coffee County AL), going one district at a time
-with a human review of each before/after preview.** That deliberate pace caught two real production
-bugs the same session, both fixed with regression tests + guardrails against recurrence: (1) a Stage
-4 console segfault (#608, PR #609) — camelot's native PDFium/OpenCV backend isn't safe for concurrent
-multi-threaded use, and two batches' autoflow could call into it at once; Stage 4 now runs in an
-isolated subprocess per batch; (2) `per_grade_lct_sample.py`'s sign-off preview was contaminated by
-the very Stage-9 write it was supposed to review against (#610) — it re-derived "legacy" live instead
-of reading the stored `lct_calculations` row, so a real +3.53 LCT change reported as Δ=0; fixed to
-read the stored row directly + flag `denom_refreshed` when the comparison spans a data-vintage change.
-Investigating why Coffee County's minutes weren't clearing the REQ-026 temporal window then surfaced
-a THIRD bug, upstream of Stage 9 entirely: the 2024-25 NCES CCD ingest had silently dropped ~3,125
-districts — every FIPS<10 state — via a LEAID leading-zero strip that broke against migration 015's
-7-digit canonicalization (#611, PR #612). Fixed + re-ingested (14,717→17,751 enrollment districts) +
-guarded with a 95%-coverage-floor assertion so a future partial import aborts instead of committing
-silently. Also this session: issue #577 (console chips) reparented from epic #92 to epic #96 (Console
-UI) via GitHub's native sub-issue API — it's console-UI scope, not Stage 9's. Full narrative:
-`docs/PROJECT_HISTORY.md` 2026-07-22 entry; `docs/REQUIREMENTS.yaml` REQ-002/REQ-162/REQ-163.
+**Current status (2026-07-22): two threads in flight — the Stage 9 campaign (6 of 38 incorporated) and
+a documentation-driven receipts hardening effort (REQ-164), the latter on an unmerged branch.** Stage 9:
+continuing one-district-at-a-time, Santa Fe/Gallup/Las Cruces NM joined the 3 already incorporated
+(32 pending; the approved total grew 22→38 as more districts cleared gate@8 mid-session). Gallup's
+secondary LCT fell back to statutory — root-caused to NCES suppressing its 2024-25 staff report, not a
+bug (`#613`, a policy question: Ian leans against widening the REQ-026 window). A pre-emptive scan of the
+pending districts found one more latent case (Dickinson 1 ND — a genuinely stale 2016-17 source, needs
+re-extraction, not a policy fix). That investigation led to a broader question — "why don't stages 6-9
+get per-district receipts like 1-5?" — which turned up two real, smaller gaps (`#614` console progress
+view, `#615` Stage-9's `district_grade_minutes` has no git twin + `district_status.json` lags gate@8/9)
+plus a `cache_ingest` disk-re-read follow-up (`#616`). This produced **REQ-164** (`must`) + the four
+commandments as testable **REQ-165…168** — built so far on branch `feat/pipeline-receipts-req164`
+(NOT merged): `common/receipts.py` (the shared always-stamped writer) + Stage 9/8/6/7 per-district
+audit receipts + in-path `district_status.json` twin refresh, all tested. Separately, the whole doc tower
+got a reorganization (3 files → `docs/state-integrations/`, a `learning-loop-reports/` dir created,
+`refactor-20260123/` → `infrastructure/quality-assurance/`, the fable review → `docs/archive/`) and a
+5-way parallel accuracy sync (`DATABASE_SETUP.md`'s schema had drifted — two fictional tables, several
+wrong column names — plus a cluster of stale "Stage 8/9 isn't built" doc residue), both landed directly
+on `main`. Full narrative: `docs/PROJECT_HISTORY.md`'s three 2026-07-22 entries; `docs/REQUIREMENTS.yaml`
+REQ-002/REQ-162/REQ-163 (main) + REQ-164/REQ-165…168 (feat branch only).
 
-**Next (RESUME HERE — 2026-07-22): finish incorporating the remaining 19 gate@8-approved districts,
-then run the one-time `lct_calculations` recompute.** Continue the same one-district-at-a-time rhythm
-(dry-run → incorporate → `per_grade_lct_sample.py` preview → review) — it's already paid for itself
-twice. All 22 districts' dry-runs are clean (no conflicts/overlaps beyond the expected K-8 pattern);
-none are batch_00000 benchmark districts. Once all 22 (or however many Ian signs off on) are
-incorporated and their previews look right, the recompute (`calculate_lct_variants.py`'s write path)
-is the final gated step — it's a no-op for every non-incorporated district and only touches
-`lct_calculations` for the ones actually incorporated. Verify it works: spot-check a few recomputed
-districts' `teachers_secondary` (and other scope) values against what the preview predicted, confirm
-`data_tier`/`instructional_minutes_source` read `per_grade_bell`/`per_grade_statutory` correctly, and
-watch for `denom_refreshed`-flagged districts where the recomputed Δ should include a data-vintage
-component the preview already called out.
+**Next (RESUME HERE — 2026-07-22): two independent threads to resume, either order.**
+**(1) Stage 9 campaign** — continue incorporating the remaining 32 gate@8-approved districts one at a
+time (dry-run → incorporate → `per_grade_lct_sample.py` preview → review); watch for Dickinson 1 ND
+(`3800038` — stale 2016-17 middle-school source, re-extract before incorporating) and any other
+staff-vintage cases like Gallup's (`#613` — expected rare, not yet a systemic pattern). Once all pending
+districts are in and previews look right, run the one-time `lct_calculations` recompute
+(`calculate_lct_variants.py`'s write path — a no-op for non-incorporated districts); spot-check
+`teachers_secondary` against the preview, confirm `data_tier`/`instructional_minutes_source`, watch for
+`denom_refreshed` districts.
+**(2) REQ-164 receipts work** (`git checkout feat/pipeline-receipts-req164`) — Phase 5b (declare all 9
+stages in `arch-manifest.json` + the both-ways coverage fitness test, now addable green since 6-9 exist)
+→ Phase 3 (convert stages 2/4/5 + benchmark to always-stamped; the Node/Python receipt convention as a
+declared cross-language contract per `POLYGLOT_PIPELINE_ARCHITECTURE_TOOLCHAIN.md`; repoint `cache_ingest`
+per `#616`) → Phase 4 (gov_db-`state_event`-sourced legacy-receipt backfill script) → Phase 5c (concluding
+doc-tower update: `PIPELINE_GOVERNANCE_AND_STATE.md` §1's receipt taxonomy, `ACQUISITION_PIPELINE.md`,
+the per-stage design notes, `CLAUDE.md`, the POLYGLOT doc).
 Banked routing: #112 → epic #128. Parked: #475/#476, #103/#80 (+#110); SEA integration follow-up (the
 ~9-state list from the 2026-07-20/21 campaign) is an opt-in backlog item, not yet filed as an issue —
 ask Ian before filing if it should be tracked now or deferred.
@@ -163,13 +169,14 @@ Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) →
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
 -m "not integration"` (expect **1905** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect
 **327**, Postgres up) + `pytest tests/test_*_integration.py` (expect **247** pass, 149 skipped, live
-DB) + `cd infrastructure/scraper && npm test` (expect **90**).
+DB) + `cd infrastructure/scraper && npm test` (expect **90**). On the receipts branch, also
+`pytest tests/test_receipts.py` (15 pass) + the stage6/7/8/9 suites.
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (the
 motivating ones: Huntington `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters).
 Stage 9 incorporate CLI: `python -m infrastructure.acquisition.stage9_incorporate <did> [--dry-run]`;
 sign-off preview: `python -m infrastructure.scripts.analyze.per_grade_lct_sample`.
-Full detail: `docs/PROJECT_HISTORY.md`, `STAGE1-5_*_DESIGN.md`, `STAGE9_INCORPORATE_DESIGN.md`,
-`PIPELINE_GOVERNANCE_AND_STATE.md`, `docs/REQUIREMENTS.yaml`.
+Full detail: `docs/PROJECT_HISTORY.md`, `STAGE1-9_*_DESIGN.md`, `PIPELINE_GOVERNANCE_AND_STATE.md`,
+`docs/REQUIREMENTS.yaml`.
 
 ---
 
