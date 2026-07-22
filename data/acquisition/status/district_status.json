@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-22T03:22:07Z",
+  "last_updated": "2026-07-22T03:34:02Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -3618,8 +3618,8 @@
       "name": "Northwestern CUSD 2",
       "state": "IL",
       "furthest_stage": 7,
-      "stage_name": "capture",
-      "outcome": "captured_all",
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -3760,6 +3760,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-22T03:34:02Z"
         }
       ],
       "notes": "74456449e8db"
@@ -4758,8 +4764,8 @@
       "name": "Old Sturbridge Academy Charter Public School",
       "state": "MA",
       "furthest_stage": 7,
-      "stage_name": "capture",
-      "outcome": "captured_all",
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -4903,6 +4909,12 @@
           "at": "2026-07-22T01:26:29Z",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-22T03:33:35Z"
         }
       ],
       "notes": "9b2d32b7d21f"

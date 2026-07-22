@@ -74,15 +74,24 @@ def _seed_contaminating_bell_and_grade_data(did):
                                        minutes_basis="gross_bell_to_bell", year="2024-25"))
 
 
-def _seed_stored_lct_calculation(did, *, minutes, source, lct_value, year="2025-26"):
+def _seed_stored_lct_calculation(did, *, minutes, source, lct_value, year="2025-26",
+                                 calculated_at=None, staff_source_year=None,
+                                 enrollment_source_year=None):
     from infrastructure.database.connection import session_scope as lct_scope
     from infrastructure.database.models import LCTCalculation
+    kw = {}
+    if calculated_at is not None:
+        kw["calculated_at"] = calculated_at
+    if staff_source_year is not None:
+        kw["staff_source_year"] = staff_source_year
+    if enrollment_source_year is not None:
+        kw["enrollment_source_year"] = enrollment_source_year
     with lct_scope() as s:
         s.add(LCTCalculation(
             district_id=did, year=year, grade_level=None, staff_scope="teachers_secondary",
             run_id="zz-lct-sample-test", instructional_minutes=minutes,
             instructional_minutes_source=source, enrollment=150, instructional_staff=10.0,
-            lct_value=lct_value, data_tier=3))
+            lct_value=lct_value, data_tier=3, **kw))
 
 
 class TestLegacyReadsStoredRowNotLiveDerivation:
@@ -113,9 +122,9 @@ class TestLegacyReadsStoredRowNotLiveDerivation:
         assert r["per_grade_sec_min"] == 480          # per-grade path still works independently
 
     def test_most_recent_stored_row_wins_across_calc_years(self, env):
-        """A district recomputed in two different years has one row per (district, year, scope) —
-        the schema's own uq_lct_scope_rows constraint enforces that. `sample()` must show the
-        LATEST one, not an arbitrary one."""
+        """A district recomputed for two different years can hold a row per year for the same scope
+        (uq_lct_scope_rows only dedups within a single (district, year, staff_scope) among
+        grade_level-NULL rows). `sample()` must show the newest YEAR's row, not an arbitrary one."""
         from infrastructure.scripts.analyze.per_grade_lct_sample import sample
         _seed_contaminating_bell_and_grade_data(env)
         _seed_stored_lct_calculation(env, minutes=111, source="state_requirement", lct_value=42.0,
@@ -126,3 +135,62 @@ class TestLegacyReadsStoredRowNotLiveDerivation:
         rows = {r["district_id"]: r for r in sample()}
         r = rows[env]
         assert r["legacy_sec_min"] == 222 and r["legacy_sec_lct"] == 84.0
+
+    def test_newest_year_wins_even_when_an_older_year_was_recomputed_later(self, env):
+        """The ordering fix (PR #610 review): a TARGET_YEAR recompute clears only its own year, so an
+        older year can get a LATER calculated_at than the newest year. Ordering by year DESC first (not
+        calculated_at alone) must still surface the newest YEAR — else a stale-year backfill silently
+        becomes 'legacy'."""
+        import datetime as _dt
+        from infrastructure.scripts.analyze.per_grade_lct_sample import sample
+        _seed_contaminating_bell_and_grade_data(env)
+        # newest year, but computed EARLIER in wall-clock time
+        _seed_stored_lct_calculation(env, minutes=222, source="bell_schedule", lct_value=84.0,
+                                     year="2025-26",
+                                     calculated_at=_dt.datetime(2026, 1, 1, tzinfo=_dt.timezone.utc))
+        # older year, backfilled LATER — must NOT win despite the later calculated_at
+        _seed_stored_lct_calculation(env, minutes=111, source="state_requirement", lct_value=42.0,
+                                     year="2024-25",
+                                     calculated_at=_dt.datetime(2026, 6, 1, tzinfo=_dt.timezone.utc))
+
+        rows = {r["district_id"]: r for r in sample()}
+        r = rows[env]
+        assert r["legacy_sec_min"] == 222 and r["legacy_sec_lct"] == 84.0   # newest YEAR, not latest calc
+
+    def test_denominator_refresh_is_flagged(self, env):
+        """#3: legacy LCT is baked from the stored row's staff/enrollment vintage; the per-grade side
+        uses today's picks. When they differ, the row must carry denom_refreshed so a reviewer doesn't
+        mistake a data-vintage shift for the per-grade methodology effect. The env fixture's
+        staff/enrollment are seeded at 2024-25; a stored row from 2023-24 is a mismatch."""
+        from infrastructure.scripts.analyze.per_grade_lct_sample import sample
+        _seed_contaminating_bell_and_grade_data(env)
+        _seed_stored_lct_calculation(env, minutes=111, source="state_requirement", lct_value=42.0,
+                                     staff_source_year="2023-24", enrollment_source_year="2023-24")
+
+        r = {row["district_id"]: row for row in sample()}[env]
+        assert r["denom_refreshed"] is True
+
+    def test_matching_denominator_years_not_flagged(self, env):
+        """The flag must NOT fire when the stored row's vintage matches today's picks (2024-25)."""
+        from infrastructure.scripts.analyze.per_grade_lct_sample import sample
+        _seed_contaminating_bell_and_grade_data(env)
+        _seed_stored_lct_calculation(env, minutes=111, source="state_requirement", lct_value=42.0,
+                                     staff_source_year="2024-25", enrollment_source_year="2024-25")
+
+        r = {row["district_id"]: row for row in sample()}[env]
+        assert r["denom_refreshed"] is False
+
+
+class TestMainDoesNotCrash:
+    def test_main_prints_never_computed_district_without_crashing(self, env, capsys):
+        """PR #610 review finding #1: main() did `pg_min - legacy_sec_min` guarding only pg_min, so a
+        never-computed district (legacy_sec_min=None, pg_min a real int — the exact 'BEFORE the
+        recompute lands' case) raised TypeError and killed the whole report. main() must complete."""
+        from infrastructure.scripts.analyze.per_grade_lct_sample import main
+        _seed_contaminating_bell_and_grade_data(env)   # incorporated, never computed -> legacy None
+
+        rc = main(argv=[])   # must not raise
+        assert rc == 0
+        out = capsys.readouterr().out
+        assert env in out
+        assert "None" in out   # the never-computed legacy prints as None, Δ prints as None
