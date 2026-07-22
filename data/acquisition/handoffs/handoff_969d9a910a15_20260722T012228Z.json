@@ -1,0 +1,72 @@
+{
+  "handoff_hash": "969d9a910a15",
+  "created_at": "2026-07-22T01:22:28Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "fingerprints": {
+    "2507080": {
+      "config": "f77ddb950061",
+      "labels": "5e4f0a50ea31",
+      "data": "1c1ab05a91cb"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v4"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.00102,
+    "n_reps": 1,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "2507080",
+      "name": "Lunenburg",
+      "state": "MA",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "2507080:44c4451fe7",
+          "url": "https://www.lunenburgschools.net/about-the-district/start-dismissal-times",
+          "decision": "send",
+          "reason": "7->6 alternate-rep re-dispatch (REQ-118)",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 14,
+              "n_chars": 1281
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    }
+  ]
+}

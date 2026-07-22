@@ -1,0 +1,72 @@
+{
+  "handoff_hash": "74456449e8db",
+  "created_at": "2026-07-22T01:23:57Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "fingerprints": {
+    "1730540": {
+      "config": "f77ddb950061",
+      "labels": "a41e220479a0",
+      "data": "50ccf82dab3c"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v4"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.00102,
+    "n_reps": 1,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "1730540",
+      "name": "Northwestern CUSD 2",
+      "state": "IL",
+      "topology": "district_hub",
+      "records": [
+        {
+          "rec_key": "1730540:49be09d9ce",
+          "url": "https://www.northwestern.k12.il.us/vimages/shared/vnews/stories/578409f72a8a1/2020-2021%20%20StudentHandbook%20updated.pdf",
+          "decision": "send",
+          "reason": "7->6 alternate-rep re-dispatch (REQ-118)",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 118,
+              "n_chars": 193634
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    }
+  ]
+}
