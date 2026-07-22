@@ -1,14 +1,23 @@
 """Before/after sample for #606 sign-off.
 
 For every INCORPORATED district (one with a Stage-9 `district_grade_minutes` projection), show the
-**legacy** secondary instructional minutes (the high-band-only stopgap) next to the **per-grade
-enrollment-weighted** secondary minutes, plus the resulting `teachers_secondary` LCT delta. Read-only:
-it computes nothing into `lct_calculations` — it is the artifact to review BEFORE the recompute lands.
+**legacy** secondary `teachers_secondary` LCT — read STRAIGHT FROM THE STORED `lct_calculations` row,
+never re-derived — next to the **per-grade** enrollment-weighted secondary result. Read-only: it
+computes nothing into `lct_calculations` — it is the artifact to review BEFORE the recompute lands.
 
-Selection fidelity (PR #607 review): the sample reuses the REAL pipeline's pickers —
-`get_most_recent_enrollment` / `get_most_recent_staff` (COVID exclusion + zero-staff fallback
-included) — and applies the same REQ-026 blend-window downgrade to the legacy value that
-`calculate_all_variants` applies, so the reviewed deltas match what the recompute would produce.
+**Why "legacy" is a stored-row read, not a live re-derivation (bug found 2026-07-22).** An earlier
+version called `get_instructional_minutes(s, did, d.state, "high")` live to reconstruct what the legacy
+formula would produce. That function's existing REQ-024 fallback ("high -> middle -> elementary, for K-8
+districts etc.") means it picks up ANY measured `bell_schedules` row — including one Stage 9 had *just*
+written for the district being sampled. So the moment a district was incorporated, "legacy" silently
+stopped meaning "what's actually live in `lct_calculations` right now" and started meaning "what the old
+formula would compute today, contaminated by today's own Stage-9 write" — a materially different, and
+misleadingly LOWER-delta, number (caught reviewing district 3601002: the live re-derivation returned
+12.88, matching the per-grade result exactly and reporting Δ=0, while the actual stored production value
+was 9.35 — a real +3.53 change the contaminated comparison hid entirely). Reading the stored row sidesteps
+the whole class of bug: it is exactly what a user of the dataset sees today, unaffected by anything Stage
+9 writes to `bell_schedules` in the meantime.
+
 Districts are listed in a stable order (district_id ascending) so a `--limit N` sample is the same
 N districts on every run.
 
@@ -19,11 +28,9 @@ from __future__ import annotations
 import argparse
 
 from infrastructure.database.connection import session_scope
-from infrastructure.database.models import District, DistrictGradeMinutes
-from infrastructure.database.school_year import within_blend_window
+from infrastructure.database.models import District, DistrictGradeMinutes, LCTCalculation
 from infrastructure.scripts.analyze.calculate_lct_variants import (
     calculate_lct,
-    get_instructional_minutes,
     get_most_recent_enrollment,
     get_most_recent_staff,
     get_statutory_minutes,
@@ -34,6 +41,16 @@ from infrastructure.scripts.analyze.per_grade_lct import (
     get_district_grade_minutes,
     weighted_scope_minutes,
 )
+
+
+def _legacy_secondary(s, district_id: str):
+    """The CURRENTLY STORED `teachers_secondary` lct_calculations row — the real, live production
+    baseline, unaffected by any Stage-9 write since it was calculated. None if never computed."""
+    return (s.query(LCTCalculation)
+            .filter(LCTCalculation.district_id == district_id,
+                    LCTCalculation.staff_scope == "teachers_secondary")
+            .order_by(LCTCalculation.calculated_at.desc())
+            .first())
 
 
 def sample(limit: int | None = None) -> list:
@@ -50,10 +67,7 @@ def sample(limit: int | None = None) -> list:
             staff, staff_yr = staff_with_years.get(did, (None, None))
             if not (d and enr):
                 continue
-            # Legacy value with the same REQ-026 downgrade the real calc applies
-            legacy_min, legacy_src, legacy_yr = get_instructional_minutes(s, did, d.state, "high")
-            if legacy_yr and not within_blend_window([legacy_yr, staff_yr, enroll_yr]):
-                legacy_min, legacy_src, legacy_yr = get_statutory_minutes(s, d.state, "high")
+            legacy = _legacy_secondary(s, did)
             gm = get_district_grade_minutes(s, did)
             pg = weighted_scope_minutes(s, d.state, SEC_GRADES, enr, gm,
                                         [staff_yr, enroll_yr],
@@ -62,12 +76,13 @@ def sample(limit: int | None = None) -> list:
             sec_enr = enr.enrollment_secondary or 0
             t_sec = (float(staff.teachers_secondary_6_12)
                      if staff is not None and staff.teachers_secondary_6_12 else None)
-            legacy_lct = calculate_lct(legacy_min, t_sec, sec_enr) if t_sec and sec_enr else None
             pg_lct = calculate_lct(pg_min, t_sec, sec_enr) if (pg_min and t_sec and sec_enr) else None
             rows.append({"district_id": did, "name": d.name, "state": d.state,
-                         "legacy_sec_min": legacy_min, "legacy_source": legacy_src,
+                         "legacy_sec_min": legacy.instructional_minutes if legacy else None,
+                         "legacy_source": legacy.instructional_minutes_source if legacy else "never_computed",
                          "per_grade_sec_min": pg_min, "source": pg_src,
-                         "legacy_sec_lct": legacy_lct, "per_grade_sec_lct": pg_lct})
+                         "legacy_sec_lct": float(legacy.lct_value) if legacy else None,
+                         "per_grade_sec_lct": pg_lct})
             if limit and len(rows) >= limit:
                 break   # cap the ELIGIBLE rows at N (not the pre-filter did list), stable by did order
     return rows
