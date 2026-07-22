@@ -41,7 +41,7 @@ districts — Marion, Pittsylvania, Las Cruces — through much of this loop rep
 surfacing and fixing real bugs (the #158 release cluster-drop, the image-first picker, the row-vs-round
 depth guard, a live defer-deadlock); **issue #122 (the first clean end-to-end pass) closed 2026-07-06**
 (23 fresh districts, 37 runs, $0.195, both back-edges proven — full report:
-`docs/technical-notes/stage-7-loop-reports/2026-07-06T0458Z-stage7-loop-report.md`).
+`docs/technical-notes/learning-loop-reports/2026-07-06T0458Z-stage7-loop-report.md`).
 
 **A SECOND live shakedown ran 2026-07-11** (batch_00013, 12 districts) to re-validate the loop against
 the epic #200/#209-hardened pipeline. It surfaced two real request-loop regressions, both fixed

@@ -156,7 +156,7 @@ pytest tests/ -v -m integration
 | [TERMINOLOGY.md](TERMINOLOGY.md) | Standardized vocabulary (read first!) |
 | [DATABASE_SETUP.md](DATABASE_SETUP.md) | PostgreSQL schema and setup |
 | [ACQUISITION_PIPELINE.md](ACQUISITION_PIPELINE.md) | The 9-stage bell-schedule acquisition pipeline map |
-| [SEA_INTEGRATION_GUIDE.md](SEA_INTEGRATION_GUIDE.md) | State education agency data integration |
+| [SEA_INTEGRATION_GUIDE.md](state-integrations/SEA_INTEGRATION_GUIDE.md) | State education agency data integration |
 | [PROJECT_HISTORY.md](PROJECT_HISTORY.md) | Decision log — how the project got to where it is |
 
 ---

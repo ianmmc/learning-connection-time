@@ -8,7 +8,7 @@
 
 ## Precedence context (why this campaign matters, and where it doesn't)
 
-Verified against the live DB 2026-07-20: staff_counts_effective is 100% nces_ccd across all states and years — SEA staff/enrollment data wins REQ-023 precedence NOWHERE today, because year-matched NCES (2024-25 CCD, ingested 2026-07) beats year-matched SEA by design (REQ-022/023). SEA data currently pays off through: (1) SPED-actual data via REQ-025 (state-actual beats the 2017-18 federal estimate — CA contributes 2,036 LCT rows today), (2) SPED-teacher splits feeding SPED scopes, and (3) years NEWER than the NCES primary (2025-26+), where SEA wins until the next CCD lands. Probe priority follows this ranking. NOT a target: daily instructional minutes — verified dead end (docs/INSTRUCTIONAL_TIME_HARVEST.md).
+Verified against the live DB 2026-07-20: staff_counts_effective is 100% nces_ccd across all states and years — SEA staff/enrollment data wins REQ-023 precedence NOWHERE today, because year-matched NCES (2024-25 CCD, ingested 2026-07) beats year-matched SEA by design (REQ-022/023). SEA data currently pays off through: (1) SPED-actual data via REQ-025 (state-actual beats the 2017-18 federal estimate — CA contributes 2,036 LCT rows today), (2) SPED-teacher splits feeding SPED scopes, and (3) years NEWER than the NCES primary (2025-26+), where SEA wins until the next CCD lands. Probe priority follows this ranking. NOT a target: daily instructional minutes — verified dead end (INSTRUCTIONAL_TIME_HARVEST.md).
 
 ---
 

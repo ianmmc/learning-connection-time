@@ -38,7 +38,7 @@ Usage:
     python merge_sea_precedence.py [--year 2023-24] [--dry-run]
 
 Reference:
-    - docs/SEA_INTEGRATION_GUIDE.md
+    - SEA_INTEGRATION_GUIDE.md
     - docs/REQUIREMENTS.yaml (REQ-023, REQ-026, REQ-027)
     - infrastructure/database/school_year.py (single source of truth for years)
 """

@@ -76,7 +76,7 @@ pytest tests/ -v
 
 ## Adding a New State Integration
 
-See [docs/SEA_INTEGRATION_GUIDE.md](docs/SEA_INTEGRATION_GUIDE.md) for detailed instructions on adding state education agency data integrations.
+See [SEA_INTEGRATION_GUIDE.md](docs/state-integrations/SEA_INTEGRATION_GUIDE.md) for detailed instructions on adding state education agency data integrations.
 
 Quick overview:
 1. Obtain state data files (enrollment, staffing, SPED)

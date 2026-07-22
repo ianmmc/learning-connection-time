@@ -10,7 +10,7 @@
 > surprise). Append with a date; never silently revise an old observation — supersede it.
 > **Companions:** `LLM_COUNCIL_RESEARCH_2026-06.md` (the literature: diversity > count, judge > vote,
 > cascades); `../CROSSFAM_EXTERNAL_REVIEW_2026-07-13.md` (the review campaign's full per-model
-> analysis — numbers here are distilled from it, not re-derived); `docs/EXTRACTION_BENCHMARK_FINDINGS.md`
+> analysis — numbers here are distilled from it, not re-derived); `docs/technical-notes/learning-loop-reports/EXTRACTION_BENCHMARK_FINDINGS.md`
 > (the 2026-06 extraction leaderboard); `EXTRACTION_TOKEN_SIZING_2026-07-06.md` (output-ceiling
 > behavior). Receipts: `data/review/crossfam-2026-07-13/` (raw_findings/adjudications/raw_replies with
 > per-call `usage.cost`).
@@ -147,7 +147,7 @@ quality (`tools/crossfam_review/roster.py`).
 |---|---|
 | Review-campaign per-model numbers | `../CROSSFAM_EXTERNAL_REVIEW_2026-07-13.md` §§1–6 + `data/review/crossfam-2026-07-13/` receipts |
 | Singleton probe (36–68% rates, crit-singleton counts) | computed 2026-07-15 from `raw_findings.json` (family-bucketed by file + line-decade + category, the harness's dedup key) |
-| Extraction leaderboard (Gemini 68.9% etc.) | `docs/EXTRACTION_BENCHMARK_FINDINGS.md` (2026-06-12/13) |
+| Extraction leaderboard (Gemini 68.9% etc.) | `docs/technical-notes/learning-loop-reports/EXTRACTION_BENCHMARK_FINDINGS.md` (2026-06-12/13) |
 | Mistral 32k snake-doc incident | #121 re-test 2026-07-15 (Broward, `camelot_hybrid.txt`, 760 times; OpenRouter 400: 33,041 requested vs 32,768 max) |
 | Council composition + diversity rule | `common/config/council_configs.json` (REQ-056; validated in `stage6_handoff/councils.py`) |
 | Discovery = index-not-model | `stage2-discovery-provider-decision` (2026-06-28 five-provider bake-off) |

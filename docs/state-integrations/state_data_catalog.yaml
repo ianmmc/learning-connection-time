@@ -15,7 +15,7 @@ meta:
     pays off through: (1) SPED-actual data via REQ-025 (state-actual beats the 2017-18 federal estimate
     — CA contributes 2,036 LCT rows today), (2) SPED-teacher splits feeding SPED scopes, and (3) years
     NEWER than the NCES primary (2025-26+), where SEA wins until the next CCD lands. Probe priority follows
-    this ranking. NOT a target: daily instructional minutes — verified dead end (docs/INSTRUCTIONAL_TIME_HARVEST.md).
+    this ranking. NOT a target: daily instructional minutes — verified dead end (INSTRUCTIONAL_TIME_HARVEST.md).
   crosswalk_correction: >-
     CORRECTION (2026-07-20, post-probe, Ian caught this): the per-state `crosswalk_ids` probe results
     below were answering the wrong question. They report whether a STATE PORTAL publishes its own state-ID<->NCES-LEAID

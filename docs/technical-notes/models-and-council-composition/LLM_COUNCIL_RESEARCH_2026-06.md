@@ -1,7 +1,7 @@
 # Multi-LLM Council / Consensus for Structured Extraction — Research Synthesis
 
 > **Source:** Perplexity Sonar deep-research query (2026-06-20), synthesizing 2024–2026 literature. Captured verbatim below (citation [n] markers refer to that synthesis's source list; the trailing reference list was trimmed for length — re-run the query if exact sources are needed).
-> **Why this is here:** evidence base for the LCT bell-schedule **extraction council** design. Companion to `docs/ACQUISITION_PIPELINE.md` (where the council rule lives), `docs/EXTRACTION_BENCHMARK_FINDINGS.md` (our model leaderboard + measured costs), and the memory note `llm-council-best-practice`.
+> **Why this is here:** evidence base for the LCT bell-schedule **extraction council** design. Companion to `docs/ACQUISITION_PIPELINE.md` (where the council rule lives), `docs/technical-notes/learning-loop-reports/EXTRACTION_BENCHMARK_FINDINGS.md` (our model leaderboard + measured costs), and the memory note `llm-council-best-practice`.
 
 ## TL;DR — findings that shaped our council design
 

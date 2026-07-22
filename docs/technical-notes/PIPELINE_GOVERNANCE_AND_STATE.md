@@ -113,7 +113,7 @@ is unavailable.
 
 **#122 (the first live non-benchmark end-to-end pass of the request loop) CLOSED 2026-07-06** — 23 fresh
 districts, both back-edges proven end-to-end; full report:
-`docs/technical-notes/stage-7-loop-reports/2026-07-06T0458Z-stage7-loop-report.md`. **A SECOND live
+`docs/technical-notes/learning-loop-reports/2026-07-06T0458Z-stage7-loop-report.md`. **A SECOND live
 shakedown ran 2026-07-11** (batch_00013) to re-validate the loop against the epic #200/#209-hardened
 pipeline, finding **six** real request-loop/pipeline regressions, fixed across two merged PRs (a third,
 unrelated PR closed out epic #123 the same day — see below):

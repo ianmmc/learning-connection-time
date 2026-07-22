@@ -6,9 +6,9 @@
 > duplicating them.
 > **Audience:** anyone orienting to the pipeline as a whole, or tracing a district through it end to end.
 > **Companions:** every `acquisition-pipeline-stage-design-notes/STAGE*_DESIGN.md` (per-stage present-state + decision log),
-> `PIPELINE_GOVERNANCE_AND_STATE.md` (DB/state/gate architecture), `docs/EXTRACTION_BENCHMARK_FINDINGS.md`
+> `PIPELINE_GOVERNANCE_AND_STATE.md` (DB/state/gate architecture), `docs/technical-notes/learning-loop-reports/EXTRACTION_BENCHMARK_FINDINGS.md`
 > (model leaderboard + measured costs), `docs/technical-notes/models-and-council-composition/EXTRACTION_AND_DISCOVERY_LEARNINGS_2026-06.md`
-> (full learnings), `docs/INSTRUCTIONAL_TIME_HARVEST.md` (why SEA central data is a dead end),
+> (full learnings), `INSTRUCTIONAL_TIME_HARVEST.md` (why SEA central data is a dead end),
 > `docs/METHODOLOGY.md` (Rules 6 & 7 — CTC and grade-span-integrity exclusions referenced below).
 > **Update this when:** a stage's purpose/IO changes, a new stage is built, or the flow diagram needs a new
 > edge — for implementation detail within an already-mapped stage, update that stage's own design note instead.
@@ -58,7 +58,7 @@ property/mutation testing (#201–#204) — **MERGED 2026-07-11 (PR #221)** afte
 review found 15 real findings in the merge candidate.
 
 **#122 (the first live non-benchmark end-to-end pass of the request loop) CLOSED 2026-07-06**; full
-report: `docs/technical-notes/stage-7-loop-reports/2026-07-06T0458Z-stage7-loop-report.md`. **A SECOND
+report: `docs/technical-notes/learning-loop-reports/2026-07-06T0458Z-stage7-loop-report.md`. **A SECOND
 live shakedown (batch_00013) ran 2026-07-11** to re-validate the loop against the epic #200/#209-hardened
 pipeline, finding **six** real request-loop/pipeline regressions across two merged PRs: **PR #221** — a
 stale-alternate display/exclusion gap across rounds (#231) and a gate@7 view that read

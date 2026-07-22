@@ -9,7 +9,7 @@ shared-service entities (CTCs, BOCES, cooperatives) from national LCT
 calculations, since they serve students part-time from multiple home
 districts, inflating teacher-to-student ratios. The schema columns
 (is_career_technical_center, is_shared_service_entity) have existed since
-the Rule 6 design (docs/technical-notes/PA_CTC_DATA_DISCREPANCY.md), but the
+the Rule 6 design (PA_CTC_DATA_DISCREPANCY.md), but the
 backfill was never actually run -- both columns were False/0 for every
 district until 2026-06-22, and calculate_lct_variants.py's exclusion filter
 (on is_shared_service_entity) had consequently never excluded anything.

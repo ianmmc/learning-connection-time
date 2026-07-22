@@ -90,7 +90,7 @@ all text paths miss). Trigger is "did the cheap reader recover usable content," 
 
 **SEA central-data harvest is a dead end for daily minutes** (verified) — states publish only statutory
 minimums / day-counts, not actual daily minutes. Web discovery + extraction is the primary acquisition
-path. See `docs/INSTRUCTIONAL_TIME_HARVEST.md`.
+path. See `INSTRUCTIONAL_TIME_HARVEST.md`.
 
 **Notes:** Local Ollama deleted; paid-cloud extraction is cheap (~$0.05–0.30/1M). Keys in gitignored
 `config/secrets.local.json` + `.env`. Requirements are tracked as REQ-001…151 in `docs/REQUIREMENTS.yaml`
@@ -262,12 +262,12 @@ To access current design resources, use the claude_design MCP (https://api.anthr
 | **Acquisition pipeline (canonical map)** | `docs/ACQUISITION_PIPELINE.md` |
 | **Per-stage present-state design notes** | `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE*_DESIGN.md` |
 | **Live pipeline code** | `infrastructure/acquisition/` (stage1_queue/ … stage9, process_governance/ console) |
-| Extraction leaderboard + costs | `docs/EXTRACTION_BENCHMARK_FINDINGS.md` |
+| Extraction leaderboard + costs | `docs/technical-notes/learning-loop-reports/EXTRACTION_BENCHMARK_FINDINGS.md` |
 | Council design research | `docs/technical-notes/models-and-council-composition/LLM_COUNCIL_RESEARCH_2026-06.md` |
 | Decisions, lessons, project history | `docs/PROJECT_HISTORY.md` |
 | Data methodology (incl. SPED, QA dashboard) | `docs/METHODOLOGY.md` |
 | Database setup | `docs/DATABASE_SETUP.md` |
-| SEA integration guide | `docs/SEA_INTEGRATION_GUIDE.md` |
+| SEA integration guide | `SEA_INTEGRATION_GUIDE.md` |
 | LCT calculation | `infrastructure/scripts/analyze/calculate_lct_variants.py` |
 | Database migrations + ledger | `infrastructure/database/migrations/` (`migrate.py status`) |
 | Database queries | `infrastructure/database/queries.py` |
@@ -283,7 +283,7 @@ This is the core briefing. Load the right doc for the task:
 | Decisions, lessons, history | `docs/PROJECT_HISTORY.md` |
 | Dev setup, workflow, testing, commands, conventions | `docs/GETTING_STARTED.md` |
 | Database setup + schema | `docs/DATABASE_SETUP.md` (schema authority = `infrastructure/database/models.py`) |
-| Data sources, SEA integrations, ID crosswalks, complex districts | `docs/DATA_SOURCES.md` · `docs/SEA_INTEGRATION_GUIDE.md` |
+| Data sources, SEA integrations, ID crosswalks, complex districts | `docs/DATA_SOURCES.md` · `SEA_INTEGRATION_GUIDE.md` |
 | Data methodology (LCT, sampling, exclusions, temporal) | `docs/METHODOLOGY.md` |
 | The acquisition pipeline + per-stage design notes | `docs/ACQUISITION_PIPELINE.md` (map) → `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE*_DESIGN.md` |
 | Governance / state model / gate model / console | `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE.md` |

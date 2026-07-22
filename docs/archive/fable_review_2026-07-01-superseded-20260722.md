@@ -1,5 +1,9 @@
 # Fable Review — Findings & Recommendations (2026-07-01)
 
+> **ARCHIVED 2026-07-22.** Filed to `docs/archive/` alongside this project's other superseded planning
+> docs — this review is the one that led Ian to move findings tracking to GitHub Issues in the first
+> place (below), so the archive banner and the tracking-moved banner are telling the same story.
+
 > **⚑ TRACKING MOVED TO GITHUB ISSUES (2026-07-01).** Every finding below is filed as an issue —
 > [`label:fable-review-2026-07`](https://github.com/ianmmc/learning-connection-time/issues?q=label%3Afable-review-2026-07)
 > (75 issues, #4–#78; `sev:*` severity + `area:*` labels; `stage7-prep` marks Stage 7–9 blockers;
