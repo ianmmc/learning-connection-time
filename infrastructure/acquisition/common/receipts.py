@@ -39,10 +39,18 @@ WRITER = "py"
 VOLATILE_KEYS = frozenset({"generated_at"})
 
 
-def district_capture_dir(district_id: str, name: str) -> Path:
-    """The district's ``lea-website-captures/`` dir -- the SAME resolution as stage2's ``lea_dir()``,
-    kept in ``common/`` so no stage module is imported (import-linter layering). ``district_id`` is the
-    real disambiguator; the slug is human-readability only."""
+def district_capture_dir(district_id: str, name: str = "") -> Path:
+    """The district's ``lea-website-captures/`` dir. The dir is ``<district_id>_<slug>`` and
+    ``district_id`` is the REAL disambiguator (the slug is human-readability only -- slugify's own
+    contract), so an EXISTING dir is resolved by a ``<district_id>_*`` glob. That makes every stage
+    land in the SAME dir regardless of which name source it holds (the gov batch name at Stage 2-8 vs.
+    the LCT ``districts`` name at Stage 9 can differ in case/whitespace across the two DBs). Falls back
+    to constructing ``<district_id>_<slug>`` from ``name`` when no dir exists yet (first write). Kept in
+    ``common/`` so no stage module is imported (import-linter layering)."""
+    if paths.RAW_CAPTURES.is_dir():
+        existing = sorted(paths.RAW_CAPTURES.glob(f"{district_id}_*"))
+        if existing:
+            return existing[0]
     return paths.RAW_CAPTURES / f"{district_id}_{slugify(name)}"
 
 

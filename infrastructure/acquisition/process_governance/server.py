@@ -32,6 +32,7 @@ from infrastructure.acquisition.stage5_filter import detectors as DET       # no
 from infrastructure.acquisition.stage5_filter import drift                  # noqa: E402  (REQ-097 advisory drift verdict — #75)
 from infrastructure.acquisition.common import db as gdb                     # noqa: E402  (isolated governance Postgres — REQ-103)
 from infrastructure.acquisition.common import district_status as DS         # noqa: E402  (state_event log — gate@1 audit events)
+from infrastructure.acquisition.common import receipts as RCPT              # noqa: E402  (per-district audit receipts — REQ-164)
 from infrastructure.acquisition.common import calibration as CAL            # noqa: E402  (gate-decision calibration log — REQ-121)
 from infrastructure.acquisition.common import gate_mode as GM               # noqa: E402  (per-gate manual/auto store — REQ-108, #104)
 from infrastructure.acquisition.common import config_loader as CFGL         # noqa: E402  (#120 mode-stability knob — Settings toggle)
@@ -696,6 +697,28 @@ def _backup_stage8_approvals(con) -> int:
         con, "SELECT approval_id, district_id, disposition, actor, reason, facts_fingerprint, "
              "receipt_json, created_at FROM stage8_approval ORDER BY approval_id",
         paths.STAGE8_APPROVALS_JSON)
+
+
+def _gate8_refresh_twin_and_receipt(con, district_id, meta, ca, *, disposition, reason,
+                                    approval_id, actor, fingerprint) -> None:
+    """After a COMMITTED gate@8 decision: refresh district_status.json in-path (#615 — gate@8 events
+    landed in gov_db but the git-tracked twin lagged until an incidental later export) and drop a
+    per-district gate@8 audit receipt into the capture dir (REQ-164). BOTH best-effort: the
+    stage8_approval row + its JSON twin are authoritative, so a disk/twin hiccup is logged, never a
+    failed (already-committed) decision. Commit-before-receipt: the caller has already committed."""
+    try:
+        DS.export_status(con)
+    except Exception as e:  # noqa: BLE001 — the twin is regenerable; never fail a committed decision
+        print(f"[warn] gate@8 district_status.json refresh failed for {district_id} "
+              f"({type(e).__name__}: {e}); the twin reconciles on the next export")
+    try:
+        RCPT.write_receipt(district_id, (meta or {}).get("name", ""), "stage8_aggregate",
+                           APV8.gate8_receipt_payload(ca, disposition=disposition, reason=reason,
+                                                      approval_id=approval_id, actor=actor,
+                                                      fingerprint=fingerprint))
+    except Exception as e:  # noqa: BLE001 — the receipt is regenerable; never fail a committed decision
+        print(f"[warn] gate@8 receipt write failed for {district_id} "
+              f"({type(e).__name__}: {e}); regenerable from gov_db")
 
 
 # ---- discovered domains (#164 — human-confirmed geo-derivation proposals) ----
@@ -2972,6 +2995,9 @@ async def aggregate_decision(district_id: str, payload: dict):
             CAL.record_calibration(con, cal)
         con.commit()
         _backup_stage8_approvals(con)
+        _gate8_refresh_twin_and_receipt(con, district_id, meta, ca, disposition=disposition,
+                                        reason=reason, approval_id=approval_id, actor=actor,
+                                        fingerprint=live_fp)
     return {"ok": True, "approval_id": approval_id, "disposition": disposition}
 
 
