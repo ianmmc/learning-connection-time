@@ -94,6 +94,45 @@ GRADE_MAPPING = {
 }
 
 
+# Minimum fraction of our districts a source-year file must match after LEAID
+# normalization. A source year's CCD file covers ~all of our districts (they ARE
+# derived from the CCD universe), and legitimate year-over-year churn (closed/merged
+# districts absent from the newer file) is ~0.5%. A match rate below this floor means a
+# LEAID-format regression silently dropped a whole population — abort rather than commit a
+# partial import (issue #611: str(int(leaid)) stripped the leading zero, unmatching every
+# FIPS<10 state after migration 015 canonicalized the districts table to 7-digit IDs).
+MATCH_COVERAGE_FLOOR = 0.95
+
+
+def _canonical_leaid(x) -> str:
+    """NCES LEAID in the canonical 7-digit leading-zero form the `districts` table uses
+    (migration 015 LPAD-standardized every id + referencing table to 7 digits). NCES files
+    usually already ship 7-char ids; zfill(7) makes a short/unpadded one canonical too and is
+    a no-op on an already-padded id. This mirrors Stage 9's `_norm_did`.
+
+    NEVER `str(int(x))` — that strips the leading zero ('0100810' -> '100810') and silently
+    unmatches every FIPS<10 state (AL/AK/AZ/AR/CA/CO/CT) against the post-015 districts table,
+    dropping ~3,100 districts with no error (issue #611)."""
+    if x is None or (isinstance(x, float) and pd.isna(x)):
+        return x
+    s = str(x).strip()
+    return s.zfill(7) if s else s
+
+
+def _assert_match_coverage(n_file_districts: int, n_matched: int, n_existing: int, label: str) -> None:
+    """Fail loud if the normalized source file matched implausibly few of our districts — the
+    silent-partial-import guard (issue #611). The denominator is min(file districts, our
+    districts): a year's file should match nearly all of whichever set is smaller."""
+    denom = min(n_file_districts, n_existing)
+    if denom and n_matched < denom * MATCH_COVERAGE_FLOOR:
+        raise SystemExit(
+            f"{label}: only {n_matched:,} of {denom:,} districts matched "
+            f"({100 * n_matched / denom:.1f}%), below the {MATCH_COVERAGE_FLOOR:.0%} floor. "
+            f"This usually means a LEAID-format regression (e.g. leading zeros stripped, "
+            f"issue #611) silently dropping a whole population. Aborting before a partial import."
+        )
+
+
 def load_staff_data(staff_file: Path, year: str) -> pd.DataFrame:
     """
     Load and pivot NCES CCD staff data from long to wide format.
@@ -130,9 +169,8 @@ def load_staff_data(staff_file: Path, year: str) -> pd.DataFrame:
     # Rename LEAID to district_id
     pivot_df = pivot_df.rename(columns={"LEAID": "district_id"})
 
-    # Normalize district_id: strip leading zeros to match Districts table format
-    # NCES files sometimes have 7-char LEAIDs (0600001) but Districts uses 6-char (600001)
-    pivot_df["district_id"] = pivot_df["district_id"].apply(lambda x: str(int(x)) if x else x)
+    # Canonical 7-digit leading-zero district_id, matching the districts table (migration 015).
+    pivot_df["district_id"] = pivot_df["district_id"].apply(_canonical_leaid)
 
     # Add metadata columns
     pivot_df["source_year"] = year
@@ -187,9 +225,8 @@ def load_enrollment_data(membership_file: Path, year: str) -> pd.DataFrame:
     # Rename LEAID to district_id
     pivot_df = pivot_df.rename(columns={"LEAID": "district_id"})
 
-    # Normalize district_id: strip leading zeros to match Districts table format
-    # NCES files sometimes have 7-char LEAIDs (0600001) but Districts uses 6-char (600001)
-    pivot_df["district_id"] = pivot_df["district_id"].apply(lambda x: str(int(x)) if x else x)
+    # Canonical 7-digit leading-zero district_id, matching the districts table (migration 015).
+    pivot_df["district_id"] = pivot_df["district_id"].apply(_canonical_leaid)
 
     # Calculate totals
     grade_columns = [col for col in pivot_df.columns if col.startswith("enrollment_")]
@@ -228,8 +265,11 @@ def import_staff_counts(staff_df: pd.DataFrame, session) -> int:
     existing_districts = {d.nces_id for d in session.query(District.nces_id).all()}
 
     # Filter to only districts that exist
+    n_file_districts = staff_df["district_id"].nunique()
     staff_df = staff_df[staff_df["district_id"].isin(existing_districts)]
     print(f"  {len(staff_df):,} districts match existing records")
+    _assert_match_coverage(n_file_districts, staff_df["district_id"].nunique(),
+                           len(existing_districts), "staff import")
 
     imported = 0
     batch_size = 1000
@@ -299,8 +339,11 @@ def import_enrollment_data(enrollment_df: pd.DataFrame, session) -> int:
     existing_districts = {d.nces_id for d in session.query(District.nces_id).all()}
 
     # Filter to only districts that exist
+    n_file_districts = enrollment_df["district_id"].nunique()
     enrollment_df = enrollment_df[enrollment_df["district_id"].isin(existing_districts)]
     print(f"  {len(enrollment_df):,} districts match existing records")
+    _assert_match_coverage(n_file_districts, enrollment_df["district_id"].nunique(),
+                           len(existing_districts), "enrollment import")
 
     imported = 0
     batch_size = 1000
