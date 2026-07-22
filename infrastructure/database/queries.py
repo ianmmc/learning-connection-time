@@ -195,6 +195,7 @@ def add_bell_schedule(
     minutes_basis: str = "gross_bell_to_bell",
     source_description: Optional[str] = None,
     notes: Optional[str] = None,
+    raw_import: Optional[Dict] = None,
     created_by: str = "claude",
 ) -> BellSchedule:
     """
@@ -271,6 +272,8 @@ def add_bell_schedule(
             existing.source_description = source_description
         if notes is not None:
             existing.notes = notes
+        if raw_import is not None:
+            existing.raw_import = raw_import
         existing.confidence = confidence
         existing.method = method
         existing.minutes_basis = minutes_basis
@@ -296,6 +299,7 @@ def add_bell_schedule(
             minutes_basis=minutes_basis,
             source_description=source_description,
             notes=notes,
+            raw_import=raw_import,
         )
         session.add(schedule)
         operation = "create"

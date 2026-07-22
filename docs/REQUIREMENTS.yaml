@@ -4080,3 +4080,37 @@ requirements:
       2026-07-20 during the epic #111 doc-tower + requirements-ledger audit. FACILITY_NAME_TOKENS
       lives in common/school_sampling.py; `_school_dict` (stage1_queue/batch_store.py) is the one
       place the flag is computed for the batch doc; gate1.js reads `review_flags` to render the cue."
+
+  - id: REQ-162
+    github_issue: "#605 / #606 (epic #92)"
+    description: "Stage 9 projects each approved band's modal minutes DOWN to the individual grade
+      (grade -> owning band -> minutes, via the band's live GSLO/GSHI span) into district_grade_minutes,
+      and the LCT calc consumes it: each staffing scope's instructional minutes becomes an
+      enrollment-weighted sum over its grades (Σ_g minutes[g]·enroll[g] / Σ_g enroll[g]), dissolving
+      the 3-band-minutes vs 2-band-staffing mismatch. The secondary variant weights mid+high instead
+      of the high-band-only #13-era stopgap."
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - "per_grade.project() maps each grade to its owning band from the live band_grade_span; a grade served by >=2 bands uses a deterministic tie-rule (canonical band wins when among the serving set, else lowest-band) recorded in overlap_flag (never silent); a grade served by no band gets no row (LCT falls back to statutory)"
+      - "district_grade_minutes (migration 025/026) holds one current row per (district, grade) KG..12 with method chk-constrained to council_extraction|statutory_fallback; Stage 9 UPSERTs + reconciles it inside the LCT write txn AND verifies it in-DB (Rule #6, like bell_schedules)"
+      - "weighted_scope_minutes reuses a grade's STORED statutory value (Stage 9 resolved it against the grade's REAL serving band) — never re-derives via the canonical band; a floating 7-9 middle's grade 9 weights the middle rate, not high"
+      - "REQ-026 temporal window: EVERY distinct measured year in a scope (not just the modal one) must form a ≤3-consecutive-year set with staff/enrollment, else the whole scope drops to per-grade statutory"
+      - "sources per_grade_bell/per_grade_mixed map to data_tier 2 AND populate bell_schedule_source_year (the migration-008 temporal trigger must see the bell year); per_grade_statutory is tier 3, year=None, _is_statutory-distinguishable (#582)"
+      - "GUARDED to incorporated districts (a district with no projection keeps the legacy band cascade byte-for-byte); the SPED-segmented scopes (core_sped/teachers_gened/instructional_sped) follow the K-12 `minutes` value by the standing base-scope convention — an intentional, documented consequence"
+      - "the recompute of lct_calculations is GATED on human sign-off of the per_grade_lct_sample before/after (which reuses the real pipeline's enrollment/staff pickers + blend-window downgrade, stable district order)"
+    tests:
+      - tests/test_stage9_per_grade.py
+      - tests/test_per_grade_lct.py
+      - tests/test_stage9_incorporate_integration.py
+    created: "2026-07-21T00:00:00Z"
+    updated: "2026-07-21T00:00:00Z"
+    notes: "The link that makes approved minutes move LCT numbers (STAGE9_INCORPORATE_DESIGN.md §4).
+      Added 2026-07-21 during the PR #607 max-effort review, which also hardened the Stage-9 write:
+      benchmark (batch_00000) districts are refused (the permanent wall); a bell_schedules row written
+      by a non-Stage-9 method (human_provided/tier_*) is PROTECTED from overwrite and orphan-delete; a
+      TOCTOU re-check ensures the receipt written is the decision the eligibility gate validated; a
+      council->statutory flip clears the retracted council clock times; _statutory_minutes uses the
+      canonical case-normalized lookup and treats only NULL (not 0) as absent; district-id normalized
+      before every governance read; init_precious_schema on entry."

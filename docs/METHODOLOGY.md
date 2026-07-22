@@ -109,6 +109,20 @@ See `docs/STAFFING_DATA_ENHANCEMENT_PLAN.md` for detailed scope definitions and 
 **3. Default (360 min)**:
 - Last-resort fallback when neither an actual schedule nor a state requirement is available
 
+**How the pipeline's minutes reach this cascade (Stage 9 write, BUILT 2026-07-21 — #93/#94/#95):** the
+acquisition pipeline produces per-band **gross bell-to-bell** minutes in **three** bands
+(elementary/middle/high). Once a district is approved at gate@8, Stage 9 writes them into `bell_schedules`
+(`method=council_extraction` / `minutes_basis=gross_bell_to_bell`); a **claimed-but-unsatisfied** band lands
+`method=statutory_fallback` / `minutes_basis=statutory` — labeled, never counted as enriched (the reader's
+`_is_statutory` keeps it `source=statutory_fallback, year=None`). **Band grain — reconciled by the per-grade
+projection (BUILT, #605/#606):** the LCT calc consumes **two** bands (elementary K-5 / secondary 6-12), so
+Stage 9 projects each band's modal minutes DOWN to the individual grade (via its live `GSLO`/`GSHI` span,
+handling floating/merged bands + overlaps) into a `district_grade_minutes` table, and `calculate_lct_variants.py`
+sums per-grade minutes × per-grade enrollment (`enrollment_grade_*`) to any staffing scope — the secondary
+variant now weights mid+high instead of high-only (`source=per_grade_bell|per_grade_mixed|per_grade_statutory`).
+Guarded to incorporated districts; the one-time recompute is gated on sign-off of the `per_grade_lct_sample`
+before/after. See `ACQUISITION_PIPELINE.md` §9 and `STAGE9_INCORPORATE_DESIGN.md` §4.
+
 **Example Values (Statutory)**:
 ```
 California (K-8):     200 minutes (minimum)
@@ -1180,13 +1194,15 @@ The current approach is **search-led discovery + tiered capture + cheap-cloud co
 
 **Data Quality Tracking**:
 
-> **Open reconciliation for #92 (Stage 9) planning:** the source/confidence vocabulary below
-> (`method`, `source`, `confidence: high|medium|low|statutory`) predates the acquisition
-> pipeline's actual current schema (`discovery_scope` domain/geo, tier A-D records, `school_fact`
-> rows, per-band mode, `batch_type`, `run_kind`, Stage 8's `closing_argument`/`stage8_approval`
-> output). There is no documented mapping yet from what Stage 8 actually approves to this legacy
-> shape — that reconciliation needs to happen as part of #92's design, not retrofitted here.
-> Flagged, not solved, in this pass (2026-07-20 doc-tower refresh).
+> **Reconciliation to the pipeline (Stage 9 write, BUILT 2026-07-21):** the legacy enrichment-record
+> shape below (`method`, `source`, `confidence: high|medium|low|statutory`) predates the acquisition
+> pipeline's schema. Stage 9 now provides the concrete mapping from what gate@8 approves to what
+> `bell_schedules` stores: per approved band → one row with `method=council_extraction`/`statutory_fallback`,
+> `minutes_basis`, `instructional_minutes` (the modal gross), `schools_sampled`, `source_urls`, `confidence`
+> (a coverage bucket), and a full `raw_import` re-verify bundle (`facts_fingerprint`, `approval_id`,
+> `receipt_band`, `band_grade_span`). Authority: `infrastructure/acquisition/stage9_incorporate/` +
+> `STAGE9_INCORPORATE_DESIGN.md`. The JSON example below is the older hand-enrichment shape, retained for
+> the pre-pipeline records that still use it.
 
 Each enrichment record includes:
 ```json

@@ -13,8 +13,9 @@
 > **Update this when:** a stage's purpose/IO changes, a new stage is built, or the flow diagram needs a new
 > edge — for implementation detail within an already-mapped stage, update that stage's own design note instead.
 
-**Current build state (2026-07-18):** the console runs the pipeline live **end to end through `gate@8`**
-(Stage 9 remains the one undesigned-into-code seam — see §9). Stage 1
+**Current build state (2026-07-21):** the console runs the pipeline live **end to end through `gate@8`**,
+and **Stage 9's write is now BUILT** (the approved per-band minutes land in the LCT `bell_schedules` DB —
+see §9; the LEA-level per-grade projection that lets LCT consume them is the scoped follow-up). Stage 1
 queue (`gate@1`, REQ-102), Stage 2 deterministic SERP cascade (REQ-104), Stage 3 capture + resilience
 (REQ-110), Stage 4 process + the Stage 4→5 incremental handoff (REQ-111), Stage 5 district-driven
 attention-first filter with the V2 detector/combiner scoring + v2.1 three-axis labeling (REQ-112/113/114/115),
@@ -327,8 +328,8 @@ flowchart TD
         CA_OUT["Approve (district-grain, ALL-OR-NOTHING — §2e) or send-back (reason<br/>required) freezes the closing argument as the receipt + its facts_fingerprint<br/>(a later re-extraction OR a new override/exclusion/add makes the approval<br/>detectably STALE) + a gate@8 calibration_event row (REQ-126, proxy=<br/>min_band_coverage, auto_recommendation=None — no auto policy yet)"]
         CA_MERGE --> CA_ROSTER --> CA_BUILD --> CA_FLAGS --> CA_EDIT --> CA_OUT
     end
-    G8{{"gate@8 — BUILT (manual). Approve -> Stage 9 writes mechanically (#93, not built).<br/>Send-back requires a reason; back-edges 8-&gt;1/8-&gt;6 DESIGNED AS STUBS, not built<br/>(governance §11e) — today the fix is a same-district re-extraction (#473) or<br/>human-add (#474), not a re-queue. epic #209 ordering constraint SATISFIED:<br/>gate@8 exists (still manual) before gates 6/7 may relax supervision"}}
-    S9[9. Incorporate — DESIGNED, not built -> LCT DB — #93]
+    G8{{"gate@8 — BUILT (manual). Approve -> Stage 9 writes mechanically (BUILT, #93/#94/#95).<br/>Send-back requires a reason; back-edges 8-&gt;1/8-&gt;6 DESIGNED AS STUBS, not built<br/>(governance §11e) — today the fix is a same-district re-extraction (#473) or<br/>human-add (#474), not a re-queue. epic #209 ordering constraint SATISFIED:<br/>gate@8 exists (still manual) before gates 6/7 may relax supervision"}}
+    S9[9. Incorporate — BUILT -> LCT bell_schedules + district_grade_minutes<br/>#93/#94/#95 write · #605/#606 per-grade projection→LCT<br/>recompute gated on sign-off]
 
     Q_OUT --> CPA --> D_RECON
     D_REG --> C_RECON
@@ -488,9 +489,9 @@ to epic #80 — blocked on the lab producing a measured escalation config: only 
 **BUILT** (`stage8_aggregate/aggregate.py` + `closing_argument.py` — see §"Stage 8 (Aggregate) BUILT" above and `STAGE8_AGGREGATE_DESIGN.md` §2 for the full design). Across the sampled schools in a district, the band value is the **modal** (most common) gross minutes; a genuine tie between distinct values falls back to the **arithmetic mean** for that band (`aggregate_band`). **Models extract per-school start/end rows; deterministic code computes the mode** — never ask the model to pick the "typical" schedule (REQ-054). Aggregation is CUMULATIVE across every production extraction run for a district (REQ-122's `merge_fact_runs`, with #254's year-precedence layered on top), draws its per-band denominator from the LIVE NCES-derived school roster (REQ-139/#253) rather than a frozen count, and is reviewable/correctable at **gate@8** (§ above) before anything reaches Stage 9 — a human override, exclusion, or hand-add changes the mode through the same canonical plausibility-gated arithmetic the council path uses, never a second, divergent code path.
 
 ### 9 · Incorporation — fail loud
-**DESIGNED, not built** (#93 — tracked under epic #92; the one remaining seam in the 9-stage map — next major build after epic #478's tail). Will write the district band values to the DB as a deterministic, re-approval-safe UPSERT off an approved gate@8 closing argument. A district where discovery finds nothing or the council can't agree lands as **`method=statutory_fallback`** — **labeled, never counted as enriched** (Rule #6, REQ-024). Coverage ≠ enrichment.
+**BUILT** (2026-07-21; #93/#94/#95 under epic #92 — `infrastructure/acquisition/stage9_incorporate/`, `STAGE9_INCORPORATE_DESIGN.md`). Writes the approved per-band values into the LCT `bell_schedules` DB as a deterministic, re-approval-safe UPSERT off the **frozen** gate@8 closing argument (the `merge_fact_runs` product — never a live re-derivation). Council bands land `method=council_extraction`/`minutes_basis=gross_bell_to_bell`; a **claimed** band with no accepted facts / no consensus lands **`method=statutory_fallback`**/`minutes_basis=statutory` — **labeled, never counted as enriched** (Rule #6, REQ-024; the reader's `_is_statutory` keeps it `source=statutory_fallback, year=None`). Verify-in-DB before commit; a Stage-9 orphan reconcile handles year-changes; an `incorporated` `state_event` (stage=9) closes the per-band lifecycle. The cross-DB write is the second sanctioned import-linter exception (Stage 9 is a layer *above* the independent stages; only `incorporate.py` reaches `infrastructure.database`). Full `#95` provenance rides in `raw_import`, including a live-roster `band_grade_span` (the grade→band substrate).
 
-**Before Stage 9 build work starts:** #479/#480 (data-quality prerequisite work) — see `CLAUDE.md`'s current resume state for the live sequencing.
+**Per-grade projection — BUILT** (2026-07-21, #605/#606): the 3-band-minutes → 2-band-staffing mismatch is dissolved by projecting each band's modal minutes down to the grade (via the live `band_grade_span`; floating/merged shapes + an overlap tie-rule), materializing a `district_grade_minutes` table (migration 025), and `calculate_lct_variants.py` summing per-grade minutes × per-grade enrollment to any scope (secondary now weights mid+high, not high-only). The one-time methodology recompute is gated on human sign-off of the before/after sample (`per_grade_lct_sample`). See `STAGE9_INCORPORATE_DESIGN.md` §4.
 
 ---
 

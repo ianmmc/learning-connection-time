@@ -99,6 +99,9 @@ class District(Base):
     enrollment_by_grade: Mapped[List["EnrollmentByGrade"]] = relationship(
         back_populates="district", cascade="all, delete-orphan"
     )
+    district_grade_minutes: Mapped[List["DistrictGradeMinutes"]] = relationship(
+        back_populates="district", cascade="all, delete-orphan"
+    )
 
     # Layer 2: State-level enhancements
     ca_sped_environments: Mapped[List["CASpedDistrictEnvironments"]] = relationship(
@@ -339,6 +342,54 @@ class BellSchedule(Base):
             "source_description": self.source_description,
             "notes": self.notes,
         }
+
+
+class DistrictGradeMinutes(Base):
+    """LEA-level per-grade instructional minutes — the Stage-9 projection (#605, migration 025).
+
+    Each grade takes its OWNING band's modal minutes (grade -> band -> minutes), using the band's
+    live GSLO/GSHI span so floating bands (a 7-9 middle) and merged shapes resolve correctly. Derived
+    from `bell_schedules` + the live roster; ONE current row per (district, grade). The LCT calc (#606)
+    reads this and weights per-grade minutes by per-grade enrollment to any staffing scope, dissolving
+    the 3-band-minutes vs 2-band-staffing mismatch. Not a source of truth (bell_schedules is) — a
+    regenerable materialized projection kept for auditability + cheap reads.
+    """
+    __tablename__ = "district_grade_minutes"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    district_id: Mapped[str] = mapped_column(
+        String(10), ForeignKey("districts.nces_id", ondelete="CASCADE"), nullable=False
+    )
+    grade: Mapped[str] = mapped_column(String(4), nullable=False)   # 'KG','01'..'12'
+    instructional_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    source_band: Mapped[str] = mapped_column(String(20), nullable=False)   # elementary|middle|high
+    method: Mapped[str] = mapped_column(String(30), nullable=False)        # council_extraction|statutory_fallback
+    minutes_basis: Mapped[Optional[str]] = mapped_column(String(30))
+    year: Mapped[Optional[str]] = mapped_column(String(10))
+    overlap_flag: Mapped[Optional[str]] = mapped_column(Text)
+    provenance = Column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    district: Mapped["District"] = relationship(back_populates="district_grade_minutes")
+
+    __table_args__ = (
+        UniqueConstraint("district_id", "grade", name="uq_district_grade_minutes"),
+        CheckConstraint("source_band IN ('elementary', 'middle', 'high')", name="chk_dgm_source_band"),
+        CheckConstraint(
+            "method IN ('council_extraction', 'statutory_fallback')", name="chk_dgm_method"
+        ),
+        CheckConstraint(
+            "minutes_basis IN ('gross_bell_to_bell', 'statutory') OR minutes_basis IS NULL",
+            name="chk_dgm_minutes_basis",
+        ),
+        CheckConstraint("instructional_minutes BETWEEN 100 AND 600", name="chk_dgm_minutes"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<DistrictGradeMinutes {self.district_id}/{self.grade}: {self.instructional_minutes} ({self.source_band})>"
 
 
 class LCTCalculation(Base):
