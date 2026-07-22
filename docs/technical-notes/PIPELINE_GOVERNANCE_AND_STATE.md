@@ -556,7 +556,7 @@ view/controls. Once cross-stage STATE is in the DB, the app is the governance co
   is an event-driven projection, not a Generate button (§6). Detail: `STAGE5_FILTER_DESIGN` (present-state rewrite).
 - **Stage 6 / gate@6** — approve the dispatch (which reps → which council config).
 - **Stage 7 / gate@7** — review the council's requests/recommendations.
-- **(later) Stage 8 / gate@8** — review per-band results before the mechanical Stage-9 DB write (the effective old "CP-C").
+- **Stage 8 / gate@8** — review per-band results before the mechanical Stage-9 DB write (the effective old "CP-C").
 
 ### Code structure — DONE (REQ-098)
 - **Move the app** the Stage-5 review app (server + `static/`) → **`infrastructure/acquisition/process_governance/`** (a top app layer, cross-stage). *(Done in REQ-098: relocated out of `common/` after import-linter flagged the common-imports-stages inversion; renamed console→process_governance for a slightly broader scope.)*
@@ -1145,10 +1145,14 @@ wiring layer's job, not the base layer's) and is called from `save_label` (gate@
 **the corpus is accruing now, not a dormant instrument.** Two decisions worth recording: **(a)** a label
 that cascades to cluster members logs exactly ONE row (the representative), never one per member — members
 are near-duplicates, and logging them separately would pseudo-replicate a single human judgment N times in
-rule-of-three math that assumes independent trials. **(b)** gate@8 — approving the council's extracted
-**times** (`school_fact.human_determination`) — is explicitly **NOT** part of this wiring: it is a Stage-8
-activity, and Stage 8 isn't built (#88/#89), so that hook is deferred until it lands, not conflated with
-gate@7's request-directive review. Detail: `STAGE5_FILTER_DESIGN.md` §4,
+rule-of-three math that assumes independent trials. **(b)** gate@8 — approving the council's closing
+argument — was explicitly **NOT** part of THIS (PR #218) wiring: it was a Stage-8 activity and Stage 8
+wasn't built yet (#88/#89), so that hook was deferred, not conflated with gate@7's request-directive
+review. **Since built (2026-07-14/21):** Stage 8 shipped (#89) and its gate@8 calibration hook is now wired
+too — `gate_calibration.gate8_decision_record` logs one `calibration_event` per district approve/send-back
+(the `min_band_coverage` proxy, `auto_recommendation=None` since gate@8 has no auto policy yet), called
+from `aggregate_decision` on the same transaction as the approval (REQ-126). Detail:
+`STAGE5_FILTER_DESIGN.md` §4,
 `STAGE6_DISPATCH_DESIGN.md` §0, `STAGE7_EXTRACT_DESIGN.md` §3.
 
 **Phase 2 — the group-aware promotion gate + safe-promotion machinery (#212/#213, built 2026-07-10).** The
@@ -1189,7 +1193,7 @@ discipline but it accumulates dormant safety code, all blocked on the same prere
 demote-hook (**live wiring shipped, WITH live callers** — `save_label`/`reset_labels`/the status endpoint —
 but its enforcement stays dormant while gate@5 is configured manual: this replaces an earlier draft of this
 sentence that said "zero live callers," which was already wrong by the time it was written — see §11b
-above for the actual wiring), #210's gate@8 calibration hook (deferred to Stage 8), and #213's
+above for the actual wiring), #210's gate@8 calibration hook (**now wired** — Stage 8 shipped #89; gate@8 logs a `calibration_event` per approve/send-back, REQ-126 — see §11b above), and #213's
 pointer-drives-live-config actuation + the minor/major re-ingest shadow — all gated on gate-mode persistence,
 with the load-bearing ordering (persistence first; gate@8's calibrated gate before 6/7 relax). When the
 manual→auto transition begins, #219 is the checklist we run so nothing is silently left inert.
@@ -1232,8 +1236,8 @@ progress bar). **Pause dropped** (not worth the complexity).
 are **7→6** (direct alternate-rep re-dispatch, bundled per district), **7→3** (recapture the URL), **7→2**
 (targeted rediscover for a band), and **7→1** (a follow-up batch adding schools) — all built, all routing
 through a Stage-1 follow-up batch except 7→6 (§3F/§11d). The Stage-8 back-edges this subsection originally
-anticipated (8→1, 8→6) are **not yet real** — Stage 8 isn't built (tracked #89) — and will be documented
-here once designed; don't treat them as built today. See the flow diagram in `ACQUISITION_PIPELINE.md`.
+anticipated (8→1, 8→6) are **not yet real** — Stage 8 itself is now built (#89), but its back-edges aren't
+designed yet — and will be documented here once designed; don't treat them as built today. See the flow diagram in `ACQUISITION_PIPELINE.md`.
 The immutable Stage-6 dispatch freeze is what keeps "what we sent" recoverable across these loops.
 
 **5→1 (BUILT 2026-07-19, #164 PR 3b):** the ZERO-YIELD back-edge — a district that lands at gate@5

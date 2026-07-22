@@ -1,6 +1,6 @@
 # Project Terminology Guide
 
-**Last Updated:** 2026-07-20
+**Last Updated:** 2026-07-22
 
 The canonical vocabulary for the Learning Connection Time (LCT) project — the file an auditor or new
 developer should read first. It standardizes the terms used across `docs/ACQUISITION_PIPELINE.md`,
@@ -93,12 +93,31 @@ tagged `Middle` is upper-elementary). Full design: `STAGE8_AGGREGATE_DESIGN.md` 
 One run's worth of targeting, produced by Stage 1 (`data/acquisition/queue/`). Carries the selected
 districts + per-band school lists + the NCES denominator. `batch_00001` is the live working batch.
 
+### Benchmark district / `batch_00000`
+The **special-case measuring-stick batch** (`batch_type == "benchmark"`, `stage1_queue/benchmark_batch.py`):
+the **27 curated-GT districts** injected directly at the **Stage-3 seam** from their FROZEN
+`gt_curation` capture artifacts (`gt://` URIs — no discovery, no fetching), so Stage 7's council and
+Stage 8's aggregation can be scored against 940/943 hand-verified per-school times with zero
+site-drift confounding. **THE WALL:** a benchmark district's extracted values are **NEVER**
+Stage-9-written to the LCT DB and **never counted** in funnel/enrichment statistics — several source
+docs are deliberately of older school years. Exclusion filters don't apply (a benchmark district is
+in by fiat). See `STAGE1_QUEUE_DESIGN.md` §2h.
+
+### Receipt (governance §1)
+The organizing split: **the DB is the working store; disk holds binaries + auditable receipts.** A
+**receipt** is a **regenerable** on-disk artifact — for state-confirmation, human inspection, and
+recovery — **not** the transport between stages (the DB is). The per-stage district-dir JSON are
+receipts: `discovery.json` / `candidates.json` (Stage 2) · `captures.json` (Stage 3) · `processed.json`
+(Stage 4) · `filtered.json` (Stage 5); so are the per-run audit files (`handoff_<hash>_<ts>.json`,
+`extraction_<hash>_<did>_<ts>.json`) and `district_status.json`. Because they're regenerable, disk
+must never run ahead of a commit. Full principle: `PIPELINE_GOVERNANCE_AND_STATE.md` §1.
+
 ### Cross-stage state / `state_event` log / `district_status.json`
 The cross-stage registry is the Postgres **`state_event` append-log** in the governance DB
-(REQ-099); current state (each district's `furthest_stage` and outcome) is a SQL view.
-`data/acquisition/status/district_status.json` is its **regenerable backup/receipt** (swept into
-commits by the pre-commit hook), not the working store. `already_attempted()` excludes a district
-from first-run re-queue once it has reached **Stage 3 (Capture)+** — searched/queued-only
+(REQ-099); **current state** (each district's `furthest_stage` and outcome) is a SQL view/projection
+over that log. `data/acquisition/status/district_status.json` is its **regenerable backup/receipt**
+(swept into commits by the pre-commit hook), not the working store. `already_attempted()` excludes a
+district from first-run re-queue once it has reached **Stage 3 (Capture)+** — searched/queued-only
 districts stay eligible.
 
 ### Discovery scope (`domain` vs `geo`) & the discovery-scope policy
@@ -254,6 +273,30 @@ identically by Stage 2/3/4's own `reconcile()` functions. Full mechanism:
   `page.pdf()` + `pdftotext -layout` (multi-column) → **Tier 2.5** OCR a clean image → **Tier 3** vision
   (Gemini Flash / Mistral Large read JS/image/scan pages text paths miss). Trigger = "did the cheap
   reader recover usable content," not file format.
+- **Handoff** (Stage 6) vs **Extraction** (Stage 7) — two immutable per-run receipts, not to be confused.
+  A **handoff** (`handoff_<hash>_<ts>.json`) is Stage 6's **content-of-record** for a dispatch: the reps
+  released to extraction + the council configs actually used, keyed by a content **`handoff_hash`**. An
+  **extraction** (`extraction_<hash>_<did>_<ts>.json`) is Stage 7's per-district **audit trail** of a
+  council run — per-rep, per-model detail incl. *what each model read*. The DB holds the queryable
+  per-school facts; these files hold the audit trail (governance §1). The handoff is **precious**
+  provenance (the closing argument reconstructs evidence from it); the extraction receipt is regenerable.
+- **Closing argument** (Stage 8, gate@8) — one district's per-band determination assembled into a
+  reviewable + freezable **evidence package** (`stage8_aggregate/closing_argument.py`). The metaphor
+  (Ian, 2026-07-13): gate@8 is an **attorney's closing argument** — state the claim (per-band modal
+  minutes), marshal the evidence (page → extraction → fact, from the immutable handoff + `state_event`),
+  confront the gaps honestly (uncovered bands, exclusions). `build_closing_argument(...)` is **PURE**.
+  On gate@8 approval the whole package is **FROZEN** into the `stage8_approval` row (`receipt_json` +
+  a `facts_fingerprint`), so a later re-extraction or override makes the approval detectably **stale**.
+- **Incorporate (Stage 9) / `district_grade_minutes` / overlap flag** — Stage 9 **writes** the approved
+  per-band values into the LCT `bell_schedules` DB off the *frozen* closing argument (council bands
+  `method=council_extraction`; a claimed band with no accepted facts lands `method=statutory_fallback`,
+  labeled, never enriched). It also materializes **`district_grade_minutes`** — the LEA-level **per-grade
+  minutes projection** (migration 025): each band's modal minutes projected DOWN to the individual grade
+  via the band's LIVE grade span (`band_grade_span`), so floating (7-9 middle) and merged (K-8) shapes
+  resolve; this is what `calculate_lct_variants.py` consumes to weight 3-band minutes against 2-band
+  staffing. **`overlap_flag`** honestly records the deterministic LEA-level tie-rule when ≥2 bands serve
+  one grade (e.g. a 7-9 middle and a 9-12 high both serving grade 9) — canonical band wins, else lowest
+  band — an arbitrary-but-stable choice, **never silent**. See `STAGE9_INCORPORATE_DESIGN.md` §4.
 
 ---
 
