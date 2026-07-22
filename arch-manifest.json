@@ -162,6 +162,33 @@
         "why": "#526: the DB is the working store; the console must never consume the on-disk batch receipt as transport.",
         "forbidden_scope": "infrastructure/acquisition/process_governance"
       }
+    ],
+    "audit_receipts": [
+      {
+        "_comment": "REQ-164 Phase 5b: the ALWAYS-datetime-stamped per-district audit receipts written through the ONE shared writer (common/receipts.py::write_receipt, imported everywhere as `RCPT`) — gates 6/7/8/9's cross-check + recovery artifacts, never read as input by an active-pipeline stage (governance §1). Distinct from the fixed-filename inter-stage handoffs above (stages 2-5): these are basename-prefixed, always-stamped (`<basename>.<fs_stamp>.<writer>-<h8>.json`), so the declared 'artifact' is the BASENAME literal passed as write_receipt's 3rd positional arg, not a full filename. test_no_undeclared_audit_receipt / test_no_stale_audit_receipt_declaration / test_audit_receipt_producer_matches_bidirectionally enforce BOTH directions the same way the external_programs checks do — addable green now that stages 6-9 all write these (previously only a partial set existed, so a complete-coverage check would have been vacuous).",
+        "basename": "stage6_dispatch",
+        "stage": 6,
+        "producer": "infrastructure/acquisition/process_governance/stage6_dispatch.py",
+        "role": "gate@6 per-district receipt projecting the district's dispatch package, pointing at the authoritative immutable handoff_<hash>_<ts>.json"
+      },
+      {
+        "basename": "stage7_extract",
+        "stage": 7,
+        "producer": "infrastructure/acquisition/process_governance/stage7_run.py",
+        "role": "per-district receipt pointing at the authoritative central extraction_<hash>_<did>_<ts>.json + gov_db:extraction/school_fact"
+      },
+      {
+        "basename": "stage8_aggregate",
+        "stage": 8,
+        "producer": "infrastructure/acquisition/process_governance/server.py",
+        "role": "gate@8 per-district receipt of the human approval decision"
+      },
+      {
+        "basename": "stage9_incorporate",
+        "stage": 9,
+        "producer": "infrastructure/acquisition/stage9_incorporate/incorporate.py",
+        "role": "per-district receipt after LCT incorporation"
+      }
     ]
   },
   "shared_config": {
