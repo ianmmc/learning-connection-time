@@ -3,7 +3,7 @@
 > **Authority:** what each federal/state data source provides, how it's accessed, and its integration
 > status — verify status claims against the live DB (Rule #6) before trusting them for anything LCT-facing.
 > **Audience:** anyone adding a new state integration or tracing where a number in the DB came from.
-> **Companions:** `docs/SEA_INTEGRATION_GUIDE.md` (the how-to for building a new state integration),
+> **Companions:** `SEA_INTEGRATION_GUIDE.md` (the how-to for building a new state integration),
 > `docs/METHODOLOGY.md` §Data Source Precedence (the authoritative Tier 1/Tier 2 completeness breakdown).
 > **Update this when:** a new data source or state integration is added, or an integration's actual DB
 > coverage changes — verify in the DB before updating a status claim, don't just update the prose.

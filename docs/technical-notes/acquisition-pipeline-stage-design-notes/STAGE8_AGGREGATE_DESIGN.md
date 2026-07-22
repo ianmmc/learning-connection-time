@@ -4,8 +4,9 @@
 > ALGORITHM** (`stage8_aggregate/aggregate.py`) — live in `gate@7`'s read path since early July; and (2)
 > the **standalone gate@8 console + approval write** (`#89`, shipped 2026-07-14), plus the `#499` slot
 > program (PRs A–F, REQ-144…150) and epic `#478`'s human-judgment overrides. What is **still genuinely
-> unbuilt: the Stage-9 write (#93) and the `8→1`/`8→6` back-edges** (`sent_back` is recorded but no
-> downstream executor consumes it yet), and gate@8 **auto** mode.
+> unbuilt: the `8→1`/`8→6` back-edges** (`sent_back` is recorded but no downstream executor consumes it
+> yet) and gate@8 **auto** mode. The **Stage-9 write (#93) shipped 2026-07-21** (epic #92) — an approved
+> district is now mechanically incorporated into the LCT DB (`STAGE9_INCORPORATE_DESIGN.md`).
 >
 > The algorithm is not a prototype awaiting a consumer. `stage7_run.py` calls `AGG.consensus_school_facts`
 > and `AGG.district_bands_from_facts` in the production extraction flow (`stage7_run.py:172,179,224`);
@@ -19,12 +20,12 @@
 > **The standalone gate@8** (§0a, §2 below) is BUILT: the review-queue + district-detail endpoints, the
 > per-school override, the four human-judgment tables, the approve/send-back verdict with a frozen
 > fingerprinted receipt, and the gate@8 calibration hook. It is the effective old "CP-C" — a human signs
-> off the district's picture before the (still-unbuilt) mechanical Stage-9 write.
+> off the district's picture before the mechanical Stage-9 write (BUILT 2026-07-21, `STAGE9_INCORPORATE_DESIGN.md`).
 > **Companions:** `ACQUISITION_PIPELINE.md` §8 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE.md`
 > §11 (gates/console; §11e cyclic back-edges), `METHODOLOGY.md` (the metric: gross bell-to-bell, the mode).
 > Upstream: `STAGE7_EXTRACT_DESIGN.md`. Downstream: `STAGE9_INCORPORATE_DESIGN.md`.
-> **Update this when:** Stage 8's code behavior changes (the back-edges or the Stage-9 write land, a
-> precious table changes). Design turns belong in the change log at the bottom.
+> **Update this when:** Stage 8's code behavior changes (the back-edges land, a precious table changes).
+> Design turns belong in the change log at the bottom.
 
 ---
 
@@ -113,8 +114,8 @@ decision (REQUIREMENTS.yaml REQ-120/REQ-121 notes): approving extracted times is
 not the times themselves. `district_bands_from_facts` seeds the field this gate acts on:
 each school entry carries a `human_determination` stub the reviewer fills in via `POST
 /api/aggregate/override` (§1a). Completion grain = district × **band** (schools are instrumental;
-governance §11d). What remains unbuilt downstream: the mechanical Stage-9 write (#93) and the
-`8→1`/`8→6` back-edges — `sent_back` is recorded but nothing consumes it yet.
+governance §11d). What remains unbuilt downstream: the `8→1`/`8→6` back-edges — `sent_back` is recorded
+but nothing consumes it yet. (The mechanical Stage-9 write, #93, shipped 2026-07-21 — §0/§3 note.)
 
 ## 1a. The live functions (aggregate.py)
 
@@ -237,8 +238,9 @@ purposes.
 ## 2. The standalone Stage 8 — design rationale (DECIDED 2026-07-13, BUILT #89 2026-07-14)
 
 > This section is the *design rationale* the built gate@8 (§0a/§0b/§0c) realizes — kept because the "why"
-> is still the reference for the parts not yet built (Stage-9 write, back-edges, auto mode). Where it reads
-> in the future tense, read §0a/§0b for what actually shipped.
+> is still the reference for the parts not yet built (back-edges, auto mode; the Stage-9 write shipped
+> 2026-07-21 — `STAGE9_INCORPORATE_DESIGN.md`). Where it reads in the future tense, read §0a/§0b for what
+> actually shipped.
 
 Design settled with Ian in a 2026-07-13 session. The guiding metaphor: **gate@8 is an attorney's closing
 argument.** A closing argument states the claim, marshals the evidence, confronts the gaps honestly, and
@@ -441,7 +443,8 @@ A max-effort multi-angle review of the manual-gate build confirmed and fixed, be
   Settings bug, which had been fixed as a settings.js-LOCAL helper); `safeUrl` is now a SHARED
   `window.LCT` helper used by both views — one home, like `esc()` itself.
 - **The benchmark wall inlined a third time** — now ONE `IS_BENCHMARK_SQL` fragment (server.py) used by
-  the dispatch preview and the gate@8 queue; Stage 9's write boundary reuses it when built.
+  the dispatch preview and the gate@8 queue; Stage 9's write boundary enforces the same benchmark wall
+  (built 2026-07-21 — via its own `_is_benchmark_district`, since Stage 9 sits below `process_governance`).
 - **Single-source stated-minutes read as agreement** — `stated_minutes_agree` is three-state: True only
   with ≥2 models stating the same number, None (rendered "single source") when only one read it.
 - **Falsy-zero `fact_id`** — the override endpoint validates `is None`, and the console guards
@@ -457,15 +460,16 @@ A max-effort multi-angle review of the manual-gate build confirmed and fixed, be
   8→1/8→6 back-edges.)
 - **`gate@8` manual/auto** — auto = confidence-escalating, never writes minutes without confidence
   (governance §11b); blocked on #104 part b. Manual shipped; the calibration hook logs from day one (§2c.6).
-- **Stage 9 write** (#93) — the mechanical upsert into the LCT DB downstream of an approval (its own stage;
-  `STAGE9_INCORPORATE_DESIGN.md`). No writer exists yet; only the DB landing zone (migration
-  `019_bell_schedules_stage9_landing.sql`).
 
 **Since CLOSED (were open in the 2026-07-13 list):**
 - ~~#90 — the per-band "satisfied" signal~~ → **BUILT as REQ-149** (per-band SATISFIED over the #499 slot
   spine; REQ-149 supersedes #90). See §2d/§0c.
 - ~~The approval-receipt schema + migration~~ → **BUILT** (`stage8_approval` + the frozen `receipt_json` /
   `facts_fingerprint`; arrives via `init_precious_schema()`, not a migration — §0b, §3 note below).
+- ~~Stage 9 write (#93)~~ → **BUILT 2026-07-21** (epic #92 — the mechanical cross-DB upsert from the frozen
+  gate@8 receipt + the per-grade projection; its own stage, `STAGE9_INCORPORATE_DESIGN.md`). Stage 9
+  consumes the frozen `stage8_approval.receipt_json` (the `merge_fact_runs` product) without re-deriving it.
+  A real incorporation campaign is underway (see that note for the live count).
 - **Modal-aggregation quality (from the live Santa Fe review, 2026-07-13)** — two distortions that made a
   human override necessary where automation should have handled it: **#253** combined-scope facts
   (`k8 schools`, `milagro and ortiz schools`) counting as distinct schools + the K-8-topology-blind

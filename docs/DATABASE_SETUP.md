@@ -1,6 +1,6 @@
 # PostgreSQL Database Setup Guide
 
-**Last Updated**: July 20, 2026
+**Last Updated**: July 22, 2026
 
 This guide covers the complete setup and usage of the PostgreSQL database for the Learning Connection Time project.
 
@@ -149,13 +149,19 @@ Primary table containing all U.S. school districts.
 
 | Column | Type | Description |
 |--------|------|-------------|
-| nces_id | VARCHAR(20) | Primary key, NCES district ID |
+| nces_id | VARCHAR(10) | Primary key, NCES district ID (7-digit canonical, migration 015) |
 | name | VARCHAR(255) | District name |
-| state | VARCHAR(2) | Two-letter state code |
-| enrollment | INTEGER | Total K-12 enrollment |
-| schools | INTEGER | Number of schools |
-| locale_code | VARCHAR(10) | NCES locale classification |
-| metadata | JSONB | Additional district info |
+| state | CHAR(2) | Two-letter state code |
+| enrollment | INTEGER | Total enrollment |
+| instructional_staff | NUMERIC(10,2) | District-level instructional staff FTE |
+| total_staff | NUMERIC(10,2) | Total staff FTE |
+| schools_count | INTEGER | Number of schools |
+| year | VARCHAR(10) | Data year |
+| data_source | VARCHAR(50) | Source (default `nces_ccd`) |
+| st_leaid | VARCHAR(20) | State-assigned LEA ID (e.g., "CA-6275796") |
+| website_url | VARCHAR(500) | District website |
+| is_career_technical_center | BOOLEAN | CTC classification flag |
+| is_shared_service_entity | BOOLEAN | Shared-service classification flag |
 | created_at | TIMESTAMP | Record creation time |
 | updated_at | TIMESTAMP | Last update time |
 
@@ -205,7 +211,8 @@ Bell schedule / instructional-minute data. This is the **acquisition pipeline's 
 **Constraints**:
 - Foreign key to `districts(nces_id)`
 - Check constraint: `instructional_minutes BETWEEN 100 AND 600` (the DB's outer sanity bound;
-  the REQ-055 plausibility gate 240–510 lives in `infrastructure/database/school_year.py`)
+  the REQ-055 plausibility gate 240–510 lives in `infrastructure/utilities/school_year.py`,
+  re-exported through `infrastructure/database/school_year.py` for the LCT layer)
 - Check constraints: `grade_level IN ('elementary','middle','high')`, `method IN (BELL_SCHEDULE_METHODS)`,
   `minutes_basis IN ('gross_bell_to_bell','statutory') OR NULL`
 - Unique constraint: `(district_id, year, grade_level)` — the Stage-9 UPSERT / idempotency key
@@ -220,25 +227,39 @@ LCT calc can weight per-grade minutes × per-grade enrollment to any staffing sc
 regenerable from `bell_schedules` + the live roster — not a source of truth. FK `districts(nces_id)` ON
 DELETE CASCADE.
 
-#### **grade_level_enrollment**
-K-12 enrollment by grade level.
+#### **enrollment_by_grade**
+Per-grade enrollment (wide format — one column per grade). One row per (district, source_year).
 
 | Column | Type | Description |
 |--------|------|-------------|
-| nces_id | VARCHAR(20) | Foreign key to districts |
-| year | VARCHAR(10) | School year |
-| grade | VARCHAR(5) | Grade level (KG, G01-G12) |
-| enrollment | INTEGER | Students in grade |
+| id | SERIAL | Primary key |
+| district_id | VARCHAR(10) | Foreign key to `districts(nces_id)` ON DELETE CASCADE |
+| source_year | VARCHAR(10) | School year of the data |
+| data_source | VARCHAR(50) | Source (default `nces_ccd`) |
+| enrollment_prek … enrollment_grade_13 | INTEGER | One column per grade (PreK, KG, G1–G13, ungraded, adult_ed) |
+| enrollment_total / enrollment_k12 / enrollment_elementary / enrollment_secondary | INTEGER | Pre-computed aggregates (elementary = K–5, secondary = 6–12) |
 
-#### **grade_level_staffing**
-K-12 teacher counts by level.
+#### **staff_counts**
+Raw per-source staff FTE counts (wide format), tiered classroom → support → admin. One row per
+(district, source_year, data_source); unique constraint `uq_staff_counts`.
 
 | Column | Type | Description |
 |--------|------|-------------|
-| nces_id | VARCHAR(20) | Foreign key to districts |
-| year | VARCHAR(10) | School year |
-| category | VARCHAR(50) | Staff category |
-| fte_count | DECIMAL(10,2) | Full-time equivalent count |
+| id | SERIAL | Primary key |
+| district_id | VARCHAR(10) | Foreign key to `districts(nces_id)` ON DELETE CASCADE |
+| source_year | VARCHAR(10) | School year |
+| data_source | VARCHAR(50) | Source (e.g., `nces_ccd`, `crdc`, a state SEA) |
+| teachers_total / teachers_elementary / teachers_secondary / … | NUMERIC(10,2) | Classroom teacher FTE by level |
+| instructional_coordinators / librarians / paraprofessionals / counselors_* / psychologists / … | NUMERIC(10,2) | Support & administrative staff FTE (~40 columns; see `models.py`) |
+
+#### **staff_counts_effective**
+Resolved current staff counts after precedence rules (migration 017) — the multi-year table LCT actually
+reads for staff scope. One row per (district, effective_year) composite PK. Holds the raw staff FTE columns
+(mirroring `staff_counts`) plus **pre-computed scope aggregates for the LCT variants**
+(`teachers_k12`, `teachers_elementary_k5`, `all_other_support_staff` [migration 023], …). `primary_source`
++ `sources_used` (JSONB) record which source won per field. Callers select the effective_year explicitly
+(`calculate_lct_variants.py`'s "most recent year with real data" rule). FK `districts(nces_id)` ON DELETE
+CASCADE.
 
 #### **lct_calculations**
 Calculated LCT metrics for districts.
@@ -246,16 +267,22 @@ Calculated LCT metrics for districts.
 | Column | Type | Description |
 |--------|------|-------------|
 | id | SERIAL | Primary key |
-| district_id | VARCHAR(20) | Foreign key to districts |
+| district_id | VARCHAR(10) | Foreign key to districts |
 | year | VARCHAR(10) | School year |
-| scope | VARCHAR(50) | LCT variant (teachers_only, etc.) |
+| grade_level | VARCHAR | Grade band the row is for |
+| staff_scope | VARCHAR | LCT variant (`teachers_only`, `teachers_core`, `instructional`, `all`, …) |
 | instructional_minutes | INTEGER | Minutes used in calculation |
-| staff_count | DECIMAL(10,2) | Staff FTE used |
+| instructional_staff | NUMERIC | Staff FTE used |
 | enrollment | INTEGER | Student enrollment used |
-| lct_value | DECIMAL(10,2) | Calculated LCT in minutes |
-| calculation_notes | TEXT | Data quality notes |
-| run_id | VARCHAR(50) | Foreign key to calculation_runs |
-| created_at | TIMESTAMP | Calculation timestamp |
+| lct_value | NUMERIC | Calculated LCT in minutes |
+| data_tier | INTEGER | Data-quality tier |
+| bell_schedule_id | INTEGER | Source bell-schedule row, if any |
+| instructional_minutes_source | VARCHAR | e.g., `per_grade_bell`, `per_grade_statutory` |
+| staff_source / staff_source_year / enrollment_source / … | VARCHAR | Per-input provenance columns |
+| component_years / year_span / within_3year_window / temporal_flags | JSONB / INT / BOOL / ARRAY | REQ-026 temporal-validation fields |
+| notes | TEXT | Data quality notes |
+| run_id | VARCHAR | Foreign key to calculation_runs |
+| calculated_at | TIMESTAMP | Calculation timestamp |
 
 #### **calculation_runs**
 Tracks LCT calculation runs for incremental processing.
@@ -358,7 +385,7 @@ FROM mv_lct_summary_stats
 ORDER BY scope;
 ```
 
-**Rows**: 7 scopes (all, instructional, teachers_only, etc.)
+**Rows**: 4 scopes (all, instructional, teachers_core, teachers_only)
 **Refresh**: After running LCT calculations
 
 ### Refreshing Views
@@ -687,6 +714,6 @@ with session_scope() as session:
 
 ---
 
-**Last Updated**: July 20, 2026
+**Last Updated**: July 22, 2026
 **Database Version**: PostgreSQL 16
 **Schema Version**: 2.0 (with materialized views and calculation tracking)

@@ -46,7 +46,7 @@ Before the pipeline was redesigned, a strategy/options review (`INSTRUCTIONAL_MI
 ---
 
 ### Extraction quality benchmarked — no silver bullet (2026-06)
-A provider-agnostic benchmark (`infrastructure/scripts/benchmark/`) compared reading methods — plain text/OCR, **table-aware** (pdfplumber), and **vision** (qwen2.5-VL) — × models, scored on grade-band *modal instructional minutes* (±15 min) vs the DB's `human_provided` ground truth. **All approaches plateau ~35–53%.** Plain text on a 7B model (mistral/qwen2.5) is the best *local* approach (~42%); table-aware and vision did **not** beat it on aggregate (table-aware is more *precise* when it hits; vision fixates on early-release columns). **Claude Haiku (cloud) edged the locals (~53%)** — a modest model lift, not a fix. **Lesson: the dominant limiter is input + ground-truth quality** (corrupt source PDFs, HTML schedules not in parseable tables, transposed tables, single-band GT) — *not* the model or reading method. *Direction set:* format-aware reading + **dual-path consensus with human review of disagreements** + better multi-band ground truth. This answers the "is local extraction good enough?" question that paused the project (no — ~42% local, ~50% even with a capable model) and reframes the work from model-selection to input/GT quality + QC. Full record: `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
+A provider-agnostic benchmark (`infrastructure/scripts/benchmark/`) compared reading methods — plain text/OCR, **table-aware** (pdfplumber), and **vision** (qwen2.5-VL) — × models, scored on grade-band *modal instructional minutes* (±15 min) vs the DB's `human_provided` ground truth. **All approaches plateau ~35–53%.** Plain text on a 7B model (mistral/qwen2.5) is the best *local* approach (~42%); table-aware and vision did **not** beat it on aggregate (table-aware is more *precise* when it hits; vision fixates on early-release columns). **Claude Haiku (cloud) edged the locals (~53%)** — a modest model lift, not a fix. **Lesson: the dominant limiter is input + ground-truth quality** (corrupt source PDFs, HTML schedules not in parseable tables, transposed tables, single-band GT) — *not* the model or reading method. *Direction set:* format-aware reading + **dual-path consensus with human review of disagreements** + better multi-band ground truth. This answers the "is local extraction good enough?" question that paused the project (no — ~42% local, ~50% even with a capable model) and reframes the work from model-selection to input/GT quality + QC. Full record: `docs/technical-notes/learning-loop-reports/EXTRACTION_BENCHMARK_FINDINGS.md`.
 
 ### Multi-provider bake-off + discovery architecture (2026-06-13) — *partly supersedes the entry above*
 A second, much wider bake-off (the local models had been deleted; cloud APIs now in play) ran ~20 models on the **full 41** districts via two new multi-model conduits (Perplexity Agent API `pplx:`, OpenRouter `openrouter:` in `extractors.py`; native Gemini direct API; Claude via subagents). It overturned the "modest model lever / ~53% ceiling" framing:
@@ -54,7 +54,7 @@ A second, much wider bake-off (the local models had been deleted; cloud APIs now
 - **Decision:** default extractor = **Gemini 2.5 Flash**; council partner = a cross-family model (**DeepSeek V3.2 / Mistral**); local/self-host = **Granite 4.1 8B**. No per-modality routing — one cheap model generalizes; route by **confidence** (consensus auto-accept) instead.
 - **Lesson — input is the ceiling (quantified).** A district×model crosstab + difficulty analysis showed **20% of districts are solved by zero models**, but on tractable inputs (difficulty > 0.70) the top models re-score to **~95–100%**. Failure-mode analysis: **22 of 23 hard inputs already contained the schedule as text** (it was *not* an OCR problem) — they failed on **granularity/noise** (giant multi-school dumps, single-band GT) or were the *wrong page*. So the path past ~69% is **better inputs**, dominated by **per-school targeting** (small, focused, current, single-schedule artifacts).
 - **Discovery validated (search, not crawling).** Blind Crawlee crawling fails (probe: glob-targeting matched zero links; broad crawl missed every schedule). **Domain-scoped search** (Perplexity `search_domain_filter`, OpenRouter `site:`, Claude `allowed_domains`) eliminates the wrong-district problem and reaches school subdomains. **Google grounding dropped** (its tool has only `exclude_domains`, no site-restriction). New bottleneck = **capture fidelity** on JS school-CMS pages → tiered capture (text-layer preferred; screenshot+OCR/vision fallback). **Crawlee re-cast as terrain-mapper/one-hop off-site fetcher**, not schedule-finder. Relevance gate stays a deliberately-cheap `pdftotext` sniff; high-fidelity reading (pdfplumber/vision) is the extraction stage's job.
-- Requirements added: **REQ-043…053** (discovery, relevance gate, multi-format capture, net-minutes extraction, grade-band assignment, consensus, fail-loud fallback, provenance, budget governor, sampling, grounded-extraction+provider-abstraction). Full record: `docs/technical-notes/models-and-council-composition/EXTRACTION_AND_DISCOVERY_LEARNINGS_2026-06.md`, `docs/EXTRACTION_BENCHMARK_FINDINGS.md` (Updates 1–3).
+- Requirements added: **REQ-043…053** (discovery, relevance gate, multi-format capture, net-minutes extraction, grade-band assignment, consensus, fail-loud fallback, provenance, budget governor, sampling, grounded-extraction+provider-abstraction). Full record: `docs/technical-notes/models-and-council-composition/EXTRACTION_AND_DISCOVERY_LEARNINGS_2026-06.md`, `docs/technical-notes/learning-loop-reports/EXTRACTION_BENCHMARK_FINDINGS.md` (Updates 1–3).
 
 ### Discovery scaled, per-school pipeline built, council + metric pinned (2026-06-20)
 The acquisition design was carried from proof-of-concept to a concrete, partly-validated pipeline. Canonical doc: `docs/ACQUISITION_PIPELINE.md` (now the single source of truth; the old "production-ready" Crawlee+Ollama description was replaced; the strategy/options report that preceded this pipeline is archived, distilled into the entry above).
@@ -897,7 +897,7 @@ One genuine surprise survived the skeptical read: Minnesota publishes a file
 (`Average Length of Instructional Days by Sch and Grade K-12 FY25.xlsx`) that reports actual
 gross bell-to-bell instructional minutes per school×grade — found by Ian manually browsing MDE,
 not by the automated discovery cascade, and independently arithmetic-verified twice. This is a
-narrow exception to `docs/INSTRUCTIONAL_TIME_HARVEST.md`'s "SEA central-data harvest is a dead end
+narrow exception to `INSTRUCTIONAL_TIME_HARVEST.md`'s "SEA central-data harvest is a dead end
 for daily minutes" conclusion, not a reversal of it — filed as its own exploratory issue (#604)
 rather than folded into the enrollment/staffing/SPED assessment, since it's a different kind of
 input with its own precedence questions.
@@ -987,6 +987,114 @@ built the same day) and `PIPELINE_GOVERNANCE_AND_STATE.md` (two spots still desc
 
 Authority: PRs #609, #610, #612; issues #608, #611; `STAGE4_PROCESS_DESIGN.md`,
 `STAGE9_INCORPORATE_DESIGN.md` §4, `docs/REQUIREMENTS.yaml` REQ-002/REQ-162/REQ-163.
+
+---
+
+### 2026-07-22 — Stage 9 campaign continued (3 more incorporated) surfaces a staff-vintage REQ-026 case, which reopens the receipts question and produces REQ-164 + the four commandments (branch work, not yet merged)
+
+Continuing the one-district-at-a-time rhythm from the entry above: **Santa Fe NM, Gallup NM, and Las
+Cruces NM** incorporated cleanly (dry-run → write → `per_grade_lct_sample` preview → review each time),
+bringing the campaign to **6 of 38 gate@8-approved districts** (32 pending) — the approved total grew
+from 22 to 38 mid-session as Ian cleared more districts through gate@8 in parallel. A pre-emptive scan of
+all 33-then-pending districts (replicating Stage 9's bell-year resolution + the REQ-026 window check
+without writing anything) found only one other latent temporal-fallback case (Dickinson 1 ND — a genuinely
+stale 2016-17 middle-school source, the find-newer-source-and-re-extract kind of fix) — reassurance that
+Gallup's case, below, was the outlier, not the norm.
+
+**Gallup's secondary LCT fell back to statutory despite current-vintage bell schedules (425 min across all
+three bands) — root-caused to NCES suppressing Gallup's entire 2024-25 staff report** (`DMS_FLAG=Suppressed`
+in `ccd_lea_059`), forcing the staff picker back to 2023-24 and blowing the REQ-026 ≤2-start-year blend
+window once combined with 2024-25 enrollment + 2025-26/2026-27 bell years. Confirmed NOT a repeat of #611
+(the suppression is spread across many states, FIPS<10 actually under-represented) and confirmed Stage 8
+manual entry is the WRONG remediation (it only touches bell facts; the binding constraint is staff vintage).
+Filed **#613** (policy: widen the REQ-026 window? — Ian leans against, the guardrail is doing its job — and
+a counterpoint on the SEA-integration-priority question the 2026-07-20/21 campaign had left open, since NM
+is one of the 8 states with no SEA staffing file collected at all).
+
+**A related ask — "why don't stages 6-9 get per-district receipts like 1-5?" — turned out to be two
+distinct, smaller gaps once actually surveyed**, not the assumed one: stages 6/7 already write proper
+receipts (just centralized by hash under `data/acquisition/{handoffs,extractions}/`, not per-district
+folders); Stage 8's is DB-native but twinned to git already. The one real gap: **Stage 9's
+`district_grade_minutes` has no git-tracked backup at all**, and **`district_status.json` silently lags
+gate@8/Stage-9 events** because neither's write path calls `DS.export_status()`/`save()` — confirmed
+concretely (the tracked file predated same-session incorporations). Filed **#614** (a console progress
+view for Stage 9, epic #92) and **#615** (the receipts/twin gap, epic #128).
+
+**This became the basis for REQ-164** (`must`; every stage 1-9 leaves an always-datetime-stamped,
+audit-only per-district receipt + refreshes the twin in-path) **and the four commandments encoded as
+testable REQ-165…168** (`type: principle`, each with `enforced_by` deterministic children +
+`verification: mixed|periodic-sweep` for the qualitative residual) — a new schema shape, Ian-approved.
+Design decisions along the way: **always-stamped, no fixed-latest name** (receipts are audit-only, never
+transmission — a stable "latest" filename serves tooling, not humans, who can sort by name/date); a
+same-second collision tiebreak via an **8-char content hash EXCLUDING volatile fields**, **loose across
+languages with a `py`-/`node`- writer tag** (not RFC-8785-strict — the two writers never touch the same
+artifact in the same second under always-stamp, so cross-writer hash equality is a guarantee that's never
+exercised and can only mislead if it silently drifts); legacy unstamped receipts backfilled by
+gov_db `state_event.created_at`, never filesystem create-date (which the planned external-drive migration
+is about to reset anyway). A companion `docs/technical-notes/POLYGLOT_PIPELINE_ARCHITECTURE_TOOLCHAIN.md`
+review reframed the Node/Python receipt convention as a declared cross-language contract
+(`arch-manifest.json` + a fitness test), the same pattern `#476`'s eventual fuzzy-environmental-dependencies
+extraction will want — so the new arch-manifest entries were kept generalizable on purpose. A `cache_ingest`
+disk-re-read finding split into its own follow-up (**#616** — eliminate the round-trip for stages 2/4,
+repoint the legitimate Node→Python/benchmark disk reads at stages 3/1, per-role rather than blanket).
+
+**Built so far on `feat/pipeline-receipts-req164` (NOT merged to main):** `common/receipts.py` (the shared
+writer + `latest_receipt()`/`iter_receipts()` resolvers, 15 unit tests); Stage 9's + Stage 8's per-district
+audit receipt and in-path twin refresh (commit-after-DB-commit; best-effort — a disk/twin hiccup is logged,
+never a failed already-committed decision); Stage 6/7's per-district capture-dir projections + a Stage-7
+non-atomic-write fix; a pytest quarantine guard (the issue-#178 pattern, extended to captures) after a
+real test-pollution incident (a shared-quarantine same-second collision from a `paths`-module reload)
+surfaced and was fixed with a deterministic same-second tiebreak in `iter_receipts`. Remaining
+(Phases 5b/3/4/5c — arch-manifest declarations + fitness test, converting stages 2/4/5 to always-stamped,
+the gov_db-sourced legacy backfill script, and the concluding doc-tower update) deferred to after a context
+refresh.
+
+Authority: issues #613/#614/#615/#616/#476; `docs/REQUIREMENTS.yaml` REQ-164/REQ-165…168;
+branch `feat/pipeline-receipts-req164` (commits `456b3e1`/`745d32e`/`6eff8e5`/`eb2b1da`, unmerged);
+`docs/technical-notes/POLYGLOT_PIPELINE_ARCHITECTURE_TOOLCHAIN.md`.
+
+---
+
+### 2026-07-22 — Documentation-tower reorganization + a 5-way parallel accuracy sync against current code
+
+A housekeeping pass, separate from the campaign/receipts work above: file moves, then a doc-content sync,
+both landing directly on `main` (no feature branch — pure documentation, low risk).
+
+**Reorganization.** `SEA_INTEGRATION_GUIDE.md`, `PA_CTC_DATA_DISCREPANCY.md`, and
+`INSTRUCTIONAL_TIME_HARVEST.md` moved into `docs/state-integrations/`, alongside the catalog/assessment
+docs already there. `docs/technical-notes/stage-7-loop-reports/` renamed to `learning-loop-reports/` (more
+of these are coming, not just Stage 7's) and `EXTRACTION_BENCHMARK_FINDINGS.md` +
+`STAGE5_TUNING_NOTES_2026-06.md` moved in alongside it. `docs/technical-notes/refactor-20260123/` (an
+unreferenced, six-months-stale one-time investigation) moved into `infrastructure/quality-assurance/docs/`.
+`docs/fable_review_2026-07-01.md` — reconsidered mid-pass once Ian recalled it was *this exact review* that
+prompted the original move-tracking-to-GitHub-issues decision — went to `docs/archive/` instead (the
+existing home for superseded planning docs, its own "tracking moved to GitHub issues" banner now paired
+with a matching archive-date banner) rather than quality-assurance. Every full-path reference to the three
+relocated state-integration docs was revised to a bare filename (Ian's call); every reference broken by the
+other two moves was repointed at the real new path; `docs/archive/`'s own historical citations were left
+untouched on purpose (frozen-in-time by design). Also committed 7 Stage-6/7 receipt files that had been
+sitting uncommitted in the working tree from earlier in the session.
+
+**Accuracy sync.** Five parallel agents, one per target, each independently verifying claims against live
+code/DB/`gh issue` state before editing, all findings then independently re-verified before commit (DB
+queries re-run, `gh issue view` re-checked, `pytest` counts re-run) — nothing accepted on summary alone.
+Real corrections found: **`DATABASE_SETUP.md`** had two fully fictional tables
+(`grade_level_enrollment`/`grade_level_staffing` — the real ones are `enrollment_by_grade`, `staff_counts`,
+`staff_counts_effective`) and a `lct_calculations` column list that didn't match the live table at all
+(`scope`→`staff_scope`, `staff_count`→`instructional_staff`, missing the whole REQ-026 temporal-validation
+column set); `mv_lct_summary_stats` is 4 scopes live, not the documented 7. **`PIPELINE_GOVERNANCE_AND_STATE.md`**
+and the **Stage 6-9 design notes** carried a cluster of "Stage 8/9 isn't built yet" residue left over from
+before #89/#92/#93 shipped, plus two stale test counts (Stage 6: 101→141, missing the console-redesign
+draft suites; Stage 9: 10→11 / 9→21) and a mostly-resolved `REQ-117`/`REQ-118` ledger-drift note (both now
+`tested`; one stray acceptance-criterion line is the only real residual left). `STAGE9_INCORPORATE_DESIGN.md`
+picked up a live-verified campaign-status line (the 6/38/32 numbers above). **`TERMINOLOGY.md`** gained five
+grounded definitions (benchmark district/`batch_00000`, receipt, handoff-vs-extraction, closing argument,
+incorporate/`district_grade_minutes`/overlap flag) — deliberately scoped to what's real on `main` today,
+not the unmerged receipts-branch extension. `PROJECT_CONTEXT.md` needed no changes (a light-touch check
+confirmed it, correctly, per its own header, stays mission/roadmap-only). `lint-imports` 4 kept/0 broken and
+the full DB-free suite (1905 passed) held throughout.
+
+Authority: commits `8c51d1b` (reorg), `f7cad85` (sync), both on `main`.
 
 ---
 

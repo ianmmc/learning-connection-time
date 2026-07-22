@@ -17,6 +17,15 @@ minutes AND projects them to per-grade so LCT consumes them (§4). Remaining is 
 recompute, gated on human sign-off of the before/after sample (§4). Seeded from the APGA console user
 stories (migrated here 2026-06-27).
 
+**Campaign status (verified live 2026-07-22):** an incorporation campaign is running one district at a time
+(dry-run → incorporate → `per_grade_lct_sample` preview → human review). **6 districts incorporated**
+(Brownsville Ascend NY `3601002`, Lincoln MA `2506900`, Coffee County AL `0100810`, Santa Fe NM `3502370`,
+Gallup NM `3501110`, Las Cruces NM `3501500`) out of **38 districts whose latest gate@8 disposition is
+`approved`** — i.e. **32 still in the backlog**. `bell_schedules` + `district_grade_minutes` each hold
+exactly those 6 districts' rows (16 Stage-9 bell rows, 70 grade rows). None are batch_00000 benchmark
+districts. The deliberate pace has already paid for itself, catching production bugs #608/#610/#611 this
+week (CLAUDE.md's Current-Status entry has the running narrative — this note stays mechanism-first).
+
 ---
 
 ## 1. Purpose & boundary
@@ -103,13 +112,18 @@ year-change is handled by `_reconcile_stage9_orphans`; the governance ledger sho
 fingerprint.
 
 ## 2f. Tests
-- `tests/test_stage9_mapping.py` — pure unit (10): council→row, all-3-bands faithful, unsatisfied→statutory,
-  year precedence (+ COVID skip), confidence, url dedup, grade-span capture.
-- `tests/test_stage9_incorporate_integration.py` — govdb+integration (9): a real ledger round-trip, plus
-  the cross-DB write against real Postgres (write+stamp, statutory fallback, reader-labels-statutory,
-  idempotent re-run, re-approval correction, council→statutory orphan reconcile, not-eligible writes
-  nothing, missing-LCT-district fails loud). The governance READ half is patched at a documented seam
-  (it is unit-tested in `test_closing_argument`/`test_stage8_approval` and exercised by the live-DB smoke).
+- `tests/test_stage9_mapping.py` — pure unit (11): council→row, all-3-bands faithful, unsatisfied→statutory,
+  year precedence (+ COVID skip, + no-signal default), confidence buckets, url dedup, grade-span capture
+  (present + absent-projection), and the CLI `--batch` indented-comment guard.
+- `tests/test_stage9_incorporate_integration.py` — govdb+integration (21): a real ledger round-trip, plus
+  the cross-DB write against real Postgres — write+stamp, statutory fallback, reader-labels-statutory,
+  idempotent re-run, re-approval correction, council→statutory orphan reconcile, the **per-grade projection**
+  (written, reprojects/reconciles on re-approval, weighted-secondary minutes, verified-in-DB), the standing
+  **walls** (benchmark refused, legacy-row collision fails loud + surfaced in `--dry-run`, TOCTOU
+  decision-changed writes nothing), statutory-flip clears council times, statutory-minutes
+  case-insensitive/zero-safe, `--dry-run` resolves statutory minutes + flags a retraction, and
+  missing-LCT-district fails loud. The governance READ half is patched at a documented seam (it is
+  unit-tested in `test_closing_argument`/`test_stage8_approval` and exercised by the live-DB smoke).
 
 ## 2g. Standing walls (PR #607 max-effort review, 2026-07-21)
 - **Benchmark wall.** batch_00000 (`batch_type='benchmark'`) districts are REFUSED — "Stage 9

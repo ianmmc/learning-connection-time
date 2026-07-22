@@ -1,0 +1,570 @@
+{
+  "handoff_hash": "969d9a910a15",
+  "district": {
+    "district_id": "2507080",
+    "name": "Lunenburg",
+    "reps": [
+      {
+        "rec_key": "2507080:44c4451fe7",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "LMS",
+                "confidence": "high",
+                "evidence_quote": "Start Time - 8:00 AM  (first bell at 7:55 AM)\n\nDismissal Time - 2:30 PM*",
+                "source_locus": "MIDDLE - HIGH SCHOOL",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2018-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "LHS",
+                "confidence": "high",
+                "evidence_quote": "Start Time - 8:00 AM  (first bell at 7:55 AM)\n\nDismissal Time - 2:30 PM*",
+                "source_locus": "MIDDLE - HIGH SCHOOL",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2018-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "TURKEY HILL ELEMENTARY SCHOOL",
+                "confidence": "high",
+                "evidence_quote": "Start Time - 8:50 AM\n\nDismissal Time - 3:10 PM*",
+                "source_locus": "TURKEY HILL ELEMENTARY SCHOOL",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2018-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:20",
+                "school_name": "PRIMARY SCHOOL",
+                "confidence": "high",
+                "evidence_quote": "Start Time - 9:00 AM\n\nDismissal Time - 3:20 PM*",
+                "source_locus": "PRIMARY SCHOOL",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2018-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1223,
+            "completion_tokens": 686,
+            "cost_usd": 0.0003967,
+            "latency_ms": 2269,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784683394-is1tSeu09eTVSy3H1M6f",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Lunenburg Public Schools",
+                "confidence": "high",
+                "evidence_quote": "Start Time - 8:00 AM  (first bell at 7:55 AM) Dismissal Time - 2:30 PM",
+                "source_locus": "SCHOOL START / DISMISSAL TIMES",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Turkey Hill Elementary School",
+                "confidence": "high",
+                "evidence_quote": "Start Time - 8:50 AM Dismissal Time - 3:10 PM",
+                "source_locus": "SCHOOL START / DISMISSAL TIMES",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:20",
+                "school_name": "Primary School",
+                "confidence": "high",
+                "evidence_quote": "Start Time - 9:00 AM Dismissal Time - 3:20 PM",
+                "source_locus": "SCHOOL START / DISMISSAL TIMES",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1227,
+            "completion_tokens": 480,
+            "cost_usd": 9.975e-05,
+            "latency_ms": 55588,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784683396-2SDqhz0z1We1snlmmxyB",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "LMS",
+                "confidence": "high",
+                "evidence_quote": "Start Time - 8:00 AM  (first bell at 7:55 AM)",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2018-26",
+                "applies_to": "multiple",
+                "campus_names": [
+                  "LMS",
+                  "LHS"
+                ]
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "LHS",
+                "confidence": "high",
+                "evidence_quote": "Start Time - 8:00 AM  (first bell at 7:55 AM)",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2018-26",
+                "applies_to": "multiple",
+                "campus_names": [
+                  "LMS",
+                  "LHS"
+                ]
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Turkey Hill Elementary School",
+                "confidence": "high",
+                "evidence_quote": "Start Time - 8:50 AM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2018-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:20",
+                "school_name": "Primary School",
+                "confidence": "high",
+                "evidence_quote": "Start Time - 9:00 AM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2018-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1183,
+            "completion_tokens": 381,
+            "cost_usd": 0.0004632,
+            "latency_ms": 22913,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784683451-pR2eF0uwghNsG5VZ2hkf",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "lms",
+            "start": "08:00",
+            "end": "14:30",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "Start Time - 8:00 AM  (first bell at 7:55 AM)",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2018-26",
+                "applies_to": "multiple"
+              }
+            },
+            "applies_to": "multiple",
+            "campus_names": [
+              "LHS",
+              "LMS"
+            ],
+            "rec_key": "2507080:44c4451fe7",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "lhs",
+            "start": "08:00",
+            "end": "14:30",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "Start Time - 8:00 AM  (first bell at 7:55 AM)",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2018-26",
+                "applies_to": "multiple"
+              }
+            },
+            "applies_to": "multiple",
+            "campus_names": [
+              "LHS",
+              "LMS"
+            ],
+            "rec_key": "2507080:44c4451fe7",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "turkey hill",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Start Time - 8:50 AM\n\nDismissal Time - 3:10 PM*",
+                "locus": "TURKEY HILL ELEMENTARY SCHOOL",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2018-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Start Time - 8:50 AM Dismissal Time - 3:10 PM",
+                "locus": "SCHOOL START / DISMISSAL TIMES",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "2507080:44c4451fe7",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "primary",
+            "start": "09:00",
+            "end": "15:20",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Start Time - 9:00 AM\n\nDismissal Time - 3:20 PM*",
+                "locus": "PRIMARY SCHOOL",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2018-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Start Time - 9:00 AM Dismissal Time - 3:20 PM",
+                "locus": "SCHOOL START / DISMISSAL TIMES",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "2507080:44c4451fe7",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "lunenburg public",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:00"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:30"
+            },
+            "rec_key": "2507080:44c4451fe7",
+            "source_file": "page.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "middle",
+        "school": "lms",
+        "start": "08:00",
+        "end": "14:30",
+        "gross": 390,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "Start Time - 8:00 AM  (first bell at 7:55 AM)",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2018-26",
+            "applies_to": "multiple"
+          }
+        },
+        "applies_to": "multiple",
+        "campus_names": [
+          "LHS",
+          "LMS"
+        ],
+        "rec_key": "2507080:44c4451fe7",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "lhs",
+        "start": "08:00",
+        "end": "14:30",
+        "gross": 390,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "Start Time - 8:00 AM  (first bell at 7:55 AM)",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2018-26",
+            "applies_to": "multiple"
+          }
+        },
+        "applies_to": "multiple",
+        "campus_names": [
+          "LHS",
+          "LMS"
+        ],
+        "rec_key": "2507080:44c4451fe7",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "turkey hill",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Start Time - 8:50 AM\n\nDismissal Time - 3:10 PM*",
+            "locus": "TURKEY HILL ELEMENTARY SCHOOL",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2018-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Start Time - 8:50 AM Dismissal Time - 3:10 PM",
+            "locus": "SCHOOL START / DISMISSAL TIMES",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "2507080:44c4451fe7",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "primary",
+        "start": "09:00",
+        "end": "15:20",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Start Time - 9:00 AM\n\nDismissal Time - 3:20 PM*",
+            "locus": "PRIMARY SCHOOL",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2018-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Start Time - 9:00 AM Dismissal Time - 3:20 PM",
+            "locus": "SCHOOL START / DISMISSAL TIMES",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "2507080:44c4451fe7",
+        "source_file": "page.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "lunenburg public",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:00"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:30"
+        },
+        "rec_key": "2507080:44c4451fe7",
+        "source_file": "page.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 380,
+        "start_time": "08:50",
+        "end_time": "15:10",
+        "n_schools": 2,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "turkey hill",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "primary",
+            "start_time": "09:00",
+            "end_time": "15:20",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 390,
+        "start_time": "08:00",
+        "end_time": "14:30",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "lms",
+            "start_time": "08:00",
+            "end_time": "14:30",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 390,
+        "start_time": "08:00",
+        "end_time": "14:30",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "lhs",
+            "start_time": "08:00",
+            "end_time": "14:30",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 3633,
+      "completion_tokens": 1547,
+      "cost_usd": 0.0009596499999999999
+    },
+    "state": "MA"
+  }
+}

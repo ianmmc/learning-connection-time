@@ -41,7 +41,7 @@ districts — Marion, Pittsylvania, Las Cruces — through much of this loop rep
 surfacing and fixing real bugs (the #158 release cluster-drop, the image-first picker, the row-vs-round
 depth guard, a live defer-deadlock); **issue #122 (the first clean end-to-end pass) closed 2026-07-06**
 (23 fresh districts, 37 runs, $0.195, both back-edges proven — full report:
-`docs/technical-notes/stage-7-loop-reports/2026-07-06T0458Z-stage7-loop-report.md`).
+`docs/technical-notes/learning-loop-reports/2026-07-06T0458Z-stage7-loop-report.md`).
 
 **A SECOND live shakedown ran 2026-07-11** (batch_00013, 12 districts) to re-validate the loop against
 the epic #200/#209-hardened pipeline. It surfaced two real request-loop regressions, both fixed
@@ -590,13 +590,12 @@ trigger (§0) — all surfaces call the same underlying functions.
   `EXTRACTION_BENCHMARK_FINDINGS.md`.
 - REQ-054 (read-times invariant), REQ-055 (gross metric), REQ-056 (cross-family consensus), REQ-051
   (budget governor), REQ-117 (this build), REQ-118 (request execution).
-  **Ledger drift to note:** `docs/REQUIREMENTS.yaml`'s own REQ-117/REQ-118 entries have not been
-  updated to match this doc's status banner — REQ-117's last acceptance criterion still reads
-  request-EXECUTION as "NOT MET, deferred," and REQ-118's `status:` field still reads `in-progress`,
-  despite execution being built and hardened across epic #163 and PR #240 (2026-07-12) and REQ-122/
-  REQ-123 (which build on top of REQ-117/118) already carrying `implemented`/`tested` statuses. This
-  doc is the accurate present-state source; REQUIREMENTS.yaml's REQ-117/118 entries need a follow-up
-  correction pass, tracked separately from this rewrite.
+  **Ledger drift to note (mostly resolved 2026-07-22):** `docs/REQUIREMENTS.yaml`'s REQ-117 and REQ-118
+  `status:` fields now both read `tested`, matching this doc's status banner (REQ-118 previously lagged at
+  `in-progress`). One cosmetic residual remains inside the REQ-117 entry: its last acceptance-criterion
+  line still reads request-EXECUTION as "NOT MET" even though the entry's overall status is `tested` and
+  execution was built + hardened across epic #163 and PR #240 (2026-07-12). This doc remains the accurate
+  present-state source; that stray AC line is the only follow-up left, tracked separately from this rewrite.
 - **Council Lab** (the producer that tunes the councils/prompts/cost the request loop routes on): design in
   `COUNCIL_LAB_DESIGN.md`; GitHub #80 (infra), #81 (spray A/B), #82 (image-council vision judge —
   fixed), #85 (camelot reader-routing).

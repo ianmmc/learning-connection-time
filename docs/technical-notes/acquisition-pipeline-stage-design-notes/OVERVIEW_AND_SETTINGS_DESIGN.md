@@ -59,8 +59,8 @@ approve/reject action regardless of the stored toggle, until that gate earns its
 
 **Backing store** (`infrastructure/acquisition/common/gate_mode.py`, REQ-108): a precious `gate_mode` table,
 one row per key — `'default'` (the global default) + `'gate@1'..'gate@8'` overrides (`gate@8` is BUILT —
-the standalone stage/gate shipped #89, 2026-07-14; the `gate_mode.py:35` inline comment still says
-"not built yet", tracked #525). Two fields per row: `configured_mode` (the human's
+the standalone stage/gate shipped #89, 2026-07-14; the stale `gate_mode.py:35` "not built yet" comment was
+since corrected — it now reads `# gate@8 built 2026-07-14 (#89)` — and #525 closed). Two fields per row: `configured_mode` (the human's
 toggle) and `license_state` (the live deadband state a gate's control law demotes/re-promotes, §1b).
 `configured_mode` is **NULLABLE — NULL means "inherit the global default"**, not "manual." This is load-
 bearing: a license-only write (§1b, from the demote-hook's first transition) must never materialize a
@@ -155,8 +155,9 @@ inline inside gate@7's endpoint since early July — `stage8_aggregate/aggregate
 `detect_single_school_over_extraction` for #237's cross-LEA contamination flag) — and the standalone gate@8
 was then built around it: the review queue, per-school override, the four human-judgment tables
 (`band_exclusion`/`human_added_fact`/`slot_assignment` + `gate_mode`), the approve/send-back verdict with a
-frozen fingerprinted receipt, and the gate@8 calibration hook. Still unbuilt downstream: the Stage-9 write
-(#93) and the 8→1/8→6 back-edges.
+frozen fingerprinted receipt, and the gate@8 calibration hook. The Stage-9 write then shipped (#93 closed,
+epic #92 — `stage9_incorporate`, the governance→LCT write + per-grade projection; the incorporation
+campaign is in progress). Still unbuilt downstream: the 8→1/8→6 back-edges.
 
 User stories this would satisfy:
 - See, across the nine stages, what just happened and what needs human attention — which

@@ -45,10 +45,10 @@ ways: Stage 7 running standalone against the frozen handoff, or — the same cod
 
 The Stage 6 package is `infrastructure/acquisition/stage6_handoff/` (pure, `common`-only imports — independent
 of the other stages, enforced by import-linter) + the app-layer bridge in `process_governance/`. Built
-slice-by-slice; **101 tests** across `test_stage6_*.py` (councils 20, package 10, cost 9, routing 9, handoff_api
+slice-by-slice; **141 tests** across `test_stage6_*.py` (councils 20, package 10, cost 9, routing 9, handoff_api
 8, handoff_artifact 8, dispatch 6, requests 9, dispatch_bridge 22 — the last jumped from 4 with the #540/#83
-dispatch-hold-pass work and its #543-#547 review-round hardening; incl. govdb Postgres) + a live end-to-end
-dispatch.
+dispatch-hold-pass work and its #543-#547 review-round hardening; plus the console-redesign draft suites
+draft_store 22 + draft_api 18, §0b; incl. govdb Postgres) + a live end-to-end dispatch.
 
 | piece | code | what it does |
 |---|---|---|

@@ -1447,7 +1447,7 @@ requirements:
       - tests/test_acquisition_stages.py::TestCTCExclusion::test_charter_with_career_branding_not_flagged
     created: "2026-06-22T00:00:00Z"
     updated: "2026-06-22T00:00:00Z"
-    notes: "The schema columns existed since the rule was designed (docs/technical-notes/PA_CTC_DATA_DISCREPANCY.md)
+    notes: "The schema columns existed since the rule was designed (PA_CTC_DATA_DISCREPANCY.md)
       but the backfill was never actually run until 2026-06-22 - the exclusion was a silent no-op in every prior
       LCT calculation. Initial backfill (152 districts, name-pattern only) missed Pima County JTED ('JTED' doesn't
       spell 'technical') when it surfaced in a real acquisition batch; expanded to the LEA_TYPE_TEXT blanket rule
