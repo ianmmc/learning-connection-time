@@ -17,6 +17,8 @@ from sqlalchemy import text
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.stage8_aggregate import approval as APV
 from infrastructure.acquisition.stage8_aggregate import closing_argument as CA
+from infrastructure.acquisition.common import paths
+from infrastructure.acquisition.common import receipts as RCPT
 from infrastructure.acquisition.stage9_incorporate import incorporate as INC
 from infrastructure.acquisition.stage9_incorporate import ledger as LEDGER
 
@@ -117,9 +119,12 @@ def _grade_rows(did):
 
 
 @pytest.fixture
-def env():
-    """Seed a synthetic LCT district (+ its state statutory row), yield its id, clean both DBs."""
+def env(tmp_path, monkeypatch):
+    """Seed a synthetic LCT district (+ its state statutory row), yield its id, clean both DBs.
+    RAW_CAPTURES is redirected to a tmp dir so Stage-9 audit receipts (REQ-164) never touch the real
+    data/raw tree."""
     _require_dbs()
+    monkeypatch.setattr(paths, "RAW_CAPTURES", tmp_path)
     gdb.init_precious_schema()   # ensure state_event exists
     _cleanup()
     from infrastructure.database.connection import session_scope as lct_scope
@@ -169,6 +174,41 @@ def test_incorporate_writes_bands_and_stamps(env, monkeypatch):
         inc = LEDGER.latest_incorporation(gs, env)
     assert inc and inc["fingerprint"] == fp
     assert inc["bands"] == {"elementary": "council_extraction", "high": "council_extraction"}
+
+
+def test_incorporate_writes_receipt_and_refreshes_twin(env, monkeypatch):
+    """REQ-164 + #615: a standalone incorporation drops a Stage-9 audit receipt into the capture dir
+    AND refreshes the district_status.json twin in the same code path."""
+    ca = _fake_ca(env, council={"elementary": {"gross": 400}, "high": {"gross": 450}})
+    _patch_gov(monkeypatch, ca, approval_id=7)
+    twin = []
+    monkeypatch.setattr(INC.DS, "export_status", lambda gs: twin.append("refreshed"))
+
+    res = INC.incorporate_district(env, actor="ian")
+    assert res.status == "incorporated"
+    assert twin == ["refreshed"]                    # #615: twin refreshed in-path (once, standalone)
+
+    latest = RCPT.latest_receipt(env, "Stage9 Test District", "stage9_incorporate")
+    assert latest is not None and latest.name.startswith("stage9_incorporate.")
+    assert ".py-" in latest.name                    # writer-tagged, always-stamped
+    doc = json.loads(latest.read_text())
+    assert doc["stage"] == 9 and doc["district_id"] == env and doc["approval_id"] == 7
+    assert {b["grade_level"] for b in doc["bands"]} == {"elementary", "high"}
+    assert doc["grade_minutes"]                      # non-empty per-grade projection
+    assert doc["authoritative"].startswith("gov_db:")   # audit projection, not a transmission vehicle
+
+
+def test_batch_refreshes_twin_once_not_per_district(env, monkeypatch):
+    """incorporate_batch exports the twin ONCE at the end, never per district (issue #49 O(N^2))."""
+    _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 400}}))
+    per_district, run_end = [], []
+    monkeypatch.setattr(INC.DS, "export_status", lambda gs: per_district.append(1))
+    monkeypatch.setattr(INC.DS, "export", lambda: run_end.append(1))
+
+    res = INC.incorporate_batch([env], actor="ian")
+    assert res[0].status == "incorporated"
+    assert per_district == []                        # no per-district export in batch mode
+    assert run_end == [1]                            # exactly one run-end twin refresh
 
 
 def test_statutory_fallback_write(env, monkeypatch):

@@ -31,6 +31,8 @@ from sqlalchemy import text
 from sqlalchemy.exc import ProgrammingError
 
 from infrastructure.acquisition.common import db as gdb
+from infrastructure.acquisition.common import district_status as DS
+from infrastructure.acquisition.common import receipts as RCPT
 from infrastructure.acquisition.stage8_aggregate import approval as APV
 from infrastructure.acquisition.stage8_aggregate import closing_argument as CA
 from infrastructure.acquisition.stage9_incorporate import ledger as LEDGER
@@ -223,9 +225,12 @@ def _verify_grade_minutes(session, stored_did: str, grade_minutes: list) -> None
 
 
 def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, force=False,
-                         strict=False) -> IncorporationResult:
+                         strict=False, refresh_twin=True) -> IncorporationResult:
     """Incorporate one approved district. Returns an IncorporationResult; raises only on a genuine
-    fault (missing LCT district, verify mismatch) or, with strict=True, on ineligibility."""
+    fault (missing LCT district, verify mismatch) or, with strict=True, on ineligibility.
+
+    `refresh_twin=True` regenerates district_status.json in-path (the #615 fix). incorporate_batch
+    passes False and exports ONCE at the end (issue #49 O(N^2) avoidance)."""
     district_id = _norm_did(district_id)   # governance + LCT ids share the zero-padded convention
     _ensure_schemas()
 
@@ -302,6 +307,7 @@ def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, for
             raise ValueError(f"District {district_id} not found in LCT production DB")
         stored_did = district.nces_id
         state = district.state
+        district_name = district.name   # captured in-session for the receipt slug (ORM detaches on exit)
         # FAIL LOUD on a foreign-row collision: a (year, grade_level) key held by a NON-Stage-9
         # method (human_provided / tier_* / legacy) is a human-vs-pipeline conflict Stage 9 must
         # never silently resolve. Raise BEFORE any write so nothing is committed; a person removes
@@ -340,15 +346,50 @@ def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, for
         n_overlaps = sum(1 for gm in grade_minutes if gm.overlap_flag)
         # commit on context-manager exit
 
-    # ---- Phase D: governance stamp (after the LCT commit) ----
+    # ---- Phase D: governance stamp + audit receipt (after the LCT commit) ----
     bands = {w.grade_level: w.method for w in writes}
+    receipt_payload = {
+        "stage": 9, "stage_name": "incorporate", "district_id": district_id, "state": state,
+        "approval_id": approval_id, "facts_fingerprint": fp_live, "actor": actor,
+        # gov_db + the LCT rows are authoritative; this receipt is a faithful audit projection, never
+        # a transmission vehicle read back by the pipeline (REQ-164 / Decision-2 / governance §1).
+        "authoritative": "gov_db:state_event + lct:bell_schedules/district_grade_minutes",
+        "bands": [w.summary() for w in writes],
+        "grade_minutes": [gm.summary() for gm in grade_minutes],
+        "n_grades": n_grades, "n_overlaps": n_overlaps}
     with gdb.session_scope() as gs:
         LEDGER.record_incorporation(gs, district_id, fingerprint=fp_live, approval_id=approval_id,
                                     bands=bands, actor=actor)
+        gs.commit()                          # commit-before-derive: persist the stamp before the twin
+        if refresh_twin:
+            _refresh_status_twin(gs)         # #615: standalone exports here; batch exports once at end
+    _stamp_receipt(district_id, district_name, receipt_payload)   # AFTER both commits (commit-before-receipt)
 
     return IncorporationResult(district_id, "incorporated",
                                written=[w.summary() for w in writes], fingerprint=fp_live,
                                grades=n_grades, overlaps=n_overlaps)
+
+
+def _refresh_status_twin(gs) -> None:
+    """Best-effort district_status.json regeneration from the COMMITTED gov log (#615: the twin lagged
+    gate@8/Stage 9 until an incidental later export). gov_db is authoritative and the twin is
+    regenerable, so a hiccup is logged, never a failed incorporation (matches cache_ingest's stance)."""
+    try:
+        DS.export_status(gs)
+    except Exception as e:  # noqa: BLE001 — the twin is regenerable; never fail a committed write
+        print(f"[warn] Stage 9 district_status.json refresh failed ({type(e).__name__}: {e}); "
+              f"the twin reconciles on the next export")
+
+
+def _stamp_receipt(district_id, district_name, receipt_payload) -> None:
+    """Best-effort per-district Stage-9 audit receipt into the capture dir (REQ-164). Written AFTER the
+    gov_db + LCT commits (commit-before-receipt); regenerable from gov_db + the LCT rows, so a disk
+    hiccup is logged, never a failed incorporation."""
+    try:
+        RCPT.write_receipt(district_id, district_name, "stage9_incorporate", receipt_payload)
+    except Exception as e:  # noqa: BLE001 — the receipt is regenerable; never fail a committed write
+        print(f"[warn] Stage 9 receipt write failed for {district_id} "
+              f"({type(e).__name__}: {e}); regenerable from gov_db + the LCT rows")
 
 
 def incorporate_batch(district_ids: Iterable, *, actor="auto:stage9", dry_run=False,
@@ -360,10 +401,24 @@ def incorporate_batch(district_ids: Iterable, *, actor="auto:stage9", dry_run=Fa
     results = []
     for did in district_ids:
         try:
+            # refresh_twin=False: the twin is regenerated ONCE after the loop, not per district
+            # (issue #49 O(N^2) avoidance — a full district_status.json rebuild per incorporation).
             results.append(incorporate_district(did, actor=actor, dry_run=dry_run, force=force,
-                                                strict=strict))
+                                                strict=strict, refresh_twin=False))
         except Exception as exc:  # noqa: BLE001 — batch resilience; the fault is captured per district
             if not continue_on_error:
                 raise
             results.append(IncorporationResult(str(did), "error", reason=f"{type(exc).__name__}: {exc}"))
+    if not dry_run and any(r.status == "incorporated" for r in results):
+        _refresh_status_twin_run_end()   # one twin refresh for the whole batch (#615 + issue #49)
     return results
+
+
+def _refresh_status_twin_run_end() -> None:
+    """Best-effort ONE-shot twin refresh after a batch (issue #49). Fresh session (DS.export), so it
+    reflects every district's committed stamp; a hiccup is logged, never a failed batch."""
+    try:
+        DS.export()
+    except Exception as e:  # noqa: BLE001
+        print(f"[warn] Stage 9 batch twin refresh failed ({type(e).__name__}: {e}); "
+              f"reconciles on the next export")
