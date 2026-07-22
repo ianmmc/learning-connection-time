@@ -24,6 +24,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import tempfile
 from pathlib import Path
 from typing import List, Optional
 
@@ -39,6 +41,20 @@ WRITER = "py"
 VOLATILE_KEYS = frozenset({"generated_at"})
 
 
+def _capture_root() -> Path:
+    """RAW_CAPTURES for receipt writes. Under pytest, a NON-overridden (still-default) RAW_CAPTURES is
+    redirected to a per-process quarantine, so a test that drives a stage write never lands a receipt in
+    the real ``data/raw`` tree (the issue-#178 guard_tracked_backup pattern, applied to captures). A
+    test that EXPLICITLY monkeypatches ``paths.RAW_CAPTURES`` to its own tmp dir passes through untouched
+    -- that is deliberate isolation (test_receipts, the Stage-9 integration env fixture)."""
+    root = paths.RAW_CAPTURES
+    if "PYTEST_CURRENT_TEST" in os.environ and root == (paths.DATA_ROOT / "raw" / "lea-website-captures"):
+        q = Path(tempfile.gettempdir()) / "lct-test-quarantine" / "lea-website-captures"
+        q.mkdir(parents=True, exist_ok=True)
+        return q
+    return root
+
+
 def district_capture_dir(district_id: str, name: str = "") -> Path:
     """The district's ``lea-website-captures/`` dir. The dir is ``<district_id>_<slug>`` and
     ``district_id`` is the REAL disambiguator (the slug is human-readability only -- slugify's own
@@ -47,11 +63,12 @@ def district_capture_dir(district_id: str, name: str = "") -> Path:
     the LCT ``districts`` name at Stage 9 can differ in case/whitespace across the two DBs). Falls back
     to constructing ``<district_id>_<slug>`` from ``name`` when no dir exists yet (first write). Kept in
     ``common/`` so no stage module is imported (import-linter layering)."""
-    if paths.RAW_CAPTURES.is_dir():
-        existing = sorted(paths.RAW_CAPTURES.glob(f"{district_id}_*"))
+    root = _capture_root()
+    if root.is_dir():
+        existing = sorted(root.glob(f"{district_id}_*"))
         if existing:
             return existing[0]
-    return paths.RAW_CAPTURES / f"{district_id}_{slugify(name)}"
+    return root / f"{district_id}_{slugify(name)}"
 
 
 def _hashable(payload):
@@ -88,19 +105,16 @@ def write_receipt(district_id: str, name: str, basename: str, payload, *,
     return path
 
 
-def _stamp_of(p: Path, basename: str) -> str:
-    """The fs_stamp segment of ``<basename>.<stamp>.<writer>-<h8>.json`` -- the ordering key."""
-    return p.name[len(basename) + 1:].split(".", 1)[0]
-
-
 def iter_receipts(district_id: str, name: str, basename: str) -> List[Path]:
-    """All stamped receipts for ``(district, basename)``, oldest -> newest. Excludes the legacy
-    unstamped ``<basename>.json`` (handled by the backfill) and any different basename sharing a prefix
-    (the ``.`` after basename anchors the glob)."""
+    """All stamped receipts for ``(district, basename)``, oldest -> newest. Sorted by full filename,
+    which is chronological because the ``<fs_stamp>`` segment is fixed-width and lexically ordered; a
+    same-second tie then breaks DETERMINISTICALLY on the trailing ``<writer>-<h8>`` (never on filesystem
+    glob order). Excludes the legacy unstamped ``<basename>.json`` (handled by the backfill) and any
+    different basename sharing a prefix (the ``.`` after basename anchors the glob)."""
     d = district_capture_dir(district_id, name)
     if not d.is_dir():
         return []
-    return sorted(d.glob(f"{basename}.*.json"), key=lambda p: _stamp_of(p, basename))
+    return sorted(d.glob(f"{basename}.*.json"), key=lambda p: p.name)
 
 
 def latest_receipt(district_id: str, name: str, basename: str) -> Optional[Path]:
