@@ -108,17 +108,25 @@ class TestDistrictNormalization:
         assert normalized == "ALBUQUERQUE PUBLIC SCHOOLS"
 
     def test_normalizes_leaid_format(self):
-        """REQ-002: Ensures LEAID is 7-digit format."""
-        # Arrange
+        """REQ-002: Ensures LEAID is 7-digit format.
+
+        Calls the REAL importer function (issue #611 regression): this test previously called a
+        test-local reimplementation (`self._normalize_leaid`) that never executed a single line of
+        production code, so it kept passing while the real importer's `str(int(x))` silently STRIPPED
+        leading zeros — dropping ~3,125 districts (every FIPS<10 state) from the 2024-25 NCES ingest
+        with no test failure anywhere. See tests/test_nces_leaid_normalization.py for the full
+        regression suite; this one stays as REQ-002's own citation."""
+        from infrastructure.database.migrations.import_staff_and_enrollment import _canonical_leaid
+
         test_cases = [
-            ("100005", "0100005"),  # Pad to 7 digits
-            ("0100005", "0100005"),  # Already 7 digits
+            ("100005", "0100005"),   # Pad to 7 digits
+            ("0100005", "0100005"),  # Already 7 digits — leading zero must be PRESERVED, never stripped
             ("12345678", "12345678"),  # Longer than 7 (unusual but valid)
         ]
 
         for raw_leaid, expected in test_cases:
             # Act
-            normalized = self._normalize_leaid(raw_leaid)
+            normalized = _canonical_leaid(raw_leaid)
 
             # Assert
             assert normalized == expected, f"Failed for {raw_leaid}"
@@ -160,13 +168,6 @@ class TestDistrictNormalization:
     def _normalize_district_name(self, name: str) -> str:
         """Normalize district name - preserve as-is from NCES."""
         return name.strip()
-
-    def _normalize_leaid(self, leaid: str) -> str:
-        """Normalize LEAID to standard format."""
-        # Pad to at least 7 digits
-        if len(leaid) < 7:
-            return leaid.zfill(7)
-        return leaid
 
     def _normalize_state_code(self, state: str) -> str:
         """Normalize state to 2-letter uppercase code."""

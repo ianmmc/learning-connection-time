@@ -1269,9 +1269,14 @@ is a fresh event worth a fresh flag.
   `failed` / `timed_out` / `captured_partial` states), + a per-district Node-capture run trigger.
   See `STAGE3_CAPTURE_DESIGN.md` §7.
 - **Stage 4** — same shape (ungated status + run trigger); **BUILT + RUN LIVE 2026-06-29 (REQ-111)**.
-  In-process (no node-owns-shutdown); reads the `processed_doc` cache; per-district usable/not-usable doc
-  counts + a **usable-representations-by-tool** readout; `no_usable_text_any`/`awaiting_capture` badges.
-  A process run that **resolves the whole batch** then runs the **Stage 4→5 incremental handoff** (§12).
+  Reads the `processed_doc` cache; per-district usable/not-usable doc counts + a
+  **usable-representations-by-tool** readout; `no_usable_text_any`/`awaiting_capture` badges. A process run
+  that **resolves the whole batch** then runs the **Stage 4→5 incremental handoff** (§12). **Run in an
+  ISOLATED SUBPROCESS per batch, not in-process (issue #608, 2026-07-22):** camelot's table extraction is
+  backed by native code (pypdfium2/PDFium + OpenCV) that can segfault under concurrent multi-threaded use
+  — a live segfault took down the whole console when several batches' autoflow ran Stage 4 concurrently on
+  in-process threads. `server._run_stage4_subprocess` now launches the CLI as its own OS process per batch,
+  so a crash kills only that batch's job. See §11h below and `STAGE4_PROCESS_DESIGN.md`.
   See `STAGE4_PROCESS_DESIGN.md` §4a/§4b.
 - **Stage 3/4 capture-fidelity triage — BUILT (#518, REQ-154's missing consumer, 2026-07-20).**
   `GET /api/fidelity-triage` is the queue the fidelity columns were write-only without: every `capture`
@@ -1394,10 +1399,20 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
   shutdown and always writes a complete manifest; a timeout is a partial outcome, not a failure.**
 - **Stage 4 console view BUILT + RUN LIVE 2026-06-29 (REQ-111)** (`static/stage4.js` + `/api/process/*` +
   `stage4_process/headless.py`): the ungated status readout (per-district usable/not-usable doc counts +
-  the usable-reps-by-tool panel, read from the DB `processed_doc` cache) + an in-process run trigger. The
-  batch resolves from the DB working store via the shared `_batch_from_db`. **No node-owns-shutdown** (the
-  work is a Python call; a crash just leaves `processed.json` unwritten → reconcile re-runs). A local
-  `stage2_complete` disk-scan replaced an import of Stage 3's `find_districts` (the independence contract).
+  the usable-reps-by-tool panel, read from the DB `processed_doc` cache) + a run trigger. The batch
+  resolves from the DB working store via the shared `_batch_from_db`. `headless.run_batch` itself is
+  unchanged — still sequential, in-process Python (**no node-owns-shutdown**: the work is a plain function
+  call; a crash mid-district just leaves `processed.json` unwritten → reconcile re-runs that district next
+  time). **What changed (issue #608, 2026-07-22): the CONSOLE no longer calls `run_batch` in-process.**
+  camelot's table extraction (pypdfium2/PDFium + OpenCV, native code) can segfault, and a segfault bypasses
+  Python's exception handling entirely — with two batches' Stage-4 threads calling into the same native
+  libraries concurrently (autoflow can trigger this for several batches at once), a live segfault took
+  down the whole console mid-session. `server._run_stage4_subprocess` now launches `headless.py`'s CLI as
+  an isolated OS subprocess per batch — a crash there kills only that batch's job. The resolved batch dict
+  crosses the process boundary via a temp file (never the on-disk queue receipt, per #526); stdout streams
+  `[kind] {...}` JSON-lines for live progress; stderr is captured to a durable per-run log under
+  `paths.PROCESS_LOGS_DIR` for post-crash forensics. A local `stage2_complete` disk-scan replaced an import
+  of Stage 3's `find_districts` (the independence contract).
 - **Stage 4→5 incremental handoff BUILT (REQ-111)** — the seam where the batch hands to Stage 5. See **§12**.
 - **Stage-5 console rework BUILT (REQ-112, 2026-06-29)** — the district-driven, attention-first faceted
   console; the app's origin, finally on the current architecture. See **§12c** + `STAGE5_FILTER_DESIGN` §A–D.

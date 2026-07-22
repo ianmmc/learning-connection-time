@@ -120,34 +120,40 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-21): SEA data-collection campaign CLOSED — catalog → probe → acquire →
-inspect, all four phases done (PRs #601/#602/#603), swinging back to #92.** Built a structured
-YAML catalog (`docs/state-integrations/state_data_catalog.yaml`) covering all 56 jurisdictions,
-corrected an early misconception (NCES CCD's own `ST_LEAID` already *is* the state↔NCES
-crosswalk — no gap there), acquired 300 files across 52 jurisdictions (96 automated + Ian's
-manual Tier-2/3 downloads), then ran a file-by-file inspection pass (every file opened and read,
-not just filename-classified) that wrote a `MANIFEST.md` per state and rolled the findings into
-`STATE_DATA_AVAILABILITY_ASSESSMENT.md`'s new "Campaign findings" section (added as a literal
-constant in `gen_state_assessment.py` so the doc's staleness fitness test still holds). **The
-answer to "was this worth integrating": no, not as a blanket 45-state push** — only 20/52 have a
-genuinely clean district-level raw-count SPED file (the one real edge over NCES, since the
-federal SPED baseline is 2017-18), enrollment/staffing recency gains are mostly 0–1yr (a nudge
-REQ-026's blend window already absorbs), and integration would be ~45 bespoke small ETL jobs, not
-one importer, with most files carrying no recorded source URL. A narrow follow-up scoped to the
-~9 net-new clean-trio states (CA, OH, TX, NJ, NE, MO, KY, SD, KS) is a bounded backlog item, not
-a blocker. One surprise survived the skeptical read: Minnesota publishes real per-school×grade
-instructional-minutes data (`data/raw/state/minnesota/`, filed as its own exploratory issue #604)
-— a narrow exception to, not a reversal of, `INSTRUCTIONAL_TIME_HARVEST.md`'s SEA-dead-end
-finding. Full narrative: `docs/PROJECT_HISTORY.md` 2026-07-20/21 (SEA campaign entry).
+**Current status (2026-07-22): Stage 9 campaign IN PROGRESS — 3 of 22 gate@8-approved districts
+incorporated (Brownsville Ascend NY, Lincoln MA, Coffee County AL), going one district at a time
+with a human review of each before/after preview.** That deliberate pace caught two real production
+bugs the same session, both fixed with regression tests + guardrails against recurrence: (1) a Stage
+4 console segfault (#608, PR #609) — camelot's native PDFium/OpenCV backend isn't safe for concurrent
+multi-threaded use, and two batches' autoflow could call into it at once; Stage 4 now runs in an
+isolated subprocess per batch; (2) `per_grade_lct_sample.py`'s sign-off preview was contaminated by
+the very Stage-9 write it was supposed to review against (#610) — it re-derived "legacy" live instead
+of reading the stored `lct_calculations` row, so a real +3.53 LCT change reported as Δ=0; fixed to
+read the stored row directly + flag `denom_refreshed` when the comparison spans a data-vintage change.
+Investigating why Coffee County's minutes weren't clearing the REQ-026 temporal window then surfaced
+a THIRD bug, upstream of Stage 9 entirely: the 2024-25 NCES CCD ingest had silently dropped ~3,125
+districts — every FIPS<10 state — via a LEAID leading-zero strip that broke against migration 015's
+7-digit canonicalization (#611, PR #612). Fixed + re-ingested (14,717→17,751 enrollment districts) +
+guarded with a 95%-coverage-floor assertion so a future partial import aborts instead of committing
+silently. Also this session: issue #577 (console chips) reparented from epic #92 to epic #96 (Console
+UI) via GitHub's native sub-issue API — it's console-UI scope, not Stage 9's. Full narrative:
+`docs/PROJECT_HISTORY.md` 2026-07-22 entry; `docs/REQUIREMENTS.yaml` REQ-002/REQ-162/REQ-163.
 
-**Next (RESUME HERE — 2026-07-21): #92 (Stage 9) is next**, per Ian's go-ahead to swing back to
-it now that the SEA campaign is closed out. #582's minutes_basis-aware reader is already in place
-for it (done 2026-07-20, see the prior PROJECT_HISTORY entries). Start by reviewing
-`docs/ACQUISITION_PIPELINE.md`'s Stage 9 section and the #92 epic/issue for current scope before
-writing code.
-Banked routing: #112 → epic #128; #577 (chips) rides with #92. Parked: #475/#476, #103/#80 (+#110);
-SEA integration follow-up (the ~9-state list above) is a new opt-in backlog item, not yet filed as
-an issue — ask Ian before filing if it should be tracked now or deferred.
+**Next (RESUME HERE — 2026-07-22): finish incorporating the remaining 19 gate@8-approved districts,
+then run the one-time `lct_calculations` recompute.** Continue the same one-district-at-a-time rhythm
+(dry-run → incorporate → `per_grade_lct_sample.py` preview → review) — it's already paid for itself
+twice. All 22 districts' dry-runs are clean (no conflicts/overlaps beyond the expected K-8 pattern);
+none are batch_00000 benchmark districts. Once all 22 (or however many Ian signs off on) are
+incorporated and their previews look right, the recompute (`calculate_lct_variants.py`'s write path)
+is the final gated step — it's a no-op for every non-incorporated district and only touches
+`lct_calculations` for the ones actually incorporated. Verify it works: spot-check a few recomputed
+districts' `teachers_secondary` (and other scope) values against what the preview predicted, confirm
+`data_tier`/`instructional_minutes_source` read `per_grade_bell`/`per_grade_statutory` correctly, and
+watch for `denom_refreshed`-flagged districts where the recomputed Δ should include a data-vintage
+component the preview already called out.
+Banked routing: #112 → epic #128. Parked: #475/#476, #103/#80 (+#110); SEA integration follow-up (the
+~9-state list from the 2026-07-20/21 campaign) is an opt-in backlog item, not yet filed as an issue —
+ask Ian before filing if it should be tracked now or deferred.
 Documented-in-code deferrals: `_satisfied_bands_now` batching (revisit on volume); the #522
 guardrail's per-rep keyword/table attribution (needs a server payload change); JS behavioral tests
 (no JS harness in repo — static-source pins only); the remediation-receipt exception is not
@@ -155,13 +161,15 @@ STAGE-scoped (time-bound 30-day expiry since 2026-07-20; revisit if remediation 
 attribution v1 reads each district's LATEST candidate plan (documented in-module).
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
--m "not integration"` (expect **1853** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **305**,
-Postgres up) + `pytest tests/test_*_integration.py` (expect **226** pass, 149 skipped, live DB) + `cd
-infrastructure/scraper && npm test` (expect **90**).
+-m "not integration"` (expect **1905** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect
+**327**, Postgres up) + `pytest tests/test_*_integration.py` (expect **247** pass, 149 skipped, live
+DB) + `cd infrastructure/scraper && npm test` (expect **90**).
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (the
 motivating ones: Huntington `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters).
-Full detail: `docs/PROJECT_HISTORY.md`, `STAGE1-5_*_DESIGN.md`, `PIPELINE_GOVERNANCE_AND_STATE.md`,
-`docs/REQUIREMENTS.yaml`.
+Stage 9 incorporate CLI: `python -m infrastructure.acquisition.stage9_incorporate <did> [--dry-run]`;
+sign-off preview: `python -m infrastructure.scripts.analyze.per_grade_lct_sample`.
+Full detail: `docs/PROJECT_HISTORY.md`, `STAGE1-5_*_DESIGN.md`, `STAGE9_INCORPORATE_DESIGN.md`,
+`PIPELINE_GOVERNANCE_AND_STATE.md`, `docs/REQUIREMENTS.yaml`.
 
 ---
 

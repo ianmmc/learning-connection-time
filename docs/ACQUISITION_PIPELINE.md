@@ -13,9 +13,10 @@
 > **Update this when:** a stage's purpose/IO changes, a new stage is built, or the flow diagram needs a new
 > edge — for implementation detail within an already-mapped stage, update that stage's own design note instead.
 
-**Current build state (2026-07-21):** the console runs the pipeline live **end to end through `gate@8`**,
-and **Stage 9's write is now BUILT** (the approved per-band minutes land in the LCT `bell_schedules` DB —
-see §9; the LEA-level per-grade projection that lets LCT consume them is the scoped follow-up). Stage 1
+**Current build state (2026-07-22):** the console runs the pipeline live **end to end through `gate@8`**,
+and **Stage 9's write is now BUILT** (the approved per-band minutes land in the LCT `bell_schedules` DB;
+the LEA-level per-grade projection that lets LCT actually consume them is ALSO BUILT, same day — see §9
+and `STAGE9_INCORPORATE_DESIGN.md` §4). Stage 1
 queue (`gate@1`, REQ-102), Stage 2 deterministic SERP cascade (REQ-104), Stage 3 capture + resilience
 (REQ-110), Stage 4 process + the Stage 4→5 incremental handoff (REQ-111), Stage 5 district-driven
 attention-first filter with the V2 detector/combiner scoring + v2.1 three-axis labeling (REQ-112/113/114/115),

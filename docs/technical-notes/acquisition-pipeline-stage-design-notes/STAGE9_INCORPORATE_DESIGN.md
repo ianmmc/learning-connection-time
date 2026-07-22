@@ -1,10 +1,11 @@
-# Stage 9 — Incorporate: design (BUILT — the write; per-grade projection is the follow-up)
+# Stage 9 — Incorporate: design (BUILT — the write AND the per-grade projection)
 
 > **Authority:** `infrastructure/acquisition/stage9_incorporate/` (the code) + this note. The **landing
 > zone** it writes into (`bell_schedules` schema: `minutes_basis`, `chk_method` incl. `council_extraction`,
 > 24-hour time acceptance, the COVID/malformed-year seam guard) is BUILT — see `DATABASE_SETUP.md` and
 > migration 019 / `queries.add_bell_schedule`.
-> **Audience:** whoever maintains Stage 9 or builds the per-grade projection follow-up.
+> **Audience:** whoever maintains Stage 9, the per-grade projection (§4), or `per_grade_lct_sample`'s
+> sign-off preview.
 > **Companions:** `ACQUISITION_PIPELINE.md` §9 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE.md` §11,
 > `DATABASE_SETUP.md` (the "Two databases" section — why this write crosses into the separate production LCT
 > DB). Upstream: `STAGE8_AGGREGATE_DESIGN.md` (`merge_fact_runs`, §1a below).
@@ -181,6 +182,33 @@ reports is the same value SPED inherits.
 incorporated. `python -m infrastructure.scripts.analyze.per_grade_lct_sample` prints the legacy-vs-
 per-grade before/after (minutes + secondary LCT) for review before a full recompute.
 
+**"Legacy" is a stored-row read, not a live re-derivation (bug found + fixed 2026-07-22, PR #610).**
+The first version of `per_grade_lct_sample` reconstructed "legacy" live via `get_instructional_minutes()`,
+whose pre-existing REQ-024 fallback (high → middle → elementary, for K-8 districts) picks up ANY measured
+`bell_schedules` row — including one Stage 9 had *just* written for the district being sampled. So the
+moment a district was incorporated, "legacy" silently stopped meaning "what's live in `lct_calculations`
+right now" and started meaning "what the old formula computes today, contaminated by today's own write" —
+caught reviewing district 3601002: the contaminated comparison reported Δ=0, while the true stored
+production value was 330min/9.35 LCT vs. the real 455min/12.88 per-grade result. Fixed by reading the
+stored `lct_calculations.teachers_secondary` row directly — the real current production baseline,
+unaffected by anything Stage 9 writes afterward — via a bulk `_legacy_secondary_by_district()` fetch (no
+N+1), ordered by `year DESC` then `calculated_at DESC` (not `calculated_at` alone: a TARGET_YEAR recompute
+clears only its own year, so an out-of-order backfill of a stale year must not outrank the newest year).
+Because legacy (stored vintage) and per-grade (today's enrollment/staff picks) can now draw from different
+data vintages, each row carries a `denom_refreshed` flag when the stored row's staff/enrollment years
+differ from today's — so a reviewer never mistakes a data refresh for the per-grade methodology effect.
+`main()` also gained a None-guard on the Δ subtraction: a never-computed district (no prior
+`lct_calculations` row at all — the common case for a *freshly* incorporated district, e.g. Lincoln MA)
+now prints cleanly instead of crashing the whole report. Live-validated against three real districts
+(Brownsville Ascend NY, Lincoln MA, Coffee County AL — see PROJECT_HISTORY.md 2026-07-22).
+
 **Caveats (documented):** both minutes and enrollment are LEA-grain — within-LEA school-to-school
 variation is a deliberate simplification, not a per-school split; `band_grade_span` is
-live-at-incorporation, so a persisted span can lag a later roster change (acceptable for a weight).
+live-at-incorporation, so a persisted span can lag a later roster change (acceptable for a weight). A
+district's staff/enrollment data COMPLETENESS also gates whether its per-grade minutes clear the REQ-026
+temporal window — issue #611 found the 2024-25 NCES ingest had silently dropped ~3,125 districts (every
+FIPS<10 state, a LEAID leading-zero normalization bug), which stranded their staff/enrollment at 2023-24
+and pushed them 4 years from the bell key, dropping the per-grade minutes to statutory. Fixed + re-ingested
+(see `docs/REQUIREMENTS.yaml` REQ-002); a district whose per-grade minutes unexpectedly read as
+`per_grade_statutory` despite real council data being incorporated is a symptom worth checking against
+NCES coverage, not assumed to be a Stage 9 bug.

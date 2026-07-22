@@ -51,6 +51,8 @@ requirements:
       - Captures full NCES IDs with leading zeros
       - Stores in PostgreSQL database
       - Handles missing/null values appropriately
+      - "A source-year import that matches fewer than 95% of min(file districts, our districts) after
+        LEAID normalization ABORTS (SystemExit) rather than silently committing a partial import"
     tests:
       - tests/test_nces_import.py::TestNCESDataFetch::test_fetches_data_from_nces_api
       - tests/test_nces_import.py::TestNCESDataFetch::test_fetches_data_from_local_files
@@ -62,8 +64,29 @@ requirements:
       - tests/test_nces_import.py::TestNullValueHandling::test_handles_null_enrollment
       - tests/test_nces_import.py::TestNullValueHandling::test_handles_null_staff_counts
       - tests/test_nces_import.py::TestNullValueHandling::test_converts_empty_strings_to_null
+      - tests/test_nces_leaid_normalization.py
     created: "2025-01-10T22:00:00Z"
-    updated: "2026-01-16T00:00:00Z"
+    updated: "2026-07-22T00:00:00Z"
+    notes: "**Incident (issue #611/#612, 2026-07-22):** `import_staff_and_enrollment.py` normalized
+      LEAIDs with `str(int(x))`, which STRIPS the leading zero this REQ's own acceptance criterion
+      requires ('0100810' -> '100810'). Migration 015 (2026-01-24) had LPAD-standardized the `districts`
+      table to 7-digit leading-zero ids, so every import run after 015 — including the 2024-25 one —
+      produced stripped ids that failed the `.isin(existing_districts)` match and were silently dropped.
+      Impact: every FIPS<10 state (AL/AK/AZ/AR/CA/CO/CT) was undercounted — 3,053 of 3,125 missing
+      districts (97.7%), CA alone 1,985; coverage 17,842->14,717 (79%) for enrollment_by_grade. Found
+      incorporating Coffee County (0100810) in the Stage 9 campaign (REQ-162's notes). The pre-existing
+      `test_normalizes_leaid_format` never caught this: it tests a test-LOCAL reimplementation
+      (`self._normalize_leaid`), never the real importer — REQ-002 had claimed 'tested' status against
+      this exact acceptance criterion while the production code silently violated it. Fixed: both
+      normalization sites (staff + enrollment) now share `_canonical_leaid()` (zfill(7), never
+      `str(int())`); a new `_assert_match_coverage()` aborts the import if post-normalization match rate
+      falls below 95% of `min(file, table)` districts (the new acceptance criterion above); re-ingested
+      2024-25 (enrollment 14,717->17,751, staff 14,720->17,754, zero duplicates, 2023-24 untouched; 91
+      remaining are genuinely absent from the raw file — closed/merged districts). `test_nces_leaid_normalization.py`
+      (11 tests) pins the real importer function directly — leading zeros preserved, every FIPS<10 sample
+      round-trips, the 82.5% partial-import case must raise. `test_normalizes_leaid_format` itself was
+      also fixed to call the real function (was the self-testing-theater pattern REQ-003's notes already
+      flagged elsewhere in this file)."
 
   - id: REQ-003
     description: Enrich districts with bell schedule data
@@ -4099,18 +4122,71 @@ requirements:
       - "REQ-026 temporal window: EVERY distinct measured year in a scope (not just the modal one) must form a ≤3-consecutive-year set with staff/enrollment, else the whole scope drops to per-grade statutory"
       - "sources per_grade_bell/per_grade_mixed map to data_tier 2 AND populate bell_schedule_source_year (the migration-008 temporal trigger must see the bell year); per_grade_statutory is tier 3, year=None, _is_statutory-distinguishable (#582)"
       - "GUARDED to incorporated districts (a district with no projection keeps the legacy band cascade byte-for-byte); the SPED-segmented scopes (core_sped/teachers_gened/instructional_sped) follow the K-12 `minutes` value by the standing base-scope convention — an intentional, documented consequence"
-      - "the recompute of lct_calculations is GATED on human sign-off of the per_grade_lct_sample before/after (which reuses the real pipeline's enrollment/staff pickers + blend-window downgrade, stable district order)"
+      - "the recompute of lct_calculations is GATED on human sign-off of per_grade_lct_sample's before/after, which reads the CURRENTLY STORED lct_calculations row for 'legacy' (never re-derives it live) — a live re-derivation via get_instructional_minutes picks up ANY measured bell_schedules row via its own REQ-024 fallback, including one Stage 9 just wrote for the sampled district, silently contaminating 'legacy' into 'today's formula, contaminated by today's write' (PR #610 bug, caught reviewing district 3601002: reported Δ=0 vs. the true 330min/9.35->455min/12.88 delta)"
+      - "per_grade_lct_sample flags denom_refreshed when the stored legacy row's staff/enrollment source years differ from today's picks, so a reviewer can't mistake a data-vintage shift for the per-grade methodology effect; main() guards its Δ subtraction against a never-computed district (legacy=None), the common case for a freshly incorporated district"
     tests:
       - tests/test_stage9_per_grade.py
       - tests/test_per_grade_lct.py
       - tests/test_stage9_incorporate_integration.py
+      - tests/test_per_grade_lct_sample.py
     created: "2026-07-21T00:00:00Z"
-    updated: "2026-07-21T00:00:00Z"
+    updated: "2026-07-22T00:00:00Z"
     notes: "The link that makes approved minutes move LCT numbers (STAGE9_INCORPORATE_DESIGN.md §4).
       Added 2026-07-21 during the PR #607 max-effort review, which also hardened the Stage-9 write:
-      benchmark (batch_00000) districts are refused (the permanent wall); a bell_schedules row written
-      by a non-Stage-9 method (human_provided/tier_*) is PROTECTED from overwrite and orphan-delete; a
-      TOCTOU re-check ensures the receipt written is the decision the eligibility gate validated; a
-      council->statutory flip clears the retracted council clock times; _statutory_minutes uses the
-      canonical case-normalized lookup and treats only NULL (not 0) as absent; district-id normalized
-      before every governance read; init_precious_schema on entry."
+      benchmark (batch_00000) districts are refused (the permanent wall); a TOCTOU re-check ensures the
+      receipt written is the decision the eligibility gate validated; a council->statutory flip clears the
+      retracted council clock times; _statutory_minutes uses the canonical case-normalized lookup and
+      treats only NULL (not 0) as absent; district-id normalized before every governance read;
+      init_precious_schema on entry. **Superseded same-day (round-2 review):** a bell_schedules row written
+      by a non-Stage-9 method was originally PROTECTED from overwrite (silently skipped) — round-2 found
+      this orphaned the skipped band's per-grade rows and left the human value invisible to the LCT calc,
+      and replaced it with FAIL-LOUD on a foreign-method collision: the write raises before anything
+      commits; a human resolves the conflict (remove the manual row, or exclude the band at gate@8) and
+      re-runs (STAGE9_INCORPORATE_DESIGN.md §2g). PR #610 (2026-07-22) fixed the sign-off script's own bug
+      (above) and added a bulk `_legacy_secondary_by_district()` fetch (was N+1) ordered by `year DESC`
+      then `calculated_at DESC` — not calculated_at alone, since a TARGET_YEAR recompute clears only its
+      own year, so an out-of-order backfill of a stale year must not outrank the newest year. Live-validated
+      2026-07-22 against 3 real gate@8-approved districts (Brownsville Ascend NY, Lincoln MA, Coffee County
+      AL) — all incorporated cleanly; Lincoln surfaced the never-computed case live (no prior
+      teachers_secondary row at all — zero reported secondary teachers, a K-8 town district); Coffee County
+      surfaced issue #611 (the 2024-25 NCES ingest had silently dropped ~3,125 districts including Coffee
+      County, stranding its staff/enrollment at 2023-24 and pushing its per-grade minutes out of the
+      REQ-026 temporal window to statutory — see REQ-002)."
+
+  - id: REQ-163
+    github_issue: "#608 / PR #609"
+    description: "The console runs each batch's Stage 4 local-processing pass (pdftotext/pdfplumber/
+      camelot/tesseract) in an ISOLATED OS SUBPROCESS, not an in-process thread. camelot's table
+      extraction is backed by native code (pypdfium2/PDFium + OpenCV) that is not safe for concurrent
+      multi-threaded use within one process; a crash there is a SIGSEGV that bypasses Python's exception
+      handling entirely, so two batches' Stage-4 threads calling into the same native libraries at once
+      (autoflow can trigger this for several batches concurrently) can segfault the whole console,
+      killing every other batch's in-flight job with it."
+    type: non-functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "server._run_stage4_subprocess launches headless.py's CLI as its own OS process per batch (python -u -m infrastructure.acquisition.stage4_process.headless run <batch_id> --batch-file <tmp>); headless.run_batch itself is UNCHANGED (still sequential, in-process) — only the console's invocation of it moved"
+      - "the resolved batch dict crosses the process boundary via a temp file, never the on-disk queue receipt (#526's 'DB is the working store' rule)"
+      - "the child streams one JSON line per event ([kind] {...}) on stdout for live progress, ending in exactly one terminal [summary]/[control_failure]/[error] line the parent parses"
+      - "a process killed by a signal (e.g. SIGSEGV) is surfaced to the caller as a RuntimeError naming the signal — not silently swallowed, not misreported as a generic error"
+      - "the child's stderr (native-library warnings, any traceback) is captured to a durable per-run log under paths.PROCESS_LOGS_DIR — the forensic record the original incident's investigation lacked"
+      - "a CONTROL FAILURE (SystemExit) in the child is distinguished from a generic error/crash so both existing call sites' `except SystemExit` / `except Exception` handlers keep working unchanged"
+    tests:
+      - tests/test_stage4_subprocess.py
+      - tests/test_process_api.py
+      - tests/test_autoflow_api.py
+    created: "2026-07-22T00:00:00Z"
+    updated: "2026-07-22T00:00:00Z"
+    notes: "Diagnosed from a live `zsh: segmentation fault` with no Python traceback (a SIGSEGV bypasses
+      exception handling) while several follow-up batches' re-discovery + re-extraction ran concurrently.
+      Root cause: `_acquire_batch_run` (issue #47) only serializes runs of the SAME batch_id, so
+      autoflow's compose-followup could spawn Stage 4 for DIFFERENT batches on concurrent threads, all
+      calling camelot.read_pdf at once. The project's own tool-roster spike
+      (STAGE4_PROCESS_DESIGN.md, 2026-06-23) reported '0 crashes' across an 11-tool x 150-PDF
+      SEQUENTIAL sweep — consistent with this only failing under concurrency that sweep never exercised.
+      A max-effort review of the fix itself found and closed 5 further issues in the same pass: main()'s
+      TypeError-safe exit-code interpretation, log-file naming, temp-file cleanup on every exit path,
+      malformed-stdout-line tolerance, and test coverage for the signal-kill path specifically (not just
+      the happy path) — see PR #609's review notes. See STAGE4_PROCESS_DESIGN.md's 2026-07-21 decision-log
+      entry for the full mechanism."

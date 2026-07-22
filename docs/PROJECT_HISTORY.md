@@ -911,6 +911,83 @@ structured fields; only opening the files found them.
 Authority: PRs #601, #602, #603; issue #604; `docs/state-integrations/state_data_catalog.yaml`,
 `STATE_DATA_AVAILABILITY_ASSESSMENT.md`, `data/raw/state/*/MANIFEST.md` (gitignored, local-only).
 
+### 2026-07-22 — Resuming the Stage 9 campaign one district at a time surfaced two real production bugs (#608, #610, #611) — going slow found what going fast would have hidden
+
+Swinging back to #92 after the SEA campaign, the plan was to incorporate the 22 gate@8-approved
+districts individually — dry-run, write, review the before/after preview, repeat — rather than batch
+through all 22 and recompute once. That deliberate pace paid off immediately: it caught a live console
+crash mid-review and a silent 17.5%-of-corpus data gap, either of which a blind full-batch run would
+likely have masked or made much harder to isolate.
+
+**Stage 4 segfault (#608, PR #609).** While several follow-up batches' re-discovery + re-extraction ran
+concurrently, the console crashed with a bare `zsh: segmentation fault` — no Python traceback, since a
+SIGSEGV bypasses exception handling entirely. Root cause: camelot's table extraction is backed by native
+code (pypdfium2/PDFium + OpenCV) unsafe for concurrent multi-threaded use in one process, and
+`_acquire_batch_run` (issue #47) only serializes runs of the *same* batch — different batches' Stage-4
+autoflow threads could call into the same native libraries at once. Fix: Stage 4 now runs in an isolated
+OS subprocess per batch (`server._run_stage4_subprocess`), so a crash kills only that batch's job, with
+stderr captured to a durable log for exactly the forensics this incident's own investigation lacked. A
+subsequent max-effort review of the fix itself found and closed 5 more issues in the same pass (exit-code
+interpretation, log naming, temp-file cleanup, malformed-line tolerance, signal-kill test coverage) — see
+REQ-163.
+
+**Stage 9 write validated live against 3 real districts** (Brownsville Ascend NY, Lincoln MA, Coffee
+County AL) — all incorporated cleanly, and each taught something the dry-run survey alone hadn't shown:
+the overlap-flag mechanism (§2g/§4 of `STAGE9_INCORPORATE_DESIGN.md`) fires on *every* grade for a small
+K-8-in-one-building charter (both elementary and middle bands' rosters span the same K-8 range); Lincoln
+has *never* had a computable `teachers_secondary` LCT at all (zero reported secondary teachers — a K-8
+town district with no local high school), which is what actually surfaced the next bug.
+
+**`per_grade_lct_sample.py`'s "legacy" column was contaminated by the very write it was supposed to
+review against (#610).** The sign-off script re-derived "legacy" live via `get_instructional_minutes()`,
+whose pre-existing REQ-024 fallback (high → middle → elementary, for K-8 districts) picks up *any*
+measured `bell_schedules` row — including one Stage 9 had just written for the district being sampled.
+So the instant a district was incorporated, "legacy" silently stopped meaning "what's live in
+`lct_calculations` right now" and started meaning "what the old formula computes today, contaminated by
+today's own write." Caught reviewing Brownsville: the contaminated comparison reported Δ=0, while the
+real stored production value was 330min/9.35 LCT against a true 455min/12.88 per-grade result — a real
++3.53 LCT change the bug hid entirely. Fixed by reading the stored `lct_calculations` row directly
+(bulk-fetched, ordered by `year DESC` then `calculated_at DESC` — not calculated_at alone, since a
+TARGET_YEAR recompute can leave an older year with a later timestamp than the newest one) and flagging
+`denom_refreshed` when the stored row's staff/enrollment vintage differs from today's picks, so a
+reviewer can't mistake a data refresh for the per-grade methodology effect. `main()` also gained a
+None-guard: Lincoln's never-computed case (legacy=None, a real per-grade value present) had been an
+untested `int - None` crash waiting to happen on exactly the scenario the tool exists for. See REQ-162.
+
+**The 2024-25 NCES CCD ingest had silently dropped ~3,125 districts — every FIPS<10 state (#611,
+PR #612).** Investigating why Coffee County's temporal blend window rejected its own freshly-written
+council minutes turned up `enrollment_by_grade`/`staff_counts_effective` rows stuck at 2023-24 despite
+2024-25 data being on disk. Root cause: `import_staff_and_enrollment.py` normalized LEAIDs with
+`str(int(x))`, which strips the leading zero (`'0100810' -> '100810'`) — fine under the *pre-migration-015*
+6-char districts table, silently wrong ever since migration 015 (2026-01-24) LPAD-standardized everything
+to 7 digits. Every import after 015, including 2024-25, produced ids that failed the
+`.isin(existing_districts)` match and were dropped with no error: 3,053 of 3,125 missing districts
+(97.7%) had leading-zero ids, CA alone 1,985. The existing `test_normalizes_leaid_format` (REQ-002) never
+caught it — it tested a test-local reimplementation, not the real importer, so REQ-002 had claimed
+'tested' status against its own "captures full NCES IDs with leading zeros" acceptance criterion the
+whole time the production code silently violated it. Fixed with a shared `_canonical_leaid()` (zfill(7),
+never `str(int())`) plus a new `_assert_match_coverage()` guardrail that aborts an import outright if
+post-normalization coverage falls below 95% — no more silent partial imports. Re-ingested 2024-25
+(enrollment 14,717→17,751, staff 14,720→17,754, zero duplicates, 2023-24 untouched); Coffee County's data
+came back current and its council minutes cleared the temporal window on the very next preview run. See
+REQ-002.
+
+**Lesson, stated plainly by Ian mid-session: "I'm glad we found this now!"** Both bugs were real, both
+were silent, and both were found specifically *because* the campaign moved one real district at a time
+with a human reading every result rather than trusting a batch run's summary line — exactly the
+high-supervision-first posture `PIPELINE_GOVERNANCE_AND_STATE.md` §11b describes, applied one level up
+from the acquisition pipeline to the LCT-core data it ultimately feeds.
+
+**Also this session:** issue #577 (console left-pane progress chips) reparented from epic #92 to epic
+#96 (Console UI build) via GitHub's native sub-issue API — it's a console-chip bug, not Stage-9 scope,
+and #96 already holds the console-UI backlog. A full doc-sync pass followed, correcting
+`ACQUISITION_PIPELINE.md` (per-grade projection was still described as "the scoped follow-up" though
+built the same day) and `PIPELINE_GOVERNANCE_AND_STATE.md` (two spots still described Stage 4 as
+"in-process" post-#608) against current code.
+
+Authority: PRs #609, #610, #612; issues #608, #611; `STAGE4_PROCESS_DESIGN.md`,
+`STAGE9_INCORPORATE_DESIGN.md` §4, `docs/REQUIREMENTS.yaml` REQ-002/REQ-162/REQ-163.
+
 ---
 
 ## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)
