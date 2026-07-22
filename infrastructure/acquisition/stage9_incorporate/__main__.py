@@ -60,9 +60,9 @@ def main(argv=None) -> int:
             line += " — " + ", ".join(
                 f"{w['grade_level']}={w['minutes']}[{w['method']}/{w['minutes_basis']}]"
                 for w in r.written)
-        if r.protected:
-            line += " — PROTECTED (not overwritten): " + ", ".join(
-                f"{p['grade_level']}@{p['year']}[{p['existing_method']}]" for p in r.protected)
+        if r.conflicts:
+            line += " — CONFLICT (would fail): " + ", ".join(
+                f"{p['grade_level']}@{p['year']}[{p['existing_method']}]" for p in r.conflicts)
         if r.status == "incorporated":
             line += f"; {r.grades} grade rows" + (f" ({r.overlaps} overlap-flagged)" if r.overlaps else "")
         print(line)

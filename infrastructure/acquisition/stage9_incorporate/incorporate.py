@@ -13,8 +13,10 @@ governance stamp), not a distributed transaction — the two DBs are deliberatel
 Standing walls (PR #607 review):
   - batch_00000 (benchmark) districts are REFUSED — "Stage 9 (non-benchmark only) is the sole
     promoter to bell_schedules" (stage7_extract/models.py; CLAUDE.md's permanent wall).
-  - A bell row whose method is NOT Stage-9-authored (human_provided, tier_*, …) is PROTECTED:
-    never overwritten, never reconciled away — human work outranks the mechanical write.
+  - A Stage-9 write whose (year, grade_level) key is already held by a NON-Stage-9 method
+    (human_provided, tier_*, …) FAILS LOUD — human/legacy work is never silently overwritten; a
+    person resolves the conflict (remove the manual row, or exclude the band at gate@8) and re-runs.
+    (`--dry-run` surfaces the conflict instead of raising, so the preview shows it before a real run.)
   - The receipt actually written is re-checked against the decision the eligibility gate validated
     (same approval_id, still approved) — a gate@8 action landing between the two governance reads
     must not smuggle a different determination into production (the PR #252 TOCTOU class).
@@ -26,6 +28,7 @@ from dataclasses import dataclass, field
 from typing import Iterable, Optional
 
 from sqlalchemy import text
+from sqlalchemy.exc import ProgrammingError
 
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.stage8_aggregate import approval as APV
@@ -57,7 +60,7 @@ class IncorporationResult:
     reason: Optional[str] = None
     grades: int = 0                  # #605: per-grade projection rows written
     overlaps: int = 0                # grades resolved by the overlap tie-rule (flagged)
-    protected: list = field(default_factory=list)   # bands skipped over a non-Stage-9 legacy row
+    conflicts: list = field(default_factory=list)   # dry-run only: bands blocked by a non-Stage-9 row
 
 
 def _norm_did(did) -> str:
@@ -77,15 +80,16 @@ def _ensure_schemas() -> None:
 def _is_benchmark_district(gs, district_id: str) -> bool:
     """True when the district belongs to any batch_type='benchmark' batch (batch_00000) — the
     permanent Stage-9 wall (mirrors stage7_execute._benchmark_district_ids, which Stage 9 cannot
-    import: process_governance sits ABOVE this layer). A fresh DB without batch tables has no
-    benchmark members — treated as not-benchmark."""
+    import: process_governance sits ABOVE this layer). Only a MISSING batch table (a fresh
+    governance DB) is treated as not-benchmark; any other query error FAILS LOUD — a wall that can
+    never fail-open, so a transient DB error can't let a benchmark district through (PR #607 R2)."""
     try:
         return bool(gs.execute(text(
             "SELECT 1 FROM batch_district bd JOIN batch b ON b.batch_id = bd.batch_id "
             "WHERE b.batch_type = 'benchmark' AND bd.district_id = :d LIMIT 1"),
             {"d": district_id}).first())
-    except Exception:
-        gs.rollback()
+    except ProgrammingError:
+        gs.rollback()   # relation "batch"/"batch_district" does not exist — fresh DB, no members
         return False
 
 
@@ -149,9 +153,26 @@ def _write_grade_minutes(session, stored_did: str, grade_minutes: list, fingerpr
     session.flush()
 
 
+def _foreign_collisions(session, stored_did: str, writes: list) -> list:
+    """The (year, grade_level) keys a Stage-9 write would land on that are already held by a
+    NON-Stage-9 method (human_provided / tier_* / legacy) — human/legacy rows Stage 9 must never
+    silently overwrite. Returns [{grade_level, year, existing_method}] (empty = clear to write)."""
+    existing = {(r.year, r.grade_level): r for r in
+                (session.query(BellSchedule)
+                 .filter(BellSchedule.district_id == stored_did).all())}
+    out = []
+    for w in writes:
+        row = existing.get((w.year, w.grade_level))
+        if row is not None and row.method not in STAGE9_METHODS:
+            out.append({"grade_level": w.grade_level, "year": w.year,
+                        "existing_method": row.method})
+    return out
+
+
 def _verify_written(session, stored_did: str, writes: list) -> None:
     """Rule #6 — re-query each intended row IN THE SAME session and assert minutes/method/basis
-    before commit. Raises on any absence or mismatch (rolls the whole write back)."""
+    (and, for statutory rows, that no council-era clock times survived) before commit. Raises on
+    any absence or mismatch (rolls the whole write back)."""
     for w in writes:
         row = (session.query(BellSchedule)
                .filter(BellSchedule.district_id == stored_did,
@@ -167,6 +188,10 @@ def _verify_written(session, stored_did: str, writes: list) -> None:
                 f"Stage 9 verify mismatch for {stored_did}/{w.year}/{w.grade_level}: "
                 f"db=({row.instructional_minutes},{row.method},{row.minutes_basis}) "
                 f"expected=({w.minutes},{w.method},{w.minutes_basis})")
+        if row.method == "statutory_fallback" and (row.start_time or row.end_time):
+            raise RuntimeError(
+                f"Stage 9 verify: statutory row {stored_did}/{w.year}/{w.grade_level} carries "
+                f"clock times ({row.start_time!r}, {row.end_time!r}) — must be cleared")
 
 
 def _verify_grade_minutes(session, stored_did: str, grade_minutes: list) -> None:
@@ -183,11 +208,18 @@ def _verify_grade_minutes(session, stored_did: str, grade_minutes: list) -> None
     for gm in grade_minutes:
         r = rows[gm.grade]
         if (r.instructional_minutes != gm.minutes or r.method != gm.method
-                or r.minutes_basis != gm.minutes_basis or r.source_band != gm.source_band):
+                or r.minutes_basis != gm.minutes_basis or r.source_band != gm.source_band
+                or r.year != gm.year or r.overlap_flag != gm.overlap_flag):
             raise RuntimeError(
                 f"Stage 9 grade-minutes verify mismatch for {stored_did}/{gm.grade}: "
-                f"db=({r.instructional_minutes},{r.method},{r.minutes_basis},{r.source_band}) "
-                f"expected=({gm.minutes},{gm.method},{gm.minutes_basis},{gm.source_band})")
+                f"db=({r.instructional_minutes},{r.method},{r.minutes_basis},{r.source_band},"
+                f"{r.year},{r.overlap_flag}) expected=({gm.minutes},{gm.method},{gm.minutes_basis},"
+                f"{gm.source_band},{gm.year},{gm.overlap_flag})")
+        # #95 provenance must round-trip as a dict (catches a JSONB serialization drop)
+        if not isinstance(r.provenance, dict) or r.provenance.get("facts_fingerprint") is None:
+            raise RuntimeError(
+                f"Stage 9 grade-minutes verify: {stored_did}/{gm.grade} provenance not persisted "
+                f"as a fingerprinted dict (got {type(r.provenance).__name__})")
 
 
 def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, force=False,
@@ -237,17 +269,26 @@ def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, for
     writes = MAP.plan_writes(receipt, fingerprint=fp_live, approval_id=approval_id, actor=actor,
                              grade_span_source=grade_span_source)
     if dry_run:
-        # Resolve statutory minutes read-only so the preview shows the number a real run would
-        # write — "None" is useless for exactly the band a human most needs to check (PR #607).
+        # Read-only preview: resolve statutory minutes (so the number a real run would write shows,
+        # not "None"), surface any foreign-row conflict a real run would fail on, and flag a
+        # retraction (an empty re-approval of a previously-incorporated district deletes its rows).
         with lct_session_scope() as ls:
             district = Q.get_district_by_id(ls, district_id)
+            conflicts = _foreign_collisions(ls, district.nces_id, writes) if district else []
             if district:
                 for w in writes:
                     if w.needs_statutory_minutes and w.minutes is None:
                         w.minutes = _statutory_minutes(ls, district.state, w.grade_level)
+        reason = None
+        if conflicts:
+            reason = "conflict: " + ", ".join(f"{c['grade_level']}@{c['year']}[{c['existing_method']}]"
+                                              for c in conflicts)
+        elif not writes:
+            reason = (f"would RETRACT {len(inc.get('bands') or {})} incorporated band(s)"
+                      if inc else "no_bands")
         return IncorporationResult(district_id, "dry_run",
                                    written=[w.summary() for w in writes], fingerprint=fp_live,
-                                   reason=(None if writes else "no_bands"))
+                                   reason=reason, conflicts=conflicts)
     if not writes and inc is None:
         return IncorporationResult(district_id, "no_bands", fingerprint=fp_live,
                                    reason="approved receipt carried no bands")
@@ -261,21 +302,18 @@ def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, for
             raise ValueError(f"District {district_id} not found in LCT production DB")
         stored_did = district.nces_id
         state = district.state
-        # Protected legacy rows: a (year, grade_level) key already held by a NON-Stage-9 method
-        # (human_provided, tier_*, …) is never overwritten — and, unrelabeled, it can never become
-        # eligible for the Stage-9 orphan delete either (PR #607 review finding #5).
-        existing_bells = {(r.year, r.grade_level): r for r in
-                          (ls.query(BellSchedule)
-                           .filter(BellSchedule.district_id == stored_did).all())}
-        to_write, protected = [], []
+        # FAIL LOUD on a foreign-row collision: a (year, grade_level) key held by a NON-Stage-9
+        # method (human_provided / tier_* / legacy) is a human-vs-pipeline conflict Stage 9 must
+        # never silently resolve. Raise BEFORE any write so nothing is committed; a person removes
+        # the manual row or excludes the band at gate@8, then re-runs (PR #607 R2 — this replaces
+        # the earlier "silently skip protected bands", which orphaned the band's per-grade rows).
+        conflicts = _foreign_collisions(ls, stored_did, writes)
+        if conflicts:
+            raise RuntimeError(
+                f"Stage 9 refuses to overwrite non-Stage-9 bell rows for {district_id}: "
+                f"{conflicts}. Resolve the conflict (remove the manual row, or exclude the band at "
+                f"gate@8) then re-incorporate.")
         for w in writes:
-            row = existing_bells.get((w.year, w.grade_level))
-            if row is not None and row.method not in STAGE9_METHODS:
-                protected.append({"grade_level": w.grade_level, "year": w.year,
-                                  "existing_method": row.method})
-                continue
-            to_write.append(w)
-        for w in to_write:
             if w.needs_statutory_minutes:
                 w.minutes = _statutory_minutes(ls, state, w.grade_level)
             schedule = Q.add_bell_schedule(
@@ -286,18 +324,16 @@ def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, for
                 source_description=w.source_description, notes=w.notes,
                 raw_import=w.raw_import, created_by=actor)
             if w.method == "statutory_fallback":
-                # A council→statutory flip over the same key must not keep the retracted
-                # council-era clock times on a row labeled statutory (PR #607 review).
+                # A council→statutory flip over the SAME key (council's consensus year == current
+                # year) hits add_bell_schedule's UPDATE path, which preserves the old None-args
+                # times — the retracted council times must not survive on a statutory row.
                 schedule.start_time = None
                 schedule.end_time = None
         ls.flush()
-        _reconcile_stage9_orphans(ls, stored_did, keep={(w.year, w.grade_level) for w in to_write})
-        _verify_written(ls, stored_did, to_write)
-        # #605: project the WRITTEN bands DOWN to per-grade minutes (the LCT-consumable artifact).
-        # Protected bands stay out — their bell row is the legacy value, and the projection must
-        # never assert Stage-9 minutes that contradict it.
-        grade_minutes = PG.project(to_write, fingerprint=fp_live, approval_id=approval_id,
-                                   actor=actor)
+        _reconcile_stage9_orphans(ls, stored_did, keep={(w.year, w.grade_level) for w in writes})
+        _verify_written(ls, stored_did, writes)
+        # #605: project the written bands DOWN to per-grade minutes (the LCT-consumable artifact).
+        grade_minutes = PG.project(writes, fingerprint=fp_live, approval_id=approval_id, actor=actor)
         _write_grade_minutes(ls, stored_did, grade_minutes, fp_live, approval_id, actor)
         _verify_grade_minutes(ls, stored_did, grade_minutes)
         n_grades = len(grade_minutes)
@@ -305,14 +341,14 @@ def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, for
         # commit on context-manager exit
 
     # ---- Phase D: governance stamp (after the LCT commit) ----
-    bands = {w.grade_level: w.method for w in to_write}
+    bands = {w.grade_level: w.method for w in writes}
     with gdb.session_scope() as gs:
         LEDGER.record_incorporation(gs, district_id, fingerprint=fp_live, approval_id=approval_id,
                                     bands=bands, actor=actor)
 
     return IncorporationResult(district_id, "incorporated",
-                               written=[w.summary() for w in to_write], fingerprint=fp_live,
-                               grades=n_grades, overlaps=n_overlaps, protected=protected)
+                               written=[w.summary() for w in writes], fingerprint=fp_live,
+                               grades=n_grades, overlaps=n_overlaps)
 
 
 def incorporate_batch(district_ids: Iterable, *, actor="auto:stage9", dry_run=False,

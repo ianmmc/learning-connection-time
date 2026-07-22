@@ -115,9 +115,12 @@ fingerprint.
   (non-benchmark only) is the sole promoter to `bell_schedules`" (CLAUDE.md's permanent wall).
   `_is_benchmark_district` mirrors Stage 7's `_benchmark_district_ids` (which Stage 9 cannot import —
   process_governance sits above this layer).
-- **Legacy-row protection.** A `bell_schedules` row whose `method` is NOT Stage-9-authored
-  (`human_provided`, `tier_*`, …) is never overwritten and — unrelabeled — never orphan-deleted; its
-  band is reported in `IncorporationResult.protected` and contributes no per-grade projection row.
+- **Foreign-row collision → FAIL LOUD.** A Stage-9 write whose `(year, grade_level)` key is already
+  held by a NON-Stage-9 method (`human_provided`, `tier_*`, legacy) raises — human/legacy work is
+  never silently overwritten; a person resolves the conflict (remove the manual row, or exclude the
+  band at gate@8) and re-runs. `--dry-run` surfaces the conflict (and any retraction) instead of
+  raising, so the preview shows it. (R2 replaced an earlier "silently skip protected bands", which
+  orphaned the skipped band's per-grade rows and left the human value invisible to the LCT calc.)
 - **TOCTOU re-check.** The receipt Stage 9 writes from is re-validated (still approved, same
   `approval_id`) against the decision the eligibility gate saw — a concurrent gate@8 action between the
   two governance reads cannot smuggle a different determination into production (the PR #252 class).

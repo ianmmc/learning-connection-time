@@ -328,30 +328,43 @@ def test_benchmark_district_refused(env, monkeypatch):
     assert _bell_rows(env) == [] and _grade_rows(env) == {}
 
 
-def test_legacy_human_row_protected(env, monkeypatch):
+def test_legacy_row_collision_fails_loud(env, monkeypatch):
     from infrastructure.database.connection import session_scope as lct_scope
     from infrastructure.database import queries as Q
-    # a hand-verified row already occupies (env, 2024-25, elementary)
+    # a hand-verified row already occupies (env, 2024-25, elementary) — the SAME key a council
+    # write would land on (council resolves to its band_consensus year 2024-25)
     with lct_scope() as s:
         Q.add_bell_schedule(s, env, "2024-25", "elementary", 390, start_time="8:00 AM",
                             end_time="2:30 PM", method="human_provided", confidence="high",
                             notes="hand-verified from the district calendar", created_by="ian")
     _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 400}, "high": {"gross": 450}}))
-    res = INC.incorporate_district(env)
-    assert res.status == "incorporated"
+    with pytest.raises(RuntimeError, match="refuses to overwrite non-Stage-9"):
+        INC.incorporate_district(env)
+    # NOTHING was written or overwritten — the human row is intact, no council rows, no grade rows
     rows = {r["grade_level"]: r for r in _bell_rows(env)}
-    # the human row is untouched (method + minutes preserved), the council high still lands
+    assert set(rows) == {"elementary"}
     assert rows["elementary"]["method"] == "human_provided" and rows["elementary"]["minutes"] == 390
-    assert rows["high"]["method"] == "council_extraction"
-    assert any(p["grade_level"] == "elementary" and p["existing_method"] == "human_provided"
-               for p in res.protected)
-    # the protected band contributes NO Stage-9 grade-minutes rows
-    assert "03" not in _grade_rows(env) and "10" in _grade_rows(env)
+    assert _grade_rows(env) == {}
+    with gdb.session_scope() as gs:
+        assert LEDGER.latest_incorporation(gs, env) is None
+
+
+def test_legacy_collision_surfaced_in_dry_run(env, monkeypatch):
+    from infrastructure.database.connection import session_scope as lct_scope
+    from infrastructure.database import queries as Q
+    with lct_scope() as s:
+        Q.add_bell_schedule(s, env, "2024-25", "elementary", 390, method="human_provided",
+                            created_by="ian")
+    _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 400}}))
+    res = INC.incorporate_district(env, dry_run=True)
+    assert res.status == "dry_run" and "conflict" in (res.reason or "")
+    assert any(c["existing_method"] == "human_provided" for c in res.conflicts)
 
 
 def test_statutory_flip_clears_council_times(env, monkeypatch):
     from infrastructure.database.connection import session_scope as lct_scope
     from infrastructure.database.models import BellSchedule
+    from infrastructure.utilities.school_year import current_school_year
 
     def _elem_row():
         with lct_scope() as s:
@@ -359,11 +372,15 @@ def test_statutory_flip_clears_council_times(env, monkeypatch):
                                              BellSchedule.grade_level == "elementary").first()
             return {"method": r.method, "start_time": r.start_time, "end_time": r.end_time}
 
-    # v1: council elementary with real times
-    _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 420}}), approval_id=1)
+    cur = current_school_year()   # council's consensus year == current => v1/v2 share the key,
+                                  # so the flip is an in-place UPDATE and the time-clear code fires
+    # v1: council elementary with real times, at the CURRENT school year
+    _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 420, "year": cur}}),
+               approval_id=1)
     INC.incorporate_district(env)
-    assert _elem_row()["start_time"] == "08:00"
-    # v2: elementary loses consensus -> statutory fallback; stale council times must be cleared
+    v1 = _elem_row()
+    assert v1["method"] == "council_extraction" and v1["start_time"] == "08:00"
+    # v2: elementary loses consensus -> statutory fallback (also at cur); stale times must clear
     _patch_gov(monkeypatch, _fake_ca(env, council={}, unsatisfied=["elementary"]), approval_id=2)
     INC.incorporate_district(env)
     row = _elem_row()
@@ -407,3 +424,15 @@ def test_statutory_minutes_case_insensitive_and_zero_safe(env):
         assert _statutory_minutes(s, "ZZ", "middle") == 330
         # an unknown state falls to the 360 default
         assert _statutory_minutes(s, "QQ", "high") == 360
+
+
+def test_dry_run_flags_retraction(env, monkeypatch):
+    # incorporate a district, then dry-run an EMPTY re-approval — the preview must warn that a
+    # real run would RETRACT the prior bands (not silently look like a never-incorporated no_bands)
+    _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 400}, "high": {"gross": 450}}))
+    INC.incorporate_district(env)
+    _patch_gov(monkeypatch, _fake_ca(env, council={}), approval_id=2)   # empty re-approval, new fp
+    res = INC.incorporate_district(env, dry_run=True)
+    assert res.status == "dry_run" and "RETRACT" in (res.reason or "")
+    # dry-run wrote nothing: the prior rows are still present
+    assert len(_bell_rows(env)) == 2

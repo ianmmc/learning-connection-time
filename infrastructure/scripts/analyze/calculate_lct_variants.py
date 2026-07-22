@@ -131,7 +131,7 @@ def get_statutory_minutes(session, state: str, grade_level: str) -> tuple[int, s
     """Statutory fallback: state requirement, else the 360 default. A statutory minimum has
     no school-year identity — year is None, never a fabricated literal (issue #24)."""
     state_req = session.query(StateRequirement).filter(
-        StateRequirement.state == state
+        StateRequirement.state == (state or "").upper()   # canonical case (matches get_state_requirement)
     ).first()
     if state_req:
         m = state_req.get_minutes(grade_level)
@@ -542,6 +542,9 @@ def calculate_all_variants(
     dgm_by_district = get_all_district_grade_minutes(session)
     if dgm_by_district:
         print(f"  Found {len(dgm_by_district):,} districts with Stage-9 per-grade minutes")
+    # One statutory-lookup memo for the whole run (key = state,band) — shared across every district
+    # so a state's ≤3 band minutes are fetched once, not per district (PR #607 R2).
+    _stat = cached_statutory(get_statutory_minutes)
 
     results = []
     processed = 0
@@ -612,7 +615,6 @@ def calculate_all_variants(
         _gm_map = dgm_by_district.get(staff.district_id) or {}
         if _gm_map:
             _blend = [staff.effective_year, _enroll_yr]
-            _stat = cached_statutory(get_statutory_minutes)   # ≤3 lookups/district, shared by all 3 scopes
             _wk = weighted_scope_minutes(session, district.state, K12_GRADES, grade_enrollment,
                                          _gm_map, _blend, _stat)
             _we = weighted_scope_minutes(session, district.state, ELEM_GRADES, grade_enrollment,

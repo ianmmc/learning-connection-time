@@ -41,8 +41,6 @@ def sample(limit: int | None = None) -> list:
     with session_scope() as s:
         dids = [r[0] for r in (s.query(DistrictGradeMinutes.district_id).distinct()
                                .order_by(DistrictGradeMinutes.district_id).all())]
-        if limit:
-            dids = dids[:limit]
         # The REAL pipeline's pickers (COVID exclusion, zero-staff fallback), bulk dicts
         enrollment_with_years = get_most_recent_enrollment(s)
         staff_with_years = get_most_recent_staff(s)
@@ -70,6 +68,8 @@ def sample(limit: int | None = None) -> list:
                          "legacy_sec_min": legacy_min, "legacy_source": legacy_src,
                          "per_grade_sec_min": pg_min, "source": pg_src,
                          "legacy_sec_lct": legacy_lct, "per_grade_sec_lct": pg_lct})
+            if limit and len(rows) >= limit:
+                break   # cap the ELIGIBLE rows at N (not the pre-filter did list), stable by did order
     return rows
 
 
