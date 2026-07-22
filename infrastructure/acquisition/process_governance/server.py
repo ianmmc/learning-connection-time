@@ -15,6 +15,8 @@ import os
 import re
 import signal
 import subprocess
+import sys
+import tempfile
 import threading
 from pathlib import Path
 
@@ -1697,9 +1699,94 @@ async def capture_retry(batch_id: str, payload: dict):
 # ---------------------------------------------------------------- Stage 4 (Process) console — REQ-111
 # Stage 4 is UNGATED -> status/observability (a processing-health + tool-effectiveness readout read FROM
 # THE DB cross-stage cache, the working store the Stage-4 finish hook keeps fresh) + an orchestration
-# trigger (the local harvesters, run IN-PROCESS as a background job). Unlike Stage 2/3 the work is plain
-# Python, not a subprocess. Durable truth = processed.json on disk + the state_event log.
+# trigger (the local harvesters, run as a background job). Durable truth = processed.json on disk + the
+# state_event log.
+#
+# #608: the local harvesters run in an ISOLATED SUBPROCESS (_run_stage4_subprocess), not an in-process
+# thread. camelot's table extraction is backed by native code (pypdfium2/PDFium + OpenCV) that is not
+# safe for concurrent multi-threaded use within one process; a crash there is a SIGSEGV that bypasses
+# Python's exception handling entirely. _acquire_batch_run only serializes runs of the SAME batch_id
+# (issue #47), so two DIFFERENT batches' Stage-4 threads used to be able to call into PDFium/OpenCV at
+# the same time in the same process — a segfault took down the whole console, killing every other
+# batch's job with it. A subprocess crash only kills that batch's job.
 _PROCESS_JOBS: dict = {}
+
+
+def _run_stage4_subprocess(batch: dict, *, actor: str = "auto:stage4", on_event=None) -> dict:
+    """Run Stage 4 (`headless.run_batch`) for `batch` in its own OS process (issue #608) rather than an
+    in-process thread — see the module comment above. The already-resolved `batch` dict crosses the
+    process boundary via a temp file (never the on-disk queue receipt — #526's 'DB is the working
+    store' rule), and the child's stdout is a stream of `[kind] {...}` JSON-lines the caller parses
+    live into `on_event`, ending in exactly one of `[summary]` / `[control_failure]` / `[error]`
+    (see headless.main). The child's stderr (camelot/pdfminer warnings, any traceback) is captured to
+    a durable per-run log file under paths.PROCESS_LOGS_DIR — the forensic record this issue's own
+    investigation didn't have.
+
+    Raises SystemExit on a CONTROL FAILURE (mirrors run_batch's own registry-ahead-of-disk hard stop),
+    RuntimeError on any other failure INCLUDING a crash (the process killed by a signal — e.g. the
+    segfault this exists to isolate) — matching what every call site already does with `except
+    SystemExit` / `except Exception`, so no call site needs to change."""
+    paths.PROCESS_LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    batch_id = batch["batch_id"]
+    from datetime import datetime, timezone
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    log_path = paths.PROCESS_LOGS_DIR / f"stage4_{batch_id}_{stamp}.log"
+    batch_file = None
+    try:
+        fd, batch_file = tempfile.mkstemp(prefix=f"stage4_{batch_id}_", suffix=".json")
+        with os.fdopen(fd, "w") as f:
+            json.dump(batch, f)
+        cmd = [sys.executable, "-u", "-m", "infrastructure.acquisition.stage4_process.headless",
+               "run", batch_id, "--actor", actor, "--batch-file", batch_file]
+        summary = None
+        control_failure = None
+        error = None
+        with open(log_path, "w") as errf:
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=errf, text=True,
+                                    start_new_session=True)
+            with _SUBPROC_GUARD:
+                _SUBPROCESSES.add(proc)
+            try:
+                for line in proc.stdout:
+                    line = line.rstrip("\n")
+                    if not line.startswith("[") or "] " not in line:
+                        continue                                  # defensive: never crash on stray output
+                    kind, _, rest = line[1:].partition("] ")
+                    try:
+                        payload = json.loads(rest)
+                    except json.JSONDecodeError:
+                        continue                                  # partial/malformed line — ignore, don't crash
+                    if kind == "summary":
+                        summary = payload
+                    elif kind == "control_failure":
+                        control_failure = payload.get("detail", "Stage 4 subprocess control failure")
+                    elif kind == "error":
+                        error = payload.get("detail", "Stage 4 subprocess error")
+                    elif on_event:
+                        on_event(kind, payload)
+                returncode = proc.wait()
+            finally:
+                with _SUBPROC_GUARD:
+                    _SUBPROCESSES.discard(proc)
+    finally:
+        if batch_file:
+            try:
+                os.unlink(batch_file)
+            except OSError:
+                pass
+    if returncode < 0:
+        sig = signal.Signals(-returncode)
+        raise RuntimeError(f"Stage 4 subprocess for {batch_id} was killed by {sig.name} — a native "
+                           f"crash (likely camelot/PDFium under concurrent load; see issue #608), not "
+                           f"an application error. stderr log: {log_path}")
+    if control_failure is not None:
+        raise SystemExit(control_failure)
+    if error is not None:
+        raise RuntimeError(f"{error} (stderr log: {log_path})")
+    if summary is None:
+        raise RuntimeError(f"Stage 4 subprocess for {batch_id} exited {returncode} with no summary "
+                           f"line — stderr log: {log_path}")
+    return summary
 
 
 def _process_job_view(batch_id: str) -> dict | None:
@@ -1769,10 +1856,12 @@ def run_stage4_with_ingest(batch: dict, *, actor: str, on_event) -> dict:
     """Stage 4 AND its Stage-5 hand-off, as ONE operation — the invariant 'Stage 4 complete implies
     the Stage-5 ingest was attempted' lives HERE, not in each caller's memory (#240 review: #235
     happened precisely because autoflow was a second run_batch call site that forgot the ingest the
-    first one remembered). Any future entry point calls THIS, never H4.run_batch directly. The
-    ingest is idempotent (per-district delete+rebuild) and self-guards on batch completeness, so no
-    todo-gating is needed at call sites. Returns Stage 4's summary."""
-    summary = H4.run_batch(batch, actor=actor, on_event=on_event)
+    first one remembered). Any future entry point calls THIS, never H4.run_batch / _run_stage4_subprocess
+    directly. The ingest itself stays IN-PROCESS (DB-only, no native-code crash risk — #608 only
+    isolates the camelot/PDFium work) so it can't be lost across the subprocess boundary; it is
+    idempotent (per-district delete+rebuild) and self-guards on batch completeness, so no todo-gating
+    is needed at call sites. Returns Stage 4's summary."""
+    summary = _run_stage4_subprocess(batch, actor=actor, on_event=on_event)
     _ingest_stage5_if_complete(batch, on_event)
     return summary
 

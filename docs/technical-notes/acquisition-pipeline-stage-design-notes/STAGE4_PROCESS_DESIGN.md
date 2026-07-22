@@ -18,8 +18,24 @@ district, `processed.json` + per-record `extracted.txt`/`<tool>.txt`/`raster_p-<
 
 **Code:** `stage4_process/process_stage4.py` imports exactly `common.district_status` (no LCT DB — ungated
 middle stage). **Unlike Stages 2/3 it does the real extraction work itself** (pdftotext/pdfplumber/
-camelot/tesseract — fast local calls, no browser, no LLM), so there is no separate worker process.
-`stage4_process/headless.py` is the batch runner the console drives.
+camelot/tesseract — fast local calls, no browser, no LLM). `stage4_process/headless.py` is the batch
+runner the console drives.
+
+**#608 (2026-07-21): the console runs this in an ISOLATED SUBPROCESS, not an in-process thread.**
+`headless.run_batch` itself is unchanged — still a plain, sequential, in-process Python call per
+district. What changed: camelot's table extraction is backed by native code (pypdfium2/PDFium +
+OpenCV) that isn't safe for concurrent multi-threaded use within one process, and a crash there is a
+SIGSEGV that bypasses Python's exception handling entirely. The console's per-batch run lock
+(`_acquire_batch_run`, issue #47) only serializes runs of the SAME batch, so two DIFFERENT batches'
+Stage-4 jobs used to be able to call into PDFium/OpenCV concurrently in the SAME process — observed
+segfaulting the whole console mid-autoflow when several follow-up batches' re-discovery/re-extraction
+ran at once. `server._run_stage4_subprocess` now launches `headless.py`'s CLI
+(`python -m ...headless run <batch_id> --batch-file <tmp>`) as its own OS process per batch; a crash
+there kills only that batch's job. The already-resolved batch dict crosses the process boundary via a
+temp file (never the on-disk queue receipt — #526), the child streams `[kind] {...}` JSON-lines on
+stdout for live progress + a terminal `[summary]`/`[control_failure]`/`[error]` line, and its stderr
+(warnings, any traceback) is captured to a durable per-run log under `paths.PROCESS_LOGS_DIR` for
+post-crash forensics.
 
 ---
 
@@ -239,10 +255,12 @@ timeouts). What landed (code is authoritative — this records the shape + the d
   **`_batch_from_db`** (renamed from `_capture_batch_from_db`; now used by capture + process).
   `process_run` also calls **`_acquire_batch_run(batch_id)`** (defined `server.py:~136`, issue #47) before
   starting the job — the same cross-stage per-batch mutex `capture_run` uses, preventing e.g. a
-  concurrent capture-run and process-run from both operating on the same `batch_id`. Unlike `capture_run`,
-  `process_run`'s `_work()` closure has no `_run=_tracked_run` injection — there's no Node child process to
-  track (Stage 4 has no subprocess worker to babysit, consistent with headless.py's "no injectable `_run`"
-  above): it's plain in-process Python, so `run_stage4_with_ingest` is called directly.
+  concurrent capture-run and process-run from both operating on the same `batch_id`, though NOT two
+  *different* batches' process-runs from each other (the #608 gap — see the top of this doc).
+  `process_run`'s `_work()` closure calls `run_stage4_with_ingest`, which (since #608) calls
+  `_run_stage4_subprocess` — an isolated OS subprocess per batch, tracked in `_SUBPROCESSES` the same
+  way `_tracked_run`'s Stage 2/3 children are, so server shutdown terminates it too. The Stage-5 ingest
+  handoff (`_ingest_stage5_if_complete`) stays in-process — DB-only, no native-code crash risk.
 - **`static/stage4.js`** + the `index.html` selector option + the `gate1.js` switcher hook
   (`if (which==="stage4" && window.initStage4) …`) — copied `stage3.js` (shared
   `outcomeBadge`/`progressBadge`, left-pane chip live-sync, `.run-anim` button, list re-fetch on
@@ -388,3 +406,22 @@ Stage-4/5 aboutness boundary) whose usable reps all recovered zero clock times �
 (cache_ingest). Unusable/errored records are not flagged — their failure is already visible via
 `usable`. Sized by the 2026-07-19 survey: 61 in-corpus records (CMS document-viewer pages whose
 linked PDF was never fetched, soft-404s, login walls). Tests: TestTimeBlindFidelity.
+
+**2026-07-21 — Stage 4 isolated into its own subprocess; the console no longer runs it on an
+in-process thread (issue #608).** Diagnosed a live `zsh: segmentation fault` (no Python traceback —
+a SIGSEGV bypasses exception handling entirely) that killed the whole console mid-session, while
+several follow-up batches' re-discovery + re-extraction were running concurrently. Root cause:
+`_acquire_batch_run` (issue #47) only serializes runs of the SAME `batch_id`; autoflow's
+`compose-followup` spawns Stage 4 on a background thread per batch, so DIFFERENT batches' Stage-4
+threads could — and, per the log, did — call `camelot.read_pdf` (backed by pypdfium2/PDFium + OpenCV,
+both native C/C++ libraries not safe for concurrent multi-threaded use in one process) at the same time
+in the same process; the project's own tool-roster spike (2026-06-23 entry above) reported "0 crashes"
+across an 11-tool × 150-PDF *sequential* sweep — consistent with this only failing under concurrency
+that sweep never exercised. Fix: `server._run_stage4_subprocess` now launches `headless.py`'s CLI as
+its own OS process per batch (the resolved batch dict crosses via a temp file, never the on-disk
+receipt — #526; stdout streams `[kind] {...}` JSON-lines for live progress + a terminal
+`[summary]`/`[control_failure]`/`[error]` line; stderr is captured to a durable per-run log under the
+new `paths.PROCESS_LOGS_DIR`) — a crash now kills only that batch's job, not the console or any other
+batch's concurrent autoflow. `headless.run_batch` itself is unchanged (still sequential, in-process).
+See the top of this doc and `test_stage4_subprocess.py` (pure line-parsing/exit-code logic + one real
+subprocess round-trip, govdb-marked).

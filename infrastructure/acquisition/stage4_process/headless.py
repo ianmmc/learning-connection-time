@@ -1,20 +1,33 @@
 """Stage 4 (Process) batch runner -- the console's orchestration + observability entry.
 
 Stage 4 is UNGATED: the console surfaces it as STATUS/observability (a processing-health + tool-
-effectiveness readout) plus a run trigger. This mirrors the Stage 3 headless runner, with ONE structural
-difference: Stage 4 does the work IN-PROCESS (pdftotext / pdfplumber / camelot / tesseract -- fast local
-subprocess calls inside process_stage4), NOT via a separate long-lived worker process. So there is **no
-node-owns-shutdown / per-district SIGKILL budget** to design here -- a district is processed by a Python
-function call (`C4.finish_district`); a crash mid-district simply leaves processed.json unwritten, so
-reconcile re-runs that district next time (idempotent). The Stage-3 deadline/partial-manifest pattern does
-NOT transfer.
+effectiveness readout) plus a run trigger. `run_batch()` itself does the work IN-PROCESS and
+sequentially (pdftotext / pdfplumber / camelot / tesseract -- fast local subprocess calls inside
+process_stage4) -- a district is processed by a plain Python function call (`C4.finish_district`); a
+crash mid-district simply leaves processed.json unwritten, so reconcile re-runs that district next time
+(idempotent). The Stage-3 deadline/partial-manifest pattern does NOT transfer.
+
+**Issue #608:** camelot's table extraction is backed by native code (pypdfium2/PDFium + OpenCV) that
+can segfault -- a crash that bypasses Python's exception handling entirely. `run_batch()` itself stays
+single-process/sequential (unchanged), but the CONSOLE now launches this module's CLI as an isolated OS
+subprocess per batch (`server._run_stage4_subprocess`) rather than an in-process thread, so two batches'
+concurrent Stage-4 runs can no longer segfault each other -- or the console -- by both touching
+PDFium/OpenCV in the same process at once. `main()`'s `run` subcommand is that subprocess's entry point:
+it prints one JSON line per event (`[kind] {...}`) and a final `[summary] {...}` / `[control_failure]
+{...}` / `[error] {...}` line, all flushed immediately, for the parent to parse as it streams.
 
 After each district's processed.json lands, `process_stage4.finish_district` records the state_event AND
 projects the processed-doc rows into the live DB cache (common/cache_ingest) -- which is what the console
 reads. The DB is the working store; processed.json on disk is the regenerable, authoritative source.
 
-Driven by `run_batch()` (the console's POST /api/process/{batch_id}/run trigger) or as a CLI:
+Driven by `run_batch()` (the console's POST /api/process/{batch_id}/run trigger, via the isolated
+subprocess above) or directly as a CLI:
   python3 -m infrastructure.acquisition.stage4_process.headless run <batch_id|path>
+  python3 -m infrastructure.acquisition.stage4_process.headless run <batch_id> --batch-file <path>
+    (--batch-file feeds a pre-resolved batch dict, e.g. straight from the governance DB, bypassing the
+    on-disk receipt lookup -- the console's own subprocess call always uses this form, per #526's "the
+    on-disk receipt is never the transport" rule: the DB-resolved dict crosses the process boundary as
+    plain IPC, not as a disk-receipt fallback.)
 """
 import argparse
 import json
@@ -313,12 +326,29 @@ def main():
     p = sub.add_parser("run", help="process an approved+captured batch (in-process local harvesters)")
     p.add_argument("batch", help="batch_id or path to batch_NNNNN.json receipt")
     p.add_argument("--actor", default="ian")
+    p.add_argument("--batch-file",
+                    help="path to a JSON file holding the already-resolved batch dict — used by the "
+                         "console's isolated-subprocess call (#608); skips load_batch_any entirely")
     a = ap.parse_args()
     if a.cmd == "run":
-        batch = load_batch_any(a.batch)   # CLI loads the receipt; the console passes a DB-resolved dict
-        summary = run_batch(batch, actor=a.actor,
-                            on_event=lambda k, p: print(f"[{k}] " + json.dumps(p)))
-        print(json.dumps(summary, indent=2))
+        if a.batch_file:
+            batch = json.loads(Path(a.batch_file).read_text())
+        else:
+            batch = load_batch_any(a.batch)   # CLI loads the receipt; the console passes a DB-resolved dict
+        # One JSON line per event/outcome, flushed immediately -- the console parent (#608) parses this
+        # stream live rather than waiting for the process to exit. `[kind] {...}` for progress events;
+        # exactly one terminal line ([summary]/[control_failure]/[error]) is printed before this
+        # process ends, so the parent always has a clear, single place to look for the final outcome.
+        try:
+            summary = run_batch(batch, actor=a.actor,
+                                on_event=lambda k, p: print(f"[{k}] " + json.dumps(p), flush=True))
+        except SystemExit as e:
+            print("[control_failure] " + json.dumps({"detail": str(e)}), flush=True)
+            raise
+        except Exception as e:
+            print("[error] " + json.dumps({"detail": f"{type(e).__name__}: {e}"}), flush=True)
+            raise SystemExit(1)
+        print("[summary] " + json.dumps(summary), flush=True)
 
 
 if __name__ == "__main__":

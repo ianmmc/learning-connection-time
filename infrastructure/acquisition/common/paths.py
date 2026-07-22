@@ -35,6 +35,13 @@ STATUS_FILE = STATUS_DIR / "district_status.json"       # cross-stage registry
 # acquisition/, NOT under raw/ — data/raw is write-once Stage-3 output (Critical Rule 5; issue #58).
 HARVEST_SLICES_DIR = ACQUISITION / "harvest_slices"
 
+# Stage 4's isolated-subprocess stderr logs (issue #608): camelot's native PDFium/OpenCV backend can
+# segfault, which bypasses Python's exception handling entirely — the console runs each batch's Stage 4
+# job in its own OS process so a crash there can't take down the server, and captures that process's
+# stderr (tracebacks, camelot/pdfminer warnings) here for post-crash forensics. Ephemeral/regenerable,
+# not a precious backup.
+PROCESS_LOGS_DIR = ACQUISITION / "process_logs"
+
 STAGE5_DIR = ACQUISITION / "stage5_review"
 # (The retired SQLite review.db cache lived here pre-REQ-103; the working store is now the isolated
 # governance Postgres DB — see common/db.py. The precious JSON backups below remain.)
