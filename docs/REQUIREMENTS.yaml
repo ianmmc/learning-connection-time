@@ -4190,3 +4190,142 @@ requirements:
       malformed-stdout-line tolerance, and test coverage for the signal-kill path specifically (not just
       the happy path) — see PR #609's review notes. See STAGE4_PROCESS_DESIGN.md's 2026-07-21 decision-log
       entry for the full mechanism."
+
+  - id: REQ-164
+    github_issue: "#615 (Stage-9 receipt + 8/9 status-twin gap, partial); #484 (datacontract schemas, complement); #616 (cache_ingest disk-decouple follow-up)"
+    description: "Every acquisition pipeline stage (1-9), on completing work for a district, leaves a
+      per-district, ALWAYS datetime-stamped receipt in that district's data/raw/lea-website-captures/<dir>/
+      and refreshes district_status.json in the SAME code path. gov_db is the sole authoritative working
+      store; the capture-dir receipts + district_status.json are audit cross-checks and recovery sources,
+      NEVER data-transmission vehicles read as input by an active-pipeline stage (governance §1; the
+      commandment-#1 auditability north star made a pipeline-wide invariant)."
+    type: constraint
+    priority: must
+    status: proposed
+    acceptance_criteria:
+      - "Each stage 1-9 writes its per-district receipt into lea-website-captures/<district_dir>/ via ONE shared crash-safe helper (common/receipts.py) — never a bespoke per-stage json.dump into the capture dir"
+      - "Receipts are ALWAYS datetime-stamped, first run included (no fixed-'latest' name): filename = <basename>.<fs_stamp>.<writer>-<h8>.json, fs_stamp=YYYYMMDDTHHMMSSZ (timeutil.fs_stamp); writer ∈ {py,node} tags the producing language so per-writer hashes are self-evidently per-writer (loose-with-writer-tag, 2026-07-22 — cross-language hash agreement is neither required nor implied); h8 = first 8 hex of sha256 over the canonical payload MINUS volatile keys (any generated_at it carries), so a re-run never clobbers a prior receipt and a same-second same-content write is idempotent"
+      - "Chronological order is carried by the timestamp (lexically sortable filename); the finer ordering authority is state_event.event_id in gov_db, never the filename; the content hash is the same-second collision-breaker only"
+      - "The receipt write happens AFTER the gov_db state_event commit (commit-before-receipt): a crash may leave a LAGGING receipt (re-derivable) but never a receipt AHEAD of the authoritative DB"
+      - "Any code path that writes a stage's state_event refreshes district_status.json in the same path (closes the gate@8 / Stage-9 gap where the twin lagged until an incidental later export)"
+      - "No active-pipeline stage reads a per-district capture-dir receipt as its input (receipts are audit/recovery only); the last such edge — cache_ingest's disk re-read — is tracked as #616"
+      - "Each stage's receipt has a declared payload schema — the target of #484's datacontract.yaml validation"
+      - "Every stage's per-district receipt is declared in arch-manifest.json (file_dispatches.receipts) for all 9 stages; a both-ways fitness test fails if a stage lacks a declared per-district receipt OR a declared producer doesn't reference its artifact"
+      - "Legacy unstamped receipts are backfilled by renaming in place, timestamp sourced from the matching (district, stage) state_event.created_at (district_status.json equivalent fallback; file mtime last-resort for orphans, logged) — NEVER from filesystem create-date, which the pending external-drive migration resets"
+    tests:
+      - tests/test_receipts.py
+      - tests/test_arch_manifest.py::test_file_dispatch_producer_references_artifact
+    created: "2026-07-22T00:00:00Z"
+    updated: "2026-07-22T00:00:00Z"
+    notes: "Filed 2026-07-22 (Ian) as the COVERAGE/placement/stamping/logging side of receipts —
+      complements #484 (shape validation) and subsumes the spec half of #615 (Stage-9 disk receipt +
+      8/9 status refresh). Two parallel code-verified surveys established current state: stages 2-5 write
+      per-district receipts (2/3/4 aside-stamp the prior copy on re-run, 5 overwrites in place); 6/7 write
+      centralized hash-named receipts (handoffs/, extractions/) AND refresh the twin; 8/9 write state_event
+      but no per-district disk receipt and do NOT refresh district_status.json in-path (twin stale until an
+      incidental later export); 9 has no disk receipt at all. ALWAYS-stamped chosen over fixed-latest+aside
+      (Ian): humans sort by filename/date, and 'receipts are audit-only, never transmission' removes the
+      need for a stable 'latest' name. Implementation sequenced new-receipts-first (Stage 9 -> 8 -> 7/6),
+      then convert 2-5 + a gov_db-state_event-sourced backfill of legacy files. STATUS proposed: helper +
+      per-stage writers + fitness/runtime tests not yet built."
+
+  # ---------------------------------------------------------------------------
+  # THE FOUR COMMANDMENTS (2026-07-22, Ian) — the project's governing priorities
+  # (MEMORY.md project-four-commandments) encoded into the ledger so they are
+  # TESTABLE, not just cultural. A `type: principle` REQ is verified through its
+  # `enforced_by` children (deterministic fitness/unit tests that cover SLICES of
+  # the principle) plus, for the residual it cannot make deterministic, a periodic
+  # LLM sweep (checkpoint skill + Haiku agents). `verification` ∈ {deterministic,
+  # mixed, periodic-sweep}. "As automated as tolerable."
+  # ---------------------------------------------------------------------------
+
+  - id: REQ-165
+    description: "COMMANDMENT #1 (NORTH STAR) — AUDITABILITY. Every material fact, decision, and state
+      transition must be reconstructable after the fact from durable, inspectable records: what was decided,
+      by which actor, from what evidence, under what code vintage. Provenance is DERIVED from receipts,
+      never inferred from absence-of-evidence; the gov_db state_event log + the per-stage receipts are the
+      audit substrate (governance §1)."
+    type: principle
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - "A principle REQ is verified through its enforced_by children (deterministic) PLUS a periodic sweep for the residual — never a single suite"
+      - "Every stage completion leaves a per-district receipt + a state_event row; provenance is derived from those receipts, never stamped-then-trusted or inferred from absence (REQ-164, REQ-128)"
+      - "A human/automated determination freezes what was acted on with a fingerprint, so a later change is detectably stale under the SAME code vintage (REQ-147)"
+      - "Cross-boundary couplings the import tools cannot see are declared + fitness-tested (arch-manifest.json / tests/test_arch_manifest.py)"
+      - "The residual — is a NEW decision surface auditable? was a new environmental edge declared? — is caught by the periodic sweep, not a unit test"
+    enforced_by: [REQ-164, REQ-147, REQ-128, REQ-054, REQ-087, "tests/test_arch_manifest.py"]
+    verification: mixed
+    created: "2026-07-22T00:00:00Z"
+    updated: "2026-07-22T00:00:00Z"
+    notes: "Ian's governing commandment #1 (MEMORY.md project-four-commandments). New `type: principle`
+      schema (Ian-approved 2026-07-22): enforced_by = the child REQs/fitness tests that deterministically
+      cover slices; verification=mixed flags the residual is caught by a periodic LLM sweep. Companions:
+      REQ-166/167/168."
+
+  - id: REQ-166
+    description: "COMMANDMENT #2 — MINIMIZE BAD DATA AT SCALE. Correctness across ~20k districts must come
+      from automated guards, not manual inspection (which does not scale — this rules OUT eyeballing every
+      district and REQUIRES automation): every datum reaching the LCT tables passes a deterministic
+      plausibility / temporal / consensus gate, and accuracy is MEASURED against the hand-curated
+      batch_00000 ground truth, never assumed."
+    type: principle
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - "Bell-to-bell minutes pass the REQ-055 plausibility gate (gross 240-510) before storage"
+      - "Multi-source blends pass the REQ-026 temporal window (<=3 consecutive start-years)"
+      - "Council extraction requires CROSS-FAMILY consensus, not same-family agreement (REQ-056); models read times, deterministic code computes minutes (REQ-054)"
+      - "A partial ingest ABORTS rather than committing silently (the #611/#612 NCES coverage-floor assertion class)"
+      - "Accuracy is measured against batch_00000 GT (940/943 hand-verified), never asserted; a regression is a metric test"
+      - "The residual — does a NEW datum class have a guard at all? — is caught by the periodic sweep"
+    enforced_by: [REQ-055, REQ-026, REQ-056, REQ-054, "#611", "#612"]
+    verification: mixed
+    created: "2026-07-22T00:00:00Z"
+    updated: "2026-07-22T00:00:00Z"
+    notes: "Ian's commandment #2. The commandment that rules OUT manual inspection at scale and therefore
+      REQUIRES automation (MEMORY.md project-four-commandments). Residual (a new datum class shipped with no
+      guard) is the sweep's job."
+
+  - id: REQ-167
+    description: "COMMANDMENT #3 — TIGHT CASH SPEND. Paid API/compute spend is minimized BY DESIGN:
+      cheapest-viable-first cascades, per-run budget caps declared as config-as-data, and no speculative
+      spend before a cheaper path is exhausted. Actual dollar burn is an OPERATIONAL metric reviewed
+      periodically, not a unit test."
+    type: principle
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - "Discovery runs a deterministic cheapest-first cascade — Wave-1 raw-index SERP before Wave-2 speculative WebSearch (stage2-discovery-provider decision)"
+      - "Per-run budget caps are declared config-as-data and schema-validated (tests/test_config_schemas.py)"
+      - "Council composition is measured in the cost_benchmark lab, never guessed (the council-lab discipline)"
+      - "Actual $ spend is reviewed periodically — operational, not deterministically unit-testable — via the periodic sweep"
+    enforced_by: ["tests/test_config_schemas.py"]
+    verification: mixed
+    created: "2026-07-22T00:00:00Z"
+    updated: "2026-07-22T00:00:00Z"
+    notes: "Ian's commandment #3. Deterministic slices: budget-cap config validation + the cheapest-first
+      discovery cascade. enforced_by lists only confidently-citeable anchors (test_config_schemas.py; the
+      cascade/budget REQ IDs to be cross-linked when re-verified) — under-claim over mis-cite. Actual-$ burn
+      is the periodic sweep's operational review."
+
+  - id: REQ-168
+    description: "COMMANDMENT #4 — ONE HUMAN'S TIME. The pipeline is built HIGH-SUPERVISION-FIRST and eased
+      toward auto only as each gate's reliability is proven ('as automated as tolerable'); human touchpoints
+      are minimized and never required where an automatic action is safe — spend-conservative AND observable
+      AND reversible. Largely qualitative: the primary verification is a periodic review, not a unit test."
+    type: principle
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - "Gates are manual/auto with confidence-escalation; a gate eases to auto only when its reliability is demonstrated on real output (ramp-up model, governance §11b)"
+      - "An automatic action is admitted when its failure mode is observable AND reversible AND spend-conservative — risk asymmetry decides, not 'a human must touch it' (MEMORY project-auto-act-when-observable)"
+      - "Auditable receipts (REQ-165/REQ-164) make failure observable — the precondition for safely easing a gate to auto"
+      - "The residual — is a new human touchpoint justified? could a proven gate ease to auto now? — is a periodic-sweep review, the clearest sweep candidate (least deterministically testable)"
+    enforced_by: [REQ-164, REQ-165]
+    verification: periodic-sweep
+    created: "2026-07-22T00:00:00Z"
+    updated: "2026-07-22T00:00:00Z"
+    notes: "Ian's commandment #4. The least deterministically-testable commandment (mostly qualitative) —
+      encoded so the periodic sweep has an explicit charter. Its one hard dependency is observability
+      (REQ-164/165): you cannot safely automate what you cannot audit."
