@@ -1,8 +1,9 @@
 """Stage 4 (Process) console API (REQ-111) — HTTP wiring for the status view + the process trigger.
 
 Hits the REAL governance DB (seeds + deletes a synthetic batch; skips if Docker is down), and NEVER runs
-the real harvesters — the run test monkeypatches H4.run_batch so the background job is a no-op. The runner
-itself is unit-tested in test_stage4_headless.py.
+the real harvesters — the run test monkeypatches server._run_stage4_subprocess (the #608 isolated-
+subprocess seam) so the background job is a no-op and never actually spawns a process. The runner itself
+is unit-tested in test_stage4_headless.py; the subprocess plumbing itself in test_stage4_subprocess.py.
 """
 import time
 
@@ -97,7 +98,7 @@ def test_run_starts_background_job(client, monkeypatch):
         return {"batch_id": batch["batch_id"], "todo": 1, "skipped": 0,
                 "results": [{"district_id": "ZZPRCA", "outcome": "processed_all"}]}
 
-    monkeypatch.setattr(server.H4, "run_batch", fake_run_batch)
+    monkeypatch.setattr(server, "_run_stage4_subprocess", fake_run_batch)
     r = client.post(f"/api/process/{BID}/run", json={"actor": "ian"})
     assert r.status_code == 200 and r.json()["started"] is True
 
@@ -120,7 +121,7 @@ def test_run_twice_rejects_second_while_running(client, monkeypatch):
         release.wait(timeout=5)
         return {"batch_id": batch["batch_id"], "todo": 0, "skipped": 0, "results": []}
 
-    monkeypatch.setattr(server.H4, "run_batch", blocking_run_batch)
+    monkeypatch.setattr(server, "_run_stage4_subprocess", blocking_run_batch)
     try:
         assert client.post(f"/api/process/{BID}/run", json={}).status_code == 200
         for _ in range(20):
@@ -143,7 +144,7 @@ def _stub_stage5(monkeypatch, *, resolved, total):
     BS.ingest_batch records its call; DS is in-memory (no real state_event writes)."""
     from infrastructure.acquisition.process_governance import server
     calls = {}
-    monkeypatch.setattr(server.H4, "run_batch",
+    monkeypatch.setattr(server, "_run_stage4_subprocess",
                         lambda batch, **kw: {"batch_id": batch["batch_id"], "todo": 1, "skipped": 0,
                                              "results": [{"district_id": "ZZPRCA", "outcome": "processed_all"}]})
     monkeypatch.setattr(server.H4, "status_for_batch",

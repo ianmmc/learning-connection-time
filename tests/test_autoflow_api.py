@@ -1,6 +1,7 @@
 """#157 — follow-up auto-flow: gate@1 auto-pass -> Stages 2->3->4 -> STOP at gate@5. The stage runners
-(H2/H3/H4.run_batch) are monkeypatched so the chain is a fast no-op; asserts the ORDER, that the batch
-is auto-approved, that it lands at gate@5, and that gate@6 (dispatch) is never auto-crossed on failure.
+(H2/H3.run_batch, and server._run_stage4_subprocess — the #608 isolated-subprocess seam for Stage 4) are
+monkeypatched so the chain is a fast no-op; asserts the ORDER, that the batch is auto-approved, that it
+lands at gate@5, and that gate@6 (dispatch) is never auto-crossed on failure.
 govdb — needs the governance DB (a real draft batch to approve + the run lock)."""
 import pytest
 from sqlalchemy import text
@@ -58,7 +59,7 @@ def test_autoflow_approves_then_runs_2_3_4_and_stops_at_gate5(env, monkeypatch):
     order = []
     monkeypatch.setattr(env.H2, "run_batch", lambda bid, **kw: order.append("discover") or {"summary": {"d": 1}})
     monkeypatch.setattr(env.H3, "run_batch", lambda batch, **kw: order.append("capture") or {"summary": {"c": 1}})
-    monkeypatch.setattr(env.H4, "run_batch", lambda batch, **kw: order.append("process") or {"summary": {"p": 1}})
+    monkeypatch.setattr(env, "_run_stage4_subprocess", lambda batch, **kw: order.append("process") or {"summary": {"p": 1}})
 
     env._autoflow_followup(BID, "ian")
 
@@ -78,7 +79,7 @@ def test_autoflow_halts_on_stage_failure_and_does_not_advance(env, monkeypatch):
         order.append("capture")
         raise RuntimeError("scraper down")
     monkeypatch.setattr(env.H3, "run_batch", boom)
-    monkeypatch.setattr(env.H4, "run_batch", lambda batch, **kw: order.append("process"))
+    monkeypatch.setattr(env, "_run_stage4_subprocess", lambda batch, **kw: order.append("process"))
 
     env._autoflow_followup(BID, "ian")
 
@@ -91,7 +92,7 @@ def test_autoflow_halts_on_stage_failure_and_does_not_advance(env, monkeypatch):
 def test_autoflow_releases_the_run_lock(env, monkeypatch):
     monkeypatch.setattr(env.H2, "run_batch", lambda bid, **kw: {"summary": {}})
     monkeypatch.setattr(env.H3, "run_batch", lambda batch, **kw: {"summary": {}})
-    monkeypatch.setattr(env.H4, "run_batch", lambda batch, **kw: {"summary": {}})
+    monkeypatch.setattr(env, "_run_stage4_subprocess", lambda batch, **kw: {"summary": {}})
     env._autoflow_followup(BID, "ian")
     lock = env._BATCH_RUN_LOCKS.get(BID)
     assert lock is None or not lock.locked()                     # lock freed for the next (manual gate@6) run

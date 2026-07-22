@@ -180,6 +180,9 @@ data/acquisition/stage5_review/*
 # Derived harvest slices (regenerable from captures at ingest; issue #58 relocation)
 data/acquisition/harvest_slices/
 
+# Stage 4 isolated-subprocess stderr logs (issue #608) — forensic-only, regenerable per run
+data/acquisition/process_logs/
+
 # Contamination-remediation restore-points (remediate_contamination.py --archive-capture-dir):
 # TRACK the small non-regenerable audit record (manifest.json), NEVER the archived raw capture dir
 # (hundreds of MB of regenerable PNG/PDF/per-tool output moved out of data/raw).
