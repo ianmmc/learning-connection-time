@@ -46,10 +46,13 @@ from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.common import receipts as RCPT
 from infrastructure.acquisition.common import timeutil as TU
 
-# The fixed-name legacy artifacts this backfill converts, and the stage whose state_event dates them.
-# filtered = Stage 5 (the only Phase-3 conversion). processed/discovery/candidates are deliberately
-# absent — their existence is still a stage-done marker read by fixed name (deferred conversion).
-STAGE_OF = {"filtered": 5}
+# Legacy fixed-name artifact stem -> (stage whose state_event dates it, target stamped basename).
+# The target basename follows the unified `stage<N>_<stage_name>` convention (2026-07-23), so the legacy
+# filename and the receipt basename deliberately DIFFER: filtered.json -> stage5_filter.<stamp>...
+# Only Stage 5 is here — processed/discovery/candidates/captures still have their EXISTENCE read as a
+# stage-done marker by fixed name, so renaming them would break reconcile (epic #617 converts them, and
+# then they join this map as stage2_discover / stage2_candidates / stage3_capture / stage4_process).
+LEGACY = {"filtered": (5, "stage5_filter")}
 
 
 @dataclass
@@ -131,11 +134,11 @@ def plan_renames(root: Path, benchmark_ids: set, session, status_doc: dict) -> l
     for ddir in sorted(p for p in root.iterdir() if p.is_dir() and "_" in p.name):
         district_id = ddir.name.split("_", 1)[0]
         is_bm = district_id in benchmark_ids
-        for base, stage in STAGE_OF.items():
-            legacy = ddir / f"{base}.json"
+        for legacy_stem, (stage, basename) in LEGACY.items():
+            legacy = ddir / f"{legacy_stem}.json"
             if not legacy.exists():
                 continue
-            target_base = f"{base}_benchmark" if is_bm else base
+            target_base = f"{basename}_benchmark" if is_bm else basename
             if _already_backfilled(ddir, target_base):
                 continue
             try:

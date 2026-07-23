@@ -338,7 +338,10 @@ def generate(session, district_id: str = None, root=None) -> list:
             # REQ-164: an always-stamped audit receipt via the shared writer (was a fixed filtered.json
             # overwritten in place). ddir is the DB-authoritative capture dir; nothing reads filtered.json
             # as pipeline input (Stage 6 reads the release projection from gov_db), so it's audit-only.
-            written = str(RCPT.write_receipt(did, district["name"], "filtered", doc, ddir=ddir))
+            # Basename follows the `stage<N>_<stage_name>` convention shared by every stage's receipt --
+            # the stage number leads so a filesystem/name sort groups a district's receipts in pipeline
+            # order (the unified naming decision, 2026-07-23).
+            written = str(RCPT.write_receipt(did, district["name"], "stage5_filter", doc, ddir=ddir))
         summary.append({"district_id": did, "topology": doc["topology"],
                         "n_canonical": doc["completeness"]["n_canonical"],
                         "n_send": doc["completeness"]["n_send"], "written": written})

@@ -60,9 +60,9 @@ def test_filtered_backfill_uses_state_event_via_status_fallback(cap_root):
     plans = BF.run(cap_root, benchmark_ids=set(), status_doc=_status(5, "2026-07-22T15:55:40Z"))
     assert len(plans) == 1 and plans[0].source == "district_status"
     assert not (d / "filtered.json").exists()
-    got = receipts.latest_receipt(DID, NAME, "filtered")
+    got = receipts.latest_receipt(DID, NAME, "stage5_filter")
     assert got is not None
-    assert re.match(r"^filtered\.20260722T155540Z\.py-[0-9a-f]{8}\.json$", got.name), got.name
+    assert re.match(r"^stage5_filter\.20260722T155540Z\.py-[0-9a-f]{8}\.json$", got.name), got.name
 
 
 def test_orphan_falls_back_to_mtime_and_warns(cap_root, capsys):
@@ -72,7 +72,7 @@ def test_orphan_falls_back_to_mtime_and_warns(cap_root, capsys):
     assert len(plans) == 1 and plans[0].source == "mtime"
     out = capsys.readouterr().out
     assert "[warn]" in out and "st_mtime" in out
-    assert receipts.latest_receipt(DID, NAME, "filtered") is not None
+    assert receipts.latest_receipt(DID, NAME, "stage5_filter") is not None
 
 
 # ----------------------------- benchmark tagging (DB-free) -----------------------------
@@ -81,9 +81,9 @@ def test_benchmark_dir_gets_benchmark_suffix_invisible_to_production_resolver(ca
     (d / "filtered.json").write_text(json.dumps({"winner": "u"}))
     BF.run(cap_root, benchmark_ids={DID}, status_doc=_status(5, "2026-07-22T15:55:40Z"))
     # tagged basename, and the production resolver must NOT see it (the .-anchored glob)
-    assert receipts.latest_receipt(DID, NAME, "filtered") is None
-    tagged = receipts.latest_receipt(DID, NAME, "filtered_benchmark")
-    assert tagged is not None and tagged.name.startswith("filtered_benchmark.")
+    assert receipts.latest_receipt(DID, NAME, "stage5_filter") is None
+    tagged = receipts.latest_receipt(DID, NAME, "stage5_filter_benchmark")
+    assert tagged is not None and tagged.name.startswith("stage5_filter_benchmark.")
 
 
 # ----------------------------- scope + idempotency + dry-run (DB-free) -----------------------------
@@ -113,7 +113,7 @@ def test_dry_run_mutates_nothing(cap_root):
                    status_doc=_status(5, "2026-07-22T15:55:40Z"))
     assert len(plans) == 1
     assert (d / "filtered.json").exists()                # still there
-    assert receipts.latest_receipt(DID, NAME, "filtered") is None
+    assert receipts.latest_receipt(DID, NAME, "stage5_filter") is None
 
 
 # ----------------------------- real SQL (govdb) -----------------------------
