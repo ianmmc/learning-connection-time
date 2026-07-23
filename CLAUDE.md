@@ -75,6 +75,18 @@ the destination is a self-governing app. **So present gate output as a recommend
 not a done deal, until that gate is explicitly set to auto** — the human inspects real output at each gate
 and catches real-data bugs code review misses. (governance §11b.)
 
+**The product is the pipeline, not the district.** Bell-schedule acquisition work targets the
+highly-automated, as-deterministic-as-possible pipeline in `ACQUISITION_PIPELINE.md`. A correct outcome
+reached by hand-orchestration — reading captures by eye, watching district-by-district for whether a rule
+triggers, re-adjudicating an already-approved gate@8 decision — is a **process failure even when the
+number is right**: it violates commandments #2 + #4 (manual inspection of ~20k districts doesn't scale)
+AND commandment #1 (a probabilistic model judgment isn't reproducible or auditable the way a deterministic
+guard is — run at a different time/model and the "verdict" could differ). Trust the deterministic inputs
+(the approved gate@8 receipt is authoritative; a note here is not) and the script's own guards (benchmark
+wall, TOCTOU, REQ-147 same-vintage staleness, REQ-026 temporal window, foreign-collision fail-loud) as the
+ONLY legitimate gates. When an outcome is wrong or fragile, fix the **pipeline** (a guard, a metadata gap)
+— never hand-fix the district. (2026-07-23, Ian.)
+
 **Three batch types (Stage 1):** `first-run`, `follow-up`, and `benchmark` (the 27 curated-GT districts
 injected as `batch_00000` — permanently walled off from Stage-9 writes and funnel/enrichment stats; see
 `STAGE1_QUEUE_DESIGN.md` §2h).
@@ -123,8 +135,9 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-23): REQ-164 receipts work COMPLETE on its branch (unmerged); Stage 9 campaign
-paused at 6/38 pending this merge.** `feat/pipeline-receipts-req164` now carries: Phase 5b (`arch-manifest.json`
+**Current status (2026-07-23): REQ-164 receipts work COMPLETE on its branch (unmerged, staying on the
+branch per Ian); Stage 9 campaign resumed on the branch — 10/38 incorporated, 28 pending.**
+`feat/pipeline-receipts-req164` now carries: Phase 5b (`arch-manifest.json`
 `file_dispatches.audit_receipts` + the both-ways bidirectional coverage tests, mirroring the
 `external_programs` pattern); Phase 4 (`infrastructure/acquisition/maintenance/backfill_receipts.py` —
 run LIVE 2026-07-23, backfilled 112 legacy `filtered.json` → `stage5_filter[_benchmark]`, 0 remaining,
@@ -136,21 +149,25 @@ discovery/candidates/captures rather than converting; and a basename **naming un
 receipt is now `stage<N>_<stage_name>`, stage number leading, so a filesystem sort groups a district's
 receipts in pipeline order). The design discussion this surfaced — why benchmark injection mimics
 Stage 2/3 output at all, and that the district-keyed Stage-9 wall doesn't clear even after an honest
-re-run — became **epic #617** (8 sub-issues #618–625: benchmark-model termini/wall-retirement/re-run,
-the deferred done-marker→gov_db inversion, retroactive stage 6-9 receipt generation, REQ sharpening),
-cross-linked to Council Lab #80. Full narrative: this session's `docs/PROJECT_HISTORY.md` entry (to add
-at merge); `docs/REQUIREMENTS.yaml` REQ-164 (status `tested`, MET/DEFERRED-marked criteria, REQ-117's
-pattern) + REQ-165…168 (feat branch only, pending merge).
+re-run — became **epic #617** (sub-issues #618–626: benchmark-model termini/wall-retirement/re-run,
+the deferred done-marker→gov_db inversion, retroactive stage 6-9 receipt generation, REQ sharpening,
+and **#626** — honor a logged gate@8 override past the REQ-026 temporal window, surfaced when the
+campaign found an approved council value that the recompute would silently drop to statutory on an
+out-of-window sampled vintage), cross-linked to Council Lab #80. Full narrative: this session's
+`docs/PROJECT_HISTORY.md` entry (to add at merge); `docs/REQUIREMENTS.yaml` REQ-164 (status `tested`,
+MET/DEFERRED-marked criteria, REQ-117's pattern) + REQ-165…168 (feat branch only, pending merge).
 
 **Next (RESUME HERE — 2026-07-23): two independent threads, either order.**
-**(1) Merge `feat/pipeline-receipts-req164` to `main`**, then resume the **Stage 9 campaign** — continue
-incorporating the remaining 32 gate@8-approved districts one at a time (dry-run → incorporate →
-`per_grade_lct_sample.py` preview → review); watch for Dickinson 1 ND (`3800038` — stale 2016-17
-middle-school source, re-extract before incorporating) and any other staff-vintage cases like Gallup's
-(`#613` — expected rare, not yet a systemic pattern). Once all pending districts are in and previews look
-right, run the one-time `lct_calculations` recompute (`calculate_lct_variants.py`'s write path — a no-op
-for non-incorporated districts); spot-check `teachers_secondary` against the preview, confirm
-`data_tier`/`instructional_minutes_source`, watch for `denom_refreshed` districts.
+**(1) Stage 9 campaign (on the branch — not merged yet, per Ian)** — incorporate the remaining 28
+non-benchmark gate@8-approved districts. This is a DETERMINISTIC step: run `incorporate` (the script's
+own guards — benchmark wall, TOCTOU, REQ-147 staleness, foreign-collision fail-loud — are the ONLY gates;
+do NOT hand-adjudicate a district by reading its captures, see "the product is the pipeline" above).
+Surface only what the SCRIPT flags. Prefer `incorporate_batch --dry-run` → review the exception list →
+real batch run over one-at-a-time narration. Once all pending districts are in, run the one-time
+`lct_calculations` recompute (`calculate_lct_variants.py`'s write path — a no-op for non-incorporated
+districts). **#626 gates the outcome for any district with an out-of-window sampled vintage**
+(an approved council value the recompute would otherwise drop to statutory): the fix (honor the gate@8
+override) is tracked there, not here.
 **(2) Epic #617** — start with **#621** (small, standalone: `_early_exit_targets` keys on the
 `batch_00000` literal instead of `batch_type='benchmark'`), then **#618** (benchmark dispatch as a
 first-class concept + enforce the gate@5/gate@7 termini — must land BEFORE #619 so no hole opens in the
