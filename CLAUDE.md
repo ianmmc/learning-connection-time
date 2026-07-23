@@ -75,8 +75,8 @@ the destination is a self-governing app. **So present gate output as a recommend
 not a done deal, until that gate is explicitly set to auto** — the human inspects real output at each gate
 and catches real-data bugs code review misses. (governance §11b.)
 
-**The product is the pipeline, not the district.** Bell-schedule acquisition work targets the
-highly-automated, as-deterministic-as-possible pipeline in `ACQUISITION_PIPELINE.md`. A correct outcome
+**When working on bell schedule acquisition infrastructure, a robust pipeline — not harvesting the instructional time data — is the immediate goal.** The way that we get instructional time data extracted and integrated is by way of the pipeline.
+Bell-schedule acquisition work targets the highly-automated, as-deterministic-as-possible pipeline in `ACQUISITION_PIPELINE.md`. A correct outcome
 reached by hand-orchestration — reading captures by eye, watching district-by-district for whether a rule
 triggers, re-adjudicating an already-approved gate@8 decision — is a **process failure even when the
 number is right**: it violates commandments #2 + #4 (manual inspection of ~20k districts doesn't scale)
