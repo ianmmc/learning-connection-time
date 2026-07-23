@@ -28,6 +28,7 @@ from sqlalchemy import text
 
 from infrastructure.acquisition.common import paths  # noqa: E402
 from infrastructure.acquisition.common import db as gdb  # noqa: E402  (governance Postgres — REQ-103)
+from infrastructure.acquisition.common import receipts as RCPT  # noqa: E402  (REQ-164 audit receipts)
 from infrastructure.utilities import school_year as SY  # noqa: E402  (calendar-vocabulary SSOT; the #241 validity floor — NOT the LCT DB)
 from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402  (TARGET_LABELS)
 from infrastructure.acquisition.common.timeutil import utcnow as _now
@@ -334,9 +335,10 @@ def generate(session, district_id: str = None, root=None) -> list:
         ddir = root / (district["district_dir"] or did)
         written = None
         if ddir.exists():
-            out = ddir / "filtered.json"
-            paths.atomic_write_json(out, doc)   # atomic; regenerable (overwritten each run)
-            written = str(out)
+            # REQ-164: an always-stamped audit receipt via the shared writer (was a fixed filtered.json
+            # overwritten in place). ddir is the DB-authoritative capture dir; nothing reads filtered.json
+            # as pipeline input (Stage 6 reads the release projection from gov_db), so it's audit-only.
+            written = str(RCPT.write_receipt(did, district["name"], "filtered", doc, ddir=ddir))
         summary.append({"district_id": did, "topology": doc["topology"],
                         "n_canonical": doc["completeness"]["n_canonical"],
                         "n_send": doc["completeness"]["n_send"], "written": written})

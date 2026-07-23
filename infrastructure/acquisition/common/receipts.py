@@ -92,12 +92,15 @@ def receipt_filename(basename: str, payload, *, ts: str, writer: str = WRITER) -
 
 
 def write_receipt(district_id: str, name: str, basename: str, payload, *,
-                  writer: str = WRITER) -> Path:
+                  writer: str = WRITER, ddir: Optional[Path] = None) -> Path:
     """Write a per-district receipt (always-stamped, atomic) and return its path. A same-second write of
     byte-identical content is idempotent (identical filename -> no re-write), never a clobber. Payload is
     written AS GIVEN (dict or list) -- schema-agnostic; the timestamp authority is the filename + gov_db,
-    so nothing is injected into the payload."""
-    d = district_capture_dir(district_id, name)
+    so nothing is injected into the payload. ``ddir`` overrides the target dir for a caller that already
+    holds the district's capture dir (Stage 4's ``district["dir"]``, Stage 5's DB-authoritative
+    ``root/district_dir``) -- the in-pipeline stages resolve the dir themselves and gate on its existence,
+    where the app-layer stages (6-9) only have a district_id and fall back to the RAW_CAPTURES glob."""
+    d = Path(ddir) if ddir is not None else district_capture_dir(district_id, name)
     d.mkdir(parents=True, exist_ok=True)
     path = d / receipt_filename(basename, payload, ts=fs_stamp(), writer=writer)
     if not path.exists():

@@ -147,12 +147,7 @@
       {
         "artifact": "processed.json",
         "producer": "infrastructure/acquisition/stage4_process",
-        "role": "per-record local-tool text extraction outcomes"
-      },
-      {
-        "artifact": "filtered.json",
-        "producer": "infrastructure/acquisition/stage5_filter",
-        "role": "event-driven release projection (winner + alternates)"
+        "role": "per-record local-tool text extraction outcomes; ALSO the Stage-4-done marker (its existence drives reconcile) — stays a fixed handoff until the deferred done-marker->gov_db inversion (with discovery/candidates), so NOT yet an always-stamped audit receipt"
       }
     ],
     "cli_only_loaders": [
@@ -165,7 +160,13 @@
     ],
     "audit_receipts": [
       {
-        "_comment": "REQ-164 Phase 5b: the ALWAYS-datetime-stamped per-district audit receipts written through the ONE shared writer (common/receipts.py::write_receipt, imported everywhere as `RCPT`) — gates 6/7/8/9's cross-check + recovery artifacts, never read as input by an active-pipeline stage (governance §1). Distinct from the fixed-filename inter-stage handoffs above (stages 2-5): these are basename-prefixed, always-stamped (`<basename>.<fs_stamp>.<writer>-<h8>.json`), so the declared 'artifact' is the BASENAME literal passed as write_receipt's 3rd positional arg, not a full filename. test_no_undeclared_audit_receipt / test_no_stale_audit_receipt_declaration / test_audit_receipt_producer_matches_bidirectionally enforce BOTH directions the same way the external_programs checks do — addable green now that stages 6-9 all write these (previously only a partial set existed, so a complete-coverage check would have been vacuous).",
+        "_comment": "REQ-164: the ALWAYS-datetime-stamped per-district audit receipts written through the ONE shared writer (common/receipts.py::write_receipt, imported everywhere as `RCPT`) — cross-check + recovery artifacts, never read as input by an active-pipeline stage (governance §1). Distinct from the fixed-filename handoffs above (discovery/candidates/captures/processed): these are basename-prefixed, always-stamped (`<basename>.<fs_stamp>.<writer>-<h8>.json`), so the declared 'artifact' is the BASENAME literal passed as write_receipt's 3rd positional arg, not a full filename. test_no_undeclared_audit_receipt / test_no_stale_audit_receipt_declaration / test_audit_receipt_producer_matches_bidirectionally enforce BOTH directions the same way the external_programs checks do. Stage 5 (filtered) joined Phase 3 — it has no reader (Stage 6 reads the release projection from gov_db), so it converted cleanly; discovery/candidates/processed stay fixed handoffs (their EXISTENCE is a stage-done marker) until the deferred done-marker->gov_db inversion.",
+        "basename": "filtered",
+        "stage": 5,
+        "producer": "infrastructure/acquisition/stage5_filter/release.py",
+        "role": "gate@5 release projection (per-district winner + alternates); no pipeline reader — Stage 6 reads it from gov_db, so audit-only"
+      },
+      {
         "basename": "stage6_dispatch",
         "stage": 6,
         "producer": "infrastructure/acquisition/process_governance/stage6_dispatch.py",

@@ -249,7 +249,13 @@ def test_generate_writes_traceable_filtered_json(gov_session, tmp_path):
     summary = R.generate(gov_session, district_id=did, root=tmp_path)
     assert len(summary) == 1 and summary[0]["n_send"] == 1
 
-    doc = json.loads((tmp_path / "reltest_dir" / "filtered.json").read_text())
+    # REQ-164: filtered is now an always-stamped audit receipt (was a fixed filtered.json). The write
+    # lands in the DB-authoritative capture dir (root/district_dir); `written` carries the stamped path.
+    from pathlib import Path
+    written = Path(summary[0]["written"])
+    assert written.parent == tmp_path / "reltest_dir"
+    assert written.name.startswith("filtered.") and ".py-" in written.name
+    doc = json.loads(written.read_text())
     assert doc["district_id"] == did and doc["topology"] == "per_school"
     assert doc["completeness"] == {"n_canonical": 1, "n_send": 1, "n_reject": 0, "n_hold": 0}
     assert set(doc["fingerprints"]) == {"config", "labels", "data"}

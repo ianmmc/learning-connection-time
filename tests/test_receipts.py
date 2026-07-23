@@ -139,3 +139,16 @@ def test_atomic_no_tmp_left_behind(cap_root, monkeypatch):
     _fixed_stamp(monkeypatch, "20260722T155540Z")
     p = receipts.write_receipt(DID, NAME, "incorporate", {"x": 1})
     assert not list(p.parent.glob("*.tmp"))
+
+
+def test_ddir_override_writes_to_the_given_dir(tmp_path, monkeypatch):
+    """An in-pipeline caller that already holds the district's capture dir (Stage 4 district['dir'],
+    Stage 5 root/district_dir) passes ddir= to bypass the RAW_CAPTURES glob — the receipt lands there,
+    NOT under district_capture_dir (which the default resolution would pick)."""
+    _fixed_stamp(monkeypatch, "20260722T155540Z")
+    monkeypatch.setattr(paths, "RAW_CAPTURES", tmp_path / "raw")   # a DIFFERENT tree
+    explicit = tmp_path / "reltest_dir"
+    p = receipts.write_receipt(DID, NAME, "filtered", {"x": 1}, ddir=explicit)
+    assert p.parent == explicit
+    assert not (tmp_path / "raw").exists()                         # the glob dir was never touched
+    assert p.name.startswith("filtered.") and ".py-" in p.name
