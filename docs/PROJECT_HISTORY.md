@@ -1031,7 +1031,7 @@ languages with a `py`-/`node`- writer tag** (not RFC-8785-strict — the two wri
 artifact in the same second under always-stamp, so cross-writer hash equality is a guarantee that's never
 exercised and can only mislead if it silently drifts); legacy unstamped receipts backfilled by
 gov_db `state_event.created_at`, never filesystem create-date (which the planned external-drive migration
-is about to reset anyway). A companion `docs/technical-notes/POLYGLOT_PIPELINE_ARCHITECTURE_TOOLCHAIN.md`
+is about to reset anyway). A companion `docs/research/POLYGLOT_PIPELINE_ARCHITECTURE_TOOLCHAIN.md`
 review reframed the Node/Python receipt convention as a declared cross-language contract
 (`arch-manifest.json` + a fitness test), the same pattern `#476`'s eventual fuzzy-environmental-dependencies
 extraction will want — so the new arch-manifest entries were kept generalizable on purpose. A `cache_ingest`
@@ -1051,7 +1051,7 @@ refresh.
 
 Authority: issues #613/#614/#615/#616/#476; `docs/REQUIREMENTS.yaml` REQ-164/REQ-165…168;
 branch `feat/pipeline-receipts-req164` (commits `456b3e1`/`745d32e`/`6eff8e5`/`eb2b1da`, unmerged);
-`docs/technical-notes/POLYGLOT_PIPELINE_ARCHITECTURE_TOOLCHAIN.md`.
+`docs/research/POLYGLOT_PIPELINE_ARCHITECTURE_TOOLCHAIN.md`.
 
 ---
 

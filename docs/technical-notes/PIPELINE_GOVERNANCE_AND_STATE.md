@@ -865,7 +865,7 @@ The only new setup step is a one-time `pip install -e .`.
 
 Adopted to **equip the agent to monitor/manage** the codebase (machine-readable, CLI/CI-driven — not
 browser dashboards) and to keep this infrastructure investment from eroding. Research basis (saved):
-`docs/technical-notes/POLYGLOT_PIPELINE_ARCHITECTURE_TOOLCHAIN.md` (Perplexity deep-research) + the
+`docs/research/POLYGLOT_PIPELINE_ARCHITECTURE_TOOLCHAIN.md` (Perplexity deep-research) + the
 earlier scratch-paper passes. Kept in this note for now (user's call) — extract to its own note only if
 it grows.
 
