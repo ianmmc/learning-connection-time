@@ -52,17 +52,17 @@ def test_fs_stamp_from_epoch():
 
 
 # ----------------------------- timestamp sourcing (DB-free) -----------------------------
-def test_processed_backfill_uses_state_event_via_status_fallback(cap_root):
-    """A processed.json with a matching stage-4 twin history entry is renamed to the exact fs_stamp
+def test_filtered_backfill_uses_state_event_via_status_fallback(cap_root):
+    """A filtered.json with a matching stage-5 twin history entry is renamed to the exact fs_stamp
     derived from that ISO timestamp (state_event's offline equivalent)."""
     d = _ddir(cap_root)
-    (d / "processed.json").write_text(json.dumps([{"hash": "a", "text": "x"}]))
-    plans = BF.run(cap_root, benchmark_ids=set(), status_doc=_status(4, "2026-07-22T15:55:40Z"))
+    (d / "filtered.json").write_text(json.dumps({"winner": "u"}))
+    plans = BF.run(cap_root, benchmark_ids=set(), status_doc=_status(5, "2026-07-22T15:55:40Z"))
     assert len(plans) == 1 and plans[0].source == "district_status"
-    assert not (d / "processed.json").exists()
-    got = receipts.latest_receipt(DID, NAME, "processed")
+    assert not (d / "filtered.json").exists()
+    got = receipts.latest_receipt(DID, NAME, "filtered")
     assert got is not None
-    assert re.match(r"^processed\.20260722T155540Z\.py-[0-9a-f]{8}\.json$", got.name), got.name
+    assert re.match(r"^filtered\.20260722T155540Z\.py-[0-9a-f]{8}\.json$", got.name), got.name
 
 
 def test_orphan_falls_back_to_mtime_and_warns(cap_root, capsys):
@@ -78,51 +78,42 @@ def test_orphan_falls_back_to_mtime_and_warns(cap_root, capsys):
 # ----------------------------- benchmark tagging (DB-free) -----------------------------
 def test_benchmark_dir_gets_benchmark_suffix_invisible_to_production_resolver(cap_root):
     d = _ddir(cap_root)
-    (d / "processed.json").write_text(json.dumps([{"hash": "a"}]))
-    BF.run(cap_root, benchmark_ids={DID}, status_doc=_status(4, "2026-07-22T15:55:40Z"))
+    (d / "filtered.json").write_text(json.dumps({"winner": "u"}))
+    BF.run(cap_root, benchmark_ids={DID}, status_doc=_status(5, "2026-07-22T15:55:40Z"))
     # tagged basename, and the production resolver must NOT see it (the .-anchored glob)
-    assert receipts.latest_receipt(DID, NAME, "processed") is None
-    tagged = receipts.latest_receipt(DID, NAME, "processed_benchmark")
-    assert tagged is not None and tagged.name.startswith("processed_benchmark.")
+    assert receipts.latest_receipt(DID, NAME, "filtered") is None
+    tagged = receipts.latest_receipt(DID, NAME, "filtered_benchmark")
+    assert tagged is not None and tagged.name.startswith("filtered_benchmark.")
 
 
 # ----------------------------- scope + idempotency + dry-run (DB-free) -----------------------------
-def test_captures_and_discovery_and_candidates_untouched(cap_root):
+def test_deferred_and_node_artifacts_untouched(cap_root):
+    """processed/discovery/candidates are still done-markers read by fixed name (deferred conversion),
+    and captures.json is a Node handoff — the backfill must leave all four alone (filtered-only scope)."""
     d = _ddir(cap_root)
-    for fixed in ("captures.json", "discovery.json", "candidates.json"):
+    for fixed in ("captures.json", "discovery.json", "candidates.json", "processed.json"):
         (d / fixed).write_text(json.dumps([{"hash": "a"}]))
     plans = BF.run(cap_root, benchmark_ids=set(), status_doc={})
-    assert plans == []                                   # none are in-scope for 3A
-    for fixed in ("captures.json", "discovery.json", "candidates.json"):
+    assert plans == []
+    for fixed in ("captures.json", "discovery.json", "candidates.json", "processed.json"):
         assert (d / fixed).exists()
 
 
 def test_idempotent_rerun_is_a_noop(cap_root):
     d = _ddir(cap_root)
-    (d / "processed.json").write_text(json.dumps([{"hash": "a"}]))
-    assert len(BF.run(cap_root, benchmark_ids=set(), status_doc=_status(4, "2026-07-22T15:55:40Z"))) == 1
-    assert BF.run(cap_root, benchmark_ids=set(), status_doc=_status(4, "2026-07-22T15:55:40Z")) == []
+    (d / "filtered.json").write_text(json.dumps({"winner": "u"}))
+    assert len(BF.run(cap_root, benchmark_ids=set(), status_doc=_status(5, "2026-07-22T15:55:40Z"))) == 1
+    assert BF.run(cap_root, benchmark_ids=set(), status_doc=_status(5, "2026-07-22T15:55:40Z")) == []
 
 
 def test_dry_run_mutates_nothing(cap_root):
     d = _ddir(cap_root)
-    (d / "processed.json").write_text(json.dumps([{"hash": "a"}]))
-    plans = BF.run(cap_root, dry_run=True, benchmark_ids=set(),
-                   status_doc=_status(4, "2026-07-22T15:55:40Z"))
-    assert len(plans) == 1
-    assert (d / "processed.json").exists()               # still there
-    assert receipts.latest_receipt(DID, NAME, "processed") is None
-
-
-def test_both_processed_and_filtered_backfilled(cap_root):
-    d = _ddir(cap_root)
-    (d / "processed.json").write_text(json.dumps([{"hash": "a"}]))
     (d / "filtered.json").write_text(json.dumps({"winner": "u"}))
-    plans = BF.run(cap_root, benchmark_ids=set(),
-                   status_doc={"districts": {DID: {"history": [
-                       {"stage": 4, "at": "2026-07-22T15:55:40Z"},
-                       {"stage": 5, "at": "2026-07-22T15:56:00Z"}]}}})
-    assert {p.basename for p in plans} == {"processed", "filtered"}
+    plans = BF.run(cap_root, dry_run=True, benchmark_ids=set(),
+                   status_doc=_status(5, "2026-07-22T15:55:40Z"))
+    assert len(plans) == 1
+    assert (d / "filtered.json").exists()                # still there
+    assert receipts.latest_receipt(DID, NAME, "filtered") is None
 
 
 # ----------------------------- real SQL (govdb) -----------------------------

@@ -6,9 +6,11 @@ into ``lea-website-captures/<did>_<slug>/``. REQ-164 makes those ALWAYS datetime
 each surviving legacy file in place to the stamped convention so already-processed districts match the
 new naming — the writers themselves are converted in the companion change (Phase 3).
 
-Scope (3A): ``processed`` (stage 4) + ``filtered`` (stage 5) ONLY. ``discovery.json`` / ``candidates.json``
-stay fixed handoffs (deferred to the benchmark-generalization epic); ``captures.json`` stays a fixed Node
-handoff and is never touched.
+Scope: ``filtered`` (stage 5) ONLY — the one Phase-3 conversion whose writer + readers actually moved to
+the stamped convention. ``processed.json`` (stage 4), ``discovery.json`` / ``candidates.json`` (stage 2)
+stay FIXED handoffs: their EXISTENCE is a stage-done marker still read by fixed name, so they must NOT be
+renamed until the deferred done-marker->gov_db inversion converts them (then this script grows to cover
+them). ``captures.json`` is a fixed Node handoff and is never touched.
 
 Timestamp source, in order (REQ-164: NEVER the filesystem create-date, which the external-drive migration
 resets):
@@ -45,8 +47,9 @@ from infrastructure.acquisition.common import receipts as RCPT
 from infrastructure.acquisition.common import timeutil as TU
 
 # The fixed-name legacy artifacts this backfill converts, and the stage whose state_event dates them.
-# processed = Stage 4, filtered = Stage 5. discovery/candidates/captures are deliberately absent (3A).
-STAGE_OF = {"processed": 4, "filtered": 5}
+# filtered = Stage 5 (the only Phase-3 conversion). processed/discovery/candidates are deliberately
+# absent — their existence is still a stage-done marker read by fixed name (deferred conversion).
+STAGE_OF = {"filtered": 5}
 
 
 @dataclass
@@ -192,7 +195,7 @@ def _load_status_doc() -> dict:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Backfill legacy unstamped stage-4/5 receipts (REQ-164).")
+    ap = argparse.ArgumentParser(description="Backfill legacy unstamped Stage-5 filtered receipts (REQ-164).")
     ap.add_argument("--dry-run", action="store_true", help="print planned renames, mutate nothing")
     ap.add_argument("--root", type=Path, default=None,
                     help="captures root (default: RAW_CAPTURES)")
