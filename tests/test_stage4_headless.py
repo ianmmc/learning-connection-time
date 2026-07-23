@@ -23,7 +23,7 @@ def inmem_registry(monkeypatch):
     monkeypatch.setattr(DS, "export", lambda: 0)   # run-end export (issue #49) — no Postgres in tests
     # the cross-stage cache hook + the #168 abandon guard each open their own DB session — no-op both
     # so the runner needs no Postgres
-    monkeypatch.setattr(C4.CI, "cache_processed", lambda *a, **k: None)
+    monkeypatch.setattr(C4.CI, "cache_processed_records", lambda *a, **k: None)  # #616 in-memory hook
     monkeypatch.setattr(H4.BG, "assert_runnable", lambda *a, **k: None)
     return reg
 

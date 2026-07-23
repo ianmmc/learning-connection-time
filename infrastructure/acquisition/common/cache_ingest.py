@@ -242,15 +242,36 @@ def _best_effort(label: str, fn) -> None:
 
 
 def cache_discovery(ddir: Path) -> None:
-    """Stage 2 finish hook: project discovery.json + candidates.json into the DB cache."""
+    """Stage 2 finish hook (DIR-based): project discovery.json + candidates.json into the DB cache.
+    Kept for the legitimate dir-based callers (the Stage-2 self-heal backfill, benchmark inject) that
+    have no in-memory doc; the same-process Stage-2 finish path uses cache_discovery_docs (#616)."""
     _best_effort("discovery", lambda con: ingest_discovery(con, ddir))
 
 
+def cache_discovery_docs(disc: dict, cand_map: dict) -> None:
+    """Stage 2 finish hook (IN-MEMORY): project the discovery_doc + candidate map Stage 2 just built
+    straight into the DB cache — no write-then-reread round-trip off disk (#616; gov_db is the working
+    store, the disk file is an audit receipt). `cand_map` is url -> {'schools','tools'} (load_candidates
+    shape). Best-effort, same stance as cache_discovery."""
+    _best_effort("discovery", lambda con: upsert_discovery_rows(con, disc, cand_map))
+
+
 def cache_capture(ddir: Path, district_id: str) -> None:
-    """Stage 3 finish hook: project captures.json into the DB cache."""
+    """Stage 3 finish hook: project captures.json into the DB cache. DIR-based by necessity — the Node
+    capture writer is a separate process, so the Python orchestrator has no in-memory object to hand off
+    (the legitimate cross-language disk read #616 keeps, not eliminates)."""
     _best_effort("capture", lambda con: ingest_capture(con, ddir, district_id))
 
 
 def cache_processed(ddir: Path, district_id: str) -> None:
-    """Stage 4 finish hook: project processed.json into the DB cache."""
+    """Stage 4 finish hook (DIR-based): project processed.json into the DB cache. Kept for dir-based
+    callers (the Stage-5 build_signals regenerator); the same-process Stage-4 finish path uses
+    cache_processed_records (#616)."""
     _best_effort("processed", lambda con: ingest_processed(con, ddir, district_id))
+
+
+def cache_processed_records(district_id: str, records: list) -> None:
+    """Stage 4 finish hook (IN-MEMORY): project the processed `records` list Stage 4 just built straight
+    into the DB cache — no write-then-reread round-trip off disk (#616). Best-effort."""
+    _best_effort("processed", lambda con: upsert_processed_rows(
+        con, district_id, {r["hash"]: r for r in records}))

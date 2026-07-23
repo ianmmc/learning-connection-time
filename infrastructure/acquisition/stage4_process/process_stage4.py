@@ -470,9 +470,10 @@ def finish_district(district: dict, registry: dict) -> str:
     outcome = compute_outcome(records)
     DS.record_stage(registry, district["district_id"], district["name"], district["state"],
                      stage=4, stage_name="process", outcome=outcome)
-    # Project this district's processed-doc rows into the live DB cache. Best-effort: processed.json
-    # on disk + the state_event are the durable record.
-    CI.cache_processed(district["dir"], district["district_id"])
+    # Project this district's processed-doc rows into the live DB cache from the in-memory records —
+    # no write-then-reread round-trip off disk (#616). Best-effort: the disk receipt + state_event are
+    # the durable record.
+    CI.cache_processed_records(district["district_id"], records)
     return outcome
 
 
