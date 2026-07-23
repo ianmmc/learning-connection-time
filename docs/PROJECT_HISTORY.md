@@ -1098,6 +1098,55 @@ Authority: commits `8c51d1b` (reorg), `f7cad85` (sync), both on `main`.
 
 ---
 
+### 2026-07-23 — REQ-164 receipts completed on-branch; a Stage-9 campaign run the *deterministic* way surfaces three real findings and crystallizes "the product is the pipeline, not the district"
+
+The receipts hardening (`feat/pipeline-receipts-req164`, still unmerged) reached completion: stages 5-9
+now leave always-datetime-stamped per-district audit receipts through the one shared writer, unified on
+a `stage<N>_<stage_name>` basename (stage number leading, so a filename sort is pipeline-ordered); the
+#616 write-then-reread round-trip was eliminated for stages 2/4; the Stage-5 `filtered.json` converted to
+`stage5_filter` and 112 legacy files were backfilled live. Two scope corrections landed on investigation,
+not by plan: `processed.json` turned out to share `discovery.json`'s done-marker coupling (its *existence*
+drives reconcile), so it deferred alongside discovery/candidates/captures rather than converting — only
+the genuinely reader-less Stage 5 converted now. The whole benchmark-vs-receipts discussion that this
+opened — why benchmark injection mimics Stage-2/3 output, and that the district-keyed "Stage 9 wall" is a
+*symptom* of a missing benchmark-dispatch terminus rather than the design — became **epic #617**
+(provenance-scope the wall; give benchmark batches a gate@5 terminus and benchmark dispatches a gate@7
+terminus; re-run batch_00000's districts fresh into LCT), with the deferred done-marker→gov_db inversion
+folded in.
+
+The session's durable lesson came from one district. Resuming the Stage 9 campaign, a stale CLAUDE.md
+breadcrumb ("watch for Dickinson — stale 2016-17 source, re-extract before incorporating") led to stepping
+in and hand-verifying the district by reading its captured PDFs — reaching a confident conclusion
+("source is current, safe") that was **wrong**: the deterministic pipeline had it right all along
+(Dickinson's middle band carries a 2016-17 vintage and the recompute correctly drops it out of the
+REQ-026 window). The lesson, established with Ian and codified as a CLAUDE.md durable fact + a memory:
+**the immediate product is the robust, deterministic pipeline, not any one district's outcome.** A result
+reached by hand-orchestration is a process failure even when the number is right — it violates
+commandments #2/#4 (manual inspection of ~20k districts does not scale) and, most sharply, #1
+(auditability): a probabilistic model judgment is non-reproducible and therefore unauditable, the opposite
+of a deterministic guard. A corollary on handoffs: an imperative-without-its-rationale (a terse note from
+present-self to future-self) gets *re-interpreted* by a fresh context — decisions belong in durable,
+deterministic homes (a tracked issue, REQUIREMENTS.yaml), consumed as data, not breadcrumbs.
+
+Applying that, the rest of the campaign ran the deterministic way — `incorporate_batch --dry-run` →
+exception list → real run, trusting the script's own guards rather than eyeballing districts — and
+**that is exactly what surfaced the real findings**, none of which hand-inspection would have caught:
+**#626** (a logged gate@8 override is *not* honored past the REQ-026 temporal window — Dickinson's
+approved council secondary silently drops to statutory, confirmed in production at recompute; the open
+decision is whether a named human override should count as an auditable "treat as current"); **#627**
+(the Stage-8 `mean_tiebreak` path emits a band gross inconsistent with its own stored start/end times, a
+fail-loud-blocking internal-consistency bug that halted two districts); and **#628** (the LCT recompute
+is a full-corpus ~2m08s rewrite over 17k districts, timeout-prone and O(all) for an O(changed) input).
+36 of 38 gate@8-approved districts are now incorporated into `lct_calculations`; 2 blocked on #627,
+Dickinson's final secondary value pending #626.
+
+Authority: branch `feat/pipeline-receipts-req164` (HEAD `625aa41`; anchors `7d8f805` Phase 5b,
+`e025df7` #616, `2a40e72` Stage 5 conversion, `831dc7a` naming, `f74ff8c` the "product is the pipeline"
+fact); `docs/REQUIREMENTS.yaml` REQ-164 (status `tested`); GitHub epic #617 (sub-issues #618-626) +
+#627 + #628.
+
+---
+
 ## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)
 
 ### Strategy: shift from "automate everything" to "AI-assisted human efficiency"

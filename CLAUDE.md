@@ -135,47 +135,38 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-23): REQ-164 receipts work COMPLETE on its branch (unmerged, staying on the
-branch per Ian); Stage 9 campaign resumed on the branch — 10/38 incorporated, 28 pending.**
-`feat/pipeline-receipts-req164` now carries: Phase 5b (`arch-manifest.json`
-`file_dispatches.audit_receipts` + the both-ways bidirectional coverage tests, mirroring the
-`external_programs` pattern); Phase 4 (`infrastructure/acquisition/maintenance/backfill_receipts.py` —
-run LIVE 2026-07-23, backfilled 112 legacy `filtered.json` → `stage5_filter[_benchmark]`, 0 remaining,
-idempotent); the **#616** cache round-trip elimination (stage2/4 `finish_district` now project the
-in-memory doc/list straight into gov_db, no disk reread); Phase 3, **scoped down from the original plan**
-— only Stage 5 (`filtered` → `stage5_filter`) converted, since investigation showed `processed.json`'s
-EXISTENCE is Stage 4's done-marker (same coupling as `discovery.json`), so it deferred alongside
-discovery/candidates/captures rather than converting; and a basename **naming unification** (every
-receipt is now `stage<N>_<stage_name>`, stage number leading, so a filesystem sort groups a district's
-receipts in pipeline order). The design discussion this surfaced — why benchmark injection mimics
-Stage 2/3 output at all, and that the district-keyed Stage-9 wall doesn't clear even after an honest
-re-run — became **epic #617** (sub-issues #618–626: benchmark-model termini/wall-retirement/re-run,
-the deferred done-marker→gov_db inversion, retroactive stage 6-9 receipt generation, REQ sharpening,
-and **#626** — honor a logged gate@8 override past the REQ-026 temporal window, surfaced when the
-campaign found an approved council value that the recompute would silently drop to statutory on an
-out-of-window sampled vintage), cross-linked to Council Lab #80. Full narrative: this session's
-`docs/PROJECT_HISTORY.md` entry (to add at merge); `docs/REQUIREMENTS.yaml` REQ-164 (status `tested`,
-MET/DEFERRED-marked criteria, REQ-117's pattern) + REQ-165…168 (feat branch only, pending merge).
+**Current status (2026-07-23): REQ-164 receipts COMPLETE on `feat/pipeline-receipts-req164` (unmerged,
+staying on-branch per Ian); Stage 9 campaign at 36/38 incorporated + the LCT recompute run.** The branch
+carries stages 5-9 always-stamped `stage<N>_<stage_name>` receipts via the ONE shared writer, the **#616**
+stage2/4 write-then-reread round-trip elimination, the Stage-5 `filtered`→`stage5_filter` conversion + a
+LIVE backfill of 112 legacy files, and the arch-manifest coverage tests. Stages 2/3/4 receipt conversion
+was DEFERRED (their file existence is a stage-done marker) into epic **#617**. The Stage 9 campaign ran
+the *deterministic* way (`incorporate_batch --dry-run` → exception list → real run — never hand-adjudicating
+a district; see "the product is the pipeline" above) and incorporated 36/38 gate@8-approved districts; the
+one-time `lct_calculations` recompute ran clean (163k rows, exit 0). That approach surfaced three findings,
+all filed durably: **#626** (a logged gate@8 override is NOT honored past the REQ-026 temporal window —
+Dickinson's approved council secondary drops to statutory, confirmed in production; open decision: should a
+named human override count as an auditable "treat as current"), **#627** (Stage-8 `mean_tiebreak` emits a
+band gross inconsistent with its stored start/end times — a fail-loud consistency bug that blocked 2
+districts), **#628** (the LCT recompute is a full-corpus ~2m08s rewrite — timeout-prone, O(all ~17k) for an
+O(changed) input). Full narrative: `docs/PROJECT_HISTORY.md` (2026-07-23 entry); `docs/REQUIREMENTS.yaml`
+REQ-164 (status `tested`) + REQ-165…168 (feat branch only). The session's governing lesson is the durable
+fact above — **the product is the pipeline, not the district.**
 
-**Next (RESUME HERE — 2026-07-23): two independent threads, either order.**
-**(1) Stage 9 campaign (on the branch — not merged yet, per Ian)** — incorporate the remaining 28
-non-benchmark gate@8-approved districts. This is a DETERMINISTIC step: run `incorporate` (the script's
-own guards — benchmark wall, TOCTOU, REQ-147 staleness, foreign-collision fail-loud — are the ONLY gates;
-do NOT hand-adjudicate a district by reading its captures, see "the product is the pipeline" above).
-Surface only what the SCRIPT flags. Prefer `incorporate_batch --dry-run` → review the exception list →
-real batch run over one-at-a-time narration. Once all pending districts are in, run the one-time
-`lct_calculations` recompute (`calculate_lct_variants.py`'s write path — a no-op for non-incorporated
-districts). **#626 gates the outcome for any district with an out-of-window sampled vintage**
-(an approved council value the recompute would otherwise drop to statutory): the fix (honor the gate@8
-override) is tracked there, not here.
-**(2) Epic #617** — start with **#621** (small, standalone: `_early_exit_targets` keys on the
-`batch_00000` literal instead of `batch_type='benchmark'`), then **#618** (benchmark dispatch as a
-first-class concept + enforce the gate@5/gate@7 termini — must land BEFORE #619 so no hole opens in the
-Stage-9 wall), then **#619** (retire the wall, provenance-scoped) → **#620** (re-run batch_00000's 27
-districts fresh). The done-marker→gov_db inversion (**#622** discovery/candidates/captures/processed,
-**#623** the Node-side half for `capture_discovery.mjs`) can run in parallel — #622 depends on #623 for
-Stage 3's writer + Stage 2's candidates resolver. **#624** (retroactive stage 6-9 receipt generation,
-83/83/38/6 districts) and **#625** (REQ sharpening) are independently pickable.
+**Next (RESUME HERE — 2026-07-23): all independent; pick any.**
+**(1) Finish the Stage 9 campaign (36/38 in).** 2 blocked on **#627** — fix `stage8_aggregate/aggregate.py::aggregate_band`
+so a `mean_tiebreak` band's gross == its stored start/end span, then Midview `3904817` + Millard `4900540`
+incorporate. **#626** governs Dickinson's (`3800038`) and any out-of-window-vintage district's final
+secondary value — resolve the honor-the-override decision, then re-incorporate + recompute.
+**(2) Epic #617 (benchmark model + done-marker inversion).** Start **#621** (small: `_early_exit_targets`
+keys on the `batch_00000` literal, should be `batch_type='benchmark'`), then **#618** (benchmark dispatch +
+gate@5/gate@7 termini — BEFORE **#619** wall-retirement so no hole opens) → **#620** (re-run batch_00000
+districts fresh into LCT). Parallel: **#622**/**#623** (done-marker→gov_db inversion + the Node-side receipt
+writer/resolver for `capture_discovery.mjs`). **#624** (retroactive stage 6-9 receipts, 83/83/38/6) + **#625**
+(REQ-117/151/162/164 sharpening) independently pickable.
+**(3) #628** — make the LCT recompute targeted (only changed districts) + add `--dry-run` + document
+"run backgrounded" (a ~2-min full-corpus job; a foreground run is SIGTERM'd at 2 min — not a hang).
+**(4) Merge `feat/pipeline-receipts-req164` → `main`** when Ian decides (clean fast-forward).
 Banked routing: #112 → epic #128. Parked: #475/#476, #103/#80 (+#110); SEA integration follow-up (the
 ~9-state list from the 2026-07-20/21 campaign) is an opt-in backlog item, not yet filed as an issue —
 ask Ian before filing if it should be tracked now or deferred.
