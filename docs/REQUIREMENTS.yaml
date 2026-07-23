@@ -4192,8 +4192,8 @@ requirements:
       entry for the full mechanism."
 
   - id: REQ-164
-    github_issue: "#615 (Stage-9 receipt + 8/9 status-twin gap, partial); #484 (datacontract schemas, complement); #616 (cache_ingest disk-decouple follow-up)"
-    description: "Every acquisition pipeline stage (1-9), on completing work for a district, leaves a
+    github_issue: "#615 (Stage-9 receipt + 8/9 status-twin gap, partial); #484 (datacontract schemas, complement); #616 (cache_ingest disk-decouple follow-up, DONE for stages 2/4); #617 (epic — the four remaining stages + retroactive 6-9 backfill)"
+    description: "Every acquisition pipeline stage, on completing work for a district, leaves a
       per-district, ALWAYS datetime-stamped receipt in that district's data/raw/lea-website-captures/<dir>/
       and refreshes district_status.json in the SAME code path. gov_db is the sole authoritative working
       store; the capture-dir receipts + district_status.json are audit cross-checks and recovery sources,
@@ -4201,33 +4201,45 @@ requirements:
       commandment-#1 auditability north star made a pipeline-wide invariant)."
     type: constraint
     priority: must
-    status: proposed
+    status: tested
     acceptance_criteria:
-      - "Each stage 1-9 writes its per-district receipt into lea-website-captures/<district_dir>/ via ONE shared crash-safe helper (common/receipts.py) — never a bespoke per-stage json.dump into the capture dir"
-      - "Receipts are ALWAYS datetime-stamped, first run included (no fixed-'latest' name): filename = <basename>.<fs_stamp>.<writer>-<h8>.json, fs_stamp=YYYYMMDDTHHMMSSZ (timeutil.fs_stamp); writer ∈ {py,node} tags the producing language so per-writer hashes are self-evidently per-writer (loose-with-writer-tag, 2026-07-22 — cross-language hash agreement is neither required nor implied); h8 = first 8 hex of sha256 over the canonical payload MINUS volatile keys (any generated_at it carries), so a re-run never clobbers a prior receipt and a same-second same-content write is idempotent"
-      - "Chronological order is carried by the timestamp (lexically sortable filename); the finer ordering authority is state_event.event_id in gov_db, never the filename; the content hash is the same-second collision-breaker only"
-      - "The receipt write happens AFTER the gov_db state_event commit (commit-before-receipt): a crash may leave a LAGGING receipt (re-derivable) but never a receipt AHEAD of the authoritative DB"
-      - "Any code path that writes a stage's state_event refreshes district_status.json in the same path (closes the gate@8 / Stage-9 gap where the twin lagged until an incidental later export)"
-      - "No active-pipeline stage reads a per-district capture-dir receipt as its input (receipts are audit/recovery only); the last such edge — cache_ingest's disk re-read — is tracked as #616"
-      - "Each stage's receipt has a declared payload schema — the target of #484's datacontract.yaml validation"
-      - "Every stage's per-district receipt is declared in arch-manifest.json (file_dispatches.receipts) for all 9 stages; a both-ways fitness test fails if a stage lacks a declared per-district receipt OR a declared producer doesn't reference its artifact"
-      - "Legacy unstamped receipts are backfilled by renaming in place, timestamp sourced from the matching (district, stage) state_event.created_at (district_status.json equivalent fallback; file mtime last-resort for orphans, logged) — NEVER from filesystem create-date, which the pending external-drive migration resets"
+      - "Each stage writes its per-district receipt into lea-website-captures/<district_dir>/ via ONE shared crash-safe helper (common/receipts.py) — never a bespoke per-stage json.dump into the capture dir — MET for stages 5/6/7/8/9 (basenames stage5_filter/stage6_dispatch/stage7_extract/stage8_aggregate/stage9_incorporate); stages 2 (discover)/3 (capture)/4 (process) DEFERRED to #617/#622/#623 — their artifact's EXISTENCE is still a stage-done marker read by fixed name (discovery.json/candidates.json/captures.json/processed.json), so renaming them would break reconcile until the done-marker->gov_db inversion lands"
+      - "Receipts are ALWAYS datetime-stamped, first run included (no fixed-'latest' name): filename = <basename>.<fs_stamp>.<writer>-<h8>.json, fs_stamp=YYYYMMDDTHHMMSSZ (timeutil.fs_stamp); writer ∈ {py,node} tags the producing language so per-writer hashes are self-evidently per-writer (loose-with-writer-tag, 2026-07-22 — cross-language hash agreement is neither required nor implied); h8 = first 8 hex of sha256 over the canonical payload MINUS volatile keys (any generated_at it carries), so a re-run never clobbers a prior receipt and a same-second same-content write is idempotent — MET. Basename convention UNIFIED 2026-07-23 (Ian): every basename is stage<N>_<stage_name> (the same stage_name state_event uses) so a filesystem/name sort groups a district's receipts in pipeline order; a benchmark-provenance receipt gets the basename suffixed _benchmark (invisible to the production resolver via the same '.'-anchored glob)"
+      - "Chronological order is carried by the timestamp (lexically sortable filename); the finer ordering authority is state_event.event_id in gov_db, never the filename; the content hash is the same-second collision-breaker only — MET"
+      - "The receipt write happens AFTER the gov_db state_event commit (commit-before-receipt): a crash may leave a LAGGING receipt (re-derivable) but never a receipt AHEAD of the authoritative DB — MET, all five writers"
+      - "Any code path that writes a stage's state_event refreshes district_status.json in the same path (closes the gate@8 / Stage-9 gap where the twin lagged until an incidental later export) — MET (stages 6/7/8/9; Stage 5's release regen was already in-path)"
+      - "No active-pipeline stage reads a per-district capture-dir receipt as its input (receipts are audit/recovery only); the last such edge — cache_ingest's disk re-read — is tracked as #616 — MET for the round-trip half (stage2/4 finish_district now projects the in-memory doc/list straight into gov_db, no reread); the remaining dir-based reads (Stage-3 Node->Python handoff, the Stage-2 self-heal backfill, benchmark inject, the Stage-5 build_signals regenerator) are the LEGITIMATE cross-process/no-in-memory-object cases #616's own note calls out to repoint, not eliminate — tracked under #622/#623"
+      - "Each stage's receipt has a declared payload schema — the target of #484's datacontract.yaml validation — NOT MET, deferred to #484 (separate issue, unstarted)"
+      - "Every stage's per-district receipt is declared in arch-manifest.json for all 9 stages; a both-ways fitness test fails if a stage lacks a declared per-district receipt OR a declared producer doesn't reference its artifact — MET for the 5 stamped-receipt stages (file_dispatches.audit_receipts + test_no_undeclared_audit_receipt/test_no_stale_audit_receipt_declaration/test_audit_receipt_producer_matches_bidirectionally, mirroring the external_programs bidirectional pattern); discovery.json/candidates.json/captures.json/processed.json stay declared in file_dispatches.receipts (fixed-filename form) until #622/#623 convert them, at which point they become audit_receipts too (\"all 9 stages\" fully met)"
+      - "Legacy unstamped receipts are backfilled by renaming in place, timestamp sourced from the matching (district, stage) state_event.created_at (district_status.json equivalent fallback; file mtime last-resort for orphans, logged) — NEVER from filesystem create-date, which the pending external-drive migration resets — MET for Stage 5 (infrastructure/acquisition/maintenance/backfill_receipts.py, run live 2026-07-23: 112 legacy filtered.json backfilled to stage5_filter[_benchmark], 56 via state_event / 56 via mtime fallback, 0 remaining, idempotent on re-run); stages 2/3/4 join once #622/#623 convert their writers; retroactive generation of the ALREADY-missing stage 6-9 receipts (83/83/38/6 districts with no receipt, since those stages only write going-forward) approved by Ian 2026-07-23 and tracked as #624"
     tests:
       - tests/test_receipts.py
-      - tests/test_arch_manifest.py::test_file_dispatch_producer_references_artifact
+      - tests/test_backfill_receipts.py
+      - tests/test_arch_manifest.py
     created: "2026-07-22T00:00:00Z"
-    updated: "2026-07-22T00:00:00Z"
+    updated: "2026-07-23T00:00:00Z"
     notes: "Filed 2026-07-22 (Ian) as the COVERAGE/placement/stamping/logging side of receipts —
       complements #484 (shape validation) and subsumes the spec half of #615 (Stage-9 disk receipt +
-      8/9 status refresh). Two parallel code-verified surveys established current state: stages 2-5 write
-      per-district receipts (2/3/4 aside-stamp the prior copy on re-run, 5 overwrites in place); 6/7 write
-      centralized hash-named receipts (handoffs/, extractions/) AND refresh the twin; 8/9 write state_event
-      but no per-district disk receipt and do NOT refresh district_status.json in-path (twin stale until an
-      incidental later export); 9 has no disk receipt at all. ALWAYS-stamped chosen over fixed-latest+aside
-      (Ian): humans sort by filename/date, and 'receipts are audit-only, never transmission' removes the
-      need for a stable 'latest' name. Implementation sequenced new-receipts-first (Stage 9 -> 8 -> 7/6),
-      then convert 2-5 + a gov_db-state_event-sourced backfill of legacy files. STATUS proposed: helper +
-      per-stage writers + fitness/runtime tests not yet built."
+      8/9 status refresh). Two parallel code-verified surveys established the pre-REQ-164 state: stages
+      2-5 wrote per-district receipts (2/3/4 aside-stamped the prior copy on re-run, 5 overwrote in
+      place); 6/7 wrote centralized hash-named receipts (handoffs/, extractions/) AND refreshed the twin;
+      8/9 wrote state_event but no per-district disk receipt and did NOT refresh district_status.json
+      in-path. ALWAYS-stamped chosen over fixed-latest+aside (Ian): humans sort by filename/date, and
+      'receipts are audit-only, never transmission' removes the need for a stable 'latest' name.
+      Sequenced new-receipts-first (Stage 9 -> 8 -> 7/6, pre-2026-07-22), then this session
+      (2026-07-22/23, branch feat/pipeline-receipts-req164): Phase 5b (arch-manifest audit_receipts +
+      bidirectional coverage tests) -> Phase 4 backfill script -> #616 round-trip elimination (stage2/4)
+      -> Phase 3 (Stage 5 filtered->stage5_filter conversion; investigation showed processed.json's
+      EXISTENCE is Stage 4's done-marker — same coupling as discovery.json — so it deferred alongside
+      discovery/candidates/captures rather than converting per the original 3-stage plan) -> basename
+      unification (stage<N>_<stage_name>) -> live backfill run. The wider design discussion this
+      surfaced (why does benchmark injection mimic Stage 2/3 output at all; the district-keyed Stage-9
+      wall doesn't clear even after an honest re-run) became epic #617 (8 sub-issues #618-625),
+      cross-linked to Council Lab #80. STATUS tested: the shared helper, 5 of 9 stage writers, the
+      bidirectional manifest coverage, the backfill script (run live), and #616's round-trip elimination
+      are all built and tested; the remaining 4 writers + retroactive 6-9 generation + #484 schema
+      validation are explicitly deferred (tracked, not silently dropped) per the MET/DEFERRED markers
+      above — the same pattern REQ-117 uses for its own open items."
 
   # ---------------------------------------------------------------------------
   # THE FOUR COMMANDMENTS (2026-07-22, Ian) — the project's governing priorities

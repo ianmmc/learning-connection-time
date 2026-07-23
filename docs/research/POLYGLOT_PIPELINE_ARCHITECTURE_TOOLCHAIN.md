@@ -3,6 +3,16 @@
 
 ***
 
+> **Note added 2026-07-23 (REQ-164 receipts):** this report's Part 3 (cross-language/cross-process
+> tracking) is exactly the class of gap the pipeline's file-based receipt convention now lives in.
+> `common/receipts.py::write_receipt` already reserves a `writer` tag (`py` | `node`) for this — the
+> filename grammar is `<basename>.<fs_stamp>.<writer>-<h8>.json`, and cross-language hash agreement is
+> deliberately NOT required (the writer tag keeps the two self-evidently distinct; see REQ-164's
+> acceptance criteria in `docs/REQUIREMENTS.yaml`). The Node-side writer/resolver counterpart (for Stage
+> 3's `captures.json` and Stage 2's `candidates.json`, both of which cross the Python↔Node boundary) is
+> unbuilt — tracked as epic #617's sub-issue #623, which should declare the contract in
+> `arch-manifest.json` per this report's Part 3/6 recommendations.
+
 ## Executive Summary
 
 No single tool covers the full dependency surface of a polyglot pipeline with subprocess invocations, shared configuration, and file-based data contracts. The practical answer is a layered toolchain: language-specific static analyzers enforcing intra-package architecture contracts, a hand-declared interface manifest as the ground truth for cross-boundary couplings, contract tests that validate that manifest at runtime, and an MCP-backed code-intelligence server for agent-driven structural queries. The cross-language/cross-process gap is real — no mature tool closes it automatically — and the most defensible approach at the current state of tooling is a combination of architecture-as-code conventions plus executable fitness functions in CI. This report covers each layer in order: (1) Python static analysis, (2) JS/TS static analysis, (3) cross-boundary tracking, (4) dynamic-import blind spots and the packaging fix, and (5) agent-integration architecture.

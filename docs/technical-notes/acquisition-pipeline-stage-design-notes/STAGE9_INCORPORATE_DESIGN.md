@@ -74,7 +74,11 @@ PURE/IO split mirroring `closing_argument.py`, so the cross-DB hole is one file 
    Stage-9 rows — `method IN ('council_extraction','statutory_fallback')` — whose `(year, grade_level)`
    dropped out, the year-change case; legacy rows untouched); **`_verify_written` re-queries and asserts
    minutes/method/minutes_basis before commit (Rule #6).**
-4. **Governance stamp** (separate txn, *after* the LCT commit): the `incorporated` `state_event`.
+4. **Governance stamp** (separate txn, *after* the LCT commit): the `incorporated` `state_event`, paired
+   with an in-path `district_status.json` twin refresh and a `stage9_incorporate` per-district audit
+   receipt (REQ-164, 2026-07-22 — always-stamped via `common/receipts.py::write_receipt`, written after
+   BOTH commits) — closing the gap where the twin used to lag until an incidental later export and
+   Stage 9 had no per-district disk receipt at all.
 
 **Two-DB safety is ORDERING, not a distributed transaction** (the DBs are deliberately decoupled): LCT
 commits before the governance stamp, so a crash between leaves LCT rows + a lagging ledger the next run

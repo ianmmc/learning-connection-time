@@ -24,8 +24,10 @@ not batch-driven (governance §12) — its console groups/sorts/filters by distr
 no batch concept in the UI.
 
 **Handoff to next stage:** the release decision, read by Stage 6 directly from the governance DB
-(`record`/`representation`/`label` + `release.decide`) — `filtered.json` is the auditable **receipt** of
-that decision, not the transport. Stage 5 has no gate of its own that blocks Stage 6; `gate@5` is
+(`record`/`representation`/`label` + `release.decide`) — `filtered.json` (an always-datetime-stamped
+`stage5_filter.<fs_stamp>.<writer>-<h8>.json` audit receipt since REQ-164, 2026-07-23; previously a fixed
+filename overwritten in place) is the auditable **receipt** of that decision, not the transport. Stage 5
+has no gate of its own that blocks Stage 6; `gate@5` is
 per-record human labeling that feeds tier-B/C records into `send` — Stage 6 can dispatch tier-A records
 (and any already-labeled target) without waiting for every record in a district to be labeled.
 
@@ -47,8 +49,9 @@ deterministic rules — never as the runtime classifier. Division of labor: **sc
 human supplies ground-truth labels; the agent builds the rules** (see memory `feedback-human-curates-ground-truth`).
 
 **Output = the release decision** (governance §4/§5): per canonical record a `decision` + `reason`, and
-for the sent ones the **one best representation** — projected to `filtered.json` (the auditable *receipt*;
-the DB is the working store) and consumed by Stage 6. Honestly labeled `gross_bell_to_bell` (REQ-055).
+for the sent ones the **one best representation** — projected to the `stage5_filter` receipt (the DB is
+the working store; Stage 6 reads the decision from there, never the receipt file). Honestly labeled
+`gross_bell_to_bell` (REQ-055).
 
 **Completion grain = district × BAND.** Schools/reps are the raw material; a district is "satisfied" when
 every claimed band has confident minutes.

@@ -456,6 +456,16 @@ negative for many-schools landing pages, tier-A precision 0.8612→0.8701.
 > follow-up rounds, individually gate@1'd (never auto-flowed, unlike 7→1). Full mechanics: governance
 > §11e; the predicate itself: `STAGE5_FILTER_DESIGN.md` §7a.
 
+> **`filtered.json` → `stage5_filter` — always-stamped audit receipt (REQ-164, 2026-07-23).** The
+> "regenerable, traceable export" above no longer overwrites a fixed `filtered.json` in place — it writes
+> via the shared `common/receipts.py::write_receipt`, so every regen leaves a NEW
+> `stage5_filter.<fs_stamp>.<writer>-<h8>.json` (a benchmark-provenance district gets
+> `stage5_filter_benchmark`). Nothing reads it as pipeline input (Stage 6 reads the release decision from
+> the DB, not the file — same as always), so the conversion was clean. 112 legacy `filtered.json` files
+> backfilled to the new name (`infrastructure/acquisition/maintenance/backfill_receipts.py`, run live
+> 2026-07-23). `discovery.json`/`candidates.json`/`captures.json`/`processed.json` remain fixed handoffs —
+> their existence is still a stage-done marker — tracked #617/#622/#623.
+
 ### 6 · Dispatch — routing + release (`gate@6`) — BUILT to the seam (REQ-101, merged 2026-06-30) · authority: `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE6_DISPATCH_DESIGN.md` §0
 Extraction standardizes on **OpenRouter** (`google/gemini-2.5-flash` etc.). Stage 6 decides *which representation* goes to *which council* and performs the release/dispatch up to (not including) the paid call.
 
@@ -491,6 +501,18 @@ to epic #80 — blocked on the lab producing a measured escalation config: only 
 
 ### 9 · Incorporation — fail loud
 **BUILT** (2026-07-21; #93/#94/#95 under epic #92 — `infrastructure/acquisition/stage9_incorporate/`, `STAGE9_INCORPORATE_DESIGN.md`). Writes the approved per-band values into the LCT `bell_schedules` DB as a deterministic, re-approval-safe UPSERT off the **frozen** gate@8 closing argument (the `merge_fact_runs` product — never a live re-derivation). Council bands land `method=council_extraction`/`minutes_basis=gross_bell_to_bell`; a **claimed** band with no accepted facts / no consensus lands **`method=statutory_fallback`**/`minutes_basis=statutory` — **labeled, never counted as enriched** (Rule #6, REQ-024; the reader's `_is_statutory` keeps it `source=statutory_fallback, year=None`). Verify-in-DB before commit; a Stage-9 orphan reconcile handles year-changes; an `incorporated` `state_event` (stage=9) closes the per-band lifecycle. The cross-DB write is the second sanctioned import-linter exception (Stage 9 is a layer *above* the independent stages; only `incorporate.py` reaches `infrastructure.database`). Full `#95` provenance rides in `raw_import`, including a live-roster `band_grade_span` (the grade→band substrate).
+
+> **Stages 6-9 per-district audit receipts (REQ-164, 2026-07-22).** Each gate now stamps a per-district
+> receipt into the capture dir via `common/receipts.py::write_receipt`, always AFTER its gov_db commit
+> (commit-before-receipt) and paired with an in-path `district_status.json` twin refresh: gate@6 →
+> `stage6_dispatch` (projects the district's dispatch package, points at the authoritative immutable
+> `handoff_<hash>_<ts>.json`); Stage 7 → `stage7_extract` (points at the authoritative central
+> `extraction_<hash>_<did>_<ts>.json` + gov_db `school_fact`); gate@8 → `stage8_aggregate` (the human
+> approval decision, both dispositions); Stage 9 → `stage9_incorporate` (post-incorporation). All best-
+> effort — a disk hiccup is logged, never a failed stage (the receipt is regenerable from gov_db). The
+> ~83/83/38/6 districts that passed these gates **before** REQ-164 shipped have no receipt yet
+> (going-forward only) — retroactive generation from the surviving sources (handoff files, extraction
+> files, `stage8_approval` rows, the incorporation ledger) is tracked as #624.
 
 **Per-grade projection — BUILT** (2026-07-21, #605/#606): the 3-band-minutes → 2-band-staffing mismatch is dissolved by projecting each band's modal minutes down to the grade (via the live `band_grade_span`; floating/merged shapes + an overlap tie-rule), materializing a `district_grade_minutes` table (migration 025), and `calculate_lct_variants.py` summing per-grade minutes × per-grade enrollment to any scope (secondary now weights mid+high, not high-only). The one-time methodology recompute is gated on human sign-off of the before/after sample (`per_grade_lct_sample`). See `STAGE9_INCORPORATE_DESIGN.md` §4.
 

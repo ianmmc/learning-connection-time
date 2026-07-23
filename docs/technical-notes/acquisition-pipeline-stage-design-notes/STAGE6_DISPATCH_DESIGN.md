@@ -33,7 +33,10 @@ that decision, never the transport.
 
 **Handoff to next stage:** the immutable `handoff_<hash>_<timestamp>.json` (the assembled, priced,
 routed dispatch package) + the precious `handoff` index row + a `dispatched` state_event are Stage 7's
-input. Stage 7's council extraction runs against the frozen package; everything it needs (routed
+input. A per-district `stage6_dispatch` audit receipt (REQ-164, 2026-07-22 — always-stamped via
+`common/receipts.py::write_receipt`, written right after `HND.write`) also lands in the capture dir,
+projecting that district's slice of the dispatch package and pointing at the authoritative handoff
+file — audit/recovery only, never read as Stage 7's input. Stage 7's council extraction runs against the frozen package; everything it needs (routed
 council per representation, per-model prompts, the capture-fidelity flag, the harvest-slice page range) is
 assembled here so Stage 7 never has to re-derive routing decisions. That paid run can be triggered two
 ways: Stage 7 running standalone against the frozen handoff, or — the same code path — the gate@6 console's
