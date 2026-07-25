@@ -33,6 +33,12 @@ class DispatchDraft(gdb.Base):
     draft_id: Mapped[str] = mapped_column(String, primary_key=True)        # e.g. draft_00007
     status: Mapped[str] = mapped_column(String, default="draft")           # draft | dispatched | abandoned
     verified_only: Mapped[bool] = mapped_column(Boolean, default=False)     # per-draft training-grade mode
+    # #618: production | benchmark. A benchmark DISPATCH is the Stages-6/7 A/B harness (which reps to
+    # which councils, and the yield) and TERMINATES AT gate@7 — it is structurally never a Stage-9
+    # candidate. DERIVED at freeze from REPRESENTATION provenance (any benchmark_gt rep forces it),
+    # with explicit human opt-in for a Council Lab A/B over production reps. NEVER derived from the
+    # district's batch history — that is the district-identity bug epic #617 exists to retire.
+    dispatch_type: Mapped[str] = mapped_column(String, default="production")
     created_at: Mapped[str] = mapped_column(String, default=utcnow)
     created_by: Mapped[str] = mapped_column(String, default="human")
     # set together, atomically, at freeze (stage6_draft_store.freeze_draft)

@@ -39,6 +39,24 @@ from sqlalchemy.exc import ProgrammingError
 
 BENCHMARK_BATCH_TYPE = "benchmark"
 
+# The DISPATCH axis (#618). Batches organize Stages 1-4; dispatches organize Stages 6-7 — there is no
+# first-run/follow-up notion for a dispatch, so this is the ONLY dispatch type axis. A benchmark
+# dispatch is the Stages-6/7 A/B harness (which representations to which councils, and the yield) and
+# TERMINATES AT gate@7, which is what makes benchmark output structurally incapable of reaching Stage 9.
+DISPATCH_PRODUCTION = "production"
+DISPATCH_BENCHMARK = "benchmark"
+DISPATCH_TYPES = (DISPATCH_PRODUCTION, DISPATCH_BENCHMARK)
+
+
+def validate_dispatch_type(value: str) -> str:
+    """Return `value` if it is a legal dispatch type, else raise. `batch_type` shipped as an
+    unconstrained string with its legal values living only in a comment, which is how the
+    `batch_00000` literal and the `== "follow-up"` branches became load-bearing — this axis validates
+    from day one so a typo can never mint a third type that silently bypasses the termini."""
+    if value not in DISPATCH_TYPES:
+        raise ValueError(f"dispatch_type must be one of {DISPATCH_TYPES} (got {value!r})")
+    return value
+
 # Embeddable correlated-EXISTS fragment for callers that need this inside a larger query's WHERE/SELECT
 # (the console's district lists). `{alias}` = the outer query's district-bearing table alias.
 # Keys on batch_type membership, NEVER the `batch_00000` id literal — the GT corpus grows into new
@@ -88,3 +106,45 @@ def all_benchmark_district_ids(session) -> set:
     """Every district in any benchmark batch (no id filter) — the corpus-wide sweep form, for tools
     that tag or partition by benchmark provenance (the receipts backfill's `_benchmark` basename)."""
     return {r[0] for r in session.execute(_ALL_SQL)}
+
+
+# ---------------------------------------------------------------------------
+# REPRESENTATION grain (#618) — the provenance of a *thing*, not of a district
+# ---------------------------------------------------------------------------
+# `capture.source` is the ONLY durable representation-grain provenance signal in the schema:
+# `record` and `representation` carry no batch_id, and `district`/`district_target` each hold a single
+# batch_id that is OVERWRITTEN on re-ingest — so after a follow-up re-run they name the follow-up batch
+# and the benchmark association is gone. `benchmark_batch.capture_record` stamps injected records
+# `source='benchmark_gt'` (URL scheme `gt://…`), and `attribution.py` already consumes it, so it is an
+# exercised field rather than a vestige.
+#
+# It also SURVIVES a re-run: Node's #174 follow-up seeding (`seedFromPriorCaptures`) pushes prior
+# records verbatim into the new manifest, and `cache_ingest` upserts the union — so a re-run district
+# legitimately holds benchmark_gt reps alongside fresh ones. That mixing is exactly why this grain is
+# load-bearing: without it a reviewer could pull a stale `gt://` rep into a production dispatch and,
+# post-#619, write injected older-school-year data into the LCT DB.
+#
+# Measured 2026-07-25 against the live governance DB: 95 benchmark_gt captures across all 27
+# benchmark-batch districts, 0 benchmark_gt captures outside them, 0 benchmark districts without
+# captures, and record->capture joins 1489/1489. So TODAY this grain and district-membership return
+# identical answers; they diverge only once #620's re-run creates the mixed case.
+BENCHMARK_CAPTURE_SOURCE = "benchmark_gt"
+
+_REC_PROV_SQL = text(
+    "SELECT DISTINCT r.rec_key FROM record r "
+    "JOIN capture c ON c.district_id = r.district_id AND c.hash = r.hash "
+    "WHERE c.source = :src AND r.rec_key = ANY(:k)")
+
+
+def benchmark_provenance_rec_keys(session, rec_keys) -> set:
+    """The subset of `rec_keys` whose underlying capture came from benchmark injection.
+
+    Errors PROPAGATE — deliberately, and unlike `is_benchmark_district`'s fresh-DB tolerance. This
+    feeds the gate@6 freeze decision, which bakes `dispatch_type` into an IMMUTABLE artifact: a loud
+    failure is recoverable (the human retries the freeze), a silently-wrong type is not. There is also
+    no fresh-DB case to tolerate — a dispatch cannot be composed at all without `record` rows."""
+    keys = list(rec_keys)
+    if not keys:
+        return set()
+    return {r[0] for r in session.execute(
+        _REC_PROV_SQL, {"src": BENCHMARK_CAPTURE_SOURCE, "k": keys})}

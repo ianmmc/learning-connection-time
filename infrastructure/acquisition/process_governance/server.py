@@ -2064,6 +2064,7 @@ async def handoff_dispatch(payload: dict):
     actor = payload.get("actor", "ian")
     overrides = payload.get("overrides") or {}
     verified_only = bool(payload.get("verified_only"))
+    dispatch_type = payload.get("dispatch_type") or BM.DISPATCH_PRODUCTION   # #618
     expected_identity = payload.get("expected_identity")   # optional (issue #37) — the console always
     if not ids:                                            # sends it; a bare CLI/test POST still works
         raise HTTPException(400, "no districts selected")
@@ -2073,19 +2074,26 @@ async def handoff_dispatch(payload: dict):
                 # Preview→freeze staleness gate (issue #37): rebuild the package the same way the
                 # preview did and compare identities BEFORE freezing anything.
                 pkg = H6.build_handoff_package(con, ids, overrides=overrides,
-                                               verified_only=verified_only)
+                                               verified_only=verified_only,
+                                               dispatch_type=dispatch_type)
                 if HND6.package_identity(pkg) != expected_identity:
                     raise HTTPException(409, "release changed since preview — the package that would "
                                              "be frozen no longer matches what was reviewed; re-preview "
                                              "before dispatching")
             doc, path = H6.dispatch_handoff(con, ids, created_by=actor, overrides=overrides,
-                                            verified_only=verified_only)
+                                            verified_only=verified_only, dispatch_type=dispatch_type)
     except FileExistsError:
         raise HTTPException(409, "an identical handoff was just dispatched (same content within the "
                                  "same second) — the prior one stands; retry in a moment if intended")
+    except ValueError as e:
+        # #618/#53: a refused dispatch (benchmark reps in a production dispatch, an invalid type, an
+        # empty effective selection) is operator input — a clean 400, never an unhandled 500. The
+        # draft-flow twin at /api/dispatch/{id}/freeze already did this.
+        raise HTTPException(400, str(e))
     cost = doc.get("cost") or {}
     return {"handoff_id": HND6.handoff_filename(doc)[:-5], "handoff_hash": doc["handoff_hash"],
             "verified_only": bool(doc.get("verified_only")),
+            "dispatch_type": doc.get("dispatch_type") or BM.DISPATCH_PRODUCTION,
             "n_districts": len(doc.get("districts", [])), "n_reps": cost.get("n_reps", 0),
             "total_usd": cost.get("total_usd", 0.0), "provenance": cost.get("provenance", "unknown"),
             "path": str(path)}
@@ -2098,7 +2106,8 @@ def handoff_list():
     with gdb.session_scope() as con:
         rows = con.execute(text(
             "SELECT handoff_hash, handoff_id, created_at, created_by, status, n_districts, n_reps, "
-            "total_usd, cost_provenance FROM handoff ORDER BY created_at DESC")).mappings().all()
+            "total_usd, cost_provenance, dispatch_type FROM handoff ORDER BY created_at DESC"
+            )).mappings().all()
         out = []
         for r in rows:
             d = dict(r)
@@ -2120,7 +2129,7 @@ def handoff_detail(handoff_id: str):
     with gdb.session_scope() as con:
         row = con.execute(text(
             "SELECT handoff_id, handoff_hash, created_at, created_by, status, path, n_districts, "
-            "n_reps, total_usd, cost_provenance FROM handoff WHERE handoff_id = :h"),
+            "n_reps, total_usd, cost_provenance, dispatch_type FROM handoff WHERE handoff_id = :h"),
             {"h": handoff_id}).mappings().first()
         if not row:
             raise HTTPException(404, f"no such handoff {handoff_id}")
@@ -2205,10 +2214,10 @@ def dispatch_candidates(draft_id: str):
 @app.post("/api/dispatch/{draft_id}/edit")
 async def dispatch_edit(draft_id: str, payload: dict):
     """gate@6 draft edit: add_district | remove_district | restore_district | set_override |
-    clear_override | set_verified_only. One delegated mutation endpoint, mirrors gate@1's
-    `/api/queue/{batch_id}/edit`. Mutates the working store and records a gate@6 draft-edit audit
-    event (district-scoped for district/override ops, draft-scoped for set_verified_only); returns
-    the fresh draft-detail view (always-current pricing)."""
+    clear_override | set_verified_only | set_dispatch_type. One delegated mutation endpoint, mirrors
+    gate@1's `/api/queue/{batch_id}/edit`. Mutates the working store and records a gate@6 draft-edit
+    audit event (district-scoped for district/override ops, draft-scoped for the two draft-wide mode
+    ops); returns the fresh draft-detail view (always-current pricing)."""
     op = payload.get("op")
     actor = payload.get("actor", "ian")
     did = payload.get("district_id")
@@ -2246,6 +2255,10 @@ async def dispatch_edit(draft_id: str, payload: dict):
             elif op == "set_verified_only":
                 DSTORE6.set_verified_only(con, draft_id, bool(payload.get("verified_only")))
                 note = f"set verified_only={bool(payload.get('verified_only'))}"
+            elif op == "set_dispatch_type":
+                # #618: the Council Lab opt-in. ValueError (bad type) -> 400 below, never a 500.
+                DSTORE6.set_dispatch_type(con, draft_id, payload.get("dispatch_type"))
+                note = f"set dispatch_type={payload.get('dispatch_type')!r}"
             else:
                 raise HTTPException(400, f"unknown edit op {op!r}")
             if op in district_scoped_ops:
@@ -2261,7 +2274,7 @@ async def dispatch_edit(draft_id: str, payload: dict):
                     # in the audit note instead of silently recording the bare id as a name.
                     affected = [(did, did, "")]
                     note += " [district not found in signals store]"
-            elif op == "set_verified_only":
+            elif op in ("set_verified_only", "set_dispatch_type"):
                 # Draft-scoped op: record against the draft's included districts (the rows whose
                 # send-set the mode flip actually changes) — mirrors gate@1's batch-level abandon,
                 # which also fans out to per-district events. Empty draft -> nothing to record.
@@ -2275,6 +2288,8 @@ async def dispatch_edit(draft_id: str, payload: dict):
         raise HTTPException(409, str(e))
     except KeyError as e:
         raise HTTPException(404, str(e))
+    except ValueError as e:
+        raise HTTPException(400, str(e))    # #618: an invalid dispatch_type is operator input, not a bug
     with gdb.session_scope() as con:
         return DSTORE6.to_view(con, draft_id)
 
@@ -2302,6 +2317,7 @@ async def dispatch_freeze(draft_id: str, payload: dict):
     cost = doc.get("cost") or {}
     return {"draft_id": draft_id, "handoff_id": HND6.handoff_filename(doc)[:-5],
            "handoff_hash": doc["handoff_hash"], "verified_only": bool(doc.get("verified_only")),
+           "dispatch_type": doc.get("dispatch_type") or BM.DISPATCH_PRODUCTION,
            "n_districts": len(doc.get("districts", [])), "n_reps": cost.get("n_reps", 0),
            "total_usd": cost.get("total_usd", 0.0), "provenance": cost.get("provenance", "unknown")}
 
