@@ -8,6 +8,7 @@ is ever destroyed — the full proposed batch stays auditable.
 """
 from sqlalchemy import select, text
 
+from infrastructure.acquisition.common import batch_types as BT
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import paths
 import infrastructure.acquisition.common.school_sampling as S
@@ -22,15 +23,26 @@ _SCHOOL_FIELDS = ("school_id", "name", "is_charter", "level", "gslo", "gshi")
 
 
 # ---------------------------------------------------------------- create (doc -> rows)
-def create_batch(sess, batch_doc: dict, *, batch_type: str = "first-run", actor: str) -> None:
+def create_batch(sess, batch_doc: dict, *, batch_type: str = "first-run",
+                 redo_attempted: bool | None = None, actor: str) -> None:
     """Write a freshly-built batch_doc into the working store (one Batch + BatchDistrict/BatchSchool
     rows). A multi-band school collapses to ONE BatchSchool row carrying all its bands. Flushes so the
-    rows are visible to a same-transaction to_receipt_doc()."""
+    rows are visible to a same-transaction to_receipt_doc().
+
+    `batch_type` is VALIDATED here (#617 Phase 2c) — this is the one chokepoint every composer (CLI,
+    console, the 5->1/7->1 escalation builders, the benchmark injector) passes through, so a typo can
+    no longer mint a fourth type that silently gets first-run behavior at all five redo-lever sites.
+
+    `redo_attempted` is the DECLARED redo lever (common/batch_types). None = undeclared, which reads
+    back through the historical `batch_type == 'follow-up'` fallback — the deliberate default, so
+    nothing composed before this existed changes behavior."""
+    BT.validate_batch_type(batch_type)
     bid = batch_doc["batch_id"]
     existing = sess.get(Batch, bid)
     if existing is not None and existing.status == "reserving":
         # Upgrade the id reservation (reserve_next_batch, issue #46) to the real draft row in place.
         existing.batch_type = batch_type
+        existing.redo_attempted = redo_attempted
         existing.status = "draft"
         existing.discovery_scope = batch_doc.get("discovery_scope", "domain")   # #164 scope-pure axis
         existing.nces_year = batch_doc.get("nces_year", "")
@@ -45,7 +57,7 @@ def create_batch(sess, batch_doc: dict, *, batch_type: str = "first-run", actor:
                           f"reopen/abandon the existing batch")
     else:
         sess.add(Batch(
-            batch_id=bid, batch_type=batch_type, status="draft",
+            batch_id=bid, batch_type=batch_type, redo_attempted=redo_attempted, status="draft",
             discovery_scope=batch_doc.get("discovery_scope", "domain"),   # #164 scope-pure axis
             nces_year=batch_doc.get("nces_year", ""),
             created_at=batch_doc.get("created") or utcnow(), created_by=actor,
@@ -163,13 +175,19 @@ def _batch_doc(sess, b: Batch) -> dict:
     "n"/"nces_year"/... can never silently shadow a computed field (#555 review)."""
     districts = [_district_doc(sess, d, included_only=True, with_flags=False)
                 for d in _ordered_districts(sess, b.batch_id, included_only=True)]
-    return {
+    doc = {
         **(b.meta_json or {}),
         "batch_id": b.batch_id, "batch_type": b.batch_type,
         "discovery_scope": b.discovery_scope or "domain",   # #164 (pre-column rows read as domain)
         "created": b.created_at,
         "n": len(districts), "nces_year": b.nces_year, "districts": districts,
     }
+    # #617 Phase 2c: the DECLARED redo lever travels to the Stage-2/3/4 runners, which read this doc
+    # from the DB (to_working_doc) or the regenerated receipt. OMITTED when undeclared, so every
+    # existing receipt regenerates byte-identically and `batch_types.redoes_attempted` falls back.
+    if b.redo_attempted is not None:
+        doc["redo_attempted"] = b.redo_attempted
+    return doc
 
 
 def to_receipt_doc(sess, batch_id: str) -> dict:
@@ -206,6 +224,11 @@ def to_view(sess, batch_id: str) -> dict:
     return {
         **(b.meta_json or {}),   # spread first — explicit fields below always win (#555 review)
         "batch_id": b.batch_id, "batch_type": b.batch_type, "status": b.status,
+        # #617 Phase 2c: the gate@1 reviewer must see whether approving this batch RE-RUNS districts
+        # that already reached a later stage (real spend + a merge into their prior round), not infer
+        # it from the type. Resolved through the same fallback the runners use, never the raw column.
+        "redo_attempted": BT.redoes_attempted({"batch_type": b.batch_type,
+                                               "redo_attempted": b.redo_attempted}),
         "discovery_scope": b.discovery_scope or "domain",   # #164
         "nces_year": b.nces_year, "created_at": b.created_at, "created_by": b.created_by,
         "approved_at": b.approved_at, "approved_by": b.approved_by,

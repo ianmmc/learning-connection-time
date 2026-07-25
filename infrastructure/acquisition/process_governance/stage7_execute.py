@@ -639,7 +639,7 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
         # flips commit together. Flip ONLY the directives whose district made it into ITS scope's
         # batch (#136) — a skipped district's directive stays 'approved', re-sweepable.
         for c in composed:
-            BSTORE.create_batch(s, c["doc"], batch_type="follow-up", actor=actor)
+            BSTORE.create_batch(s, c["doc"], batch_type="follow-up", redo_attempted=True, actor=actor)
             _flip(s, c["flip_ids"], c["batch_id"])
         return {"batch_id": composed[0]["batch_id"],
                 "n_requests": sum(len(c["flip_ids"]) for c in composed),

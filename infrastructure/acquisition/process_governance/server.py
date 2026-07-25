@@ -30,6 +30,7 @@ from infrastructure.acquisition.stage5_filter import build_signals as BS    # no
 from infrastructure.acquisition.stage5_filter import release as REL         # noqa: E402  (filtered.json projection — REQ-094)
 from infrastructure.acquisition.stage5_filter import detectors as DET       # noqa: E402  (#521 relevance-density event weights — the SSOT)
 from infrastructure.acquisition.stage5_filter import drift                  # noqa: E402  (REQ-097 advisory drift verdict — #75)
+from infrastructure.acquisition.common import batch_types as BT             # noqa: E402  (THE batch_type axis + redo lever — epic #617)
 from infrastructure.acquisition.common import benchmark as BM               # noqa: E402  (THE benchmark predicate — epic #617)
 from infrastructure.acquisition.common import db as gdb                     # noqa: E402  (isolated governance Postgres — REQ-103)
 from infrastructure.acquisition.common import district_status as DS         # noqa: E402  (state_event log — gate@1 audit events)
@@ -1155,6 +1156,10 @@ async def queue_create(payload: dict):
     n = int(payload.get("n", 12))
     batch_type = payload.get("batch_type", "first-run")
     actor = payload.get("actor", "ian")
+    try:
+        BT.validate_batch_type(batch_type)   # #617 Phase 2c: reject a typo at the door, not at persist
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     # Reserve the id UP FRONT in its own short transaction (issue #46): build_batch takes 10-20s, and
     # computing the number without persisting anything let a second concurrent create draw the SAME
     # number. The committed 'reserving' placeholder makes a duplicate draw fail fast on the PK;
@@ -1188,55 +1193,78 @@ async def queue_create(payload: dict):
         batch_id = BSTORE.reserve_next_batch(con, actor=actor)
     try:
         registry = DS.load()
-        # #164 PR 3b (4): under geo_interleaved, an unspecified scope is DRAWN per batch, weighted
-        # by the remaining blank-vs-domained eligible populations; the draw + weights are recorded
-        # on the batch (meta) so the composition is auditable. An explicit discovery_scope in the
-        # payload is the operator's override and skips the draw. Seeded by batch_id: same pools →
-        # same draw, reproducible in the receipt's terms.
-        scope_draw = None
-        if not scope_given and batch_type == "first-run" and policy == "geo_interleaved":
-            weights = Q1.scope_pool_counts(year, registry, discovered)
-            scope = Q1.draw_interleaved_scope(weights, batch_id)
-            scope_draw = {"policy": policy, "weights": weights, "drawn": scope}
         # #572 path 4 ("dev/manual batches on direction — exception path, not SOP"): an optional
         # explicit district-id list restricts the draw; recorded in batch meta (`targeted`).
         district_ids = [d.strip() for d in (payload.get("district_ids") or []) if str(d).strip()]
-        batch_doc, _gap, _domain_excluded, _n_elig = Q1.build_batch(
-            year, n, batch_id, registry, scope=scope, discovered_domains=discovered,
-            geo_pool=geo_pool, district_ids=district_ids or None)
-        # #572: a targeted draw that matches nothing is an operator-input miss, never a pool signal —
-        # report which ids fell outside the pool instead of persisting an empty batch (and never
-        # let it trip the pool-drained auto-advance below).
-        if district_ids and not batch_doc["districts"]:
-            missing = (batch_doc.get("targeted") or {}).get("missing") or district_ids
-            raise HTTPException(409, f"none of the targeted district id(s) are in the {scope} draw "
-                                     f"pool (excluded, already attempted, or in the other scope's "
-                                     f"pool): {', '.join(missing)}")
-        # #164 PR 3b (3): the pool-drained auto-advance, detected AT COMPOSE TIME — a domain-scoped
-        # first-run that can draw NOTHING while blank-domain districts remain is the moment the
-        # conservative default stops meaning anything. Auto-act (observable: the event row + this
-        # 409 notice; reversible: set_policy; spend-conservative: composes nothing by itself).
-        if scope == "domain" and batch_type == "first-run" and not batch_doc["districts"]:
-            notice = "domain-scoped eligible pool is EXHAUSTED (0 drawable districts)"
-            if _domain_excluded:
-                with gdb.session_scope() as con:
-                    advanced = DPOL.advance_one_step(
-                        con, actor=f"auto:{actor}",
-                        trigger=(f"domain-scoped eligible pool exhausted at compose; "
-                                 f"{len(_domain_excluded)} blank-domain district(s) remain"))
-                if advanced:
+        if batch_type != BT.FIRST_RUN:
+            # #617 Phase 2c — the OPERATOR-reachable targeted composer (mobility properties 1 + 2).
+            # follow-up and benchmark both NAME their districts rather than drawing them, so both
+            # route to build_followup_batch, which deliberately bypasses eligible_pool's
+            # already-attempted exclusion — the exclusion that made a re-run of an
+            # already-pipelined district impossible to express through this endpoint at all
+            # (build_followup_batch was reachable only from the 5->1 / 7->1 escalation back-edges).
+            if not district_ids:
+                raise HTTPException(400, f"a {batch_type} batch is composed from an explicit district "
+                                         f"list — pass district_ids (optionally `targets` for "
+                                         f"per-district bands; default is every covered band)")
+            targets = payload.get("targets") or Q1.all_bands_targets(year, district_ids)
+            batch_doc, skipped = Q1.build_followup_batch(
+                year, batch_id, targets, scope=scope, discovered_domains=discovered)
+            if not batch_doc["districts"]:
+                why = "; ".join(f"{s['district_id']}: {s['reason']}" for s in skipped) or "no targets"
+                raise HTTPException(409, f"no district composed into the {batch_type} batch — {why}")
+            batch_doc["targeted"] = {"requested": district_ids,
+                                     "missing": [s["district_id"] for s in skipped]}
+        else:
+            # #164 PR 3b (4): under geo_interleaved, an unspecified scope is DRAWN per batch, weighted
+            # by the remaining blank-vs-domained eligible populations; the draw + weights are recorded
+            # on the batch (meta) so the composition is auditable. An explicit discovery_scope in the
+            # payload is the operator's override and skips the draw. Seeded by batch_id: same pools →
+            # same draw, reproducible in the receipt's terms.
+            scope_draw = None
+            if not scope_given and policy == "geo_interleaved":
+                weights = Q1.scope_pool_counts(year, registry, discovered)
+                scope = Q1.draw_interleaved_scope(weights, batch_id)
+                scope_draw = {"policy": policy, "weights": weights, "drawn": scope}
+            batch_doc, _gap, _domain_excluded, _n_elig = Q1.build_batch(
+                year, n, batch_id, registry, scope=scope, discovered_domains=discovered,
+                geo_pool=geo_pool, district_ids=district_ids or None)
+            # #572: a targeted draw that matches nothing is an operator-input miss, never a pool signal —
+            # report which ids fell outside the pool instead of persisting an empty batch (and never
+            # let it trip the pool-drained auto-advance below).
+            if district_ids and not batch_doc["districts"]:
+                missing = (batch_doc.get("targeted") or {}).get("missing") or district_ids
+                raise HTTPException(409, f"none of the targeted district id(s) are in the {scope} draw "
+                                         f"pool (excluded, already attempted, or in the other scope's "
+                                         f"pool): {', '.join(missing)}")
+            # #164 PR 3b (3): the pool-drained auto-advance, detected AT COMPOSE TIME — a domain-scoped
+            # first-run that can draw NOTHING while blank-domain districts remain is the moment the
+            # conservative default stops meaning anything. Auto-act (observable: the event row + this
+            # 409 notice; reversible: set_policy; spend-conservative: composes nothing by itself).
+            if scope == "domain" and not batch_doc["districts"]:
+                notice = "domain-scoped eligible pool is EXHAUSTED (0 drawable districts)"
+                if _domain_excluded:
                     with gdb.session_scope() as con:
-                        _backup_discovery_policy(con)   # the twin, post-commit (sibling convention)
-                    notice += (f"; discovery_scope_policy AUTO-ADVANCED domain_only → geo_for_blank "
-                               f"(#164) — compose a geo batch for the {len(_domain_excluded)} "
-                               f"blank-domain district(s)")
-                else:
-                    notice += (f"; {len(_domain_excluded)} blank-domain district(s) remain — "
-                               f"compose a geo batch (policy already allows it)")
-            raise HTTPException(409, notice)
-        if scope_draw:
-            batch_doc["scope_draw"] = scope_draw   # -> Batch.meta_json (audit trail of the draw)
-        Q1.persist_batch(batch_doc, registry, batch_type=batch_type, actor=actor)
+                        advanced = DPOL.advance_one_step(
+                            con, actor=f"auto:{actor}",
+                            trigger=(f"domain-scoped eligible pool exhausted at compose; "
+                                     f"{len(_domain_excluded)} blank-domain district(s) remain"))
+                    if advanced:
+                        with gdb.session_scope() as con:
+                            _backup_discovery_policy(con)   # the twin, post-commit (sibling convention)
+                        notice += (f"; discovery_scope_policy AUTO-ADVANCED domain_only → geo_for_blank "
+                                   f"(#164) — compose a geo batch for the {len(_domain_excluded)} "
+                                   f"blank-domain district(s)")
+                    else:
+                        notice += (f"; {len(_domain_excluded)} blank-domain district(s) remain — "
+                                   f"compose a geo batch (policy already allows it)")
+                raise HTTPException(409, notice)
+            if scope_draw:
+                batch_doc["scope_draw"] = scope_draw   # -> Batch.meta_json (audit trail of the draw)
+        # #617 Phase 2c: DECLARE the redo lever on the batch rather than let a stage re-derive it from
+        # batch_type — see common/batch_types for why a benchmark batch must not redo by type alone.
+        Q1.persist_batch(batch_doc, registry, batch_type=batch_type,
+                         redo_attempted=BT.default_redo_attempted(batch_type), actor=actor)
     except BaseException:
         with gdb.session_scope() as con:   # failed build — free the number (don't leave a dead placeholder)
             BSTORE.release_reservation(con, batch_id)

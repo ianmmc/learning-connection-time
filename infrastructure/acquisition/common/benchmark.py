@@ -37,7 +37,7 @@ from __future__ import annotations
 from sqlalchemy import text
 from sqlalchemy.exc import ProgrammingError
 
-BENCHMARK_BATCH_TYPE = "benchmark"
+from infrastructure.acquisition.common.batch_types import BENCHMARK as BENCHMARK_BATCH_TYPE  # noqa: F401 (re-export)
 
 # The DISPATCH axis (#618). Batches organize Stages 1-4; dispatches organize Stages 6-7 — there is no
 # first-run/follow-up notion for a dispatch, so this is the ONLY dispatch type axis. A benchmark

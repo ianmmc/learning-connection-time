@@ -311,6 +311,19 @@
     const pools = pol.pools ? ` <span class="muted">(${fmtnum(pol.pools.domain)} domained · ${fmtnum(pol.pools.geo)} blank-domain)</span>` : "";
     const geoLabel = pol.policy === "geo_all" ? "Geo-scoped (any district — geo_all experiment)" : "Geo-scoped (blank-domain pool)";
     const body = `
+      <p><b>Batch type</b> <span class="muted">— first-run DRAWS districts; follow-up and benchmark
+        take a district list you name, and RE-RUN districts that already have artifacts (#617).</span></p>
+      <label class="add-item"><input type="radio" name="q-btype" value="first-run" checked
+        data-feat="q-create-type"/>
+        <span class="q-sname">First-run <span class="muted">— stratified draw, excludes already-attempted</span></span></label>
+      <label class="add-item"><input type="radio" name="q-btype" value="follow-up"/>
+        <span class="q-sname">Follow-up (targeted) <span class="muted">— re-target named districts; Stages 2/3/4 redo and MERGE into the prior round</span></span></label>
+      <label class="add-item"><input type="radio" name="q-btype" value="benchmark"/>
+        <span class="q-sname">Benchmark (targeted) <span class="muted">— the Stages-2/3/4 A/B harness; terminates at gate@5, never Stage-9-written</span></span></label>
+      <p id="q-create-redo-warn" data-feat="q-create-redo-warn" class="muted" style="display:none">
+        ⚠ This batch RE-RUNS discovery, capture and processing for every district you name — real SERP
+        spend, and Stage 2 merges the new round into that district's existing candidate set.</p>
+      <hr/>
       <p>Stratified draw from the full NCES corpus + DB enrollment (~10–20s). Policy:
         <b>${esc(pol.policy)}</b>${pools} <span class="muted">— change it in Settings.</span></p>
       <label class="add-item"><input type="radio" name="q-scope" value="domain" checked/>
@@ -325,20 +338,41 @@
       <p><label>Target district IDs <span class="muted">(optional, comma-separated — path 4: dev/manual batch on direction, recorded in batch meta; not SOP)</span><br/>
         <input id="q-create-targets" type="text" placeholder="e.g. 3173740" style="width:100%" data-feat="q-create-targets"/></label></p>`;
     showModal("Create batch", body, async (root) => {
+      const btype = (root.querySelector("input[name='q-btype']:checked") || {}).value || "first-run";
+      const targeted = btype !== "first-run";
       const scope = (root.querySelector("input[name='q-scope']:checked") || {}).value;
       const n = parseInt(root.querySelector("#q-create-n").value, 10) || 12;
       const targets = (root.querySelector("#q-create-targets").value || "")
         .split(",").map((s) => s.trim()).filter(Boolean);
-      const payload = { n, nces_year: "2024_25", batch_type: "first-run", actor: "ian" };
+      // #617 Phase 2c: a targeted batch is composed FROM the named list — an empty one would 400 at
+      // the server; refuse here so the human gets the reason instead of a bare error.
+      if (targeted && !targets.length) {
+        alert(`A ${btype} batch is composed from an explicit district list — enter one or more `
+              + "target district IDs.");
+        return;
+      }
+      const payload = { n, nces_year: "2024_25", batch_type: btype, actor: "ian" };
       if (scope) payload.discovery_scope = scope;              // "" = drawn by policy (server draws)
       if (targets.length) payload.district_ids = targets;
-      showOverlay("Building batch — stratified draw across the full NCES corpus + DB enrollment. ~10–20s…");
+      showOverlay(targeted
+        ? `Composing the ${btype} batch over ${targets.length} named district(s)…`
+        : "Building batch — stratified draw across the full NCES corpus + DB enrollment. ~10–20s…");
       try {
         const v = await api("/api/queue/create", postJSON(payload));
         hideOverlay();
         await loadBatches(v.batch_id);
       } catch (e) { hideOverlay(); alert("Create failed: " + e.message); }
     }, "Create batch");
+    // #617 Phase 2c: the re-run warning follows the type selection. showModal renders synchronously,
+    // so the nodes exist by here. The warning is the ONLY place a human is told that approving a
+    // targeted batch spends on districts that already have artifacts.
+    const modal = $g("#q-modal");
+    const warn = modal && modal.querySelector("#q-create-redo-warn");
+    if (warn) {
+      modal.querySelectorAll("input[name='q-btype']").forEach((r) => {
+        r.onchange = () => { warn.style.display = r.value === "first-run" ? "none" : ""; };
+      });
+    }
   }
 
   // ----------------------------- add-school picker -----------------------------

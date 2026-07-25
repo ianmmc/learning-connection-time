@@ -31,6 +31,7 @@ import requests
 from sqlalchemy import text
 
 from infrastructure.acquisition.common import batch_guard as BG
+from infrastructure.acquisition.common import batch_types as BT
 from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import discover as DISC
@@ -305,7 +306,7 @@ def discover_district(batch: dict, district: dict, registry: dict, *,
         # search — the #227 class); with one, wave 2 runs domain-scoped as normal.
         wave2_runner(district, residual, domain)
     return D2.finish_district(district, roster, batch["batch_id"], registry,
-                              merge=batch.get("batch_type") == "follow-up",
+                              merge=BT.redoes_attempted(batch),
                               geo_receipt=geo_receipt)
 
 
