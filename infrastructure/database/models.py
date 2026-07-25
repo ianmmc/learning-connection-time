@@ -366,6 +366,11 @@ class DistrictGradeMinutes(Base):
     method: Mapped[str] = mapped_column(String(30), nullable=False)        # council_extraction|statutory_fallback
     minutes_basis: Mapped[Optional[str]] = mapped_column(String(30))
     year: Mapped[Optional[str]] = mapped_column(String(10))
+    # #626: a band a human vouched for at gate@8 (an override note, an applied times-override, or a
+    # hand-added cited fact) is treated as equivalent to an in-temporal-window schedule — the LCT calc
+    # exempts a vouched grade's `year` from the REQ-026 blend-window test (the auditable human
+    # determination stands in for a current vintage). Set at incorporation from the frozen receipt.
+    human_vouched: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     overlap_flag: Mapped[Optional[str]] = mapped_column(Text)
     provenance = Column(JSONB)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)

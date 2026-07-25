@@ -94,6 +94,56 @@ def test_frozen_modal_band_keeps_consistent_times():
     assert w.minutes == 415 and w.start_time == "07:40" and w.end_time == "14:35"
 
 
+# ----------------------------- #626 human-vouched + vintage -----------------------------
+def test_band_human_vouched_detects_note_only_override():
+    # Dickinson's case: a note-only human_override (no times) is still a human vouch.
+    assert P.band_human_vouched({"schools": [
+        {"school": "a", "human_override": {"reason": "I'm approving", "actor": "ian"}}]}) is True
+    assert P.band_human_vouched({"schools": [{"school": "a", "human_added": {"reason": "cited"}}]}) is True
+    assert P.band_human_vouched({"schools": [{"school": "a", "override_applied": True}]}) is True
+    assert P.band_human_vouched({"schools": [{"school": "a"}]}) is False
+    # an override on an EXCLUDED (struck-through) school is not a vouch for the value
+    assert P.band_human_vouched({"schools": [
+        {"school": "a", "excluded": {"reason": "x"}, "human_override": {"reason": "y"}}]}) is False
+
+
+def test_vouched_flag_flows_onto_bandwrite():
+    receipt = {"bands": {"middle": {
+        "gross_minutes": 426, "start_time": None, "end_time": None, "method": "mean_tiebreak",
+        "sampling": {}, "schools": [
+            {"school": "dickinson", "gross": 426, "human_override": {"reason": "approving"}},
+            {"school": "hagen", "gross": 425, "human_override": {"reason": "closed school"}}]}}}
+    w = MAP.plan_writes(receipt)[0]
+    assert w.human_vouched is True
+
+
+def test_626_part2_vintage_tracks_the_value_source_not_a_losing_sample():
+    # Dickinson middle: value 426 == dickinson's gross (URL has no year); hagen (425) carries a
+    # 2016-17 URL. The band's vintage must come from the REPRESENTATIVE (value's source), so hagen's
+    # stale URL year is NOT inherited — the band falls through to current-year.
+    from infrastructure.utilities.school_year import is_acceptable_data_year, current_school_year
+    band = {"gross_minutes": 426, "schools": [
+        {"school": "dickinson", "gross": 426, "school_year": None,
+         "evidence": {"url": "https://d.k12.nd.us/families/back-to-school"}},
+        {"school": "hagen", "gross": 425, "school_year": None,
+         "evidence": {"url": "https://d.k12.nd.us/docs/2015-2016/2016-17-HJH-HBook.pdf"}}]}
+    year, basis = P.resolve_schedule_year(band, P.collect_source_urls(band))
+    assert (year, basis) == (current_school_year(), "default_current")
+    assert is_acceptable_data_year(year)
+
+
+def test_626_part2_representative_url_year_is_kept_when_it_is_the_value_source():
+    # Mirror guard: when the REPRESENTATIVE school's own URL carries the year, it IS used (the fix
+    # narrows WHICH url sources the year, it doesn't suppress a legitimate representative vintage).
+    band = {"gross_minutes": 420, "schools": [
+        {"school": "oak", "gross": 420, "school_year": None,
+         "evidence": {"url": "https://d.org/2023-24/bell.pdf"}},
+        {"school": "elm", "gross": 400, "school_year": None,
+         "evidence": {"url": "https://d.org/2016-17/old.pdf"}}]}
+    year, basis = P.resolve_schedule_year(band, P.collect_source_urls(band))
+    assert (year, basis) == ("2023-24", "content_url")
+
+
 # ----------------------------- statutory fallback (#94) -----------------------------
 def test_unsatisfied_band_maps_to_statutory():
     # High is CLAIMED (NCES has High schools) but has no accepted facts -> unsatisfied.

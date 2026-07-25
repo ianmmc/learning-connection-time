@@ -33,6 +33,7 @@ class BandWrite:
     raw_import: Optional[dict] = None
     needs_statutory_minutes: bool = False
     statutory_reason: Optional[str] = None
+    human_vouched: bool = False              # #626: a gate@8 human determination on this band
 
     def summary(self) -> dict:
         return {"grade_level": self.grade_level, "method": self.method,
@@ -78,6 +79,7 @@ def plan_writes(receipt: dict, *, fingerprint: Optional[str] = None,
             raw_import=P.council_raw_import(receipt, band, b, fingerprint=fingerprint,
                                             approval_id=approval_id, year_basis=basis, actor=actor,
                                             grade_span_source=grade_span_source),
+            human_vouched=P.band_human_vouched(b),   # #626
         ))
 
     unsatisfied = (receipt.get("negative_space") or {}).get("unsatisfied_bands") or []

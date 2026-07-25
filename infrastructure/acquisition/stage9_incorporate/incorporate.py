@@ -143,12 +143,14 @@ def _write_grade_minutes(session, stored_did: str, grade_minutes: list, fingerpr
             row.minutes_basis = gm.minutes_basis
             row.year = gm.year
             row.overlap_flag = gm.overlap_flag
+            row.human_vouched = gm.human_vouched   # #626
             row.provenance = prov
         else:
             session.add(DistrictGradeMinutes(
                 district_id=stored_did, grade=gm.grade, instructional_minutes=gm.minutes,
                 source_band=gm.source_band, method=gm.method, minutes_basis=gm.minutes_basis,
-                year=gm.year, overlap_flag=gm.overlap_flag, provenance=prov))
+                year=gm.year, overlap_flag=gm.overlap_flag, human_vouched=gm.human_vouched,
+                provenance=prov))
     for grade, row in existing.items():
         if grade not in keep:
             session.delete(row)
