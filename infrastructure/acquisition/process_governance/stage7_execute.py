@@ -30,6 +30,7 @@ from sqlalchemy import text
 from pathlib import Path
 from typing import NamedTuple
 
+from infrastructure.acquisition.common import benchmark as BM
 from infrastructure.acquisition.common import budget as BUD
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import discovered_domain as DDOM
@@ -287,17 +288,14 @@ def _executed_rounds(session, district_ids: list) -> dict:
 
 
 def _benchmark_district_ids(session, district_ids: list) -> set:
-    """The subset of `district_ids` belonging to any batch_type='benchmark' batch (batch_00000 —
-    permanently WALLED OFF from Stage-9 writes and funnel/enrichment stats, CLAUDE.md). Request
-    execution must never rebadge these into a follow-up batch (issue #134)."""
-    if not district_ids:
-        return set()
-    rows = session.execute(text(
-        "SELECT DISTINCT bd.district_id FROM batch_district bd "
-        "JOIN batch b ON b.batch_id = bd.batch_id "
-        "WHERE b.batch_type = 'benchmark' AND bd.district_id = ANY(:d)"),
-        {"d": list(district_ids)})
-    return {r[0] for r in rows}
+    """The subset of `district_ids` belonging to any batch_type='benchmark' batch. Request execution
+    must never rebadge these into a follow-up batch (issue #134).
+
+    Thin alias over `common/benchmark.py` — THE definition since epic #617 consolidated the three
+    hand-maintained copies (this one, Stage 9's, and server.py's IS_BENCHMARK_SQL). GRAIN WARNING:
+    district-MEMBERSHIP, which #619 replaces with dispatch provenance for the write-eligibility
+    callers; see that module's docstring."""
+    return BM.benchmark_district_ids(session, district_ids)
 
 
 def _defer_76_districts(session, district_ids: list, max_rounds=None) -> set:

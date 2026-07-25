@@ -30,6 +30,7 @@ from infrastructure.acquisition.stage5_filter import build_signals as BS    # no
 from infrastructure.acquisition.stage5_filter import release as REL         # noqa: E402  (filtered.json projection — REQ-094)
 from infrastructure.acquisition.stage5_filter import detectors as DET       # noqa: E402  (#521 relevance-density event weights — the SSOT)
 from infrastructure.acquisition.stage5_filter import drift                  # noqa: E402  (REQ-097 advisory drift verdict — #75)
+from infrastructure.acquisition.common import benchmark as BM               # noqa: E402  (THE benchmark predicate — epic #617)
 from infrastructure.acquisition.common import db as gdb                     # noqa: E402  (isolated governance Postgres — REQ-103)
 from infrastructure.acquisition.common import district_status as DS         # noqa: E402  (state_event log — gate@1 audit events)
 from infrastructure.acquisition.common import receipts as RCPT              # noqa: E402  (per-district audit receipts — REQ-164)
@@ -2430,14 +2431,14 @@ def handoff_inspect(district_id: str, rec_key: str, file: str):
     return FileResponse(fp)
 
 
-# THE benchmark wall, as one SQL fragment (review round, PR #252 — it was inlined verbatim at two call
-# sites, and Stage 9's write boundary will need it a third time; a rule this load-bearing gets ONE
-# definition so a future change can't silently leave the gates disagreeing about what's benchmark).
-# Keys on batch_type='benchmark' membership, never the batch_00000 id literal — the GT corpus grows
-# into new benchmark batches. `{alias}` = the outer query's district-bearing table alias.
-IS_BENCHMARK_SQL = """EXISTS (SELECT 1 FROM batch_district bd JOIN batch b ON b.batch_id = bd.batch_id
-                              WHERE bd.district_id = {alias}.district_id
-                                AND b.batch_type = 'benchmark')"""
+# THE benchmark wall, as one SQL fragment. PR #252 made it one definition ACROSS THIS MODULE's two call
+# sites; epic #617 finished the job by moving it to `common/benchmark.py`, so Stage 9 and Stage 7 read
+# the SAME text instead of hand-copying it (they could not import this module — process_governance sits
+# above them; `common` is the base layer everything may import). Re-exported under the original name so
+# existing call sites and their tests are unchanged. `{alias}` = the outer query's district-bearing
+# table alias. GRAIN WARNING: district-MEMBERSHIP; #619 moves the write-eligibility callers to dispatch
+# provenance — see common/benchmark.py's docstring.
+IS_BENCHMARK_SQL = BM.IS_BENCHMARK_SQL
 
 
 # REQ-122 cumulative counts — the SQL twin of AGG.merge_fact_runs's accepted/unresolved rule ("a pair

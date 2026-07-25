@@ -24,6 +24,7 @@ from pathlib import Path
 
 from sqlalchemy import text
 
+from infrastructure.acquisition.common import benchmark as BM
 from infrastructure.acquisition.common import budget as BUD
 from infrastructure.acquisition.common import config_loader as CFG
 from infrastructure.acquisition.common import db as gdb
@@ -190,11 +191,7 @@ def _early_exit_targets(district_ids) -> dict:
         return out
     try:
         with gdb.session_scope() as s:
-            walled = {r[0] for r in s.execute(
-                text("SELECT DISTINCT bd.district_id FROM batch_district bd "
-                     "JOIN batch b ON b.batch_id = bd.batch_id "
-                     "WHERE b.batch_type = 'benchmark' AND bd.district_id = ANY(:d)"),
-                {"d": ids}).all()}
+            walled = BM.benchmark_district_ids(s, ids)
             rows = s.execute(
                 text("SELECT district_id, lea_claimed_bands_json, schools_by_band_json, "
                      "nces_by_level_json FROM district_target WHERE district_id = ANY(:d)"),

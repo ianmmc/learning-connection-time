@@ -232,9 +232,12 @@ def test_early_exit_exempts_a_district_in_both_a_benchmark_and_a_production_batc
     membership. This is the shape epic #617's re-run campaign creates (a batch_00000 district that
     later runs in a production follow-up batch), so pin today's behavior explicitly.
 
-    NOTE: #619 revisits whether this is still right once guards are provenance-scoped — a production
-    extraction of such a district is arguably not measuring GT and could take the early exit. That is
-    a deliberate follow-on decision, not something #621 changes."""
+    DECIDED (Ian, 2026-07-25) — #619 REPLACES this with dispatch provenance: the exemption fires when
+    the DISPATCH being extracted is a benchmark dispatch, not when the district has benchmark history.
+    Rationale: REQ-151's "measurement wants the census" case is already covered by the two disablers at
+    stage7_run.py:447-449 (run_kind != production, gt_data is None); district membership is a third
+    belt that fires on runs measuring nothing, and after #620 it would make all 27 re-run districts
+    pay full-census extraction forever. Kept here as the pre-#619 pin — this test INVERTS at #619."""
     gdb.init_precious_schema()
     s = gov_session
     BS.ensure_signal_schema(s)
