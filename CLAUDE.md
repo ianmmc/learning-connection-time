@@ -135,8 +135,9 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-23): REQ-164 receipts COMPLETE on `feat/pipeline-receipts-req164` (unmerged,
-staying on-branch per Ian); Stage 9 campaign at 36/38 incorporated + the LCT recompute run.** The branch
+**Current status (2026-07-24): REQ-164 receipts COMPLETE on `feat/pipeline-receipts-req164` (unmerged,
+staying on-branch per Ian); Stage 9 campaign COMPLETE at 38/38 incorporated (#627 fixed 2026-07-24 →
+Midview + Millard in; full LCT recompute clean, exit 0, both on `per_grade_bell`).** The branch
 carries stages 5-9 always-stamped `stage<N>_<stage_name>` receipts via the ONE shared writer, the **#616**
 stage2/4 write-then-reread round-trip elimination, the Stage-5 `filtered`→`stage5_filter` conversion + a
 LIVE backfill of 112 legacy files, and the arch-manifest coverage tests. Stages 2/3/4 receipt conversion
@@ -146,18 +147,23 @@ a district; see "the product is the pipeline" above) and incorporated 36/38 gate
 one-time `lct_calculations` recompute ran clean (163k rows, exit 0). That approach surfaced three findings,
 all filed durably: **#626** (a logged gate@8 override is NOT honored past the REQ-026 temporal window —
 Dickinson's approved council secondary drops to statutory, confirmed in production; open decision: should a
-named human override count as an auditable "treat as current"), **#627** (Stage-8 `mean_tiebreak` emits a
-band gross inconsistent with its stored start/end times — a fail-loud consistency bug that blocked 2
-districts), **#628** (the LCT recompute is a full-corpus ~2m08s rewrite — timeout-prone, O(all ~17k) for an
-O(changed) input). Full narrative: `docs/PROJECT_HISTORY.md` (2026-07-23 entry); `docs/REQUIREMENTS.yaml`
+named human override count as an auditable "treat as current" — STILL OPEN), **#627** (Stage-8
+`mean_tiebreak` emitted a band gross inconsistent with its stored start/end — **CLOSED 2026-07-24**: a
+mean_tiebreak value is a synthetic average matching no single school, so `aggregate.district_bands_from_facts`
+now emits it with NO representative times; Stage 9 `provenance.times_consistent`+`mapping.plan_writes` drop
+inconsistent times from receipts frozen pre-fix so the 2 already-approved districts incorporated minutes-only;
+gate@8 UI shows "synthesized average"), **#628** (the LCT recompute is a full-corpus ~2m08s rewrite —
+timeout-prone, O(all ~17k) for an O(changed) input — run backgrounded). Full narrative:
+`docs/PROJECT_HISTORY.md` (2026-07-23 entry); `docs/REQUIREMENTS.yaml`
 REQ-164 (status `tested`) + REQ-165…168 (feat branch only). The session's governing lesson is the durable
 fact above — **the product is the pipeline, not the district.**
 
-**Next (RESUME HERE — 2026-07-23): all independent; pick any.**
-**(1) Finish the Stage 9 campaign (36/38 in).** 2 blocked on **#627** — fix `stage8_aggregate/aggregate.py::aggregate_band`
-so a `mean_tiebreak` band's gross == its stored start/end span, then Midview `3904817` + Millard `4900540`
-incorporate. **#626** governs Dickinson's (`3800038`) and any out-of-window-vintage district's final
-secondary value — resolve the honor-the-override decision, then re-incorporate + recompute.
+**Next (RESUME HERE — 2026-07-24): all independent; pick any.**
+**(1) Stage 9 campaign DONE (38/38, #627 closed 2026-07-24).** Remaining Stage-9 open item is **#626**
+(design decision, STILL OPEN): honor a logged gate@8 override past the REQ-026 temporal window. Anchor case
+Dickinson (`3800038`) — approved council secondary (426, but its sampled Hagen source is vintage 2016-17)
+still silently drops to statutory at recompute. Resolve the honor-the-override decision (+ investigate why
+the band inherited the losing sample's vintage), then re-incorporate + recompute Dickinson.
 **(2) Epic #617 (benchmark model + done-marker inversion).** Start **#621** (small: `_early_exit_targets`
 keys on the `batch_00000` literal, should be `batch_type='benchmark'`), then **#618** (benchmark dispatch +
 gate@5/gate@7 termini — BEFORE **#619** wall-retirement so no hole opens) → **#620** (re-run batch_00000
