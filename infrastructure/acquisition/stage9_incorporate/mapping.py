@@ -55,13 +55,21 @@ def plan_writes(receipt: dict, *, fingerprint: Optional[str] = None,
         year, basis = P.resolve_schedule_year(b, urls)
         agg = b.get("method")
         sampling = b.get("sampling") or {}
+        gross = b.get("gross_minutes")
+        # #627: drop representative times a frozen receipt carries when they're inconsistent with the
+        # gross (a mean_tiebreak band's synthetic gross can't equal one school's real span). Writing
+        # them would fail the bell_schedules cross-check; the approved VALUE is written minutes-only.
+        # The original synthetic band survives verbatim in raw_import.receipt_band.
+        start_time, end_time = b.get("start_time"), b.get("end_time")
+        if not P.times_consistent(start_time, end_time, gross):
+            start_time = end_time = None
         writes.append(BandWrite(
             grade_level=band,
             method="council_extraction",
             minutes_basis="gross_bell_to_bell",
             year=year, year_basis=basis,
-            minutes=b.get("gross_minutes"),
-            start_time=b.get("start_time"), end_time=b.get("end_time"),
+            minutes=gross,
+            start_time=start_time, end_time=end_time,
             confidence=P.band_confidence(sampling),
             schools_sampled=P.collect_schools_sampled(b),
             source_urls=urls,

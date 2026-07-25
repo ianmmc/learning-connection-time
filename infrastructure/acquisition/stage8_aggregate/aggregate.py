@@ -437,10 +437,20 @@ def district_bands_from_facts(accepted):
         # must not crash (or win) the representative min() below; it stays in schools[] though — it's
         # an accepted fact, and hiding it would be a silent drop.
         if val is None: continue
-        # representative start/end = those of a school whose gross is closest to the modal value
+        # representative start/end = those of a school whose gross is closest to the value
         rep = min((f for f in facts if f["gross"] is not None),
                   key=lambda f: abs(f["gross"] - val))
-        out[band] = {"gross_minutes": val, "start_time": rep["start"], "end_time": rep["end"],
+        # #627 INVARIANT: a band that carries representative times must be internally consistent —
+        # its gross MUST equal the span of those times, or Stage 9's bell_schedules cross-check
+        # (minutes ≤ end−start) fails loud. A mean_tiebreak VALUE is a synthetic average that
+        # matches NO single school's schedule (the two tied schools have distinct spans), so the
+        # rep's span != val; emit the value WITHOUT representative times (per-school real times stay
+        # in schools[] below). Every other method takes a single school's (start,end,gross) verbatim,
+        # so rep["gross"] == val and the times are kept.
+        keep_times = method != "mean_tiebreak" and rep["gross"] == val
+        rep_start = rep["start"] if keep_times else None
+        rep_end = rep["end"] if keep_times else None
+        out[band] = {"gross_minutes": val, "start_time": rep_start, "end_time": rep_end,
                      "n_schools": len(facts), "method": method,
                      "schools": [{"school": f["school"], "start_time": f["start"], "end_time": f["end"],
                                   "gross": f["gross"], "models": f["models"],

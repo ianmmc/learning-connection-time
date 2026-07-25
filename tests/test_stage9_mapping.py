@@ -61,6 +61,39 @@ def test_all_three_bands_written_faithfully():
     assert all(w.method == "council_extraction" for w in writes)
 
 
+# ----------------------------- #627 frozen mean_tiebreak heal -----------------------------
+def test_times_consistent_helper():
+    assert P.times_consistent("07:25", "14:20", 415) is True     # span == gross
+    assert P.times_consistent("07:25", "14:20", 425) is False    # synthetic mean != span
+    assert P.times_consistent(None, "14:20", 425) is True        # absent time -> nothing to contradict
+    assert P.times_consistent("07:25", "14:20", None) is True    # no gross -> nothing to contradict
+
+
+def test_frozen_mean_tiebreak_band_drops_inconsistent_times():
+    """#627: a receipt frozen BEFORE the aggregate.py fix carries a mean_tiebreak band with a
+    synthetic gross (425) but one school's real times (07:25-14:20, span 415). plan_writes must
+    drop those times so the write is minutes-only and passes Stage 9's bell_schedules cross-check;
+    the authoritative approved value (425) and the original synthetic band survive."""
+    receipt = {"bands": {"middle": {
+        "gross_minutes": 425, "start_time": "07:25", "end_time": "14:20", "method": "mean_tiebreak",
+        "sampling": {"n_sampled": 2, "n_total": 2, "coverage": 1.0},
+        "schools": [{"school": "midview", "start_time": "07:25", "end_time": "14:20", "gross": 415},
+                    {"school": "midview east", "start_time": "07:20", "end_time": "14:35", "gross": 435}]}}}
+    w = MAP.plan_writes(receipt)[0]
+    assert w.minutes == 425
+    assert w.start_time is None and w.end_time is None       # inconsistent times dropped
+    assert w.raw_import["receipt_band"]["start_time"] == "07:25"   # original band preserved for audit
+
+
+def test_frozen_modal_band_keeps_consistent_times():
+    """Guard the scope: a modal band whose stored times ARE consistent (span == gross) is untouched."""
+    receipt = {"bands": {"high": {
+        "gross_minutes": 415, "start_time": "07:40", "end_time": "14:35", "method": "modal",
+        "sampling": {"n_sampled": 2, "n_total": 2, "coverage": 1.0}, "schools": []}}}
+    w = MAP.plan_writes(receipt)[0]
+    assert w.minutes == 415 and w.start_time == "07:40" and w.end_time == "14:35"
+
+
 # ----------------------------- statutory fallback (#94) -----------------------------
 def test_unsatisfied_band_maps_to_statutory():
     # High is CLAIMED (NCES has High schools) but has no accepted facts -> unsatisfied.

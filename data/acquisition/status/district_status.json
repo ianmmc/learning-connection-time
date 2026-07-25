@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-23T22:05:07Z",
+  "last_updated": "2026-07-25T03:48:46Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -9478,8 +9478,8 @@
     "3904817": {
       "name": "Midview Local",
       "state": "OH",
-      "furthest_stage": 8,
-      "stage_name": "aggregate",
+      "furthest_stage": 9,
+      "stage_name": "incorporate",
       "outcome": null,
       "topology": null,
       "batch_id": null,
@@ -9564,9 +9564,18 @@
           "checkpoint": "gate@8",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": 9,
+          "stage_name": "incorporate",
+          "outcome": null,
+          "at": "2026-07-25T03:48:44Z",
+          "checkpoint": "incorporated",
+          "event_type": "incorporated",
+          "actor": "auto:stage9"
         }
       ],
-      "notes": "bb177cd7c381"
+      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
     },
     "4000766": {
       "name": "KIPP OKC COLLEGE PREP CHARTER",
@@ -11711,8 +11720,8 @@
     "4900540": {
       "name": "Millard District",
       "state": "UT",
-      "furthest_stage": 8,
-      "stage_name": "aggregate",
+      "furthest_stage": 9,
+      "stage_name": "incorporate",
       "outcome": null,
       "topology": null,
       "batch_id": null,
@@ -11797,9 +11806,18 @@
           "checkpoint": "gate@8",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": 9,
+          "stage_name": "incorporate",
+          "outcome": null,
+          "at": "2026-07-25T03:48:46Z",
+          "checkpoint": "incorporated",
+          "event_type": "incorporated",
+          "actor": "auto:stage9"
         }
       ],
-      "notes": "c127b5f6e5d7"
+      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
     },
     "5000395": {
       "name": "Essex Westford Educational Community Unified Union SD #51",

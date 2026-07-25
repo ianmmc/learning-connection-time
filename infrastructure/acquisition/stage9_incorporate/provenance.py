@@ -42,6 +42,32 @@ def resolve_schedule_year(band: dict, urls: Optional[list] = None) -> tuple:
     return current_school_year(), "default_current"
 
 
+# ----------------------------- band-times consistency (#627) -----------------------------
+def _hhmm_to_min(t: Optional[str]) -> Optional[int]:
+    """HH:MM -> minutes-since-midnight, or None if absent/unparseable."""
+    if not t or ":" not in str(t):
+        return None
+    try:
+        h, m = str(t).split(":")[:2]
+        return int(h) * 60 + int(m)
+    except (ValueError, TypeError):
+        return None
+
+
+def times_consistent(start: Optional[str], end: Optional[str], gross: Optional[int]) -> bool:
+    """#627: are a band's representative (start,end) internally consistent with its gross?
+    True when a time is absent/unparseable or gross is None (nothing to contradict), else span
+    end−start must equal gross. A mean_tiebreak band stores a SYNTHETIC gross (average of two
+    distinct-span schools) with one school's real times, so span != gross — writing those times
+    fails Stage 9's bell_schedules cross-check (minutes ≤ end−start). plan_writes drops the times
+    when this returns False, healing receipts frozen before the aggregate.py fix (new receipts
+    already omit them). The original synthetic band stays intact in raw_import.receipt_band."""
+    sm, em = _hhmm_to_min(start), _hhmm_to_min(end)
+    if sm is None or em is None or gross is None:
+        return True
+    return (em - sm) == gross
+
+
 # ----------------------------- provenance field builders -----------------------------
 def collect_source_urls(band: dict) -> list:
     """Dedup of each included school's winning-evidence URL (order-stable)."""

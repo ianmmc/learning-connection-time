@@ -247,6 +247,33 @@ class TestMode:
         assert bands["elementary"]["start_time"] == "08:00"   # rep must be the non-None fact
         assert {s["school"] for s in bands["elementary"]["schools"]} == {"a", "b"}
 
+    def test_mean_tiebreak_band_emits_no_representative_times(self):
+        """#627: two schools, distinct grosses (415 & 435) -> no mode -> mean_tiebreak value 425.
+        425 matches NEITHER school's span, so carrying a school's real times would store an
+        internally-inconsistent band (gross != span) that Stage 9's bell_schedules cross-check
+        (minutes ≤ end−start) fails loud on. The band must emit the value WITHOUT times; the two
+        real per-school schedules stay in schools[]."""
+        base = {"band": "middle", "models": ["x", "y"], "method": "council_agree"}
+        facts = [{**base, "school": "midview", "start": "07:25", "end": "14:20", "gross": 415},
+                 {**base, "school": "midview east", "start": "07:20", "end": "14:35", "gross": 435}]
+        band = A.district_bands_from_facts(facts)["middle"]
+        assert band["gross_minutes"] == 425 and band["method"] == "mean_tiebreak"
+        assert band["start_time"] is None and band["end_time"] is None
+        # the real per-school times are NOT lost — they remain on the fact rows
+        assert {(s["start_time"], s["end_time"]) for s in band["schools"]} == \
+            {("07:25", "14:20"), ("07:20", "14:35")}
+
+    def test_modal_band_keeps_consistent_times(self):
+        """Sibling to the above: a modal band takes a single real school's (start,end,gross)
+        verbatim, so gross == span and the representative times ARE kept (the fix is scoped to the
+        synthetic mean_tiebreak case, not a blanket times-drop)."""
+        base = {"band": "high", "models": ["x", "y"], "method": "council_agree"}
+        facts = [{**base, "school": "a", "start": "07:40", "end": "14:35", "gross": 415},
+                 {**base, "school": "b", "start": "07:40", "end": "14:35", "gross": 415}]
+        band = A.district_bands_from_facts(facts)["high"]
+        assert band["method"] == "modal"
+        assert band["start_time"] == "07:40" and band["end_time"] == "14:35"
+
     def test_all_none_gross_band_is_omitted_not_crashed(self):
         """#403 sibling: a band whose every accepted fact has gross=None has nothing aggregable —
         omit it (same posture as an empty band), don't TypeError on min() over an empty candidate
