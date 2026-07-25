@@ -143,8 +143,8 @@ def test_streaming_passes_the_district_target_bands(monkeypatch):
 
 def test_streaming_disables_early_exit_for_probes_and_gt_runs(monkeypatch):
     """A probe measures a council variant and a GT run scores against the curated corpus — both want
-    the full census, never the spend shortcut (batch_00000 is additionally exempted in
-    _early_exit_targets itself)."""
+    the full census, never the spend shortcut (benchmark-batch members are additionally exempted in
+    _early_exit_targets itself — see the govdb section below, #621)."""
     seen = _mock_streaming(monkeypatch, {"ZZM1": {"elementary"}})
     probe = dict(DOC, run_kind="probe")
     R7.run_council_streaming(probe, persist=False)
@@ -165,3 +165,82 @@ def test_gate7_console_shows_the_skip_and_settings_carries_the_toggle():
     sjs = (REPO / "infrastructure/acquisition/process_governance/static/settings.js").read_text()
     assert 'data-feat="mode-stability-toggle"' in sjs
     assert "/api/stage7/mode-stability" in sjs
+
+
+# --------------------------- the benchmark exemption (govdb): #621 ---------------------------
+# The REQ-151 exemption ("measurement wants the census, not the shortcut") used to key on the
+# `batch_00000` ID LITERAL while every other benchmark guard keys on `batch_type`. These exercise the
+# REAL SQL against Postgres, with benchmark batch ids that are deliberately NOT `batch_00000`.
+
+import pytest  # noqa: E402
+from sqlalchemy import text  # noqa: E402
+from infrastructure.acquisition.common import db as gdb  # noqa: E402
+from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402
+
+govdb = pytest.mark.govdb
+
+
+def _seed_target(s, did, bands):
+    s.execute(text("DELETE FROM district_target WHERE district_id = :d"), {"d": did})
+    s.execute(text("INSERT INTO district_target (district_id, lea_claimed_bands_json, "
+                   "schools_by_band_json, nces_by_level_json) VALUES (:d, :c, '{}', '{}')"),
+              {"d": did, "c": json.dumps(bands)})
+
+
+def _seed_batch(s, batch_id, batch_type, district_id):
+    from infrastructure.acquisition.stage1_queue.models import Batch, BatchDistrict
+    s.add(Batch(batch_id=batch_id, batch_type=batch_type, status="approved", nces_year="2024_25",
+                created_at="t", created_by="zz", meta_json={}))
+    s.add(BatchDistrict(batch_id=batch_id, district_id=district_id, ord=0, name="ZZ", state="AK",
+                        domain="", enrollment_k12=None, lea_claimed_bands=[], nces_school_counts={},
+                        band_processing_order=[], band_meta={}, included=True))
+    s.flush()
+
+
+def _use_test_session(monkeypatch, sess):
+    """_early_exit_targets opens its OWN session; point it at the test's (rolled back at teardown).
+    Also stub the NCES roster reads — this exercises the walled-set SQL, not band derivation."""
+    monkeypatch.setattr(R7.gdb, "session_scope", lambda: contextlib.nullcontext(sess))
+    monkeypatch.setattr(R7.SS, "band_rosters_for_district", lambda did: {})
+    monkeypatch.setattr(R7.SS, "real_bands_for_district",
+                        lambda by_level, sbb, band_rosters=None: {"elementary", "middle", "high"})
+
+
+@govdb
+def test_early_exit_exempts_any_benchmark_batch_not_just_batch_00000(gov_session, monkeypatch):
+    """#621: a FUTURE benchmark batch (id != batch_00000) must keep its full-census exemption. Keyed
+    on the literal, this district would have been handed early-exit targets and measured the shortcut
+    instead of the pipeline — precisely what REQ-151's exemption exists to prevent."""
+    gdb.init_precious_schema()
+    s = gov_session
+    BS.ensure_signal_schema(s)                    # district_target lives in the signal schema
+    _seed_batch(s, "batch_zz621_bm", "benchmark", "ZZ621BM")
+    _seed_batch(s, "batch_zz621_fr", "first-run", "ZZ621OK")
+    _seed_target(s, "ZZ621BM", ["elementary", "high"])
+    _seed_target(s, "ZZ621OK", ["elementary", "high"])
+    _use_test_session(monkeypatch, s)
+
+    out = R7._early_exit_targets(["ZZ621BM", "ZZ621OK"])
+    assert "ZZ621BM" not in out                   # benchmark: absent => full census, no early exit
+    assert out["ZZ621OK"] == {"elementary", "high"}   # ordinary district: unchanged behavior
+
+
+@govdb
+def test_early_exit_exempts_a_district_in_both_a_benchmark_and_a_production_batch(
+        gov_session, monkeypatch):
+    """Union semantics: membership in ANY benchmark batch exempts, even alongside production
+    membership. This is the shape epic #617's re-run campaign creates (a batch_00000 district that
+    later runs in a production follow-up batch), so pin today's behavior explicitly.
+
+    NOTE: #619 revisits whether this is still right once guards are provenance-scoped — a production
+    extraction of such a district is arguably not measuring GT and could take the early exit. That is
+    a deliberate follow-on decision, not something #621 changes."""
+    gdb.init_precious_schema()
+    s = gov_session
+    BS.ensure_signal_schema(s)
+    _seed_batch(s, "batch_zz621_bm2", "benchmark", "ZZ621BOTH")
+    _seed_batch(s, "batch_zz621_fu", "follow-up", "ZZ621BOTH")
+    _seed_target(s, "ZZ621BOTH", ["high"])
+    _use_test_session(monkeypatch, s)
+
+    assert R7._early_exit_targets(["ZZ621BOTH"]) == {}

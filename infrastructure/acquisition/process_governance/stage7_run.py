@@ -175,9 +175,15 @@ def _bands_mode_stable(accepted: list, bands, p: dict) -> bool:
 def _early_exit_targets(district_ids) -> dict:
     """{district_id: fillable target bands (claimed ∩ real)} for the #120 early-exit. A district is
     ABSENT (→ no early exit, the full census) when its district_target row is missing (unknown is
-    never assumed satisfied) or it belongs to batch_00000 (the benchmark wants the census — GT
-    scoring measures the pipeline, the shortcut would measure the shortcut). Failure degrades to {}
-    — disabling the exit, never blocking the run."""
+    never assumed satisfied) or it belongs to ANY batch_type='benchmark' batch (the benchmark wants
+    the census — GT scoring measures the pipeline, the shortcut would measure the shortcut). Failure
+    degrades to {} — disabling the exit, never blocking the run.
+
+    #621: this used to key on the `batch_00000` id LITERAL while every other benchmark guard keyed on
+    `batch_type` (server.py's own comment: "never the batch_00000 id literal — the GT corpus grows
+    into new benchmark batches"). A SECOND benchmark batch would silently have lost REQ-151's
+    full-census exemption and measured the shortcut instead of the pipeline. Latent while batch_00000
+    was the only benchmark batch; real as soon as epic #617 makes another one composable."""
     out: dict = {}
     ids = list(district_ids)
     if not ids:
@@ -185,8 +191,10 @@ def _early_exit_targets(district_ids) -> dict:
     try:
         with gdb.session_scope() as s:
             walled = {r[0] for r in s.execute(
-                text("SELECT district_id FROM batch_district WHERE batch_id = 'batch_00000' "
-                     "AND district_id = ANY(:d)"), {"d": ids}).all()}
+                text("SELECT DISTINCT bd.district_id FROM batch_district bd "
+                     "JOIN batch b ON b.batch_id = bd.batch_id "
+                     "WHERE b.batch_type = 'benchmark' AND bd.district_id = ANY(:d)"),
+                {"d": ids}).all()}
             rows = s.execute(
                 text("SELECT district_id, lea_claimed_bands_json, schools_by_band_json, "
                      "nces_by_level_json FROM district_target WHERE district_id = ANY(:d)"),
