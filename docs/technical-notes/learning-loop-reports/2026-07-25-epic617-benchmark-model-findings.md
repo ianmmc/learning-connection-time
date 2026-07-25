@@ -202,9 +202,27 @@ Council Lab opt-in, each with a named test —
 property-3 one, and `test_the_same_district_is_still_refused_on_its_stale_injected_rep` is its converse
 (rep-grain must not become a loophole).
 
-**Properties 1 and 2 remain open**, pending Phase 2c's composers and the generalized redo lever.
-Property 1's gap was subsequently clarified as *the missing composer, not the batch-type choice* — see
-§10.4.
+**Properties 1 and 2 are LANDED** (Phase 2c, §10.5): the targeted composer is reachable from
+`POST /api/queue/create` (and from the gate@1 console), and the redo lever is now a declared batch
+attribute. Named tests:
+`test_mobility_1_a_benchmark_batch_district_composes_a_targeted_follow_up_batch` and
+`test_mobility_2_an_attempted_district_composes_a_benchmark_batch_and_redoes`, with
+`test_the_drawn_composer_still_refuses_an_already_attempted_district` as the baseline that makes both
+meaningful. Demonstrated on real data too: Baldwin County (`0100270`, a batch_00000 district at
+`furthest_stage = 7`) is refused by `build_batch` and composed with all three bands by the targeted
+path. Property 1's gap was clarified along the way as *the missing composer, not the batch-type
+choice* — see §10.4.
+
+**All four mobility properties now hold.** The §7 plan's remaining phases (2d/2e onward) change what
+the guards *judge*, not what an operator can *express*.
+
+> **Correction to §3's property-2 finding.** It named **three** redo-lever sites (the two Stage-2/3
+> `merge=`/`redo=` call sites plus Stage 4's). There are **five**: `discover_stage2.py::reconcile`
+> holds the `followup` flag that makes the todo/skip decision *itself* — the most consequential of
+> the five, since the two `merge=` sites only matter for districts reconcile already admitted — and
+> the Stage-2 legacy CLI carries a sixth-of-a-kind copy of `merge=`. The undercount came from
+> grepping the call sites named in the epic rather than the whole `batch_type ==` surface; the same
+> mistake as §2's guard undercount, one axis over.
 
 ---
 
@@ -471,10 +489,15 @@ re-checked at implementation time.
 and `package_identity`'s reuse of it (read directly — it is what makes the staleness check free);
 `DispatchDraft`'s columns and `meta_json` comment; that identity is only ever compared fresh-vs-fresh
 (grepped, so no stored hash is invalidated); `capture.source` as the rep-grain signal and its five
-measured properties (§10.3); `seedFromPriorCaptures`'s verbatim carry-forward; and the three
-`batch_type == "follow-up"` redo-lever sites. The 1954/337/249/90 test counts in CLAUDE.md were also
-unverified at planning time and are now confirmed for the two suites this work touches: the DB-free
-suite started at **1954 passed / 1 skipped** and govdb at **337**, matching.
+measured properties (§10.3); `seedFromPriorCaptures`'s verbatim carry-forward; and the
+`batch_type == "follow-up"` redo-lever sites — ~~three~~ **five**, see the correction at the end of §3
+(the count above was wrong, and the missed site was the load-bearing one). The 1954/337/249/90 test
+counts in CLAUDE.md were also unverified at planning time and are now confirmed for the two suites
+this work touches: the DB-free suite started at **1954 passed / 1 skipped** and govdb at **337**,
+matching. The integration suite does **not** match: CLAUDE.md says 249, and the measured baseline —
+confirmed by stashing all of this branch's changes and re-running — is **252 passed / 149 skipped**.
+Pre-existing doc drift, not caused by this work; fold the correction into CLAUDE.md's
+resume-essentials when the epic lands.
 
 **Explicitly not verified**: that the 1954 / 337 / 249 / 90 test counts in CLAUDE.md still hold (no suite
 was run this session — the pass was read-only).
@@ -652,3 +675,81 @@ distinguishes a *decision* on a literal from a comment or display string mention
   when the prior "discovery" was injected). One wrinkle recorded for #620: follow-up normally targets
   *unsatisfied* bands and batch_00000's are largely satisfied, but `build_followup_batch` does not check
   satisfaction — it only drops bands with no NCES school coverage — so passing all real bands works.
+
+### 10.5 Phase 2c — batch mobility, the declared redo lever (commit `d8f4704`)
+
+Properties 1 and 2. Two plan corrections, one of them the most consequential finding of the phase.
+
+**CORRECTION — the plan's home for the predicate was import-illegal.** The plan specified
+`batch_store.batch_redoes_attempted(batch)`, in `stage1_queue`. But `stage1_queue` and
+`stage2_discover`/`3`/`4` are *siblings* in the layering contract's third layer (separated by `|` =
+independent, may not import each other), so none of the five call sites could have imported it. This
+was caught by reading `common/batch_guard.py`, whose docstring states the rule outright: *"a guard
+shared across stage2/3/4 must sit in the base layer."* The predicate went to
+`common/batch_types.py`. Cheap to catch by reading the neighbour that solved the same problem —
+expensive to catch after writing five call sites against an import that `lint-imports` then rejects.
+
+**CORRECTION — deriving redo from `batch_type` would have put the FIXED yardstick one click from
+corruption.** The plan said *"a batch-level predicate true for `follow-up` AND `benchmark`"*, which
+reads as a type derivation. Measured before implementing: all 27 batch_00000 districts hold frozen
+`discovery.json` + `candidates.json` on disk carrying their hand-verified `gt://` artifacts (27 of 116
+district dirs, `discovery.json.benchmark == true`). Under a type derivation, one Stage-2 run on
+batch_00000 — an *approved* batch, one console click, no special intent required — would have re-run
+discovery over all 27 and, because the same lever drives `merge=`, folded fresh SERP candidates into
+those frozen candidate sets. `benchmark_batch.inject_district`'s `FileExistsError` guard covers only
+the *initial* injection, so nothing else would have stopped it.
+
+The fix is the plan's own words taken literally — *"redo-eligibility becomes a declared batch
+attribute"* — with a three-valued read:
+
+| declared | reads as | who |
+|---|---|---|
+| `true` / `false` | believed, whatever the type | every new composer (`default_redo_attempted`) |
+| `NULL` / key absent | the historical `batch_type == 'follow-up'` rule | all 30 existing batch rows, every existing receipt |
+
+`redo_attempted` is therefore **nullable with no default and no backfill** — the opposite of #618's
+`dispatch_type` (`NOT NULL DEFAULT 'production'`), and deliberately so. `dispatch_type`'s two values
+are exhaustive and its default is the safe one; here the safe answer for an undeclared batch *depends
+on its type*, and a two-valued column would have had to pick one and be wrong for the other. Verified
+against the live governance DB after the ALTER: `benchmark 1 / first-run 10 / follow-up 19`, all
+`NULL`. The projection **omits** the key rather than emitting `null`, so every existing receipt
+regenerates byte-identically.
+
+**The falsification test the plan implied.** All suites passed with **zero fixture changes** —
+1987 DB-free / 352 govdb / 252 integration / 90 npm — which is the empirical form of the
+backward-compatibility claim, in the same spirit as Phase 5's "step 1 must pass with unchanged
+fixtures" gate. Had the fallback been wrong for any real batch, the stage suites would have said so.
+
+**The composer gap, and what `build_followup_batch` actually is.** The endpoint now routes any
+non-first-run type to it. The function is misnamed by history: it is **the targeted builder**, not
+the follow-up builder — the composer for any batch whose district list is *named* rather than
+*drawn*, which is follow-up and benchmark alike (only `batch_type` at persist differs). Recorded in
+its docstring rather than renamed, since the name has many callers and the risk is not worth the
+churn. `all_bands_targets` fills in the bands when the operator named only districts.
+
+Verified end-to-end on real data with **zero writes** — Baldwin County (`0100270`, batch_00000,
+`furthest_stage = 7`): `build_batch` returns `[]`, `build_followup_batch` composes it with all three
+bands and no skips, and both `follow-up` and `benchmark` declare `redoes_attempted → True`. The live
+`POST` was deliberately *not* run: `persist_batch` records `stage=1 queued` state events, which is
+precious-state mutation on a benchmark district and belongs to Phase 7's gated campaign, not to a
+mid-phase smoke test.
+
+**`batch_type` is now validated**, at `create_batch` — the one chokepoint every composer passes
+through (CLI, console, the 5→1 and 7→1 escalation builders, the benchmark injector). It shipped
+unconstrained with its legal values in a comment, which is precisely how the five literals became
+load-bearing; the same reasoning `validate_dispatch_type` recorded at #618.
+
+**Console.** gate@1's create dialog gains a batch-type selector and a re-run warning, and the review
+payload resolves `redo_attempted` (never the raw nullable column). The warning is the only place a
+human is told that approving a targeted batch spends on districts that already have artifacts — which
+is the ramp-up posture's requirement, not a nicety. Static-source pins only; no JS harness (§9).
+
+**Fitness function, falsified.** `test_no_stage_re_derives_the_redo_lever_from_a_batch_type_literal`
+is parametrized over the four files. Falsified by reverting `stage3_capture/headless.py` to
+`redo=batch.get("batch_type") == "follow-up")` — the test failed, and only that parametrization did.
+Per the §10.2 lesson, a fitness function nobody has falsified is decoration.
+
+**Generalizable lesson.** *When a plan says "a predicate true for A and B," check whether it means a
+derivation or a declaration.* Here the two differ only for batches that already exist — and that is
+exactly the population a derivation silently reclassifies. The declaration costs one nullable column
+and buys a guarantee that no historical batch changes behavior.
