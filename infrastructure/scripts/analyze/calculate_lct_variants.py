@@ -80,6 +80,7 @@ from infrastructure.database.school_year import (
     within_blend_window,
 )
 from infrastructure.database.models import (
+    STATUTORY_DEFAULT_MINUTES,
     District,
     BellSchedule,
     StateRequirement,
@@ -137,7 +138,7 @@ def get_statutory_minutes(session, state: str, grade_level: str) -> tuple[int, s
         m = state_req.get_minutes(grade_level)
         if m:
             return m, "state_requirement", None
-    return 360, "default", None
+    return STATUTORY_DEFAULT_MINUTES, "default", None   # #638: one policy home (models.py)
 
 
 def get_instructional_minutes(

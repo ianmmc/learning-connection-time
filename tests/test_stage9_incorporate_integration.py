@@ -259,6 +259,87 @@ def test_reapproval_correction_updates_in_place(env, monkeypatch):
     assert len(rows) == 1 and rows[0]["minutes"] == 430
 
 
+def _times(did, grade="elementary"):
+    from infrastructure.database.connection import session_scope as lct_scope
+    from infrastructure.database.models import BellSchedule
+    with lct_scope() as s:
+        r = (s.query(BellSchedule).filter(BellSchedule.district_id == did.zfill(7),
+                                          BellSchedule.grade_level == grade).first())
+        return (r.start_time, r.end_time, r.instructional_minutes, bool(r.human_vouched))
+
+
+def test_630_reapproval_to_mean_tiebreak_clears_stale_times(env, monkeypatch):
+    """#630: v1 modal band carries real consistent times; v2 re-approval over the SAME (year, grade)
+    key resolves mean_tiebreak — synthetic gross, receipt still carrying one school's times (a
+    pre-#627 frozen shape). The UPDATE must NOT merge-preserve v1's (or the receipt's) stale times:
+    the row lands minutes-only, and _verify_written now enforces the #627 invariant for council rows."""
+    _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 415, "year": "2024-25"}}),
+               approval_id=1)
+    INC.incorporate_district(env)
+    st, et, mins, _ = _times(env)
+    assert (st, et, mins) == ("08:00", "14:55", 415)   # v1: real, consistent times
+    # v2: same year key, mean_tiebreak 425 with a school's 415-span times (inconsistent → dropped)
+    ca2 = _fake_ca(env)
+    ca2["bands"]["elementary"] = {
+        "gross_minutes": 425, "start_time": "08:00", "end_time": "14:55", "method": "mean_tiebreak",
+        "sampling": {"n_sampled": 2, "n_total": 2, "coverage": 1.0, "plurality_share": 0.5},
+        "schools": [
+            {"school": "oak", "gross": 415, "start_time": "08:00", "end_time": "14:55",
+             "school_year": "2024-25", "models": ["m1", "m2"], "evidence": {"url": "https://d.org/oak"}},
+            {"school": "elm", "gross": 435, "start_time": "07:55", "end_time": "15:10",
+             "school_year": "2024-25", "models": ["m1", "m2"], "evidence": {"url": "https://d.org/elm"}}]}
+    _patch_gov(monkeypatch, ca2, approval_id=2)
+    res = INC.incorporate_district(env)
+    assert res.status == "incorporated"
+    st, et, mins, _ = _times(env)
+    assert (st, et, mins) == (None, None, 425), \
+        f"stale times survived the UPDATE (#630): ({st!r}, {et!r}, {mins})"
+
+
+def test_631_mapper_version_mismatch_triggers_rewrite(env, monkeypatch):
+    """#631: an incorporation recorded under an older (or absent, pre-#631) MAPPING_VERSION is NOT
+    'already_incorporated' — a plain re-run applies the current mapper's writes. A same-version
+    re-run stays a no-op."""
+    ca = _fake_ca(env, council={"elementary": {"gross": 420}})
+    _patch_gov(monkeypatch, ca)
+    assert INC.incorporate_district(env).status == "incorporated"
+    assert INC.incorporate_district(env).status == "already_incorporated"
+    # simulate a pre-#631 ledger event: strip the recorded mapper from the newest stamp
+    with gdb.session_scope() as gs:
+        row = gs.execute(text(
+            "SELECT event_id, fingerprints_json FROM state_event "
+            "WHERE district_id=:d AND checkpoint='incorporated' ORDER BY event_id DESC LIMIT 1"),
+            {"d": env}).mappings().first()
+        fp = json.loads(row["fingerprints_json"])
+        fp.pop("mapper", None)
+        gs.execute(text("UPDATE state_event SET fingerprints_json=:j WHERE event_id=:e"),
+                   {"j": json.dumps(fp), "e": row["event_id"]})
+    res = INC.incorporate_district(env)   # NO --force
+    assert res.status == "incorporated", "a mapper-version mismatch must re-write without --force"
+    assert INC.incorporate_district(env).status == "already_incorporated"
+
+
+def test_636_vouched_band_lands_on_bell_schedules(env, monkeypatch):
+    """#636: the gate@8 vouch is persisted on bell_schedules (the band source of truth), not only
+    on the projection — a note-only human_override on an included school sets it; a plain council
+    band leaves it False."""
+    ca = _fake_ca(env, council={"elementary": {"gross": 420}, "high": {"gross": 430}})
+    ca["bands"]["elementary"]["schools"][0]["human_override"] = {
+        "start_time": None, "end_time": None, "reason": "verified by eye", "actor": "ian"}
+    _patch_gov(monkeypatch, ca)
+    INC.incorporate_district(env)
+    assert _times(env, "elementary")[3] is True
+    assert _times(env, "high")[3] is False
+    # and the projection inherits per owning band
+    from infrastructure.database.connection import session_scope as lct_scope
+    from infrastructure.database.models import DistrictGradeMinutes
+    with lct_scope() as s:
+        by_grade = {r.grade: r.human_vouched for r in
+                    s.query(DistrictGradeMinutes)
+                    .filter(DistrictGradeMinutes.district_id == env.zfill(7)).all()}
+    assert by_grade["03"] is True and by_grade["10"] is False
+
+
 # ----------------------------- #605 per-grade projection -----------------------------
 def test_per_grade_projection_written(env, monkeypatch):
     # council elementary + high (fake CA has empty slot_projection -> canonical fallback:

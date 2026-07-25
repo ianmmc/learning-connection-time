@@ -139,6 +139,38 @@ def test_626_vouched_does_not_rescue_a_non_vouched_stale_sibling():
     assert source == "per_grade_statutory"
 
 
+def test_638_grade_band_split_matches_school_sampling_bands():
+    """#638 fitness: per_grade_lct's LCT-side grade→band vocabulary (GRADES/ELEM_GRADES/SEC_GRADES/
+    _CANON_BAND) is a second copy of school_sampling's BANDS/GRADE_ORD, forced apart by the
+    import-linter boundary (LCT-side must not import acquisition code — so THIS TEST is the pin).
+    If the band boundaries ever move in school_sampling.BANDS, Stage 9 would project a grade into
+    one band while weighted_scope_minutes weights it into a different scope — silent LCT drift."""
+    from infrastructure.acquisition.common.school_sampling import BANDS, GRADE_ORD
+    # same grade-token vocabulary (school_sampling additionally knows PK/13, outside LCT range)
+    assert set(PGL.GRADES) <= set(GRADE_ORD)
+    for g in PGL.GRADES:
+        owning = [b for b, rng in BANDS.items() if GRADE_ORD[g] in rng]
+        assert owning == [PGL._CANON_BAND[g]], (
+            f"grade {g}: school_sampling.BANDS says {owning}, per_grade_lct._CANON_BAND says "
+            f"{PGL._CANON_BAND[g]} — the two grade→band definitions diverged (#638)")
+    # the scope split is the same partition
+    assert PGL.ELEM_GRADES == [g for g in PGL.GRADES if PGL._CANON_BAND[g] == "elementary"]
+    assert PGL.SEC_GRADES == [g for g in PGL.GRADES if PGL._CANON_BAND[g] in ("middle", "high")]
+    assert PGL.ELEM_GRADES + PGL.SEC_GRADES == PGL.GRADES
+
+
+def test_638_statutory_default_single_home():
+    """#638: the statutory last-resort default has ONE policy home (models.STATUTORY_DEFAULT_MINUTES);
+    both consumers import it rather than carrying independent literals."""
+    from infrastructure.database.models import STATUTORY_DEFAULT_MINUTES
+    from infrastructure.acquisition.stage9_incorporate import incorporate as INC
+    assert INC.STATUTORY_DEFAULT_MINUTES is STATUTORY_DEFAULT_MINUTES
+    import inspect
+    from infrastructure.scripts.analyze import calculate_lct_variants as CLV
+    src = inspect.getsource(CLV.get_statutory_minutes)
+    assert "STATUTORY_DEFAULT_MINUTES" in src and "return 360" not in src
+
+
 def test_zero_enrollment_returns_none():
     enr = _enr(**{g: 0 for g in PGL.SEC_GRADES})
     assert PGL.weighted_scope_minutes(None, "XX", PGL.SEC_GRADES, enr, _gm({}), ["2024-25"], _get_statutory) is None

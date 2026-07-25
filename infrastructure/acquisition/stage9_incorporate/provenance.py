@@ -10,7 +10,7 @@ import json
 from collections import Counter
 from typing import Optional
 
-from infrastructure.acquisition.common.timeutil import utcnow
+from infrastructure.acquisition.common.timeutil import hhmm_to_min, utcnow
 from infrastructure.utilities.school_year import (
     content_school_year,
     current_school_year,
@@ -20,8 +20,13 @@ from infrastructure.utilities.school_year import (
 
 # ----------------------------- year resolution -----------------------------
 def band_school_years(band: dict) -> list:
-    """The per-school stated school_year readings (#254) present in a band, non-null."""
-    return [s.get("school_year") for s in band.get("schools", []) if s.get("school_year")]
+    """The per-school stated school_year readings (#254) present in a band, non-null. INCLUDED
+    schools only (#632): a struck/excluded school was removed from the band's value, so its stated
+    year must not enter the band-consensus vintage — the same excluded-filter its siblings
+    `_representative_urls`/`band_human_vouched` already apply (a 2016-17 reading on an excluded
+    school would otherwise hijack precedence-1 and force the scope to statutory)."""
+    return [s.get("school_year") for s in band.get("schools", [])
+            if s.get("school_year") and not s.get("excluded")]
 
 
 def band_human_vouched(band: dict) -> bool:
@@ -88,17 +93,6 @@ def resolve_schedule_year(band: dict, urls: Optional[list] = None) -> tuple:
 
 
 # ----------------------------- band-times consistency (#627) -----------------------------
-def _hhmm_to_min(t: Optional[str]) -> Optional[int]:
-    """HH:MM -> minutes-since-midnight, or None if absent/unparseable."""
-    if not t or ":" not in str(t):
-        return None
-    try:
-        h, m = str(t).split(":")[:2]
-        return int(h) * 60 + int(m)
-    except (ValueError, TypeError):
-        return None
-
-
 def times_consistent(start: Optional[str], end: Optional[str], gross: Optional[int]) -> bool:
     """#627: are a band's representative (start,end) internally consistent with its gross?
     True when a time is absent/unparseable or gross is None (nothing to contradict), else span
@@ -107,7 +101,7 @@ def times_consistent(start: Optional[str], end: Optional[str], gross: Optional[i
     fails Stage 9's bell_schedules cross-check (minutes ≤ end−start). plan_writes drops the times
     when this returns False, healing receipts frozen before the aggregate.py fix (new receipts
     already omit them). The original synthetic band stays intact in raw_import.receipt_band."""
-    sm, em = _hhmm_to_min(start), _hhmm_to_min(end)
+    sm, em = hhmm_to_min(start), hhmm_to_min(end)
     if sm is None or em is None or gross is None:
         return True
     return (em - sm) == gross
@@ -115,9 +109,14 @@ def times_consistent(start: Optional[str], end: Optional[str], gross: Optional[i
 
 # ----------------------------- provenance field builders -----------------------------
 def collect_source_urls(band: dict) -> list:
-    """Dedup of each included school's winning-evidence URL (order-stable)."""
+    """Dedup of each included school's winning-evidence URL (order-stable). The docstring always
+    said INCLUDED; #632 made the code enforce it — an excluded school's URL is not a source of the
+    band's value (it also rides into resolve_schedule_year's fallback, where a struck school's
+    stale URL year must not set the vintage)."""
     seen, out = set(), []
     for s in band.get("schools", []):
+        if s.get("excluded"):
+            continue
         ev = s.get("evidence")
         u = ev.get("url") if isinstance(ev, dict) else None
         if u and u not in seen:

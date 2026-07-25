@@ -143,6 +143,13 @@ class District(Base):
         }
 
 
+# #638: THE statutory last-resort default (minutes/day) when a state has no StateRequirement row
+# or the row carries no value for the band. ONE policy home — previously an independent literal in
+# stage9 incorporate._statutory_minutes AND calculate_lct_variants.get_statutory_minutes, which
+# agreed only by coincidence. Both callers import this.
+STATUTORY_DEFAULT_MINUTES = 360
+
+
 class StateRequirement(Base):
     """
     State statutory requirements for instructional time.
@@ -280,6 +287,10 @@ class BellSchedule(Base):
     # 'statutory' = state statutory-minimum fallback;
     # NULL = unlabeled pre-pipeline legacy row, slated for removal (do NOT backfill).
     minutes_basis: Mapped[Optional[str]] = mapped_column(String(30))
+    # #626/#636: a human vouched for this band at gate@8 (override note / applied times-override /
+    # hand-added cited fact) — exempts the band's vintage from the REQ-026 blend window. THIS row
+    # is the source of truth; district_grade_minutes.human_vouched is its projection (migration 028).
+    human_vouched: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     source_description: Mapped[Optional[str]] = mapped_column(Text)
     notes: Mapped[Optional[str]] = mapped_column(Text)
 
@@ -366,10 +377,11 @@ class DistrictGradeMinutes(Base):
     method: Mapped[str] = mapped_column(String(30), nullable=False)        # council_extraction|statutory_fallback
     minutes_basis: Mapped[Optional[str]] = mapped_column(String(30))
     year: Mapped[Optional[str]] = mapped_column(String(10))
-    # #626: a band a human vouched for at gate@8 (an override note, an applied times-override, or a
-    # hand-added cited fact) is treated as equivalent to an in-temporal-window schedule — the LCT calc
-    # exempts a vouched grade's `year` from the REQ-026 blend-window test (the auditable human
-    # determination stands in for a current vintage). Set at incorporation from the frozen receipt.
+    # #626: a band a human vouched for at gate@8 is treated as equivalent to an in-temporal-window
+    # schedule — the LCT calc exempts a vouched grade's `year` from the REQ-026 blend-window test.
+    # PROJECTION of bell_schedules.human_vouched (the source of truth, #636/migration 028): set at
+    # incorporation from the owning band's write, so the regenerable-from-bell_schedules contract
+    # in this table's docstring holds for this column too.
     human_vouched: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     overlap_flag: Mapped[Optional[str]] = mapped_column(Text)
     provenance = Column(JSONB)

@@ -107,12 +107,8 @@ import re as _re
 # one home in common (REQ-117). See common.school_match.
 from infrastructure.acquisition.common.school_match import norm_school as _norm_school
 from infrastructure.acquisition.common.school_match import norm_school_strict as _norm_school_strict
-
-def _to_min(t):
-    if not t: return None
-    m = _re.match(r"\s*(\d{1,2}):(\d{2})", str(t))
-    if not m: return None
-    return int(m.group(1)) * 60 + int(m.group(2))
+# #638: ONE canonical HH:MM parser (was a private copy here + another in stage9 provenance).
+from infrastructure.acquisition.common.timeutil import hhmm_to_min as _to_min
 
 def is_plausible(gross):
     """THE plausibility gate (REQ-055): is a gross bell-to-bell minutes/day value inside PLAUSIBLE?

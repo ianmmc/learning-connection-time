@@ -119,6 +119,9 @@ def weighted_scope_minutes(session, state: str, scope_grades: list, enr, gm_map:
             den += e
         if den == 0:
             return None
+        # #639 considered-and-kept: Python round() (banker's, half-to-even) — the same rounding
+        # stage 8's aggregate_band applies to mean_tiebreak; a half-up here would make the two
+        # stages disagree on exact-.5 values. Effect is ≤1 minute on a rare exact half.
         return round(num / den), n_measured, n_statutory, measured_years, window_years
 
     first = _weighted(force_statutory=False)

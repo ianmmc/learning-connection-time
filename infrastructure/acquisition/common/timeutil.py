@@ -8,7 +8,24 @@ Two formats were each hand-rolled ~identically across the stages:
 Both intentionally second-resolution and Zulu-suffixed. Importing from here keeps the format from
 drifting between stages (a mixed format would break the ≤3-year temporal comparisons + filename sorts).
 """
+import re as _re
 from datetime import datetime, timezone
+from typing import Optional
+
+
+def hhmm_to_min(t) -> Optional[int]:
+    """Canonical 'HH:MM' (24h) → minutes-since-midnight, or None if absent/unparseable (#638).
+    ONE parser for the pipeline's canonical clock strings — previously duplicated as
+    stage8_aggregate.aggregate._to_min and stage9_incorporate.provenance._hhmm_to_min (a third
+    near-miss, build_signals.to_minutes, is a DIFFERENT function: pre-split ints + meridiem
+    heuristics for raw-text extraction, deliberately not unified). Tolerant of surrounding
+    whitespace/suffixes via prefix match, same as the original aggregate regex."""
+    if not t:
+        return None
+    m = _re.match(r"\s*(\d{1,2}):(\d{2})", str(t))
+    if not m:
+        return None
+    return int(m.group(1)) * 60 + int(m.group(2))
 
 
 def utcnow() -> str:

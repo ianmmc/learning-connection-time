@@ -63,6 +63,34 @@ def test_triage_groups_classes_and_flags(client):
                     con.execute(text(f"DELETE FROM {t} WHERE district_id LIKE 'ZZFT%'"))
 
 
+def test_634_scalar_fidelity_json_degrades_never_500s(client):
+    """#634: a JSON SCALAR fidelity_json (e.g. the bare string `"login_wall"`) passes the WHERE
+    filter but has no .keys(); the endpoint's contract is 'never a 500' — it must degrade (treat
+    the scalar as its own class) instead of AttributeError'ing the gate@5 triage panel."""
+    from contextlib import closing
+    from infrastructure.acquisition.common import cache_ingest as CI
+    eng = gdb.get_engine()
+    with closing(eng.connect()) as con:
+        with con.begin():
+            from sqlalchemy.orm import Session
+            s = Session(bind=con)
+            CI.ensure_cache_schema(s)
+            s.execute(text("DELETE FROM capture WHERE district_id = 'ZZFT8'"))
+            s.execute(text("INSERT INTO capture (district_id, hash, url, fidelity_json) VALUES "
+                           "('ZZFT8', 'h1', 'https://s/1', '\"login_wall\"'), "   # JSON scalar string
+                           "('ZZFT8', 'h2', 'https://s/2', '7')"))                # JSON scalar number
+            s.flush()
+    try:
+        r = client.get("/api/fidelity-triage")
+        assert r.status_code == 200, f"scalar fidelity_json 500'd the triage endpoint: {r.text[:200]}"
+        b = next(x for x in r.json()["districts"] if x["district_id"] == "ZZFT8")
+        assert b["classes"] == {"login_wall": 1}   # string scalar = its own class; number = no signal
+    finally:
+        with closing(eng.connect()) as con:
+            with con.begin():
+                con.execute(text("DELETE FROM capture WHERE district_id = 'ZZFT8'"))
+
+
 def test_triage_row_listing_is_bounded(client):
     from contextlib import closing
     from infrastructure.acquisition.common import cache_ingest as CI

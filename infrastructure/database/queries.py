@@ -197,6 +197,7 @@ def add_bell_schedule(
     notes: Optional[str] = None,
     raw_import: Optional[Dict] = None,
     created_by: str = "claude",
+    human_vouched: Optional[bool] = None,   # #636: None = unspecified (preserve on update, False on create)
 ) -> BellSchedule:
     """
     Add or update a bell schedule record.
@@ -274,6 +275,8 @@ def add_bell_schedule(
             existing.notes = notes
         if raw_import is not None:
             existing.raw_import = raw_import
+        if human_vouched is not None:
+            existing.human_vouched = human_vouched   # #626/#636 gate@8 vouch, band source of truth
         existing.confidence = confidence
         existing.method = method
         existing.minutes_basis = minutes_basis
@@ -300,6 +303,7 @@ def add_bell_schedule(
             source_description=source_description,
             notes=notes,
             raw_import=raw_import,
+            human_vouched=bool(human_vouched),
         )
         session.add(schedule)
         operation = "create"

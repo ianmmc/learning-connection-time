@@ -707,6 +707,9 @@ def _gate8_refresh_twin_and_receipt(con, district_id, meta, ca, *, disposition, 
     stage8_approval row + its JSON twin are authoritative, so a disk/twin hiccup is logged, never a
     failed (already-committed) decision. Commit-before-receipt: the caller has already committed."""
     try:
+        # #637 considered-and-kept: a full export here is O(ever-attempted districts), NOT O(all
+        # ~17k) — measured 171 districts / 0.33s (2026-07-25) behind a human-paced decision click.
+        # Revisit (incremental single-district rewrite) only if the attempted corpus grows ~10×.
         DS.export_status(con)
     except Exception as e:  # noqa: BLE001 — the twin is regenerable; never fail a committed decision
         print(f"[warn] gate@8 district_status.json refresh failed for {district_id} "
@@ -1466,7 +1469,15 @@ def fidelity_triage():
         out = []
         try:
             v = json.loads(fj) if fj else []
-            out += list(v) if isinstance(v, list) else list(v.keys())
+            if isinstance(v, list):
+                out += [str(x) for x in v]
+            elif isinstance(v, dict):
+                out += list(v.keys())
+            elif isinstance(v, str) and v:
+                # #634: a scalar fidelity_json (e.g. `"login_wall"`) passes the WHERE filter but
+                # has no .keys() — treat it as its own single class instead of 500ing an endpoint
+                # documented "never a 500". Other scalars (numbers/bools) carry no class signal.
+                out.append(v)
         except (TypeError, ValueError):
             pass
         if err and str(err).startswith("security_block"):
@@ -1764,9 +1775,12 @@ def _run_stage4_subprocess(batch: dict, *, actor: str = "auto:stage4", on_event=
         summary = None
         control_failure = None
         error = None
+        returncode = None
         with open(log_path, "w") as errf:
+            # errors="replace": the child wraps native camelot/PDFium code that can emit non-UTF-8
+            # bytes on fd1 — a strict decode would raise mid-stream (#633); degrade, don't die.
             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=errf, text=True,
-                                    start_new_session=True)
+                                    errors="replace", start_new_session=True)
             with _SUBPROC_GUARD:
                 _SUBPROCESSES.add(proc)
             try:
@@ -1789,6 +1803,16 @@ def _run_stage4_subprocess(batch: dict, *, actor: str = "auto:stage4", on_event=
                         on_event(kind, payload)
                 returncode = proc.wait()
             finally:
+                # #633: if the stream loop raised (on_event callback, KeyboardInterrupt, read
+                # error), returncode was never reached — kill the child BEFORE discarding it from
+                # the tracked set, or the detached (start_new_session=True) process outlives us
+                # invisible to the shutdown kill-sweep.
+                if returncode is None:
+                    try:
+                        proc.kill()
+                        proc.wait(timeout=10)
+                    except (OSError, subprocess.TimeoutExpired):
+                        pass
                 with _SUBPROC_GUARD:
                     _SUBPROCESSES.discard(proc)
     finally:

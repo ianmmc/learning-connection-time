@@ -144,6 +144,67 @@ def test_626_part2_representative_url_year_is_kept_when_it_is_the_value_source()
     assert (year, basis) == ("2023-24", "content_url")
 
 
+# ----------------------------- #632 excluded schools & vintage -----------------------------
+def test_632_excluded_school_year_does_not_hijack_band_consensus():
+    """#632: a struck/excluded school was removed from the band's VALUE, so its stated school_year
+    must not enter the precedence-1 band-consensus vintage. Included school states no year; the
+    excluded one states 2016-17 → the band falls through to current, never 2016-17."""
+    from infrastructure.utilities.school_year import current_school_year
+    band = {"gross_minutes": 420, "schools": [
+        {"school": "central ms", "gross": 420, "school_year": None,
+         "evidence": {"url": "https://d.org/bells"}},
+        {"school": "old jh", "gross": 425, "school_year": "2016-17",
+         "evidence": {"url": "https://d.org/2016-17/old.pdf"}, "excluded": {"reason": "closed"}}]}
+    year, basis = P.resolve_schedule_year(band, P.collect_source_urls(band))
+    assert (year, basis) == (current_school_year(), "default_current")
+
+
+def test_632_excluded_school_url_not_a_source():
+    """collect_source_urls' docstring always said INCLUDED schools; #632 made the code enforce it."""
+    band = {"schools": [
+        {"school": "a", "evidence": {"url": "https://d.org/live"}},
+        {"school": "b", "evidence": {"url": "https://d.org/struck"}, "excluded": {"reason": "x"}}]}
+    assert P.collect_source_urls(band) == ["https://d.org/live"]
+
+
+def test_632_included_school_years_still_reach_consensus():
+    """Mirror guard: included schools' stated years still form the precedence-1 consensus."""
+    band = {"gross_minutes": 400, "schools": [
+        {"school": "a", "gross": 400, "school_year": "2024-25"},
+        {"school": "b", "gross": 400, "school_year": "2024-25"},
+        {"school": "c", "gross": 405, "school_year": "2016-17",
+         "excluded": {"reason": "closed"}}]}
+    assert P.resolve_schedule_year(band) == ("2024-25", "band_consensus")
+
+
+# ----------------------------- #631 mapping version -----------------------------
+def test_631_mapping_version_exists_and_rides_the_ledger():
+    """#631: the idempotency key is (facts fingerprint, MAPPING_VERSION). The constant must exist,
+    and ledger.record_incorporation must persist whatever `mapper` it is given so a plain re-run
+    after a mapper fix re-writes (source-pinned; the DB round-trip is covered by the govdb suite)."""
+    assert isinstance(MAP.MAPPING_VERSION, int) and MAP.MAPPING_VERSION >= 1
+    import inspect
+    from infrastructure.acquisition.stage9_incorporate import ledger as LG
+    assert '"mapper": mapper' in inspect.getsource(LG.record_incorporation)
+    from infrastructure.acquisition.stage9_incorporate import incorporate as INC
+    src = inspect.getsource(INC.incorporate_district)
+    assert 'inc.get("mapper") == MAP.MAPPING_VERSION' in src
+
+
+# ----------------------------- #638 shared HH:MM parser -----------------------------
+def test_638_one_hhmm_parser():
+    """#638: aggregate._to_min and provenance's times_consistent both resolve to the ONE
+    timeutil.hhmm_to_min (no third private copy)."""
+    from infrastructure.acquisition.common.timeutil import hhmm_to_min
+    from infrastructure.acquisition.stage8_aggregate import aggregate as AGG
+    assert AGG._to_min is hhmm_to_min
+    assert hhmm_to_min("07:40") == 460 and hhmm_to_min(None) is None
+    assert hhmm_to_min("7:40") == 460 and hhmm_to_min("garbage") is None
+    # times_consistent semantics unchanged through the swap
+    assert P.times_consistent("07:25", "14:20", 415) is True
+    assert P.times_consistent("07:25", "14:20", 425) is False
+
+
 # ----------------------------- statutory fallback (#94) -----------------------------
 def test_unsatisfied_band_maps_to_statutory():
     # High is CLAIMED (NCES has High schools) but has no accepted facts -> unsatisfied.

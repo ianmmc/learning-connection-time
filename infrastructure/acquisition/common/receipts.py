@@ -55,6 +55,15 @@ def _capture_root() -> Path:
     return root
 
 
+# #637: memo for district_capture_dir's glob resolution — the glob is an O(dir-entries) scandir of
+# the whole RAW_CAPTURES root, and the server's receipt writers/readers (write_receipt,
+# iter_receipts) hit it once per district per pass. Keyed on (root, district_id) so a
+# pytest-monkeypatched root never leaks across tests. ONLY a glob-RESOLVED existing dir is cached:
+# caching the constructed fallback would pin a long-running server to a dir that a later Node-side
+# capture (which slugs the name itself) never creates — a reader would then miss real receipts.
+_dir_memo: dict = {}
+
+
 def district_capture_dir(district_id: str, name: str = "") -> Path:
     """The district's ``lea-website-captures/`` dir. The dir is ``<district_id>_<slug>`` and
     ``district_id`` is the REAL disambiguator (the slug is human-readability only -- slugify's own
@@ -64,9 +73,14 @@ def district_capture_dir(district_id: str, name: str = "") -> Path:
     to constructing ``<district_id>_<slug>`` from ``name`` when no dir exists yet (first write). Kept in
     ``common/`` so no stage module is imported (import-linter layering)."""
     root = _capture_root()
+    key = (str(root), district_id)
+    hit = _dir_memo.get(key)
+    if hit is not None:
+        return hit
     if root.is_dir():
         existing = sorted(root.glob(f"{district_id}_*"))
         if existing:
+            _dir_memo[key] = existing[0]
             return existing[0]
     return root / f"{district_id}_{slugify(name)}"
 

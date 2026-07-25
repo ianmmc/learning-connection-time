@@ -104,8 +104,11 @@ def stage4_attribution(con, district_ids=None) -> dict:
         WHERE l.primary_label = ANY(:t){clause}"""), {"t": list(TARGET), **params})]
     winning: dict = defaultdict(int)
     n_target_records = 0
+    # #637: ONE bulk load for all target districts (was a per-district load_district_records loop —
+    # an N+1 over the labeled TARGET corpus, growing with every labeled district).
+    records_by_did = REL.load_districts_records(con, sorted(target_dids))
     for did in sorted(target_dids):
-        for rec in REL.load_district_records(con, did):
+        for rec in records_by_did.get(did, []):
             if rec.get("label") not in TARGET:
                 continue
             n_target_records += 1

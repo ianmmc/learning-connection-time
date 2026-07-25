@@ -13,6 +13,15 @@ from typing import Optional
 
 from infrastructure.acquisition.stage9_incorporate import provenance as P
 
+# #631: version of the receipt→writes mapping logic (this module + provenance.py + per_grade.py).
+# Stage 9's idempotency key is (facts_fingerprint, MAPPING_VERSION): the frozen receipt can be
+# unchanged while a mapper/provenance/projection fix changes what SHOULD be written (#627's
+# times-drop, #626's human_vouched/vintage derivation) — without this, such a fix is silently
+# inert on already-incorporated districts unless --force. BUMP on ANY change to plan_writes,
+# provenance derivation, or the per-grade projection that alters the planned writes; a version
+# mismatch makes a plain re-run re-write (idempotent UPSERTs, so re-writing is always safe).
+MAPPING_VERSION = 1
+
 
 @dataclass
 class BandWrite:

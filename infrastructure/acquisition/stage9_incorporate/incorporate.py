@@ -38,17 +38,20 @@ from infrastructure.acquisition.stage8_aggregate import closing_argument as CA
 from infrastructure.acquisition.stage9_incorporate import ledger as LEDGER
 from infrastructure.acquisition.stage9_incorporate import mapping as MAP
 from infrastructure.acquisition.stage9_incorporate import per_grade as PG
+from infrastructure.acquisition.stage9_incorporate import provenance as P
 
 # The sanctioned cross-DB imports (import-linter ignore_imports #2, pyproject.toml):
 from infrastructure.database import queries as Q
 from infrastructure.database.connection import session_scope as lct_session_scope
-from infrastructure.database.models import BellSchedule, DistrictGradeMinutes
+from infrastructure.database.models import (
+    STATUTORY_DEFAULT_MINUTES,   # #638: one policy home (models.py, next to StateRequirement)
+    BellSchedule,
+    DistrictGradeMinutes,
+)
 
 # Methods that mark a `bell_schedules` row as Stage-9-authored (there is no created_by column) — the
 # orphan-reconcile scope AND the overwrite boundary: any other method is a protected legacy row.
 STAGE9_METHODS = ("council_extraction", "statutory_fallback")
-
-STATUTORY_DEFAULT_MINUTES = 360
 
 _schemas_ensured = False
 
@@ -175,8 +178,10 @@ def _foreign_collisions(session, stored_did: str, writes: list) -> list:
 
 def _verify_written(session, stored_did: str, writes: list) -> None:
     """Rule #6 — re-query each intended row IN THE SAME session and assert minutes/method/basis
-    (and, for statutory rows, that no council-era clock times survived) before commit. Raises on
-    any absence or mismatch (rolls the whole write back)."""
+    AND clock times before commit. Raises on any absence or mismatch (rolls the whole write back).
+    #630 widened the times check from statutory-only to ALL rows (faithful == the planned write,
+    None included) plus the #627 internal-consistency invariant on council rows — a stale
+    merge-preserved time can no longer survive a re-incorporation undetected."""
     for w in writes:
         row = (session.query(BellSchedule)
                .filter(BellSchedule.district_id == stored_did,
@@ -192,10 +197,18 @@ def _verify_written(session, stored_did: str, writes: list) -> None:
                 f"Stage 9 verify mismatch for {stored_did}/{w.year}/{w.grade_level}: "
                 f"db=({row.instructional_minutes},{row.method},{row.minutes_basis}) "
                 f"expected=({w.minutes},{w.method},{w.minutes_basis})")
-        if row.method == "statutory_fallback" and (row.start_time or row.end_time):
+        if row.start_time != w.start_time or row.end_time != w.end_time:
             raise RuntimeError(
-                f"Stage 9 verify: statutory row {stored_did}/{w.year}/{w.grade_level} carries "
-                f"clock times ({row.start_time!r}, {row.end_time!r}) — must be cleared")
+                f"Stage 9 verify: {stored_did}/{w.year}/{w.grade_level} clock times "
+                f"db=({row.start_time!r},{row.end_time!r}) != planned "
+                f"({w.start_time!r},{w.end_time!r}) — stale times survived the write (#630)")
+        if (row.method == "council_extraction"
+                and not P.times_consistent(row.start_time, row.end_time,
+                                           row.instructional_minutes)):
+            raise RuntimeError(
+                f"Stage 9 verify: council row {stored_did}/{w.year}/{w.grade_level} is internally "
+                f"inconsistent (#627): minutes={row.instructional_minutes} != span of "
+                f"({row.start_time!r},{row.end_time!r})")
 
 
 def _verify_grade_minutes(session, stored_did: str, grade_minutes: list) -> None:
@@ -267,7 +280,12 @@ def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, for
         # slot_projection, and roster coverage is derived-live-never-frozen by design.
         grade_span_source = ca_live
         inc = LEDGER.latest_incorporation(gs, district_id)
-        already = bool(inc and inc.get("fingerprint") == fp_live)
+        # #631: idempotency key = (facts fingerprint, mapping version). A mapper/provenance/
+        # projection fix changes the WRITES without touching the frozen receipt; requiring the
+        # recorded MAPPING_VERSION to match makes a plain re-run apply the corrected writes
+        # (pre-#631 events carry mapper=None → treated as stale once, then re-stamped).
+        already = bool(inc and inc.get("fingerprint") == fp_live
+                       and inc.get("mapper") == MAP.MAPPING_VERSION)
 
     if already and not force:
         return IncorporationResult(district_id, "already_incorporated", fingerprint=fp_live)
@@ -330,13 +348,17 @@ def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, for
                 schools_sampled=w.schools_sampled, source_urls=w.source_urls,
                 confidence=w.confidence, method=w.method, minutes_basis=w.minutes_basis,
                 source_description=w.source_description, notes=w.notes,
-                raw_import=w.raw_import, created_by=actor)
-            if w.method == "statutory_fallback":
-                # A council→statutory flip over the SAME key (council's consensus year == current
-                # year) hits add_bell_schedule's UPDATE path, which preserves the old None-args
-                # times — the retracted council times must not survive on a statutory row.
-                schedule.start_time = None
-                schedule.end_time = None
+                raw_import=w.raw_import, created_by=actor,
+                human_vouched=w.human_vouched)   # #636: band source of truth for the #626 vouch
+            # #630: a BandWrite is the COMPLETE intended row state — assign times faithfully,
+            # including None. add_bell_schedule's UPDATE path merge-preserves on None args (issue
+            # #26 partial-update semantics, right for other callers), which here let stale times
+            # survive two flips over the same key: council→statutory (the retracted council times
+            # on a statutory row) and modal→mean_tiebreak (#627: a synthetic gross next to the old
+            # school's times — gross != span on the source-of-truth table, undetected). Stage 9
+            # owns its rows; the planned write IS the truth.
+            schedule.start_time = w.start_time
+            schedule.end_time = w.end_time
         ls.flush()
         _reconcile_stage9_orphans(ls, stored_did, keep={(w.year, w.grade_level) for w in writes})
         _verify_written(ls, stored_did, writes)
@@ -361,7 +383,7 @@ def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, for
         "n_grades": n_grades, "n_overlaps": n_overlaps}
     with gdb.session_scope() as gs:
         LEDGER.record_incorporation(gs, district_id, fingerprint=fp_live, approval_id=approval_id,
-                                    bands=bands, actor=actor)
+                                    bands=bands, actor=actor, mapper=MAP.MAPPING_VERSION)
         gs.commit()                          # commit-before-derive: persist the stamp before the twin
         if refresh_twin:
             _refresh_status_twin(gs)         # #615: standalone exports here; batch exports once at end
