@@ -135,52 +135,33 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-24): REQ-164 receipts COMPLETE on `feat/pipeline-receipts-req164` (unmerged,
-staying on-branch per Ian); Stage 9 campaign COMPLETE at 38/38 incorporated (#627 fixed 2026-07-24 →
-Midview + Millard in; full LCT recompute clean, exit 0, both on `per_grade_bell`).** The branch
-carries stages 5-9 always-stamped `stage<N>_<stage_name>` receipts via the ONE shared writer, the **#616**
-stage2/4 write-then-reread round-trip elimination, the Stage-5 `filtered`→`stage5_filter` conversion + a
-LIVE backfill of 112 legacy files, and the arch-manifest coverage tests. Stages 2/3/4 receipt conversion
-was DEFERRED (their file existence is a stage-done marker) into epic **#617**. The Stage 9 campaign ran
-the *deterministic* way (`incorporate_batch --dry-run` → exception list → real run — never hand-adjudicating
-a district; see "the product is the pipeline" above) and incorporated 36/38 gate@8-approved districts; the
-one-time `lct_calculations` recompute ran clean (163k rows, exit 0). That approach surfaced three findings,
-all filed durably: **#626** (a logged gate@8 override is NOT honored past the REQ-026 temporal window —
-Dickinson's approved council secondary drops to statutory — **CLOSED 2026-07-24**: Ian's decision "a human
-override = an in-temporal-window schedule" shipped as (part 1) a `district_grade_minutes.human_vouched`
-column [migration 027] that `per_grade_lct` exempts from the blend-window test, and (part 2)
-`resolve_schedule_year` deriving a band's vintage from its winning value's REPRESENTATIVE source URL, not a
-losing/closed-school sample; re-incorporated all 38 + recomputed, blast radius = only Dickinson [secondary
-statutory→council 350→428]), **#627** (Stage-8
-`mean_tiebreak` emitted a band gross inconsistent with its stored start/end — **CLOSED 2026-07-24**: a
-mean_tiebreak value is a synthetic average matching no single school, so `aggregate.district_bands_from_facts`
-now emits it with NO representative times; Stage 9 `provenance.times_consistent`+`mapping.plan_writes` drop
-inconsistent times from receipts frozen pre-fix so the 2 already-approved districts incorporated minutes-only;
-gate@8 UI shows "synthesized average"), **#628** (the LCT recompute is a full-corpus ~2m08s rewrite —
-timeout-prone, O(all ~17k) for an O(changed) input — run backgrounded). Full narrative:
-`docs/PROJECT_HISTORY.md` (2026-07-23 entry); `docs/REQUIREMENTS.yaml`
-REQ-164 (status `tested`) + REQ-165…168 (feat branch only). The session's governing lesson is the durable
-fact above — **the product is the pipeline, not the district.**
+**Current status (2026-07-25): REQ-164 receipts + the Stage 9 campaign are MERGED to `main`** (PR #629,
+squash commit `a26aee9`; feature branch deleted both sides). Stages 5-9 leave always-stamped
+`stage<N>_<stage_name>` audit receipts via the one shared writer; all 38 gate@8-approved districts are
+incorporated (`bell_schedules` + `district_grade_minutes` + `lct_calculations`); **#626** (a gate@8 human
+override now exempts its band's vintage from the REQ-026 window — `bell_schedules.human_vouched`,
+migration 028) and **#627** (a `mean_tiebreak` band no longer pairs a synthetic gross with one school's
+real times) are closed. A `/code-review max` pass across the whole branch before merge filed and
+same-day-closed **#630-639** (a stale-times UPDATE-path bug caught live in production, an idempotency-key
+fix, an excluded-school vintage hijack, the `human_vouched` table relocation, plus hardening/consolidation
+— two findings were refuted with evidence, not silently dropped). Full narrative:
+`docs/PROJECT_HISTORY.md` (2026-07-23 and 2026-07-24/25 entries). `docs/REQUIREMENTS.yaml` REQ-164
+(status `tested`) + REQ-165…168. Governing lesson still standing: **the product is the pipeline, not the
+district** (durable fact + memory).
 
-**Next (RESUME HERE — 2026-07-24): all independent; pick any.**
-**(1) Stage 9 campaign DONE (38/38); #626 + #627 both closed 2026-07-24.** No open Stage-9 items — the
-whole gate@8→LCT path is landed and verified in production (Dickinson secondary now council, not statutory).
-A `/code-review max` of the branch (2026-07-25) filed **#630–#639**, all ADDRESSED same-day (commit
-6aa9894): Stage-9 writes times faithfully + verifies the #627 invariant (#630, healed a live latent row
-in 4200874), idempotency key gained `mapping.MAPPING_VERSION` so mapper fixes re-write without --force
-(#631), excluded schools can't hijack a band vintage (#632), `human_vouched` moved to `bell_schedules`
-as source of truth (migration 028, #636), plus subprocess/triage/sanitize hardening and consolidation
-(one HH:MM parser, one statutory default, a grade→band fitness pin). #635 refuted-by-design; two #637
-items refuted by measurement. All 38 re-incorporated + recomputed: zero LCT changes.
-**(2) Epic #617 (benchmark model + done-marker inversion).** Start **#621** (small: `_early_exit_targets`
-keys on the `batch_00000` literal, should be `batch_type='benchmark'`), then **#618** (benchmark dispatch +
-gate@5/gate@7 termini — BEFORE **#619** wall-retirement so no hole opens) → **#620** (re-run batch_00000
-districts fresh into LCT). Parallel: **#622**/**#623** (done-marker→gov_db inversion + the Node-side receipt
-writer/resolver for `capture_discovery.mjs`). **#624** (retroactive stage 6-9 receipts, 83/83/38/6) + **#625**
-(REQ-117/151/162/164 sharpening) independently pickable.
-**(3) #628** — make the LCT recompute targeted (only changed districts) + add `--dry-run` + document
-"run backgrounded" (a ~2-min full-corpus job; a foreground run is SIGTERM'd at 2 min — not a hang).
-**(4) Merge `feat/pipeline-receipts-req164` → `main`** when Ian decides (clean fast-forward).
+**Next (RESUME HERE — 2026-07-25): epic #617 — generalize the benchmark model, retire the district-keyed
+Stage-9 wall.** All 8 sub-issues open; sequence matters for two of them:
+**(1) #621** (small, do first) — `stage7_run._early_exit_targets` keys on the `batch_00000` literal;
+should be `batch_type='benchmark'`.
+**(2) #618** (benchmark dispatch as first-class + gate@5/gate@7 termini) BEFORE **#619** (retire the
+wall, provenance-scoped not district-permanent) — #619 opens a hole if #618 lands second.
+**(3) #620** — re-run batch_00000's 27 districts through fresh batches, incorporate on the new
+provenance (depends on #618/#619 landing first).
+**Parallel/independent:** **#622**/**#623** (done-marker→gov_db inversion + the Node-side receipt
+writer/resolver for `capture_discovery.mjs`), **#624** (retroactive stage 6-9 receipts, 83/83/38/6),
+**#625** (REQ-117/151/162/164 sharpening for the provenance-scoped model).
+Also open, unrelated to #617: **#628** (make the LCT recompute targeted/O(changed) instead of the
+current ~2-min full-corpus rewrite; add `--dry-run`).
 Banked routing: #112 → epic #128. Parked: #475/#476, #103/#80 (+#110); SEA integration follow-up (the
 ~9-state list from the 2026-07-20/21 campaign) is an opt-in backlog item, not yet filed as an issue —
 ask Ian before filing if it should be tracked now or deferred.
@@ -193,8 +174,7 @@ Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) →
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
 -m "not integration"` (expect **1954** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect
 **337**, Postgres up) + `pytest tests/test_*_integration.py` (expect **249** pass, 149 skipped, live
-DB) + `cd infrastructure/scraper && npm test` (expect **90**). On the receipts branch, also
-`pytest tests/test_receipts.py tests/test_backfill_receipts.py` (27 pass) + the stage6/7/8/9 suites.
+DB) + `cd infrastructure/scraper && npm test` (expect **90**).
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (the
 motivating ones: Huntington `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters).
 Stage 9 incorporate CLI: `python -m infrastructure.acquisition.stage9_incorporate <did> [--dry-run]`;

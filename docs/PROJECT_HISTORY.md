@@ -1145,6 +1145,56 @@ Authority: branch `feat/pipeline-receipts-req164` (HEAD `625aa41`; anchors `7d8f
 fact); `docs/REQUIREMENTS.yaml` REQ-164 (status `tested`); GitHub epic #617 (sub-issues #618-626) +
 #627 + #628.
 
+### 2026-07-24/25 — Stage 9 campaign closes at 38/38, #626 lands a durable temporal-exemption primitive, and a `/code-review max` sweep of the whole branch ships same-day before merge
+
+The two blockers left open on 2026-07-23 both closed. **#627** (Stage-8 `mean_tiebreak` emitting a
+gross inconsistent with its own stored start/end) was fixed at the root — `aggregate_band` now omits
+representative times for a synthetic-mean band rather than pairing a synthetic value with one real
+school's span — which unblocked Midview and Millard. **#626** — whether a logged gate@8 override should
+be honored past the REQ-026 temporal window — was Ian's call: *"a human override should be treated as
+equivalent to an in-temporal-window schedule."* That shipped as two parts: a `human_vouched` flag
+(originating on `district_grade_minutes`, then relocated to `bell_schedules` — see below) that exempts a
+vouched grade's vintage from the blend-window test without exempting a non-vouched sibling in the same
+scope; and a vintage-derivation fix so a band's stored year tracks the *winning* value's source school,
+not a losing/closed-school sample (Dickinson's middle had inherited the since-closed Hagen JH's 2016-17
+URL despite winning on the current Dickinson MS's reading). Re-incorporating all 38 and recomputing
+confirmed the blast radius was exactly Dickinson — every scope flipped `per_grade_statutory` →
+`per_grade_bell`, secondary 350→428 — with zero collateral movement elsewhere in the corpus.
+
+With the campaign complete, PR #629 (REQ-164 receipts + the full Stage 9 campaign) went up — and before
+merging, a `/code-review max` pass across every commit since 2026-07-20 was run: nine parallel finder
+angles (line-scan, removed-behavior, cross-file tracing, language pitfalls, wrapper/write-path
+correctness, reuse/simplification, efficiency, altitude, convention checks), one of which died mid-run
+on an API error and was cleanly respawned from a fresh agent rather than left silently absent. The
+sweep surfaced ten issues (#630-639), several from two *independent* finders converging on the same
+defect — the strongest signal a review can produce short of a repro. All ten were addressed the same
+day, not merely triaged: **#630** (Stage 9's re-incorporation UPDATE path relied on `add_bell_schedule`'s
+merge-preserve semantics and left stale times on a row whose method flipped to `mean_tiebreak` — caught
+a *live* instance, `4200874` elementary, mid-fix); **#631** (the idempotency key was the frozen-receipt
+fingerprint alone, so a mapper-logic fix with no receipt delta was silently inert without `--force` —
+now `(fingerprint, MAPPING_VERSION)`); **#632** (an excluded/struck school's stated year could still win
+band-consensus vintage, the same bug class #626's URL-vintage fix had just closed on a different path);
+**#636** (`human_vouched` had been added to `district_grade_minutes` — documented as a *regenerable
+projection* of `bell_schedules` — making the projection's own contract false; relocated to
+`bell_schedules`, migration 028, with the projection now genuinely inheriting it); plus a subprocess
+orphan/decode fix, a triage-endpoint 500, three consolidations (one HH:MM parser, one statutory-360
+constant, a grade→band equivalence fitness test pinned across the import-linter boundary), and hardening
+(`_sanitize_reason`'s `--`-reformation, a documented rounding choice). Two findings were refuted rather
+than fixed after checking the code against its own test suite and design intent — the Node discovery
+breaker's "resets only on success" was a deliberate, already-pinned choice (a WAF'd district's dead links
+404 *between* challenges; resetting there would violate the one-attempt rule), and the gate@8 twin-export
+"O(all districts)" concern measured at 171 districts / 0.33s, not the ~17k feared. Refuting with
+evidence, not silence, is what made the closure trustworthy. Re-incorporating and recomputing after the
+fixes confirmed zero LCT value changes beyond the one #630 heal — the review hardened the pipeline
+without moving a single production number it didn't intend to.
+
+The whole arc — REQ-164 receipts, the Stage 9 campaign, #626/#627, and the review follow-up — merged to
+`main` as PR #629 (squash commit `a26aee9`) on 2026-07-25.
+
+Authority: PR #629 (merged); GitHub issues #626-639 (all closed); migrations 027 (`district_grade_minutes.
+human_vouched`, superseded-in-place) + 028 (`bell_schedules.human_vouched`, the surviving source of
+truth); `docs/REQUIREMENTS.yaml` REQ-164 (`tested`).
+
 ---
 
 ## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)
