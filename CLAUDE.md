@@ -165,6 +165,13 @@ fact above — **the product is the pipeline, not the district.**
 **Next (RESUME HERE — 2026-07-24): all independent; pick any.**
 **(1) Stage 9 campaign DONE (38/38); #626 + #627 both closed 2026-07-24.** No open Stage-9 items — the
 whole gate@8→LCT path is landed and verified in production (Dickinson secondary now council, not statutory).
+A `/code-review max` of the branch (2026-07-25) filed **#630–#639**, all ADDRESSED same-day (commit
+6aa9894): Stage-9 writes times faithfully + verifies the #627 invariant (#630, healed a live latent row
+in 4200874), idempotency key gained `mapping.MAPPING_VERSION` so mapper fixes re-write without --force
+(#631), excluded schools can't hijack a band vintage (#632), `human_vouched` moved to `bell_schedules`
+as source of truth (migration 028, #636), plus subprocess/triage/sanitize hardening and consolidation
+(one HH:MM parser, one statutory default, a grade→band fitness pin). #635 refuted-by-design; two #637
+items refuted by measurement. All 38 re-incorporated + recomputed: zero LCT changes.
 **(2) Epic #617 (benchmark model + done-marker inversion).** Start **#621** (small: `_early_exit_targets`
 keys on the `batch_00000` literal, should be `batch_type='benchmark'`), then **#618** (benchmark dispatch +
 gate@5/gate@7 termini — BEFORE **#619** wall-retirement so no hole opens) → **#620** (re-run batch_00000
@@ -184,8 +191,8 @@ STAGE-scoped (time-bound 30-day expiry since 2026-07-20; revisit if remediation 
 attribution v1 reads each district's LATEST candidate plan (documented in-module).
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
--m "not integration"` (expect **1946** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect
-**333**, Postgres up) + `pytest tests/test_*_integration.py` (expect **249** pass, 149 skipped, live
+-m "not integration"` (expect **1954** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect
+**337**, Postgres up) + `pytest tests/test_*_integration.py` (expect **249** pass, 149 skipped, live
 DB) + `cd infrastructure/scraper && npm test` (expect **90**). On the receipts branch, also
 `pytest tests/test_receipts.py tests/test_backfill_receipts.py` (27 pass) + the stage6/7/8/9 suites.
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (the
