@@ -79,6 +79,11 @@ volatile provenance. Staleness (REQ-147, the 2026-07-14 incident) re-hashes the 
 fingerprint-basis evolution can never fake staleness on an unchanged picture. A re-decision after a back-edge
 is a new append-only row, never a rewrite.
 
+Every decision (both dispositions) also drops a `stage8_aggregate` per-district audit receipt into the
+capture dir (REQ-164, 2026-07-22 — always-stamped via `common/receipts.py::write_receipt`,
+`approval.gate8_receipt_payload`), paired with an in-path `district_status.json` twin refresh — closing
+the gap where the twin used to lag until an incidental later export.
+
 ## 0c. The #499 slot program (BUILT, REQ-144…150 all tested)
 
 "Slots" (`common/slot_spine.py`, PURE — no DB/disk): each band's **live NCES roster** (never frozen) is

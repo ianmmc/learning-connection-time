@@ -30,6 +30,7 @@ from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import model_families as MF
 from infrastructure.acquisition.common import paths
+from infrastructure.acquisition.common import receipts as RCPT
 from infrastructure.acquisition.common import school_sampling as SS
 from infrastructure.acquisition.common import timeutil as TU
 from infrastructure.acquisition.stage5_filter import build_signals as BS
@@ -597,18 +598,36 @@ def write_receipt(results: dict, *, root=None) -> str:
     d = Path(root) if root else (paths.ACQUISITION / "extractions")
     d.mkdir(parents=True, exist_ok=True)
     path = d / f"extraction_{hh}_{_fs_ts()}.json"
-    path.write_text(json.dumps(results, indent=2))
+    paths.atomic_write_json(path, results)   # crash-safe (was a bare write_text — the one non-atomic receipt)
     return str(path)
 
 
 def write_district_receipt(pd: dict, handoff_hash: str, *, root=None) -> str:
     """One district's run as an immutable receipt (`extraction_<hash>_<did>_<ts>.json`), written the
-    moment the district completes — durable independent of the rest of the batch (the streaming path)."""
+    moment the district completes — durable independent of the rest of the batch (the streaming path).
+    ALSO drops a per-district capture-dir audit receipt (REQ-164) pointing at this authoritative file."""
     d = Path(root) if root else (paths.ACQUISITION / "extractions")
     d.mkdir(parents=True, exist_ok=True)
     path = d / f"extraction_{handoff_hash or 'nohash'}_{pd['district_id']}_{_fs_ts()}.json"
-    path.write_text(json.dumps({"handoff_hash": handoff_hash, "district": pd}, indent=2))
+    paths.atomic_write_json(path, {"handoff_hash": handoff_hash, "district": pd})   # crash-safe (was write_text)
+    _stage7_capture_receipt(pd, handoff_hash, path)
     return str(path)
+
+
+def _stage7_capture_receipt(pd: dict, handoff_hash: str, central_path: Path) -> None:
+    """Faithful per-district Stage-7 receipt into the capture dir (REQ-164), carrying the district's
+    extraction detail + a pointer to the authoritative central file (acquisition/extractions/) and the
+    gov DB (extraction/school_fact). Best-effort — those two ARE authoritative, so a disk hiccup is
+    logged, never a failed extraction (the receipt is regenerable)."""
+    try:
+        RCPT.write_receipt(pd["district_id"], "", "stage7_extract", {
+            "stage": 7, "stage_name": "extract", "district_id": pd["district_id"],
+            "handoff_hash": handoff_hash,
+            "authoritative": f"gov_db:extraction/school_fact + acquisition/extractions/{central_path.name}",
+            "central_receipt": central_path.name, "district": pd})
+    except Exception as e:  # noqa: BLE001 — the receipt is regenerable; never fail an extraction
+        print(f"[warn] Stage 7 capture-dir receipt failed for {pd.get('district_id')} "
+              f"({type(e).__name__}: {e}); regenerable from gov_db + the central receipt")
 
 
 def _already_extracted(handoff_hash: str) -> set:

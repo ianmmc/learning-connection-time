@@ -193,6 +193,14 @@ class TestSanitizeReason:
         assert '--' not in v._sanitize_reason('a -- DROP TABLE x')
         assert '--' not in v._sanitize_reason('Normal text; DROP TABLE users;--')
 
+    def test_639_whitelist_cannot_reform_comment_token(self):
+        """#639: the whitelist deletes a non-whitelisted char BETWEEN two hyphens; the '--' removal
+        must run AFTER it (order, not iteration) so the token can't re-form in the output."""
+        assert '--' not in v._sanitize_reason('a-\x00-b')          # \x00 removed → would join 'a--b'
+        assert '--' not in v._sanitize_reason('x-;-y DROP-\x07-z')
+        assert '--' not in v._sanitize_reason('-' * 7)             # hyphen runs reduce to ≤1
+        assert v._sanitize_reason('non-compliant') == 'non-compliant'   # #292 still holds
+
     def test_hyphens_still_preserved_after_comment_fix(self):
         """The comment-stripping fix must not regress #292 itself."""
         assert v._sanitize_reason('non-compliant district') == 'non-compliant district'

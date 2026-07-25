@@ -34,8 +34,9 @@ _CANON_BAND = {**{g: "elementary" for g in ELEM_GRADES},
 
 
 def _row_tuple(r) -> tuple:
-    """(minutes, method, minutes_basis, year, source_band) for one projection row."""
-    return (r.instructional_minutes, r.method, r.minutes_basis, r.year, r.source_band)
+    """(minutes, method, minutes_basis, year, source_band, human_vouched) for one projection row."""
+    return (r.instructional_minutes, r.method, r.minutes_basis, r.year, r.source_band,
+            bool(getattr(r, "human_vouched", False)))
 
 
 def get_district_grade_minutes(session, district_id: str) -> dict:
@@ -83,17 +84,23 @@ def weighted_scope_minutes(session, state: str, scope_grades: list, enr, gm_map:
     wrap with cached_statutory() at the call site)."""
     def _weighted(force_statutory: bool):
         num = den = 0
-        measured_years, n_measured, n_statutory = [], 0, 0
+        measured_years, window_years, n_measured, n_statutory = [], [], 0, 0
         for g in scope_grades:
             e = _enroll(enr, g)
             if e <= 0:
                 continue
             m = gm_map.get(g)
             if m and m[2] == "gross_bell_to_bell" and m[0] and not force_statutory:
-                minutes_g, yr = m[0], m[3]
+                minutes_g, yr, vouched = m[0], m[3], m[5]
                 n_measured += 1
                 if yr:
                     measured_years.append(yr)
+                    # #626: a human-vouched grade is treated as equivalent to an in-window schedule —
+                    # its vintage does NOT enter the blend-window test (a logged gate@8 override is the
+                    # auditable determination that the value is acceptable). It still feeds the weighted
+                    # average and the reported rep_year; it just can't drag the scope to statutory.
+                    if not vouched:
+                        window_years.append(yr)
             elif m and m[2] == "statutory" and m[0]:
                 # Stage 9 already resolved this grade's statutory value against its REAL serving
                 # band — reuse it verbatim, never re-derive via the canonical band.
@@ -112,19 +119,24 @@ def weighted_scope_minutes(session, state: str, scope_grades: list, enr, gm_map:
             den += e
         if den == 0:
             return None
-        return round(num / den), n_measured, n_statutory, measured_years
+        # #639 considered-and-kept: Python round() (banker's, half-to-even) — the same rounding
+        # stage 8's aggregate_band applies to mean_tiebreak; a half-up here would make the two
+        # stages disagree on exact-.5 values. Effect is ≤1 minute on a rare exact half.
+        return round(num / den), n_measured, n_statutory, measured_years, window_years
 
     first = _weighted(force_statutory=False)
     if first is None:
         return None
-    minutes, n_measured, n_statutory, measured_years = first
+    minutes, n_measured, n_statutory, measured_years, window_years = first
     if n_measured == 0:
         return minutes, "per_grade_statutory", None
 
     # Temporal window (REQ-026): EVERY distinct measured year feeding the weighted average must form
     # a ≤3-consecutive-year set with the staff/enrollment years — not just the modal one (PR #607
-    # review: a minority-share band from an out-of-window year must not blend in silently).
-    years = sorted(set(measured_years))
+    # review: a minority-share band from an out-of-window year must not blend in silently). #626:
+    # human-vouched grades are excluded from `window_years` — a logged gate@8 determination exempts
+    # them (equivalent to an in-window schedule), so they never force the scope to statutory.
+    years = sorted(set(window_years))
     if not within_blend_window([y for y in blend_years if y] + years):
         again = _weighted(force_statutory=True)
         return (again[0], "per_grade_statutory", None) if again else None

@@ -425,7 +425,7 @@ def _prior_doc(d: Path, live: Path, stem: str) -> dict:
 
 
 def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool = False,
-                    geo_receipt: dict | None = None) -> Path:
+                    geo_receipt: dict | None = None, docs_out: dict | None = None) -> Path:
     """Write discovery.json (full per-school audit trail) + candidates.json (flattened,
     capture-ready). Both writes are atomic (temp + os.replace, #265), and candidates.json is
     written FIRST: reconcile() keys "Stage 2 done" on discovery.json existing, so a crash
@@ -539,6 +539,13 @@ def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool 
     # candidates first, discovery last (#265): discovery.json existing is the "done" marker.
     _atomic_write_json(cand_path, candidates_doc)
     _atomic_write_json(disc_path, discovery_doc)
+    if docs_out is not None:
+        # #616: hand the just-built docs back so the same-process caller can project them into the DB
+        # cache WITHOUT re-reading them off disk. cand_map mirrors cache_ingest.load_candidates' shape.
+        docs_out["discovery"] = discovery_doc
+        docs_out["candidates_map"] = {c["url"]: {"schools": c.get("schools", []),
+                                                 "tools": c.get("tools", [])}
+                                      for c in candidates if c.get("url")}
     return d
 
 
@@ -548,15 +555,17 @@ def finish_district(district: dict, roster: list, batch_id: str, registry: dict,
     never an interim 'started' marker (there's nothing meaningful to reconcile against a
     half-finished state, since the file write only happens once everything is assembled).
     `merge=True` = a follow-up redo (issue #174): write_discovery unions with the prior round."""
-    ddir = write_discovery(district, roster, batch_id, merge=merge, geo_receipt=geo_receipt)
+    docs: dict = {}
+    write_discovery(district, roster, batch_id, merge=merge, geo_receipt=geo_receipt, docs_out=docs)
     outcome = district_outcome(roster)
     DS.record_stage(
         registry, district["district_id"], district["name"], district["state"],
         stage=2, stage_name="discover", outcome=outcome, batch_id=batch_id,
     )
     # Project this district's funnel into the live DB cache so the console reads fresh rows without
-    # waiting for a Stage-5 ingest. Best-effort: the disk JSON + state_event are the durable record.
-    CI.cache_discovery(ddir)
+    # waiting for a Stage-5 ingest, from the just-built docs — no write-then-reread round-trip off disk
+    # (#616; gov_db is the working store, disk is an audit receipt). Best-effort.
+    CI.cache_discovery_docs(docs["discovery"], docs["candidates_map"])
     return outcome
 
 

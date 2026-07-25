@@ -32,6 +32,7 @@ from infrastructure.acquisition.stage5_filter import detectors as DET       # no
 from infrastructure.acquisition.stage5_filter import drift                  # noqa: E402  (REQ-097 advisory drift verdict — #75)
 from infrastructure.acquisition.common import db as gdb                     # noqa: E402  (isolated governance Postgres — REQ-103)
 from infrastructure.acquisition.common import district_status as DS         # noqa: E402  (state_event log — gate@1 audit events)
+from infrastructure.acquisition.common import receipts as RCPT              # noqa: E402  (per-district audit receipts — REQ-164)
 from infrastructure.acquisition.common import calibration as CAL            # noqa: E402  (gate-decision calibration log — REQ-121)
 from infrastructure.acquisition.common import gate_mode as GM               # noqa: E402  (per-gate manual/auto store — REQ-108, #104)
 from infrastructure.acquisition.common import config_loader as CFGL         # noqa: E402  (#120 mode-stability knob — Settings toggle)
@@ -696,6 +697,31 @@ def _backup_stage8_approvals(con) -> int:
         con, "SELECT approval_id, district_id, disposition, actor, reason, facts_fingerprint, "
              "receipt_json, created_at FROM stage8_approval ORDER BY approval_id",
         paths.STAGE8_APPROVALS_JSON)
+
+
+def _gate8_refresh_twin_and_receipt(con, district_id, meta, ca, *, disposition, reason,
+                                    approval_id, actor, fingerprint) -> None:
+    """After a COMMITTED gate@8 decision: refresh district_status.json in-path (#615 — gate@8 events
+    landed in gov_db but the git-tracked twin lagged until an incidental later export) and drop a
+    per-district gate@8 audit receipt into the capture dir (REQ-164). BOTH best-effort: the
+    stage8_approval row + its JSON twin are authoritative, so a disk/twin hiccup is logged, never a
+    failed (already-committed) decision. Commit-before-receipt: the caller has already committed."""
+    try:
+        # #637 considered-and-kept: a full export here is O(ever-attempted districts), NOT O(all
+        # ~17k) — measured 171 districts / 0.33s (2026-07-25) behind a human-paced decision click.
+        # Revisit (incremental single-district rewrite) only if the attempted corpus grows ~10×.
+        DS.export_status(con)
+    except Exception as e:  # noqa: BLE001 — the twin is regenerable; never fail a committed decision
+        print(f"[warn] gate@8 district_status.json refresh failed for {district_id} "
+              f"({type(e).__name__}: {e}); the twin reconciles on the next export")
+    try:
+        RCPT.write_receipt(district_id, (meta or {}).get("name", ""), "stage8_aggregate",
+                           APV8.gate8_receipt_payload(ca, disposition=disposition, reason=reason,
+                                                      approval_id=approval_id, actor=actor,
+                                                      fingerprint=fingerprint))
+    except Exception as e:  # noqa: BLE001 — the receipt is regenerable; never fail a committed decision
+        print(f"[warn] gate@8 receipt write failed for {district_id} "
+              f"({type(e).__name__}: {e}); regenerable from gov_db")
 
 
 # ---- discovered domains (#164 — human-confirmed geo-derivation proposals) ----
@@ -1443,7 +1469,15 @@ def fidelity_triage():
         out = []
         try:
             v = json.loads(fj) if fj else []
-            out += list(v) if isinstance(v, list) else list(v.keys())
+            if isinstance(v, list):
+                out += [str(x) for x in v]
+            elif isinstance(v, dict):
+                out += list(v.keys())
+            elif isinstance(v, str) and v:
+                # #634: a scalar fidelity_json (e.g. `"login_wall"`) passes the WHERE filter but
+                # has no .keys() — treat it as its own single class instead of 500ing an endpoint
+                # documented "never a 500". Other scalars (numbers/bools) carry no class signal.
+                out.append(v)
         except (TypeError, ValueError):
             pass
         if err and str(err).startswith("security_block"):
@@ -1741,9 +1775,12 @@ def _run_stage4_subprocess(batch: dict, *, actor: str = "auto:stage4", on_event=
         summary = None
         control_failure = None
         error = None
+        returncode = None
         with open(log_path, "w") as errf:
+            # errors="replace": the child wraps native camelot/PDFium code that can emit non-UTF-8
+            # bytes on fd1 — a strict decode would raise mid-stream (#633); degrade, don't die.
             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=errf, text=True,
-                                    start_new_session=True)
+                                    errors="replace", start_new_session=True)
             with _SUBPROC_GUARD:
                 _SUBPROCESSES.add(proc)
             try:
@@ -1766,6 +1803,16 @@ def _run_stage4_subprocess(batch: dict, *, actor: str = "auto:stage4", on_event=
                         on_event(kind, payload)
                 returncode = proc.wait()
             finally:
+                # #633: if the stream loop raised (on_event callback, KeyboardInterrupt, read
+                # error), returncode was never reached — kill the child BEFORE discarding it from
+                # the tracked set, or the detached (start_new_session=True) process outlives us
+                # invisible to the shutdown kill-sweep.
+                if returncode is None:
+                    try:
+                        proc.kill()
+                        proc.wait(timeout=10)
+                    except (OSError, subprocess.TimeoutExpired):
+                        pass
                 with _SUBPROC_GUARD:
                     _SUBPROCESSES.discard(proc)
     finally:
@@ -2972,6 +3019,9 @@ async def aggregate_decision(district_id: str, payload: dict):
             CAL.record_calibration(con, cal)
         con.commit()
         _backup_stage8_approvals(con)
+        _gate8_refresh_twin_and_receipt(con, district_id, meta, ca, disposition=disposition,
+                                        reason=reason, approval_id=approval_id, actor=actor,
+                                        fingerprint=live_fp)
     return {"ok": True, "approval_id": approval_id, "disposition": disposition}
 
 

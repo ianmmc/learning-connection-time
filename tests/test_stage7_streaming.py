@@ -365,3 +365,26 @@ def test_current_image_council_passes_the_vision_check():
            "districts": [{"district_id": "Z", "records": [
                {"rec_key": "Z:a", "reps": [{"file": "p.png", "kind": "image", "councils": ["image"]}]}]}]}
     R7._check_image_councils(doc)     # must not raise
+
+
+def test_write_district_receipt_central_atomic_and_capture(tmp_path, monkeypatch):
+    """REQ-164 + the atomic fix: write_district_receipt writes the crash-safe central receipt AND a
+    per-district capture-dir audit receipt pointing at it."""
+    import json
+    from pathlib import Path
+    from infrastructure.acquisition.common import paths
+    from infrastructure.acquisition.common import receipts as RCPT
+    monkeypatch.setattr(paths, "RAW_CAPTURES", tmp_path / "caps")
+
+    # globally-unique district id: latest_receipt can never pick up another test's same-second receipt
+    # if RAW_CAPTURES isolation falls to the shared pytest quarantine (a paths-module reload elsewhere).
+    pd = {"district_id": "7770077", "state": "AR", "telemetry": {"cost_usd": 0.1}}
+    rp = R7.write_district_receipt(pd, "hh123", root=tmp_path / "ext")
+
+    assert Path(rp).exists() and Path(rp).name.startswith("extraction_hh123_7770077_")
+    assert not list((tmp_path / "ext").glob("*.tmp"))            # atomic — no temp left behind
+    cap = RCPT.latest_receipt("7770077", "", "stage7_extract")
+    assert cap is not None and ".py-" in cap.name
+    d = json.loads(cap.read_text())
+    assert d["stage"] == 7 and d["district"]["district_id"] == "7770077"
+    assert d["central_receipt"] == Path(rp).name

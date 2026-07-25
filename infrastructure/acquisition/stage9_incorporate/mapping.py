@@ -13,6 +13,15 @@ from typing import Optional
 
 from infrastructure.acquisition.stage9_incorporate import provenance as P
 
+# #631: version of the receipt→writes mapping logic (this module + provenance.py + per_grade.py).
+# Stage 9's idempotency key is (facts_fingerprint, MAPPING_VERSION): the frozen receipt can be
+# unchanged while a mapper/provenance/projection fix changes what SHOULD be written (#627's
+# times-drop, #626's human_vouched/vintage derivation) — without this, such a fix is silently
+# inert on already-incorporated districts unless --force. BUMP on ANY change to plan_writes,
+# provenance derivation, or the per-grade projection that alters the planned writes; a version
+# mismatch makes a plain re-run re-write (idempotent UPSERTs, so re-writing is always safe).
+MAPPING_VERSION = 1
+
 
 @dataclass
 class BandWrite:
@@ -33,6 +42,7 @@ class BandWrite:
     raw_import: Optional[dict] = None
     needs_statutory_minutes: bool = False
     statutory_reason: Optional[str] = None
+    human_vouched: bool = False              # #626: a gate@8 human determination on this band
 
     def summary(self) -> dict:
         return {"grade_level": self.grade_level, "method": self.method,
@@ -55,13 +65,21 @@ def plan_writes(receipt: dict, *, fingerprint: Optional[str] = None,
         year, basis = P.resolve_schedule_year(b, urls)
         agg = b.get("method")
         sampling = b.get("sampling") or {}
+        gross = b.get("gross_minutes")
+        # #627: drop representative times a frozen receipt carries when they're inconsistent with the
+        # gross (a mean_tiebreak band's synthetic gross can't equal one school's real span). Writing
+        # them would fail the bell_schedules cross-check; the approved VALUE is written minutes-only.
+        # The original synthetic band survives verbatim in raw_import.receipt_band.
+        start_time, end_time = b.get("start_time"), b.get("end_time")
+        if not P.times_consistent(start_time, end_time, gross):
+            start_time = end_time = None
         writes.append(BandWrite(
             grade_level=band,
             method="council_extraction",
             minutes_basis="gross_bell_to_bell",
             year=year, year_basis=basis,
-            minutes=b.get("gross_minutes"),
-            start_time=b.get("start_time"), end_time=b.get("end_time"),
+            minutes=gross,
+            start_time=start_time, end_time=end_time,
             confidence=P.band_confidence(sampling),
             schools_sampled=P.collect_schools_sampled(b),
             source_urls=urls,
@@ -70,6 +88,7 @@ def plan_writes(receipt: dict, *, fingerprint: Optional[str] = None,
             raw_import=P.council_raw_import(receipt, band, b, fingerprint=fingerprint,
                                             approval_id=approval_id, year_basis=basis, actor=actor,
                                             grade_span_source=grade_span_source),
+            human_vouched=P.band_human_vouched(b),   # #626
         ))
 
     unsatisfied = (receipt.get("negative_space") or {}).get("unsatisfied_bands") or []

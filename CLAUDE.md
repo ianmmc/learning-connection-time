@@ -59,8 +59,11 @@ index) → Wave 2 = Claude WebSearch on the residual (a different index, specula
 recall — raw Google wins; own-index providers crater on long-tail K-12.
 
 **The DB is the working store; disk holds binaries + receipts.** The governance Postgres DB is what every
-stage actually reads/writes; per-stage JSON files (`discovery.json`, `filtered.json`, `handoff_*.json`,
-etc.) are regenerable, auditable receipts — never the transport between stages.
+stage actually reads/writes; per-stage JSON files (`discovery.json`, `stage5_filter.<ts>...`,
+`handoff_*.json`, etc.) are regenerable, auditable receipts — never the transport between stages. Stages
+5-9 write theirs via the ONE shared `common/receipts.py::write_receipt`, ALWAYS datetime-stamped
+(`stage<N>_<stage_name>.<fs_stamp>.<writer>-<h8>.json`, unified naming 2026-07-23); stages 2-4 stay
+fixed-filename handoffs whose EXISTENCE is a stage-done marker (REQ-164; conversion tracked #617/#622/#623).
 
 **Human-in-the-loop gates are stage-numbered:** `gate@1` (Queue) · `gate@5` (Filter — the critical
 per-URL review gate) · `gate@6` (Dispatch) · `gate@7` (Extract) · `gate@8` (Aggregate — Stage 9 then
@@ -71,6 +74,18 @@ gate manual now, easing toward auto (confidence-escalating) only as each gate's 
 the destination is a self-governing app. **So present gate output as a recommendation for human sign-off,
 not a done deal, until that gate is explicitly set to auto** — the human inspects real output at each gate
 and catches real-data bugs code review misses. (governance §11b.)
+
+**When working on bell schedule acquisition infrastructure, a robust pipeline — not harvesting the instructional time data — is the immediate goal.** The way that we get instructional time data extracted and integrated is by way of the pipeline.
+Bell-schedule acquisition work targets the highly-automated, as-deterministic-as-possible pipeline in `ACQUISITION_PIPELINE.md`. A correct outcome
+reached by hand-orchestration — reading captures by eye, watching district-by-district for whether a rule
+triggers, re-adjudicating an already-approved gate@8 decision — is a **process failure even when the
+number is right**: it violates commandments #2 + #4 (manual inspection of ~20k districts doesn't scale)
+AND commandment #1 (a probabilistic model judgment isn't reproducible or auditable the way a deterministic
+guard is — run at a different time/model and the "verdict" could differ). Trust the deterministic inputs
+(the approved gate@8 receipt is authoritative; a note here is not) and the script's own guards (benchmark
+wall, TOCTOU, REQ-147 same-vintage staleness, REQ-026 temporal window, foreign-collision fail-loud) as the
+ONLY legitimate gates. When an outcome is wrong or fragile, fix the **pipeline** (a guard, a metadata gap)
+— never hand-fix the district. (2026-07-23, Ian.)
 
 **Three batch types (Stage 1):** `first-run`, `follow-up`, and `benchmark` (the 27 curated-GT districts
 injected as `batch_00000` — permanently walled off from Stage-9 writes and funnel/enrichment stats; see
@@ -120,43 +135,52 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-22): two threads in flight — the Stage 9 campaign (6 of 38 incorporated) and
-a documentation-driven receipts hardening effort (REQ-164), the latter on an unmerged branch.** Stage 9:
-continuing one-district-at-a-time, Santa Fe/Gallup/Las Cruces NM joined the 3 already incorporated
-(32 pending; the approved total grew 22→38 as more districts cleared gate@8 mid-session). Gallup's
-secondary LCT fell back to statutory — root-caused to NCES suppressing its 2024-25 staff report, not a
-bug (`#613`, a policy question: Ian leans against widening the REQ-026 window). A pre-emptive scan of the
-pending districts found one more latent case (Dickinson 1 ND — a genuinely stale 2016-17 source, needs
-re-extraction, not a policy fix). That investigation led to a broader question — "why don't stages 6-9
-get per-district receipts like 1-5?" — which turned up two real, smaller gaps (`#614` console progress
-view, `#615` Stage-9's `district_grade_minutes` has no git twin + `district_status.json` lags gate@8/9)
-plus a `cache_ingest` disk-re-read follow-up (`#616`). This produced **REQ-164** (`must`) + the four
-commandments as testable **REQ-165…168** — built so far on branch `feat/pipeline-receipts-req164`
-(NOT merged): `common/receipts.py` (the shared always-stamped writer) + Stage 9/8/6/7 per-district
-audit receipts + in-path `district_status.json` twin refresh, all tested. Separately, the whole doc tower
-got a reorganization (3 files → `docs/state-integrations/`, a `learning-loop-reports/` dir created,
-`refactor-20260123/` → `infrastructure/quality-assurance/`, the fable review → `docs/archive/`) and a
-5-way parallel accuracy sync (`DATABASE_SETUP.md`'s schema had drifted — two fictional tables, several
-wrong column names — plus a cluster of stale "Stage 8/9 isn't built" doc residue), both landed directly
-on `main`. Full narrative: `docs/PROJECT_HISTORY.md`'s three 2026-07-22 entries; `docs/REQUIREMENTS.yaml`
-REQ-002/REQ-162/REQ-163 (main) + REQ-164/REQ-165…168 (feat branch only).
+**Current status (2026-07-24): REQ-164 receipts COMPLETE on `feat/pipeline-receipts-req164` (unmerged,
+staying on-branch per Ian); Stage 9 campaign COMPLETE at 38/38 incorporated (#627 fixed 2026-07-24 →
+Midview + Millard in; full LCT recompute clean, exit 0, both on `per_grade_bell`).** The branch
+carries stages 5-9 always-stamped `stage<N>_<stage_name>` receipts via the ONE shared writer, the **#616**
+stage2/4 write-then-reread round-trip elimination, the Stage-5 `filtered`→`stage5_filter` conversion + a
+LIVE backfill of 112 legacy files, and the arch-manifest coverage tests. Stages 2/3/4 receipt conversion
+was DEFERRED (their file existence is a stage-done marker) into epic **#617**. The Stage 9 campaign ran
+the *deterministic* way (`incorporate_batch --dry-run` → exception list → real run — never hand-adjudicating
+a district; see "the product is the pipeline" above) and incorporated 36/38 gate@8-approved districts; the
+one-time `lct_calculations` recompute ran clean (163k rows, exit 0). That approach surfaced three findings,
+all filed durably: **#626** (a logged gate@8 override is NOT honored past the REQ-026 temporal window —
+Dickinson's approved council secondary drops to statutory — **CLOSED 2026-07-24**: Ian's decision "a human
+override = an in-temporal-window schedule" shipped as (part 1) a `district_grade_minutes.human_vouched`
+column [migration 027] that `per_grade_lct` exempts from the blend-window test, and (part 2)
+`resolve_schedule_year` deriving a band's vintage from its winning value's REPRESENTATIVE source URL, not a
+losing/closed-school sample; re-incorporated all 38 + recomputed, blast radius = only Dickinson [secondary
+statutory→council 350→428]), **#627** (Stage-8
+`mean_tiebreak` emitted a band gross inconsistent with its stored start/end — **CLOSED 2026-07-24**: a
+mean_tiebreak value is a synthetic average matching no single school, so `aggregate.district_bands_from_facts`
+now emits it with NO representative times; Stage 9 `provenance.times_consistent`+`mapping.plan_writes` drop
+inconsistent times from receipts frozen pre-fix so the 2 already-approved districts incorporated minutes-only;
+gate@8 UI shows "synthesized average"), **#628** (the LCT recompute is a full-corpus ~2m08s rewrite —
+timeout-prone, O(all ~17k) for an O(changed) input — run backgrounded). Full narrative:
+`docs/PROJECT_HISTORY.md` (2026-07-23 entry); `docs/REQUIREMENTS.yaml`
+REQ-164 (status `tested`) + REQ-165…168 (feat branch only). The session's governing lesson is the durable
+fact above — **the product is the pipeline, not the district.**
 
-**Next (RESUME HERE — 2026-07-22): two independent threads to resume, either order.**
-**(1) Stage 9 campaign** — continue incorporating the remaining 32 gate@8-approved districts one at a
-time (dry-run → incorporate → `per_grade_lct_sample.py` preview → review); watch for Dickinson 1 ND
-(`3800038` — stale 2016-17 middle-school source, re-extract before incorporating) and any other
-staff-vintage cases like Gallup's (`#613` — expected rare, not yet a systemic pattern). Once all pending
-districts are in and previews look right, run the one-time `lct_calculations` recompute
-(`calculate_lct_variants.py`'s write path — a no-op for non-incorporated districts); spot-check
-`teachers_secondary` against the preview, confirm `data_tier`/`instructional_minutes_source`, watch for
-`denom_refreshed` districts.
-**(2) REQ-164 receipts work** (`git checkout feat/pipeline-receipts-req164`) — Phase 5b (declare all 9
-stages in `arch-manifest.json` + the both-ways coverage fitness test, now addable green since 6-9 exist)
-→ Phase 3 (convert stages 2/4/5 + benchmark to always-stamped; the Node/Python receipt convention as a
-declared cross-language contract per `POLYGLOT_PIPELINE_ARCHITECTURE_TOOLCHAIN.md`; repoint `cache_ingest`
-per `#616`) → Phase 4 (gov_db-`state_event`-sourced legacy-receipt backfill script) → Phase 5c (concluding
-doc-tower update: `PIPELINE_GOVERNANCE_AND_STATE.md` §1's receipt taxonomy, `ACQUISITION_PIPELINE.md`,
-the per-stage design notes, `CLAUDE.md`, the POLYGLOT doc).
+**Next (RESUME HERE — 2026-07-24): all independent; pick any.**
+**(1) Stage 9 campaign DONE (38/38); #626 + #627 both closed 2026-07-24.** No open Stage-9 items — the
+whole gate@8→LCT path is landed and verified in production (Dickinson secondary now council, not statutory).
+A `/code-review max` of the branch (2026-07-25) filed **#630–#639**, all ADDRESSED same-day (commit
+6aa9894): Stage-9 writes times faithfully + verifies the #627 invariant (#630, healed a live latent row
+in 4200874), idempotency key gained `mapping.MAPPING_VERSION` so mapper fixes re-write without --force
+(#631), excluded schools can't hijack a band vintage (#632), `human_vouched` moved to `bell_schedules`
+as source of truth (migration 028, #636), plus subprocess/triage/sanitize hardening and consolidation
+(one HH:MM parser, one statutory default, a grade→band fitness pin). #635 refuted-by-design; two #637
+items refuted by measurement. All 38 re-incorporated + recomputed: zero LCT changes.
+**(2) Epic #617 (benchmark model + done-marker inversion).** Start **#621** (small: `_early_exit_targets`
+keys on the `batch_00000` literal, should be `batch_type='benchmark'`), then **#618** (benchmark dispatch +
+gate@5/gate@7 termini — BEFORE **#619** wall-retirement so no hole opens) → **#620** (re-run batch_00000
+districts fresh into LCT). Parallel: **#622**/**#623** (done-marker→gov_db inversion + the Node-side receipt
+writer/resolver for `capture_discovery.mjs`). **#624** (retroactive stage 6-9 receipts, 83/83/38/6) + **#625**
+(REQ-117/151/162/164 sharpening) independently pickable.
+**(3) #628** — make the LCT recompute targeted (only changed districts) + add `--dry-run` + document
+"run backgrounded" (a ~2-min full-corpus job; a foreground run is SIGTERM'd at 2 min — not a hang).
+**(4) Merge `feat/pipeline-receipts-req164` → `main`** when Ian decides (clean fast-forward).
 Banked routing: #112 → epic #128. Parked: #475/#476, #103/#80 (+#110); SEA integration follow-up (the
 ~9-state list from the 2026-07-20/21 campaign) is an opt-in backlog item, not yet filed as an issue —
 ask Ian before filing if it should be tracked now or deferred.
@@ -167,10 +191,10 @@ STAGE-scoped (time-bound 30-day expiry since 2026-07-20; revisit if remediation 
 attribution v1 reads each district's LATEST candidate plan (documented in-module).
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
--m "not integration"` (expect **1905** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect
-**327**, Postgres up) + `pytest tests/test_*_integration.py` (expect **247** pass, 149 skipped, live
+-m "not integration"` (expect **1954** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect
+**337**, Postgres up) + `pytest tests/test_*_integration.py` (expect **249** pass, 149 skipped, live
 DB) + `cd infrastructure/scraper && npm test` (expect **90**). On the receipts branch, also
-`pytest tests/test_receipts.py` (15 pass) + the stage6/7/8/9 suites.
+`pytest tests/test_receipts.py tests/test_backfill_receipts.py` (27 pass) + the stage6/7/8/9 suites.
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (the
 motivating ones: Huntington `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters).
 Stage 9 incorporate CLI: `python -m infrastructure.acquisition.stage9_incorporate <did> [--dry-run]`;

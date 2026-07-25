@@ -28,6 +28,7 @@ from sqlalchemy import text
 
 from infrastructure.acquisition.common import paths  # noqa: E402
 from infrastructure.acquisition.common import db as gdb  # noqa: E402  (governance Postgres — REQ-103)
+from infrastructure.acquisition.common import receipts as RCPT  # noqa: E402  (REQ-164 audit receipts)
 from infrastructure.utilities import school_year as SY  # noqa: E402  (calendar-vocabulary SSOT; the #241 validity floor — NOT the LCT DB)
 from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402  (TARGET_LABELS)
 from infrastructure.acquisition.common.timeutil import utcnow as _now
@@ -283,6 +284,26 @@ def load_district_records(session, district_id: str) -> list:
     return [_shape_record(r, reps.get(r["rec_key"], [])) for r in recs]
 
 
+def load_districts_records(session, district_ids) -> dict:
+    """{district_id: [record, ...]} for MANY districts in two queries — the bulk twin of
+    load_district_records (#637: stage4_attribution called the per-district loader in a loop over
+    the whole labeled TARGET corpus, an N+1 that grows with every labeled district). Same canonical
+    filter + shaping; per-district record order preserved (tier, sort_score DESC)."""
+    dids = list(district_ids)
+    if not dids:
+        return {}
+    recs = session.execute(text(
+        f"""SELECT r.district_id, {_RECORD_COLS}
+           FROM record r LEFT JOIN label l ON l.rec_key = r.rec_key
+           WHERE r.district_id = ANY(:d) AND {CANONICAL_RECORD_WHERE}
+           ORDER BY r.district_id, r.tier, r.sort_score DESC"""), {"d": dids}).mappings().all()
+    reps = _reps_by_key(session, [r["rec_key"] for r in recs])
+    out: dict = {}
+    for r in recs:
+        out.setdefault(r["district_id"], []).append(_shape_record(r, reps.get(r["rec_key"], [])))
+    return out
+
+
 def load_records_by_key(session, rec_keys) -> list:
     """Like `load_district_records` but scoped to specific `rec_keys` — the 7->6 executor needs only
     the approved requests' target records, not the whole district (#148: it was loading ALL records +
@@ -334,9 +355,13 @@ def generate(session, district_id: str = None, root=None) -> list:
         ddir = root / (district["district_dir"] or did)
         written = None
         if ddir.exists():
-            out = ddir / "filtered.json"
-            paths.atomic_write_json(out, doc)   # atomic; regenerable (overwritten each run)
-            written = str(out)
+            # REQ-164: an always-stamped audit receipt via the shared writer (was a fixed filtered.json
+            # overwritten in place). ddir is the DB-authoritative capture dir; nothing reads filtered.json
+            # as pipeline input (Stage 6 reads the release projection from gov_db), so it's audit-only.
+            # Basename follows the `stage<N>_<stage_name>` convention shared by every stage's receipt --
+            # the stage number leads so a filesystem/name sort groups a district's receipts in pipeline
+            # order (the unified naming decision, 2026-07-23).
+            written = str(RCPT.write_receipt(did, district["name"], "stage5_filter", doc, ddir=ddir))
         summary.append({"district_id": did, "topology": doc["topology"],
                         "n_canonical": doc["completeness"]["n_canonical"],
                         "n_send": doc["completeness"]["n_send"], "written": written})

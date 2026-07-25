@@ -61,6 +61,150 @@ def test_all_three_bands_written_faithfully():
     assert all(w.method == "council_extraction" for w in writes)
 
 
+# ----------------------------- #627 frozen mean_tiebreak heal -----------------------------
+def test_times_consistent_helper():
+    assert P.times_consistent("07:25", "14:20", 415) is True     # span == gross
+    assert P.times_consistent("07:25", "14:20", 425) is False    # synthetic mean != span
+    assert P.times_consistent(None, "14:20", 425) is True        # absent time -> nothing to contradict
+    assert P.times_consistent("07:25", "14:20", None) is True    # no gross -> nothing to contradict
+
+
+def test_frozen_mean_tiebreak_band_drops_inconsistent_times():
+    """#627: a receipt frozen BEFORE the aggregate.py fix carries a mean_tiebreak band with a
+    synthetic gross (425) but one school's real times (07:25-14:20, span 415). plan_writes must
+    drop those times so the write is minutes-only and passes Stage 9's bell_schedules cross-check;
+    the authoritative approved value (425) and the original synthetic band survive."""
+    receipt = {"bands": {"middle": {
+        "gross_minutes": 425, "start_time": "07:25", "end_time": "14:20", "method": "mean_tiebreak",
+        "sampling": {"n_sampled": 2, "n_total": 2, "coverage": 1.0},
+        "schools": [{"school": "midview", "start_time": "07:25", "end_time": "14:20", "gross": 415},
+                    {"school": "midview east", "start_time": "07:20", "end_time": "14:35", "gross": 435}]}}}
+    w = MAP.plan_writes(receipt)[0]
+    assert w.minutes == 425
+    assert w.start_time is None and w.end_time is None       # inconsistent times dropped
+    assert w.raw_import["receipt_band"]["start_time"] == "07:25"   # original band preserved for audit
+
+
+def test_frozen_modal_band_keeps_consistent_times():
+    """Guard the scope: a modal band whose stored times ARE consistent (span == gross) is untouched."""
+    receipt = {"bands": {"high": {
+        "gross_minutes": 415, "start_time": "07:40", "end_time": "14:35", "method": "modal",
+        "sampling": {"n_sampled": 2, "n_total": 2, "coverage": 1.0}, "schools": []}}}
+    w = MAP.plan_writes(receipt)[0]
+    assert w.minutes == 415 and w.start_time == "07:40" and w.end_time == "14:35"
+
+
+# ----------------------------- #626 human-vouched + vintage -----------------------------
+def test_band_human_vouched_detects_note_only_override():
+    # Dickinson's case: a note-only human_override (no times) is still a human vouch.
+    assert P.band_human_vouched({"schools": [
+        {"school": "a", "human_override": {"reason": "I'm approving", "actor": "ian"}}]}) is True
+    assert P.band_human_vouched({"schools": [{"school": "a", "human_added": {"reason": "cited"}}]}) is True
+    assert P.band_human_vouched({"schools": [{"school": "a", "override_applied": True}]}) is True
+    assert P.band_human_vouched({"schools": [{"school": "a"}]}) is False
+    # an override on an EXCLUDED (struck-through) school is not a vouch for the value
+    assert P.band_human_vouched({"schools": [
+        {"school": "a", "excluded": {"reason": "x"}, "human_override": {"reason": "y"}}]}) is False
+
+
+def test_vouched_flag_flows_onto_bandwrite():
+    receipt = {"bands": {"middle": {
+        "gross_minutes": 426, "start_time": None, "end_time": None, "method": "mean_tiebreak",
+        "sampling": {}, "schools": [
+            {"school": "dickinson", "gross": 426, "human_override": {"reason": "approving"}},
+            {"school": "hagen", "gross": 425, "human_override": {"reason": "closed school"}}]}}}
+    w = MAP.plan_writes(receipt)[0]
+    assert w.human_vouched is True
+
+
+def test_626_part2_vintage_tracks_the_value_source_not_a_losing_sample():
+    # Dickinson middle: value 426 == dickinson's gross (URL has no year); hagen (425) carries a
+    # 2016-17 URL. The band's vintage must come from the REPRESENTATIVE (value's source), so hagen's
+    # stale URL year is NOT inherited — the band falls through to current-year.
+    from infrastructure.utilities.school_year import is_acceptable_data_year, current_school_year
+    band = {"gross_minutes": 426, "schools": [
+        {"school": "dickinson", "gross": 426, "school_year": None,
+         "evidence": {"url": "https://d.k12.nd.us/families/back-to-school"}},
+        {"school": "hagen", "gross": 425, "school_year": None,
+         "evidence": {"url": "https://d.k12.nd.us/docs/2015-2016/2016-17-HJH-HBook.pdf"}}]}
+    year, basis = P.resolve_schedule_year(band, P.collect_source_urls(band))
+    assert (year, basis) == (current_school_year(), "default_current")
+    assert is_acceptable_data_year(year)
+
+
+def test_626_part2_representative_url_year_is_kept_when_it_is_the_value_source():
+    # Mirror guard: when the REPRESENTATIVE school's own URL carries the year, it IS used (the fix
+    # narrows WHICH url sources the year, it doesn't suppress a legitimate representative vintage).
+    band = {"gross_minutes": 420, "schools": [
+        {"school": "oak", "gross": 420, "school_year": None,
+         "evidence": {"url": "https://d.org/2023-24/bell.pdf"}},
+        {"school": "elm", "gross": 400, "school_year": None,
+         "evidence": {"url": "https://d.org/2016-17/old.pdf"}}]}
+    year, basis = P.resolve_schedule_year(band, P.collect_source_urls(band))
+    assert (year, basis) == ("2023-24", "content_url")
+
+
+# ----------------------------- #632 excluded schools & vintage -----------------------------
+def test_632_excluded_school_year_does_not_hijack_band_consensus():
+    """#632: a struck/excluded school was removed from the band's VALUE, so its stated school_year
+    must not enter the precedence-1 band-consensus vintage. Included school states no year; the
+    excluded one states 2016-17 → the band falls through to current, never 2016-17."""
+    from infrastructure.utilities.school_year import current_school_year
+    band = {"gross_minutes": 420, "schools": [
+        {"school": "central ms", "gross": 420, "school_year": None,
+         "evidence": {"url": "https://d.org/bells"}},
+        {"school": "old jh", "gross": 425, "school_year": "2016-17",
+         "evidence": {"url": "https://d.org/2016-17/old.pdf"}, "excluded": {"reason": "closed"}}]}
+    year, basis = P.resolve_schedule_year(band, P.collect_source_urls(band))
+    assert (year, basis) == (current_school_year(), "default_current")
+
+
+def test_632_excluded_school_url_not_a_source():
+    """collect_source_urls' docstring always said INCLUDED schools; #632 made the code enforce it."""
+    band = {"schools": [
+        {"school": "a", "evidence": {"url": "https://d.org/live"}},
+        {"school": "b", "evidence": {"url": "https://d.org/struck"}, "excluded": {"reason": "x"}}]}
+    assert P.collect_source_urls(band) == ["https://d.org/live"]
+
+
+def test_632_included_school_years_still_reach_consensus():
+    """Mirror guard: included schools' stated years still form the precedence-1 consensus."""
+    band = {"gross_minutes": 400, "schools": [
+        {"school": "a", "gross": 400, "school_year": "2024-25"},
+        {"school": "b", "gross": 400, "school_year": "2024-25"},
+        {"school": "c", "gross": 405, "school_year": "2016-17",
+         "excluded": {"reason": "closed"}}]}
+    assert P.resolve_schedule_year(band) == ("2024-25", "band_consensus")
+
+
+# ----------------------------- #631 mapping version -----------------------------
+def test_631_mapping_version_exists_and_rides_the_ledger():
+    """#631: the idempotency key is (facts fingerprint, MAPPING_VERSION). The constant must exist,
+    and ledger.record_incorporation must persist whatever `mapper` it is given so a plain re-run
+    after a mapper fix re-writes (source-pinned; the DB round-trip is covered by the govdb suite)."""
+    assert isinstance(MAP.MAPPING_VERSION, int) and MAP.MAPPING_VERSION >= 1
+    import inspect
+    from infrastructure.acquisition.stage9_incorporate import ledger as LG
+    assert '"mapper": mapper' in inspect.getsource(LG.record_incorporation)
+    from infrastructure.acquisition.stage9_incorporate import incorporate as INC
+    src = inspect.getsource(INC.incorporate_district)
+    assert 'inc.get("mapper") == MAP.MAPPING_VERSION' in src
+
+
+# ----------------------------- #638 shared HH:MM parser -----------------------------
+def test_638_one_hhmm_parser():
+    """#638: aggregate._to_min and provenance's times_consistent both resolve to the ONE
+    timeutil.hhmm_to_min (no third private copy)."""
+    from infrastructure.acquisition.common.timeutil import hhmm_to_min
+    from infrastructure.acquisition.stage8_aggregate import aggregate as AGG
+    assert AGG._to_min is hhmm_to_min
+    assert hhmm_to_min("07:40") == 460 and hhmm_to_min(None) is None
+    assert hhmm_to_min("7:40") == 460 and hhmm_to_min("garbage") is None
+    # times_consistent semantics unchanged through the swap
+    assert P.times_consistent("07:25", "14:20", 415) is True
+    assert P.times_consistent("07:25", "14:20", 425) is False
+
+
 # ----------------------------- statutory fallback (#94) -----------------------------
 def test_unsatisfied_band_maps_to_statutory():
     # High is CLAIMED (NCES has High schools) but has no accepted facts -> unsatisfied.

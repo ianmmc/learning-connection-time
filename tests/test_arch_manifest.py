@@ -61,6 +61,8 @@ def test_manifest_schema():
         assert {"artifact", "producer", "role"} <= set(rec), f"receipts entry incomplete: {rec}"
     for ldr in MANIFEST["file_dispatches"]["cli_only_loaders"]:
         assert {"loader", "why", "forbidden_scope"} <= set(ldr), f"cli_only_loaders entry incomplete: {ldr}"
+    for ar in MANIFEST["file_dispatches"]["audit_receipts"]:
+        assert {"basename", "stage", "producer", "role"} <= set(ar), f"audit_receipts entry incomplete: {ar}"
     for root in MANIFEST["scan"]["python_roots"]:
         assert (REPO / root).is_dir(), f"scan.python_roots entry does not exist: {root}"
 
@@ -75,6 +77,8 @@ def test_manifest_enforced_sections_are_nonempty():
     assert MANIFEST["file_dispatches"]["receipts"]
     assert MANIFEST["file_dispatches"]["cli_only_loaders"], \
         "cli_only_loaders emptied — the #526 receipt-as-transport check would vanish"
+    assert MANIFEST["file_dispatches"]["audit_receipts"], \
+        "audit_receipts emptied — the REQ-164 both-ways receipt-coverage check would vanish"
 
 
 # ----------------------------- external programs -----------------------------
@@ -291,3 +295,76 @@ def test_cli_only_loaders_not_referenced_in_scope(ldr):
     assert not offenders, (
         f"{ldr['loader']} is CLI-only ({ldr['why']}) but is referenced in {offenders} — "
         f"resolve the batch via _batch_from_db instead")
+
+
+# ----------------------------- audit receipts (REQ-164, common/receipts.py) -----------------------------
+def _receipts_alias(tree):
+    """The local alias bound to `infrastructure.acquisition.common.receipts` in this module, or None."""
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and node.module == "infrastructure.acquisition.common":
+            for alias in node.names:
+                if alias.name == "receipts":
+                    return alias.asname or alias.name
+    return None
+
+
+@functools.lru_cache(maxsize=1)
+def _audit_receipt_calls():
+    """{basename -> tuple of 'relpath:line'} over the declared scan scope — every call of the shared
+    per-district receipt writer (`RCPT.write_receipt(district_id, name, basename, payload)`), keyed by
+    its basename (the 3rd positional arg, a string literal). Mirrors _external_program_calls()'s shape
+    so the same both-ways coverage pattern (#206's external_programs review) applies to audit receipts."""
+    found = {}
+    for p in _scanned_py_files():
+        try:
+            tree = ast.parse(p.read_text())
+        except SyntaxError:
+            continue
+        alias = _receipts_alias(tree)
+        if alias is None:
+            continue
+        rel = p.relative_to(REPO).as_posix()
+        for node in ast.walk(tree):
+            if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "write_receipt"
+                    and isinstance(node.func.value, ast.Name) and node.func.value.id == alias):
+                continue
+            if len(node.args) < 3 or not (isinstance(node.args[2], ast.Constant)
+                                           and isinstance(node.args[2].value, str)):
+                continue
+            found.setdefault(node.args[2].value, []).append(f"{rel}:{node.lineno}")
+    return {basename: tuple(sites) for basename, sites in found.items()}
+
+
+def test_no_undeclared_audit_receipt():
+    """Every basename passed to the shared per-district receipt writer must be declared in the manifest
+    — a NEW stage (or a renamed basename) that isn't declared fails here."""
+    declared = {ar["basename"] for ar in MANIFEST["file_dispatches"]["audit_receipts"]}
+    undeclared = {b: sites for b, sites in _audit_receipt_calls().items() if b not in declared}
+    assert not undeclared, (
+        "Undeclared audit-receipt basename(s) — add them to arch-manifest.json "
+        f"`file_dispatches.audit_receipts` (with stage + producer + role): {undeclared}")
+
+
+def test_no_stale_audit_receipt_declaration():
+    """The reverse — a declared basename no longer written anywhere keeps the manifest honest."""
+    declared = {ar["basename"] for ar in MANIFEST["file_dispatches"]["audit_receipts"]}
+    stale = declared - set(_audit_receipt_calls())
+    assert not stale, f"arch-manifest.json declares audit receipt basename(s) no longer written: {stale}"
+
+
+def test_audit_receipt_producer_matches_bidirectionally():
+    """BOTH directions (mirrors test_program_callers_match_bidirectionally): the declared producer must
+    be a real call site for its basename, and every ACTUAL call site of a declared basename must be the
+    declared producer — a second module quietly writing the same basename is a review-worthy new edge."""
+    actual = _audit_receipt_calls()
+    for ar in MANIFEST["file_dispatches"]["audit_receipts"]:
+        basename, declared_producer = ar["basename"], ar["producer"]
+        actual_files = {site.rsplit(":", 1)[0] for site in actual.get(basename, ())}
+        assert declared_producer in actual_files, (
+            f"arch-manifest.json says {declared_producer} produces audit receipt {basename!r}, but no "
+            f"write_receipt(..., {basename!r}, ...) call was found there (found in: {sorted(actual_files)})")
+        undeclared = actual_files - {declared_producer}
+        assert not undeclared, (
+            f"NEW undeclared producer(s) of audit receipt {basename!r}: {sorted(undeclared)} — add them "
+            f"to file_dispatches.audit_receipts in arch-manifest.json (that edit is the review surface)")

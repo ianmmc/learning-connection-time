@@ -215,9 +215,11 @@ export function detectChallenge(headers, bodyText) {
   return null;
 }
 
-// The district circuit breaker's threshold: this many CONSECUTIVE challenges halts the district's
-// remaining captures (the un-attempted URLs record a non-retryable security_block variant --
-// deliberately NOT not_attempted, which the #116 retry would re-hammer).
+// The district circuit breaker's threshold: this many challenges UNBROKEN BY A SUCCESSFUL CAPTURE
+// halts the district's remaining captures (the un-attempted URLs record a non-retryable
+// security_block variant -- deliberately NOT not_attempted, which the #116 retry would re-hammer).
+// Interleaved 404s/timeouts do NOT reset the streak (#635): a WAF'd district's dead links 404
+// between challenges, and only a real successful capture is evidence the wall is down.
 export const SECURITY_BREAKER_N = 3;
 
 // Fold one finished record into the district's breaker state ({secConsec, secHalted}); pure over
@@ -227,6 +229,11 @@ export function updateSecurityState(state, rec) {
     state.secConsec = (state.secConsec || 0) + 1;
     if (state.secConsec >= SECURITY_BREAKER_N) state.secHalted = true;
   } else if (rec.ok) {
+    // #635 considered-and-kept: ONLY a successful capture resets the streak. A 404/timeout
+    // neither counts nor resets (pinned by capture_security.test.mjs) — a WAF'd district's dead
+    // links 404 between challenges, and resetting on those would keep hammering a protected
+    // district (the ONE-attempt rule, Critical Rule #3). The spend/safety asymmetry favors
+    // tripping early: a false trip costs recall on a few URLs; a missed trip risks an IP ban.
     state.secConsec = 0;
   }
   return state;
@@ -974,9 +981,9 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
       const wasHalted = st.secHalted;
       updateSecurityState(st, rec);
       if (st.secHalted && !wasHalted) {
-        st.secHaltReason = `${st.secConsec} consecutive challenges`;
+        st.secHaltReason = `${st.secConsec} challenges with no successful capture between`;
         console.error(`  ${t.did}: SECURITY BLOCK -- halting this district's remaining captures `
-          + `after ${st.secConsec} consecutive challenges (one-attempt rule, Rule 3)`);
+          + `after ${st.secConsec} challenges unbroken by a successful capture (one-attempt rule, Rule 3)`);
       }
       byDistrict[t.did].records.push(rec);
       // #117: journal the completed record NOW -- appendFileSync is per-line durable, so a

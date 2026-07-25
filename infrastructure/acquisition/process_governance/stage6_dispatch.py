@@ -12,6 +12,7 @@ from pathlib import Path
 from infrastructure.acquisition.common import calibration as CAL
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
+from infrastructure.acquisition.common import receipts as RCPT
 from infrastructure.acquisition.process_governance import gate_calibration as GCAL
 from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402  (HUB_LABELS — the taxonomy's canonical home)
 from infrastructure.acquisition.stage5_filter import release as REL
@@ -341,6 +342,7 @@ def dispatch_handoff(session, district_ids, created_by: str = "human", root=None
     path = (Path(root) if root else HND.DEFAULT_ROOT) / HND.handoff_filename(doc)
     record_dispatch(session, doc, path, actor=created_by, metas=metas)
     HND.write(doc, root=root)            # the immutable file LAST (commit-order: DB record, then disk)
+    _stage6_capture_receipts(doc, path)  # REQ-164: per-district audit receipt pointing at the handoff
     # district_status.json refresh runs TRULY LAST (issue #39): only after the file write succeeded —
     # if write() had raised, the session would roll back and an earlier export would have baked
     # phantom `dispatched` events into the git-tracked backup. Best-effort, as everywhere: the DB is
@@ -351,3 +353,25 @@ def dispatch_handoff(session, district_ids, created_by: str = "human", root=None
         print(f"[warn] district_status.json backup refresh failed after dispatch "
               f"({type(e).__name__}: {e}); the DB is authoritative — re-export later")
     return doc, path
+
+
+def _stage6_capture_receipts(doc: dict, handoff_path: Path) -> None:
+    """One per-district Stage-6 audit receipt into each district's capture dir (REQ-164). The handoff is
+    a per-DISPATCH bundle (acquisition/handoffs/handoff_<hash>_<ts>.json — the authoritative immutable
+    file); this projects each district's slice (the council package it was dispatched under) and points
+    at that file. Best-effort per district — the handoff file + gov DB are authoritative, so a disk
+    hiccup is logged, never a failed dispatch (the receipt is regenerable)."""
+    hh = doc.get("handoff_hash")
+    for d in doc.get("districts", []):
+        did = d.get("district_id")
+        if not did:
+            continue
+        try:
+            RCPT.write_receipt(did, "", "stage6_dispatch", {
+                "stage": 6, "stage_name": "dispatch", "checkpoint": "gate@6", "district_id": did,
+                "handoff_hash": hh,
+                "authoritative": f"acquisition/handoffs/{handoff_path.name} + gov_db:handoff/extraction_request",
+                "handoff_file": handoff_path.name, "district": d})
+        except Exception as e:  # noqa: BLE001 — the receipt is regenerable; never fail a dispatch
+            print(f"[warn] Stage 6 capture-dir receipt failed for {did} "
+                  f"({type(e).__name__}: {e}); regenerable from the handoff file")

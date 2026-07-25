@@ -19,14 +19,15 @@ from infrastructure.acquisition.common.timeutil import utcnow
 
 
 def record_incorporation(con, district_id, *, fingerprint, approval_id, bands,
-                         actor="auto:stage9", name="", state=None):
-    """Append an 'incorporated' state_event (stage=9). `bands` = {grade_level: method} just written."""
+                         actor="auto:stage9", name="", state=None, mapper=None):
+    """Append an 'incorporated' state_event (stage=9). `bands` = {grade_level: method} just written.
+    `mapper` = mapping.MAPPING_VERSION at write time (#631) — half of the idempotency key."""
     con.execute(DS.INSERT_STATE_EVENT, {
         "district_id": district_id, "name": name, "state": state,
         "stage": 9, "stage_name": "incorporate", "checkpoint": "incorporated",
         "event_type": "incorporated", "outcome": None, "topology": None, "batch_id": None,
         "fingerprints_json": json.dumps({"facts": fingerprint, "approval_id": approval_id,
-                                         "bands": bands}),
+                                         "bands": bands, "mapper": mapper}),
         "actor": actor,
         "note": (f"wrote {len(bands)} band(s): "
                  + ",".join(f"{b}={m}" for b, m in sorted(bands.items()))),
@@ -44,4 +45,5 @@ def latest_incorporation(con, district_id):
         return None
     fp = json.loads(row["fingerprints_json"] or "{}")
     return {"fingerprint": fp.get("facts"), "approval_id": fp.get("approval_id"),
-            "bands": fp.get("bands"), "created_at": row["created_at"]}
+            "bands": fp.get("bands"), "mapper": fp.get("mapper"),   # absent pre-#631 → None
+            "created_at": row["created_at"]}

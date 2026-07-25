@@ -132,7 +132,7 @@
       <div class="s8-band-head" data-feat="claim">
         <h3>${esc(band)}</h3>
         ${b.satisfied && b.satisfied.satisfied ? `<span class="badge badge-success" data-feat="band-satisfied" title="REQ-149: confident determination (basis: ${esc(b.satisfied.basis)}) — follow-up spend for this band is suppressed">satisfied · ${esc(b.satisfied.basis)}</span>` : ""}
-        <span class="s8-claim"><strong>${b.gross_minutes} min/day</strong> · ${esc(b.start_time)}–${esc(b.end_time)} · <span class="s8-method">${esc(b.method)}</span></span>
+        <span class="s8-claim"><strong>${b.gross_minutes} min/day</strong> · ${b.start_time && b.end_time ? `${esc(b.start_time)}–${esc(b.end_time)}` : `<span class="s8-muted" title="#627: a mean_tiebreak value is the average of schools with distinct schedules — it matches no single school's start/end, so no representative times are shown. Per-school times are in the roster below.">synthesized average — no single schedule</span>`} · <span class="s8-method">${esc(b.method)}</span></span>
       </div>
       <div class="s8-sampling" data-feat="sampling">
         Sampled <strong>${s.n_sampled}</strong> of <strong>${s.n_total == null ? "?" : s.n_total}</strong> schools${denomDetail} ·

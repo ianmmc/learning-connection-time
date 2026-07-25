@@ -17,6 +17,8 @@ from sqlalchemy import text
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.stage8_aggregate import approval as APV
 from infrastructure.acquisition.stage8_aggregate import closing_argument as CA
+from infrastructure.acquisition.common import paths
+from infrastructure.acquisition.common import receipts as RCPT
 from infrastructure.acquisition.stage9_incorporate import incorporate as INC
 from infrastructure.acquisition.stage9_incorporate import ledger as LEDGER
 
@@ -117,9 +119,12 @@ def _grade_rows(did):
 
 
 @pytest.fixture
-def env():
-    """Seed a synthetic LCT district (+ its state statutory row), yield its id, clean both DBs."""
+def env(tmp_path, monkeypatch):
+    """Seed a synthetic LCT district (+ its state statutory row), yield its id, clean both DBs.
+    RAW_CAPTURES is redirected to a tmp dir so Stage-9 audit receipts (REQ-164) never touch the real
+    data/raw tree."""
     _require_dbs()
+    monkeypatch.setattr(paths, "RAW_CAPTURES", tmp_path)
     gdb.init_precious_schema()   # ensure state_event exists
     _cleanup()
     from infrastructure.database.connection import session_scope as lct_scope
@@ -171,6 +176,41 @@ def test_incorporate_writes_bands_and_stamps(env, monkeypatch):
     assert inc["bands"] == {"elementary": "council_extraction", "high": "council_extraction"}
 
 
+def test_incorporate_writes_receipt_and_refreshes_twin(env, monkeypatch):
+    """REQ-164 + #615: a standalone incorporation drops a Stage-9 audit receipt into the capture dir
+    AND refreshes the district_status.json twin in the same code path."""
+    ca = _fake_ca(env, council={"elementary": {"gross": 400}, "high": {"gross": 450}})
+    _patch_gov(monkeypatch, ca, approval_id=7)
+    twin = []
+    monkeypatch.setattr(INC.DS, "export_status", lambda gs: twin.append("refreshed"))
+
+    res = INC.incorporate_district(env, actor="ian")
+    assert res.status == "incorporated"
+    assert twin == ["refreshed"]                    # #615: twin refreshed in-path (once, standalone)
+
+    latest = RCPT.latest_receipt(env, "Stage9 Test District", "stage9_incorporate")
+    assert latest is not None and latest.name.startswith("stage9_incorporate.")
+    assert ".py-" in latest.name                    # writer-tagged, always-stamped
+    doc = json.loads(latest.read_text())
+    assert doc["stage"] == 9 and doc["district_id"] == env and doc["approval_id"] == 7
+    assert {b["grade_level"] for b in doc["bands"]} == {"elementary", "high"}
+    assert doc["grade_minutes"]                      # non-empty per-grade projection
+    assert doc["authoritative"].startswith("gov_db:")   # audit projection, not a transmission vehicle
+
+
+def test_batch_refreshes_twin_once_not_per_district(env, monkeypatch):
+    """incorporate_batch exports the twin ONCE at the end, never per district (issue #49 O(N^2))."""
+    _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 400}}))
+    per_district, run_end = [], []
+    monkeypatch.setattr(INC.DS, "export_status", lambda gs: per_district.append(1))
+    monkeypatch.setattr(INC.DS, "export", lambda: run_end.append(1))
+
+    res = INC.incorporate_batch([env], actor="ian")
+    assert res[0].status == "incorporated"
+    assert per_district == []                        # no per-district export in batch mode
+    assert run_end == [1]                            # exactly one run-end twin refresh
+
+
 def test_statutory_fallback_write(env, monkeypatch):
     # elementary satisfied; high CLAIMED-but-unsatisfied -> statutory fallback from StateRequirement ZZ
     ca = _fake_ca(env, council={"elementary": {"gross": 400}}, unsatisfied=["high"])
@@ -217,6 +257,87 @@ def test_reapproval_correction_updates_in_place(env, monkeypatch):
     assert res.status == "incorporated"
     rows = _bell_rows(env)
     assert len(rows) == 1 and rows[0]["minutes"] == 430
+
+
+def _times(did, grade="elementary"):
+    from infrastructure.database.connection import session_scope as lct_scope
+    from infrastructure.database.models import BellSchedule
+    with lct_scope() as s:
+        r = (s.query(BellSchedule).filter(BellSchedule.district_id == did.zfill(7),
+                                          BellSchedule.grade_level == grade).first())
+        return (r.start_time, r.end_time, r.instructional_minutes, bool(r.human_vouched))
+
+
+def test_630_reapproval_to_mean_tiebreak_clears_stale_times(env, monkeypatch):
+    """#630: v1 modal band carries real consistent times; v2 re-approval over the SAME (year, grade)
+    key resolves mean_tiebreak — synthetic gross, receipt still carrying one school's times (a
+    pre-#627 frozen shape). The UPDATE must NOT merge-preserve v1's (or the receipt's) stale times:
+    the row lands minutes-only, and _verify_written now enforces the #627 invariant for council rows."""
+    _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 415, "year": "2024-25"}}),
+               approval_id=1)
+    INC.incorporate_district(env)
+    st, et, mins, _ = _times(env)
+    assert (st, et, mins) == ("08:00", "14:55", 415)   # v1: real, consistent times
+    # v2: same year key, mean_tiebreak 425 with a school's 415-span times (inconsistent → dropped)
+    ca2 = _fake_ca(env)
+    ca2["bands"]["elementary"] = {
+        "gross_minutes": 425, "start_time": "08:00", "end_time": "14:55", "method": "mean_tiebreak",
+        "sampling": {"n_sampled": 2, "n_total": 2, "coverage": 1.0, "plurality_share": 0.5},
+        "schools": [
+            {"school": "oak", "gross": 415, "start_time": "08:00", "end_time": "14:55",
+             "school_year": "2024-25", "models": ["m1", "m2"], "evidence": {"url": "https://d.org/oak"}},
+            {"school": "elm", "gross": 435, "start_time": "07:55", "end_time": "15:10",
+             "school_year": "2024-25", "models": ["m1", "m2"], "evidence": {"url": "https://d.org/elm"}}]}
+    _patch_gov(monkeypatch, ca2, approval_id=2)
+    res = INC.incorporate_district(env)
+    assert res.status == "incorporated"
+    st, et, mins, _ = _times(env)
+    assert (st, et, mins) == (None, None, 425), \
+        f"stale times survived the UPDATE (#630): ({st!r}, {et!r}, {mins})"
+
+
+def test_631_mapper_version_mismatch_triggers_rewrite(env, monkeypatch):
+    """#631: an incorporation recorded under an older (or absent, pre-#631) MAPPING_VERSION is NOT
+    'already_incorporated' — a plain re-run applies the current mapper's writes. A same-version
+    re-run stays a no-op."""
+    ca = _fake_ca(env, council={"elementary": {"gross": 420}})
+    _patch_gov(monkeypatch, ca)
+    assert INC.incorporate_district(env).status == "incorporated"
+    assert INC.incorporate_district(env).status == "already_incorporated"
+    # simulate a pre-#631 ledger event: strip the recorded mapper from the newest stamp
+    with gdb.session_scope() as gs:
+        row = gs.execute(text(
+            "SELECT event_id, fingerprints_json FROM state_event "
+            "WHERE district_id=:d AND checkpoint='incorporated' ORDER BY event_id DESC LIMIT 1"),
+            {"d": env}).mappings().first()
+        fp = json.loads(row["fingerprints_json"])
+        fp.pop("mapper", None)
+        gs.execute(text("UPDATE state_event SET fingerprints_json=:j WHERE event_id=:e"),
+                   {"j": json.dumps(fp), "e": row["event_id"]})
+    res = INC.incorporate_district(env)   # NO --force
+    assert res.status == "incorporated", "a mapper-version mismatch must re-write without --force"
+    assert INC.incorporate_district(env).status == "already_incorporated"
+
+
+def test_636_vouched_band_lands_on_bell_schedules(env, monkeypatch):
+    """#636: the gate@8 vouch is persisted on bell_schedules (the band source of truth), not only
+    on the projection — a note-only human_override on an included school sets it; a plain council
+    band leaves it False."""
+    ca = _fake_ca(env, council={"elementary": {"gross": 420}, "high": {"gross": 430}})
+    ca["bands"]["elementary"]["schools"][0]["human_override"] = {
+        "start_time": None, "end_time": None, "reason": "verified by eye", "actor": "ian"}
+    _patch_gov(monkeypatch, ca)
+    INC.incorporate_district(env)
+    assert _times(env, "elementary")[3] is True
+    assert _times(env, "high")[3] is False
+    # and the projection inherits per owning band
+    from infrastructure.database.connection import session_scope as lct_scope
+    from infrastructure.database.models import DistrictGradeMinutes
+    with lct_scope() as s:
+        by_grade = {r.grade: r.human_vouched for r in
+                    s.query(DistrictGradeMinutes)
+                    .filter(DistrictGradeMinutes.district_id == env.zfill(7)).all()}
+    assert by_grade["03"] is True and by_grade["10"] is False
 
 
 # ----------------------------- #605 per-grade projection -----------------------------

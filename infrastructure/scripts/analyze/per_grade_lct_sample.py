@@ -48,7 +48,7 @@ from infrastructure.scripts.analyze.calculate_lct_variants import (
 from infrastructure.scripts.analyze.per_grade_lct import (
     SEC_GRADES,
     cached_statutory,
-    get_district_grade_minutes,
+    get_all_district_grade_minutes,
     weighted_scope_minutes,
 )
 
@@ -86,21 +86,27 @@ def sample(limit: int | None = None) -> list:
     with session_scope() as s:
         dids = [r[0] for r in (s.query(DistrictGradeMinutes.district_id).distinct()
                                .order_by(DistrictGradeMinutes.district_id).all())]
-        # The REAL pipeline's pickers (COVID exclusion, zero-staff fallback), bulk dicts
+        # The REAL pipeline's pickers (COVID exclusion, zero-staff fallback), bulk dicts.
+        # #637: EVERYTHING per-district is bulk-fetched before the loop — the District rows, the
+        # grade-minutes projection, and ONE shared statutory memo (it was rebuilt per iteration,
+        # throwing its (state, band) cache away each district).
         enrollment_with_years = get_most_recent_enrollment(s)
         staff_with_years = get_most_recent_staff(s)
         legacy_by_district = _legacy_secondary_by_district(s, dids)
+        districts_by_id = {d.nces_id: d for d in
+                           s.query(District).filter(District.nces_id.in_(dids)).all()}
+        gm_by_district = get_all_district_grade_minutes(s)
+        stat = cached_statutory(get_statutory_minutes)
         for did in dids:
-            d = s.query(District).filter(District.nces_id == did).first()
+            d = districts_by_id.get(did)
             enr, enroll_yr = enrollment_with_years.get(did, (None, None))
             staff, staff_yr = staff_with_years.get(did, (None, None))
             if not (d and enr):
                 continue
             legacy = legacy_by_district.get(did)
-            gm = get_district_grade_minutes(s, did)
+            gm = gm_by_district.get(did) or {}
             pg = weighted_scope_minutes(s, d.state, SEC_GRADES, enr, gm,
-                                        [staff_yr, enroll_yr],
-                                        cached_statutory(get_statutory_minutes))
+                                        [staff_yr, enroll_yr], stat)
             pg_min, pg_src = (pg[0], pg[1]) if pg else (None, None)
             sec_enr = enr.enrollment_secondary or 0
             t_sec = (float(staff.teachers_secondary_6_12)

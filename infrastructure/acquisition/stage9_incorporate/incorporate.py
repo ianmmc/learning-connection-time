@@ -31,22 +31,27 @@ from sqlalchemy import text
 from sqlalchemy.exc import ProgrammingError
 
 from infrastructure.acquisition.common import db as gdb
+from infrastructure.acquisition.common import district_status as DS
+from infrastructure.acquisition.common import receipts as RCPT
 from infrastructure.acquisition.stage8_aggregate import approval as APV
 from infrastructure.acquisition.stage8_aggregate import closing_argument as CA
 from infrastructure.acquisition.stage9_incorporate import ledger as LEDGER
 from infrastructure.acquisition.stage9_incorporate import mapping as MAP
 from infrastructure.acquisition.stage9_incorporate import per_grade as PG
+from infrastructure.acquisition.stage9_incorporate import provenance as P
 
 # The sanctioned cross-DB imports (import-linter ignore_imports #2, pyproject.toml):
 from infrastructure.database import queries as Q
 from infrastructure.database.connection import session_scope as lct_session_scope
-from infrastructure.database.models import BellSchedule, DistrictGradeMinutes
+from infrastructure.database.models import (
+    STATUTORY_DEFAULT_MINUTES,   # #638: one policy home (models.py, next to StateRequirement)
+    BellSchedule,
+    DistrictGradeMinutes,
+)
 
 # Methods that mark a `bell_schedules` row as Stage-9-authored (there is no created_by column) — the
 # orphan-reconcile scope AND the overwrite boundary: any other method is a protected legacy row.
 STAGE9_METHODS = ("council_extraction", "statutory_fallback")
-
-STATUTORY_DEFAULT_MINUTES = 360
 
 _schemas_ensured = False
 
@@ -141,12 +146,14 @@ def _write_grade_minutes(session, stored_did: str, grade_minutes: list, fingerpr
             row.minutes_basis = gm.minutes_basis
             row.year = gm.year
             row.overlap_flag = gm.overlap_flag
+            row.human_vouched = gm.human_vouched   # #626
             row.provenance = prov
         else:
             session.add(DistrictGradeMinutes(
                 district_id=stored_did, grade=gm.grade, instructional_minutes=gm.minutes,
                 source_band=gm.source_band, method=gm.method, minutes_basis=gm.minutes_basis,
-                year=gm.year, overlap_flag=gm.overlap_flag, provenance=prov))
+                year=gm.year, overlap_flag=gm.overlap_flag, human_vouched=gm.human_vouched,
+                provenance=prov))
     for grade, row in existing.items():
         if grade not in keep:
             session.delete(row)
@@ -171,8 +178,10 @@ def _foreign_collisions(session, stored_did: str, writes: list) -> list:
 
 def _verify_written(session, stored_did: str, writes: list) -> None:
     """Rule #6 — re-query each intended row IN THE SAME session and assert minutes/method/basis
-    (and, for statutory rows, that no council-era clock times survived) before commit. Raises on
-    any absence or mismatch (rolls the whole write back)."""
+    AND clock times before commit. Raises on any absence or mismatch (rolls the whole write back).
+    #630 widened the times check from statutory-only to ALL rows (faithful == the planned write,
+    None included) plus the #627 internal-consistency invariant on council rows — a stale
+    merge-preserved time can no longer survive a re-incorporation undetected."""
     for w in writes:
         row = (session.query(BellSchedule)
                .filter(BellSchedule.district_id == stored_did,
@@ -188,10 +197,18 @@ def _verify_written(session, stored_did: str, writes: list) -> None:
                 f"Stage 9 verify mismatch for {stored_did}/{w.year}/{w.grade_level}: "
                 f"db=({row.instructional_minutes},{row.method},{row.minutes_basis}) "
                 f"expected=({w.minutes},{w.method},{w.minutes_basis})")
-        if row.method == "statutory_fallback" and (row.start_time or row.end_time):
+        if row.start_time != w.start_time or row.end_time != w.end_time:
             raise RuntimeError(
-                f"Stage 9 verify: statutory row {stored_did}/{w.year}/{w.grade_level} carries "
-                f"clock times ({row.start_time!r}, {row.end_time!r}) — must be cleared")
+                f"Stage 9 verify: {stored_did}/{w.year}/{w.grade_level} clock times "
+                f"db=({row.start_time!r},{row.end_time!r}) != planned "
+                f"({w.start_time!r},{w.end_time!r}) — stale times survived the write (#630)")
+        if (row.method == "council_extraction"
+                and not P.times_consistent(row.start_time, row.end_time,
+                                           row.instructional_minutes)):
+            raise RuntimeError(
+                f"Stage 9 verify: council row {stored_did}/{w.year}/{w.grade_level} is internally "
+                f"inconsistent (#627): minutes={row.instructional_minutes} != span of "
+                f"({row.start_time!r},{row.end_time!r})")
 
 
 def _verify_grade_minutes(session, stored_did: str, grade_minutes: list) -> None:
@@ -223,9 +240,12 @@ def _verify_grade_minutes(session, stored_did: str, grade_minutes: list) -> None
 
 
 def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, force=False,
-                         strict=False) -> IncorporationResult:
+                         strict=False, refresh_twin=True) -> IncorporationResult:
     """Incorporate one approved district. Returns an IncorporationResult; raises only on a genuine
-    fault (missing LCT district, verify mismatch) or, with strict=True, on ineligibility."""
+    fault (missing LCT district, verify mismatch) or, with strict=True, on ineligibility.
+
+    `refresh_twin=True` regenerates district_status.json in-path (the #615 fix). incorporate_batch
+    passes False and exports ONCE at the end (issue #49 O(N^2) avoidance)."""
     district_id = _norm_did(district_id)   # governance + LCT ids share the zero-padded convention
     _ensure_schemas()
 
@@ -260,7 +280,12 @@ def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, for
         # slot_projection, and roster coverage is derived-live-never-frozen by design.
         grade_span_source = ca_live
         inc = LEDGER.latest_incorporation(gs, district_id)
-        already = bool(inc and inc.get("fingerprint") == fp_live)
+        # #631: idempotency key = (facts fingerprint, mapping version). A mapper/provenance/
+        # projection fix changes the WRITES without touching the frozen receipt; requiring the
+        # recorded MAPPING_VERSION to match makes a plain re-run apply the corrected writes
+        # (pre-#631 events carry mapper=None → treated as stale once, then re-stamped).
+        already = bool(inc and inc.get("fingerprint") == fp_live
+                       and inc.get("mapper") == MAP.MAPPING_VERSION)
 
     if already and not force:
         return IncorporationResult(district_id, "already_incorporated", fingerprint=fp_live)
@@ -302,6 +327,7 @@ def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, for
             raise ValueError(f"District {district_id} not found in LCT production DB")
         stored_did = district.nces_id
         state = district.state
+        district_name = district.name   # captured in-session for the receipt slug (ORM detaches on exit)
         # FAIL LOUD on a foreign-row collision: a (year, grade_level) key held by a NON-Stage-9
         # method (human_provided / tier_* / legacy) is a human-vs-pipeline conflict Stage 9 must
         # never silently resolve. Raise BEFORE any write so nothing is committed; a person removes
@@ -322,13 +348,17 @@ def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, for
                 schools_sampled=w.schools_sampled, source_urls=w.source_urls,
                 confidence=w.confidence, method=w.method, minutes_basis=w.minutes_basis,
                 source_description=w.source_description, notes=w.notes,
-                raw_import=w.raw_import, created_by=actor)
-            if w.method == "statutory_fallback":
-                # A council→statutory flip over the SAME key (council's consensus year == current
-                # year) hits add_bell_schedule's UPDATE path, which preserves the old None-args
-                # times — the retracted council times must not survive on a statutory row.
-                schedule.start_time = None
-                schedule.end_time = None
+                raw_import=w.raw_import, created_by=actor,
+                human_vouched=w.human_vouched)   # #636: band source of truth for the #626 vouch
+            # #630: a BandWrite is the COMPLETE intended row state — assign times faithfully,
+            # including None. add_bell_schedule's UPDATE path merge-preserves on None args (issue
+            # #26 partial-update semantics, right for other callers), which here let stale times
+            # survive two flips over the same key: council→statutory (the retracted council times
+            # on a statutory row) and modal→mean_tiebreak (#627: a synthetic gross next to the old
+            # school's times — gross != span on the source-of-truth table, undetected). Stage 9
+            # owns its rows; the planned write IS the truth.
+            schedule.start_time = w.start_time
+            schedule.end_time = w.end_time
         ls.flush()
         _reconcile_stage9_orphans(ls, stored_did, keep={(w.year, w.grade_level) for w in writes})
         _verify_written(ls, stored_did, writes)
@@ -340,15 +370,50 @@ def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, for
         n_overlaps = sum(1 for gm in grade_minutes if gm.overlap_flag)
         # commit on context-manager exit
 
-    # ---- Phase D: governance stamp (after the LCT commit) ----
+    # ---- Phase D: governance stamp + audit receipt (after the LCT commit) ----
     bands = {w.grade_level: w.method for w in writes}
+    receipt_payload = {
+        "stage": 9, "stage_name": "incorporate", "district_id": district_id, "state": state,
+        "approval_id": approval_id, "facts_fingerprint": fp_live, "actor": actor,
+        # gov_db + the LCT rows are authoritative; this receipt is a faithful audit projection, never
+        # a transmission vehicle read back by the pipeline (REQ-164 / Decision-2 / governance §1).
+        "authoritative": "gov_db:state_event + lct:bell_schedules/district_grade_minutes",
+        "bands": [w.summary() for w in writes],
+        "grade_minutes": [gm.summary() for gm in grade_minutes],
+        "n_grades": n_grades, "n_overlaps": n_overlaps}
     with gdb.session_scope() as gs:
         LEDGER.record_incorporation(gs, district_id, fingerprint=fp_live, approval_id=approval_id,
-                                    bands=bands, actor=actor)
+                                    bands=bands, actor=actor, mapper=MAP.MAPPING_VERSION)
+        gs.commit()                          # commit-before-derive: persist the stamp before the twin
+        if refresh_twin:
+            _refresh_status_twin(gs)         # #615: standalone exports here; batch exports once at end
+    _stamp_receipt(district_id, district_name, receipt_payload)   # AFTER both commits (commit-before-receipt)
 
     return IncorporationResult(district_id, "incorporated",
                                written=[w.summary() for w in writes], fingerprint=fp_live,
                                grades=n_grades, overlaps=n_overlaps)
+
+
+def _refresh_status_twin(gs) -> None:
+    """Best-effort district_status.json regeneration from the COMMITTED gov log (#615: the twin lagged
+    gate@8/Stage 9 until an incidental later export). gov_db is authoritative and the twin is
+    regenerable, so a hiccup is logged, never a failed incorporation (matches cache_ingest's stance)."""
+    try:
+        DS.export_status(gs)
+    except Exception as e:  # noqa: BLE001 — the twin is regenerable; never fail a committed write
+        print(f"[warn] Stage 9 district_status.json refresh failed ({type(e).__name__}: {e}); "
+              f"the twin reconciles on the next export")
+
+
+def _stamp_receipt(district_id, district_name, receipt_payload) -> None:
+    """Best-effort per-district Stage-9 audit receipt into the capture dir (REQ-164). Written AFTER the
+    gov_db + LCT commits (commit-before-receipt); regenerable from gov_db + the LCT rows, so a disk
+    hiccup is logged, never a failed incorporation."""
+    try:
+        RCPT.write_receipt(district_id, district_name, "stage9_incorporate", receipt_payload)
+    except Exception as e:  # noqa: BLE001 — the receipt is regenerable; never fail a committed write
+        print(f"[warn] Stage 9 receipt write failed for {district_id} "
+              f"({type(e).__name__}: {e}); regenerable from gov_db + the LCT rows")
 
 
 def incorporate_batch(district_ids: Iterable, *, actor="auto:stage9", dry_run=False,
@@ -360,10 +425,24 @@ def incorporate_batch(district_ids: Iterable, *, actor="auto:stage9", dry_run=Fa
     results = []
     for did in district_ids:
         try:
+            # refresh_twin=False: the twin is regenerated ONCE after the loop, not per district
+            # (issue #49 O(N^2) avoidance — a full district_status.json rebuild per incorporation).
             results.append(incorporate_district(did, actor=actor, dry_run=dry_run, force=force,
-                                                strict=strict))
+                                                strict=strict, refresh_twin=False))
         except Exception as exc:  # noqa: BLE001 — batch resilience; the fault is captured per district
             if not continue_on_error:
                 raise
             results.append(IncorporationResult(str(did), "error", reason=f"{type(exc).__name__}: {exc}"))
+    if not dry_run and any(r.status == "incorporated" for r in results):
+        _refresh_status_twin_run_end()   # one twin refresh for the whole batch (#615 + issue #49)
     return results
+
+
+def _refresh_status_twin_run_end() -> None:
+    """Best-effort ONE-shot twin refresh after a batch (issue #49). Fresh session (DS.export), so it
+    reflects every district's committed stamp; a hiccup is logged, never a failed batch."""
+    try:
+        DS.export()
+    except Exception as e:  # noqa: BLE001
+        print(f"[warn] Stage 9 batch twin refresh failed ({type(e).__name__}: {e}); "
+              f"reconciles on the next export")

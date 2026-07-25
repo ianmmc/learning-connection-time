@@ -25,10 +25,12 @@ def _enr(**counts):
     return SimpleNamespace(**base)
 
 
-def _gm(minutes_by_grade, *, basis="gross_bell_to_bell", year="2024-25", bands=None):
-    """5-tuples (minutes, method, basis, year, source_band); source_band defaults canonical."""
+def _gm(minutes_by_grade, *, basis="gross_bell_to_bell", year="2024-25", bands=None, vouched=None):
+    """6-tuples (minutes, method, basis, year, source_band, human_vouched); source_band defaults
+    canonical. `vouched` is an optional set of grades whose row carries a gate@8 human vouch (#626)."""
     method = "council_extraction" if basis == "gross_bell_to_bell" else "statutory_fallback"
-    return {g: (m, method, basis, year, (bands or {}).get(g, PGL._CANON_BAND[g]))
+    vouched = vouched or set()
+    return {g: (m, method, basis, year, (bands or {}).get(g, PGL._CANON_BAND[g]), g in vouched)
             for g, m in minutes_by_grade.items()}
 
 
@@ -101,6 +103,72 @@ def test_temporal_window_checks_every_measured_year_not_just_modal():
     minutes, source, year = PGL.weighted_scope_minutes(None, "XX", PGL.SEC_GRADES, _enr(), gm, ["2024-25"], _get_statutory)
     assert source == "per_grade_statutory" and year is None
     assert minutes == round((3 * 330 + 4 * 350) / 7)   # all statutory, per real band
+
+
+def test_626_human_vouched_grade_exempt_from_window_keeps_council_value():
+    # #626 (Dickinson shape): a human vouched for the middle band at gate@8; its stored vintage is
+    # out of window (2016-17) but the high band is current (2025-26). The vouched middle is treated as
+    # equivalent to an in-window schedule — the scope stays per_grade_bell on the council values, and
+    # only the NON-vouched years gate the window (staff/enroll 2024-25 + high 2025-26 form a set).
+    gm = (_gm({g: 426 for g in ["06", "07", "08"]}, year="2016-17", vouched={"06", "07", "08"})
+          | _gm({g: 430 for g in ["09", "10", "11", "12"]}, year="2025-26"))
+    minutes, source, year = PGL.weighted_scope_minutes(None, "XX", PGL.SEC_GRADES, _enr(),
+                                                       gm, ["2024-25"], _get_statutory)
+    assert source == "per_grade_bell"                       # NOT dropped to statutory
+    assert minutes == round((3 * 426 + 4 * 430) / 7)        # council values blended, vouched kept
+    assert year == "2025-26"                                # rep_year = modal actual vintage
+
+
+def test_626_non_vouched_out_of_window_still_drops():
+    # Guard the scope: WITHOUT a vouch, the same out-of-window middle correctly drops the whole scope
+    # to statutory (the exemption is strictly the human determination, not a blanket window relaxation).
+    gm = (_gm({g: 426 for g in ["06", "07", "08"]}, year="2016-17")
+          | _gm({g: 430 for g in ["09", "10", "11", "12"]}, year="2025-26"))
+    _, source, _ = PGL.weighted_scope_minutes(None, "XX", PGL.SEC_GRADES, _enr(),
+                                              gm, ["2024-25"], _get_statutory)
+    assert source == "per_grade_statutory"
+
+
+def test_626_vouched_does_not_rescue_a_non_vouched_stale_sibling():
+    # A vouch exempts only ITS grade's year. A second, NON-vouched out-of-window band in the same scope
+    # still forces statutory — the window is not globally disabled by one vouched band.
+    gm = (_gm({g: 426 for g in ["06", "07", "08"]}, year="2016-17", vouched={"06", "07", "08"})
+          | _gm({g: 430 for g in ["09", "10", "11", "12"]}, year="2016-17"))   # high: stale, NOT vouched
+    _, source, _ = PGL.weighted_scope_minutes(None, "XX", PGL.SEC_GRADES, _enr(),
+                                              gm, ["2024-25"], _get_statutory)
+    assert source == "per_grade_statutory"
+
+
+def test_638_grade_band_split_matches_school_sampling_bands():
+    """#638 fitness: per_grade_lct's LCT-side grade→band vocabulary (GRADES/ELEM_GRADES/SEC_GRADES/
+    _CANON_BAND) is a second copy of school_sampling's BANDS/GRADE_ORD, forced apart by the
+    import-linter boundary (LCT-side must not import acquisition code — so THIS TEST is the pin).
+    If the band boundaries ever move in school_sampling.BANDS, Stage 9 would project a grade into
+    one band while weighted_scope_minutes weights it into a different scope — silent LCT drift."""
+    from infrastructure.acquisition.common.school_sampling import BANDS, GRADE_ORD
+    # same grade-token vocabulary (school_sampling additionally knows PK/13, outside LCT range)
+    assert set(PGL.GRADES) <= set(GRADE_ORD)
+    for g in PGL.GRADES:
+        owning = [b for b, rng in BANDS.items() if GRADE_ORD[g] in rng]
+        assert owning == [PGL._CANON_BAND[g]], (
+            f"grade {g}: school_sampling.BANDS says {owning}, per_grade_lct._CANON_BAND says "
+            f"{PGL._CANON_BAND[g]} — the two grade→band definitions diverged (#638)")
+    # the scope split is the same partition
+    assert PGL.ELEM_GRADES == [g for g in PGL.GRADES if PGL._CANON_BAND[g] == "elementary"]
+    assert PGL.SEC_GRADES == [g for g in PGL.GRADES if PGL._CANON_BAND[g] in ("middle", "high")]
+    assert PGL.ELEM_GRADES + PGL.SEC_GRADES == PGL.GRADES
+
+
+def test_638_statutory_default_single_home():
+    """#638: the statutory last-resort default has ONE policy home (models.STATUTORY_DEFAULT_MINUTES);
+    both consumers import it rather than carrying independent literals."""
+    from infrastructure.database.models import STATUTORY_DEFAULT_MINUTES
+    from infrastructure.acquisition.stage9_incorporate import incorporate as INC
+    assert INC.STATUTORY_DEFAULT_MINUTES is STATUTORY_DEFAULT_MINUTES
+    import inspect
+    from infrastructure.scripts.analyze import calculate_lct_variants as CLV
+    src = inspect.getsource(CLV.get_statutory_minutes)
+    assert "STATUTORY_DEFAULT_MINUTES" in src and "return 360" not in src
 
 
 def test_zero_enrollment_returns_none():

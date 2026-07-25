@@ -339,7 +339,7 @@ architecture, superseded 2026-06-28 by the deterministic SERP cascade above. `ga
 own-index providers crater — Perplexity's 30 misses ALL had `raw_urls=0` (no index entry for small
 district domains). Google's own Custom Search API was ruled out separately (shutting down Jan 2027,
 50-domain cap). Provider survey + two Perplexity Deep Research reports:
-`docs/technical-notes/SERP_API_PROVIDER_COMPARISON_2026-06.md`. Live result: batch_00002's Bright Data Wave-1
+`docs/research/SERP_API_PROVIDER_COMPARISON_2026-06.md`. Live result: batch_00002's Bright Data Wave-1
 found 28/30 schools; the 2 residuals invoked Claude Wave-2 and recovered 0 (both genuine no-page cases).
 Wave-2 timeout lowered 420s → 75s (the diagnostic harness keeps 420s; only the live sequential path was
 over-budgeted).

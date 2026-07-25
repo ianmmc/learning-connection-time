@@ -99,3 +99,21 @@ def decision_status(con, district_id, *, current_fingerprint=None):
     return {"decided": True, "disposition": latest["disposition"],
             "is_approved": latest["disposition"] == "approved" and not is_stale,
             "is_stale": is_stale, "latest": latest}
+
+
+def gate8_receipt_payload(closing_argument, *, disposition, reason, approval_id, actor, fingerprint):
+    """Faithful per-district projection of a gate@8 decision for the capture-dir audit receipt (REQ-164).
+    PURE. The AUTHORITATIVE frozen record is the ``stage8_approval.receipt_json`` row + its JSON twin
+    (``status/stage8_approvals.json``); this is an audit projection pointing at those, NEVER a
+    transmission vehicle read back by the pipeline (Decision-2 / governance §1). Both dispositions get a
+    receipt -- a send-back is an auditable state transition too."""
+    bands = closing_argument.get("bands") or {}
+    return {
+        "stage": 8, "stage_name": "aggregate", "checkpoint": "gate@8",
+        "district_id": closing_argument.get("district_id"),
+        "disposition": disposition, "reason": reason, "approval_id": approval_id,
+        "facts_fingerprint": fingerprint, "actor": actor,
+        "authoritative": "gov_db:stage8_approval.receipt_json + status/stage8_approvals.json",
+        "bands": {b: {"gross_minutes": (v or {}).get("gross_minutes"), "method": (v or {}).get("method")}
+                  for b, v in bands.items()},
+    }

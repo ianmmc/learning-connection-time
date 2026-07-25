@@ -223,7 +223,8 @@ referenced inside `process_governance/` again.
 | **CROSS-STAGE DATA** | the queryable projection of every stage's output — `discovery_school` / `candidate` / `capture` / `processed_doc` (`common/cache_ingest.py`) + `record` / `representation` / `district_target` (Stage 5) | **DB** (working store) | regenerable from disk; **what each stage reads to drive the next**, kept fresh by each stage's finish hook |
 | **LABELS / SPLITS / BATCHES / FLAGS** | human ground truth, cluster-split overrides, the queued/approved batch (incl. `batch_district.domain`), follow-up flags | **DB** | **precious** — never in the ingest drop list; JSON-backed; a label's honest terminal states are `target_present` / `target_absent` / `unusable` / **`unlabeled`** — #228's `reset_labels_bulk` (a plain UPDATE, not a delete) is the one shared path back to `unlabeled` when a label turns out to assert a false non-target ground truth, the case a Millard-style contamination (#227) forces |
 | **CAPTURE BINARIES** | the captured PDFs / PNGs / extracted text files | **disk**, authoritative | regenerable from the **web** (not the DB); referenced by `filename` from `representation`; relocatable as one tree (REQ-087) |
-| **JSON RECEIPTS** | `discovery.json` / `candidates.json` / `captures.json` / `processed.json` / `filtered.json` / `batch_*.json` | **disk** | regenerable; the auditable record of each stage's output + the DB-recovery source (`batch_*.json` / `filtered.json` are generated *from* the DB); **NOT stage-to-stage transmitters** |
+| **JSON RECEIPTS — fixed-name handoffs** | `discovery.json` / `candidates.json` / `captures.json` / `processed.json` / `batch_*.json` | **disk** | regenerable; the auditable record of each stage's output + the DB-recovery source (`batch_*.json` is generated *from* the DB); **NOT stage-to-stage transmitters**. Each one's EXISTENCE also doubles as that stage's "done" marker (reconcile/redo-skip/self-heal read it by fixed name), which is why REQ-164 could not yet convert them to the always-stamped form below — tracked #617/#622/#623 |
+| **JSON RECEIPTS — always-stamped audit receipts (REQ-164)** | `stage5_filter` / `stage6_dispatch` / `stage7_extract` / `stage8_aggregate` / `stage9_incorporate`, each written `<basename>.<fs_stamp>.<writer>-<h8>.json` via the ONE shared `common/receipts.py::write_receipt` | **disk** | regenerable; a basename is a decl NOT a full filename (always datetime-stamped, first run included — no fixed-'latest' name); NEVER read as input by an active-pipeline stage; naming convention is `stage<N>_<stage_name>` (unified 2026-07-23) so a filesystem/name sort groups a district's receipts in pipeline order; a benchmark-provenance receipt gets `_benchmark` appended to the basename |
 
 **Precious vs regenerable is the load-bearing line — not DB vs disk.** The DB holds precious things (labels,
 lifecycle state, batches, flags) *and* the regenerable working store (signals + the cross-stage data
@@ -865,7 +866,7 @@ The only new setup step is a one-time `pip install -e .`.
 
 Adopted to **equip the agent to monitor/manage** the codebase (machine-readable, CLI/CI-driven — not
 browser dashboards) and to keep this infrastructure investment from eroding. Research basis (saved):
-`docs/technical-notes/POLYGLOT_PIPELINE_ARCHITECTURE_TOOLCHAIN.md` (Perplexity deep-research) + the
+`docs/research/POLYGLOT_PIPELINE_ARCHITECTURE_TOOLCHAIN.md` (Perplexity deep-research) + the
 earlier scratch-paper passes. Kept in this note for now (user's call) — extract to its own note only if
 it grows.
 

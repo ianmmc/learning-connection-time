@@ -41,6 +41,7 @@ class GradeMinute:
     year: Optional[str]
     serving_bands: list
     overlap_flag: Optional[str]
+    human_vouched: bool = False              # #626: inherited from the grade's owning band
 
     def summary(self) -> dict:
         return {"grade": self.grade, "minutes": self.minutes, "source_band": self.source_band,
@@ -110,7 +111,7 @@ def project(writes, *, fingerprint: Optional[str] = None, approval_id: Optional[
         out.append(GradeMinute(
             grade=g, minutes=w.minutes, source_band=band, method=w.method,
             minutes_basis=w.minutes_basis, year=w.year, serving_bands=sorted(serving),
-            overlap_flag=flag))
+            overlap_flag=flag, human_vouched=bool(w.human_vouched)))   # #626
     return out
 
 

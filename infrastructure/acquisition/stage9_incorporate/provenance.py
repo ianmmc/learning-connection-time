@@ -10,7 +10,7 @@ import json
 from collections import Counter
 from typing import Optional
 
-from infrastructure.acquisition.common.timeutil import utcnow
+from infrastructure.acquisition.common.timeutil import hhmm_to_min, utcnow
 from infrastructure.utilities.school_year import (
     content_school_year,
     current_school_year,
@@ -20,33 +20,103 @@ from infrastructure.utilities.school_year import (
 
 # ----------------------------- year resolution -----------------------------
 def band_school_years(band: dict) -> list:
-    """The per-school stated school_year readings (#254) present in a band, non-null."""
-    return [s.get("school_year") for s in band.get("schools", []) if s.get("school_year")]
+    """The per-school stated school_year readings (#254) present in a band, non-null. INCLUDED
+    schools only (#632): a struck/excluded school was removed from the band's value, so its stated
+    year must not enter the band-consensus vintage — the same excluded-filter its siblings
+    `_representative_urls`/`band_human_vouched` already apply (a 2016-17 reading on an excluded
+    school would otherwise hijack precedence-1 and force the scope to statutory)."""
+    return [s.get("school_year") for s in band.get("schools", [])
+            if s.get("school_year") and not s.get("excluded")]
+
+
+def band_human_vouched(band: dict) -> bool:
+    """#626: did a human vouch for this band's value at gate@8? True when any INCLUDED school carries a
+    human determination — a `human_override` (incl. a note-only approval like Dickinson's "I'm
+    approving"), an applied times-override, or a hand-added cited fact (`human_added`, #474). Such a
+    determination is durable + auditable (a named actor took responsibility) and renders the band's
+    value acceptable past the REQ-026 temporal window (Ian, 2026-07-24). Excluded (struck-through)
+    schools never count — they were removed from the value, so an override on one isn't a vouch for it."""
+    for s in band.get("schools", []):
+        if s.get("excluded"):
+            continue
+        if s.get("human_override") or s.get("override_applied") or s.get("human_added"):
+            return True
+    return False
+
+
+def _representative_urls(band: dict) -> list:
+    """#626 part 2: the evidence URL(s) of the INCLUDED school(s) whose gross is CLOSEST to the band's
+    winning value — the source of the value, not a losing/out-of-roster sample. A band's stored vintage
+    must track its actual value's provenance: Dickinson's middle (426 — the mean of Dickinson MS's 426
+    and the since-CLOSED Hagen JH's 425) must not inherit Hagen's `.../2016-17-HJH...` URL year just
+    because that URL happens to parse a year. Empty when the band carries no per-school gross/URL signal
+    (→ the caller falls through to current-year, never a stale non-representative URL)."""
+    val = band.get("gross_minutes")
+    schools = [s for s in band.get("schools", [])
+               if s.get("gross") is not None and not s.get("excluded")]
+    if val is None or not schools:
+        return []
+    best = min(abs(s["gross"] - val) for s in schools)
+    urls, seen = [], set()
+    for s in schools:
+        if abs(s["gross"] - val) != best:
+            continue
+        ev = s.get("evidence")
+        u = ev.get("url") if isinstance(ev, dict) else None
+        if u and u not in seen:
+            seen.add(u)
+            urls.append(u)
+    return urls
 
 
 def resolve_schedule_year(band: dict, urls: Optional[list] = None) -> tuple:
     """(year, basis) for a band's `bell_schedules` KEY coordinate. Precedence (REQ-054 — never
     inferred from today's date):
       1. band-consensus school_year — the modal acceptable per-school reading;
-      2. deterministic content year off the winning source URLs;
+      2. deterministic content year off the REPRESENTATIVE source URL (the value's source — #626 part 2);
       3. current_school_year() — the last-resort key coordinate (a page that stated no year is not
          evidence of staleness; the reader returns year=None for statutory rows regardless).
     COVID/malformed candidates are skipped at (1)/(2), never written."""
     years = [y for y in band_school_years(band) if is_acceptable_data_year(y)]
     if years:
         return Counter(years).most_common(1)[0][0], "band_consensus"
-    if urls:
-        cy = content_school_year(*[u for u in urls if u])
+    # #626 part 2: derive the content year from the value's OWN source (the school whose gross is closest
+    # to the band value), NOT every band URL — a non-winning/closed-school sample's stale URL must not
+    # set the band's vintage. Fall back to the caller-passed `urls` only when the band has no gross
+    # signal at all (e.g. the statutory-fallback call passes band={}).
+    src_urls = _representative_urls(band) or [u for u in (urls or []) if u]
+    if src_urls:
+        cy = content_school_year(*src_urls)
         if cy and is_acceptable_data_year(cy):
             return cy, "content_url"
     return current_school_year(), "default_current"
 
 
+# ----------------------------- band-times consistency (#627) -----------------------------
+def times_consistent(start: Optional[str], end: Optional[str], gross: Optional[int]) -> bool:
+    """#627: are a band's representative (start,end) internally consistent with its gross?
+    True when a time is absent/unparseable or gross is None (nothing to contradict), else span
+    end−start must equal gross. A mean_tiebreak band stores a SYNTHETIC gross (average of two
+    distinct-span schools) with one school's real times, so span != gross — writing those times
+    fails Stage 9's bell_schedules cross-check (minutes ≤ end−start). plan_writes drops the times
+    when this returns False, healing receipts frozen before the aggregate.py fix (new receipts
+    already omit them). The original synthetic band stays intact in raw_import.receipt_band."""
+    sm, em = hhmm_to_min(start), hhmm_to_min(end)
+    if sm is None or em is None or gross is None:
+        return True
+    return (em - sm) == gross
+
+
 # ----------------------------- provenance field builders -----------------------------
 def collect_source_urls(band: dict) -> list:
-    """Dedup of each included school's winning-evidence URL (order-stable)."""
+    """Dedup of each included school's winning-evidence URL (order-stable). The docstring always
+    said INCLUDED; #632 made the code enforce it — an excluded school's URL is not a source of the
+    band's value (it also rides into resolve_schedule_year's fallback, where a struck school's
+    stale URL year must not set the vintage)."""
     seen, out = set(), []
     for s in band.get("schools", []):
+        if s.get("excluded"):
+            continue
         ev = s.get("evidence")
         u = ev.get("url") if isinstance(ev, dict) else None
         if u and u not in seen:

@@ -873,19 +873,20 @@ def _sanitize_reason(reason: str) -> str:
     # Truncate to max length
     sanitized = reason[:MAX_REASON_LENGTH]
 
-    # Strip SQL comment syntax BEFORE the character whitelist below — once
-    # hyphens are individually allowed (issue #292), "--" (a SQL line
-    # comment) survives character-class filtering intact unless removed as
-    # its own token first (found in max-effort review; regression on a
-    # pre-existing test). Values land in the ORM's parameterized JSON
-    # details, so this whole pass is defense-in-depth, not the actual
-    # injection barrier — but the intended behavior is that it blocks this.
-    sanitized = sanitized.replace('--', '')
-
     # Remove potentially dangerous characters (SQL injection, XSS). Keep
     # alphanumeric, spaces, basic punctuation, hyphens and colons — stripping
     # hyphens mangled legitimate audit reasons like "non-compliant" (issue #292).
     sanitized = re.sub(r'[^\w\s.,!?\'"()/:-]', '', sanitized)
+
+    # Strip SQL comment syntax AFTER the character whitelist (#639): the whitelist
+    # can delete a non-whitelisted char BETWEEN two hyphens and re-form "--"
+    # (e.g. "a-\x00-b" → "a--b"), so running the token removal first left the
+    # guard's stated invariant false. Order matters, not iteration: a run of n
+    # hyphens reduces to n mod 2 (≤ 1) in one replace pass, and no later step
+    # inserts hyphens, so a single post-whitelist pass suffices. Values land in
+    # the ORM's parameterized JSON details, so this whole pass is
+    # defense-in-depth, not the actual injection barrier.
+    sanitized = sanitized.replace('--', '')
 
     # Remove SQL-like keywords (case-insensitive)
     sql_keywords = ['DROP', 'DELETE', 'INSERT', 'UPDATE', 'SELECT', 'UNION', 'ALTER', 'CREATE', 'TRUNCATE']

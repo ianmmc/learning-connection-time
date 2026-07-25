@@ -251,7 +251,9 @@ exercise against the #200/#209-hardened pipeline, not a distinct issue awaiting 
   between this stated rule and the first draft's actual fillable-band fallback.
 - `write_receipt()` / `write_district_receipt()` — per-run and per-district JSON under
   `data/acquisition/extractions/` (regenerable, auditable — never the transport; governance's
-  DB-is-the-working-store rule).
+  DB-is-the-working-store rule). `write_district_receipt()` also drops a `stage7_extract` per-district
+  audit receipt into the capture dir (REQ-164, 2026-07-22 — always-stamped via
+  `common/receipts.py::write_receipt`), pointing at this central file + gov_db `school_fact`.
 - `main()` CLI: `--mode {plumbing,council,image}`, `--persist`, `--validate --gt <path>`, `--no-resume`,
   `--no-judge`, `--limit`.
 

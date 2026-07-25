@@ -52,6 +52,40 @@ def test_dispatch_handoff_freezes_writes_and_records(tmp_path, monkeypatch):
     assert captured["path"] == path and captured["actor"] == "ian"
 
 
+def test_dispatch_writes_per_district_capture_receipt(tmp_path, monkeypatch):
+    """REQ-164: dispatch drops a per-district gate@6 audit receipt into the capture dir, pointing at
+    the authoritative handoff file."""
+    from infrastructure.acquisition.common import paths
+    from infrastructure.acquisition.common import receipts as RCPT
+    monkeypatch.setattr(paths, "RAW_CAPTURES", tmp_path / "caps")
+    reps = [{"source": "extracted", "filename": "e.txt", "file_kind": "text", "n_chars": 10,
+             "n_times": 1, "usable": 1}]
+    records = [{"rec_key": "a", "url": "u", "tier": "A", "category": None,
+                "signals": {"visual_text_gap": False}, "is_emergent": 0, "intended_schools": [],
+                "label": "school_bell_table", "flags": [], "reps": reps}]
+    monkeypatch.setattr(REL, "load_district",
+                        lambda s, did: {"district_id": did, "name": "X", "district_dir": f"{did}_x",
+                                        "labeled_topology": "per_school",
+                                        "nces_denominator": {"total": 1, "by_level": {}}})
+    monkeypatch.setattr(REL, "load_district_records", lambda s, did: records)
+    monkeypatch.setattr(REL, "district_fingerprints",
+                        lambda s, did: {"config": "c", "labels": "l", "data": "d"})
+    monkeypatch.setattr(BR, "record_dispatch",
+                        lambda session, doc, path, actor="human", metas=None: None)
+
+    # a globally-unique district id so latest_receipt can never pick up another test's same-second
+    # receipt (RAW_CAPTURES isolation can fall to the shared pytest quarantine when an earlier test
+    # reloads the paths module — a unique id makes the assertion robust regardless).
+    doc, path = BR.dispatch_handoff(session=None, district_ids=["6660066"],
+                                    created_by="ian", root=tmp_path)
+
+    cap = RCPT.latest_receipt("6660066", "", "stage6_dispatch")
+    assert cap is not None and ".py-" in cap.name
+    d = json.loads(cap.read_text())
+    assert d["stage"] == 6 and d["checkpoint"] == "gate@6" and d["district_id"] == "6660066"
+    assert d["handoff_file"] == path.name and d["handoff_hash"] == doc["handoff_hash"]
+
+
 def test_dispatch_handoff_is_immutable_on_repeat(tmp_path, monkeypatch):
     monkeypatch.setattr(REL, "load_district",
                         lambda s, did: {"district_id": did, "name": "X", "district_dir": f"{did}_x",

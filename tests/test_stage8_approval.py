@@ -118,3 +118,29 @@ def test_decision_status_never_ships_the_receipt(gov_session):
     s.flush()
     st = APV.decision_status(s, "9999006", current_fingerprint=CA.fingerprint(ca))
     assert "receipt_json" not in st["latest"]
+
+
+# ----------------------------- gate@8 capture-dir audit receipt (REQ-164) -----------------------------
+def test_gate8_receipt_payload_projection():
+    """The per-district gate@8 receipt is a faithful projection (bands -> gross_minutes+method) that
+    points at the authoritative frozen record, not a copy of the full closing argument."""
+    ca = {"district_id": "9999010",
+          "bands": {"elementary": {"gross_minutes": 400, "method": "modal", "schools": [1, 2]},
+                    "high": {"gross_minutes": 450, "method": "modal"}}}
+    p = APV.gate8_receipt_payload(ca, disposition="approved", reason=None, approval_id=42,
+                                  actor="ian", fingerprint="fp-abc")
+    assert p["stage"] == 8 and p["checkpoint"] == "gate@8"
+    assert p["district_id"] == "9999010" and p["disposition"] == "approved"
+    assert p["approval_id"] == 42 and p["facts_fingerprint"] == "fp-abc" and p["actor"] == "ian"
+    assert p["authoritative"].startswith("gov_db:stage8_approval")
+    assert p["bands"] == {"elementary": {"gross_minutes": 400, "method": "modal"},
+                          "high": {"gross_minutes": 450, "method": "modal"}}
+
+
+def test_gate8_receipt_payload_sent_back_carries_reason():
+    """A send-back is an auditable state transition too -- it gets a receipt carrying its reason."""
+    p = APV.gate8_receipt_payload({"district_id": "9999011", "bands": {}}, disposition="sent_back",
+                                  reason="middle band unresolved", approval_id=7, actor="ian",
+                                  fingerprint="fp-x")
+    assert p["disposition"] == "sent_back" and p["reason"] == "middle band unresolved"
+    assert p["bands"] == {}
