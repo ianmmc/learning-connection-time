@@ -146,8 +146,12 @@ the *deterministic* way (`incorporate_batch --dry-run` → exception list → re
 a district; see "the product is the pipeline" above) and incorporated 36/38 gate@8-approved districts; the
 one-time `lct_calculations` recompute ran clean (163k rows, exit 0). That approach surfaced three findings,
 all filed durably: **#626** (a logged gate@8 override is NOT honored past the REQ-026 temporal window —
-Dickinson's approved council secondary drops to statutory, confirmed in production; open decision: should a
-named human override count as an auditable "treat as current" — STILL OPEN), **#627** (Stage-8
+Dickinson's approved council secondary drops to statutory — **CLOSED 2026-07-24**: Ian's decision "a human
+override = an in-temporal-window schedule" shipped as (part 1) a `district_grade_minutes.human_vouched`
+column [migration 027] that `per_grade_lct` exempts from the blend-window test, and (part 2)
+`resolve_schedule_year` deriving a band's vintage from its winning value's REPRESENTATIVE source URL, not a
+losing/closed-school sample; re-incorporated all 38 + recomputed, blast radius = only Dickinson [secondary
+statutory→council 350→428]), **#627** (Stage-8
 `mean_tiebreak` emitted a band gross inconsistent with its stored start/end — **CLOSED 2026-07-24**: a
 mean_tiebreak value is a synthetic average matching no single school, so `aggregate.district_bands_from_facts`
 now emits it with NO representative times; Stage 9 `provenance.times_consistent`+`mapping.plan_writes` drop
@@ -159,11 +163,8 @@ REQ-164 (status `tested`) + REQ-165…168 (feat branch only). The session's gove
 fact above — **the product is the pipeline, not the district.**
 
 **Next (RESUME HERE — 2026-07-24): all independent; pick any.**
-**(1) Stage 9 campaign DONE (38/38, #627 closed 2026-07-24).** Remaining Stage-9 open item is **#626**
-(design decision, STILL OPEN): honor a logged gate@8 override past the REQ-026 temporal window. Anchor case
-Dickinson (`3800038`) — approved council secondary (426, but its sampled Hagen source is vintage 2016-17)
-still silently drops to statutory at recompute. Resolve the honor-the-override decision (+ investigate why
-the band inherited the losing sample's vintage), then re-incorporate + recompute Dickinson.
+**(1) Stage 9 campaign DONE (38/38); #626 + #627 both closed 2026-07-24.** No open Stage-9 items — the
+whole gate@8→LCT path is landed and verified in production (Dickinson secondary now council, not statutory).
 **(2) Epic #617 (benchmark model + done-marker inversion).** Start **#621** (small: `_early_exit_targets`
 keys on the `batch_00000` literal, should be `batch_type='benchmark'`), then **#618** (benchmark dispatch +
 gate@5/gate@7 termini — BEFORE **#619** wall-retirement so no hole opens) → **#620** (re-run batch_00000
@@ -183,7 +184,7 @@ STAGE-scoped (time-bound 30-day expiry since 2026-07-20; revisit if remediation 
 attribution v1 reads each district's LATEST candidate plan (documented in-module).
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
--m "not integration"` (expect **1934** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect
+-m "not integration"` (expect **1946** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect
 **333**, Postgres up) + `pytest tests/test_*_integration.py` (expect **249** pass, 149 skipped, live
 DB) + `cd infrastructure/scraper && npm test` (expect **90**). On the receipts branch, also
 `pytest tests/test_receipts.py tests/test_backfill_receipts.py` (27 pass) + the stage6/7/8/9 suites.
