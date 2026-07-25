@@ -12,8 +12,10 @@
 > **Companions:** GitHub #617 (epic) + #618–#625 · `STAGE1_QUEUE_DESIGN.md` §2h (the wall's stated
 > rationale) · `STAGE9_INCORPORATE_DESIGN.md` §2g (the standing walls) · `COUNCIL_LAB_DESIGN.md`
 > (benchmark dispatches are #80's evaluation instrument) · `docs/REQUIREMENTS.yaml` REQ-117/151/162/164/166.
-> **Update this when:** never, except to add a closing "what actually happened" section once the epic
-> lands. Corrections to *present state* belong in the design notes.
+> **Update this when:** never, except to append to §10 (the implementation log) as phases land, and to
+> correct a §1-§9 claim that implementation *disproved* — with the correction marked, not silently
+> rewritten, since the value of this document is partly the record of what the planning pass got
+> wrong. Corrections to *present state* belong in the design notes.
 
 ---
 
@@ -56,6 +58,13 @@ candidate. The guard that remains is defence-in-depth rather than the load-beari
 ## 2. The guard census (code-verified 2026-07-25)
 
 Four sites key on `batch_type='benchmark'`; exactly one keys on the `batch_00000` **id literal**.
+
+> **Refined during implementation (§10.2):** counting *guard sites* understates the duplication.
+> Counting **spellings of the SQL** there were **five**: the three the epic named (Stage 9, Stage 7
+> execution, `server.py`) plus two the epic did not — an inline copy in
+> `stage7_run._early_exit_targets` and another in `maintenance/backfill_receipts.load_benchmark_ids`.
+> Site #4 below (`compose_zero_yield`) is not a copy — it is an ORM attribute compare on a batch row,
+> and is genuinely batch-grain, so it stays.
 
 | # | site | file:line | posture |
 |---|---|---|---|
@@ -184,6 +193,18 @@ batches organize Stages 1–4, dispatches organize Stages 6–7 (Ian's own clari
 are the unit of discovery; batches organize stages 1-4, dispatches organize stages 6-7"*). After this work
 the only dispatch axis is `dispatch_type ∈ {production, benchmark}`, so properties 3 and 4 are the two
 directions of one axis.
+
+### Status of the matrix as phases land
+
+**Properties 3 and 4 are LANDED** (Phase 2b, §10.3): rep-grain refusal at freeze plus the explicit
+Council Lab opt-in, each with a named test —
+`test_mobility_3_a_benchmark_batch_district_composes_a_production_dispatch_on_fresh_reps` is the
+property-3 one, and `test_the_same_district_is_still_refused_on_its_stale_injected_rep` is its converse
+(rep-grain must not become a loophole).
+
+**Properties 1 and 2 remain open**, pending Phase 2c's composers and the generalized redo lever.
+Property 1's gap was subsequently clarified as *the missing composer, not the batch-type choice* — see
+§10.4.
 
 ---
 
@@ -446,6 +467,15 @@ central "may advance" function and `batch_guard.assert_runnable` as the only bat
 list; `benchmark_holdback_18.json`'s record shape. None of these change a design decision; all should be
 re-checked at implementation time.
 
+**Promoted to verified during implementation (2026-07-25):** `handoff._identity`'s `verified_only` fold
+and `package_identity`'s reuse of it (read directly — it is what makes the staleness check free);
+`DispatchDraft`'s columns and `meta_json` comment; that identity is only ever compared fresh-vs-fresh
+(grepped, so no stored hash is invalidated); `capture.source` as the rep-grain signal and its five
+measured properties (§10.3); `seedFromPriorCaptures`'s verbatim carry-forward; and the three
+`batch_type == "follow-up"` redo-lever sites. The 1954/337/249/90 test counts in CLAUDE.md were also
+unverified at planning time and are now confirmed for the two suites this work touches: the DB-free
+suite started at **1954 passed / 1 skipped** and govdb at **337**, matching.
+
 **Explicitly not verified**: that the 1954 / 337 / 249 / 90 test counts in CLAUDE.md still hold (no suite
 was run this session — the pass was read-only).
 
@@ -454,17 +484,171 @@ was run this session — the pass was read-only).
 - **Should a benchmark batch draw from the full corpus or an explicit list only?** The plan assumes
   explicit-list-only (mirroring `build_followup_batch`), which is the conservative choice. A stratified
   benchmark draw is a different instrument and is not needed for #617.
-- **What happens to a mixed-provenance district at gate@6?** The plan surfaces per-rep provenance so a
-  human can deselect stale `benchmark_gt` reps. Whether stale injected reps should be *dispatchable at
-  all* after a fresh run is a policy question for the gate@5/gate@6 reviewer, not settled here.
+- **What happens to a mixed-provenance district at gate@6?** ~~The plan surfaces per-rep provenance so a
+  human can deselect stale `benchmark_gt` reps.~~ **RESOLVED in Phase 2b (§10.3):** preview reports the
+  benchmark reps, freeze refuses while the dispatch is production, and the human either deselects them
+  or opts the whole dispatch in as benchmark. The narrower question — whether a stale injected rep
+  should be *release-eligible at all* after a fresh run, i.e. suppressed upstream at Stage 5 rather than
+  caught at gate@6 — is still open and is a gate@5 policy call, not settled here.
 - **`benchmark_holdback_18.json` has an arithmetic discrepancy** — the file says `n_districts: 18` with an
   18-long list, but `PROJECT_HISTORY.md:143` says "the other 14 of the original 41" (41 − 27 = 14). One is
   wrong; resolve during #620, which is the standing comparison obligation that file exists to serve.
 - **The two measurement leaks in §2b** (`attribution.py`, `_attempted_schools`) are unfiled. Decide
   whether they become issues or are accepted as intended behavior for an effectiveness scorecard.
+- **The gate@6 console changes are not yet Playwright-verified** against a live draft containing a
+  benchmark rep. They are static-source-pinned only (no JS harness in the repo — a documented
+  deferral), so the warning banner, the type toggle and the two badges have been asserted to *exist*,
+  not to *render correctly*. Do this before gate@6 is driven for real in #620.
 
 ---
 
 *Produced 2026-07-25 during the #617 planning pass. Exploration was read-only; no code was changed. The
 mobility matrix in §3 exists because Ian tested the plan against it and two properties failed — that
 exchange is the most load-bearing part of this document.*
+
+---
+
+## 10. Implementation log — what actually happened
+
+Appended as phases land. The point of this section is the **deltas from the plan**: where implementation
+disproved a §1-§9 claim, and what the code forced that the design pass missed. A phase that landed
+exactly as planned gets one line.
+
+### 10.1 Phase 1 — #621, the `batch_00000` literal (commit `f4a8d47`)
+
+Landed as planned: the literal became the same `batch_district JOIN batch … batch_type='benchmark'`
+shape as every other guard. Semantics are strictly *broader* (batch_00000 IS a benchmark batch), so no
+district loses its exemption.
+
+**Learning — the test was worth more than the fix.** `_early_exit_targets` had no direct test at all:
+`tests/test_stage7_mode_stability.py` monkeypatches it wholesale and only mentions the exemption in
+prose. Two govdb tests were added against real Postgres, using benchmark batch ids deliberately **not**
+`batch_00000` — then **reverted the SQL and confirmed both fail red** before passing green. A guard test
+that would have passed against the pre-fix code is worthless, and this class of fix (swap one predicate
+for a broader one) makes that failure mode easy to ship.
+
+**Process note.** REQ-151's acceptance criterion literally read *"batch_00000 members are exempt"*,
+which the fix made false as written. It was corrected in the same commit rather than deferred to #625:
+leaving it would have let the ledger contradict the code for the duration of the epic, and the ledger
+is what a reviewer or auditor reads first.
+
+### 10.2 Phase 2a — one home for the predicate (commit `a66f356`)
+
+Pure refactor: the five spellings (see §2's refinement note) now delegate to
+`infrastructure/acquisition/common/benchmark.py`.
+
+**Preserved asymmetry, now documented as deliberate.** `is_benchmark_district` tolerates ONLY a missing
+table (fresh DB) and lets everything else propagate — Stage 9's wall can never fail open (PR #607 R2).
+The set-valued readers carry no such tolerance. That difference existed before and read as accidental;
+it is now stated, because a future "consistency" cleanup would otherwise be very likely to unify them
+in the fail-open direction.
+
+**Learning — a fitness function nobody has falsified is decoration.** The consolidation shipped with a
+test asserting no module may re-inline the JOIN. Running that detector against the **four real removed
+copies** found two defects in the detector itself:
+
+1. A line-by-line scan caught only 1 of 3. The predicate is written as *adjacent string literals across
+   source lines*, so `batch_type = 'benchmark'` and `batch_district` never appear on the same line —
+   i.e. it missed exactly the copies that had just been deleted.
+2. After switching to a normalizer that joins adjacent literals, it still missed the backfill copy: the
+   join step consumed the value's own closing quote where `'benchmark'` abutted the enclosing string's
+   quote (`… = 'benchmark'"))` → `… = 'benchmark))`). The pattern now treats the quotes as optional.
+
+**Learning — a git-derived test corpus is a time bomb.** The first version read the removed copies via
+`git show $(git merge-base HEAD origin/main):<path>`. That silently stops testing anything the moment
+the branch merges (the merge-base advances past the consolidation and those paths hold the *new*
+content), and breaks outright in a shallow CI clone. The corpus is now embedded as literals. Generalize:
+**a regression corpus must not be resolved through a moving ref.**
+
+### 10.3 Phase 2b — `dispatch_type` (commit `bcb4e26`)
+
+**The plan was wrong, and the mobility matrix is what caught it.** §3's draft forcing rule read *"if any
+selected DISTRICT is benchmark-provenance, force benchmark"* — the district-identity bug this epic
+exists to retire, relocated one stage upstream. It breaks property 3 outright: a batch_00000 district
+could never compose a production dispatch again regardless of how fresh its representations were. The
+rule is now **representation grain**. This is the single most important correction in the epic so far,
+and it was found by testing the plan against a stated property rather than by reading the code again.
+
+**Empirical verification before building on the assumption.** Rep-grain is only implementable if rep
+provenance is recoverable. Measured against the live governance DB:
+
+| check | result |
+|---|---|
+| `capture.source` distribution | discovered 1450 · emergent 206 · **benchmark_gt 95** · manual 1 |
+| benchmark-batch districts with a non-`benchmark_gt` capture | **0** |
+| `benchmark_gt` captures outside a benchmark batch | **0** |
+| benchmark-batch districts with no capture rows at all | **0 of 27** |
+| `record` → `capture` join on `(district_id, hash)` | **1489 / 1489** |
+
+Two consequences worth carrying forward. First, **rep-grain and district-grain return identical answers
+today** — so the change is a provable no-op on current data and diverges only once #620's re-run creates
+the mixed case. That is the ideal shape for a guard change: no behavioral risk at landing, correctness
+only when it starts to matter. Second, `record`/`representation` carry **no** `batch_id` and
+`district`/`district_target` hold a single *overwritten* one, so `capture.source` is not merely the best
+signal — it is the **only** durable rep-grain provenance in the schema.
+
+**Mixing is real, and code-verified.** `capture_discovery.mjs::seedFromPriorCaptures` pushes prior
+records **verbatim** (`district.records.push(rec)`) into the new manifest; only a *failed* prior record
+whose URL is re-planned is dropped. So `source: 'benchmark_gt'` survives a follow-up re-run and
+`cache_ingest` upserts the union. A re-run district legitimately holds stale `gt://` reps alongside fresh
+ones — which is exactly why the rep-grain rule is load-bearing rather than pedantic: without it a
+reviewer could pull a stale injected rep into a production dispatch and, post-#619, write deliberately
+older-school-year data into the LCT DB.
+
+**Design change: REFUSE, never silently force.** The plan said force. Implementation changed it after
+considering blast radius: a dispatch carries ONE type, so auto-forcing on a single benchmark rep would
+wall **every other district in that dispatch** off from the Stage-9 write — one operator slip silently
+costing unrelated districts their LCT minutes. The landed shape splits report from refuse:
+
+- **preview reports** (`benchmark_reps` on the draft view), mirroring the existing
+  `missing_from_release` pattern, so the console can still render a draft that currently cannot be
+  frozen — which is what lets the human see the problem and fix it;
+- **freeze refuses**, naming the offending reps and stating the alternative;
+- an explicit `dispatch_type='benchmark'` always passes, and may contain production reps — mixing is the
+  point of an A/B.
+
+Generalize: **when a guard's unit is coarser than its trigger, refuse; do not coerce.** Coercion at the
+coarse unit silently penalizes everything else sharing it.
+
+**A free win from an existing design.** `package_identity()` is implemented as `_identity(package, {},
+{})`, so folding `dispatch_type` into `_identity` made the gate@6 preview→freeze staleness check (#37)
+cover a type flip with no new machinery — preview-as-production / freeze-as-benchmark now 409s instead
+of silently substituting. Confirmed by grep that identity is only ever compared **fresh-vs-fresh**, so
+no stored hash is invalidated (the same reasoning `verified_only` and `pages` relied on).
+
+**Incidental defect found.** The legacy `/api/handoff/dispatch` endpoint had **no `ValueError`
+handler**, so even the pre-existing #53 empty-selection refusal was surfacing as an unhandled 500 rather
+than a 400. Fixed while threading the new refusal through it. Wiring a new raise through an old path is
+a good moment to check what that path already fails to catch.
+
+**Testing note — do not let a new guard get stubbed into inertness.** Three DB-free tests in
+`test_stage6_dispatch.py` pass `session=None` and monkeypatch every DB accessor; the new guard's query
+broke them. The tempting fix — skip the check when `session is None` — is **fail-open**, and a
+production caller passing None would silently bypass the wall. Instead the tests stub the guard's
+provenance *read*, leaving `assert_dispatch_type_allowed`'s own logic running for real.
+
+**Manifest over ad-hoc assertion.** The "client must not re-decide provenance" rule is declared in
+`arch-manifest.json`'s `forbidden_client_comparisons` rather than asserted in the test file. The first,
+ad-hoc version flagged its own explanatory comment as a violation; the manifest's fitness test already
+distinguishes a *decision* on a literal from a comment or display string mentioning it.
+
+### 10.4 Decisions taken during implementation
+
+- **The mode-stability early-exit re-keys to dispatch provenance at #619** (Ian, 2026-07-25). Its
+  benchmark exemption is district-membership today, which after #620 would make all 27 re-run districts
+  pay full-census extraction on every future production run, forever. REQ-151's actual measurement case
+  is already covered by the two disablers at `stage7_run.py:447-449` (`run_kind != production`,
+  `gt_data is None`); district membership is a third belt firing on runs that measure nothing.
+  `test_early_exit_exempts_a_district_in_both_a_benchmark_and_a_production_batch` is the pre-#619 pin
+  and **inverts** at #619.
+- **Property 1's gap was the missing composer, not the batch-type choice** (clarified with Ian,
+  2026-07-25). `build_followup_batch` is already correct — it deliberately re-includes attempted
+  districts — but its only production callers are the two directive-driven back-edges, and
+  `POST /api/batches/create` unconditionally routes to `build_batch`. First-run cannot substitute:
+  `already_attempted` (threshold 3) drops all 27, and the #572 targeted path is applied *after* the pool
+  filter, so it 409s. Admitting them via first-run would mean weakening the predicate that makes
+  first-run a cold-start draw — a corpus-wide change for a 27-district need. Follow-up also fits on the
+  merits (it re-includes by design, triggers merge/redo, and shapes its own discovery, which matters
+  when the prior "discovery" was injected). One wrinkle recorded for #620: follow-up normally targets
+  *unsatisfied* bands and batch_00000's are largely satisfied, but `build_followup_batch` does not check
+  satisfaction — it only drops bands with no NCES school coverage — so passing all real bands works.
