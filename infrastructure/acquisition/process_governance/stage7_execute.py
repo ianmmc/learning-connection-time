@@ -298,6 +298,30 @@ def _benchmark_district_ids(session, district_ids: list) -> set:
     return BM.benchmark_district_ids(session, district_ids)
 
 
+def _refuse_benchmark_reps(session, package: dict):
+    """#644: apply #618's freeze provenance guard on the gate@7 BACK-EDGE freeze paths, returning
+    this module's `{"ok": False, "reason": ...}` refusal instead of raising.
+
+    The guard existed but had ONE call site (`stage6_dispatch.dispatch_handoff`) against THREE freeze
+    paths — the two here called `HND.freeze` directly and never set `dispatch_type`, so it defaulted
+    to `production`. A 7->6 directive names its alternate reps by rec_key from the district's LIVE
+    reps, and a batch_00000 district holds `benchmark_gt` captures, so these paths could mint a
+    production dispatch carrying injected `gt://` reps — exactly what #618 refuses elsewhere.
+
+    It never fired only because the #134 membership wall above keeps benchmark districts away from
+    both paths, which made a district-identity ACCIDENT load-bearing for a provenance rule — the
+    coupling epic #617 exists to retire, and it would have broken the moment #134 was re-keyed (#620).
+
+    Returns None when the freeze may proceed. The refusal is a normal action result, not an
+    exception, because both callers are console actions whose contract is a refusal dict; the
+    exception form stays the right shape at gate@6, where a raise rolls the session back."""
+    try:
+        H6.assert_dispatch_type_allowed(session, package)
+    except ValueError as e:
+        return {"ok": False, "reason": str(e)}
+    return None
+
+
 def _defer_76_districts(session, district_ids: list, max_rounds=None) -> set:
     """Districts with an UN-EXECUTED 7->6 (status pending or approved) that CAN STILL EXECUTE —
     #159: their NEW-work (7->2) requests are HELD at compose so the cheap in-hand alternate rep is
@@ -850,6 +874,8 @@ def _bundle_alternate(s, district_id: str, actor: str, root) -> dict:
     if not package["cost"]["n_reps"]:
         return {"ok": False, "reason": "the bundled alternates produced an empty dispatch package"}
     package["verified_only"] = False
+    if (refusal := _refuse_benchmark_reps(s, package)) is not None:
+        return refusal
     fps = {district_id: REL.district_fingerprints(s, district_id)}
     doc = HND.freeze(package, councils, fps, created_by=actor)
     path = (Path(root) if root else HND.DEFAULT_ROOT) / HND.handoff_filename(doc)
@@ -943,6 +969,8 @@ def _dispatch_recover_band(s, district_id: str, band: str, rec_key: str, file: s
     if not package["cost"]["n_reps"]:
         return {"ok": False, "reason": "the recover-band rep produced an empty dispatch package"}
     package["verified_only"] = False
+    if (refusal := _refuse_benchmark_reps(s, package)) is not None:
+        return refusal
     fps = {district_id: REL.district_fingerprints(s, district_id)}
     doc = HND.freeze(package, councils, fps, created_by=actor)
     path = (Path(root) if root else HND.DEFAULT_ROOT) / HND.handoff_filename(doc)

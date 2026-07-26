@@ -1092,6 +1092,23 @@ enumerating the sites an issue listed instead of the sites that exist. This one 
 new shape: not "how many places assert the rule" but **"how many places must the rule fire, and does
 it?"** Grep the *guarded operation* (`HND.freeze`), not just the guard.
 
+**FIXED same day.** Both back-edges now call the guard through `_refuse_benchmark_reps`, a declared
+adapter returning `stage7_execute`'s `{"ok": False, "reason": …}` contract rather than raising — the
+exception form stays right at gate@6, where a raise rolls the session back with nothing written.
+
+The durable part is the fitness test, and its shape follows directly from the defect: testing the
+*guard* again could never have found this, because the guard was correct everywhere it was applied.
+So the test walks the AST and asserts that **every function containing an `HND.freeze` call also
+calls the guard, above it** — per-function, not per-module, since a module-level count would pass on
+a file that guards one path twice and another not at all, which is precisely this defect's shape. It
+is falsified against the verbatim pre-fix body of `_bundle_alternate`. Sanctioned wrappers are named
+explicitly rather than pattern-matched, so a new indirection has to be added deliberately — that
+addition is the review point.
+
+The test also earned its keep immediately: it failed on first run *after* the fix, because both
+call sites reach the guard through the adapter. That is the detector refusing to accept an
+indirection it had not been told about — the correct default for a rule this load-bearing.
+
 ### 12.8 Test surface
 
 +14 DB-free, +7 govdb, +3 integration. The named acceptance test is

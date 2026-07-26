@@ -204,3 +204,54 @@ def test_the_no_client_side_provenance_rule_is_declared_in_the_manifest():
     literals = {r["literal"] for r in
                 manifest["client_server_boundaries"]["forbidden_client_comparisons"]}
     assert BM.BENCHMARK_CAPTURE_SOURCE in literals
+
+
+# --------------------------- #644: the back-edge freeze paths --------------------------------
+
+@govdb
+def test_644_the_back_edge_adapter_refuses_a_benchmark_rep(signals):
+    """#644: the gate@7 back-edges (`_bundle_alternate`, `_dispatch_recover_band`) froze dispatches
+    by calling HND.freeze DIRECTLY, so #618's provenance guard — which had ONE call site against
+    THREE freeze paths — never ran on them. They also never set `dispatch_type`, so it defaulted to
+    `production`.
+
+    A 7->6 directive names its alternate reps by rec_key from the district's LIVE reps, and a
+    batch_00000 district holds `benchmark_gt` captures (95 across the 27), so these paths could mint
+    a production dispatch carrying injected `gt://` reps into an IMMUTABLE artifact.
+
+    The adapter returns this-module's refusal dict rather than raising, because both callers are
+    console actions whose contract is `{"ok": False, "reason": ...}`."""
+    from infrastructure.acquisition.process_governance import stage7_execute as EX
+    s = signals
+    _seed_rec(s, "ZZ644", "ZZ644:gt", "gt644", BM.BENCHMARK_CAPTURE_SOURCE)
+    pkg = _pkg(BM.DISPATCH_PRODUCTION, rec_keys=("ZZ644:gt",), district_id="ZZ644")
+
+    refusal = EX._refuse_benchmark_reps(s, pkg)
+    assert refusal is not None and refusal["ok"] is False
+    assert "ZZ644:gt" in refusal["reason"]          # names the rep, so the human can deselect it
+    assert "benchmark provenance" in refusal["reason"]
+
+
+@govdb
+def test_644_the_adapter_lets_clean_reps_through(signals):
+    """The refusal must be narrow: an ordinary discovered rep freezes normally. A guard that blocked
+    the honest path would simply be turned off."""
+    from infrastructure.acquisition.process_governance import stage7_execute as EX
+    s = signals
+    _seed_rec(s, "ZZ644B", "ZZ644B:ok", "ok644", "discovered")
+    pkg = _pkg(BM.DISPATCH_PRODUCTION, rec_keys=("ZZ644B:ok",), district_id="ZZ644B")
+
+    assert EX._refuse_benchmark_reps(s, pkg) is None
+
+
+@govdb
+def test_644_a_deliberate_benchmark_back_edge_is_allowed(signals):
+    """The Council Lab opt-in survives the adapter: an explicit benchmark dispatch may carry
+    benchmark reps, on the back-edge exactly as at gate@6. The guard refuses a MIS-TYPED dispatch,
+    never a benchmark one."""
+    from infrastructure.acquisition.process_governance import stage7_execute as EX
+    s = signals
+    _seed_rec(s, "ZZ644C", "ZZ644C:gt", "gt644c", BM.BENCHMARK_CAPTURE_SOURCE)
+    pkg = _pkg(BM.DISPATCH_BENCHMARK, rec_keys=("ZZ644C:gt",), district_id="ZZ644C")
+
+    assert EX._refuse_benchmark_reps(s, pkg) is None

@@ -8,6 +8,7 @@ backfill). Each carried a comment saying it ought to have one definition; none c
 These tests cover the predicate itself (govdb, real SQL) AND pin the consolidation with a fitness
 function — the copies must not silently grow back.
 """
+import ast
 import re
 from pathlib import Path
 
@@ -373,3 +374,60 @@ def test_the_provenance_fragment_and_the_helper_agree(gov_session):
     via_py = {d for d, k, f in (("ZZPVA", "ZZPVA:gt", f1), ("ZZPVB", "ZZPVB:ok", f2))
               if BM.is_benchmark_provenance(s, rec_keys=[k], fact_ids=[f])}
     assert via_sql == via_py == {"ZZPVA"}
+
+
+# --------------------------- #644: every freeze path is guarded ---------------------------
+# The #618 provenance guard shipped with ONE call site against THREE freeze paths. That class of
+# defect — a rule that is correct where it is applied and simply ABSENT elsewhere — is invisible to
+# every test of the guard itself, so the durable fix is to count the guarded OPERATION rather than
+# to test the guard again. Grep the operation, not the guard (findings report §12.7).
+_FREEZE_CALL = re.compile(r"\bHND\.freeze\s*\(")
+# The guard counts either directly or through a SANCTIONED wrapper. `_refuse_benchmark_reps` is the
+# back-edge adapter: same guard, but returning this-module's `{"ok": False, "reason": ...}` refusal
+# rather than raising, because those two callers are console actions whose contract is a refusal dict.
+# Naming wrappers explicitly (rather than accepting any call whose name contains "benchmark") keeps
+# the detector honest — a new indirection has to be added here deliberately, which is the review point.
+_GUARD_CALL = re.compile(r"(?:assert_dispatch_type_allowed|_refuse_benchmark_reps)\s*\(")
+
+
+def test_every_freeze_call_site_is_preceded_by_the_provenance_guard():
+    """A frozen handoff is IMMUTABLE, so a wrong `dispatch_type` is unrecoverable — the guard has to
+    run before every freeze, not before the one the author remembered.
+
+    Scoped per-function: the guard must appear in the same function body as the freeze, above it.
+    A module-level count would pass on a file that guards one path twice and another not at all,
+    which is exactly the shape of the defect being pinned."""
+    offenders = []
+    for py in ACQ.rglob("*.py"):
+        src = py.read_text()
+        if not _FREEZE_CALL.search(src):
+            continue
+        tree = ast.parse(src)
+        for fn in (n for n in ast.walk(tree)
+                   if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))):
+            body = ast.get_source_segment(src, fn) or ""
+            fm = _FREEZE_CALL.search(body)
+            if not fm:
+                continue
+            gm = _GUARD_CALL.search(body)
+            if gm is None or gm.start() > fm.start():
+                offenders.append(f"{py.relative_to(REPO)}::{fn.name}")
+    assert not offenders, (
+        "these functions freeze a handoff without first calling assert_dispatch_type_allowed — a "
+        "production dispatch could carry benchmark-provenance representations into an IMMUTABLE "
+        "artifact (#644):\n  " + "\n  ".join(offenders))
+
+
+def test_the_freeze_detector_would_have_caught_the_644_defect():
+    """Falsification: the pre-#644 body of `_bundle_alternate`, verbatim in shape. A fitness function
+    that cannot be shown to fail on the real defect it was written for is decoration."""
+    pre_644 = '''
+def _bundle_alternate(s, district_id, actor, root):
+    package = PKG6.assemble_package(districts_input, councils, cost_model, overrides)
+    package["verified_only"] = False
+    fps = {district_id: REL.district_fingerprints(s, district_id)}
+    doc = HND.freeze(package, councils, fps, created_by=actor)
+'''
+    fm = _FREEZE_CALL.search(pre_644)
+    gm = _GUARD_CALL.search(pre_644)
+    assert fm is not None and gm is None, "the detector would not have caught the #644 defect"
