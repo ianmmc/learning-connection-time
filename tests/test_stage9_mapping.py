@@ -289,3 +289,50 @@ def test_load_ids_ignores_indented_comments(tmp_path):
     f = tmp_path / "ids.txt"
     f.write_text("0100810\n  # an indented comment\n# top comment\n\n  3620580  \n")
     assert _load_ids(str(f)) == ["0100810", "3620580"]
+
+
+# ----------------------------- #619: the write-bearing provenance walk -----------------------------
+def _sch(name, *, rec_key=None, fact_id=None, excluded=None):
+    s = {"school": name, "gross": 420}
+    if rec_key:
+        s["rec_key"] = rec_key
+    if fact_id is not None:
+        s["fact_id"] = fact_id
+    if excluded:
+        s["excluded"] = excluded
+    return s
+
+
+def test_619_collects_rec_keys_and_fact_ids_across_every_band():
+    """The wall's input is every band's evidence, not one band's — a receipt writes all its bands, so
+    an injected rep in ANY of them taints a write."""
+    receipt = {"bands": {
+        "elementary": {"schools": [_sch("oak", rec_key="D:a", fact_id=1),
+                                   _sch("elm", rec_key="D:b", fact_id=2)]},
+        "high": {"schools": [_sch("west", rec_key="D:c", fact_id=3)]}}}
+    assert P.collect_write_bearing_sources(receipt) == ({"D:a", "D:b", "D:c"}, {1, 2, 3})
+
+
+def test_619_excluded_school_is_not_write_bearing():
+    """The escape hatch, and the reason the wall can be ANY-of: a school struck at gate@8
+    (band_exclusion, #257) was removed BEFORE the mode, so it is not a source of the band's value and
+    must not refuse the write on its behalf. Same skip collect_source_urls makes (#632)."""
+    receipt = {"bands": {"elementary": {"schools": [
+        _sch("oak", rec_key="D:clean", fact_id=1),
+        _sch("stale", rec_key="D:gt", fact_id=2, excluded={"reason": "stale", "actor": "ian"})]}}}
+    assert P.collect_write_bearing_sources(receipt) == ({"D:clean"}, {1})
+
+
+def test_619_human_added_fact_contributes_no_identifiers():
+    """A human-added fact (#626) has no capture, so it carries no benchmark provenance to check — and
+    must not be treated as UNKNOWN and refused. Verified against all 38 frozen receipts (2026-07-26):
+    the single school lacking both identifiers is the one real human_added_fact row."""
+    receipt = {"bands": {"middle": {"schools": [_sch("riverside")]}}}
+    assert P.collect_write_bearing_sources(receipt) == (set(), set())
+
+
+def test_619_empty_and_bandless_receipts_are_inert():
+    """A statutory-fallback-only receipt has no council bands at all; it must not touch the DB."""
+    assert P.collect_write_bearing_sources({}) == (set(), set())
+    assert P.collect_write_bearing_sources({"bands": {}}) == (set(), set())
+    assert P.collect_write_bearing_sources({"bands": {"high": {}}}) == (set(), set())

@@ -4363,18 +4363,26 @@ requirements:
       - "dispatch_type rides handoff._identity (the verified_only precedent), so the same reps dispatched benchmark vs production are hash-distinct artifacts and a preview-as-production / freeze-as-benchmark flip 409s instead of silently substituting"
       - "The frozen handoff RECORDS its own dispatch_type: 'was this dispatch benchmark?' is answerable from the receipt alone, never only from a DB row that could be lost or disagree"
       - "REDO-ELIGIBILITY IS DECLARED (batch.redo_attempted), not derived from batch_type. An absent value falls back to the historical batch_type=='follow-up' rule so no pre-existing batch changes behavior. Deriving it would let one Stage-2 run on batch_00000 merge fresh SERP candidates into the 27 curated districts' FROZEN gt:// candidate sets (REQ-059's corpus is fixed)"
-      - "The Stage-9 write guard has TWO arms, neither redundant: the stamped handoff.dispatch_type (which cannot see a production dispatch that pulled in a stale benchmark representation) and provenance DERIVED from the frozen artifact's representations (which cannot see a Council Lab A/B composed entirely of production representations)"
+      - "The Stage-9 write guard has TWO arms, neither redundant: the stamped handoff.dispatch_type (which cannot see a production dispatch that pulled in a stale benchmark representation) and provenance DERIVED from the representations behind the facts (which cannot see a Council Lab A/B composed entirely of production representations) — MET 2026-07-26 (#619). GRAIN CORRECTION: the derived arm reads the FROZEN APPROVED RECEIPT's write-bearing schools (bands[*].schools[*].rec_key / fact_id), which is FACT grain, not the (handoff x district) grain earlier specified — school_fact.rec_key exists and is 100% populated (2782/2782), so fact->representation IS traversable. Reading the receipt also avoids a fail-OPEN hole: _load_handoff_by_hash returns None for a pruned handoff file, which would have answered not-benchmark for exactly the districts whose receipts went missing"
+      - "The write guard refuses on ANY benchmark-provenance evidence rather than dropping the tainted fact (one injected representation taints the band value it feeds, and dropping it would silently change an approved number). The auditable way to satisfy it is a human striking the stale evidence at gate@8 (band_exclusion, REQ-257): an excluded school is applied BEFORE the mode, so it is not a source of the band's value and does not refuse the write on its behalf. A school carrying NEITHER identifier is a human-added fact — no capture, so no provenance to check, and it must not be read as 'unknown' and refused"
+      - "The gate@8 REVIEW QUEUE is provenance-scoped by the same definition (IS_BENCHMARK_PROVENANCE_SQL), and must land WITH the Stage-9 wall rather than after it: gate@8 is the only door to a Stage-9 write, so re-keying the write alone leaves the fix unreachable and the mobility property vacuous — MET 2026-07-26"
+      - "The mode-stability early-exit's full-census exemption (REQ-151) is a property of THE RUN, read off the frozen handoff (run_kind, gt_data, dispatch_type), never of a district's batch membership — membership would make all 27 re-run districts pay a full-census extraction on every future production run, forever — MET 2026-07-26 (#619), inverting two pre-#619 pins"
       - "An operator can COMPOSE a targeted batch (follow-up or benchmark) over a named district list, via API and console — build_batch's eligible_pool drops every district at furthest_stage>=3, so without this neither mobility property 1 nor 2 is expressible at all"
       - "NOT YET MET — the benchmark-BATCH terminus is unenforced for newly-composed benchmark batches (REQ-170 / #640)"
+      - "OPEN — the #134 request-execution guards (stage7_execute _gather / _bundle_alternate / _dispatch_recover_band) still key on district membership. Decided with Ian 2026-07-26: re-key to provenance inside #620, where the need is real and observable. #644 is the BLOCKING PREREQUISITE — the membership wall is currently the only thing keeping benchmark districts away from two freeze paths that bypass the #618 provenance refusal, so it is accidentally load-bearing and must not be touched first. #134's own rationale is also obsolete in its premises: it guards against evading 'the Stage-9 walls that key off batch_type', which is the wall this requirement retired"
+      - "EVERY path that freezes a dispatch must pass assert_dispatch_type_allowed. NOT MET (#644): the guard has one call site (stage6_dispatch.py) but three freeze paths — stage7_execute's two gate@7 back-edges call HND.freeze directly and default dispatch_type to production, so they can mint a production dispatch holding injected gt:// representations. The durable fix is a fitness test counting HND.freeze call sites, because the defect is a MISSING call site"
+      - "The frozen handoff's per-record payload (rec_key/url/reps/decision) must be readable from gov_db, not only from the disk artifact. NOT MET (#645): the handoff table stores metadata + a path, so closing_argument._evidence_from_handoffs globs and reads the JSON to build the evidence that gets frozen into the gate@8 receipt — active processing over a receipt, and it degrades silently when a file is pruned (_load_handoff_by_hash returns None). This is why the REQ-169 write guard reads the receipt + gov_db and never the artifact"
     tests:
       - tests/test_batch_mobility.py
       - tests/test_stage6_dispatch_type.py
       - tests/test_benchmark_predicate.py
       - tests/test_stage7_mode_stability.py
+      - tests/test_stage9_incorporate_integration.py
+      - tests/test_stage9_mapping.py
     depends_on: [REQ-117, REQ-151, REQ-162, REQ-059]
     verification: mixed
     created: "2026-07-25T00:00:00Z"
-    updated: "2026-07-25T00:00:00Z"
+    updated: "2026-07-26T00:00:00Z"
     notes: "Origin: the 27 batch_00000 ground-truth districts could never be written to lct_db, because a
       guard mirrored across five sites keyed on district IDENTITY where the documented rationale was about
       extraction PROVENANCE. Identity was a proxy that held only while a district had exactly one history.
@@ -4415,3 +4423,38 @@ requirements:
       discovered/emergent — indistinguishable from first-run output. Measured live 2026-07-25: discovered
       1450 / emergent 206 / benchmark_gt 95 / manual 1. Sequenced into #623, which already opens the Node
       capture_discovery.mjs seam (avoids touching Node twice)."
+
+  - id: REQ-171
+    github_issue: "#622, #623, #645 (the open violations); generalizes REQ-164 beyond the capture dir"
+    description: "PIPELINE-WIDE INVARIANT — RECEIPTS ARE EVIDENCE, gov_db IS THE TRANSPORT. Every artifact
+      the acquisition pipeline writes to disk is an auditable RECEIPT of work done. No active-pipeline
+      operation may read any such artifact as its input, and no artifact's EXISTENCE, name, or absence may
+      serve as pipeline state. The governance DB is the sole working store between stages; disk holds
+      binaries plus receipts (governance §1). This is the location-independent generalization of REQ-164,
+      whose otherwise-identical rule is scoped to per-district capture-dir receipts and therefore does not
+      reach the data/acquisition/ artifacts or the fixed-filename stage-done markers."
+    type: architectural
+    priority: must
+    status: proposed
+    acceptance_criteria:
+      - "SCOPE IS EVERY PIPELINE-WRITTEN ARTIFACT, not a directory. Three classes exist today and REQ-164 names only the first: (a) per-district capture-dir receipts under data/raw/lea-website-captures/<dir>/ — covered, MET; (b) cross-district artifacts under data/acquisition/ (handoffs/, batches, remediation) — NOT covered; (c) the fixed-filename stage 2-4 handoffs (discovery.json/candidates.json/captures.json/processed.json) whose EXISTENCE is a stage-done marker — NOT covered, and the clearest violation of the rule's second half"
+      - "NO ARTIFACT IS PIPELINE STATE. A stage's completion is a gov_db state_event, never the presence of a file. Reading a done-marker is the same defect as reading a receipt as input — it is transmission by filesystem, one bit wide. Tracked as #622/#623"
+      - "NO ACTIVE READ. Known open violation: stage8_aggregate/closing_argument._evidence_from_handoffs globs and reads data/acquisition/handoffs/*.json to build the evidence that is then FROZEN into the gate@8 receipt authorizing a production write. The per-record payload has no gov_db home at all (the handoff table stores metadata + a path). Tracked as #645"
+      - "SILENT DEGRADATION IS THE TELL. An active read of a receipt cannot distinguish 'absent' from 'no such fact' — _load_handoff_by_hash returns None for a pruned file and the closing argument quietly loses evidence. A gov_db read fails loud instead. This is also why the REQ-169 benchmark wall reads gov_db and not the artifact: the artifact path would have FAILED OPEN for exactly the districts whose receipts went missing"
+      - "FROZEN ARTIFACTS ARE NOT AN EXCEPTION, THEY ARE A DUAL-WRITE. An immutable artifact (a frozen handoff, a gate@8 approval receipt) IS the authoritative record for audit — REQ-169 requires a dispatch's type be answerable 'from the receipt alone, never only from a DB row that could be lost or disagree'. The resolution is not to read the file during operations but to hold the SAME content in gov_db, derived from the artifact and verifiable against it, so divergence is detectable. Reconciles this REQ with feedback-derive-provenance-from-receipts: DERIVE from the receipt, then READ the derivation"
+      - "WRITE ORDER, unchanged from REQ-164: the gov_db commit precedes the receipt write, so a crash may leave a receipt LAGGING (re-derivable) but never AHEAD of the authoritative store"
+      - "ENFORCED, NOT ASSERTED. A fitness test over infrastructure/acquisition/ flags a disk read (open/glob/Path.read_text) of any pipeline-written artifact from a non-recovery, non-audit code path, with recovery/backfill/maintenance entry points declared in arch-manifest.json rather than pattern-matched. The rule has been true in prose across at least six stage-level REQs (101, 110, 128, 154, 163, 164) and was still violated in a seventh place — prose does not hold a cross-cutting invariant"
+      - "NOT IN COMPLIANCE AT PROPOSAL TIME. #622 + #623 (done-marker inversion) and #645 (handoff payload) must land before this can move past proposed; #616 closed the last capture-dir round-trip. Recording it now so the rule exists as a rule rather than as seven stage-level restatements"
+    depends_on: [REQ-164, REQ-165, REQ-110]
+    verification: test
+    created: "2026-07-26T00:00:00Z"
+    updated: "2026-07-26T00:00:00Z"
+    notes: "Proposed 2026-07-26 (Ian) after #645 surfaced a live active-read of a frozen handoff artifact.
+      Ian's framing: the pipeline must 'both produce auditable receipts at each stage and not utilize those
+      receipts for data transmission during active operations'. The audit that prompted it: the production
+      half IS generalized (REQ-164), but the transmission half is stated only per-stage — REQ-101
+      ('filtered.json is the auditable receipt, not the transport'), REQ-154 ('the JSON receipts are never
+      the downstream transport'), REQ-110/163 ('DB is the working store'), REQ-128 (origin derived from
+      receipts) — each true, none binding on a stage that had not yet been written. REQ-164 comes closest
+      and is marked tested, which is accurate for its stated scope and is exactly why the gap was invisible:
+      its rule is scoped to the capture dir, and #645's violation is in data/acquisition/."

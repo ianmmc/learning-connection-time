@@ -17,6 +17,7 @@ from sqlalchemy import text
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.stage8_aggregate import approval as APV
 from infrastructure.acquisition.stage8_aggregate import closing_argument as CA
+from infrastructure.acquisition.common import benchmark as BM
 from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.common import receipts as RCPT
 from infrastructure.acquisition.stage9_incorporate import incorporate as INC
@@ -93,6 +94,17 @@ def _cleanup():
         for tbl, col in (("batch_district", "batch_id"), ("batch", "batch_id")):
             try:
                 gs.execute(text(f"DELETE FROM {tbl} WHERE {col} = 'zz_bench_test'"))
+            except Exception:
+                gs.rollback()
+        # #619 provenance-guard tests seed the record/capture + dispatch/extraction/fact chain
+        for sql, params in (
+                ("DELETE FROM school_fact WHERE district_id = ANY(:d)", {"d": list(dids)}),
+                ("DELETE FROM extraction WHERE handoff_hash = 'zzbench619'", {}),
+                ("DELETE FROM handoff WHERE handoff_hash = 'zzbench619'", {}),
+                ("DELETE FROM record WHERE district_id = ANY(:d)", {"d": list(dids)}),
+                ("DELETE FROM capture WHERE district_id = ANY(:d)", {"d": list(dids)})):
+            try:
+                gs.execute(text(sql), params)
             except Exception:
                 gs.rollback()
 
@@ -430,9 +442,10 @@ def test_missing_lct_district_fails_loud(env, monkeypatch):
     assert _bell_rows(MISSING_DID) == []
 
 
-# ----------------------------- PR #607 review fixes -----------------------------
-def test_benchmark_district_refused(env, monkeypatch):
-    # A batch_00000-style benchmark membership walls the district off from Stage-9 writes.
+# ----------------------------- the benchmark wall (PR #607 review; re-keyed by #619) --------------
+def _seed_benchmark_membership(did):
+    """Put `did` in a batch_type='benchmark' batch — the batch_00000 shape. Pre-#619 this ALONE
+    refused the district's writes, permanently (batch_district rows are never deleted)."""
     with gdb.session_scope() as gs:
         gs.execute(text(
             "INSERT INTO batch (batch_id, batch_type, status, nces_year, created_at, created_by, "
@@ -442,11 +455,118 @@ def test_benchmark_district_refused(env, monkeypatch):
             "INSERT INTO batch_district (batch_id, district_id, ord, name, state, domain, "
             "lea_claimed_bands, nces_school_counts, band_processing_order, band_meta, included) "
             "VALUES ('zz_bench_test', :d, 0, 'Stage9 Test', 'ZZ', 'zz.test', '[]', '{}', '[]', "
-            "'{}', true)"), {"d": env})
-    _patch_gov(monkeypatch, _fake_ca(env, council={"elementary": {"gross": 420}}))
+            "'{}', true)"), {"d": did})
+
+
+def _seed_rep(did, rec_key, hash_, source):
+    """One record + its capture, joined on (district_id, hash) — the real arm-2 provenance path."""
+    from infrastructure.acquisition.common import cache_ingest as CI
+    from infrastructure.acquisition.stage5_filter import build_signals as BS
+    with gdb.session_scope() as gs:
+        BS.ensure_signal_schema(gs)
+        CI.ensure_cache_schema(gs)
+        gs.execute(text("INSERT INTO record (rec_key, district_id, url, hash, tier) "
+                        "VALUES (:k, :d, :u, :h, 'A') ON CONFLICT (rec_key) DO NOTHING"),
+                   {"k": rec_key, "d": did, "u": f"http://x/{hash_}", "h": hash_})
+        gs.execute(text("INSERT INTO capture (district_id, hash, url, ok, kind, source) "
+                        "VALUES (:d, :h, :u, 1, 'html', :s) "
+                        "ON CONFLICT (district_id, hash) DO UPDATE SET source = EXCLUDED.source"),
+                   {"d": did, "h": hash_, "u": f"http://x/{hash_}", "s": source})
+
+
+def _ca_with_rep(did, *, rec_key, gross=420, excluded=False):
+    """A one-band closing argument whose single school names `rec_key` — the write-bearing evidence
+    the #619 wall interrogates."""
+    ca = _fake_ca(did, council={"elementary": {"gross": gross}})
+    school = ca["bands"]["elementary"]["schools"][0]
+    school["rec_key"] = rec_key
+    if excluded:
+        # the real shape: closing_argument attaches the band_exclusion row itself, not a bool
+        school["excluded"] = {"reason": "stale injected rep", "actor": "ian"}
+    return ca
+
+
+def test_benchmark_batch_membership_alone_no_longer_refuses(env, monkeypatch):
+    """THE #619 ACCEPTANCE TEST — the exact case that was broken. A district that was in batch_00000
+    and has since been honestly re-run through a production batch CAN be incorporated.
+
+    Pre-#619 the seeded membership row alone refused this write forever, because `batch_district`
+    rows are never deleted: the guard keyed on district IDENTITY, while every documented reason for
+    it (injected reps, deliberately older school years, don't inflate coverage stats) is about the
+    specific extraction. Nothing about this receipt's evidence is benchmark, so it writes."""
+    _seed_benchmark_membership(env)
+    _seed_rep(env, f"{env}:cleanrep", "cleanrep", "discovered")
+    _patch_gov(monkeypatch, _ca_with_rep(env, rec_key=f"{env}:cleanrep"))
+
     res = INC.incorporate_district(env)
-    assert res.status == "not_eligible" and "benchmark" in res.reason
+    assert res.status == "incorporated"
+    assert {r["grade_level"]: r["minutes"] for r in _bell_rows(env)} == {"elementary": 420}
+
+
+def test_benchmark_provenance_rep_refuses(env, monkeypatch):
+    """ARM 2 (derived): an injected `gt://` rep among the write-bearing evidence refuses the write —
+    with NO benchmark batch membership anywhere, which is what makes this provenance and not identity.
+
+    This is the arm that covers the one real MIXED handoff (`f33790e63820`), a genuine production
+    dispatch holding three curated-GT PDFs. Its 227 accepted facts were held back only by the
+    district-keyed wall this issue retires; arm 2 is what keeps holding them."""
+    _seed_rep(env, f"{env}:gtrep", "gtrep", BM.BENCHMARK_CAPTURE_SOURCE)
+    _patch_gov(monkeypatch, _ca_with_rep(env, rec_key=f"{env}:gtrep"))
+
+    res = INC.incorporate_district(env)
+    assert res.status == "not_eligible" and "benchmark provenance" in res.reason
     assert _bell_rows(env) == [] and _grade_rows(env) == {}
+
+
+def test_benchmark_dispatch_refuses_even_with_production_reps(env, monkeypatch):
+    """ARM 1 (stamped): a fact produced against a `dispatch_type='benchmark'` handoff (#618) refuses
+    the write even though its rep is an ordinary discovered capture.
+
+    This is precisely the case arm 2 CANNOT see — a Council Lab A/B composed entirely of production
+    reps carries no rep-level signal at all — which is why the guard has two arms and not one."""
+    from infrastructure.acquisition.stage6_handoff import models as M6   # noqa: F401 (register)
+    from infrastructure.acquisition.stage7_extract import models as M7   # noqa: F401 (register)
+    _seed_rep(env, f"{env}:cleanrep2", "cleanrep2", "discovered")
+    with gdb.session_scope() as gs:
+        gdb.init_precious_schema()
+        gs.execute(text(
+            "INSERT INTO handoff (handoff_id, handoff_hash, created_at, created_by, status, path, "
+            "dispatch_type, n_districts, n_reps, total_usd, cost_provenance, district_ids, "
+            "council_ids) VALUES ('handoff_zzbench619_t', 'zzbench619', 'now', 'zz-test', "
+            "'dispatched', '/zz/x.json', :dt, 1, 1, 0.0, 'zz', '[]', '[]')"),
+            {"dt": BM.DISPATCH_BENCHMARK})
+        eid = gs.execute(text(
+            "INSERT INTO extraction (handoff_hash, district_id, run_kind, created_at, created_by, "
+            "n_reps, n_calls, n_judge_calls, n_errors, prompt_tokens, completion_tokens, cost_usd, "
+            "n_accepted, n_unresolved) VALUES ('zzbench619', :d, 'production', 'now', 'zz-test', "
+            "1, 1, 0, 0, 0, 0, 0.0, 1, 0) RETURNING extraction_id"), {"d": env}).scalar()
+        fid = gs.execute(text(
+            "INSERT INTO school_fact (extraction_id, district_id, band, school, status, rec_key, "
+            "created_at, human_determination) VALUES (:e, :d, 'elementary', 'oak', 'accepted', :k, "
+            "'now', '') RETURNING fact_id"),
+            {"e": eid, "d": env, "k": f"{env}:cleanrep2"}).scalar()
+
+    ca = _ca_with_rep(env, rec_key=f"{env}:cleanrep2")
+    ca["bands"]["elementary"]["schools"][0]["fact_id"] = fid
+    _patch_gov(monkeypatch, ca)
+
+    res = INC.incorporate_district(env)
+    assert res.status == "not_eligible" and "benchmark provenance" in res.reason
+    assert _bell_rows(env) == []
+
+
+def test_a_struck_benchmark_school_does_not_refuse_the_write(env, monkeypatch):
+    """The auditable ESCAPE HATCH, and why the wall can be ANY-of rather than a blunt district ban: a
+    school the human struck at gate@8 (`band_exclusion`, #257) is applied BEFORE the mode, so it is
+    not a source of the band's value and must not refuse the write on its behalf.
+
+    This is the path a re-run district (#620) uses to shed injected evidence it no longer relies on —
+    a recorded human decision, not a code exception. Same skip `collect_source_urls` makes (#632)."""
+    _seed_rep(env, f"{env}:gtrep2", "gtrep2", BM.BENCHMARK_CAPTURE_SOURCE)
+    _patch_gov(monkeypatch, _ca_with_rep(env, rec_key=f"{env}:gtrep2", excluded=True))
+
+    res = INC.incorporate_district(env)
+    assert res.status == "incorporated"
 
 
 def test_legacy_row_collision_fails_loud(env, monkeypatch):

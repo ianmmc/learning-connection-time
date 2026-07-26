@@ -125,6 +125,32 @@ def collect_source_urls(band: dict) -> list:
     return out
 
 
+def collect_write_bearing_sources(receipt: dict) -> tuple:
+    """`(rec_keys, fact_ids)` for every school across every band that actually SOURCES a written
+    value — the identifiers the #619 benchmark-provenance wall interrogates.
+
+    Excluded schools are skipped for exactly the reason `collect_source_urls` skips them (#632/#257):
+    a human struck them at gate@8, the mode was computed without them, so they are not a source of
+    the band's value and must not be able to refuse the write on its behalf. That skip is also the
+    auditable ESCAPE HATCH from the wall — striking a stale injected `gt://` school is how a re-run
+    district (#620) clears provenance it legitimately no longer relies on.
+
+    A school with no `rec_key` is a human-added fact (`human_added_fact`, #626) — it has no capture,
+    so there is no benchmark provenance to carry; it contributes neither identifier. Verified against
+    all 38 frozen receipts on 2026-07-26: 355 of 356 schools carry both identifiers, and the single
+    one carrying neither is the one real `human_added_fact` row, which holds its own `source_url`."""
+    rec_keys, fact_ids = set(), set()
+    for b in (receipt.get("bands") or {}).values():
+        for s in b.get("schools", []):
+            if s.get("excluded"):
+                continue
+            if s.get("rec_key"):
+                rec_keys.add(s["rec_key"])
+            if s.get("fact_id") is not None:
+                fact_ids.add(s["fact_id"])
+    return rec_keys, fact_ids
+
+
 def collect_schools_sampled(band: dict) -> list:
     """The fact-side per-school evidence list (names + council times + models + stated year) — the
     re-verify roster. Grade coverage rides in raw_import.band_grade_span, not here."""

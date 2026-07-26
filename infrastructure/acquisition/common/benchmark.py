@@ -15,16 +15,30 @@ The layering constraint that forced the duplication is real (``stage9_incorporat
 here. A fourth copy lived inline in ``stage7_run._early_exit_targets`` and a fifth in
 ``maintenance/backfill_receipts.load_benchmark_ids``; both now read this module too.
 
-**Grain matters, and it is about to change.** Everything here is *district-membership* grain — "has this
-district EVER been in a ``batch_type='benchmark'`` batch". That is the pre-#619 semantics, preserved
-byte-for-byte so the consolidation is a pure refactor. Epic #617's whole thesis is that this grain is
-wrong for a *write* decision: ``batch_district`` rows are never deleted, so a district honestly re-run
-through a production batch still matches forever, and its correct facts are refused at Stage 9 (#619).
+**Grain matters, and THREE grains live here.** Read the grain in the function name, never assume:
 
-When #619 lands, the write-eligibility guards move to **provenance** grain — "did the fact under
-consideration come from a benchmark DISPATCH" — which will live here alongside these, NOT replace them:
-membership stays the right question for genuinely batch-grain callers (e.g. Stage 5's zero-yield
-escalation, which asks about the source batch). Read the grain in the function name, never assume.
+  * *district-membership* — "has this district EVER been in a ``batch_type='benchmark'`` batch"
+    (``is_benchmark_district`` / ``benchmark_district_ids`` / the ``IS_BENCHMARK_SQL`` fragment).
+    Permanent by construction: ``batch_district`` rows are never deleted. This is the RIGHT question
+    for genuinely batch-grain callers (Stage 5's zero-yield escalation asks about the source batch)
+    and the WRONG one for a write decision — that was #619's bug.
+  * *representation* — "did this rep's capture come from benchmark injection"
+    (``benchmark_provenance_rec_keys``, keyed on ``capture.source='benchmark_gt'``).
+  * *provenance* — "did the FACT under consideration come from benchmark work" (``is_benchmark_provenance``
+    and its two arms). This is what every write-eligibility guard asks post-#619.
+
+**The provenance predicate has TWO ARMS, and neither is redundant** (#619, from the 39-handoff census
+in the epic's findings report §11.4). Arm 1 is the STAMPED signal — ``handoff.dispatch_type='benchmark'``
+(#618) — which is the only thing that can see a future Council Lab A/B composed entirely of *production*
+reps. Arm 2 is the DERIVED signal — the fact's own rep carries benchmark provenance — which is the only
+thing that can see the one real MIXED artifact (``f33790e63820``: a genuine production dispatch that
+pulled three ``gt://`` curated PDFs into 3 of its 9 districts). Dispatch grain alone answers that one
+wrong in *both* directions, which is why the guard is not simply "was this a benchmark dispatch".
+
+Deriving arm 2 rather than back-stamping the handoffs is deliberate: the two pure-benchmark artifacts
+are immutable frozen files that PREDATE ``dispatch_type``, so stamping their DB rows would leave each
+row disagreeing with its own receipt — and the receipt is the auditable record. (This retired the
+epic's planned Phase 2e.)
 
 **Fail-closed asymmetry is deliberate, not an oversight.** ``is_benchmark_district`` tolerates ONLY a
 missing table (a fresh governance DB) and lets every other error propagate — a wall that can never
@@ -148,3 +162,86 @@ def benchmark_provenance_rec_keys(session, rec_keys) -> set:
         return set()
     return {r[0] for r in session.execute(
         _REC_PROV_SQL, {"src": BENCHMARK_CAPTURE_SOURCE, "k": keys})}
+
+
+# ---------------------------------------------------------------------------
+# PROVENANCE grain (#619) — "did the fact under consideration come from benchmark work"
+# ---------------------------------------------------------------------------
+# The write-eligibility question, and the one the district-membership guards were WRONGLY answering.
+# Two arms (see the module docstring); a caller supplies whichever identifiers it holds and the arms
+# it can't feed simply don't fire.
+#
+# Measured against the live governance DB 2026-07-26, across all 83 districts holding production facts:
+# membership and arm 2 agree on ALL 83 (27 benchmark either way, zero disagreements), and every
+# benchmark district's production facts are ENTIRELY benchmark-provenance (`any` == `all`). So the
+# re-key is behaviour-preserving TODAY — including for the mixed handoff's three districts, whose 227
+# accepted facts stay walled. The two grains diverge only once #620's re-run mints fresh production
+# reps for a district that also holds injected ones, which is exactly the case #617 exists to unblock.
+# Arm 1 fires on nothing today (all 39 handoff rows are `dispatch_type='production'`, the two
+# pure-benchmark artifacts included — see the no-back-stamping note in the module docstring); it is
+# the forward-looking arm, stamped by #618 on every dispatch frozen from now on.
+
+# Embeddable correlated-EXISTS fragment, the provenance twin of IS_BENCHMARK_SQL, for callers that
+# need this inside a larger query (the gate@8 review queue). `{alias}` = the outer query's
+# district-bearing table alias. Both arms, scoped to PRODUCTION extractions — a probe is not a
+# release path, and folding probes in would wall a district for an experiment it never released.
+# It reads the LIVE facts rather than a frozen receipt because a queue exists before any approval
+# does; Stage 9's wall re-asks the same question of the receipt it actually writes from.
+IS_BENCHMARK_PROVENANCE_SQL = """(
+  EXISTS (SELECT 1 FROM extraction e JOIN handoff h ON h.handoff_hash = e.handoff_hash
+          WHERE e.district_id = {alias}.district_id AND e.run_kind = 'production'
+            AND h.dispatch_type = 'benchmark')
+  OR EXISTS (SELECT 1 FROM extraction e
+             JOIN school_fact f ON f.extraction_id = e.extraction_id
+             JOIN record r ON r.rec_key = f.rec_key
+             JOIN capture c ON c.district_id = r.district_id AND c.hash = r.hash
+             WHERE e.district_id = {alias}.district_id AND e.run_kind = 'production'
+               AND c.source = 'benchmark_gt'))"""
+
+_BENCH_DISPATCH_FACTS_SQL = text(
+    "SELECT DISTINCT f.fact_id FROM school_fact f "
+    "JOIN extraction e ON e.extraction_id = f.extraction_id "
+    "JOIN handoff h ON h.handoff_hash = e.handoff_hash "
+    "WHERE h.dispatch_type = :dt AND f.fact_id = ANY(:f)")
+
+
+def benchmark_dispatch_fact_ids(session, fact_ids) -> set:
+    """ARM 1: the subset of `fact_ids` produced by a run against a BENCHMARK dispatch.
+
+    Keyed by FACT rather than by handoff hash because that is what the callers hold — the frozen
+    receipt names its facts, not its dispatches. A handoff-keyed form is the obvious sibling and is
+    deliberately absent until something needs it (the deferred #134 re-key would, §12.6).
+
+    The join is fact -> extraction -> handoff, because `school_fact` carries no dispatch link of its
+    own. A fact whose row has since been deleted contributes nothing — which is safe here only because
+    arm 2 keys on the same facts' `rec_key`, and `school_fact` is precious/append-only anyway."""
+    ids = list(fact_ids)
+    if not ids:
+        return set()
+    return {r[0] for r in session.execute(
+        _BENCH_DISPATCH_FACTS_SQL, {"dt": DISPATCH_BENCHMARK, "f": ids})}
+
+
+def is_benchmark_provenance(session, *, rec_keys=(), fact_ids=()) -> bool:
+    """True when ANY of the supplied facts/reps carries benchmark provenance by EITHER arm — the
+    write-eligibility wall Stage 9 asks (#619), replacing the district-membership question.
+
+    ANY, not ALL, and deliberately: one injected `gt://` rep among a district's evidence is enough to
+    taint the band value it feeds, so this REFUSES rather than silently dropping the tainted fact —
+    the same "never let a guard whose unit is coarser than its trigger coerce an answer" posture that
+    made #618's freeze refuse. The auditable way to satisfy it is for a human to strike the stale
+    evidence at gate@8 (`band_exclusion`, #257), which removes those schools from the receipt's
+    write-bearing set before this ever sees them.
+
+    Fail-closed like `is_benchmark_district`, and for the same PR #607 R2 reason: ONLY a missing table
+    (a fresh governance DB with no dispatch history at all) reads as not-benchmark; every other error
+    propagates, so a transient DB fault can never let benchmark data through. Note this is the opposite
+    tolerance from bare `benchmark_provenance_rec_keys`, which feeds the gate@6 freeze — there a loud
+    failure is recoverable (retry the freeze) and there is no fresh-DB case to tolerate."""
+    try:
+        if benchmark_dispatch_fact_ids(session, fact_ids):
+            return True
+        return bool(benchmark_provenance_rec_keys(session, rec_keys))
+    except ProgrammingError:
+        session.rollback()   # relation "handoff"/"record"/"capture" absent — fresh DB, no provenance
+        return False

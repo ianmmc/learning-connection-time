@@ -930,3 +930,174 @@ the `dispatch_type` field**, so stamping the DB row would leave the row and its 
 disagreeing — with the artifact, which is the auditable record, saying nothing. Deriving keeps the
 receipt authoritative (`feedback-derive-provenance-from-receipts`). Verified: arm 2 classifies all 39
 correctly, including the mixed one at district grain (3 tainted of 9).
+
+---
+
+## 12. Phase 3 implementation log — #619, the two-arm provenance guard (2026-07-26)
+
+Landed: the write-eligibility guards move from district MEMBERSHIP to fact PROVENANCE, with the
+two-arm predicate §11.4 specified. Three corrections to that spec, one of them to a load-bearing
+premise.
+
+### 12.1 CORRECTION to §11.4 — fact→rep IS traversable; the grain is finer than stated
+
+§11.4 says: *"`extraction` is one row per `(handoff_hash, district_id)` and carries **no** rep link;
+`school_fact` links only to `extraction_id`. So fact→rep is not traversable — but the frozen artifact
+holds each district's `rec_key` list."* The first half is right about `extraction`; the conclusion is
+wrong. **`school_fact.rec_key` exists** (`stage7_extract/models.py`, "provenance + review": *"# source
+rep"*), and measured against the live governance DB it is **100% populated — 2782 of 2782 rows**,
+both statuses, both run kinds. So the available grain is the **fact**, one step finer than the
+`(handoff × district)` the report settled for, and it is readable from the DB with no artifact glob.
+
+This matters beyond tidiness, for three reasons:
+
+1. **The frozen receipt already carries it.** `bands[*].schools[*]` holds both `rec_key` and
+   `fact_id` (355 of 356 schools across all 38 approved receipts). So the guard can interrogate *the
+   artifact Stage 9 actually writes from* — question and write with the same subject — rather than a
+   parallel lookup. That is `feedback-derive-provenance-from-receipts` satisfied more directly than
+   the artifact-glob plan would have.
+2. **The artifact path would have FAILED OPEN.** `closing_argument._load_handoff_by_hash` returns
+   `None` when no handoff file matches ("an older run whose receipt was pruned"). A wall built on
+   reading frozen handoffs would have silently answered *not-benchmark* for exactly the districts
+   whose receipts went missing. The receipt+DB path has no such hole.
+3. **It is what makes the escape hatch work** (§12.3).
+
+### 12.2 The measurement that made the re-key safe to land
+
+Before writing code, both rules were run against every district holding production facts:
+
+| | result |
+|---|---|
+| districts with production facts | **83** |
+| walled by district membership | **27** |
+| walled by rep provenance (arm 2) | **27** |
+| **disagreements** | **0** |
+| benchmark districts whose facts are *entirely* benchmark-provenance | **27 of 27** (`any` == `all`) |
+| gate@8 queue admits, old fragment vs new | **56 vs 56**, identical sets |
+
+So Phase 3 is **behaviour-preserving today** — the empirical form of the claim, the same falsification
+gate Phase 2c used ("all suites pass with zero fixture changes"). Nothing is newly admitted and
+nothing newly refused, *including the mixed handoff's three districts*: their 227 accepted facts stay
+walled, now by arm 2 rather than by identity. §11.4 recorded that exposure as an accepted consequence
+of #619 ("post-#619 those 227 facts become gate@8 reviewable and Stage-9 writable"); at fact grain
+**they do not**, and the hole the report flagged never opens.
+
+The two grains diverge only when #620's re-run mints fresh reps for a district that also holds
+injected ones — which is the case the epic exists to unblock. Arm 1 fires on **nothing** today: all 39
+`handoff` rows are `dispatch_type='production'`, the two pure-benchmark artifacts included, exactly as
+the retirement of Phase 2e's back-stamping intends. Arm 1 is the forward-looking arm.
+
+### 12.3 The escape hatch, and why the wall is ANY-of rather than a district ban
+
+The wall refuses on ANY benchmark-provenance evidence rather than dropping the tainted fact — one
+injected rep taints the band value it feeds, and silently dropping it would change an approved number
+(#618's "refuse, never coerce"). That raises the obvious question: how does a re-run district ever
+clear provenance it no longer relies on?
+
+**Through a recorded human decision, not a code exception.** A school struck at gate@8
+(`band_exclusion`, #257) is applied *before* the mode, so it is not a source of the band's value;
+`collect_write_bearing_sources` skips excluded schools for exactly the reason `collect_source_urls`
+does (#632). Striking a stale injected school is therefore the auditable path that satisfies the wall
+— which is the ramp-up posture working as designed: the deterministic guard holds, and the human's
+override is itself a precious, git-backed record.
+
+A school carrying **neither** identifier is a human-added fact (#626) — no capture, so no benchmark
+provenance to check, and it must not be read as *unknown* and refused. Verified: the one such school
+across all 38 receipts is the single real `human_added_fact` row, which carries its own `source_url`.
+
+### 12.4 The full-surface grep found EIGHT sites, not the three #619 names
+
+The epic's standing lesson (§2, §3: it undercounted twice by grepping only the sites the issue listed)
+held a third time. Disposition of every site:
+
+| site | asks | disposition |
+|---|---|---|
+| `incorporate.py` Stage-9 wall | may these facts be written? | **re-keyed** to the two-arm predicate, and MOVED to after the receipt loads — it now interrogates the artifact it writes from |
+| `server.py::aggregate_districts` (gate@8 queue) | may this district be reviewed? | **re-keyed** via the new `IS_BENCHMARK_PROVENANCE_SQL` |
+| `stage7_run._early_exit_targets` | full census or shortcut? | **membership check REMOVED**; intent re-homed at run level (§12.5) |
+| `server.py` gate@6 `is_benchmark` badge | display | **kept on membership** — "part of the yardstick corpus" is true and useful to an operator |
+| `stage7_execute` ×3 (`_gather`, `_bundle_alternate`, `_dispatch_recover_band`) | may this spawn new PAID work? | **left on membership — open decision, §12.6** |
+| `stage5_followup.compose_zero_yield` | escalate from this batch? | genuinely batch-grain, correct as-is (unchanged from §2) |
+| `backfill_receipts.load_benchmark_ids` | tooling: `_benchmark` basename | corpus-wide sweep, batch-grain, correct as-is |
+
+**Why the gate@8 queue had to land WITH the Stage-9 wall, not after it.** CLAUDE.md sequenced the
+`aggregate_districts` rescope as the step *after* #619. It cannot be: gate@8 is the only door to a
+Stage-9 write, so re-keying Stage 9 while the queue still excluded by membership would have left the
+fix **unreachable** — an honestly re-run district could never have been approved in the first place,
+and #619's stated acceptance property would have been vacuous. The two are one terminus.
+
+### 12.5 The early-exit inversion, and a predicate extracted so a test could pin it
+
+The mode-stability exemption's intent (REQ-151: a *measurement* run wants the full census, or the
+shortcut measures the shortcut) is a property of **the run**, not of a district. It moved to the call
+site as a third disabler beside `run_kind == 'production'` and `gt_data is None` — now
+`dispatch_type != 'benchmark'`, read off the frozen handoff, which is also the only form that can see
+a Council Lab A/B built entirely from production reps.
+
+Both pre-#619 pins inverted, as §10.4 predicted for one of them (the second,
+`test_early_exit_exempts_any_benchmark_batch_not_just_batch_00000`, was #621's regression guard and
+inverts for the same reason — the epic predicted one of the two). The run-level condition was
+**extracted into `_early_exit_enabled`** rather than left inline: pinned inline, the test would have
+asserted against a *copy* of the condition rather than the code, which is the failure mode where a
+test passes while the shipped path drifts.
+
+### 12.6 The #134 request-execution wall — deferred to #620, and NOT for the reason first given
+
+`stage7_execute`'s three sites refuse to spawn new work (7→6 / 7→3 / 7→2 / 7→1) for a
+benchmark-membership district. Same district-permanent shape #619 retires, and the same re-key is
+available and cheap (`extraction_request.handoff_hash` feeds arm 1; its `target` rec_key feeds arm 2).
+Decided with Ian 2026-07-26: **re-key them to provenance inside #620**, where the need is real and
+observable, rather than speculatively now.
+
+> **CORRECTION to this section's first draft.** It argued the deferral was safe because these are a
+> *spend* decision rather than a write decision, and "the wall currently failing closed costs nothing."
+> **That is wrong, and §12.8 is why:** the membership wall is currently the only thing keeping
+> benchmark districts away from two freeze paths that bypass #618's provenance refusal. It is not
+> inert — it is accidentally load-bearing. The deferral stands, but #644 is now its **blocking
+> prerequisite**, and the ordering matters in a way the first draft did not see.
+
+Worth recording that #134's own stated rationale is now obsolete in its premises: it exists to stop
+compose from "evading the funnel-stats and **Stage-9 walls that key off batch_type**" — the very wall
+#619 just retired. The guard outlived the thing it was guarding, which is exactly the review that
+Ian's re-anchoring invites (progressive definition earns a revisit).
+
+Also considered and NOT chosen for now: giving the back-edge composer a **declared** dispatch/batch
+type (the `redo_attempted` "declared, not derived" precedent), letting an operator compose benchmark
+back-edges deliberately and removing the need for any wall. Correct in shape, but speculative until
+the Council Lab actually wants benchmark back-edges (#80/#103, parked) — default production plus a
+working freeze refusal covers today's need.
+
+### 12.7 FINDING — #618's freeze guard has two bypass paths (#644)
+
+Surfaced by asking what #134's wall would actually be protecting once re-keyed.
+`assert_dispatch_type_allowed` is called at **exactly one** site (`stage6_dispatch.py:399`, the normal
+gate@6 freeze), but **three** paths freeze a dispatch. The two gate@7 back-edges —
+`stage7_execute._bundle_alternate:854` and `_dispatch_recover_band:947` — call `HND.freeze(...)`
+directly and never set `dispatch_type`, so it defaults to `production`.
+
+A 7→6 directive names its alternate reps by `rec_key` from the district's live reps, and a
+batch_00000 district holds `benchmark_gt` captures (95 across the 27). So these paths **can mint a
+production dispatch containing injected `gt://` reps** — precisely what #618 refuses on the path it
+guards.
+
+It has never fired because #134's membership wall keeps benchmark districts away from both paths. That
+is the finding: **a district-identity accident is load-bearing for a provenance rule**, which is the
+coupling this epic exists to retire, and it breaks the moment #134 is touched. Filed as **#644**, with
+a fitness test asserting every `HND.freeze` call site is guard-preceded — the defect is a *missing call
+site*, so counting them is the only durable fix.
+
+**The generalizable lesson, third instance in this epic.** §2 undercounted guard spellings, §3
+undercounted redo-lever sites, §12.4 found 8 guard sites where #619 named 3 — each time from
+enumerating the sites an issue listed instead of the sites that exist. This one is the same error in a
+new shape: not "how many places assert the rule" but **"how many places must the rule fire, and does
+it?"** Grep the *guarded operation* (`HND.freeze`), not just the guard.
+
+### 12.8 Test surface
+
++14 DB-free, +7 govdb, +3 integration. The named acceptance test is
+`test_benchmark_batch_membership_alone_no_longer_refuses` — a district seeded into a benchmark batch,
+honestly re-run, **incorporates**. Both arms are pinned independently and adversarially (each proven
+to see the case the *other* arm is blind to), the fitness function that keeps the predicate in one
+home now covers the provenance arms too, and its falsification corpus carries **both polarities** —
+the three real prose/error-string forms that an earlier draft of the detector wrongly flagged are
+pinned as must-NOT-fire, because a detector that cries wolf gets ignored.
