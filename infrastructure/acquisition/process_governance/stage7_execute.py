@@ -536,7 +536,8 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
                            cap: int = 12, session=None, dry_run: bool = False) -> dict:
     """Sweep APPROVED 7->2/7->3/7->1 directives into targeted, DRAFT Stage-1 follow-up batch(es)
     (reviewable at gate@1), flipping the swept directives to 'executed' with THEIR district's
-    batch_id as `executed_ref`. Benchmark (batch_00000) districts are EXCLUDED — the wall (#134).
+    batch_id as `executed_ref`. Directives of BENCHMARK PROVENANCE are EXCLUDED — the wall (#134),
+    re-keyed from district membership to the directive's own provenance (#619).
     Scope to one run with `handoff_hash`, else all approved NEW-work directives.
 
     #164 PR 3b — the 7->1 second-loop scope split: a target district's ladder position is derived

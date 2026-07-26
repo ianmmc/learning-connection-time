@@ -11,8 +11,12 @@ that short-circuits an unchanged fingerprint. Two-DB safety is ORDERING (LCT com
 governance stamp), not a distributed transaction — the two DBs are deliberately decoupled.
 
 Standing walls (PR #607 review):
-  - batch_00000 (benchmark) districts are REFUSED — "Stage 9 (non-benchmark only) is the sole
-    promoter to bell_schedules" (stage7_extract/models.py; CLAUDE.md's permanent wall).
+  - Receipts of BENCHMARK PROVENANCE are REFUSED — "Stage 9 (non-benchmark only) is the sole
+    promoter to bell_schedules" (stage7_extract/models.py). The grain is the WORK, not the district
+    (#619): the two-arm predicate asks whether THIS receipt's write-bearing reps came from a
+    benchmark dispatch (stamped `handoff.dispatch_type`) or from a `benchmark_gt` capture — never
+    whether the district was ever a benchmark-batch member, which walled 27 districts permanently
+    (epic #617).
   - A Stage-9 write whose (year, grade_level) key is already held by a NON-Stage-9 method
     (human_provided, tier_*, …) FAILS LOUD — human/legacy work is never silently overwritten; a
     person resolves the conflict (remove the manual row, or exclude the band at gate@8) and re-runs.

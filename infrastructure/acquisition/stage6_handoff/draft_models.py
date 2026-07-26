@@ -35,8 +35,11 @@ class DispatchDraft(gdb.Base):
     verified_only: Mapped[bool] = mapped_column(Boolean, default=False)     # per-draft training-grade mode
     # #618: production | benchmark. A benchmark DISPATCH is the Stages-6/7 A/B harness (which reps to
     # which councils, and the yield) and TERMINATES AT gate@7 — it is structurally never a Stage-9
-    # candidate. DERIVED at freeze from REPRESENTATION provenance (any benchmark_gt rep forces it),
-    # with explicit human opt-in for a Council Lab A/B over production reps. NEVER derived from the
+    # candidate. DECLARED by the human, never coerced: a production freeze that selected any
+    # benchmark-provenance rep is REFUSED at gate@6 naming the offending reps
+    # (stage6_dispatch.assert_dispatch_type_allowed) — auto-forcing the type would let one stale
+    # `gt://` rep wall every OTHER district in the dispatch off from Stage 9. That is REQ-169's
+    # "REFUSE, DO NOT COERCE when a guard's unit is coarser than its trigger". NEVER derived from the
     # district's batch history — that is the district-identity bug epic #617 exists to retire.
     # server_default mirrors the _PRECIOUS_ALTERS `NOT NULL DEFAULT 'production'` so a fresh
     # create_all() DB matches a migrated one (see the note on Handoff.dispatch_type).
