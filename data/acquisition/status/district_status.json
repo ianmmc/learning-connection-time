@@ -1,15 +1,15 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-25T07:05:05Z",
+  "last_updated": "2026-07-26T07:03:18Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
       "state": "AL",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00030",
       "history": [
         {
           "stage": 1,
@@ -69,6 +69,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:06:48Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:02:52Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -416,10 +422,10 @@
       "name": "Mobile County",
       "state": "AL",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00030",
       "history": [
         {
           "stage": 1,
@@ -497,6 +503,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:02:52Z"
         }
       ],
       "notes": "3315c46d2ce7"
@@ -646,10 +658,10 @@
       "name": "Matanuska-Susitna Borough School District",
       "state": "AK",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00030",
       "history": [
         {
           "stage": 1,
@@ -709,6 +721,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:18:33Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:02:52Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -717,10 +735,10 @@
       "name": "Fairbanks North Star Borough School District",
       "state": "AK",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00030",
       "history": [
         {
           "stage": 1,
@@ -780,6 +798,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:19:23Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:02:52Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -863,10 +887,10 @@
       "name": "Mesa Unified District (4235)",
       "state": "AZ",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00030",
       "history": [
         {
           "stage": 1,
@@ -941,6 +965,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:20:41Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:02:52Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -1207,10 +1237,10 @@
       "name": "BENTONVILLE SCHOOL DISTRICT",
       "state": "AR",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00030",
       "history": [
         {
           "stage": 1,
@@ -1264,6 +1294,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-12T07:14:19Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:02:52Z"
         }
       ],
       "notes": "f33790e63820"
@@ -1272,10 +1308,10 @@
       "name": "LITTLE ROCK SCHOOL DISTRICT",
       "state": "AR",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00030",
       "history": [
         {
           "stage": 1,
@@ -1329,6 +1365,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-12T07:14:28Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:02:52Z"
         }
       ],
       "notes": "f33790e63820"
@@ -1337,10 +1379,10 @@
       "name": "SPRINGDALE SCHOOL DISTRICT",
       "state": "AR",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00030",
       "history": [
         {
           "stage": 1,
@@ -1408,6 +1450,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:28:08Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:02:52Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -2370,10 +2418,10 @@
       "name": "New Haven Unified",
       "state": "CA",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00030",
       "history": [
         {
           "stage": 1,
@@ -2441,6 +2489,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:38:03Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:02:52Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -2449,10 +2503,10 @@
       "name": "San Diego Unified",
       "state": "CA",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00031",
       "history": [
         {
           "stage": 1,
@@ -2520,6 +2574,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:40:27Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:03:17Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -2864,10 +2924,10 @@
       "name": "Bridgeport School District",
       "state": "CT",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00031",
       "history": [
         {
           "stage": 1,
@@ -2935,6 +2995,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:41:38Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:03:17Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -2943,10 +3009,10 @@
       "name": "New Haven School District",
       "state": "CT",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00031",
       "history": [
         {
           "stage": 1,
@@ -3014,6 +3080,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:42:59Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:03:17Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -3022,10 +3094,10 @@
       "name": "Waterbury School District",
       "state": "CT",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00031",
       "history": [
         {
           "stage": 1,
@@ -3093,6 +3165,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:44:19Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:03:17Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -3101,10 +3179,10 @@
       "name": "Appoquinimink School District",
       "state": "DE",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00031",
       "history": [
         {
           "stage": 1,
@@ -3187,6 +3265,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:45:15Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:03:17Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -3222,10 +3306,10 @@
       "name": "BROWARD",
       "state": "FL",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00031",
       "history": [
         {
           "stage": 1,
@@ -3287,6 +3371,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-12T07:17:59Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:03:17Z"
         }
       ],
       "notes": "f33790e63820"
@@ -3295,10 +3385,10 @@
       "name": "ORANGE",
       "state": "FL",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00031",
       "history": [
         {
           "stage": 1,
@@ -3366,6 +3456,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:47:30Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:03:17Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -4518,10 +4614,10 @@
       "name": "Cedar Rapids Comm School District",
       "state": "IA",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00031",
       "history": [
         {
           "stage": 1,
@@ -4589,6 +4685,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:48:37Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:03:17Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -5047,10 +5149,10 @@
       "name": "Bangor Public Schools",
       "state": "ME",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00032",
       "history": [
         {
           "stage": 1,
@@ -5118,6 +5220,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:49:23Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:03:18Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -5126,10 +5234,10 @@
       "name": "Lewiston Public Schools",
       "state": "ME",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00032",
       "history": [
         {
           "stage": 1,
@@ -5197,6 +5305,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:50:12Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:03:18Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -5769,10 +5883,10 @@
       "name": "Worcester",
       "state": "MA",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00032",
       "history": [
         {
           "stage": 1,
@@ -5840,6 +5954,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:55:25Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:03:18Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -7308,10 +7428,10 @@
       "name": "Washoe County",
       "state": "NV",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00032",
       "history": [
         {
           "stage": 1,
@@ -7379,6 +7499,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:58:33Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:03:18Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -10021,10 +10147,10 @@
       "name": "Cleveland Municipal",
       "state": "OH",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00032",
       "history": [
         {
           "stage": 1,
@@ -10086,6 +10212,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T04:21:03Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:03:18Z"
         }
       ],
       "notes": "a2bc80c004ca"
@@ -11690,10 +11822,10 @@
       "name": "Memphis-Shelby County Schools",
       "state": "TN",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00032",
       "history": [
         {
           "stage": 1,
@@ -11761,6 +11893,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T07:00:23Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:03:18Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -12741,10 +12879,10 @@
       "name": "Essex Westford Educational Community Unified Union SD #51",
       "state": "VT",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00032",
       "history": [
         {
           "stage": 1,
@@ -12827,6 +12965,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T07:02:17Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:03:18Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
@@ -13763,10 +13907,10 @@
       "name": "Sweetwater County School District #1",
       "state": "WY",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00032",
       "history": [
         {
           "stage": 1,
@@ -13834,6 +13978,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T07:03:10Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-26T07:03:18Z"
         }
       ],
       "notes": "a2bc80c004ca-image"
