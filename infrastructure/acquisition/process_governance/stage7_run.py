@@ -184,7 +184,7 @@ def _early_exit_enabled(doc: dict, run_kind: str, gt_data, ms_params: dict) -> b
     permanently for a district instead; it is also the only form that can see a Council Lab A/B
     composed entirely of production reps, which carries no rep-level signal at all."""
     return bool(ms_params.get("enabled")) and run_kind == "production" and gt_data is None \
-        and (doc.get("dispatch_type") or BM.DISPATCH_PRODUCTION) != BM.DISPATCH_BENCHMARK
+        and not BM.is_benchmark_dispatch(doc)
 
 
 def _early_exit_targets(district_ids) -> dict:

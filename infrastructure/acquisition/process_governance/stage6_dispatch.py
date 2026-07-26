@@ -288,7 +288,7 @@ def assert_dispatch_type_allowed(session, package: dict) -> None:
 
     An explicit `dispatch_type='benchmark'` always passes: that is the Council Lab opt-in, and a
     benchmark dispatch is *allowed* to contain production reps (that is the point of an A/B)."""
-    if (package.get("dispatch_type") or BM.DISPATCH_PRODUCTION) == BM.DISPATCH_BENCHMARK:
+    if BM.is_benchmark_dispatch(package):
         return
     flagged = benchmark_reps_in_package(session, package)
     if flagged:
@@ -317,7 +317,7 @@ def insert_handoff_row(session, doc: dict, path) -> str:
         # #618: mirror the frozen doc's own type onto the queryable index, so the provenance-scoped
         # guards (#619) can join school_fact -> extraction.handoff_hash -> handoff without opening
         # the file. The doc on disk stays the authority; this row is the index over it.
-        dispatch_type=doc.get("dispatch_type") or BM.DISPATCH_PRODUCTION))
+        dispatch_type=BM.effective_dispatch_type(doc)))
     session.flush()
     return hid
 

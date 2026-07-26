@@ -15,6 +15,7 @@ import pytest
 from sqlalchemy import text
 
 from infrastructure.acquisition.common import db as gdb
+from tests import benchmark_seed as BSEED
 from infrastructure.acquisition.stage8_aggregate import approval as APV
 from infrastructure.acquisition.stage8_aggregate import closing_argument as CA
 from infrastructure.acquisition.common import benchmark as BM
@@ -459,19 +460,11 @@ def _seed_benchmark_membership(did):
 
 
 def _seed_rep(did, rec_key, hash_, source):
-    """One record + its capture, joined on (district_id, hash) — the real arm-2 provenance path."""
-    from infrastructure.acquisition.common import cache_ingest as CI
-    from infrastructure.acquisition.stage5_filter import build_signals as BS
+    """One record + its capture — the real arm-2 provenance path. Opens its own session (this module
+    seeds outside the caller's transaction); the SQL is the shared one (#661)."""
     with gdb.session_scope() as gs:
-        BS.ensure_signal_schema(gs)
-        CI.ensure_cache_schema(gs)
-        gs.execute(text("INSERT INTO record (rec_key, district_id, url, hash, tier) "
-                        "VALUES (:k, :d, :u, :h, 'A') ON CONFLICT (rec_key) DO NOTHING"),
-                   {"k": rec_key, "d": did, "u": f"http://x/{hash_}", "h": hash_})
-        gs.execute(text("INSERT INTO capture (district_id, hash, url, ok, kind, source) "
-                        "VALUES (:d, :h, :u, 1, 'html', :s) "
-                        "ON CONFLICT (district_id, hash) DO UPDATE SET source = EXCLUDED.source"),
-                   {"d": did, "h": hash_, "u": f"http://x/{hash_}", "s": source})
+        BSEED.ensure_schema(gs)
+        BSEED.seed_rep(gs, did, rec_key, hash_, source)
 
 
 def _ca_with_rep(did, *, rec_key, gross=420, excluded=False):
@@ -529,22 +522,9 @@ def test_benchmark_dispatch_refuses_even_with_production_reps(env, monkeypatch):
     _seed_rep(env, f"{env}:cleanrep2", "cleanrep2", "discovered")
     with gdb.session_scope() as gs:
         gdb.init_precious_schema()
-        gs.execute(text(
-            "INSERT INTO handoff (handoff_id, handoff_hash, created_at, created_by, status, path, "
-            "dispatch_type, n_districts, n_reps, total_usd, cost_provenance, district_ids, "
-            "council_ids) VALUES ('handoff_zzbench619_t', 'zzbench619', 'now', 'zz-test', "
-            "'dispatched', '/zz/x.json', :dt, 1, 1, 0.0, 'zz', '[]', '[]')"),
-            {"dt": BM.DISPATCH_BENCHMARK})
-        eid = gs.execute(text(
-            "INSERT INTO extraction (handoff_hash, district_id, run_kind, created_at, created_by, "
-            "n_reps, n_calls, n_judge_calls, n_errors, prompt_tokens, completion_tokens, cost_usd, "
-            "n_accepted, n_unresolved) VALUES ('zzbench619', :d, 'production', 'now', 'zz-test', "
-            "1, 1, 0, 0, 0, 0, 0.0, 1, 0) RETURNING extraction_id"), {"d": env}).scalar()
-        fid = gs.execute(text(
-            "INSERT INTO school_fact (extraction_id, district_id, band, school, status, rec_key, "
-            "created_at, human_determination) VALUES (:e, :d, 'elementary', 'oak', 'accepted', :k, "
-            "'now', '') RETURNING fact_id"),
-            {"e": eid, "d": env, "k": f"{env}:cleanrep2"}).scalar()
+        BSEED.seed_handoff(gs, "zzbench619", dispatch_type=BM.DISPATCH_BENCHMARK)
+        eid = BSEED.seed_extraction(gs, "zzbench619", env)
+        fid = BSEED.seed_fact(gs, eid, env, f"{env}:cleanrep2")
 
     ca = _ca_with_rep(env, rec_key=f"{env}:cleanrep2")
     ca["bands"]["elementary"]["schools"][0]["fact_id"] = fid

@@ -41,6 +41,10 @@ _GRANDFATHERED = {
     # legitimate pure-filesystem fitness functions — same shape as test_arch_manifest.py, nothing
     # production-Python to import (test_ci_workflows.py scans .github/workflows/*.yml, not infra code)
     "test_suite_hygiene.py", "test_ci_workflows.py",
+    # test_one_home_fitness.py (#650) scans acquisition + tests SOURCE for re-spelled rules — it must
+    # NOT import the modules it polices (importing would prove nothing about their text, and the
+    # policed set includes test files). Same shape as test_arch_manifest.py.
+    "test_one_home_fitness.py",
     # test_state_catalog.py validates docs/state-integrations/state_data_catalog.yaml
     # (the SEA-campaign source-of-truth written by probe/acquire agents) — pure-YAML
     # fitness function, no production Python involved

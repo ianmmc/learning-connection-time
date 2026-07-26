@@ -25,6 +25,7 @@ from __future__ import annotations
 
 from sqlalchemy import select, text
 
+from infrastructure.acquisition.common import batch_types as BT
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.process_governance.stage7_execute import _flag_escalation_exhausted
@@ -147,7 +148,8 @@ def compose_zero_yield(batch_id: str, *, actor: str = "ian", session=None, dry_r
                     "n_districts": len(doc["districts"]), "ladder": ladder, "names": names,
                     "ineligible": ineligible, "flagged": flagged, "skipped": skipped,
                     "targets": targets}
-        BSTORE.create_batch(s, doc, batch_type="follow-up", redo_attempted=True, actor=actor)
+        BSTORE.create_batch(s, doc, batch_type=BT.FOLLOW_UP, actor=actor,
+                            redo_attempted=BT.default_redo_attempted(BT.FOLLOW_UP))
         return {"ok": True, "batch_id": new_bid, "scope": "geo",
                 "n_districts": len(doc["districts"]), "ladder": ladder, "names": names,
                 "ineligible": ineligible, "flagged": flagged, "skipped": skipped,

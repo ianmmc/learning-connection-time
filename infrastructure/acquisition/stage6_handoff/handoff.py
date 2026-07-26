@@ -16,7 +16,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from infrastructure.acquisition.common.benchmark import DISPATCH_PRODUCTION
+from infrastructure.acquisition.common.benchmark import effective_dispatch_type
 from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.common.timeutil import utcnow as _now
 
@@ -67,7 +67,7 @@ def _identity(package: dict, used_councils: dict, fingerprints: dict) -> dict:
     # benchmark computes a different identity and 409s instead of silently substituting.
     return {"districts": dist, "councils": used_councils, "fingerprints": fingerprints,
             "verified_only": bool(package.get("verified_only", False)),
-            "dispatch_type": package.get("dispatch_type") or DISPATCH_PRODUCTION}
+            "dispatch_type": effective_dispatch_type(package)}
 
 
 def package_identity(package: dict) -> str:
@@ -94,7 +94,7 @@ def freeze(package: dict, councils: dict, fingerprints: dict, created_by: str = 
         # #618: the frozen doc RECORDS its own type, so the artifact on disk is self-describing —
         # "was this dispatch benchmark?" must be answerable from the receipt alone, never only from a
         # DB row that could be lost or disagree (the derive-provenance-from-receipts convention).
-        "dispatch_type": package.get("dispatch_type") or DISPATCH_PRODUCTION,
+        "dispatch_type": effective_dispatch_type(package),
         "fingerprints": fingerprints, "councils": used,
         "cost": package.get("cost"), "districts": package.get("districts", []),
     }

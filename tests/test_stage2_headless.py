@@ -408,9 +408,13 @@ def test_620_a_redo_batch_reports_todo_until_it_has_run(gov_session, monkeypatch
     assert rows[0]["status"] == "todo"                   # was "done" — the button-hiding bug
     assert H2.rollup(rows)["todo"] == 1                  # what stage2.js gates the Run control on
 
-    # …and once THIS batch has actually discovered it, it flips to done
-    s.execute(text("INSERT INTO state_event (district_id, stage, stage_name, event_type, outcome, "
-                   "batch_id, created_at, actor) VALUES (:d, 2, 'discover', 'stage', 'found_all', "
+    # …and once THIS batch has actually dispatched it, it flips to done.
+    # #655: the marker is the `dispatched` event, via the SAME shared helper Stages 3/4 use
+    # (DS.dispatched_by_batch) rather than the hand-rolled "any stage=2 event" twin this test
+    # originally pinned. Stage 2's completion events are not universally stamped — 12 of 147
+    # `found_all` rows carry no batch_id — while all 126 `dispatched` rows do.
+    s.execute(text("INSERT INTO state_event (district_id, stage_name, event_type, "
+                   "batch_id, created_at, actor) VALUES (:d, 'discover', 'dispatched', "
                    ":b, 'now', 'zz')"), {"d": did, "b": "batch_zz620"})
     s.flush()
     assert H2.status_for_batch(batch)[0]["status"] == "done"

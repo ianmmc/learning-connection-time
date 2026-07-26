@@ -349,20 +349,25 @@ def status_for_batch(batch: dict) -> list:
     every one of them. The view and the run disagreed about what "done" means, and the view won
     because it owns the button.
 
-    So when the batch declares a redo, done-ness is asked of THIS BATCH: a stage=2 `state_event`
-    carrying this `batch_id`. That is the gov_db working store answering a question file-existence
-    cannot — the district-vs-batch grain distinction epic #617 keeps running into, and the same
-    done-marker inversion #622 generalizes. Ordinary batches keep the disk rule byte-for-byte."""
+    So when the batch declares a redo, done-ness is asked of THIS BATCH, through the SAME shared
+    helper Stages 3 and 4 call — `DS.dispatched_by_batch`, intersected with the disk artifact. That
+    is the gov_db working store answering a question file-existence cannot: the district-vs-batch
+    grain distinction epic #617 keeps running into, and the same done-marker inversion #622
+    generalizes. Ordinary batches keep the disk rule byte-for-byte.
+
+    #655: this was a hand-rolled twin ("any stage=2 event carrying this batch_id"), on the reasoning
+    that Stage 2's completion events have always been stamped. They have not, quite — 12 of 147
+    `found_all` rows carry no `batch_id`, so the twin could read a completed redo district as `todo`
+    while `dispatched` (126/126 stamped) answers correctly. Three near-simultaneous fixes producing
+    one shared helper used twice and one private copy is the exact shape this epic exists to retire,
+    so the copy is gone. Measured before converging: on the three live #620 redo batches the two
+    rules agree on all 25 districts."""
     ids = [d["district_id"] for d in batch["districts"]]
     ddirs = {d["district_id"]: D2.lea_dir(d["district_id"], d["name"]) for d in batch["districts"]}
+    discovered = {did for did in ids if (ddirs[did] / "discovery.json").exists()}
     if BT.redoes_attempted(batch):
-        with gdb.session_scope() as con:
-            done_ids = [r[0] for r in con.execute(
-                text("SELECT DISTINCT district_id FROM state_event WHERE stage = 2 "
-                     "AND batch_id = :b AND district_id = ANY(:ids)"),
-                {"b": batch["batch_id"], "ids": ids})]
-    else:
-        done_ids = [did for did in ids if (ddirs[did] / "discovery.json").exists()]
+        discovered &= DS.dispatched_by_batch(batch["batch_id"], "discover", ids)
+    done_ids = [did for did in ids if did in discovered]
 
     with gdb.session_scope() as con:
         CI.ensure_cache_schema(con)
