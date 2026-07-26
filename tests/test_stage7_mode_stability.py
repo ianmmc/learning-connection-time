@@ -132,6 +132,9 @@ def _mock_streaming(monkeypatch, targets):
     monkeypatch.setattr(R7.gdb, "init_precious_schema", lambda: None)
     monkeypatch.setattr(R7.gdb, "session_scope", lambda: contextlib.nullcontext(None))
     monkeypatch.setattr(R7, "_early_exit_targets", lambda ids: targets)
+    # #653's arm 2 runs on the targets arm 1 lets through, and would degrade to {} against this
+    # null session. These tests are about the target passthrough; the provenance gate has its own.
+    monkeypatch.setattr(R7.BM, "benchmark_provenance_rec_keys", lambda s, keys: set())
     return seen
 
 
@@ -143,8 +146,9 @@ def test_streaming_passes_the_district_target_bands(monkeypatch):
 
 def test_streaming_disables_early_exit_for_probes_and_gt_runs(monkeypatch):
     """A probe measures a council variant and a GT run scores against the curated corpus — both want
-    the full census, never the spend shortcut (benchmark-batch members are additionally exempted in
-    _early_exit_targets itself — see the govdb section below, #621)."""
+    the full census, never the spend shortcut. Two sibling disablers join them post-#619: a benchmark
+    DISPATCH run-wide (arm 1), and a district holding an injected rep in this run (arm 2, #653).
+    Benchmark batch MEMBERSHIP exempts nothing anymore — see the govdb section below."""
     seen = _mock_streaming(monkeypatch, {"ZZM1": {"elementary"}})
     probe = dict(DOC, run_kind="probe")
     R7.run_council_streaming(probe, persist=False)
@@ -271,6 +275,62 @@ def test_early_exit_is_disabled_for_a_benchmark_dispatch():
     assert R7._early_exit_enabled({}, "probe", None, on) is False
     assert R7._early_exit_enabled({}, "production", {"x": 1}, on) is False
     assert R7._early_exit_enabled({}, "production", None, {"enabled": False}) is False
+
+
+# --------------------------- #653: arm 2 of the early-exit disabler ---------------------------
+# `_early_exit_enabled` reads the run's stamped dispatch_type, which is handoff-WIDE. The one real
+# mixed handoff on record (`f33790e63820` — a genuine production dispatch holding 3 `gt://` curated
+# PDFs across 3 of its 9 districts) reads "production" run-wide, so arm 1 alone lets the shortcut
+# fire for exactly the districts REQ-151 exists to give the full census. Arm 2 is per-district.
+
+def _prov(monkeypatch, flagged):
+    """Point the per-district provenance lookup at a fixed answer (no DB): it opens its own session
+    and asks common/benchmark for the flagged subset of the run's rec_keys."""
+    monkeypatch.setattr(R7.gdb, "session_scope", lambda: contextlib.nullcontext(object()))
+    monkeypatch.setattr(R7.BM, "benchmark_provenance_rec_keys", lambda s, keys: set(flagged))
+
+
+def test_a_district_with_an_injected_rep_in_this_run_pays_the_full_census(monkeypatch):
+    """THE mixed case. Two districts in one production dispatch; only one holds a gt:// rep. The
+    tainted district loses its early-exit targets, the other keeps them — the shortcut is decided at
+    the grain the contamination actually has, not handoff-wide."""
+    _prov(monkeypatch, {"DIRTY:gt"})
+    by_district = {"DIRTY": [{"rec_key": "DIRTY:gt"}, {"rec_key": "DIRTY:web"}],
+                   "CLEAN": [{"rec_key": "CLEAN:web"}]}
+    targets = {"DIRTY": {"high"}, "CLEAN": {"high"}}
+
+    assert R7._drop_benchmark_provenance_districts(targets, by_district) == {"CLEAN": {"high"}}
+
+
+def test_an_all_production_run_keeps_every_target(monkeypatch):
+    """The common case must be untouched — arm 2 is a disabler, never a new gate."""
+    _prov(monkeypatch, set())
+    by_district = {"A": [{"rec_key": "A:web"}], "B": [{"rec_key": "B:web"}]}
+    targets = {"A": {"high"}, "B": {"elementary"}}
+
+    assert R7._drop_benchmark_provenance_districts(targets, by_district) == targets
+
+
+def test_a_provenance_lookup_failure_disables_the_shortcut_entirely(monkeypatch):
+    """Degrades the OPPOSITE way from `_early_exit_targets`, on purpose: an absent target means "we
+    don't know what to fill" (advisory), an unknown provenance means "we might be measuring the
+    shortcut" (a correctness risk). Unknown provenance costs paid calls, never silence."""
+    def boom():
+        raise RuntimeError("gov DB down")
+    monkeypatch.setattr(R7.gdb, "session_scope", boom)
+
+    assert R7._drop_benchmark_provenance_districts({"A": {"high"}}, {"A": [{"rec_key": "A:x"}]}) == {}
+
+
+def test_arm2_short_circuits_without_a_query_when_there_is_nothing_to_ask_about(monkeypatch):
+    """No targets (arm 1 already disabled it, or nothing is fillable) and no rec_keys must not open a
+    session at all — the same needless-round-trip rule the predicate helpers follow."""
+    def boom():
+        raise AssertionError("must not open a session")
+    monkeypatch.setattr(R7.gdb, "session_scope", boom)
+
+    assert R7._drop_benchmark_provenance_districts({}, {"A": [{"rec_key": "A:x"}]}) == {}
+    assert R7._drop_benchmark_provenance_districts({"A": {"high"}}, {"A": []}) == {"A": {"high"}}
 
 
 # ------------------------- #662: run_kind reflects dispatch benchmark provenance -------------------------
