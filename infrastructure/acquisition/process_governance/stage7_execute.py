@@ -287,15 +287,20 @@ def _executed_rounds(session, district_ids: list) -> dict:
     return {(r[0], r[1]): r[2] for r in rows}
 
 
-def _benchmark_district_ids(session, district_ids: list) -> set:
-    """The subset of `district_ids` belonging to any batch_type='benchmark' batch. Request execution
-    must never rebadge these into a follow-up batch (issue #134).
-
-    Thin alias over `common/benchmark.py` — THE definition since epic #617 consolidated the three
-    hand-maintained copies (this one, Stage 9's, and server.py's IS_BENCHMARK_SQL). GRAIN WARNING:
-    district-MEMBERSHIP, which #619 replaces with dispatch provenance for the write-eligibility
-    callers; see that module's docstring."""
-    return BM.benchmark_district_ids(session, district_ids)
+# `_benchmark_district_ids` lived here — the district-MEMBERSHIP alias behind #134's three walls.
+# All three re-keyed to provenance (#620): membership is permanent (`batch_district` rows are never
+# deleted), so it forbade a batch_00000 district from ever acting on directives its own honest
+# production runs raised. Nothing in this module asks the membership question any more.
+#
+# With this removal, `BM.is_benchmark_district` / `BM.benchmark_district_ids` have NO production
+# caller left (grimp + vulture, 2026-07-26). They are kept deliberately, not by inertia: the
+# membership question is still legitimate — `test_benchmark_predicate` and `test_stage6_dispatch_type`
+# both need it to assert membership as the CONTRAST to provenance — and `common/benchmark.py` is the
+# only place allowed to spell that SQL, so deleting them would force a caller to re-inline the JOIN,
+# which the one-home fitness function forbids. The live production membership surfaces are
+# `all_benchmark_district_ids` (the receipts backfill) and `IS_BENCHMARK_SQL` (the gate@6 badge).
+# Stage 5's zero-yield escalation is batch-grain and never used these — it compares
+# `Batch.batch_type` on the ORM row directly (`stage5_followup.py`).
 
 
 def _refuse_benchmark_reps(session, package: dict):
@@ -373,12 +378,18 @@ def _gather(session, handoff_hash: str, max_rounds=None, ca_cache: dict = None) 
     rows = _approved_newwork(session, handoff_hash)
     if not rows:
         return Gathered.empty()
-    dids = sorted({r["district_id"] for r in rows})
-    bm = _benchmark_district_ids(session, dids)
+    # #134, re-keyed by #620 from district MEMBERSHIP to directive PROVENANCE. The old form asked
+    # "has this district ever been in a benchmark batch", which is permanent — so a batch_00000
+    # district could never act on directives its own honest production runs raised (mobility
+    # property 1, the defect epic #617 exists to retire). The question that actually matters is
+    # whether the DIRECTIVE originates in benchmark work: a benchmark dispatch terminates at gate@7,
+    # so its findings must not compose themselves into a production follow-up batch.
+    bm_reqs = BM.benchmark_provenance_request_ids(session, [r["request_id"] for r in rows])
     benchmark_excluded = [{"district_id": r["district_id"], "request_id": r["request_id"],
-                           "reason": "benchmark district (batch_00000) — walled off from execution"}
-                          for r in rows if r["district_id"] in bm]
-    rows = [r for r in rows if r["district_id"] not in bm]
+                           "reason": "benchmark provenance — this directive was raised by benchmark "
+                                     "work, which terminates at gate@7 and does not seed new work"}
+                          for r in rows if r["request_id"] in bm_reqs]
+    rows = [r for r in rows if r["request_id"] not in bm_reqs]
     if not rows:
         return Gathered.empty(benchmark_excluded=benchmark_excluded)
     dids = sorted({r["district_id"] for r in rows})
@@ -822,18 +833,26 @@ def build_alternate_bundle_input(meta: dict, selections: list) -> tuple:
 
 def _bundle_alternate(s, district_id: str, actor: str, root) -> dict:
     """Core (session-in): bundle ALL approved 7->6 directives for one district into a SINGLE Stage-6
-    dispatch = one round. Benchmark-walled (#134), depth-guarded by ROUNDS (#153), each record's rep
-    chosen yield-ranked from live reps excluding every already-failed file (#155/F4). Flips every
-    bundled directive to 'executed' with the one handoff_hash. Returns the bundle result."""
-    if _benchmark_district_ids(s, [district_id]):
-        return {"ok": False, "reason": f"district {district_id} is a benchmark district (batch_00000) "
-                                       f"— walled off from request execution"}
+    dispatch = one round. Benchmark-PROVENANCE walled (#134 re-keyed by #620), depth-guarded by
+    ROUNDS (#153), each record's rep chosen yield-ranked from live reps excluding every already-failed
+    file (#155/F4). Flips every bundled directive to 'executed' with the one handoff_hash. Returns the
+    bundle result."""
     reqs = s.execute(text(
         "SELECT request_id, target FROM extraction_request "
         "WHERE district_id = :d AND route = :r AND status = 'approved' ORDER BY request_id"),
         {"d": district_id, "r": RQ.ROUTE_ALT_REP}).mappings().all()
     if not reqs:
         return {"ok": False, "reason": f"no approved 7->6 directive for district {district_id}"}
+    # The wall runs AFTER the fetch now: it asks about the DIRECTIVES, not the district's batch
+    # history. Refuse-don't-filter — a bundle is one round with one handoff_hash, so quietly dropping
+    # the benchmark-origin members would flip them 'executed' against a dispatch that never carried
+    # them. Rep-grain contamination is caught separately at freeze (#644).
+    if bm_reqs := BM.benchmark_provenance_request_ids(s, [r["request_id"] for r in reqs]):
+        return {"ok": False, "reason":
+                f"{len(bm_reqs)} of {len(reqs)} approved 7->6 directive(s) for {district_id} were "
+                f"raised by benchmark work (request_id {sorted(bm_reqs)}), which terminates at "
+                f"gate@7 and does not seed new dispatches. Reject those directives, or re-run the "
+                f"district through a production dispatch and act on its findings instead."}
 
     b = BUD.load_budget()
     used = _executed_rounds_76(s, district_id)
@@ -929,10 +948,17 @@ def _dispatch_recover_band(s, district_id: str, band: str, rec_key: str, file: s
     accepted. Mints an APPROVED 7->6 ExtractionRequest for lineage (the gate@8 click IS the human
     approval — same posture as the override/exclude actions), then freezes an immutable one-record
     dispatch and flips the request executed. The PAID extraction stays a separate, budget-gated
-    Stage-7 run at gate@7 — this action only stages the work. Benchmark-walled, ROUNDS depth-guarded
-    like every 7->6."""
-    if _benchmark_district_ids(s, [district_id]):
-        return {"ok": False, "reason": f"district {district_id} is a benchmark district (batch_00000)"}
+    Stage-7 run at gate@7 — this action only stages the work. Benchmark-PROVENANCE walled (#134
+    re-keyed by #620), ROUNDS depth-guarded like every 7->6."""
+    # REP grain here, not directive grain: this action MINTS its own directive, so there is no prior
+    # request to ask about — the human named a rec_key, and that rep's provenance is the question.
+    # #644's freeze guard would also refuse the resulting package; failing here is the earlier, more
+    # legible stop (no minted request, no depth-guard round consumed).
+    if BM.is_benchmark_provenance(s, rec_keys=[rec_key]):
+        return {"ok": False, "reason":
+                f"record {rec_key} carries benchmark provenance (an injected representation) — it "
+                f"terminates at gate@7 and must not be re-dispatched as production work. Recover "
+                f"the band from a representation this district discovered honestly."}
     b = BUD.load_budget()
     used = _executed_rounds_76(s, district_id)
     if b.rounds_exhausted(used):

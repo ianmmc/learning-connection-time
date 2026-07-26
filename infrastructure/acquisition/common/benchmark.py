@@ -19,9 +19,17 @@ here. A fourth copy lived inline in ``stage7_run._early_exit_targets`` and a fif
 
   * *district-membership* — "has this district EVER been in a ``batch_type='benchmark'`` batch"
     (``is_benchmark_district`` / ``benchmark_district_ids`` / the ``IS_BENCHMARK_SQL`` fragment).
-    Permanent by construction: ``batch_district`` rows are never deleted. This is the RIGHT question
-    for genuinely batch-grain callers (Stage 5's zero-yield escalation asks about the source batch)
-    and the WRONG one for a write decision — that was #619's bug.
+    Permanent by construction: ``batch_district`` rows are never deleted, which is the WRONG question
+    for any decision about releasing work — that was #619's bug — and it is why nothing that gates a
+    write, a spend, or a dispatch reads these any more. Live production callers after #620:
+    ``all_benchmark_district_ids`` (the receipts backfill's ``_benchmark`` basename) and
+    ``IS_BENCHMARK_SQL`` (the gate@6 console BADGE, where "this district is part of the yardstick
+    corpus" is true and useful to an operator). ``is_benchmark_district`` and
+    ``benchmark_district_ids`` currently have no production caller and are kept on purpose: tests
+    need membership as the CONTRAST to provenance, and this module is the only place permitted to
+    spell that SQL, so removing them would force a re-inlined JOIN the fitness function rejects.
+    (Stage 5's zero-yield escalation is batch-grain and never used these — it compares
+    ``Batch.batch_type`` on the ORM row.)
   * *representation* — "did this rep's capture come from benchmark injection"
     (``benchmark_provenance_rec_keys``, keyed on ``capture.source='benchmark_gt'``).
   * *provenance* — "did the FACT under consideration come from benchmark work" (``is_benchmark_provenance``
@@ -220,6 +228,45 @@ def benchmark_dispatch_fact_ids(session, fact_ids) -> set:
         return set()
     return {r[0] for r in session.execute(
         _BENCH_DISPATCH_FACTS_SQL, {"dt": DISPATCH_BENCHMARK, "f": ids})}
+
+
+_BENCH_PROV_REQUESTS_SQL = text("""
+SELECT DISTINCT er.request_id FROM extraction_request er
+JOIN handoff h ON h.handoff_hash = er.handoff_hash
+WHERE h.dispatch_type = :dt AND er.request_id = ANY(:r)
+UNION
+SELECT DISTINCT er.request_id FROM extraction_request er
+JOIN extraction e ON e.handoff_hash = er.handoff_hash AND e.district_id = er.district_id
+JOIN school_fact f ON f.extraction_id = e.extraction_id
+JOIN record rec ON rec.rec_key = f.rec_key
+JOIN capture c ON c.district_id = rec.district_id AND c.hash = rec.hash
+WHERE c.source = :src AND er.request_id = ANY(:r)""")
+
+
+def benchmark_provenance_request_ids(session, request_ids) -> set:
+    """The subset of gate@7 directives (`extraction_request`) that ORIGINATE in benchmark work — the
+    #134 request-execution guard, re-keyed from district membership to provenance (#619/#620).
+
+    A directive is a finding OF an extraction, so its provenance is that extraction's: the same two
+    arms, at `(handoff × district)` grain — arm 1 the stamped `handoff.dispatch_type`, arm 2 the reps
+    behind the facts that extraction produced. `extraction_request` carries `handoff_hash` +
+    `district_id`, which is exactly the key both arms need.
+
+    WHAT THIS DOES AND DOES NOT STOP. It stops an EXPERIMENT from silently seeding production work: a
+    benchmark dispatch terminates at gate@7, so its findings must not compose themselves into a
+    production follow-up batch. It does NOT stop a district that has benchmark history from acting on
+    directives its PRODUCTION runs produced — that is mobility property 1, and forbidding it was the
+    #134 defect. Rep-grain contamination on the dispatch-building back-edges is a separate concern,
+    covered at freeze by `assert_dispatch_type_allowed` (#618/#644).
+
+    Errors PROPAGATE. Unlike `is_benchmark_provenance`'s fresh-DB tolerance there is no fresh-DB case
+    here — a directive cannot exist without the extraction that raised it."""
+    ids = list(request_ids)
+    if not ids:
+        return set()
+    return {r[0] for r in session.execute(
+        _BENCH_PROV_REQUESTS_SQL,
+        {"dt": DISPATCH_BENCHMARK, "src": BENCHMARK_CAPTURE_SOURCE, "r": ids})}
 
 
 def is_benchmark_provenance(session, *, rec_keys=(), fact_ids=()) -> bool:
