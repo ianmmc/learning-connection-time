@@ -1118,3 +1118,64 @@ to see the case the *other* arm is blind to), the fitness function that keeps th
 home now covers the provenance arms too, and its falsification corpus carries **both polarities** —
 the three real prose/error-string forms that an earlier draft of the detector wrongly flagged are
 pinned as must-NOT-fire, because a detector that cries wolf gets ignored.
+
+### 12.9 The blocker #620 hit immediately — and the grain error it turned out to be (#647, #646)
+
+With the guards re-keyed, the next step was to actually move the 27 districts: three targeted
+follow-up batches (`batch_00030`/`00031`/`00032`, 9+8+8 = 25 districts — see #646 below for the
+missing two), composed with `redo_attempted = true`. Ian approved all three at gate@1 and reported
+that **Stage 2 showed every district as already discovered, with no way to action the batch** —
+reasonably read at the time as "we are still bound by some of the batch_00000 locks."
+
+**It was not a lock.** Nothing in the retired wall or its replacements was involved. The console's
+`status_for_batch` computed done-ness from *the presence of `discovery.json` on disk*, which is a
+fact about a **district**, being used to answer a question about **this batch's work**. `stage2.js`
+gates its Run control on `canRun = approved && r.todo > 0`, so a redo batch — whose entire purpose is
+to re-run districts that are already done — reported `todo: 0` and hid its own button. Meanwhile the
+*runner* (`reconcile`) had been taught to read `redoes_attempted` in Phase 2c and would have
+processed all 9 districts happily. **A view/run disagreement, not a wall**: the console was refusing
+to offer work the pipeline was ready to do.
+
+**This is the epic's own error, one surface over.** Phase 2c made redo a *declared property of the
+batch*, but only the write side learned to read it. Every read-side surface that asks "is this
+district done?" from a district-grain artifact inherits exactly the identity-vs-work confusion #619
+exists to retire. The undercount pattern also struck a fourth time (§12.4 was the third): Stage 2 was
+fixed first, and only a check-ahead found Stages 3 and 4 showing the same symptom.
+
+**Stages 3 and 4 had the same symptom and a DIFFERENT root cause — and the obvious fix was wrong.**
+The natural move was to copy Stage 2's pattern: scope done-ness to the completion `state_event` for
+this batch. Measured against live data before committing, completion events carry `batch_id` on
+**28/147** stage-3 rows and **0/128** stage-4 rows — `finish_district` had never been passed the
+batch, so only the run loop's `dispatched`/`failed` events ever carried it. That fix would have
+declared all **18 historical follow-up batches never run**, inviting a re-pay for capture and
+processing already completed. It was caught by building a regression table across all 30 pre-existing
+batches *before* committing rather than after, which is the only reason it cost nothing.
+
+What shipped instead is two-part, and the split matters:
+
+- **Going forward**, `batch_id` is threaded into `finish_district` in both `capture_stage3.py` and
+  `process_stage4.py`, so completion events start carrying it. This fixes the data, not the read.
+- **For the status computation**, use a signal that has *always* been reliable: intersect on-disk
+  artifact existence with "this batch actually **dispatched** this district" (`state_event`
+  `event_type='dispatched'`, which has carried `batch_id` for its whole history). This is a **proxy**
+  and is named as one in the code — it answers "did this batch do work on this district" rather than
+  "did this batch finish it," and it is correct precisely because dispatch precedes completion.
+
+Two smaller things fell out. Stage 2's fix also cleared a latent bug in `batch_00025` (approved but
+never run, silently hiding its own Run control — the same `todo: 0` symptom with no redo involved).
+And the shared helper landed in `common/district_status.py::dispatched_by_batch`, **not** in
+`stage3_capture/headless.py` where the first draft put it: stage 3 and stage 4 are independent
+siblings and cannot import each other. `lint-imports` caught it before the commit. The Phase 2c
+lesson, repeated.
+
+**#646, filed and NOT fixed:** a district with no confirmed domain that has already been attempted
+(`furthest_stage >= 3`) is unreachable by *every* Stage-1 composer — the first-run pool excludes it as
+attempted, and the targeted composers need a domain to scope discovery. Two of `batch_00000`'s 27 sit
+in exactly that state, which is why #620's re-run covers 25. It is a composer-reachability gap, not a
+benchmark question, and it is the second time this epic has found a district stranded by a rule that
+was never meant to be permanent.
+
+**Relationship to #622/#623:** this whole class of bug is the disease those issues cure. Disk-artifact
+existence *as* the stage-done marker is the premise being inverted. #647's fix is a scoped patch on
+the read side that keeps #620 moving; it does not remove the premise, and should be revisited (and
+likely deleted) when the done-markers move to gov_db.
