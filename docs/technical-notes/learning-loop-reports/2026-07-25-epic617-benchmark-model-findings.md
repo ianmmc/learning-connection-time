@@ -432,6 +432,12 @@ required (`receipts.py:12-15`), so pinning those would manufacture false alarms.
 
 ## 7. The plan
 
+> **SUPERSEDED 2026-07-26 by §11.** Kept verbatim as the record of what was planned before Ian's
+> re-anchoring (§10.7), the mixed handoff (§10.8), the review backlog (§10.19) and #662 (§10.20).
+> Phases 1-3 landed close to this shape; the *ordering* below is wrong in one consequential way —
+> it treats #620 as the epic's last chore rather than its only validation (§11.2). Read §11 for the
+> live plan; read this for what the design pass believed going in.
+
 Phases, in dependency order. The full plan (with per-phase file:line detail) is the approved plan file;
 this is the shape.
 
@@ -536,6 +542,15 @@ exchange is the most load-bearing part of this document.*
 Appended as phases land. The point of this section is the **deltas from the plan**: where implementation
 disproved a §1-§9 claim, and what the code forced that the design pass missed. A phase that landed
 exactly as planned gets one line.
+
+> **Consolidated 2026-07-26.** This log was previously split across three top-level sections — §10
+> (phases 1-2c), §11 (Ian's re-anchoring), §12 (phase 3) — which made "what happened, in order" a
+> three-stop read and let the same lesson get recorded twice. They are now one section. **Nothing was
+> rewritten or deleted in the merge**; only headings and cross-references changed, so the corrections
+> and their dates stand exactly as they were first written. Old → new: §11 → §10.7 · §11.4 → §10.8 ·
+> §12.1-12.9 → §10.10-10.18. §10.1-10.6 are unchanged. Ian's re-anchoring (§10.7) is an *input*, not a
+> phase, but it sits here because it landed mid-implementation and changed what followed — which is
+> precisely what an implementation log is for.
 
 ### 10.1 Phase 1 — #621, the `batch_00000` literal (commit `f4a8d47`)
 
@@ -781,12 +796,12 @@ DDL must be declared TWICE, identically," enforced DB-free by
 
 ---
 
-## 11. Re-anchoring the concept (Ian, 2026-07-25) — what it confirmed, and the gap it exposed
+### 10.7 Interlude — Ian re-anchors the concept (2026-07-25): what it confirmed, and the gap it exposed
 
 > **Primary source:** Ian's write-up is preserved verbatim in
 > `ian's_comments_on_benchmark_batches_and_dispatches_2026-07-25.md` (this directory). Read it for the
 > intent in the author's own words. **Two points in it were resolved differently by the end of the
-> same conversation and are recorded in §11.3** — the dispatch axis stayed **two**-valued, and
+> same conversation and are recorded in §10.7** — the dispatch axis stayed **two**-valued, and
 > "follow-up is more automated by default" turned out to describe where the decision sits rather than
 > a gate setting. Treat that file as the statement of intent, and this section as where it landed.
 
@@ -800,7 +815,7 @@ that testing, measuring and training could happen without experimental output re
 That framing is worth recording verbatim in spirit because **it earned its keep**: it confirmed most
 of the design and falsified one shipped assumption.
 
-### 11.1 What it confirmed
+#### What it confirmed
 
 - Benchmark's defining property is *"simply isn't on a pathway to get integrated into lct_db"* — the
   terminus model (§1), not a per-district wall.
@@ -812,7 +827,7 @@ of the design and falsified one shipped assumption.
 - Follow-up's purpose as *"collect information a first run wasn't able to surface"* — literally
   `build_followup_batch`'s untried-schools-first / widen-queries shaping (#160/#162).
 
-### 11.2 The gap it exposed — the benchmark-BATCH terminus has no enforcement
+#### The gap it exposed — the benchmark-BATCH terminus has no enforcement
 
 Filed as **#640**. #618's freeze guard keys on `capture.source = 'benchmark_gt'`, a value written
 **only** by the one-shot GT injector. A benchmark batch composed through Phase 2c's targeted composer
@@ -850,7 +865,7 @@ production batch gets penalized because an experiment found the same page — th
 pattern, one grain down) and *first producer wins* (the answer depends on run order, an accident
 rather than a fact about the representation).
 
-### 11.3 Two clarifications recorded, no work
+#### Two clarifications recorded, no work
 
 - **The dispatch axis stays TWO-valued** (`production | benchmark`), confirmed with Ian. His
   re-anchoring described three types for *both* constructs; in code, first-run vs follow-up carries
@@ -868,7 +883,7 @@ rather than a fact about the representation).
   `benchmark_batch.py` and nowhere else. No work; recorded so the next reader doesn't mistake the
   posture for a gate-mode feature.
 
-### 11.4 The mixed handoff — the concrete instance of the hole #619 opens
+### 10.8 The mixed handoff — the concrete instance of the hole #619 opens
 
 Classifying all **39** frozen handoffs by the rep provenance of their contents (not by district
 identity) gives a strikingly clean picture, and one exception that changes the Phase-3 design:
@@ -933,15 +948,15 @@ correctly, including the mixed one at district grain (3 tainted of 9).
 
 ---
 
-## 12. Phase 3 implementation log — #619, the two-arm provenance guard (2026-07-26)
+### 10.9 Phase 3 — #619, the two-arm provenance guard (2026-07-26)
 
 Landed: the write-eligibility guards move from district MEMBERSHIP to fact PROVENANCE, with the
-two-arm predicate §11.4 specified. Three corrections to that spec, one of them to a load-bearing
+two-arm predicate §10.8 specified. Three corrections to that spec, one of them to a load-bearing
 premise.
 
-### 12.1 CORRECTION to §11.4 — fact→rep IS traversable; the grain is finer than stated
+### 10.10 CORRECTION to §10.8 — fact→rep IS traversable; the grain is finer than stated
 
-§11.4 says: *"`extraction` is one row per `(handoff_hash, district_id)` and carries **no** rep link;
+§10.8 says: *"`extraction` is one row per `(handoff_hash, district_id)` and carries **no** rep link;
 `school_fact` links only to `extraction_id`. So fact→rep is not traversable — but the frozen artifact
 holds each district's `rec_key` list."* The first half is right about `extraction`; the conclusion is
 wrong. **`school_fact.rec_key` exists** (`stage7_extract/models.py`, "provenance + review": *"# source
@@ -960,9 +975,9 @@ This matters beyond tidiness, for three reasons:
    `None` when no handoff file matches ("an older run whose receipt was pruned"). A wall built on
    reading frozen handoffs would have silently answered *not-benchmark* for exactly the districts
    whose receipts went missing. The receipt+DB path has no such hole.
-3. **It is what makes the escape hatch work** (§12.3).
+3. **It is what makes the escape hatch work** (§10.12).
 
-### 12.2 The measurement that made the re-key safe to land
+### 10.11 The measurement that made the re-key safe to land
 
 Before writing code, both rules were run against every district holding production facts:
 
@@ -978,7 +993,7 @@ Before writing code, both rules were run against every district holding producti
 So Phase 3 is **behaviour-preserving today** — the empirical form of the claim, the same falsification
 gate Phase 2c used ("all suites pass with zero fixture changes"). Nothing is newly admitted and
 nothing newly refused, *including the mixed handoff's three districts*: their 227 accepted facts stay
-walled, now by arm 2 rather than by identity. §11.4 recorded that exposure as an accepted consequence
+walled, now by arm 2 rather than by identity. §10.8 recorded that exposure as an accepted consequence
 of #619 ("post-#619 those 227 facts become gate@8 reviewable and Stage-9 writable"); at fact grain
 **they do not**, and the hole the report flagged never opens.
 
@@ -987,7 +1002,7 @@ injected ones — which is the case the epic exists to unblock. Arm 1 fires on *
 `handoff` rows are `dispatch_type='production'`, the two pure-benchmark artifacts included, exactly as
 the retirement of Phase 2e's back-stamping intends. Arm 1 is the forward-looking arm.
 
-### 12.3 The escape hatch, and why the wall is ANY-of rather than a district ban
+### 10.12 The escape hatch, and why the wall is ANY-of rather than a district ban
 
 The wall refuses on ANY benchmark-provenance evidence rather than dropping the tainted fact — one
 injected rep taints the band value it feeds, and silently dropping it would change an approved number
@@ -1005,7 +1020,7 @@ A school carrying **neither** identifier is a human-added fact (#626) — no cap
 provenance to check, and it must not be read as *unknown* and refused. Verified: the one such school
 across all 38 receipts is the single real `human_added_fact` row, which carries its own `source_url`.
 
-### 12.4 The full-surface grep found EIGHT sites, not the three #619 names
+### 10.13 The full-surface grep found EIGHT sites, not the three #619 names
 
 The epic's standing lesson (§2, §3: it undercounted twice by grepping only the sites the issue listed)
 held a third time. Disposition of every site:
@@ -1014,9 +1029,9 @@ held a third time. Disposition of every site:
 |---|---|---|
 | `incorporate.py` Stage-9 wall | may these facts be written? | **re-keyed** to the two-arm predicate, and MOVED to after the receipt loads — it now interrogates the artifact it writes from |
 | `server.py::aggregate_districts` (gate@8 queue) | may this district be reviewed? | **re-keyed** via the new `IS_BENCHMARK_PROVENANCE_SQL` |
-| `stage7_run._early_exit_targets` | full census or shortcut? | **membership check REMOVED**; intent re-homed at run level (§12.5) |
+| `stage7_run._early_exit_targets` | full census or shortcut? | **membership check REMOVED**; intent re-homed at run level (§10.14) |
 | `server.py` gate@6 `is_benchmark` badge | display | **kept on membership** — "part of the yardstick corpus" is true and useful to an operator |
-| `stage7_execute` ×3 (`_gather`, `_bundle_alternate`, `_dispatch_recover_band`) | may this spawn new PAID work? | **left on membership — open decision, §12.6** |
+| `stage7_execute` ×3 (`_gather`, `_bundle_alternate`, `_dispatch_recover_band`) | may this spawn new PAID work? | **left on membership — open decision, §10.15** |
 | `stage5_followup.compose_zero_yield` | escalate from this batch? | genuinely batch-grain, correct as-is (unchanged from §2) |
 | `backfill_receipts.load_benchmark_ids` | tooling: `_benchmark` basename | corpus-wide sweep, batch-grain, correct as-is |
 
@@ -1026,7 +1041,7 @@ Stage-9 write, so re-keying Stage 9 while the queue still excluded by membership
 fix **unreachable** — an honestly re-run district could never have been approved in the first place,
 and #619's stated acceptance property would have been vacuous. The two are one terminus.
 
-### 12.5 The early-exit inversion, and a predicate extracted so a test could pin it
+### 10.14 The early-exit inversion, and a predicate extracted so a test could pin it
 
 The mode-stability exemption's intent (REQ-151: a *measurement* run wants the full census, or the
 shortcut measures the shortcut) is a property of **the run**, not of a district. It moved to the call
@@ -1041,7 +1056,7 @@ inverts for the same reason — the epic predicted one of the two). The run-leve
 asserted against a *copy* of the condition rather than the code, which is the failure mode where a
 test passes while the shipped path drifts.
 
-### 12.6 The #134 request-execution wall — deferred to #620, and NOT for the reason first given
+### 10.15 The #134 request-execution wall — deferred to #620, and NOT for the reason first given
 
 `stage7_execute`'s three sites refuse to spawn new work (7→6 / 7→3 / 7→2 / 7→1) for a
 benchmark-membership district. Same district-permanent shape #619 retires, and the same re-key is
@@ -1051,7 +1066,7 @@ observable, rather than speculatively now.
 
 > **CORRECTION to this section's first draft.** It argued the deferral was safe because these are a
 > *spend* decision rather than a write decision, and "the wall currently failing closed costs nothing."
-> **That is wrong, and §12.8 is why:** the membership wall is currently the only thing keeping
+> **That is wrong, and §10.17 is why:** the membership wall is currently the only thing keeping
 > benchmark districts away from two freeze paths that bypass #618's provenance refusal. It is not
 > inert — it is accidentally load-bearing. The deferral stands, but #644 is now its **blocking
 > prerequisite**, and the ordering matters in a way the first draft did not see.
@@ -1067,7 +1082,7 @@ back-edges deliberately and removing the need for any wall. Correct in shape, bu
 the Council Lab actually wants benchmark back-edges (#80/#103, parked) — default production plus a
 working freeze refusal covers today's need.
 
-### 12.7 FINDING — #618's freeze guard has two bypass paths (#644)
+### 10.16 FINDING — #618's freeze guard has two bypass paths (#644)
 
 Surfaced by asking what #134's wall would actually be protecting once re-keyed.
 `assert_dispatch_type_allowed` is called at **exactly one** site (`stage6_dispatch.py:399`, the normal
@@ -1087,7 +1102,7 @@ a fitness test asserting every `HND.freeze` call site is guard-preceded — the 
 site*, so counting them is the only durable fix.
 
 **The generalizable lesson, third instance in this epic.** §2 undercounted guard spellings, §3
-undercounted redo-lever sites, §12.4 found 8 guard sites where #619 named 3 — each time from
+undercounted redo-lever sites, §10.13 found 8 guard sites where #619 named 3 — each time from
 enumerating the sites an issue listed instead of the sites that exist. This one is the same error in a
 new shape: not "how many places assert the rule" but **"how many places must the rule fire, and does
 it?"** Grep the *guarded operation* (`HND.freeze`), not just the guard.
@@ -1109,7 +1124,7 @@ The test also earned its keep immediately: it failed on first run *after* the fi
 call sites reach the guard through the adapter. That is the detector refusing to accept an
 indirection it had not been told about — the correct default for a rule this load-bearing.
 
-### 12.8 Test surface
+### 10.17 Test surface
 
 +14 DB-free, +7 govdb, +3 integration. The named acceptance test is
 `test_benchmark_batch_membership_alone_no_longer_refuses` — a district seeded into a benchmark batch,
@@ -1119,7 +1134,7 @@ home now covers the provenance arms too, and its falsification corpus carries **
 the three real prose/error-string forms that an earlier draft of the detector wrongly flagged are
 pinned as must-NOT-fire, because a detector that cries wolf gets ignored.
 
-### 12.9 The blocker #620 hit immediately — and the grain error it turned out to be (#647, #646)
+### 10.18 The blocker #620 hit immediately — and the grain error it turned out to be (#647, #646)
 
 With the guards re-keyed, the next step was to actually move the 27 districts: three targeted
 follow-up batches (`batch_00030`/`00031`/`00032`, 9+8+8 = 25 districts — see #646 below for the
@@ -1139,7 +1154,7 @@ to offer work the pipeline was ready to do.
 **This is the epic's own error, one surface over.** Phase 2c made redo a *declared property of the
 batch*, but only the write side learned to read it. Every read-side surface that asks "is this
 district done?" from a district-grain artifact inherits exactly the identity-vs-work confusion #619
-exists to retire. The undercount pattern also struck a fourth time (§12.4 was the third): Stage 2 was
+exists to retire. The undercount pattern also struck a fourth time (§10.13 was the third): Stage 2 was
 fixed first, and only a check-ahead found Stages 3 and 4 showing the same symptom.
 
 **Stages 3 and 4 had the same symptom and a DIFFERENT root cause — and the obvious fix was wrong.**
@@ -1179,3 +1194,272 @@ was never meant to be permanent.
 existence *as* the stage-done marker is the premise being inverted. #647's fix is a scoped patch on
 the read side that keeps #620 moving; it does not remove the premise, and should be revisited (and
 likely deleted) when the done-markers move to gov_db.
+
+### 10.19 The adversarial review of PRs #641 + #648 — 13 issues, and what they say about the epic
+
+With PR #648 open and green (6/6 CI), both PRs were put through a max-effort multi-agent review: ~11
+finder angles (line-by-line diff, cross-file trace, removed-behavior audit, language pitfalls,
+duplication, simplification, efficiency, altitude, conventions) plus their children — 48 subagent
+transcripts, ~1.9M subagent tokens. **Thirteen issues were filed, #649-#661**, all as sub-issues of
+#617. This is the first end-to-end adversarial pass over the epic's own output, and the results split
+cleanly into a reassurance and a rebuke.
+
+**The reassurance: no functional regression in the thing that mattered.** Every angle that went
+looking for a hole in the two-arm predicate, the Stage-9 wall, the gate@8 queue, the freeze guards, or
+the mode-stability inversion came back with the same answer — the guards are correctly wired, the
+five original call sites all route through the shared predicate, gate@8 approval is still required
+before any write, and the `band_exclusion` escape hatch requires an explicit human action. The
+measured claims in §10.11 (83/83 agreement, 56 = 56) held under independent re-derivation.
+
+**The rebuke: the epic solved its own instance and did not generalize the fix.** #617 exists because
+one rule lived in five hand-maintained copies. It built one home for that rule and a falsified fitness
+function to keep it there. But the review found that rules **this epic itself introduced** have the
+same disease and none of the medicine:
+
+| new rule | copies | fitness function? |
+|---|---|---|
+| the benchmark predicate (the epic's subject) | 1 home | yes, falsified both polarities |
+| `dispatch_type` default-normalization (#618) | **8 inline copies** (#650) | none |
+| the `redo_attempted` lever (#2c) | 1 home + **2 call sites bypassing it** (#658) | one — and it does not cover these two sites |
+| batch-scoped "is this district done" (#647) | 1 helper + **1 hand-rolled twin** (#655) | none |
+
+The consolidation was scoped to *the rule that hurt*, not to *the class of rule*. Each new copy was
+introduced by the same reasoning the epic set out to retire — "it's two words, inline is clearer" —
+and each is one edit away from the same divergence. **Generalizable: when an epic's finding is "this
+rule had N copies," the fix is not only to unify that rule; it is to ask which rule you are creating
+in the fix, and give it a home before it has two.**
+
+**Documentation drifted faster than code, and one comment is actively inverted.** Three docstrings
+still describe the retired district-membership wall as current behavior (#652), REQ-169's own
+acceptance criteria still lists the #134 re-key as open when it shipped in the same PR (#649) — and
+worst, `draft_models.py`'s `dispatch_type` comment describes the design the epic **explicitly
+rejected**: *"any benchmark_gt rep forces it"* where the code refuses instead (#657). §10.3 recorded
+"refuse, never coerce" as the phase's most important design change; the column comment records the
+opposite. A stale comment costs a reader a minute. An inverted one invites a future engineer to
+"restore" the documented behavior and reintroduce the exact bug — which is why it is the only one of
+the thirteen rated `sev:major`.
+
+**Guard scoping is inconsistent across siblings that answer the same question.** `IS_BENCHMARK_-
+PROVENANCE_SQL` scopes both arms to `run_kind='production'`; three sibling fragments answering the
+same class of question do not (#651). `_early_exit_enabled` consults arm 1 only, so the shortcut can
+still fire for the mixed handoff's three districts — the case REQ-151 exists to prevent (#653). None
+is exploitable today, each by a different accident (probe hashes are suffixed; the mixed handoff is
+historical). **That is the §10.16 lesson recurring: a rule held correct by an accident elsewhere is
+not held at all.**
+
+**On the review method itself — the raw output is a candidate list, not a findings list.** A material
+fraction of what the agents surfaced did not survive verification against the actual code, and two
+cases are worth naming because they cut in opposite directions:
+
+- **Refuted.** An agent reported that deleting `_refuse_benchmark_reps` from `_bundle_alternate` would
+  go uncaught, because `test_stage6_dispatch_type.py` only tests the adapter in isolation. True of
+  that file — but `test_every_freeze_call_site_is_preceded_by_the_provenance_guard` (§10.16) walks the
+  AST of every function containing `HND.freeze` and would fail immediately. **The fitness function
+  written for #644 answered a review question about #644 four days later**, which is the clearest
+  return this epic's testing discipline has produced.
+- **Undercounted.** The same review that catalogued the duplication reported "7 sites" for the
+  `dispatch_type` idiom; the actual count is 8. The epic's signature error — enumerating the sites
+  someone listed rather than the sites that exist — reproduced itself *inside the audit written to
+  catch it.*
+
+Both were caught by re-deriving each claim against the current file before filing. **Generalizable:
+an adversarial review's yield is proportional to how much of it you refuse to believe.** Filing the
+raw list would have put a refuted finding and a wrong count into the tracker, where they would have
+read as verified.
+
+**Disposition.** None of the thirteen blocks PR #648: all are pre-existing, latent, or cosmetic, and
+none touches the write path's correctness. They are the epic's own cleanup backlog, sequenced in §11.
+
+### 10.20 CORRECTION to §10.11 — the three layers do not agree, and #620 is blocked (#662)
+
+§10.11 measured the re-key as behaviour-preserving and concluded: *"The two grains diverge only when
+#620's re-run mints fresh reps for a district that also holds injected ones — which is the case the
+epic exists to unblock."* **That claim is true for Stage 9's wall and false for the two layers in
+front of it.** Verified against the live governance DB 2026-07-26, before starting #620's Stage 3:
+
+| layer | scope | after an honest re-run |
+|---|---|---|
+| Stage 9 wall (`_is_benchmark_receipt`) | the **receipt**'s write-bearing `rec_key`/`fact_id` | correctly **passes** |
+| gate@8 queue (`IS_BENCHMARK_PROVENANCE_SQL`) | the **district**, across all production extractions ever | **refuses forever** |
+| `merge_fact_runs` (what the receipt would contain) | all production facts, earliest-wins | **old benchmark facts win** |
+
+**Measured:** all **25 of 25** re-run districts are walled by the queue predicate today, on **1198**
+`benchmark_gt`-sourced production facts (extractions 2026-07-03 → 07-12). `extraction` and
+`school_fact` are append-only, so a fresh run cannot retract them and the `EXISTS` fires permanently.
+And of the accepted ones, **957 of 957 carry `school_year = NULL`** — so the year-supersede rule,
+which by design compares only two *known* years, never engages, and precedence falls through to
+earliest-`extraction_id`. The injected artifact wins against a fresh fact for every school it covers.
+
+**This is the epic's own defect in a new key.** #617 exists because a guard keyed on a fact that is
+permanently true (`batch_district` rows are never deleted). The replacement keys on a different fact
+that is *also* permanently true (an append-only fact table's history). The grain moved from district
+to provenance, which was right; what did not move is the **scope** — "ever" versus "this run."
+
+**How the measurement missed it.** Every number in §10.11 was taken against the *pre*-#620 state — the
+one state in which all three layers necessarily agree, because no district yet holds both fresh and
+injected reps. A behaviour-preserving check answers "did I break today"; it cannot answer "will the
+thing I built for tomorrow work." **Generalizable: when a change is justified by "it diverges only in
+the future case," the future case is the one that has to be constructed and tested, not reasoned
+about.** The cheap version here was one seeded district and three assertions; it would have cost
+minutes and would have caught all three layers.
+
+The decision it forces — how a re-run supersedes prior benchmark facts (strike at gate@8 · provenance
+precedence in the merge · reclassify the historical extractions' `run_kind` · scope the closing
+argument to the run) — is recorded with tradeoffs in **#662** and is Ian's call. It is the head of the
+revised plan (§11), because until it is answered #620 cannot complete and the epic's acceptance
+property stays vacuous.
+
+---
+
+## 11. Revised plan — completing #617, then #92 (2026-07-26)
+
+§7's plan is superseded. It was written before Ian's re-anchoring (§10.7), before the mixed handoff
+(§10.8), before the review backlog (§10.19), and before #662 (§10.20). This section replaces it.
+
+### 11.1 Where the epic actually stands
+
+**Built and green, not merged:** PR #648 — #619's two-arm guard, #644's freeze-path fix, #134's
+re-key, #647's batch-scoped status, plus #620's three composed batches. 6/6 CI.
+
+**Built and merged:** PR #641 — #621, one home for the predicate, `dispatch_type`, batch mobility.
+
+**In flight:** #620's `batch_00030/31/32` (25 districts) are approved with `redo_attempted=true` and
+**Stage 2 is complete for all 25**. Their `discovery.json`/`candidates.json` were rotated to
+timestamped backups and rewritten; the frozen `gt://` candidates survived the merge (Baldwin County:
+12 `gt://` + 23 fresh). Stage 3 is the next console action — **and it should not start until §11.4
+resolves**, because everything captured after it feeds a merge that currently cannot produce a
+writable closing argument.
+
+**Open on the epic:** 12 pre-existing (#618, #619, #620, #622, #623, #624, #625, #640, #644, #645,
+#646, #647) + 14 from the review and the blocker (#649-#662). #618/#619/#644/#647 are *code-complete*
+and close on merge.
+
+### 11.2 The critical path is not what CLAUDE.md currently says
+
+CLAUDE.md sequences #625 → #622/#623 → #640 → #624 → #620, with #620 last. **Invert it.** #620 is not
+the epic's final chore; it is the epic's **only validation**. Every guard #617 built is unexercised
+until a district with mixed provenance actually moves, and §10.20 is the proof: three layers were
+wrong and all three measured green, because the only state ever measured was the one where they
+cannot disagree. The structural work (#622/#623/#640/#645) is real and needed, but it is *insurance
+on a mechanism nobody has yet run end-to-end.*
+
+So: **prove one district, then generalize, then clean up.** The standing lesson — the product is the
+pipeline, not the district — is not violated by this ordering, because the deliverable of Phase C is a
+*mechanism* plus a *test*, not 25 hand-walked districts.
+
+### 11.3 Phase A — land what is built
+
+**PR #648 merges as-is on the merits.** #662 does not invalidate it: the two-arm predicate is correct
+and necessary, and #662 is a *scope* defect in the layer in front of it. Blocking the merge would
+strand #644's genuine security fix (two unguarded freeze paths) for no gain.
+
+**Fold in only the text that this PR's own behavior makes false** — #649 (REQ-169's criteria still
+call the #134 re-key open, in the PR that shipped it) and #657 (the `dispatch_type` comment describes
+the coercion design this epic explicitly rejected). Both are comment/ledger-only, zero code risk, one
+CI re-run. Shipping a PR whose own spec ledger contradicts it is precisely the failure §10.19 records;
+fixing it costs minutes now and a confused session later. #652's three stale docstrings ride along.
+
+Then close #618, #619, #644, #647, and #621's already-merged sibling work.
+
+**Acceptance:** `main` carries the provenance guards; `gh issue list` for the epic shrinks by four.
+
+### 11.4 Phase B — decide #662, and build the test that would have caught it
+
+**This is a hard gate. Nothing in #620 proceeds until Ian picks a supersession mechanism.** The fork,
+with tradeoffs, is in #662; my recommendation is **(c) + (b)**: reclassify the historical benchmark
+extractions' `run_kind` so they leave the production pool at the source, and add provenance precedence
+to `merge_fact_runs` as the durable forward rule, keeping gate@8's `band_exclusion` as the per-case
+hatch. (c) is a declared, audited migration over precious rows and must exclude the mixed handoff
+(§10.8), whose production reps are genuine — that exclusion is the risky part and deserves its own
+review.
+
+**Before any of it, write the acceptance test, and watch it fail.** The property has been declared
+since §7a and has never been executable:
+
+> Seed a district with benchmark-provenance history, run it honestly, and assert it (i) appears in the
+> gate@8 queue, (ii) builds a closing argument whose write-bearing evidence is the **fresh** reps, and
+> (iii) incorporates.
+
+Today it fails at (i). That failing test is the epic's actual acceptance criterion, and its absence is
+why three layers shipped green. **No fix lands before the test that fails on the unfixed code** — the
+§10.1/§10.2 falsification discipline, applied to the epic's own headline property.
+
+**Acceptance:** the test above passes; #662 closes; the mechanism is documented in
+`PIPELINE_GOVERNANCE_AND_STATE.md` §13 as a durable rule, not a #620 workaround.
+
+### 11.5 Phase C — #620, the campaign
+
+Ian drives the console; I prepare, verify, and fix the pipeline. Order:
+
+1. **One district end-to-end** — Stage 3 → 4 → gate@5 → 6 → 7 → 8 → 9, chosen for a clean mix of
+   fresh and injected reps. This is the first real exercise of every guard #617 built.
+2. **Decide the gate@5 policy the campaign walks into** (§9, still open): should a stale injected rep
+   be *release-eligible at all* after a fresh run — suppressed at Stage 5, or carried and refused at
+   gate@6? With (c) chosen in Phase B the pressure drops, but the question is real and #620 is where
+   it becomes concrete.
+3. **#660 if it bites** — a district needing the `band_exclusion` hatch must be *visible* to use it.
+   Under option (c) most districts will not need it; keep #660 hot, not pre-emptive.
+4. **The remaining 24**, in batch.
+5. **#646** to reach 27/27 — two districts are domain-less *and* already-attempted, reachable by no
+   composer.
+
+**Acceptance:** ≥1 district's honest, fresh minutes in `bell_schedules` with production provenance and
+a frozen gate@8 receipt naming only fresh reps; then 25; then 27. **Falsifier:** if any district
+requires a hand-edit, a re-adjudicated gate@8 decision, or a per-district exception, the mechanism is
+wrong and Phase B is not finished — stop and fix the pipeline.
+
+### 11.6 Phase D — the review backlog, in four PRs
+
+Grouped so each PR has one reviewable idea. None blocks #620; all are cheap.
+
+| PR | issues | idea |
+|---|---|---|
+| guard scoping | #651, #653, #654 | make the sibling predicates agree with `IS_BENCHMARK_PROVENANCE_SQL` on `run_kind` and arms, or document why not — each is currently held correct by an accident elsewhere |
+| one home, again | #650, #658, #655, #661 | the rules *this epic introduced* get the treatment the epic gave the rule it was about — plus **one fitness function over the class**, not a fourth per-rule test |
+| docs truth | #652, #656 (+#649/#657 if not folded in Phase A) | the ledger and the comments say what the code does |
+| gate@6/8 surface | #659, #660 | stop assembling the package twice; make the withheld set visible |
+
+**Acceptance for "one home, again":** a single falsified detector that fails when *any* declared
+benchmark/batch rule is re-inlined — the generalization §10.19 says was missed the first time.
+
+### 11.7 Phase E — the structural work
+
+Unchanged in content from CLAUDE.md's list, now correctly placed *after* validation:
+
+**#623** (Node receipts: `stage3_capture` writer + `stage2_candidates` resolver) → **#622** (invert the
+done-markers to gov_db; #622 needs #623's Node half) → **#640** (durable rep-grain batch provenance —
+build *inside* #623, the seam is already open) → **#645** (the frozen handoff's per-record payload
+into gov_db; the REQ-171 blocker) → **#624** (retroactive stage 6-9 receipts, 83/83/38/6) → **#625**
+(the REQ sweep, deliberately **last**, so it records the true final state rather than a moving one).
+
+Two carry-forwards: #647's read-side patch should be **revisited and likely deleted** when #622 lands
+(§10.18), and #655's Stage-2 divergence resolves itself in the same change. REQ-171 moves from
+`proposed` to met when #622/#623/#645 are all in.
+
+### 11.8 Phase F — epic #92 (Stage 9)
+
+#92 is nearly closed already: #93/#94/#95 are done and the 38/38 campaign ran. **One open sub-issue:
+#614** — the console's Stage-9 progress/status view. Two adjacent issues belong with it: **#615**
+(`district_grade_minutes` has no git-tracked receipt twin, so `district_status.json` goes silently
+stale after a write) and **#628** (LCT recompute is a full-corpus ~2m08s rewrite for an O(changed)
+input, plus `--dry-run`).
+
+**Sequencing:** all three land *after* Phase C, and #614 in particular is worth little before it —
+a status view with 38 historical rows and nothing moving is a different design problem than one
+watching 27 districts incorporate. Verified: `stage9_incorporate` does **not** trigger a recompute
+itself, so #628 is a convenience for the campaign's tail, not a blocker for it.
+
+**#92's acceptance:** an operator can see, from the console alone, which districts have incorporated,
+which are pending, and which failed and why — without running the CLI.
+
+### 11.9 What this plan changes, and the standing risk
+
+**Changed from §7 and from CLAUDE.md's ordering:** #620 moves from last to first-after-merge, because
+it is the only validation; #625 moves to last, because a REQ sweep over a moving target is wasted; the
+review backlog is triaged as *not* blocking; and a hard decision gate (#662) is inserted ahead of all
+campaign work.
+
+**The standing risk is the one this section exists to name.** Three layers of this epic shipped green
+against measurements that could not fail. The mitigation is structural, not diligence: **every
+remaining phase states an acceptance property that is executable, and no fix lands before a test that
+fails without it.** Where that is not possible, the phase says so out loud.

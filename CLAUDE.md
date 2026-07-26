@@ -169,49 +169,58 @@ DB diverges from a migrated one and fails raw `text()` INSERTs **on CI only**. A
 `PIPELINE_GOVERNANCE_AND_STATE.md`. **Verify a new precious column against a THROWAWAY governance DB —
 the local migrated one tests the path that isn't broken.**
 
-**Next (RESUME HERE — 2026-07-26): (1) get PR #648 reviewed and merged, then (2) drive #620 through
-the console.**
+**Next (RESUME HERE — 2026-07-26): a code review of PRs #641+#648 filed 14 issues (#649-#662), and
+one of them — #662 — BLOCKS #620. Full revised plan: findings report §11.**
 
-**(1) PR #648** — https://github.com/ianmmc/learning-connection-time/pull/648. Green but higher-risk
-than the epic's earlier phases, and its body carries a risk-by-area table + a "what a reviewer should
-push on" section written for exactly that. The three places to aim scrutiny: the **ANY-of Stage-9 write
-wall** (a struck-at-gate@8 school is excluded from the check — the band_exclusion escape hatch is
-deliberate), **#647's dispatch-intersection proxy** (it answers "did this batch *work on* this
-district," not "finish it" — see §12.9 for why the obvious completion-event fix was wrong), and the
-**three flipped tests** (`test_early_exit_reaches_...`, `test_compose_admits_...`,
-`test_benchmark_batch_membership_alone_no_longer_refuses` — each is an intended inversion, not a
-regression). **Not covered by #648:** no Playwright verification of the gate@1/gate@6 console changes
-(static-source-pinned only), and REQ-171 is `proposed`, not met.
+**READ FIRST: #662.** #619 re-keyed the Stage-9 wall to provenance, but two layers in FRONT of it are
+still district-permanent, so an honestly re-run district *still* cannot incorporate. Measured on the
+live DB: all **25 of 25** #620 districts are walled by the gate@8 queue predicate TODAY (it asks "has
+this DISTRICT ever produced a `benchmark_gt` fact" over append-only tables — permanently true), and
+`merge_fact_runs` gives the OLD benchmark facts the win over fresh ones (**957 of 957** carry
+`school_year=NULL`, so the year-supersede rule never engages and earliest-run wins). Only Stage 9's own
+wall is receipt-scoped and correct. **§10.11's "the grains diverge only after #620" claim was true for
+the wall and false for the queue and the merge** — every measurement had been taken in the one state
+where all three necessarily agree. **#662 needs Ian's decision** on the supersession mechanism (my rec:
+reclassify the historical benchmark extractions' `run_kind` + add provenance precedence to the merge).
 
-**(2) #620 — the 27 districts' re-run, mid-flight.** `batch_00030`/`00031`/`00032` (9+8+8 = **25**
-districts) are composed, approved at gate@1, `redo_attempted=true`, and **Stage 2 is COMPLETE for all
-25**. Next console action is **Stage 3 (Capture)**, then Stage 4 → gate@5. **Ian drives the console;
-prepare batches, don't execute stage runs.** **#646 caps this at 25/27**: two districts have no
-confirmed domain AND `furthest_stage >= 3`, which no Stage-1 composer can reach. **Prove ONE district
-end-to-end through gate@8 + Stage 9 before pushing the other 24** — that write is the first real
-exercise of the two-arm guard, and the first time membership and provenance can legitimately disagree.
-**Then, in order:** **#625** (REQ sync — REQ-117/151/162 already revised;
-`COUNCIL_LAB_DESIGN.md:54` "the yardstick GROWS" still contradicts CLAUDE.md and is wrong) ·
-**#622/#623** (done-marker→gov_db inversion; 6 steps, one artifact per PR — and #647's read-side patch
-should be revisited, likely deleted, when this lands) · **#640** (durable rep-grain batch provenance —
-build INSIDE #623, the Node seam is already open there) · **#645** (handoff per-record payload → gov_db;
-sibling of #622/#623, the REQ-171 blocker) · **#624** (retroactive stage 6-9 receipts, 83/83/38/6) ·
-**#646** (the composer-reachability gap, to finish #620 at 27/27).
-**Retired, do not do:** Phase 2e's retroactive `dispatch_type='benchmark'` tagging of batch_00000's
-handoffs — arm 2 derives it, and stamping would leave the two pure-benchmark artifacts (which predate the
-field) disagreeing with their own immutable receipts.
+**Sequence — note this INVERTS the old order; #620 moves FIRST, #625 last (§11.2):**
+**(A) Merge PR #648** — https://github.com/ianmmc/learning-connection-time/pull/648, green, and still
+correct: #662 is a scope defect in the layer in front of it, not a fault in the two-arm predicate.
+Fold in only the text this PR makes false (**#649** REQ-169 still calls the #134 re-key open; **#657**
+the `dispatch_type` comment describes the coercion design the epic REJECTED; **#652**). Then close
+#618/#619/#644/#647. ·
+**(B) Decide #662, and FIRST write the acceptance test that fails** — "seed a benchmark-history
+district, run it honestly, assert it (i) reaches the gate@8 queue, (ii) builds a closing argument on
+FRESH reps, (iii) incorporates." It has been declared since §7a and never been executable; it fails at
+(i) today. ·
+**(C) #620** — the epic's ONLY validation, not its last chore. `batch_00030/31/32` (25 districts) are
+approved, `redo_attempted=true`, **Stage 2 complete**; Stage 3 is next but **must not start until (B)
+resolves**. Ian drives the console; prepare and verify, don't execute stage runs. Prove ONE district
+end-to-end, then 24, then **#646** for 27/27. *Falsifier: if any district needs a hand-edit or a
+re-adjudicated gate@8 call, the mechanism is wrong — fix the pipeline, not the district.* ·
+**(D) review backlog in 4 PRs** — guard scoping (#651/#653/#654) · one-home-again (#650/#658/#655/#661
+— plus ONE fitness function over the CLASS, the generalization the epic missed) · docs truth
+(#652/#656) · gate@6-8 surface (#659/#660). None blocks #620. ·
+**(E) structural:** #623 → #622 (needs #623's Node half) → #640 (build INSIDE #623) → #645 (REQ-171
+blocker) → #624 → **#625 LAST** (a REQ sweep over a moving target is wasted). #647's read-side patch
+gets deleted when #622 lands. ·
+**(F) epic #92** — nearly closed (#93/#94/#95 done, 38/38 campaign ran). Open: **#614** (console Stage-9
+status view) + adjacent **#615**, **#628**. All land AFTER (C) — #614 is worth little with nothing
+moving. Verified: `stage9_incorporate` does NOT trigger a recompute, so #628 is convenience, not a gate.
+
+**The standing lesson from this round (findings report §10.19/§10.20):** three layers shipped green
+against measurements that could not fail, and the epic's own consolidation didn't generalize —
+`dispatch_type` normalization is inline at 8 sites, `redo_attempted` bypassed at 2, all introduced BY
+this epic. **When a change is justified by "it diverges only in the future case," construct that case
+and test it.** Also: an adversarial review's raw output is a *candidate* list — roughly a third didn't
+survive verification here (one claimed test gap was refuted by #644's own AST fitness function; a
+"7 sites" count was actually 8).
 **Outstanding:** Playwright-verify the gate@6 + gate@1 console changes AND #647's Stage 2/3/4 status/Run
 control (all static-source-pinned only so far — the code is verified, the *rendering* is not).
-Also open, unrelated: **#628** (targeted/O(changed) LCT recompute + `--dry-run`).
-**New 2026-07-26, deferred by design (epic #128):** **#642** (content-derived document vintage — a
-governing-year signal from PDF typography; `pdfplumber` already reads font size/weight at Stage 4 and we
-discard it, so the #241 validity floor's `content_school_year` never opens the document) and **#643** (the
-Stage-3 render-facts probe, the HTML half — rides #623's Node seam). **Do #642 first**: retroactive, no
-cross-language change, measurable now against the 95 `benchmark_gt` reps + 440 gate@5 labels. Both pay
-twice — Stage-5 suppression AND REQ-026 vintage accuracy (a content-scoped year would have fixed
-Dickinson at the source instead of needing #626's `human_vouched`). **Open policy question they surface,
-unresolved:** should a stale injected rep be *release-eligible at all* after a fresh run — suppressed
-upstream at Stage 5 rather than caught at gate@6? A gate@5 policy call (§9); #620 walks into it.
+**New 2026-07-26, deferred by design (epic #128):** **#642** (content-derived document vintage — note
+#662 makes this MORE valuable: the 957 `school_year=NULL` facts are exactly what a content-derived
+year would have populated) and **#643** (the Stage-3 render-facts probe; rides #623's Node seam).
+**Retired, do not do:** Phase 2e's retroactive `dispatch_type='benchmark'` tagging — arm 2 derives it.
 Banked routing: #112 → epic #128. Parked: #475/#476, #103/#80 (+#110); the SEA integration follow-up
 (~9 states, 2026-07-20/21 campaign) is an opt-in backlog item — ask Ian before filing.
 Documented-in-code deferrals: `_satisfied_bands_now` batching (revisit on volume); the #522 guardrail's
