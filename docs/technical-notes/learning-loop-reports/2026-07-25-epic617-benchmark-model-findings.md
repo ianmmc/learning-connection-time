@@ -1463,3 +1463,89 @@ campaign work.
 against measurements that could not fail. The mitigation is structural, not diligence: **every
 remaining phase states an acceptance property that is executable, and no fix lands before a test that
 fails without it.** Where that is not possible, the phase says so out loud.
+
+---
+
+## 12. Implementation log — Phases A, B and D (2026-07-26)
+
+Appended, not rewritten (the standing convention in this report): §11 stays as the plan that was
+accepted, and this section records what actually happened against it.
+
+### 12.1 Phase A — PR #648 merged (`af1ce77`)
+
+Squash-merged to `main` after folding in only the text the PR itself made false: **#649** (REQ-169's
+criterion still called the #134 re-key open, when it shipped on that branch in `4563efe`), **#652**
+(three docstrings still framing the wall as "batch_00000 districts are REFUSED"), **#657** (the
+`dispatch_type` column comment describing provenance as *forcing* the type when the code refuses —
+the design REQ-169 explicitly rejected). Closed: #618, #619, #644, #647, #649, #652, #657.
+
+### 12.2 Phase B — the acceptance test exists and fails (PR #663)
+
+`tests/test_benchmark_rerun_acceptance.py`. Seed a district whose only prior facts came from injected
+`benchmark_gt` reps, run it again over ordinary discovered reps, assert the fresh work reaches
+production. It had been declared since §7a and had never been executable.
+
+| layer | verdict, measured |
+|---|---|
+| gate@8 review queue | REFUSES — strict `xfail` |
+| `merge_fact_runs` | returns the OLD 400-min fact, not the fresh 420 — strict `xfail` |
+| Stage 9's wall | admits — passes |
+
+A fourth test pins the *disagreement itself*, so whichever mechanism #662 lands has to collapse it
+deliberately rather than by accident. Both xfails are `strict=True`: when the fix lands they become
+XPASS, which pytest reports as a failure, so it cannot land quietly and the markers cannot be left
+behind. REQ-169 gains a **SCOPE** criterion (NOT MET, #662) carrying the two measurements: 25 of 25
+#620 districts walled today; 957 of 957 accepted benchmark facts with `school_year=NULL`.
+
+**Phase C remains blocked on Ian's decision.** Nothing in the campaign proceeded.
+
+### 12.3 Phase D — the review backlog, four PRs
+
+**#664, guard scoping (#651/#653/#654).** #651 read as "three fragments are missing the production
+filter." Verified: **only one of the three should have it**, and giving it to the other two would fail
+*open*. The distinction — now written down in `common/benchmark.py` — is what the query enumerates. A
+query that sweeps a district's HISTORY must scope to production; a query asked about identifiers the
+CALLER ALREADY SELECTED must not, because narrowing there only removes rows the caller asked about.
+Both polarities pinned. #653 added arm 2 to the mode-stability disabler (arm 1 is handoff-wide and
+blind to the mixed case), degrading conservatively — a lookup failure costs paid calls, never silence.
+#654 narrowed a fail-closed `except ProgrammingError` to SQLSTATE 42P01 in **both** predicates; the
+docstrings had always promised "only a missing table" and the code caught renamed columns too.
+
+**#665, one home again (#650/#658/#655/#661) — and the generalization the epic missed.** The epic
+consolidated one rule and guarded it, then introduced three more and hand-copied every one. All four
+are now single-homed. The durable change is `tests/test_one_home_fitness.py`: a **declared table** of
+seven one-home rules, each with a home, a scope, a forbid pattern, and a falsification corpus of
+copies that really existed. Four tests over the table — no re-spelling in scope; the detector catches
+every real removed copy; it does *not* fire on a mere mention (every negative is verbatim prose or an
+operator error string that tripped an earlier draft); and every detector still matches its own home,
+so a renamed rule cannot leave a dead guard passing forever. The two bespoke detectors in
+`test_benchmark_predicate.py` moved in as rows — one home applied to the guards themselves.
+
+*One correction surfaced here:* #655's premise ("Stage 2's completion events have always carried
+`batch_id`, so the hand-rolled twin is safe") is not quite true — **12 of 147** `found_all` rows carry
+none, while **126 of 126** `dispatched` rows do. The twin could read a completed redo district as
+`todo`. Measured before converging: on the three live #620 redo batches both rules agree on all 25.
+
+**#666, docs truth (#656).** `arch-manifest.json` restored to literal punctuation and its
+serialization pinned. Nothing emits this file programmatically, so the test *is* the fix.
+
+**#667, gate@6-8 surface (#659/#660).** #659 was filed as efficiency; it is also correctness. The
+staleness gate hashed one build and froze an independently rebuilt second one, so a change landing
+between them passed the gate and was frozen unseen — the window issue #37 exists to close. Now one
+`ReleaseBundle` is built, hashed, and passed through; every path assembles exactly once, pinned in
+both directions. #660 surfaced the withheld set: the gate@8 queue hid benchmark-provenance districts
+entirely, so REQ-169's named remedy (`band_exclusion`) had **no route to it** — and #620 walks
+straight into that population. Playwright-verified against the live DB: 26 withheld / 47 queued, and
+the first withheld district opens to a closing argument whose evidence path is a `gt_curation_*.pdf`.
+
+### 12.4 What this round confirms about §10.19
+
+The review's own output needed the same discipline it was measuring. Of the findings acted on here,
+**two were materially wrong as filed** — #651 named three fragments where one was correct, and #655's
+stated premise was false in a direction that made the bug *worse* than described, not better. Both
+were only resolvable by measuring rather than by reading. That is the same failure mode as §10.20, one
+level up: a claim about the code, plausible on its face, that had never been checked against the data.
+
+**The generalization now has a home rather than a lesson.** §10.19 observed that the epic guarded a
+rule instead of a class; `test_one_home_fitness.py` is that observation made executable, and adding a
+consolidated rule to `common/` without a row in it is now a visible omission.
