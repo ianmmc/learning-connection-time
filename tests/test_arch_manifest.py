@@ -39,6 +39,28 @@ _RUNNERS = {"run", "Popen", "call", "check_output", "check_call", "create_subpro
 _CMD_VARS = {"cmd", "argv", "command"}
 
 
+# ----------------------------- manifest serialization (#656) -----------------------------
+
+
+def test_the_manifest_is_stored_in_its_canonical_serialization():
+    """The file must be exactly `json.dumps(..., indent=2, ensure_ascii=False)` + a trailing newline.
+
+    #656: a 2-entry content change in PR #641 re-serialized the WHOLE file, because the write path
+    used the default `ensure_ascii=True` and converted every em-dash and section-sign in ~16
+    `_comment` fields to a \\uXXXX escape. A 2-line change became a 264-line diff, and the escaped
+    form then became the on-disk style, so the next hand-edit using literal punctuation would churn
+    it right back. Cheap to pin, and it keeps this file's diffs reviewable — which matters more here
+    than elsewhere, since CLAUDE.md makes an edit to this manifest THE review surface for a new
+    cross-boundary edge."""
+    raw = (REPO / "arch-manifest.json").read_text(encoding="utf-8")
+    canonical = json.dumps(json.loads(raw), indent=2, ensure_ascii=False) + "\n"
+    assert raw == canonical, (
+        "arch-manifest.json is not in its canonical serialization. Rewrite it with\n"
+        "  json.dumps(obj, indent=2, ensure_ascii=False) + '\\n'\n"
+        f"(escapes present: {raw.count(chr(92) + 'u')}). Never serialize it with ensure_ascii=True — "
+        "that rewrites every line carrying an em-dash or section-sign.")
+
+
 # ----------------------------- manifest self-checks (schema + emptiness) -----------------------------
 # #206 review: (a) unguarded dict-key access crashed with a raw KeyError on an incomplete entry, and
 # (b) pytest.parametrize over an emptied manifest list silently collects ZERO tests instead of failing.
