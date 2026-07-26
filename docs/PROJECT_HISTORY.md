@@ -1195,6 +1195,65 @@ Authority: PR #629 (merged); GitHub issues #626-639 (all closed); migrations 027
 human_vouched`, superseded-in-place) + 028 (`bell_schedules.human_vouched`, the surviving source of
 truth); `docs/REQUIREMENTS.yaml` REQ-164 (`tested`).
 
+### 2026-07-25 — Epic #617: a permanent exclusion of 27 districts turns out to be a GRAIN error, and the fix generalizes into a third pipeline construct
+
+Closing the Stage 9 campaign surfaced the question that started this: **why can't `batch_00000`'s 27
+curated-ground-truth districts ever be written to `lct_db`?** The answer was a guard, mirrored across
+five sites, asking *"has this district EVER been in a `batch_type='benchmark'` batch?"* — and because
+`batch_district` rows are never deleted, the answer is permanently yes. Those districts are among the
+largest in the corpus, and a district honestly re-discovered, re-extracted and human-approved at gate@8
+through an ordinary production run would still have been refused, forever.
+
+**The diagnosis is the durable lesson: the guard keyed on DISTRICT IDENTITY where the documented
+rationale was about EXTRACTION PROVENANCE.** Identity was a serviceable proxy only while those
+districts had exactly one history. The moment a district can travel through the pipeline more than
+once — which is the whole point of follow-ups — an identity-keyed rule starts refusing correct work.
+The generalization: *a run's handling type is a property of the work, never of the district.*
+
+Reframing it that way dissolved most of the guard. Benchmark work had never been given a **terminus**;
+nothing structurally stopped it flowing toward the LCT write, so a per-district wall had been bolted on
+instead. Give each harness its stopping point — a benchmark **batch** (which A/Bs Stages 2/3/4) ends at
+gate@5, a benchmark **dispatch** (which A/Bs Stages 6/7) ends at gate@7 — and benchmark output becomes
+*structurally* incapable of being a Stage-9 candidate, with the remaining guards demoted to defense in
+depth. Ian then restated the whole picture from first principles mid-implementation, which named what
+was really being built: batches and dispatches began as **human-factors** constructs (working in sets
+makes supervision attention and approval clicks affordable), and the type axis is a distinct third
+layer — **handling instructions**, the thing that makes it possible to test, measure and train without
+experimental output reaching the database.
+
+Four findings worth carrying, three of which corrected work already written:
+
+- **The planning pass earned its keep by being wrong in public.** The first draft would have forced a
+  dispatch to `benchmark` whenever any selected *district* had benchmark history — relocating the exact
+  identity bug the epic exists to retire, one stage upstream. Ian's demand to verify four
+  *mobility properties* (a district must move freely between harnesses in both directions) is what
+  caught it; two of the four failed on first inspection. Mobility became the epic's acceptance test.
+- **When a guard's unit is coarser than its trigger, refuse — do not coerce.** A dispatch carries one
+  type, so auto-forcing it on one stale representation would wall every other district sharing it.
+  Gate@6 reports the offending representations and refuses the freeze, naming them.
+- **"A predicate true for A and B" hides a choice between derivation and declaration.** Deriving
+  redo-eligibility from `batch_type` would have put the FIXED ground-truth corpus one console click
+  from corruption: a Stage-2 run on `batch_00000` would have folded fresh SERP candidates into 27
+  districts' frozen `gt://` candidate sets. Declaring it on the batch, with an absent value falling
+  back to the historical rule, cost one nullable column and changed no existing batch's behavior.
+- **The hole the epic warned about existed in production already.** Classifying all 39 frozen handoffs
+  by *representation* provenance rather than district identity found 2 pure benchmark, 36 pure
+  production — and one **mixed**: a genuine production dispatch that had pulled in three `gt://`
+  curated PDFs, carrying 227 accepted facts on production extractions with no gate@8 approval. The
+  retired wall was the only thing holding them. It also proved dispatch grain too coarse (tagging that
+  artifact either way is wrong) and forced the Stage-9 guard to two arms — a stamped `dispatch_type`
+  and a provenance derived from the frozen receipt, neither able to see what the other sees.
+
+A methodological consequence is now disclosed in `METHODOLOGY.md`: the 27 districts' absence from
+published LCT coverage is a **pipeline artifact, not a data-availability finding**, until #620's re-run
+completes. The ground-truth corpus itself stays fixed and is never appended to by approvals.
+
+Authority: GitHub epic #617 + sub-issues #618-#625, #640 (the benchmark-*batch* terminus is still
+unenforced for newly-composed benchmark batches — durable per-representation batch provenance, filed
+2026-07-25); `docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md`
+(the full evidence record, including §10-§11's log of what the planning pass got wrong) and, beside it,
+Ian's own statement of intent; `PIPELINE_GOVERNANCE_AND_STATE.md` §13 (the durable architecture).
+
 ---
 
 ## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)

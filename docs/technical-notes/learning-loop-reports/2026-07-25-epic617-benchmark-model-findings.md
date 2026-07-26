@@ -758,6 +758,13 @@ and buys a guarantee that no historical batch changes behavior.
 
 ## 11. Re-anchoring the concept (Ian, 2026-07-25) — what it confirmed, and the gap it exposed
 
+> **Primary source:** Ian's write-up is preserved verbatim in
+> `ian's_comments_on_benchmark_batches_and_dispatches_2026-07-25.md` (this directory). Read it for the
+> intent in the author's own words. **Two points in it were resolved differently by the end of the
+> same conversation and are recorded in §11.3** — the dispatch axis stayed **two**-valued, and
+> "follow-up is more automated by default" turned out to describe where the decision sits rather than
+> a gate setting. Treat that file as the statement of intent, and this section as where it landed.
+
 Mid-epic, Ian restated the whole picture from first principles: NCES CCD gives the district list; the
 goal is banded daily instructional minutes in `lct_db`; batches (Stages 1-4) and dispatches (Stages
 6-7) exist as **human-factors constructs** — working in sets rather than one district at a time, so
