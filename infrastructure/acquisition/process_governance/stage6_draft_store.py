@@ -17,6 +17,7 @@ safe on a `draft`-status row — nothing external depends on a draft until it fr
 """
 from sqlalchemy import select
 
+from infrastructure.acquisition.common import benchmark as BM
 from infrastructure.acquisition.process_governance import stage6_dispatch as H6
 from infrastructure.acquisition.stage6_handoff import handoff as HND
 from infrastructure.acquisition.stage6_handoff.draft_models import DispatchDraft, DispatchDraftDistrict, utcnow
@@ -65,6 +66,7 @@ def create_draft(sess, *, actor: str) -> str:
     sess.execute(_text("SELECT pg_advisory_xact_lock(hashtext('dispatch_draft:create'))"))
     draft_id = f"draft_{next_draft_number(sess):05d}"
     sess.add(DispatchDraft(draft_id=draft_id, status="draft", verified_only=False,
+                           dispatch_type=BM.DISPATCH_PRODUCTION,
                            created_at=utcnow(), created_by=actor, meta_json={}))
     sess.flush()
     return draft_id
@@ -151,6 +153,18 @@ def set_verified_only(sess, draft_id: str, verified_only: bool) -> None:
     sess.flush()
 
 
+def set_dispatch_type(sess, draft_id: str, dispatch_type: str) -> None:
+    """The gate@6 human's explicit dispatch-type choice (#618) — the Council Lab opt-in that lets a
+    production-rep draft run as a benchmark A/B. Validated, so a typo raises here rather than minting
+    a third type that would silently satisfy neither terminus. Setting it does NOT re-check rep
+    provenance: benchmark is always allowed, and switching BACK to production is re-checked at freeze
+    by assert_dispatch_type_allowed (a draft can legitimately sit in a refusing state while the human
+    decides which reps to deselect)."""
+    d = _locked_draft(sess, draft_id)
+    d.dispatch_type = BM.validate_dispatch_type(dispatch_type)
+    sess.flush()
+
+
 # ---------------------------------------------------------------- read
 def _included_districts(sess, draft_id: str) -> list[DispatchDraftDistrict]:
     return list(sess.scalars(select(DispatchDraftDistrict).where(
@@ -183,17 +197,23 @@ def to_view(sess, draft_id: str) -> dict:
     included_ids = [r.district_id for r in all_rows if r.included]
     overrides = _merged_overrides([r for r in all_rows if r.included])
     package = H6.build_handoff_package(sess, included_ids, overrides=overrides,
-                                       verified_only=d.verified_only) if included_ids else \
+                                       verified_only=d.verified_only,
+                                       dispatch_type=d.dispatch_type) if included_ids else \
         {"districts": [], "cost": {"total_usd": 0.0, "n_reps": 0, "provenance": "unknown"},
-         "verified_only": d.verified_only}
+         "verified_only": d.verified_only, "dispatch_type": d.dispatch_type}
     # build_handoff_package SILENTLY drops a district whose release input is gone (removed from the
     # signals store after it was added to the draft) — unlike freeze-time dispatch_handoff, which
     # tracks `skipped`. Surface the gap here so the console can warn instead of showing two
     # quietly-disagreeing district counts (the draft's own rows vs the priced package).
     pkg_ids = {pd["district_id"] for pd in package["districts"]}
     missing_from_release = [i for i in included_ids if i not in pkg_ids]
+    # #618: the reps that would REFUSE this freeze as a production dispatch. Reported (not raised)
+    # for the same reason missing_from_release is: the console must be able to render the draft and
+    # show the human what to deselect. dispatch_handoff raises at the irreversible step.
+    benchmark_reps = H6.benchmark_reps_in_package(sess, package)
     return {
         "draft_id": d.draft_id, "status": d.status, "verified_only": d.verified_only,
+        "dispatch_type": d.dispatch_type,
         "created_at": d.created_at, "created_by": d.created_by,
         "dispatched_at": d.dispatched_at, "dispatched_by": d.dispatched_by,
         "handoff_hash": d.handoff_hash,
@@ -202,6 +222,7 @@ def to_view(sess, draft_id: str) -> dict:
                        "overrides": r.overrides_json or {}} for r in all_rows],
         "package": package,
         "missing_from_release": missing_from_release,
+        "benchmark_reps": benchmark_reps,
         "preview_identity": HND.package_identity(package),
     }
 
@@ -249,7 +270,7 @@ def list_dispatch_rows(sess) -> list[dict]:
             DispatchDraftDistrict.draft_id == d.draft_id, DispatchDraftDistrict.included.is_(True)))))
         draft_rows.append({
             "kind": "draft", "draft_id": d.draft_id, "status": d.status,
-            "verified_only": d.verified_only, "n_districts": n,
+            "verified_only": d.verified_only, "dispatch_type": d.dispatch_type, "n_districts": n,
             "created_at": d.created_at, "created_by": d.created_by,
             "abandoned_at": d.abandoned_at, "abandon_reason": d.abandon_reason,
         })
@@ -257,7 +278,7 @@ def list_dispatch_rows(sess) -> list[dict]:
     handoff_rows = []
     for r in sess.execute(_text(f"""
         SELECT h.handoff_id, h.handoff_hash, h.created_at, h.created_by, h.status,
-               h.n_districts, h.n_reps, h.total_usd, h.cost_provenance,
+               h.n_districts, h.n_reps, h.total_usd, h.cost_provenance, h.dispatch_type,
                {_origin_case('h.handoff_hash')} AS origin
         FROM handoff h
         ORDER BY h.created_at DESC""")).mappings():
@@ -292,11 +313,12 @@ def freeze_draft(sess, draft_id: str, actor: str, expected_identity: str | None 
     overrides = _merged_overrides(included)
     if expected_identity:
         pkg = H6.build_handoff_package(sess, included_ids, overrides=overrides,
-                                       verified_only=d.verified_only)
+                                       verified_only=d.verified_only,
+                                       dispatch_type=d.dispatch_type)
         if HND.package_identity(pkg) != expected_identity:
             raise ValueError("release changed since you last opened this draft — reload before freezing")
     doc, path = H6.dispatch_handoff(sess, included_ids, created_by=actor, overrides=overrides,
-                                    verified_only=d.verified_only)
+                                    verified_only=d.verified_only, dispatch_type=d.dispatch_type)
     d.status = "dispatched"
     d.dispatched_at = utcnow()
     d.dispatched_by = actor

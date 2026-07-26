@@ -16,6 +16,7 @@ import hashlib
 import json
 from pathlib import Path
 
+from infrastructure.acquisition.common.benchmark import DISPATCH_PRODUCTION
 from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.common.timeutil import utcnow as _now
 
@@ -59,14 +60,21 @@ def _identity(package: dict, used_councils: dict, fingerprints: dict) -> dict:
     dist.sort(key=lambda x: x["district_id"] or "")
     # `verified_only` is part of identity: a training-grade dispatch (labeled targets only) is a
     # distinct artifact from a default one even when the reps happen to coincide (no hash collision).
+    # `dispatch_type` (#618) rides for exactly the same reason: a BENCHMARK dispatch of the same reps
+    # is a different artifact from a production one — it terminates at gate@7 and never reaches the
+    # LCT write. Because package_identity() reuses this function, the gate@6 preview->freeze staleness
+    # check (issue #37) covers a type flip for free: a draft previewed as production and frozen as
+    # benchmark computes a different identity and 409s instead of silently substituting.
     return {"districts": dist, "councils": used_councils, "fingerprints": fingerprints,
-            "verified_only": bool(package.get("verified_only", False))}
+            "verified_only": bool(package.get("verified_only", False)),
+            "dispatch_type": package.get("dispatch_type") or DISPATCH_PRODUCTION}
 
 
 def package_identity(package: dict) -> str:
     """Public identity hash of an UNFROZEN package — the gate@6 preview→freeze staleness token
     (issue #37). Covers exactly what the human reviewed: the sorted districts/records/reps (incl.
-    each rep's routed councils + overrides, via rep['councils']) and the verified_only mode; NO
+    each rep's routed councils + overrides, via rep['councils']), the verified_only mode, and the
+    dispatch_type (#618 — a preview-as-production / freeze-as-benchmark flip must 409, not slip); NO
     fingerprints and NO council configs (a preview has neither), and price-independent like the
     frozen hash. Preview and dispatch both compute it from a freshly built package: equal hashes ⇒
     the release content the human approved is what dispatch is about to freeze."""
@@ -83,6 +91,10 @@ def freeze(package: dict, councils: dict, fingerprints: dict, created_by: str = 
     return {
         "handoff_hash": h, "created_at": _now(), "created_by": created_by,
         "verified_only": bool(package.get("verified_only", False)),
+        # #618: the frozen doc RECORDS its own type, so the artifact on disk is self-describing —
+        # "was this dispatch benchmark?" must be answerable from the receipt alone, never only from a
+        # DB row that could be lost or disagree (the derive-provenance-from-receipts convention).
+        "dispatch_type": package.get("dispatch_type") or DISPATCH_PRODUCTION,
         "fingerprints": fingerprints, "councils": used,
         "cost": package.get("cost"), "districts": package.get("districts", []),
     }

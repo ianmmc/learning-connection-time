@@ -27,11 +27,24 @@ class Batch(gdb.Base):
     __tablename__ = "batch"
 
     batch_id: Mapped[str] = mapped_column(String, primary_key=True)        # e.g. batch_00002
-    batch_type: Mapped[str] = mapped_column(String, default="first-run")   # first-run | follow-up | benchmark
+    # first-run | follow-up | benchmark — the legal values live in common/batch_types.BATCH_TYPES and are
+    # ENFORCED at create_batch (#617 Phase 2c); this was an unconstrained string with the values in a comment.
+    batch_type: Mapped[str] = mapped_column(String, default="first-run")
+    # #617 Phase 2c: does this batch deliberately RE-RUN districts that already reached a later stage?
+    # DECLARED at composition, never derived from batch_type — deriving it would make a Stage-2 run on
+    # batch_00000 merge fresh SERP candidates into the FROZEN gt:// candidate sets. NULL = not declared
+    # (every pre-#617 row, batch_00000 included) → common/batch_types.redoes_attempted falls back to the
+    # historical `batch_type == 'follow-up'` rule, so no backfill and no behavior change.
+    # Additive column via common/db.py _PRECIOUS_ALTERS.
+    redo_attempted: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     # #164: the SECOND batch axis (orthogonal to batch_type) — a batch is scope-pure by construction:
     # every district in it is discovered domain-scoped OR geo-scoped, never mixed. Benchmark is never geo.
     # Additive column via common/db.py _PRECIOUS_ALTERS.
-    discovery_scope: Mapped[str] = mapped_column(String, default="domain")   # domain | geo
+    # domain | geo. server_default mirrors the _PRECIOUS_ALTERS `DEFAULT 'domain'`: the model is
+    # NOT NULL, so without it a FRESH create_all() DB gets NOT NULL with no default and every raw
+    # text() INSERT omitting the column fails — invisible on a migrated DB, which has the default.
+    discovery_scope: Mapped[str] = mapped_column(String, default="domain", server_default="domain",
+                                                 nullable=False)
     status: Mapped[str] = mapped_column(String, default="draft")           # draft | approved | abandoned | reserving
     nces_year: Mapped[str] = mapped_column(String)
     created_at: Mapped[str] = mapped_column(String, default=utcnow)

@@ -646,6 +646,39 @@ For mixed-year data (enrollment, staffing, and bell schedules from different yea
 - Data source must be documented for each component
 - Mixed-year calculations are acceptable with disclosure
 
+### Provenance Exclusion: benchmark-harness data is never an LCT input
+
+The acquisition pipeline runs two **benchmark harnesses** — for testing search queries, capture and
+processing tools (Stages 2-4), and for testing extraction councils (Stages 6-7). Bell-schedule
+measurements produced by either are **excluded from `lct_db` and from all coverage/enrichment
+statistics**, for two independent reasons:
+
+1. **Content.** The curated ground-truth corpus was hand-collected and several of its source documents
+   are deliberately of *older school years* — they exist to be a fixed yardstick, so they intentionally
+   violate the temporal rules above (the COVID exclusion and the ≤ 3-year span requirement).
+2. **Process.** Benchmark runs exercise *experimental* configurations. Output produced to evaluate a
+   tool or a prompt must not silently become published truth, whatever its apparent quality.
+
+**The exclusion is scoped to the provenance of the measurement, never to the district.** This
+distinction is the methodologically important one: a district used as a benchmark subject remains
+**fully eligible** as a data source, and a normal pipeline run over that same district yields a
+publishable measurement. Being a yardstick does not remove a district from the corpus.
+
+> **Known coverage gap, corrected (disclosed 2026-07-25).** This rule was originally implemented at
+> *district* grain — "has this district ever been used as a benchmark subject?" — which permanently
+> excluded the 27 ground-truth districts from `lct_db`, including measurements they would later have
+> produced through entirely normal runs. Those districts are among the largest in the corpus, so the
+> gap was material. The rule is being re-scoped to measurement provenance and the 27 are being re-run
+> to obtain publishable measurements (GitHub epic #617, sub-issue #620). Until those runs complete,
+> **the 27 districts are absent from published LCT coverage**, and their absence is a pipeline
+> artifact rather than a data-availability finding — it must not be read as "no bell schedule was
+> obtainable." The curated ground-truth corpus itself is **fixed** and is never appended to by the
+> approval process; it remains the accuracy yardstick, not a data source.
+
+Mechanics, grain rules and the full evidence record:
+`docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE.md` §13 and
+`docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md`.
+
 ---
 
 ## SPED Segmentation (self-contained vs. mainstreamed)

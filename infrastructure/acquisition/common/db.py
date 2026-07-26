@@ -101,6 +101,16 @@ _PRECIOUS_ALTERS = [
     "UPDATE batch SET first_approved_at = approved_at WHERE first_approved_at IS NULL AND approved_at IS NOT NULL",
     # #148: first-class run-kind for extractions, replacing the `handoff_hash NOT LIKE '%-image'` hack.
     "ALTER TABLE extraction ADD COLUMN IF NOT EXISTS run_kind text NOT NULL DEFAULT 'production'",
+    # #618 (epic #617): the benchmark DISPATCH type. Defaults production so every existing frozen
+    # handoff and open draft reads as production — batch_00000's historical handoffs are retagged
+    # explicitly by the #617 backfill, never by this default.
+    "ALTER TABLE dispatch_draft ADD COLUMN IF NOT EXISTS dispatch_type text NOT NULL DEFAULT 'production'",
+    "ALTER TABLE handoff ADD COLUMN IF NOT EXISTS dispatch_type text NOT NULL DEFAULT 'production'",
+    # #617 Phase 2c: the DECLARED redo lever. Deliberately NULLABLE with NO default and NO backfill —
+    # NULL means "not declared" and common/batch_types.redoes_attempted falls back to the historical
+    # `batch_type == 'follow-up'` rule, so every existing batch (batch_00000's frozen gt:// artifacts
+    # above all) keeps byte-identical reconcile behavior. Only new composers declare a value.
+    "ALTER TABLE batch ADD COLUMN IF NOT EXISTS redo_attempted boolean",
     # #120: reps left unsent by the mode-stability early-exit (detail lives in the disk receipt).
     "ALTER TABLE extraction ADD COLUMN IF NOT EXISTS n_reps_skipped integer NOT NULL DEFAULT 0",
     # STAGE8 §2a.6: per-fact council evidence (verbatim quote / locus / stated minutes) from the v2

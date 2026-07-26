@@ -9,6 +9,7 @@ pure `package` assembler — producing the in-memory handoff package (slice 5 pe
 import json
 from pathlib import Path
 
+from infrastructure.acquisition.common import benchmark as BM
 from infrastructure.acquisition.common import calibration as CAL
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
@@ -236,13 +237,18 @@ def district_release_input(session, district_id: str, verified_only: bool = Fals
 
 
 def build_handoff_package(session, district_ids, councils=None, cost_model=None, overrides=None,
-                          verified_only=False) -> dict:
+                          verified_only=False, dispatch_type=BM.DISPATCH_PRODUCTION) -> dict:
     """Assemble the in-memory handoff package for `district_ids` from the DB release decision.
     Pure stage6 logic does the routing/pricing; this layer only supplies the data. `overrides` =
     gate@6 per-rep council overrides ({"<rec_key>::<file>": council_id}). `verified_only` = gate@6
-    training-grade mode (labeled targets only); stamped onto the package so preview + freeze agree."""
+    training-grade mode (labeled targets only); stamped onto the package so preview + freeze agree.
+    `dispatch_type` (#618) is stamped the same way — validated but NOT forced here; the provenance
+    guard runs at freeze (`assert_dispatch_type_allowed`), so a preview can still be BUILT and
+    displayed for a draft that currently can't be frozen. That is what lets the human see the problem
+    and fix it, rather than the console failing to render the draft at all."""
     councils = councils or C6.load_configs()
     cost_model = cost_model or COST6.load_cost_model()
+    BM.validate_dispatch_type(dispatch_type)
     districts = []
     for did in district_ids:
         di = district_release_input(session, did, verified_only=verified_only)
@@ -250,7 +256,50 @@ def build_handoff_package(session, district_ids, councils=None, cost_model=None,
             districts.append(di)
     package = PKG6.assemble_package(districts, councils, cost_model, overrides)
     package["verified_only"] = bool(verified_only)
+    package["dispatch_type"] = dispatch_type
     return package
+
+
+def benchmark_reps_in_package(session, package: dict) -> list:
+    """The package's representations carrying BENCHMARK provenance, as [{district_id, rec_key}].
+
+    REPRESENTATION grain, never district grain (#618). A district that merely *was* in a benchmark
+    batch is not the question — epic #617 exists to retire exactly that proxy. The question is whether
+    the reps this dispatch actually selected trace back to benchmark injection
+    (`capture.source='benchmark_gt'`), which is real and mixed after a #620 re-run: Node's #174
+    follow-up seeding carries prior records verbatim into the new manifest, so a re-run district
+    legitimately holds stale `gt://` reps alongside fresh ones."""
+    by_key = {r["rec_key"]: d["district_id"]
+              for d in package.get("districts", []) for r in d.get("records", [])
+              if r.get("rec_key")}
+    if not by_key:
+        return []
+    flagged = BM.benchmark_provenance_rec_keys(session, list(by_key))
+    return [{"district_id": by_key[k], "rec_key": k} for k in sorted(flagged)]
+
+
+def assert_dispatch_type_allowed(session, package: dict) -> None:
+    """REFUSE to freeze a production dispatch that selected any benchmark-provenance representation.
+
+    Refuse rather than silently force the dispatch to benchmark: a dispatch carries ONE type, so
+    auto-forcing would let a single stale `gt://` rep wall every OTHER district in the same dispatch
+    off from the Stage-9 write — one operator slip silently costing unrelated districts their LCT
+    minutes. The human deselects the rep, or opts the whole dispatch in as benchmark on purpose.
+
+    An explicit `dispatch_type='benchmark'` always passes: that is the Council Lab opt-in, and a
+    benchmark dispatch is *allowed* to contain production reps (that is the point of an A/B)."""
+    if (package.get("dispatch_type") or BM.DISPATCH_PRODUCTION) == BM.DISPATCH_BENCHMARK:
+        return
+    flagged = benchmark_reps_in_package(session, package)
+    if flagged:
+        shown = ", ".join(f"{f['district_id']}:{f['rec_key']}" for f in flagged[:5])
+        more = f" (+{len(flagged) - 5} more)" if len(flagged) > 5 else ""
+        raise ValueError(
+            f"dispatch refused: {len(flagged)} selected representation(s) carry benchmark provenance "
+            f"(capture source '{BM.BENCHMARK_CAPTURE_SOURCE}') — {shown}{more}. A benchmark rep must "
+            f"not ride in a production dispatch (it terminates at gate@7 and never reaches Stage 9). "
+            f"Deselect those records, or set dispatch_type='benchmark' to run this as a Council Lab "
+            f"A/B on purpose.")
 
 
 # ----------------------------- recording a dispatch (DB index + state) -----------------------------
@@ -264,7 +313,11 @@ def insert_handoff_row(session, doc: dict, path) -> str:
         n_districts=len(doc.get("districts", [])), n_reps=cost.get("n_reps", 0),
         total_usd=cost.get("total_usd", 0.0), cost_provenance=cost.get("provenance", "unknown"),
         district_ids=[d["district_id"] for d in doc.get("districts", [])],
-        council_ids=sorted((doc.get("councils") or {}).keys())))
+        council_ids=sorted((doc.get("councils") or {}).keys()),
+        # #618: mirror the frozen doc's own type onto the queryable index, so the provenance-scoped
+        # guards (#619) can join school_fact -> extraction.handoff_hash -> handoff without opening
+        # the file. The doc on disk stays the authority; this row is the index over it.
+        dispatch_type=doc.get("dispatch_type") or BM.DISPATCH_PRODUCTION))
     session.flush()
     return hid
 
@@ -311,7 +364,8 @@ def record_dispatch(session, doc: dict, path, actor: str = "human", metas: dict 
 
 
 def dispatch_handoff(session, district_ids, created_by: str = "human", root=None,
-                     councils=None, cost_model=None, overrides=None, verified_only=False):
+                     councils=None, cost_model=None, overrides=None, verified_only=False,
+                     dispatch_type=BM.DISPATCH_PRODUCTION):
     """Freeze + record a dispatch (up to — not including — the paid Stage-7 calls): build the package
     from the DB release decision, freeze it, RECORD the index row + state events (atomic on `session`),
     then write the immutable file LAST — so any DB failure rolls back cleanly with no orphaned record,
@@ -338,6 +392,11 @@ def dispatch_handoff(session, district_ids, created_by: str = "human", root=None
                f"(unknown ids skipped: {skipped})" if skipped else "no districts were selected"))
     package = PKG6.assemble_package(districts_input, councils, cost_model, overrides)
     package["verified_only"] = bool(verified_only)
+    package["dispatch_type"] = BM.validate_dispatch_type(dispatch_type)
+    # #618: the provenance guard, BEFORE the freeze — the frozen artifact is immutable, so a wrong
+    # dispatch_type is unrecoverable. Raising here rolls the session back with nothing written, the
+    # same posture as the 0-district refusal above.
+    assert_dispatch_type_allowed(session, package)
     doc = HND.freeze(package, councils, fingerprints, created_by=created_by)
     path = (Path(root) if root else HND.DEFAULT_ROOT) / HND.handoff_filename(doc)
     record_dispatch(session, doc, path, actor=created_by, metas=metas)

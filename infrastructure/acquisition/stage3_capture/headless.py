@@ -24,6 +24,7 @@ from pathlib import Path
 from sqlalchemy import text
 
 from infrastructure.acquisition.common import batch_guard as BG
+from infrastructure.acquisition.common import batch_types as BT
 from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
@@ -254,7 +255,7 @@ def run_batch(batch: dict, *, actor: str = "auto:stage3", on_event=None, _run=su
         districts = find_batch_districts(batch)
         registry = DS.load()
         todo, skipped = C3.reconcile(districts, registry,
-                                     redo=batch.get("batch_type") == "follow-up")
+                                     redo=BT.redoes_attempted(batch))
         DS.save(registry, export=False)
         # Drop no-link districts (Stage 2 manual_flag_all -> empty candidates.json) BEFORE dispatch: they
         # have nothing for Playwright, are terminal at Stage 2, and get no Stage-3 artifact/event (they

@@ -41,6 +41,7 @@ from typing import Optional
 
 from sqlalchemy import text
 
+from infrastructure.acquisition.common import benchmark as BM
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.common import receipts as RCPT
@@ -65,12 +66,10 @@ class Rename:
 
 def load_benchmark_ids(session) -> set:
     """District ids belonging to any batch_type='benchmark' batch (batch_00000 + any future benchmark
-    batch). Keys on batch_type, never the batch_00000 literal — the yardstick grows into new benchmark
-    batches (the shared IS_BENCHMARK convention)."""
-    rows = session.execute(text(
-        "SELECT DISTINCT bd.district_id FROM batch_district bd "
-        "JOIN batch b ON b.batch_id = bd.batch_id WHERE b.batch_type = 'benchmark'"))
-    return {r[0] for r in rows}
+    batch). Thin alias over `common/benchmark.py` — THE definition since epic #617 consolidated the
+    copies. Keys on batch_type, never the batch_00000 literal, so the tagging keeps working as the
+    yardstick grows into new benchmark batches."""
+    return BM.all_benchmark_district_ids(session)
 
 
 def _stamp_from_state_event(session, district_id: str, stage: int) -> Optional[str]:

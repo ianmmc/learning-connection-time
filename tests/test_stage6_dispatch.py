@@ -34,6 +34,9 @@ def test_dispatch_handoff_freezes_writes_and_records(tmp_path, monkeypatch):
     monkeypatch.setattr(REL, "load_district_records", lambda s, did: records)
     monkeypatch.setattr(REL, "district_fingerprints",
                         lambda s, did: {"config": "c", "labels": "l", "data": "d"})
+    # #618: these tests pass session=None and monkeypatch every DB accessor; stub the guard's
+    # provenance READ (not the guard itself) so assert_dispatch_type_allowed still runs for real.
+    monkeypatch.setattr(BR, "benchmark_reps_in_package", lambda session, package: [])
 
     captured = {}
     monkeypatch.setattr(BR, "record_dispatch",
@@ -70,6 +73,9 @@ def test_dispatch_writes_per_district_capture_receipt(tmp_path, monkeypatch):
     monkeypatch.setattr(REL, "load_district_records", lambda s, did: records)
     monkeypatch.setattr(REL, "district_fingerprints",
                         lambda s, did: {"config": "c", "labels": "l", "data": "d"})
+    # #618: these tests pass session=None and monkeypatch every DB accessor; stub the guard's
+    # provenance READ (not the guard itself) so assert_dispatch_type_allowed still runs for real.
+    monkeypatch.setattr(BR, "benchmark_reps_in_package", lambda session, package: [])
     monkeypatch.setattr(BR, "record_dispatch",
                         lambda session, doc, path, actor="human", metas=None: None)
 
@@ -93,6 +99,9 @@ def test_dispatch_handoff_is_immutable_on_repeat(tmp_path, monkeypatch):
                                         "nces_denominator": {"total": 1, "by_level": {}}})
     monkeypatch.setattr(REL, "load_district_records", lambda s, did: [])
     monkeypatch.setattr(REL, "district_fingerprints", lambda s, did: {})
+    # #618: these tests pass session=None and monkeypatch every DB accessor; stub the guard's
+    # provenance READ (not the guard itself) so assert_dispatch_type_allowed still runs for real.
+    monkeypatch.setattr(BR, "benchmark_reps_in_package", lambda session, package: [])
     monkeypatch.setattr(BR, "record_dispatch", lambda *a, **k: None)
     # freeze the clock so both calls produce the same filename, proving write() refuses to overwrite
     monkeypatch.setattr("infrastructure.acquisition.stage6_handoff.handoff._now", lambda: "2026-06-30T00:00:00Z")
@@ -107,6 +116,9 @@ def test_dispatch_handoff_refuses_an_empty_effective_selection(tmp_path, monkeyp
     monkeypatch.setattr(REL, "load_district", lambda s, did: None)
     monkeypatch.setattr(REL, "load_district_records", lambda s, did: [])
     monkeypatch.setattr(REL, "district_fingerprints", lambda s, did: {})
+    # #618: these tests pass session=None and monkeypatch every DB accessor; stub the guard's
+    # provenance READ (not the guard itself) so assert_dispatch_type_allowed still runs for real.
+    monkeypatch.setattr(BR, "benchmark_reps_in_package", lambda session, package: [])
     monkeypatch.setattr(BR, "record_dispatch", lambda *a, **k: None)
     with pytest.raises(ValueError, match="9999999"):
         BR.dispatch_handoff(session=None, district_ids=["9999999"], root=tmp_path)
@@ -147,6 +159,9 @@ def _fake_release(monkeypatch):
     monkeypatch.setattr(REL, "load_district_records", lambda s, did: records)
     monkeypatch.setattr(REL, "district_fingerprints",
                         lambda s, did: {"config": "c", "labels": "l", "data": "d"})
+    # #618: these tests pass session=None and monkeypatch every DB accessor; stub the guard's
+    # provenance READ (not the guard itself) so assert_dispatch_type_allowed still runs for real.
+    monkeypatch.setattr(BR, "benchmark_reps_in_package", lambda session, package: [])
 
 
 def test_status_backup_exports_only_after_the_file_write_succeeds(tmp_path, monkeypatch):

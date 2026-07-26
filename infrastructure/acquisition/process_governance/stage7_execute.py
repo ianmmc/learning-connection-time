@@ -30,6 +30,7 @@ from sqlalchemy import text
 from pathlib import Path
 from typing import NamedTuple
 
+from infrastructure.acquisition.common import benchmark as BM
 from infrastructure.acquisition.common import budget as BUD
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import discovered_domain as DDOM
@@ -287,17 +288,14 @@ def _executed_rounds(session, district_ids: list) -> dict:
 
 
 def _benchmark_district_ids(session, district_ids: list) -> set:
-    """The subset of `district_ids` belonging to any batch_type='benchmark' batch (batch_00000 —
-    permanently WALLED OFF from Stage-9 writes and funnel/enrichment stats, CLAUDE.md). Request
-    execution must never rebadge these into a follow-up batch (issue #134)."""
-    if not district_ids:
-        return set()
-    rows = session.execute(text(
-        "SELECT DISTINCT bd.district_id FROM batch_district bd "
-        "JOIN batch b ON b.batch_id = bd.batch_id "
-        "WHERE b.batch_type = 'benchmark' AND bd.district_id = ANY(:d)"),
-        {"d": list(district_ids)})
-    return {r[0] for r in rows}
+    """The subset of `district_ids` belonging to any batch_type='benchmark' batch. Request execution
+    must never rebadge these into a follow-up batch (issue #134).
+
+    Thin alias over `common/benchmark.py` — THE definition since epic #617 consolidated the three
+    hand-maintained copies (this one, Stage 9's, and server.py's IS_BENCHMARK_SQL). GRAIN WARNING:
+    district-MEMBERSHIP, which #619 replaces with dispatch provenance for the write-eligibility
+    callers; see that module's docstring."""
+    return BM.benchmark_district_ids(session, district_ids)
 
 
 def _defer_76_districts(session, district_ids: list, max_rounds=None) -> set:
@@ -641,7 +639,7 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
         # flips commit together. Flip ONLY the directives whose district made it into ITS scope's
         # batch (#136) — a skipped district's directive stays 'approved', re-sweepable.
         for c in composed:
-            BSTORE.create_batch(s, c["doc"], batch_type="follow-up", actor=actor)
+            BSTORE.create_batch(s, c["doc"], batch_type="follow-up", redo_attempted=True, actor=actor)
             _flip(s, c["flip_ids"], c["batch_id"])
         return {"batch_id": composed[0]["batch_id"],
                 "n_requests": sum(len(c["flip_ids"]) for c in composed),

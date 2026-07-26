@@ -2856,7 +2856,7 @@ requirements:
       CAVEAT for whoever authors the AC (2026-07-16 doc-tower audit): this REQ predates the finding that Stage-6 eligibility is a UNION (`tier==A OR human_label in target-shapes`) — see STAGE5_FILTER_DESIGN.md §3a obs. 5. Author the AC against that current rule, not the older tier-only framing. Also note #83 shares the Stage-6 eligibility seam with #515 (confounder vetoes): #83 NARROWS eligibility to one hub rep; #515 VETOES confounders out of it. Same file, different intent — sequence them."
 
   - id: REQ-117
-    description: "Stage 7 (Extract): execute a frozen gate@6 handoff's paid OpenRouter council calls per representation, parse per-school {start_time,end_time,grade_level,school_name} facts (REQ-054 read-times invariant), reach cross-family per-school consensus (±15 min, REQ-056) with a 3rd-family judge on disagreement, and persist per-school facts to a GOVERNANCE-DB working table (school_fact) — NEVER the LCT DB (benchmark batches are walled off; only Stage 9 promotes non-benchmark results). gate@7 reviews extraction results + council requests/recommendations."
+    description: "Stage 7 (Extract): execute a frozen gate@6 handoff's paid OpenRouter council calls per representation, parse per-school {start_time,end_time,grade_level,school_name} facts (REQ-054 read-times invariant), reach cross-family per-school consensus (±15 min, REQ-056) with a 3rd-family judge on disagreement, and persist per-school facts to a GOVERNANCE-DB working table (school_fact) — NEVER the LCT DB (Stage 9 is the only promoter, and it admits only non-benchmark-PROVENANCE facts — REQ-169). gate@7 reviews extraction results + council requests/recommendations."
     type: functional
     priority: must
     status: tested
@@ -2865,7 +2865,7 @@ requirements:
       - "The OpenRouter client (stage7_extract/openrouter.py) is gated on OPENROUTER_API_KEY, streams via SSE, captures usage tokens + cost telemetry + generation_id, and raises BillingAuthError on 401/402 (halt) while returning transient errors per-call — MET"
       - "The model-output parser (stage7_extract/parse.py) tolerates markdown fences + truncated JSON (salvage) + drops prompt-example-leak rows; the council reads TIMES only and deterministic code computes gross = end-start + the per-band mode (REQ-054/REQ-042) — MET"
       - "Consensus is cross-family on the per-school (start,end) pair within ±15 min (REQ-056), judge re-reads the page on disagreement; per-district band value = the exact mode over accepted per-school gross (REQ-055 gross bell-to-bell) — MET"
-      - "Per-school facts persist to a governance-DB table with a stage=7 state_event + gate@7; benchmark (batch_type='benchmark') output is never Stage-9-written — MET"
+      - "Per-school facts persist to a governance-DB table with a stage=7 state_event + gate@7; benchmark output is never Stage-9-written — MET. RE-SCOPED 2026-07-25 (epic #617): the rule is the PROVENANCE of the facts (the (handoff x district) that produced them), not the district's batch membership — see REQ-169. The prior district-keyed form permanently refused all 27 batch_00000 districts, including facts from later honest production runs"
       - "A validation harness scores per-school + per-band output vs gt_curation gt_proposals.json (±15 min) for batch_00000 — MET: full-batch run scored 95.2% band / 99.3% per-school (text), 88.5%/98.1% (image), 24 districts / 83 reps"
       - "The council run is durable and resumable (per-district persistence, not end-of-batch) — MET (run_council_streaming)"
       - "A deterministic request-more-evidence loop detects representation/URL/district-altitude insufficiency and routes 7->6/3/2/1, with zero model calls — MET (stage7_extract/requests.py), validated against real data with zero false positives across 20 covered districts"
@@ -3760,7 +3760,7 @@ requirements:
     acceptance_criteria:
       - "After each rep, _run_district checks aggregate.mode_stable per fillable target band (claimed ∩ real, from district_target + school_sampling); when EVERY target band is stable, the remaining reps are skipped — recorded in the receipt's skipped_reps/early_exit (reason mode_stable), NEVER in reps (a skipped rep must not read as barren to the request loop)"
       - "Unknown targets never exit: a missing district_target row, an empty fillable set, a target-lookup failure, or a disabled knob all degrade to the full census (unknown is never assumed satisfied)"
-      - "Probes (run_kind != production), GT-scored runs (gt_data passed), and batch_00000 members are exempt — measurement wants the census, not the shortcut"
+      - "Probes (run_kind != production), GT-scored runs (gt_data passed), and members of ANY batch_type='benchmark' batch are exempt — measurement wants the census, not the shortcut. Keyed on batch_type, NEVER the batch_00000 id literal (#621, 2026-07-25): the literal silently denied a second benchmark batch its exemption, so it would have measured the shortcut instead of the pipeline — latent while batch_00000 was the only benchmark batch, real as soon as epic #617 makes another composable"
       - "extraction.n_reps_skipped (additive precious column, default 0) persists the count; the gate@7 header renders it (data-feat mode-stability-skip) so a band's n never reads as 'capture only found n'"
       - "Params are config-as-data (stage7_mode_stability.json, schema-validated, arch-manifest-declared; window=5/min_n=3/min_share=0.6) — changed by PR, never console-editable; `enabled` is the ONE operational kill-switch, flippable from Settings (data-feat mode-stability-toggle, POST /api/stage7/mode-stability writes enabled + toggled_by/at back to the knob file)"
     tests:
@@ -4133,7 +4133,7 @@ requirements:
     updated: "2026-07-22T00:00:00Z"
     notes: "The link that makes approved minutes move LCT numbers (STAGE9_INCORPORATE_DESIGN.md §4).
       Added 2026-07-21 during the PR #607 max-effort review, which also hardened the Stage-9 write:
-      benchmark (batch_00000) districts are refused (the permanent wall); a TOCTOU re-check ensures the
+      benchmark districts are refused (then a PERMANENT district-keyed wall; re-scoped to fact provenance by epic #617 / REQ-169 on 2026-07-25 — the permanent form refused correct minutes from later honest runs); a TOCTOU re-check ensures the
       receipt written is the decision the eligibility gate validated; a council->statutory flip clears the
       retracted council clock times; _statutory_minutes uses the canonical case-normalized lookup and
       treats only NULL (not 0) as absent; district-id normalized before every governance read;
@@ -4341,3 +4341,77 @@ requirements:
     notes: "Ian's commandment #4. The least deterministically-testable commandment (mostly qualitative) —
       encoded so the periodic sweep has an explicit charter. Its one hard dependency is observability
       (REQ-164/165): you cannot safely automate what you cannot audit."
+
+  - id: REQ-169
+    github_issue: "epic #617 (#618-#625)"
+    description: "THE TYPE AXIS — handling instructions for batches and dispatches. Batches (Stages 1-4)
+      carry batch_type first-run|follow-up|benchmark; dispatches (Stages 6-7) carry dispatch_type
+      production|benchmark. Each benchmark harness has a TERMINUS (benchmark batch -> gate@5; benchmark
+      dispatch -> gate@7), which is what makes benchmark output structurally incapable of reaching the
+      LCT write. Every benchmark rule is scoped to the PROVENANCE OF THE WORK — a representation, or the
+      (handoff x district) that produced a fact — and NEVER to the district's identity or membership
+      history."
+    type: architectural
+    priority: must
+    status: in_progress
+    acceptance_criteria:
+      - "GRAIN: no guard deciding LCT-write eligibility keys on 'has this district ever been in a batch_type=benchmark batch'. batch_district rows are never deleted, so that question is permanently yes and permanently refuses correct, freshly-sourced minutes (the defect epic #617 exists to retire)"
+      - "MOBILITY (the acceptance test, Ian 2026-07-25): a district moves between harnesses in BOTH directions — (1) benchmark batch -> follow-up batch, (2) first-run/follow-up batch -> benchmark batch, (3) benchmark dispatch -> production dispatch, (4) production dispatch -> benchmark dispatch. One named regression test per direction"
+      - "ONE definition per rule: batch types + the redo lever in common/batch_types.py; benchmark predicates (district-membership grain AND representation grain) + dispatch types in common/benchmark.py. common is the base layer every stage may import — which is what makes a single home possible, since stage9_incorporate cannot import process_governance and that layering forced five hand-maintained copies"
+      - "batch_type and dispatch_type are VALIDATED (batch_store.create_batch / validate_dispatch_type), never unconstrained strings whose legal values live in a comment"
+      - "REFUSE, DO NOT COERCE, when a guard's unit is coarser than its trigger: a dispatch carries ONE type, so a production dispatch that selected any benchmark-provenance representation is REFUSED at freeze, naming the representations — auto-forcing the whole dispatch to benchmark would wall every OTHER district sharing it"
+      - "dispatch_type rides handoff._identity (the verified_only precedent), so the same reps dispatched benchmark vs production are hash-distinct artifacts and a preview-as-production / freeze-as-benchmark flip 409s instead of silently substituting"
+      - "The frozen handoff RECORDS its own dispatch_type: 'was this dispatch benchmark?' is answerable from the receipt alone, never only from a DB row that could be lost or disagree"
+      - "REDO-ELIGIBILITY IS DECLARED (batch.redo_attempted), not derived from batch_type. An absent value falls back to the historical batch_type=='follow-up' rule so no pre-existing batch changes behavior. Deriving it would let one Stage-2 run on batch_00000 merge fresh SERP candidates into the 27 curated districts' FROZEN gt:// candidate sets (REQ-059's corpus is fixed)"
+      - "The Stage-9 write guard has TWO arms, neither redundant: the stamped handoff.dispatch_type (which cannot see a production dispatch that pulled in a stale benchmark representation) and provenance DERIVED from the frozen artifact's representations (which cannot see a Council Lab A/B composed entirely of production representations)"
+      - "An operator can COMPOSE a targeted batch (follow-up or benchmark) over a named district list, via API and console — build_batch's eligible_pool drops every district at furthest_stage>=3, so without this neither mobility property 1 nor 2 is expressible at all"
+      - "NOT YET MET — the benchmark-BATCH terminus is unenforced for newly-composed benchmark batches (REQ-170 / #640)"
+    tests:
+      - tests/test_batch_mobility.py
+      - tests/test_stage6_dispatch_type.py
+      - tests/test_benchmark_predicate.py
+      - tests/test_stage7_mode_stability.py
+    depends_on: [REQ-117, REQ-151, REQ-162, REQ-059]
+    verification: mixed
+    created: "2026-07-25T00:00:00Z"
+    updated: "2026-07-25T00:00:00Z"
+    notes: "Origin: the 27 batch_00000 ground-truth districts could never be written to lct_db, because a
+      guard mirrored across five sites keyed on district IDENTITY where the documented rationale was about
+      extraction PROVENANCE. Identity was a proxy that held only while a district had exactly one history.
+      Ian's framing (2026-07-25): batches and dispatches began as HUMAN-FACTORS constructs (working in sets
+      makes supervision attention and approval clicks affordable during the ramp-up); the type axis is a
+      distinct third layer that makes it possible to test, measure and train WITHOUT experimental output
+      reaching lct_db. The dispatch axis is deliberately TWO-valued while the batch axis is three: a
+      dispatch has no first-run/follow-up notion (that is derivable from a district's dispatch history),
+      and a third value carrying no behavior invites exactly the string-equality coupling this retired.
+      Full evidence + the record of what the planning pass got wrong:
+      docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md;
+      durable architecture: PIPELINE_GOVERNANCE_AND_STATE.md §13. status in_progress — Phases 1/2a/2b/2c
+      landed; #619 (guard re-scoping), #620 (the 27-district re-run) and #640 open."
+
+  - id: REQ-170
+    github_issue: "#640 (epic #617)"
+    description: "Durable REPRESENTATION-GRAIN batch provenance: every capture records the batch(es) that
+      produced it, ON THE RECEIPT (captures.json), so 'was this representation produced by a benchmark
+      batch' is answerable without inferring it from the district. This is what makes the benchmark-BATCH
+      terminus (gate@5) enforceable."
+    type: functional
+    priority: should
+    status: proposed
+    acceptance_criteria:
+      - "The stamp lives on the RECEIPT, not only in the DB: cache_ingest.upsert_capture_rows does DELETE-then-UPSERT from captures.json and the cross-stage cache is regenerable from disk, so a DB-only column is erased by the next re-ingest"
+      - "Node stamps the producing batch per capture record (captures.json is written by Node; capture_stage3.reconstruct, the recovery path, must stamp too). seedFromPriorCaptures already carries prior records VERBATIM into a new manifest, so a seeded prior-round record keeps its ORIGINAL batch for free — which is exactly what the set semantics needs"
+      - "Provenance is a SET, not a column: capture is keyed (district_id, hash) and the hash derives from the URL, so one representation genuinely can be produced by both a benchmark and a production batch. Modeled as a link table"
+      - "WALL RULE (Ian, 2026-07-25): a representation is walled from production dispatches iff it has producers AND EVERY producer is a benchmark batch. benchmark-only -> walled; benchmark + first-run/follow-up -> allowed (a production batch independently found it); no producers recorded -> allowed (every pre-stamp row; today's behavior, unchanged)"
+      - "Rejected alternatives, recorded: 'any benchmark producer walls it' penalizes a production batch because an experiment happened to find the same page — the REQ-169 district-identity pattern one grain down; 'first producer wins' makes the answer depend on run order, an accident rather than a fact about the representation"
+      - "Node/Python parity vectors for the stamp, in the existing #34/#416 CMS-host-parity style"
+    depends_on: [REQ-169, REQ-164]
+    verification: test
+    created: "2026-07-25T00:00:00Z"
+    updated: "2026-07-25T00:00:00Z"
+    notes: "The gap REQ-169 does not yet close. Today's representation-grain guard keys on
+      capture.source='benchmark_gt', which ONLY the one-shot batch_00000 injector writes; a benchmark batch
+      composed through the Phase-2c targeted composer captures real URLs, which Node records as
+      discovered/emergent — indistinguishable from first-run output. Measured live 2026-07-25: discovered
+      1450 / emergent 206 / benchmark_gt 95 / manual 1. Sequenced into #623, which already opens the Node
+      capture_discovery.mjs seam (avoids touching Node twice)."

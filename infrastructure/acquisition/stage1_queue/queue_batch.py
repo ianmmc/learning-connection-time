@@ -332,14 +332,28 @@ def build_batch(year: str, n: int, batch_id: str, registry: dict, *, scope: str 
     return batch_doc, gap_excluded, domain_excluded, len(pool)
 
 
+def all_bands_targets(year: str, district_ids: list) -> dict:
+    """{district_id: [band, ...]} over every band with school-level NCES coverage — the default target
+    set for an OPERATOR-composed targeted batch (#617 Phase 2c), where the human named districts, not
+    bands. The escalation builders (5->1, 7->1) always pass explicit bands and never route here.
+    Order follows BANDS so the composed batch is deterministic."""
+    sch_idx = S.school_index(year)
+    return {did: [b for b in BANDS if sch_idx.get(did, {}).get(b)] for did in district_ids}
+
+
 def build_followup_batch(year: str, batch_id: str, targets: dict, *,
                          attempted_by_did: dict = None, seed_urls_by_did: dict = None,
                          preferred_by_did: dict = None, scope: str = "domain",
                          discovered_domains: dict | None = None,
                          force_widen_dids: set | None = None) -> tuple[dict, list]:
-    """Build a TARGETED follow-up batch (batch_type='follow-up') from explicit district×band targets —
-    the Stage-1 landing point for the request-more-evidence back-edges 7->2/7->3/7->1 (governance §11d:
-    any NEW capture/discovery routes through a reviewable Stage-1 batch, never straight to discovery).
+    """Build a TARGETED batch from explicit district×band targets — the Stage-1 landing point for the
+    request-more-evidence back-edges 7->2/7->3/7->1 (governance §11d: any NEW capture/discovery routes
+    through a reviewable Stage-1 batch, never straight to discovery).
+
+    THE TARGETED BUILDER, not the follow-up builder (#617 Phase 2c). The name is historical: this is
+    the composer for any batch whose district list is NAMED rather than drawn, which is follow-up AND
+    benchmark alike (a benchmark batch re-runs specific districts as a Stages-2/3/4 A/B — the same
+    shape, a different `batch_type` at persist_batch). build_batch remains the drawn/stratified path.
 
     UNLIKE build_batch this is NOT stratified and deliberately RE-INCLUDES already-attempted districts —
     a follow-up re-targets *unsatisfied bands* on districts that have already been through the pipeline,
@@ -470,7 +484,7 @@ def build_followup_batch(year: str, batch_id: str, targets: dict, *,
 
 
 def persist_batch(batch_doc: dict, registry: dict, *, batch_type: str = "first-run",
-                  actor: str = "cli") -> Path:
+                  redo_attempted: bool | None = None, actor: str = "cli") -> Path:
     """Persist a freshly-built batch: write the DB WORKING STORE (batch_store rows) + regenerate the
     receipt batch_NNNNN.json from those rows + record one stage=1 'queued' state_event per district.
     Shared by the CLI and the gate@1 console 'create' action -- the single place a batch becomes
@@ -479,7 +493,8 @@ def persist_batch(batch_doc: dict, registry: dict, *, batch_type: str = "first-r
     batch_id = batch_doc["batch_id"]
     gdb.init_precious_schema()   # ensure the batch tables exist (idempotent; never drops)
     with gdb.session_scope() as sess:
-        BSTORE.create_batch(sess, batch_doc, batch_type=batch_type, actor=actor)
+        BSTORE.create_batch(sess, batch_doc, batch_type=batch_type,
+                            redo_attempted=redo_attempted, actor=actor)
         out_path = BSTORE.write_receipt(sess, batch_id)   # receipt regenerated FROM the rows
     for d in batch_doc["districts"]:
         DS.record_stage(

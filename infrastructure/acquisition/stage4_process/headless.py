@@ -37,6 +37,7 @@ from pathlib import Path
 from sqlalchemy import text
 
 from infrastructure.acquisition.common import batch_guard as BG
+from infrastructure.acquisition.common import batch_types as BT
 from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
@@ -271,7 +272,7 @@ def run_batch(batch: dict, *, actor: str = "auto:stage4", on_event=None) -> dict
         # `failed` process event (so status shows it, retriable after investigation) with a
         # distinct `inconsistent` outcome in the results, while the rest of the batch runs.
         todo, skipped, quarantined = C4.reconcile(districts, registry,
-                                                  redo=batch.get("batch_type") == "follow-up")
+                                                  redo=BT.redoes_attempted(batch))
         results = []
         for q in quarantined:
             problems = "; ".join(q.get("inconsistency") or [])

@@ -80,7 +80,7 @@
       el.dataset.kind = "draft"; el.dataset.id = r.draft_id;
       const badge = r.status === "abandoned" ? statusBadge("abandoned") : `<span class="badge badge-neutral">draft</span>`;
       el.innerHTML = `<div class="q-batch-top"><span class="q-batch-id">${esc(r.draft_id)}</span>${badge}</div>
-        <div class="q-batch-meta">${r.n_districts} district${r.n_districts === 1 ? "" : "s"} · ${r.verified_only ? "verified-only" : "standard"} · ${esc(fmt(r.created_at))}</div>`;
+        <div class="q-batch-meta">${r.n_districts} district${r.n_districts === 1 ? "" : "s"} · ${r.verified_only ? "verified-only" : "standard"}${r.dispatch_type === "benchmark" ? " · benchmark" : ""} · ${esc(fmt(r.created_at))}</div>`;
       el.onclick = () => openDispatch(r.draft_id, "draft");
     } else {
       el.dataset.kind = "handoff"; el.dataset.id = r.handoff_id;
@@ -148,7 +148,7 @@
       : ` · created by ${esc(v.created_by)} ${esc(fmt(v.created_at))}`;
     let html = `<div class="q-detail-head">
         <div><h2>${esc(v.draft_id)} ${statusBadge(v.status)}</h2>
-          <div class="q-sub">${v.districts.filter((d) => d.included).length} district(s) · ${v.verified_only ? "verified-only" : "standard"}${byline}</div></div>
+          <div class="q-sub">${v.districts.filter((d) => d.included).length} district(s) · ${v.verified_only ? "verified-only" : "standard"}${v.dispatch_type === "benchmark" ? ` · <span class="badge badge-accent" data-feat="s6-dispatch-type">benchmark dispatch</span>` : ""}${byline}</div></div>
         <div class="q-actions">${actions}</div></div>`;
     if (abandoned) {
       html += `<div class="q-locked">Abandoned${v.abandon_reason ? ` — ${esc(v.abandon_reason)}` : ""}. Terminal.</div>`;
@@ -156,6 +156,8 @@
       html += `<div class="s6-toggle-row">
           <label class="s6-fl s6-mode" title="Dispatch ONLY human-labeled target representations — drops the speculative unlabeled tier-A auto-sends.">
             <input type="checkbox" id="s6-verified" ${v.verified_only ? "checked" : ""}/> verified only (labeled targets)</label>
+          <label class="s6-fl s6-mode" data-feat="s6-dispatch-type-toggle" title="A BENCHMARK dispatch is the Stages 6/7 A/B harness (which representations to which councils, and the yield). It TERMINATES AT gate@7 — its results are never written to the LCT DB. Turn this on to run a Council Lab experiment over these representations on purpose.">
+            <input type="checkbox" id="s6-dispatch-type" ${v.dispatch_type === "benchmark" ? "checked" : ""}/> benchmark dispatch (stops at gate@7)</label>
           <button id="s6-add-district" class="btn btn-mini add">+ Add district</button>
         </div>`;
     }
@@ -167,6 +169,14 @@
       // districts have no package block (hence no normal ✕), so the warning carries its own.
       const items = gone.map((g) => `${esc(g)}${draft ? ` <button class="s6-remove" data-did="${esc(g)}" title="remove from draft">✕</button>` : ""}`).join(", ");
       html += `<div class="q-locked" data-feat="s6-missing-release">⚠ ${gone.length} district(s) in this draft no longer have Stage-5 release data and will NOT be dispatched: ${items}</div>`;
+    }
+    // #618: representations carrying benchmark provenance (capture source 'benchmark_gt'). These
+    // REFUSE the freeze while this is a production dispatch — surfaced here, not raised, so the human
+    // can see exactly what to deselect (or opt the whole dispatch in as benchmark).
+    const bmReps = v.benchmark_reps || [];
+    if (bmReps.length && v.dispatch_type !== "benchmark") {
+      const items = bmReps.map((b) => `${esc(b.district_id)}:<code>${esc(b.rec_key)}</code>`).join(", ");
+      html += `<div class="q-locked" data-feat="s6-benchmark-reps">⚠ ${bmReps.length} representation(s) carry benchmark provenance and will BLOCK this freeze: ${items}. Deselect those records, or tick “benchmark dispatch” to run this as a Council Lab A/B on purpose.</div>`;
     }
     const blocks = pkg.districts.map((d) => renderDistrictBlock(d, draft));
     html += `<div class="s6-summary">
@@ -212,6 +222,8 @@
     const abandon = $g("#s6-abandon"); if (abandon) abandon.onclick = () => doAbandon(draftId);
     const verified = $g("#s6-verified");
     if (verified) verified.onchange = (e) => draftEdit(draftId, { op: "set_verified_only", verified_only: e.target.checked });
+    const dtype = $g("#s6-dispatch-type");
+    if (dtype) dtype.onchange = (e) => draftEdit(draftId, { op: "set_dispatch_type", dispatch_type: e.target.checked ? "benchmark" : "production" });
     const addBtn = $g("#s6-add-district"); if (addBtn) addBtn.onclick = () => openAddDistrictPicker(draftId);
     det.querySelectorAll(".s6-remove").forEach((b) => {
       b.onclick = () => draftEdit(draftId, { op: "remove_district", district_id: b.dataset.did });
@@ -366,7 +378,7 @@
       : `<button class="btn btn-secondary btn-mini s6-extract" data-feat="s6-run-extraction" data-hash="${esc(h.handoff_hash)}" ${h.running ? "disabled" : ""}>${h.running ? "running…" : (h.n_extracted > 0 ? "Resume extraction" : "Run extraction ▶")}</button>`;
     const blocks = pkg.districts.map((d) => renderDistrictBlock(d, false));
     det.innerHTML = `<div class="q-detail-head">
-        <div><h2>${esc(h.handoff_id)} <span class="badge badge-success">${esc(h.status)}</span>${h.verified_only ? ` <span class="badge badge-accent">verified only</span>` : ""}</h2>
+        <div><h2>${esc(h.handoff_id)} <span class="badge badge-success">${esc(h.status)}</span>${h.verified_only ? ` <span class="badge badge-accent">verified only</span>` : ""}${h.dispatch_type === "benchmark" ? ` <span class="badge badge-accent" data-feat="s6-dispatch-type">benchmark</span>` : ""}</h2>
           <div class="q-sub">${pkg.cost.n_reps} rep(s) · ${pkg.districts.length} district(s) · ${usd(pkg.cost.total_usd)} <span class="badge badge-neutral">${esc(pkg.cost.provenance)}</span> · ${esc(fmt(h.created_at))}</div></div>
         <div class="q-actions">${extractControl}</div></div>
       ${origin}${blocks.join("")}`;

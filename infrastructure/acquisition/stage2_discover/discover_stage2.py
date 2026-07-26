@@ -25,6 +25,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from infrastructure.acquisition.common import batch_guard as BG
+from infrastructure.acquisition.common import batch_types as BT
 from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.common import config_loader as CFG
 from infrastructure.acquisition.common import db as gdb
@@ -149,7 +150,7 @@ def reconcile(batch: dict, registry: dict) -> tuple[list, list]:
     rediscovers fresh (write_discovery merge mode finds no prior file and writes anew). A
     missing discovery.json with NO remediation receipt still halts the entire run."""
     todo, skipped = [], []
-    followup = batch.get("batch_type") == "follow-up"
+    followup = BT.redoes_attempted(batch)
     for d in batch["districts"]:
         did = d["district_id"]
         done_on_disk = (lea_dir(did, d["name"]) / "discovery.json").exists()
@@ -629,7 +630,7 @@ def main():
         print(f"  wave 2: skipped, Wave 1 + gating satisfied all {len(roster)} schools")
         registry = DS.load()
         outcome = finish_district(district, roster, batch["batch_id"], registry,
-                                  merge=batch.get("batch_type") == "follow-up")
+                                  merge=BT.redoes_attempted(batch))
         DS.save(registry)
         print(f"{district['district_id']} {district['name']}: {outcome}")
 

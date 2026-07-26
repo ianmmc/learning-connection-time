@@ -144,8 +144,11 @@ rather than silently skip if Chromium is unavailable.
   `domain_of`/`is_scoping_domain`, surfaced in the gate@1 console as a `domain_excluded` refusal list) as
   the admission-time guard, **plus Stage 2's `gate_urls()` fails closed as defense-in-depth** — a blank/junk
   domain now rejects every URL with an explicit reason instead of falling through to the old unscoped
-  branch that kept everything (that fallthrough was the actual Millard mechanism, #227); benchmark
-  (`batch_00000`) is exempt by structure (never routes through `build_batch`). **#228** (remedy) — a
+  branch that kept everything (that fallthrough was the actual Millard mechanism, #227); `batch_00000`
+  is exempt by structure (never routes through `build_batch`). *(Since #617 Phase 2c, "benchmark ⇒
+  exempt" no longer follows from the type: a **newly composed** benchmark batch runs real discovery
+  through the targeted composer, which applies the #229 domain guard exactly as a follow-up does. Only
+  the injected `batch_00000` bypasses it. See §13.)* **#228** (remedy) — a
   gate@5 "Reset labels" console action + `POST /api/reset-labels`, backed by the one shared
   `build_signals.reset_labels_bulk` (an UPDATE-to-unlabeled, not a delete), for the case a label asserts
   a false non-target ground truth (a valid schedule for the *wrong* district) that neither `target_absent`
@@ -1673,3 +1676,125 @@ the **recency gate (REQ-044)**; a full **`state_event`-subscription projector** 
 needs a reason×label cross-tab); the **"District Investigator"** holistic-journey view (the data model — `district_id`
 + the event log — already supports it; out of scope here) (tracked: #101). NCES **locale** facet descoped (not in our CCD data).
 Authority for the as-built: `STAGE5_FILTER_DESIGN` §A–D.
+
+---
+
+## 13. The TYPE axis: handling instructions for batches and dispatches — epic #617 (2026-07-25)
+
+**Read first if you are reviewing, auditing, or refreshing context on why benchmark data is treated
+differently.** Full reasoning, code evidence and the record of what the planning pass got wrong:
+`docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md`. Statement
+of intent in Ian's own words: `…/learning-loop-reports/ian's_comments_on_benchmark_batches_and_dispatches_2026-07-25.md`.
+This section carries only the durable architecture.
+
+### 13a. What the axis is, and why it is a third construct
+
+**Batches** (Stages 1-4) and **dispatches** (Stages 6-7) were introduced as *human-factors* constructs:
+working in sets rather than one district at a time is what makes supervision attention and approval
+clicks affordable during the high-supervision phase of the ramp-up model (§11b). The **type** axis is a
+later, orthogonal layer answering a different question — **how should the pipeline HANDLE this run?**
+
+Getting from high-supervision to high-automation requires testing CLI tools, APIs, search queries,
+prompts, configs and settings; that requires the ability to test, measure and train **without
+experimental output reaching `lct_db`**. That is what the type axis exists for.
+
+| construct | types | what varies |
+|---|---|---|
+| **batch** (Stages 1-4) | `first-run` · `follow-up` · `benchmark` | how districts are chosen, and whether already-attempted districts re-run |
+| **dispatch** (Stages 6-7) | `production` · `benchmark` | whether the run's output is on a pathway to `lct_db` |
+
+**The asymmetry is deliberate, not an oversight** (decided 2026-07-25). A dispatch has no
+first-run/follow-up notion: a dispatch is "these representations → these councils," and whether it is
+a district's first or second is *derivable* from its dispatch history. A third value carrying no
+behavior would be a label that invites exactly the string-equality coupling this epic retired.
+
+**The two constructs are functionally independent.** A benchmark *dispatch* may draw representations
+that emerged from any batch type. Never infer one from the other.
+
+### 13b. Termini — the structural rule that replaced a per-district wall
+
+Each benchmark harness has a defined stopping point. This is the load-bearing rule; the guards are
+defense in depth.
+
+| harness | what it A/B tests | terminus |
+|---|---|---|
+| **benchmark batch** | Stages 2/3/4 — search queries, SERP providers, capture tools, processing tools | **gate@5** |
+| **benchmark dispatch** | Stages 6/7 — which representations to which councils, and the yield | **gate@7** |
+
+Neither reaches Stage 8/9, so benchmark output is *structurally* incapable of being a Stage-9
+candidate — rather than being blocked by a guard that must be remembered and maintained.
+
+### 13c. GRAIN — the rule that matters most, and the mistake it corrects
+
+> **A run's handling type is a property of the WORK, never of the DISTRICT.**
+
+The retired wall asked *"has this district ever been in a `batch_type='benchmark'` batch?"*
+`batch_district` rows are never deleted, so the answer was permanently yes for all 27 of
+`batch_00000`'s districts — and their correct, freshly-sourced minutes from a later honest production
+run were refused at Stage 9 **forever**. The documented rationale had always been about the provenance
+of a particular extraction; district identity was a proxy that held only while those districts had
+exactly one history.
+
+Correct grains, coarsest failure first:
+
+| question | wrong grain | right grain |
+|---|---|---|
+| may this representation enter a production dispatch? | district membership | the **representation's** provenance (`capture.source`, plus its producing batches — #640) |
+| may this district's facts be Stage-9 written? | district membership | the **`(handoff × district)`** that produced them — `extraction` is one row per `(handoff_hash, district_id)` and carries no rep link, so this is the finest grain that exists |
+| may a 5→1 escalation run from this batch? | — | the **batch** (genuinely batch-grain; correct as-is) |
+
+**Corollary — when a guard's unit is coarser than its trigger, REFUSE; do not coerce.** A dispatch
+carries one type, so auto-forcing it to `benchmark` because one stale representation was selected
+would wall every *other* district sharing that dispatch. Gate@6 therefore reports the offending
+representations and refuses the freeze, naming them, so a human can deselect them or run the dispatch
+as benchmark deliberately.
+
+### 13d. Mobility — the acceptance criterion
+
+A district must move freely between harnesses **in both directions**: benchmark ⇄ follow-up batch, and
+benchmark ⇄ production dispatch. Having been a benchmark subject must never be a permanent status.
+This is the epic's acceptance test, and each direction has a named regression test
+(`tests/test_batch_mobility.py`, `tests/test_stage6_dispatch_type.py`).
+
+### 13e. Derived vs declared — the two places this was decided, and why differently
+
+Both readings are legitimate; the choice turns on what the *absence* of a value should mean.
+
+- **DECLARED** — `batch.redo_attempted` (nullable, no default, no backfill). Whether a batch re-runs
+  districts that already have artifacts is stated on the batch, not derived from its type. Deriving it
+  would have made one Stage-2 run on `batch_00000` fold fresh SERP candidates into the 27 curated
+  districts' **frozen `gt://` candidate sets**. An absent value falls back to the historical
+  `batch_type == 'follow-up'` rule, so no pre-existing batch changes behavior.
+- **DERIVED** — a historical dispatch's benchmark-ness is read from the frozen artifact's
+  representations rather than stamped onto its DB row. The two pure-benchmark handoffs **predate** the
+  `dispatch_type` field, so stamping would leave a row disagreeing with its own immutable receipt —
+  and the receipt is the auditable record.
+
+Going forward a dispatch stamps `dispatch_type` at freeze (the artifact is self-describing) **and**
+provenance stays derivable, because neither alone is sufficient: the stamp cannot see a production
+dispatch that pulled in a stale benchmark representation, and derivation cannot see a Council Lab A/B
+composed entirely of production representations.
+
+### 13f. Known gap — the benchmark-BATCH terminus is not yet enforced (#640)
+
+Today's representation-grain guard keys on `capture.source = 'benchmark_gt'`, which **only** the
+one-shot `batch_00000` injector writes. A benchmark batch composed through the targeted composer
+captures real URLs, which Node records as `discovered`/`emergent` — indistinguishable from first-run
+output. Closing it needs durable per-representation batch provenance on the **receipt** (`captures.json`,
+written by Node), because the cross-stage cache is regenerable from disk and a DB-only column would be
+erased by the next re-ingest. One representation can also have **several** producing batches (`capture`
+is keyed `(district_id, hash)` and the hash derives from the URL), so provenance is a *set*: a
+representation is walled iff it has producers and every producer is a benchmark batch.
+
+### 13g. Single definitions — where the rules live
+
+| rule | home |
+|---|---|
+| batch types, validation, the redo lever | `common/batch_types.py` |
+| benchmark predicates (district-membership grain **and** representation grain), dispatch types | `common/benchmark.py` |
+| the gate@6 freeze refusal | `process_governance/stage6_dispatch.py::assert_dispatch_type_allowed` |
+
+These consolidated **five** hand-maintained copies of the benchmark predicate, each of which carried a
+comment explaining why it should have had one definition. `common` is the base layer every stage may
+import, which is what makes one home possible under the layering contract (§10) — Stage 9 cannot import
+`process_governance`, which is what forced the duplication in the first place.

@@ -28,8 +28,8 @@ from dataclasses import dataclass, field
 from typing import Iterable, Optional
 
 from sqlalchemy import text
-from sqlalchemy.exc import ProgrammingError
 
+from infrastructure.acquisition.common import benchmark as BM
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import receipts as RCPT
@@ -83,19 +83,17 @@ def _ensure_schemas() -> None:
 
 
 def _is_benchmark_district(gs, district_id: str) -> bool:
-    """True when the district belongs to any batch_type='benchmark' batch (batch_00000) — the
-    permanent Stage-9 wall (mirrors stage7_execute._benchmark_district_ids, which Stage 9 cannot
-    import: process_governance sits ABOVE this layer). Only a MISSING batch table (a fresh
-    governance DB) is treated as not-benchmark; any other query error FAILS LOUD — a wall that can
-    never fail-open, so a transient DB error can't let a benchmark district through (PR #607 R2)."""
-    try:
-        return bool(gs.execute(text(
-            "SELECT 1 FROM batch_district bd JOIN batch b ON b.batch_id = bd.batch_id "
-            "WHERE b.batch_type = 'benchmark' AND bd.district_id = :d LIMIT 1"),
-            {"d": district_id}).first())
-    except ProgrammingError:
-        gs.rollback()   # relation "batch"/"batch_district" does not exist — fresh DB, no members
-        return False
+    """True when the district belongs to any batch_type='benchmark' batch — the Stage-9 write wall.
+
+    Thin alias over `common/benchmark.py`, which is now THE definition (epic #617). This used to be a
+    hand-copy of stage7_execute._benchmark_district_ids because Stage 9 cannot import
+    process_governance (it sits ABOVE this layer) — `common` is the base layer, so the rule moved
+    there and the copies collapsed. Fail-closed posture (missing table only) lives in that module.
+
+    GRAIN WARNING: this is DISTRICT-MEMBERSHIP grain, which #619 replaces with dispatch PROVENANCE —
+    membership is permanent (batch_district rows are never deleted), so a district honestly re-run
+    through a production batch is refused here forever. That is the bug epic #617 exists to fix."""
+    return BM.is_benchmark_district(gs, district_id)
 
 
 def _statutory_minutes(session, state: Optional[str], band: str) -> int:

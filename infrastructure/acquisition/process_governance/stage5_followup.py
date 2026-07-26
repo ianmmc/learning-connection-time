@@ -147,7 +147,7 @@ def compose_zero_yield(batch_id: str, *, actor: str = "ian", session=None, dry_r
                     "n_districts": len(doc["districts"]), "ladder": ladder, "names": names,
                     "ineligible": ineligible, "flagged": flagged, "skipped": skipped,
                     "targets": targets}
-        BSTORE.create_batch(s, doc, batch_type="follow-up", actor=actor)
+        BSTORE.create_batch(s, doc, batch_type="follow-up", redo_attempted=True, actor=actor)
         return {"ok": True, "batch_id": new_bid, "scope": "geo",
                 "n_districts": len(doc["districts"]), "ladder": ladder, "names": names,
                 "ineligible": ineligible, "flagged": flagged, "skipped": skipped,

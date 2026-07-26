@@ -30,6 +30,8 @@ from infrastructure.acquisition.stage5_filter import build_signals as BS    # no
 from infrastructure.acquisition.stage5_filter import release as REL         # noqa: E402  (filtered.json projection — REQ-094)
 from infrastructure.acquisition.stage5_filter import detectors as DET       # noqa: E402  (#521 relevance-density event weights — the SSOT)
 from infrastructure.acquisition.stage5_filter import drift                  # noqa: E402  (REQ-097 advisory drift verdict — #75)
+from infrastructure.acquisition.common import batch_types as BT             # noqa: E402  (THE batch_type axis + redo lever — epic #617)
+from infrastructure.acquisition.common import benchmark as BM               # noqa: E402  (THE benchmark predicate — epic #617)
 from infrastructure.acquisition.common import db as gdb                     # noqa: E402  (isolated governance Postgres — REQ-103)
 from infrastructure.acquisition.common import district_status as DS         # noqa: E402  (state_event log — gate@1 audit events)
 from infrastructure.acquisition.common import receipts as RCPT              # noqa: E402  (per-district audit receipts — REQ-164)
@@ -1154,6 +1156,10 @@ async def queue_create(payload: dict):
     n = int(payload.get("n", 12))
     batch_type = payload.get("batch_type", "first-run")
     actor = payload.get("actor", "ian")
+    try:
+        BT.validate_batch_type(batch_type)   # #617 Phase 2c: reject a typo at the door, not at persist
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     # Reserve the id UP FRONT in its own short transaction (issue #46): build_batch takes 10-20s, and
     # computing the number without persisting anything let a second concurrent create draw the SAME
     # number. The committed 'reserving' placeholder makes a duplicate draw fail fast on the PK;
@@ -1187,55 +1193,78 @@ async def queue_create(payload: dict):
         batch_id = BSTORE.reserve_next_batch(con, actor=actor)
     try:
         registry = DS.load()
-        # #164 PR 3b (4): under geo_interleaved, an unspecified scope is DRAWN per batch, weighted
-        # by the remaining blank-vs-domained eligible populations; the draw + weights are recorded
-        # on the batch (meta) so the composition is auditable. An explicit discovery_scope in the
-        # payload is the operator's override and skips the draw. Seeded by batch_id: same pools →
-        # same draw, reproducible in the receipt's terms.
-        scope_draw = None
-        if not scope_given and batch_type == "first-run" and policy == "geo_interleaved":
-            weights = Q1.scope_pool_counts(year, registry, discovered)
-            scope = Q1.draw_interleaved_scope(weights, batch_id)
-            scope_draw = {"policy": policy, "weights": weights, "drawn": scope}
         # #572 path 4 ("dev/manual batches on direction — exception path, not SOP"): an optional
         # explicit district-id list restricts the draw; recorded in batch meta (`targeted`).
         district_ids = [d.strip() for d in (payload.get("district_ids") or []) if str(d).strip()]
-        batch_doc, _gap, _domain_excluded, _n_elig = Q1.build_batch(
-            year, n, batch_id, registry, scope=scope, discovered_domains=discovered,
-            geo_pool=geo_pool, district_ids=district_ids or None)
-        # #572: a targeted draw that matches nothing is an operator-input miss, never a pool signal —
-        # report which ids fell outside the pool instead of persisting an empty batch (and never
-        # let it trip the pool-drained auto-advance below).
-        if district_ids and not batch_doc["districts"]:
-            missing = (batch_doc.get("targeted") or {}).get("missing") or district_ids
-            raise HTTPException(409, f"none of the targeted district id(s) are in the {scope} draw "
-                                     f"pool (excluded, already attempted, or in the other scope's "
-                                     f"pool): {', '.join(missing)}")
-        # #164 PR 3b (3): the pool-drained auto-advance, detected AT COMPOSE TIME — a domain-scoped
-        # first-run that can draw NOTHING while blank-domain districts remain is the moment the
-        # conservative default stops meaning anything. Auto-act (observable: the event row + this
-        # 409 notice; reversible: set_policy; spend-conservative: composes nothing by itself).
-        if scope == "domain" and batch_type == "first-run" and not batch_doc["districts"]:
-            notice = "domain-scoped eligible pool is EXHAUSTED (0 drawable districts)"
-            if _domain_excluded:
-                with gdb.session_scope() as con:
-                    advanced = DPOL.advance_one_step(
-                        con, actor=f"auto:{actor}",
-                        trigger=(f"domain-scoped eligible pool exhausted at compose; "
-                                 f"{len(_domain_excluded)} blank-domain district(s) remain"))
-                if advanced:
+        if batch_type != BT.FIRST_RUN:
+            # #617 Phase 2c — the OPERATOR-reachable targeted composer (mobility properties 1 + 2).
+            # follow-up and benchmark both NAME their districts rather than drawing them, so both
+            # route to build_followup_batch, which deliberately bypasses eligible_pool's
+            # already-attempted exclusion — the exclusion that made a re-run of an
+            # already-pipelined district impossible to express through this endpoint at all
+            # (build_followup_batch was reachable only from the 5->1 / 7->1 escalation back-edges).
+            if not district_ids:
+                raise HTTPException(400, f"a {batch_type} batch is composed from an explicit district "
+                                         f"list — pass district_ids (optionally `targets` for "
+                                         f"per-district bands; default is every covered band)")
+            targets = payload.get("targets") or Q1.all_bands_targets(year, district_ids)
+            batch_doc, skipped = Q1.build_followup_batch(
+                year, batch_id, targets, scope=scope, discovered_domains=discovered)
+            if not batch_doc["districts"]:
+                why = "; ".join(f"{s['district_id']}: {s['reason']}" for s in skipped) or "no targets"
+                raise HTTPException(409, f"no district composed into the {batch_type} batch — {why}")
+            batch_doc["targeted"] = {"requested": district_ids,
+                                     "missing": [s["district_id"] for s in skipped]}
+        else:
+            # #164 PR 3b (4): under geo_interleaved, an unspecified scope is DRAWN per batch, weighted
+            # by the remaining blank-vs-domained eligible populations; the draw + weights are recorded
+            # on the batch (meta) so the composition is auditable. An explicit discovery_scope in the
+            # payload is the operator's override and skips the draw. Seeded by batch_id: same pools →
+            # same draw, reproducible in the receipt's terms.
+            scope_draw = None
+            if not scope_given and policy == "geo_interleaved":
+                weights = Q1.scope_pool_counts(year, registry, discovered)
+                scope = Q1.draw_interleaved_scope(weights, batch_id)
+                scope_draw = {"policy": policy, "weights": weights, "drawn": scope}
+            batch_doc, _gap, _domain_excluded, _n_elig = Q1.build_batch(
+                year, n, batch_id, registry, scope=scope, discovered_domains=discovered,
+                geo_pool=geo_pool, district_ids=district_ids or None)
+            # #572: a targeted draw that matches nothing is an operator-input miss, never a pool signal —
+            # report which ids fell outside the pool instead of persisting an empty batch (and never
+            # let it trip the pool-drained auto-advance below).
+            if district_ids and not batch_doc["districts"]:
+                missing = (batch_doc.get("targeted") or {}).get("missing") or district_ids
+                raise HTTPException(409, f"none of the targeted district id(s) are in the {scope} draw "
+                                         f"pool (excluded, already attempted, or in the other scope's "
+                                         f"pool): {', '.join(missing)}")
+            # #164 PR 3b (3): the pool-drained auto-advance, detected AT COMPOSE TIME — a domain-scoped
+            # first-run that can draw NOTHING while blank-domain districts remain is the moment the
+            # conservative default stops meaning anything. Auto-act (observable: the event row + this
+            # 409 notice; reversible: set_policy; spend-conservative: composes nothing by itself).
+            if scope == "domain" and not batch_doc["districts"]:
+                notice = "domain-scoped eligible pool is EXHAUSTED (0 drawable districts)"
+                if _domain_excluded:
                     with gdb.session_scope() as con:
-                        _backup_discovery_policy(con)   # the twin, post-commit (sibling convention)
-                    notice += (f"; discovery_scope_policy AUTO-ADVANCED domain_only → geo_for_blank "
-                               f"(#164) — compose a geo batch for the {len(_domain_excluded)} "
-                               f"blank-domain district(s)")
-                else:
-                    notice += (f"; {len(_domain_excluded)} blank-domain district(s) remain — "
-                               f"compose a geo batch (policy already allows it)")
-            raise HTTPException(409, notice)
-        if scope_draw:
-            batch_doc["scope_draw"] = scope_draw   # -> Batch.meta_json (audit trail of the draw)
-        Q1.persist_batch(batch_doc, registry, batch_type=batch_type, actor=actor)
+                        advanced = DPOL.advance_one_step(
+                            con, actor=f"auto:{actor}",
+                            trigger=(f"domain-scoped eligible pool exhausted at compose; "
+                                     f"{len(_domain_excluded)} blank-domain district(s) remain"))
+                    if advanced:
+                        with gdb.session_scope() as con:
+                            _backup_discovery_policy(con)   # the twin, post-commit (sibling convention)
+                        notice += (f"; discovery_scope_policy AUTO-ADVANCED domain_only → geo_for_blank "
+                                   f"(#164) — compose a geo batch for the {len(_domain_excluded)} "
+                                   f"blank-domain district(s)")
+                    else:
+                        notice += (f"; {len(_domain_excluded)} blank-domain district(s) remain — "
+                                   f"compose a geo batch (policy already allows it)")
+                raise HTTPException(409, notice)
+            if scope_draw:
+                batch_doc["scope_draw"] = scope_draw   # -> Batch.meta_json (audit trail of the draw)
+        # #617 Phase 2c: DECLARE the redo lever on the batch rather than let a stage re-derive it from
+        # batch_type — see common/batch_types for why a benchmark batch must not redo by type alone.
+        Q1.persist_batch(batch_doc, registry, batch_type=batch_type,
+                         redo_attempted=BT.default_redo_attempted(batch_type), actor=actor)
     except BaseException:
         with gdb.session_scope() as con:   # failed build — free the number (don't leave a dead placeholder)
             BSTORE.release_reservation(con, batch_id)
@@ -2063,6 +2092,7 @@ async def handoff_dispatch(payload: dict):
     actor = payload.get("actor", "ian")
     overrides = payload.get("overrides") or {}
     verified_only = bool(payload.get("verified_only"))
+    dispatch_type = payload.get("dispatch_type") or BM.DISPATCH_PRODUCTION   # #618
     expected_identity = payload.get("expected_identity")   # optional (issue #37) — the console always
     if not ids:                                            # sends it; a bare CLI/test POST still works
         raise HTTPException(400, "no districts selected")
@@ -2072,19 +2102,26 @@ async def handoff_dispatch(payload: dict):
                 # Preview→freeze staleness gate (issue #37): rebuild the package the same way the
                 # preview did and compare identities BEFORE freezing anything.
                 pkg = H6.build_handoff_package(con, ids, overrides=overrides,
-                                               verified_only=verified_only)
+                                               verified_only=verified_only,
+                                               dispatch_type=dispatch_type)
                 if HND6.package_identity(pkg) != expected_identity:
                     raise HTTPException(409, "release changed since preview — the package that would "
                                              "be frozen no longer matches what was reviewed; re-preview "
                                              "before dispatching")
             doc, path = H6.dispatch_handoff(con, ids, created_by=actor, overrides=overrides,
-                                            verified_only=verified_only)
+                                            verified_only=verified_only, dispatch_type=dispatch_type)
     except FileExistsError:
         raise HTTPException(409, "an identical handoff was just dispatched (same content within the "
                                  "same second) — the prior one stands; retry in a moment if intended")
+    except ValueError as e:
+        # #618/#53: a refused dispatch (benchmark reps in a production dispatch, an invalid type, an
+        # empty effective selection) is operator input — a clean 400, never an unhandled 500. The
+        # draft-flow twin at /api/dispatch/{id}/freeze already did this.
+        raise HTTPException(400, str(e))
     cost = doc.get("cost") or {}
     return {"handoff_id": HND6.handoff_filename(doc)[:-5], "handoff_hash": doc["handoff_hash"],
             "verified_only": bool(doc.get("verified_only")),
+            "dispatch_type": doc.get("dispatch_type") or BM.DISPATCH_PRODUCTION,
             "n_districts": len(doc.get("districts", [])), "n_reps": cost.get("n_reps", 0),
             "total_usd": cost.get("total_usd", 0.0), "provenance": cost.get("provenance", "unknown"),
             "path": str(path)}
@@ -2097,7 +2134,8 @@ def handoff_list():
     with gdb.session_scope() as con:
         rows = con.execute(text(
             "SELECT handoff_hash, handoff_id, created_at, created_by, status, n_districts, n_reps, "
-            "total_usd, cost_provenance FROM handoff ORDER BY created_at DESC")).mappings().all()
+            "total_usd, cost_provenance, dispatch_type FROM handoff ORDER BY created_at DESC"
+            )).mappings().all()
         out = []
         for r in rows:
             d = dict(r)
@@ -2119,7 +2157,7 @@ def handoff_detail(handoff_id: str):
     with gdb.session_scope() as con:
         row = con.execute(text(
             "SELECT handoff_id, handoff_hash, created_at, created_by, status, path, n_districts, "
-            "n_reps, total_usd, cost_provenance FROM handoff WHERE handoff_id = :h"),
+            "n_reps, total_usd, cost_provenance, dispatch_type FROM handoff WHERE handoff_id = :h"),
             {"h": handoff_id}).mappings().first()
         if not row:
             raise HTTPException(404, f"no such handoff {handoff_id}")
@@ -2204,10 +2242,10 @@ def dispatch_candidates(draft_id: str):
 @app.post("/api/dispatch/{draft_id}/edit")
 async def dispatch_edit(draft_id: str, payload: dict):
     """gate@6 draft edit: add_district | remove_district | restore_district | set_override |
-    clear_override | set_verified_only. One delegated mutation endpoint, mirrors gate@1's
-    `/api/queue/{batch_id}/edit`. Mutates the working store and records a gate@6 draft-edit audit
-    event (district-scoped for district/override ops, draft-scoped for set_verified_only); returns
-    the fresh draft-detail view (always-current pricing)."""
+    clear_override | set_verified_only | set_dispatch_type. One delegated mutation endpoint, mirrors
+    gate@1's `/api/queue/{batch_id}/edit`. Mutates the working store and records a gate@6 draft-edit
+    audit event (district-scoped for district/override ops, draft-scoped for the two draft-wide mode
+    ops); returns the fresh draft-detail view (always-current pricing)."""
     op = payload.get("op")
     actor = payload.get("actor", "ian")
     did = payload.get("district_id")
@@ -2245,6 +2283,10 @@ async def dispatch_edit(draft_id: str, payload: dict):
             elif op == "set_verified_only":
                 DSTORE6.set_verified_only(con, draft_id, bool(payload.get("verified_only")))
                 note = f"set verified_only={bool(payload.get('verified_only'))}"
+            elif op == "set_dispatch_type":
+                # #618: the Council Lab opt-in. ValueError (bad type) -> 400 below, never a 500.
+                DSTORE6.set_dispatch_type(con, draft_id, payload.get("dispatch_type"))
+                note = f"set dispatch_type={payload.get('dispatch_type')!r}"
             else:
                 raise HTTPException(400, f"unknown edit op {op!r}")
             if op in district_scoped_ops:
@@ -2260,7 +2302,7 @@ async def dispatch_edit(draft_id: str, payload: dict):
                     # in the audit note instead of silently recording the bare id as a name.
                     affected = [(did, did, "")]
                     note += " [district not found in signals store]"
-            elif op == "set_verified_only":
+            elif op in ("set_verified_only", "set_dispatch_type"):
                 # Draft-scoped op: record against the draft's included districts (the rows whose
                 # send-set the mode flip actually changes) — mirrors gate@1's batch-level abandon,
                 # which also fans out to per-district events. Empty draft -> nothing to record.
@@ -2274,6 +2316,8 @@ async def dispatch_edit(draft_id: str, payload: dict):
         raise HTTPException(409, str(e))
     except KeyError as e:
         raise HTTPException(404, str(e))
+    except ValueError as e:
+        raise HTTPException(400, str(e))    # #618: an invalid dispatch_type is operator input, not a bug
     with gdb.session_scope() as con:
         return DSTORE6.to_view(con, draft_id)
 
@@ -2301,6 +2345,7 @@ async def dispatch_freeze(draft_id: str, payload: dict):
     cost = doc.get("cost") or {}
     return {"draft_id": draft_id, "handoff_id": HND6.handoff_filename(doc)[:-5],
            "handoff_hash": doc["handoff_hash"], "verified_only": bool(doc.get("verified_only")),
+           "dispatch_type": doc.get("dispatch_type") or BM.DISPATCH_PRODUCTION,
            "n_districts": len(doc.get("districts", [])), "n_reps": cost.get("n_reps", 0),
            "total_usd": cost.get("total_usd", 0.0), "provenance": cost.get("provenance", "unknown")}
 
@@ -2430,14 +2475,14 @@ def handoff_inspect(district_id: str, rec_key: str, file: str):
     return FileResponse(fp)
 
 
-# THE benchmark wall, as one SQL fragment (review round, PR #252 — it was inlined verbatim at two call
-# sites, and Stage 9's write boundary will need it a third time; a rule this load-bearing gets ONE
-# definition so a future change can't silently leave the gates disagreeing about what's benchmark).
-# Keys on batch_type='benchmark' membership, never the batch_00000 id literal — the GT corpus grows
-# into new benchmark batches. `{alias}` = the outer query's district-bearing table alias.
-IS_BENCHMARK_SQL = """EXISTS (SELECT 1 FROM batch_district bd JOIN batch b ON b.batch_id = bd.batch_id
-                              WHERE bd.district_id = {alias}.district_id
-                                AND b.batch_type = 'benchmark')"""
+# THE benchmark wall, as one SQL fragment. PR #252 made it one definition ACROSS THIS MODULE's two call
+# sites; epic #617 finished the job by moving it to `common/benchmark.py`, so Stage 9 and Stage 7 read
+# the SAME text instead of hand-copying it (they could not import this module — process_governance sits
+# above them; `common` is the base layer everything may import). Re-exported under the original name so
+# existing call sites and their tests are unchanged. `{alias}` = the outer query's district-bearing
+# table alias. GRAIN WARNING: district-MEMBERSHIP; #619 moves the write-eligibility callers to dispatch
+# provenance — see common/benchmark.py's docstring.
+IS_BENCHMARK_SQL = BM.IS_BENCHMARK_SQL
 
 
 # REQ-122 cumulative counts — the SQL twin of AGG.merge_fact_runs's accepted/unresolved rule ("a pair
