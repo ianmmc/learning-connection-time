@@ -376,3 +376,63 @@ class TestRunBatch:
                               wave2_runner=lambda *a: None)
         assert summary["todo"] == 1 and summary["skipped"] == 1
         assert "testschools.example" in searched   # only the todo district was searched (both share domain)
+
+
+# ------------------ #620: a redo batch's Stage-2 status is BATCH-scoped ------------------
+@pytest.mark.govdb
+def test_620_a_redo_batch_reports_todo_until_it_has_run(gov_session, monkeypatch, tmp_path):
+    """THE BUG #620 HIT IN PRODUCTION. `discovery.json` existing means "discovered at some point",
+    which is the wrong question for a batch whose PURPOSE is re-discovering districts that already
+    have artifacts. Every district read `done`, the rollup read `todo: 0`, and stage2.js REPLACES the
+    Run control with "All districts discovered." when `todo === 0` — so a deliberate redo could not be
+    started from the console at all, while `reconcile` would happily have processed every district.
+
+    The view and the run disagreed about "done", and the view won because it owns the button."""
+    from sqlalchemy import text
+    from infrastructure.acquisition.common import db as gdb
+    from infrastructure.acquisition.stage2_discover import headless as H2
+    gdb.init_precious_schema()
+    s = gov_session
+    monkeypatch.setattr(H2.gdb, "session_scope", lambda: __import__("contextlib").nullcontext(s))
+
+    did, name = "ZZ620A", "Redo Test District"
+    ddir = tmp_path / "ZZ620A_Redo"
+    ddir.mkdir(parents=True)
+    (ddir / "discovery.json").write_text("{}")           # prior round's artifact exists on disk
+    monkeypatch.setattr(H2.D2, "lea_dir", lambda d, n: ddir)
+
+    batch = {"batch_id": "batch_zz620", "batch_type": "follow-up", "redo_attempted": True,
+             "districts": [{"district_id": did, "name": name, "state": "ZZ", "domain": "x.org"}]}
+
+    rows = H2.status_for_batch(batch)
+    assert rows[0]["status"] == "todo"                   # was "done" — the button-hiding bug
+    assert H2.rollup(rows)["todo"] == 1                  # what stage2.js gates the Run control on
+
+    # …and once THIS batch has actually discovered it, it flips to done
+    s.execute(text("INSERT INTO state_event (district_id, stage, stage_name, event_type, outcome, "
+                   "batch_id, created_at, actor) VALUES (:d, 2, 'discover', 'stage', 'found_all', "
+                   ":b, 'now', 'zz')"), {"d": did, "b": "batch_zz620"})
+    s.flush()
+    assert H2.status_for_batch(batch)[0]["status"] == "done"
+
+
+@pytest.mark.govdb
+def test_620_an_ordinary_batch_still_uses_the_disk_rule(gov_session, monkeypatch, tmp_path):
+    """The fix is scoped to declared redo batches: a first-run batch keeps the byte-for-byte disk
+    rule, so the 19 pre-existing non-redo batches are untouched. A district discovered before the
+    batch_id-stamped state_event era has no attributable event, and must not regress to `todo`."""
+    import contextlib
+    from infrastructure.acquisition.common import db as gdb
+    from infrastructure.acquisition.stage2_discover import headless as H2
+    gdb.init_precious_schema()
+    monkeypatch.setattr(H2.gdb, "session_scope", lambda: contextlib.nullcontext(gov_session))
+
+    did = "ZZ620B"
+    ddir = tmp_path / "ZZ620B_Ordinary"
+    ddir.mkdir(parents=True)
+    (ddir / "discovery.json").write_text("{}")
+    monkeypatch.setattr(H2.D2, "lea_dir", lambda d, n: ddir)
+
+    batch = {"batch_id": "batch_zz620b", "batch_type": "first-run",
+             "districts": [{"district_id": did, "name": "Ordinary", "state": "ZZ", "domain": "y.org"}]}
+    assert H2.status_for_batch(batch)[0]["status"] == "done"   # disk rule, no state_event needed

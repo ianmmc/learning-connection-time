@@ -190,6 +190,23 @@ def remediation_receipt(district_id: str):
     return newest
 
 
+def dispatched_by_batch(batch_id: str, stage_name: str, ids: list) -> set:
+    """Districts THIS batch actually handed to `stage_name` — the `dispatched` state_event, which has
+    carried `batch_id` since long before completion events did (#647).
+
+    Why this and not the completion event's own `batch_id`: completion events are only stamped from
+    #647 onward (stage-3 carried it on 28 of 147 rows, stage-4 on 0 of 128), so keying done-ness on
+    the stamp alone would declare every historical follow-up batch un-run — 18 of them — and invite a
+    re-run of work already paid for. Intersecting the DISK artifact with "this batch dispatched it"
+    is true in both eras: a batch that never dispatched a district cannot have completed it, and one
+    that did dispatch it and left an artifact did."""
+    with gdb.session_scope() as con:
+        return {r[0] for r in con.execute(
+            text("SELECT DISTINCT district_id FROM state_event WHERE stage_name = :nm "
+                 "AND event_type = 'dispatched' AND batch_id = :b AND district_id = ANY(:ids)"),
+            {"nm": stage_name, "b": batch_id, "ids": ids or [""]})}
+
+
 def record_stage(
     registry: dict,
     district_id: str,

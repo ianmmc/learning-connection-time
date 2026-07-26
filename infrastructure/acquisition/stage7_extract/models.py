@@ -5,7 +5,8 @@
 produced — `accepted` rows carry the agreed start/end/gross, `unresolved` rows carry the per-model
 disagreement for gate@7 review. Both are PRECIOUS (paid output — never in the Stage-5 ingest drop
 list; rebuildable from the receipt if ever needed) and live in the GOVERNANCE DB, never the LCT DB —
-Stage 9 (non-benchmark only) is the sole promoter to `bell_schedules`, so benchmark stays walled off.
+Stage 9 (non-benchmark only) is the sole promoter to `bell_schedules`, so benchmark-PROVENANCE work
+stays walled off — the wall keys on the receipt's reps, not on the district (#619).
 
 Registered on the governance `Base`; created via `init_precious_schema()` once the app (or the
 Stage-7 persist path) imports this module.

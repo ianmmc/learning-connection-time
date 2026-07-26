@@ -11,8 +11,12 @@ that short-circuits an unchanged fingerprint. Two-DB safety is ORDERING (LCT com
 governance stamp), not a distributed transaction — the two DBs are deliberately decoupled.
 
 Standing walls (PR #607 review):
-  - batch_00000 (benchmark) districts are REFUSED — "Stage 9 (non-benchmark only) is the sole
-    promoter to bell_schedules" (stage7_extract/models.py; CLAUDE.md's permanent wall).
+  - Receipts of BENCHMARK PROVENANCE are REFUSED — "Stage 9 (non-benchmark only) is the sole
+    promoter to bell_schedules" (stage7_extract/models.py). The grain is the WORK, not the district
+    (#619): the two-arm predicate asks whether THIS receipt's write-bearing reps came from a
+    benchmark dispatch (stamped `handoff.dispatch_type`) or from a `benchmark_gt` capture — never
+    whether the district was ever a benchmark-batch member, which walled 27 districts permanently
+    (epic #617).
   - A Stage-9 write whose (year, grade_level) key is already held by a NON-Stage-9 method
     (human_provided, tier_*, …) FAILS LOUD — human/legacy work is never silently overwritten; a
     person resolves the conflict (remove the manual row, or exclude the band at gate@8) and re-runs.
@@ -82,18 +86,21 @@ def _ensure_schemas() -> None:
         _schemas_ensured = True
 
 
-def _is_benchmark_district(gs, district_id: str) -> bool:
-    """True when the district belongs to any batch_type='benchmark' batch — the Stage-9 write wall.
+def _is_benchmark_receipt(gs, receipt: dict) -> bool:
+    """True when the APPROVED RECEIPT's write-bearing evidence carries benchmark provenance — the
+    Stage-9 write wall, re-keyed from district identity to fact provenance (#619).
 
-    Thin alias over `common/benchmark.py`, which is now THE definition (epic #617). This used to be a
-    hand-copy of stage7_execute._benchmark_district_ids because Stage 9 cannot import
-    process_governance (it sits ABOVE this layer) — `common` is the base layer, so the rule moved
-    there and the copies collapsed. Fail-closed posture (missing table only) lives in that module.
+    Thin alias over `common/benchmark.py`, THE definition since epic #617 (Stage 9 cannot import
+    process_governance — it sits ABOVE this layer — but `common` is the base layer every stage may
+    read). Both arms and the fail-closed posture live in that module.
 
-    GRAIN WARNING: this is DISTRICT-MEMBERSHIP grain, which #619 replaces with dispatch PROVENANCE —
-    membership is permanent (batch_district rows are never deleted), so a district honestly re-run
-    through a production batch is refused here forever. That is the bug epic #617 exists to fix."""
-    return BM.is_benchmark_district(gs, district_id)
+    THE GRAIN IS THE POINT. This used to ask "has this district EVER been in a benchmark batch", and
+    `batch_district` rows are never deleted — so all 27 batch_00000 districts were refused a Stage-9
+    write FOREVER, including correct minutes from later honest production runs. A run's handling type
+    is a property of THE WORK, never of the district. What is interrogated now is the frozen receipt
+    this call is about to write from, so the question and the write have the same subject."""
+    rec_keys, fact_ids = P.collect_write_bearing_sources(receipt)
+    return BM.is_benchmark_provenance(gs, rec_keys=rec_keys, fact_ids=fact_ids)
 
 
 def _statutory_minutes(session, state: Optional[str], band: str) -> int:
@@ -254,8 +261,6 @@ def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, for
 
     # ---- Phase A: governance read + eligibility ----
     with gdb.session_scope() as gs:
-        if _is_benchmark_district(gs, district_id):
-            return _ineligible("benchmark district (batch_00000) — walled off from Stage-9 writes")
         ca_live = CA.load_closing_argument(gs, district_id, record_drift_event=False)
         fp_live = CA.fingerprint(ca_live)
         status = APV.decision_status(gs, district_id, current_fingerprint=fp_live)
@@ -274,6 +279,14 @@ def incorporate_district(district_id, *, actor="auto:stage9", dry_run=False, for
             return _ineligible("decision_changed_during_read", fp_live)
         receipt = json.loads(latest["receipt_json"])
         approval_id = latest["approval_id"]
+        # The benchmark wall (#619). It sits HERE, after the receipt loads, because the receipt is
+        # what it interrogates — pre-#619 it ran first, on district identity alone, which is what made
+        # it permanent. A district that is benchmark-associated but unapproved now reports its
+        # approval status rather than "benchmark"; the outcome (no write) is unchanged either way.
+        if _is_benchmark_receipt(gs, receipt):
+            return _ineligible("benchmark provenance — the approved evidence includes benchmark "
+                               "work (injected rep or benchmark dispatch); walled off from Stage-9 "
+                               "writes", fp_live)
         # The LIVE roster (unsigned) sources band_grade_span — pre-#499 frozen receipts carry no
         # slot_projection, and roster coverage is derived-live-never-frozen by design.
         grade_span_source = ca_live

@@ -355,11 +355,19 @@ def write_manifest(district: dict, records: list) -> None:
             pass   # absent / already swept — the manifest is what matters
 
 
-def finish_district(district: dict, registry: dict) -> str:
+def finish_district(district: dict, registry: dict, batch_id: str | None = None) -> str:
     """Single registry write per district, at actual completion -- never an interim
     'started' marker, same principle as Stage 2: there's nothing meaningful to reconcile
     against a half-finished state, since captures.json only exists once the Node capture
-    script has fully finished that district."""
+    script has fully finished that district.
+
+    `batch_id` STAMPS THE COMPLETION EVENT (#647). The dispatched/failed events in the run loop
+    always carried it, but the completion event did not -- it is written here, and here had no idea
+    which batch it was serving, so `stage=3` events landed with `batch_id = NULL` (119 of 147 before
+    this change; Stage 4 was 128 of 128). That gap is why "has THIS BATCH captured this district" was
+    unanswerable from gov_db, which is what forced the console to ask the filesystem instead and made
+    a redo batch report itself already done. Optional and defaulted so the direct
+    `capture_stage3 run <district_id>` CLI path -- which has no batch -- is unchanged."""
     captures_path = district["dir"] / "captures.json"
     try:
         captures = json.loads(captures_path.read_text())
@@ -379,7 +387,7 @@ def finish_district(district: dict, registry: dict) -> str:
     outcome, notes = compute_outcome(captures)
     DS.record_stage(
         registry, district["district_id"], district["name"], district["state"],
-        stage=3, stage_name="capture", outcome=outcome, notes=notes,
+        stage=3, stage_name="capture", outcome=outcome, notes=notes, batch_id=batch_id,
     )
     # Project this district's capture receipts into the live DB cache (the console's Stage-3 surface
     # reads them). Best-effort: captures.json on disk + the state_event are the durable record.

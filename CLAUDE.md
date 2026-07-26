@@ -135,10 +135,11 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-26): epic #617 phases 0-2c are MERGED to `main` (PR #641 = `9865666`).**
-Working tree clean, no feature branch open — branch `feat/617-phase0-1-findings-and-621` is merged and
-deleted. Everything before it (REQ-164 receipts, the Stage 9 campaign 38/38, #626/#627, the #630-639
-review sweep) is on `main` as PR #629 (`a26aee9`).
+**Current status (2026-07-26): epic #617 Phase 3 is on branch `feat/619-provenance-scoped-benchmark-guards`
+— PR #648 is OPEN, 6/6 CI green, awaiting Ian's review. NOT merged.** Base `main` = `9865666` (PR #641,
+phases 0-2c). Working tree clean, branch pushed, `HEAD` == origin at `be09f57`. Everything before #641
+(REQ-164 receipts, the Stage 9 campaign 38/38, #626/#627, the #630-639 review sweep) is on `main` as PR
+#629 (`a26aee9`).
 
 **#617 in one line: a guard mirrored across five sites asked "has this district EVER been in a
 `batch_type='benchmark'` batch", `batch_district` rows are never deleted, so all 27 batch_00000 districts
@@ -149,8 +150,15 @@ home, `common/benchmark.py`), **#618/Phase 2b** (`dispatch_type` first-class, fo
 `handoff._identity`, gate@6 REFUSES a production freeze that selected a benchmark-provenance rep), and
 **Phase 2c** (`batch.redo_attempted` as a DECLARED lever + operator-reachable targeted composers for
 follow-up/benchmark batches — mobility properties 1 and 2). All four mobility properties now hold.
+**On PR #648 (Phase 3, unmerged):** **#619** (the TWO-ARM provenance guard — stamped `dispatch_type`
+OR reps derived from the frozen receipt — re-keyed at 8 sites, not the 3 the issue named), **#644**
+(two of three freeze paths were entirely unguarded; the only thing covering them was the district
+identity #134 was about to remove), **#134** (request-execution walls → directive provenance), **#647**
+(Stage 2/3/4 console status was district-grain, so a redo batch hid its own Run control), and #620's
+three composed batches. Behaviour-preserving today, measured: membership and provenance agree on all
+83 districts with production facts; gate@8 admits the identical 56. Divergence starts with #620.
 Read `docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md` first
-(evidence + §10/§11 log of what the plan got wrong); durable architecture in
+(evidence + §10/§11 log of what the plan got wrong, §12 the Phase 3 implementation log); durable architecture in
 `PIPELINE_GOVERNANCE_AND_STATE.md` **§13**; spec in `docs/REQUIREMENTS.yaml` **REQ-169** (`in_progress`)
 + **REQ-170**. Governing lesson still standing: **the product is the pipeline, not the district**.
 
@@ -161,53 +169,71 @@ DB diverges from a migrated one and fails raw `text()` INSERTs **on CI only**. A
 `PIPELINE_GOVERNANCE_AND_STATE.md`. **Verify a new precious column against a THROWAWAY governance DB —
 the local migrated one tests the path that isn't broken.**
 
-**Next (RESUME HERE — 2026-07-26): Phase 3 / #619 — provenance-scope the guards, with a TWO-ARM
-predicate.** Real data forced this design change, so do not implement #619 as originally written:
-classifying all 39 frozen handoffs by REP provenance found 2 pure benchmark, 36 pure production, and **1
-MIXED** (`f33790e63820` — a genuine production dispatch holding 3 `gt://` curated PDFs across 3 of its 9
-districts, **227 accepted facts, no gate@8 approval**; the retired wall is the only thing holding them).
-Dispatch grain is wrong in BOTH directions there. Build in `common/benchmark.py`:
-**arm 1** = `handoff.dispatch_type = 'benchmark'` (stamped) · **arm 2** = this `(handoff, district)`'s
-reps carry benchmark provenance (DERIVED from the frozen artifact — `extraction` is one row per
-`(handoff_hash, district_id)` with no rep link, so this is the finest grain that exists). Neither is
-redundant. Details: findings report **§11.4** + the comment on #619.
-**Start with a full-surface grep, not the three guards #619 names** — this epic undercounted twice
-(§2's five guard *spellings* vs three sites; §3's five redo-lever sites vs three), both times from
-grepping only the sites the issue listed. **A fourth site re-keys here:** the mode-stability early-exit,
-whose benchmark exemption inverts at #619 (§10.4) — `test_early_exit_exempts_a_district_in_both_a_
-benchmark_and_a_production_batch` is the deliberate pre-#619 pin that flips.
-**Then, in order:** the gate@7 terminus (`aggregate_districts` rescoped) · **#625** (REQ sync — REQ-117/151/162
-already revised; `COUNCIL_LAB_DESIGN.md:54` "the yardstick GROWS" still contradicts CLAUDE.md and is wrong)
-· **#622/#623** (done-marker→gov_db inversion; 6 steps, one artifact per PR) · **#640** (durable rep-grain
-batch provenance — build INSIDE #623, the Node seam is already open there) · **#624** (retroactive stage
-6-9 receipts, 83/83/38/6) · **#620** (re-run the 27 through targeted follow-up batches; prove one district
-end-to-end before the other 26).
-**Retired, do not do:** Phase 2e's retroactive `dispatch_type='benchmark'` tagging of batch_00000's
-handoffs — arm 2 derives it, and stamping would leave the two pure-benchmark artifacts (which predate the
-field) disagreeing with their own immutable receipts.
-**Outstanding:** Playwright-verify the gate@6 + gate@1 console changes (static-source-pinned only so far).
-Also open, unrelated: **#628** (targeted/O(changed) LCT recompute + `--dry-run`).
-**New 2026-07-26, deferred by design (epic #128):** **#642** (content-derived document vintage — a
-governing-year signal from PDF typography; `pdfplumber` already reads font size/weight at Stage 4 and we
-discard it, so the #241 validity floor's `content_school_year` never opens the document) and **#643** (the
-Stage-3 render-facts probe, the HTML half — rides #623's Node seam). **Do #642 first**: retroactive, no
-cross-language change, measurable now against the 95 `benchmark_gt` reps + 440 gate@5 labels. Both pay
-twice — Stage-5 suppression AND REQ-026 vintage accuracy (a content-scoped year would have fixed
-Dickinson at the source instead of needing #626's `human_vouched`). **Open policy question they surface,
-unresolved:** should a stale injected rep be *release-eligible at all* after a fresh run — suppressed
-upstream at Stage 5 rather than caught at gate@6? A gate@5 policy call (§9); #620 walks into it.
+**Next (RESUME HERE — 2026-07-26): a code review of PRs #641+#648 filed 14 issues (#649-#662), and
+one of them — #662 — BLOCKS #620. Full revised plan: findings report §11.**
+
+**READ FIRST: #662.** #619 re-keyed the Stage-9 wall to provenance, but two layers in FRONT of it are
+still district-permanent, so an honestly re-run district *still* cannot incorporate. Measured on the
+live DB: all **25 of 25** #620 districts are walled by the gate@8 queue predicate TODAY (it asks "has
+this DISTRICT ever produced a `benchmark_gt` fact" over append-only tables — permanently true), and
+`merge_fact_runs` gives the OLD benchmark facts the win over fresh ones (**957 of 957** carry
+`school_year=NULL`, so the year-supersede rule never engages and earliest-run wins). Only Stage 9's own
+wall is receipt-scoped and correct. **§10.11's "the grains diverge only after #620" claim was true for
+the wall and false for the queue and the merge** — every measurement had been taken in the one state
+where all three necessarily agree. **#662 needs Ian's decision** on the supersession mechanism (my rec:
+reclassify the historical benchmark extractions' `run_kind` + add provenance precedence to the merge).
+
+**Sequence — note this INVERTS the old order; #620 moves FIRST, #625 last (§11.2):**
+**(A) Merge PR #648** — https://github.com/ianmmc/learning-connection-time/pull/648, green, and still
+correct: #662 is a scope defect in the layer in front of it, not a fault in the two-arm predicate.
+Fold in only the text this PR makes false (**#649** REQ-169 still calls the #134 re-key open; **#657**
+the `dispatch_type` comment describes the coercion design the epic REJECTED; **#652**). Then close
+#618/#619/#644/#647. ·
+**(B) Decide #662, and FIRST write the acceptance test that fails** — "seed a benchmark-history
+district, run it honestly, assert it (i) reaches the gate@8 queue, (ii) builds a closing argument on
+FRESH reps, (iii) incorporates." It has been declared since §7a and never been executable; it fails at
+(i) today. ·
+**(C) #620** — the epic's ONLY validation, not its last chore. `batch_00030/31/32` (25 districts) are
+approved, `redo_attempted=true`, **Stage 2 complete**; Stage 3 is next but **must not start until (B)
+resolves**. Ian drives the console; prepare and verify, don't execute stage runs. Prove ONE district
+end-to-end, then 24, then **#646** for 27/27. *Falsifier: if any district needs a hand-edit or a
+re-adjudicated gate@8 call, the mechanism is wrong — fix the pipeline, not the district.* ·
+**(D) review backlog in 4 PRs** — guard scoping (#651/#653/#654) · one-home-again (#650/#658/#655/#661
+— plus ONE fitness function over the CLASS, the generalization the epic missed) · docs truth
+(#652/#656) · gate@6-8 surface (#659/#660). None blocks #620. ·
+**(E) structural:** #623 → #622 (needs #623's Node half) → #640 (build INSIDE #623) → #645 (REQ-171
+blocker) → #624 → **#625 LAST** (a REQ sweep over a moving target is wasted). #647's read-side patch
+gets deleted when #622 lands. ·
+**(F) epic #92** — nearly closed (#93/#94/#95 done, 38/38 campaign ran). Open: **#614** (console Stage-9
+status view) + adjacent **#615**, **#628**. All land AFTER (C) — #614 is worth little with nothing
+moving. Verified: `stage9_incorporate` does NOT trigger a recompute, so #628 is convenience, not a gate.
+
+**The standing lesson from this round (findings report §10.19/§10.20):** three layers shipped green
+against measurements that could not fail, and the epic's own consolidation didn't generalize —
+`dispatch_type` normalization is inline at 8 sites, `redo_attempted` bypassed at 2, all introduced BY
+this epic. **When a change is justified by "it diverges only in the future case," construct that case
+and test it.** Also: an adversarial review's raw output is a *candidate* list — roughly a third didn't
+survive verification here (one claimed test gap was refuted by #644's own AST fitness function; a
+"7 sites" count was actually 8).
+**Outstanding:** Playwright-verify the gate@6 + gate@1 console changes AND #647's Stage 2/3/4 status/Run
+control (all static-source-pinned only so far — the code is verified, the *rendering* is not).
+**New 2026-07-26, deferred by design (epic #128):** **#642** (content-derived document vintage — note
+#662 makes this MORE valuable: the 957 `school_year=NULL` facts are exactly what a content-derived
+year would have populated) and **#643** (the Stage-3 render-facts probe; rides #623's Node seam).
+**Retired, do not do:** Phase 2e's retroactive `dispatch_type='benchmark'` tagging — arm 2 derives it.
 Banked routing: #112 → epic #128. Parked: #475/#476, #103/#80 (+#110); the SEA integration follow-up
 (~9 states, 2026-07-20/21 campaign) is an opt-in backlog item — ask Ian before filing.
 Documented-in-code deferrals: `_satisfied_bands_now` batching (revisit on volume); the #522 guardrail's
 per-rep keyword/table attribution (needs a server payload change); JS behavioral tests (no JS harness —
 static-source pins only); the remediation-receipt exception is not STAGE-scoped (30-day expiry since
 2026-07-20); attribution v1 reads each district's LATEST candidate plan (documented in-module).
-Resume-essentials (all five verified green on `main` at `9865666`, 2026-07-26): `pip install -e .` →
-Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) →
-`lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **1990** pass, 1
-skipped [pyarrow]) + `pytest -q -m govdb` (expect **352**, Postgres up) + `pytest
-tests/test_*_integration.py` (expect **252** pass, 149 skipped, live DB) + `cd infrastructure/scraper &&
-npm test` (expect **90**).
+Resume-essentials (all five verified green on `feat/619-provenance-scoped-benchmark-guards` at `be09f57`,
+2026-07-26): `pip install -e .` → Docker up (`docker-compose up -d`) → `git config core.hooksPath
+.githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not
+integration"` (expect **2008** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **368**,
+Postgres up) + `pytest tests/test_*_integration.py` (expect **255** pass, 149 skipped, live DB) + `cd
+infrastructure/scraper && npm test` (expect **90**). On `main` at `9865666` the counts are
+1990/352/252/90 — if you are on `main`, use those.
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (Huntington
 `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters).
 Stage 9 incorporate CLI: `python3 -m infrastructure.acquisition.stage9_incorporate <did> [--dry-run]`;

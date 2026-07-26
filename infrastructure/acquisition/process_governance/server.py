@@ -2480,9 +2480,14 @@ def handoff_inspect(district_id: str, rec_key: str, file: str):
 # the SAME text instead of hand-copying it (they could not import this module — process_governance sits
 # above them; `common` is the base layer everything may import). Re-exported under the original name so
 # existing call sites and their tests are unchanged. `{alias}` = the outer query's district-bearing
-# table alias. GRAIN WARNING: district-MEMBERSHIP; #619 moves the write-eligibility callers to dispatch
-# provenance — see common/benchmark.py's docstring.
+# table alias. GRAIN WARNING: district-MEMBERSHIP. #619 moved the write-eligibility caller (the gate@8
+# queue) to IS_BENCHMARK_PROVENANCE_SQL below; what remains on membership here is the gate@6 district
+# list's `is_benchmark` BADGE, which is display, and where "this district is part of the yardstick
+# corpus" is the true and useful thing to tell an operator. See common/benchmark.py's docstring.
 IS_BENCHMARK_SQL = BM.IS_BENCHMARK_SQL
+# The provenance twin (#619) — "does this district's released work carry benchmark provenance", the
+# question every write-eligibility gate asks now. Re-exported under a local name for the same reason.
+IS_BENCHMARK_PROVENANCE_SQL = BM.IS_BENCHMARK_PROVENANCE_SQL
 
 
 # REQ-122 cumulative counts — the SQL twin of AGG.merge_fact_runs's accepted/unresolved rule ("a pair
@@ -2693,11 +2698,16 @@ def aggregate_districts():
     decision. Undecided first, then most unresolved (attention-first). Cheap counts only; the full closing
     argument loads on click.
 
-    EXCLUDES benchmark districts via the shared IS_BENCHMARK_SQL wall — the SAME fragment the dispatch
-    preview uses (one definition, review round PR #252). gate@8 authorizes the Stage-9 LCT write, and
-    benchmark stays walled off; it is ALSO how the growing GT yardstick works (a non-benchmark district
-    promoted here becomes verified GT — benchmark districts are already the yardstick, so they don't
-    re-flow through this gate)."""
+    EXCLUDES benchmark-PROVENANCE districts via the shared IS_BENCHMARK_PROVENANCE_SQL wall (#619).
+    gate@8 authorizes the Stage-9 LCT write, so this gate and that write must agree about what is
+    walled — they read the same two-arm definition from common/benchmark.py, one asking of the live
+    facts and the other of the frozen receipt.
+
+    Pre-#619 this keyed on district MEMBERSHIP, which permanently hid all 27 batch_00000 districts:
+    since gate@8 is the only door to a Stage-9 write, re-keying Stage 9 alone would have left the fix
+    unreachable — an honestly re-run district could never have been approved in the first place.
+    Measured across all 83 districts holding production facts, the two rules exclude the SAME 27
+    today; they diverge only when a re-run mints fresh reps (#620)."""
     with gdb.session_scope() as con:
         rows = con.execute(text(
             f"""SELECT p.district_id, d.name, d.state,
@@ -2713,7 +2723,7 @@ def aggregate_districts():
                  AND NOT EXISTS (SELECT 1 FROM extraction_request r
                                  WHERE r.district_id = p.district_id
                                    AND r.status IN {EX.RQ.OPEN_STATUSES_SQL})
-                 AND NOT {IS_BENCHMARK_SQL.format(alias='p')}
+                 AND NOT {IS_BENCHMARK_PROVENANCE_SQL.format(alias='p')}
                ORDER BY (s8.disposition IS NOT NULL), n_unresolved DESC, p.district_id""")).mappings().all()
         return [dict(r) for r in rows]
 

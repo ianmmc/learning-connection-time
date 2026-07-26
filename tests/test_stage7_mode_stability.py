@@ -174,6 +174,7 @@ def test_gate7_console_shows_the_skip_and_settings_carries_the_toggle():
 
 import pytest  # noqa: E402
 from sqlalchemy import text  # noqa: E402
+from infrastructure.acquisition.common import benchmark as BM  # noqa: E402
 from infrastructure.acquisition.common import db as gdb  # noqa: E402
 from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402
 
@@ -207,10 +208,14 @@ def _use_test_session(monkeypatch, sess):
 
 
 @govdb
-def test_early_exit_exempts_any_benchmark_batch_not_just_batch_00000(gov_session, monkeypatch):
-    """#621: a FUTURE benchmark batch (id != batch_00000) must keep its full-census exemption. Keyed
-    on the literal, this district would have been handed early-exit targets and measured the shortcut
-    instead of the pipeline — precisely what REQ-151's exemption exists to prevent."""
+def test_early_exit_no_longer_keys_on_benchmark_batch_membership(gov_session, monkeypatch):
+    """#619 INVERTED this. It used to assert that a benchmark-batch district is absent from the
+    targets (full census); the exemption has moved to the run level, so membership no longer decides
+    anything here and a benchmark-batch district gets targets exactly like any other.
+
+    Its predecessor was #621's regression guard, which fixed the exemption keying on the
+    `batch_00000` LITERAL rather than `batch_type`. That lesson didn't die with the exemption — it is
+    why the replacement reads the frozen handoff's `dispatch_type` instead of any id."""
     gdb.init_precious_schema()
     s = gov_session
     BS.ensure_signal_schema(s)                    # district_target lives in the signal schema
@@ -221,23 +226,21 @@ def test_early_exit_exempts_any_benchmark_batch_not_just_batch_00000(gov_session
     _use_test_session(monkeypatch, s)
 
     out = R7._early_exit_targets(["ZZ621BM", "ZZ621OK"])
-    assert "ZZ621BM" not in out                   # benchmark: absent => full census, no early exit
+    assert out["ZZ621BM"] == {"elementary", "high"}   # was: absent. Membership decides nothing now.
     assert out["ZZ621OK"] == {"elementary", "high"}   # ordinary district: unchanged behavior
 
 
 @govdb
-def test_early_exit_exempts_a_district_in_both_a_benchmark_and_a_production_batch(
+def test_early_exit_reaches_a_district_in_both_a_benchmark_and_a_production_batch(
         gov_session, monkeypatch):
-    """Union semantics: membership in ANY benchmark batch exempts, even alongside production
-    membership. This is the shape epic #617's re-run campaign creates (a batch_00000 district that
-    later runs in a production follow-up batch), so pin today's behavior explicitly.
+    """THE #619 INVERSION, on the exact shape epic #617's re-run campaign creates: a batch_00000
+    district that later runs in a production follow-up batch (#620). Pre-#619 this asserted `== {}`
+    — the district was exempted forever on membership alone, so all 27 re-run districts would have
+    paid a full-census extraction on every future production run.
 
-    DECIDED (Ian, 2026-07-25) — #619 REPLACES this with dispatch provenance: the exemption fires when
-    the DISPATCH being extracted is a benchmark dispatch, not when the district has benchmark history.
-    Rationale: REQ-151's "measurement wants the census" case is already covered by the two disablers at
-    stage7_run.py:447-449 (run_kind != production, gt_data is None); district membership is a third
-    belt that fires on runs measuring nothing, and after #620 it would make all 27 re-run districts
-    pay full-census extraction forever. Kept here as the pre-#619 pin — this test INVERTS at #619."""
+    REQ-151's "a measurement run wants the census" case did not go away; it moved to the run-level
+    disablers, which the next test covers. The distinction that matters: THIS run measures nothing,
+    so there is nothing for the shortcut to distort."""
     gdb.init_precious_schema()
     s = gov_session
     BS.ensure_signal_schema(s)
@@ -246,4 +249,25 @@ def test_early_exit_exempts_a_district_in_both_a_benchmark_and_a_production_batc
     _seed_target(s, "ZZ621BOTH", ["high"])
     _use_test_session(monkeypatch, s)
 
-    assert R7._early_exit_targets(["ZZ621BOTH"]) == {}
+    assert R7._early_exit_targets(["ZZ621BOTH"]) == {"ZZ621BOTH": {"high"}}
+
+
+def test_early_exit_is_disabled_for_a_benchmark_dispatch():
+    """Where REQ-151's exemption LIVES post-#619: the run level, read off the frozen handoff. A
+    benchmark dispatch (#618) is the Stages-6/7 A/B harness, so it wants the full census for the same
+    reason a probe or a GT-scored run does — and unlike district membership, this can see a Council
+    Lab A/B composed entirely of production reps.
+
+    Asserted on `_early_exit_enabled` — the real predicate the run path calls — rather than through
+    `run_council_streaming`, which is a paid OpenRouter path. The disabler was extracted into that
+    named function precisely so this could pin the code instead of a copy of the condition."""
+    on = {"enabled": True}
+    ok = dict(run_kind="production", gt_data=None, ms_params=on)
+
+    assert R7._early_exit_enabled({"dispatch_type": BM.DISPATCH_PRODUCTION}, **ok) is True
+    assert R7._early_exit_enabled({}, **ok) is True                   # unstamped => production
+    assert R7._early_exit_enabled({"dispatch_type": BM.DISPATCH_BENCHMARK}, **ok) is False
+    # the three sibling disablers still hold independently
+    assert R7._early_exit_enabled({}, "probe", None, on) is False
+    assert R7._early_exit_enabled({}, "production", {"x": 1}, on) is False
+    assert R7._early_exit_enabled({}, "production", None, {"enabled": False}) is False

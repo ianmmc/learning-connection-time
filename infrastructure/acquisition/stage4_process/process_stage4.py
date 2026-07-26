@@ -456,12 +456,18 @@ def write_processed(district: dict, records: list[dict]) -> Path:
     return path
 
 
-def finish_district(district: dict, registry: dict) -> str:
+def finish_district(district: dict, registry: dict, batch_id: str | None = None) -> str:
     """Single registry write per district, at actual completion -- same principle as
     Stage 2/3: there's nothing meaningful to reconcile against a half-finished state.
     Belt-and-braces re-check of file consistency (#78): reconcile() already quarantines,
     but the direct `run <district_id>` path reaches here without it -- raise a district-
-    scoped error, never a run-halting SystemExit."""
+    scoped error, never a run-halting SystemExit.
+
+    `batch_id` STAMPS THE COMPLETION EVENT (#647) -- see the Stage-3 twin. Every one of the 128
+    pre-existing `stage=4` events carries `batch_id = NULL`, because the dispatched/failed events are
+    written in the run loop (which has the batch) while the completion event is written here (which
+    did not). Optional and defaulted, so the direct `process_stage4 run <district_id>` CLI path is
+    unchanged."""
     problems = check_file_consistency(district)
     if problems:
         raise InconsistentCapturesError("; ".join(problems))
@@ -469,7 +475,7 @@ def finish_district(district: dict, registry: dict) -> str:
     write_processed(district, records)
     outcome = compute_outcome(records)
     DS.record_stage(registry, district["district_id"], district["name"], district["state"],
-                     stage=4, stage_name="process", outcome=outcome)
+                     stage=4, stage_name="process", outcome=outcome, batch_id=batch_id)
     # Project this district's processed-doc rows into the live DB cache from the in-memory records —
     # no write-then-reread round-trip off disk (#616). Best-effort: the disk receipt + state_event are
     # the durable record.

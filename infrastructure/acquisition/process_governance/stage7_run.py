@@ -173,32 +173,48 @@ def _bands_mode_stable(accepted: list, bands, p: dict) -> bool:
     return True
 
 
+def _early_exit_enabled(doc: dict, run_kind: str, gt_data, ms_params: dict) -> bool:
+    """Is the #120 mode-stability early-exit live for THIS RUN? Every disabler here is a property of
+    the run, read off the frozen handoff — a MEASUREMENT run wants the full census, because the
+    shortcut would measure the shortcut (REQ-151).
+
+    Three kinds of measurement, at one altitude: a probe (#148 — a council variant), a GT-scored run,
+    and, since #619, a BENCHMARK dispatch (#618 — the Stages-6/7 A/B harness). The third replaced a
+    per-district `batch_type='benchmark'` MEMBERSHIP check that could see none of them and answered
+    permanently for a district instead; it is also the only form that can see a Council Lab A/B
+    composed entirely of production reps, which carries no rep-level signal at all."""
+    return bool(ms_params.get("enabled")) and run_kind == "production" and gt_data is None \
+        and (doc.get("dispatch_type") or BM.DISPATCH_PRODUCTION) != BM.DISPATCH_BENCHMARK
+
+
 def _early_exit_targets(district_ids) -> dict:
     """{district_id: fillable target bands (claimed ∩ real)} for the #120 early-exit. A district is
-    ABSENT (→ no early exit, the full census) when its district_target row is missing (unknown is
-    never assumed satisfied) or it belongs to ANY batch_type='benchmark' batch (the benchmark wants
-    the census — GT scoring measures the pipeline, the shortcut would measure the shortcut). Failure
-    degrades to {} — disabling the exit, never blocking the run.
+    ABSENT (→ no early exit, the full census) when its district_target row is missing — unknown is
+    never assumed satisfied. Failure degrades to {} — disabling the exit, never blocking the run.
 
-    #621: this used to key on the `batch_00000` id LITERAL while every other benchmark guard keyed on
-    `batch_type` (server.py's own comment: "never the batch_00000 id literal — the GT corpus grows
-    into new benchmark batches"). A SECOND benchmark batch would silently have lost REQ-151's
-    full-census exemption and measured the shortcut instead of the pipeline. Latent while batch_00000
-    was the only benchmark batch; real as soon as epic #617 makes another one composable."""
+    #619 REMOVED a district-membership benchmark exemption from here, and the removal INVERTS this
+    function's answer for the 27 batch_00000 districts. Its intent — REQ-151's "a measurement run
+    wants the full census, the shortcut would measure the shortcut" — is a property of THE RUN, so it
+    now lives with the run-level disablers at the call site (`run_kind == production`, `gt_data is
+    None`, and #618's `dispatch_type != benchmark`), where the frozen handoff can actually answer it.
+    District membership was a third belt firing on runs that measure nothing, and — membership being
+    permanent — it would have made all 27 re-run districts pay a full-census extraction on every
+    future production run, forever (#620 makes those runs real).
+
+    #621 is still the standing lesson for whatever keys here next: the removed exemption keyed on the
+    `batch_00000` id LITERAL while every other benchmark guard keyed on `batch_type`, so a SECOND
+    benchmark batch would silently have lost the exemption it was there to provide."""
     out: dict = {}
     ids = list(district_ids)
     if not ids:
         return out
     try:
         with gdb.session_scope() as s:
-            walled = BM.benchmark_district_ids(s, ids)
             rows = s.execute(
                 text("SELECT district_id, lea_claimed_bands_json, schools_by_band_json, "
                      "nces_by_level_json FROM district_target WHERE district_id = ANY(:d)"),
                 {"d": ids}).all()
             for did, cj, sj, lj in rows:
-                if did in walled:
-                    continue
                 claimed = json.loads(cj) if cj else []
                 sbb = json.loads(sj) if sj else {}
                 by_level = json.loads(lj) if lj else {}
@@ -438,12 +454,9 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
         cost_model = None
 
     run_kind = doc.get("run_kind") or "production"    # #148: probes (image_handoff_variant) stamp this
-    # #120: the mode-stability early-exit applies to PRODUCTION, non-GT-scored runs only — a probe
-    # measures a council variant and a GT run scores the pipeline; both want the full census.
     ms_params = load_mode_stability()
     ms_targets = (_early_exit_targets(by_district.keys())
-                  if ms_params.get("enabled") and run_kind == "production" and gt_data is None
-                  else {})
+                  if _early_exit_enabled(doc, run_kind, gt_data, ms_params) else {})
     results = {"handoff_hash": hh, "run_kind": run_kind, "districts": {}}
     for did in sorted(by_district):
         if did in done:

@@ -144,8 +144,19 @@ def status_for_batch(batch: dict) -> dict:
     ids = [d["district_id"] for d in batch["districts"]]
     ondisk = {d["district_id"]: d for d in stage2_complete(RAW_DIR)}   # Stage-2-complete: id -> {dir,...}
     cand_n = {did: candidate_count(dk["dir"]) for did, dk in ondisk.items()}
+    # A REDO BATCH IS BATCH-SCOPED (#647) — see the Stage-3 twin for the full reasoning. `stage4.js`
+    # gates its Run control on `retriable > 0` exactly as Stage 3 does, so the same disk rule hid the
+    # same button. Ordinary batches keep the disk rule byte-for-byte.
+    #
+    # BOTH sets are scoped, not just `processed`. `captured` is this stage's UPSTREAM GATE (Stage 3
+    # still owes the district), so leaving it on disk state would tell a redo district it is ready to
+    # process while its re-capture has not happened — reading `todo` when the honest answer is
+    # `awaiting_capture`. As at Stage 3, one variable feeds both the loop and `done_ids`.
     captured = {did for did, dk in ondisk.items() if (dk["dir"] / "captures.json").exists()}
     processed = {did for did, dk in ondisk.items() if (dk["dir"] / "processed.json").exists()}
+    if BT.redoes_attempted(batch):
+        captured &= DS.dispatched_by_batch(batch["batch_id"], "capture", ids)
+        processed &= DS.dispatched_by_batch(batch["batch_id"], "process", ids)
     done_ids = [d["district_id"] for d in batch["districts"] if d["district_id"] in processed]
 
     # Process FAILURES (a tool/IO crash) leave NO processed.json and write a `failed` process event with
@@ -301,7 +312,8 @@ def run_batch(batch: dict, *, actor: str = "auto:stage4", on_event=None) -> dict
             did = d["district_id"]
             try:
                 registry = DS.load()
-                outcome = C4.finish_district(d, registry)   # in-process work + processed.json + DB cache
+                # batch_id stamps the stage=4 completion event (#647) — see the Stage-3 twin.
+                outcome = C4.finish_district(d, registry, batch_id)   # + processed.json + DB cache
                 DS.save(registry, export=False)
                 results.append({"district_id": did, "name": d["name"], "outcome": outcome})
                 emit("completed", district_id=did, name=d["name"], outcome=outcome)

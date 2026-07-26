@@ -94,6 +94,7 @@ def test_district_order_is_first_seen_preserving_attention_sort():
 import json  # noqa: E402
 import pytest  # noqa: E402
 from sqlalchemy import text  # noqa: E402
+from infrastructure.acquisition.common import benchmark as BM  # noqa: E402
 from infrastructure.acquisition.common import db as gdb  # noqa: E402
 from infrastructure.acquisition.stage7_extract import models as _M7  # noqa: E402,F401 (registers table)
 
@@ -438,14 +439,20 @@ def test_bundle_multiple_7to6_into_one_round(gov_session, monkeypatch):
 
 
 @govdb
-def test_compose_excludes_benchmark_districts(gov_session, monkeypatch):
-    """#134 — the WALL: a benchmark (batch_00000) district's approved directive must never be swept
-    into a follow-up batch (which would rebadge it past every downstream batch_type check)."""
+def test_compose_admits_a_benchmark_batch_district_on_production_directives(gov_session, monkeypatch):
+    """THE #620 INVERSION of #134's wall. Pre-#620 this asserted the opposite — that mere membership
+    in a benchmark batch kept a district's approved directive out of a follow-up batch, forever,
+    because `batch_district` rows are never deleted.
+
+    That is mobility property 1 denied: these directives were raised by a PRODUCTION dispatch over
+    this district's own reps, and acting on them is exactly how a batch_00000 district gets honest
+    minutes. The re-keyed guard asks where the DIRECTIVE came from, not where the district has been.
+    The next test covers the half that still refuses."""
     from infrastructure.acquisition.stage1_queue.models import Batch, BatchDistrict
     gdb.init_precious_schema()
     s = gov_session
     hh = "zzbmwall"
-    _seed_req(s, hh, "ZZBM1", "7->2", "high")      # benchmark district
+    _seed_req(s, hh, "ZZBM1", "7->2", "high")      # benchmark-BATCH district, production directive
     _seed_req(s, hh, "ZZBM2", "7->2", "middle")    # ordinary district
     s.add(Batch(batch_id="batch_zztest_bm", batch_type="benchmark", status="approved",
                 nces_year="2024_25", created_at="t", created_by="zz", meta_json={}))
@@ -461,12 +468,45 @@ def test_compose_excludes_benchmark_districts(gov_session, monkeypatch):
 
     out = EX.compose_followup_batch(handoff_hash=hh, session=s)
     s.flush()
-    assert set(out["targets"]) == {"ZZBM2"}                       # benchmark district never targeted
-    assert [b["district_id"] for b in out["benchmark_excluded"]] == ["ZZBM1"]
+    assert set(out["targets"]) == {"ZZBM1", "ZZBM2"}      # was: {"ZZBM2"} — membership decides nothing
+    assert out["benchmark_excluded"] == []
     statuses = {r[0]: r[1] for r in s.execute(text(
         "SELECT district_id, status FROM extraction_request WHERE handoff_hash=:h"), {"h": hh})}
-    assert statuses["ZZBM1"] == "approved"                        # untouched, never executed
-    assert statuses["ZZBM2"] == "executed"
+    assert statuses["ZZBM1"] == statuses["ZZBM2"] == "executed"
+
+
+@govdb
+def test_compose_excludes_directives_raised_by_a_benchmark_dispatch(gov_session, monkeypatch):
+    """The half of #134 that SURVIVES the re-key, now keyed correctly. A benchmark dispatch
+    terminates at gate@7, so its findings must not compose themselves into a production follow-up
+    batch — an experiment must not silently seed paid production work.
+
+    Note this fires on a district with NO benchmark batch membership at all: the wall is about where
+    the directive came from, which is the whole point of the re-key."""
+    gdb.init_precious_schema()
+    s = gov_session
+    hh = "zzbenchdisp"
+    _seed_req(s, hh, "ZZBD1", "7->2", "high")
+    s.execute(text(
+        "INSERT INTO handoff (handoff_id, handoff_hash, created_at, created_by, status, path, "
+        "dispatch_type, n_districts, n_reps, total_usd, cost_provenance, district_ids, council_ids) "
+        "VALUES ('handoff_zzbenchdisp_t', :h, 'now', 'zz', 'dispatched', '/zz/x.json', :dt, 1, 1, "
+        "0.0, 'zz', '[]', '[]')"), {"h": hh, "dt": BM.DISPATCH_BENCHMARK})
+    s.flush()
+
+    monkeypatch.setattr(EX.Q1, "build_followup_batch",
+                        lambda year, bid, targets, **kw: ({"batch_id": bid, "districts":
+                            [{"district_id": d} for d in targets]}, []))
+    monkeypatch.setattr(EX.BSTORE, "create_batch", lambda sess, doc, **k: None)
+
+    out = EX.compose_followup_batch(handoff_hash=hh, session=s)
+    s.flush()
+    assert out["targets"] == {}                                   # {district_id: bands}, none left
+    assert [b["district_id"] for b in out["benchmark_excluded"]] == ["ZZBD1"]
+    assert "benchmark provenance" in out["benchmark_excluded"][0]["reason"]
+    statuses = {r[0]: r[1] for r in s.execute(text(
+        "SELECT district_id, status FROM extraction_request WHERE handoff_hash=:h"), {"h": hh})}
+    assert statuses["ZZBD1"] == "approved"                        # untouched, never executed
 
 
 @govdb

@@ -1756,8 +1756,24 @@ Correct grains, coarsest failure first:
 | question | wrong grain | right grain |
 |---|---|---|
 | may this representation enter a production dispatch? | district membership | the **representation's** provenance (`capture.source`, plus its producing batches — #640) |
-| may this district's facts be Stage-9 written? | district membership | the **`(handoff × district)`** that produced them — `extraction` is one row per `(handoff_hash, district_id)` and carries no rep link, so this is the finest grain that exists |
+| may this district's facts be Stage-9 written? | district membership | the **fact** — each write-bearing school in the frozen approved receipt carries `rec_key` + `fact_id`, so the guard interrogates the very artifact the write comes from |
+| may this district be REVIEWED at gate@8? | district membership | the same rule, asked of the live facts (`IS_BENCHMARK_PROVENANCE_SQL`). gate@8 is the only door to a Stage-9 write, so the two must agree and must change together |
+| full census or mode-stability shortcut? | district membership | **the run** — `run_kind`, `gt_data`, `dispatch_type`, all read off the frozen handoff |
 | may a 5→1 escalation run from this batch? | — | the **batch** (genuinely batch-grain; correct as-is) |
+
+*(An earlier draft named `(handoff × district)` as the finest available grain for the write decision,
+on the premise that fact→representation is not traversable. It is: `school_fact.rec_key` exists and is
+100% populated. Reading the receipt rather than re-deriving from the frozen handoff file also closes a
+fail-OPEN hole — the handoff loader returns `None` for a pruned receipt, which would have read as
+not-benchmark. #619, findings report §12.1.)*
+
+**Corollary — the wall refuses on ANY tainted evidence, and the human holds the release valve.** One
+injected representation taints the band value it feeds, and silently dropping that fact would change
+an approved number — so the guard refuses the whole write. The way through is a *recorded human
+decision*, not a code exception: a school struck at gate@8 (`band_exclusion`) is applied before the
+mode, so it is not a source of the band's value and does not refuse the write on its behalf. A fact a
+human ADDED carries no capture at all, so it carries no provenance to check and is never read as
+"unknown" and refused.
 
 **Corollary — when a guard's unit is coarser than its trigger, REFUSE; do not coerce.** A dispatch
 carries one type, so auto-forcing it to `benchmark` because one stale representation was selected
@@ -1807,10 +1823,22 @@ representation is walled iff it has producers and every producer is a benchmark 
 | rule | home |
 |---|---|
 | batch types, validation, the redo lever | `common/batch_types.py` |
-| benchmark predicates (district-membership grain **and** representation grain), dispatch types | `common/benchmark.py` |
+| benchmark predicates — all three grains (district-membership, representation, **provenance**) — and dispatch types | `common/benchmark.py` |
+| the write-bearing walk over a frozen receipt | `stage9_incorporate/provenance.py::collect_write_bearing_sources` |
 | the gate@6 freeze refusal | `process_governance/stage6_dispatch.py::assert_dispatch_type_allowed` |
 
 These consolidated **five** hand-maintained copies of the benchmark predicate, each of which carried a
 comment explaining why it should have had one definition. `common` is the base layer every stage may
 import, which is what makes one home possible under the layering contract (§10) — Stage 9 cannot import
 `process_governance`, which is what forced the duplication in the first place.
+
+Two fitness functions in `tests/test_benchmark_predicate.py` keep it that way — one per rule family
+(membership, provenance) — each with a **falsified** detector: every pattern is proven to catch real
+hand-inlined copies *and* proven not to fire on the prose and operator error strings that legitimately
+name the rule. A detector that cries wolf gets ignored, which is the same outcome as not having one.
+
+**Which grain a call site needs is not guessable from the word "benchmark"** — read it off the
+function name. The membership forms remain correct for genuinely batch-grain callers (Stage 5's
+zero-yield escalation, the receipts backfill's corpus sweep) and for the gate@6 console **badge**,
+where telling an operator "this district is part of the yardstick corpus" is both true and useful.
+What may never key on membership is any guard deciding whether work gets released.

@@ -117,7 +117,11 @@ class TestGeoGovdb:
                    tally={"outcome": "derived"}, actor="ian")
         assert DD.get_domain(gov_session, "3173740") == "mpsomaha.org"
         DD.confirm(gov_session, "3173740", "millard.org", actor="ian")   # re-confirm upserts
-        assert DD.all_confirmed(gov_session) == {"3173740": "millard.org"}
+        # Scoped to the district this test controls, NOT whole-table equality: `all_confirmed` reads
+        # the live table, so an operator confirming any real domain broke this (it did — 4220130 ->
+        # redbankvalley.net, 2026-07-26). It passed in CI, where the govdb is fresh, and failed only
+        # locally — a test that holds only on an empty database is testing the fixture.
+        assert DD.all_confirmed(gov_session).get("3173740") == "millard.org"
         with pytest.raises(ValueError):
             DD.confirm(gov_session, "3173740", "not a domain", actor="ian")
 
