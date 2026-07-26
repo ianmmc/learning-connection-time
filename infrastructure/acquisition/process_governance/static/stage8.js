@@ -42,9 +42,29 @@
     let ds;
     try { ds = await api("/api/aggregate/districts"); }
     catch (e) { list.innerHTML = `<div class="empty err">Couldn't load: ${esc(e.message)}<br/>Is Docker (governance DB) up?</div>`; return; }
-    if (!ds.length) { list.innerHTML = `<div class="empty">No districts are ready for gate@8 yet — a district appears once it has extracted facts and its gate@7 request loop is quiet.</div>`; return; }
+    // #660: a withheld district never appears in the queue, so a human could not reach the gate@8
+    // escape hatch (band_exclusion) that REQ-169 names as the way to clear a stale injected rep.
+    // Best-effort — a failure here must never blank the queue itself.
+    let withheld = [];
+    try { withheld = await api("/api/aggregate/withheld"); } catch (e) { withheld = []; }
+    if (!ds.length && !withheld.length) { list.innerHTML = `<div class="empty">No districts are ready for gate@8 yet — a district appears once it has extracted facts and its gate@7 request loop is quiet.</div>`; return; }
     list.innerHTML = "";
+    if (!ds.length) list.innerHTML = `<div class="empty">No districts are ready for gate@8 right now.</div>`;
     ds.forEach((d) => list.appendChild(districtRow(d)));
+    if (withheld.length) list.appendChild(withheldSection(withheld));
+  }
+
+  function withheldSection(ws) {
+    const wrap = document.createElement("div");
+    wrap.className = "q-withheld";
+    wrap.innerHTML = `<div class="q-left-head"><h3>Withheld · benchmark provenance (${ws.length})</h3></div>
+      <div class="q-batch-meta q-withheld-note">These hold at least one fact traced to an injected <code>gt://</code> representation, so a Stage-9 write is refused. Open one and strike the stale evidence at gate@8 (band exclusion) to clear it — the wall keys on the work, not the district.</div>`;
+    ws.forEach((d) => {
+      const row = districtRow(d);
+      row.classList.add("q-batch-muted");
+      wrap.appendChild(row);
+    });
+    return wrap;
   }
 
   function dispositionBadge(disp) {

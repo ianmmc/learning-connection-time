@@ -311,14 +311,18 @@ def freeze_draft(sess, draft_id: str, actor: str, expected_identity: str | None 
     included = [r for r in all_rows if r.included]
     included_ids = [r.district_id for r in included]
     overrides = _merged_overrides(included)
+    # ONE assembly, checked and then frozen — the draft-flow twin of the fix in /api/handoff/dispatch
+    # (#659). Checking build A and freezing build B let a change between them slip past the gate.
+    bundle = None
     if expected_identity:
-        pkg = H6.build_handoff_package(sess, included_ids, overrides=overrides,
-                                       verified_only=d.verified_only,
-                                       dispatch_type=d.dispatch_type)
-        if HND.package_identity(pkg) != expected_identity:
-            raise ValueError("release changed since you last opened this draft — reload before freezing")
+        bundle = H6.release_bundle(sess, included_ids, overrides=overrides,
+                                   verified_only=d.verified_only, dispatch_type=d.dispatch_type)
+        if HND.package_identity(bundle.package) != expected_identity:
+            raise ValueError("release changed since you last opened this draft — "
+                             "reload before freezing")
     doc, path = H6.dispatch_handoff(sess, included_ids, created_by=actor, overrides=overrides,
-                                    verified_only=d.verified_only, dispatch_type=d.dispatch_type)
+                                    verified_only=d.verified_only, dispatch_type=d.dispatch_type,
+                                    bundle=bundle)
     d.status = "dispatched"
     d.dispatched_at = utcnow()
     d.dispatched_by = actor
