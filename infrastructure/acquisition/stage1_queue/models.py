@@ -40,7 +40,11 @@ class Batch(gdb.Base):
     # #164: the SECOND batch axis (orthogonal to batch_type) — a batch is scope-pure by construction:
     # every district in it is discovered domain-scoped OR geo-scoped, never mixed. Benchmark is never geo.
     # Additive column via common/db.py _PRECIOUS_ALTERS.
-    discovery_scope: Mapped[str] = mapped_column(String, default="domain")   # domain | geo
+    # domain | geo. server_default mirrors the _PRECIOUS_ALTERS `DEFAULT 'domain'`: the model is
+    # NOT NULL, so without it a FRESH create_all() DB gets NOT NULL with no default and every raw
+    # text() INSERT omitting the column fails — invisible on a migrated DB, which has the default.
+    discovery_scope: Mapped[str] = mapped_column(String, default="domain", server_default="domain",
+                                                 nullable=False)
     status: Mapped[str] = mapped_column(String, default="draft")           # draft | approved | abandoned | reserving
     nces_year: Mapped[str] = mapped_column(String)
     created_at: Mapped[str] = mapped_column(String, default=utcnow)

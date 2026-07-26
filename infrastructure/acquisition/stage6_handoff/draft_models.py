@@ -38,7 +38,10 @@ class DispatchDraft(gdb.Base):
     # candidate. DERIVED at freeze from REPRESENTATION provenance (any benchmark_gt rep forces it),
     # with explicit human opt-in for a Council Lab A/B over production reps. NEVER derived from the
     # district's batch history — that is the district-identity bug epic #617 exists to retire.
-    dispatch_type: Mapped[str] = mapped_column(String, default="production")
+    # server_default mirrors the _PRECIOUS_ALTERS `NOT NULL DEFAULT 'production'` so a fresh
+    # create_all() DB matches a migrated one (see the note on Handoff.dispatch_type).
+    dispatch_type: Mapped[str] = mapped_column(String, default="production", server_default="production",
+                                               nullable=False)
     created_at: Mapped[str] = mapped_column(String, default=utcnow)
     created_by: Mapped[str] = mapped_column(String, default="human")
     # set together, atomically, at freeze (stage6_draft_store.freeze_draft)

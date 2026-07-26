@@ -32,6 +32,11 @@ class Handoff(gdb.Base):
     # #618: production | benchmark — the FROZEN dispatch's type, mirroring the draft it came from.
     # Also folded into handoff._identity, so the same reps dispatched benchmark vs production are
     # hash-distinct artifacts (the `verified_only` precedent).
-    dispatch_type: Mapped[str] = mapped_column(String, default="production")
+    # server_default, not just an ORM default: the _PRECIOUS_ALTERS migration adds this column as
+    # `NOT NULL DEFAULT 'production'`, so a fresh create_all() DB must emit the SAME server-side
+    # default or raw text() INSERTs that omit the column fail NOT NULL on fresh DBs only (the
+    # `run_kind` / `blinded` precedent). Deliberately UNindexed, like every _PRECIOUS_ALTERS column.
+    dispatch_type: Mapped[str] = mapped_column(String, default="production", server_default="production",
+                                               nullable=False)
     district_ids: Mapped[list] = mapped_column(JSON, default=list)
     council_ids: Mapped[list] = mapped_column(JSON, default=list)
