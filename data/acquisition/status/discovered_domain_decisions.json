@@ -126,5 +126,77 @@
     },
     "actor": "ian",
     "created_at": "2026-07-20T13:49:11Z"
+  },
+  {
+    "id": 118,
+    "district_id": "4220130",
+    "domain": "redbankvalley.net",
+    "decision": "confirm",
+    "reason": "",
+    "derived_in_batch": "batch_00025",
+    "tally_json": {
+      "redbankvalley.net": {
+        "n": 62,
+        "n_schools": 3
+      },
+      "mapquest.com": {
+        "n": 3,
+        "n_schools": 3
+      },
+      "pacodeandbulletin.gov": {
+        "n": 3,
+        "n_schools": 2
+      },
+      "homes.com": {
+        "n": 2,
+        "n_schools": 2
+      },
+      "pa.gov": {
+        "n": 2,
+        "n_schools": 2
+      },
+      "990s.foundationcenter.org": {
+        "n": 2,
+        "n_schools": 1
+      },
+      "newbethlehemboro.com": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "clarioncountyspromise.org": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "thecourierexpress.com": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "spcwater.org": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "winnie.com": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "pittsburghfoundation.org": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "thederrick.com": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "govinfo.gov": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "co.armstrong.pa.us": {
+        "n": 1,
+        "n_schools": 1
+      }
+    },
+    "actor": "ian",
+    "created_at": "2026-07-26T08:43:07Z"
   }
 ]
