@@ -126,10 +126,22 @@ def status_for_batch(batch: dict) -> dict:
     ids = [d["district_id"] for d in batch["districts"]]
     ondisk = {d["district_id"]: d for d in C3.find_districts(RAW_DIR)}   # id -> {dir, name, ...}
     cand_n = {did: candidate_count(dk["dir"]) for did, dk in ondisk.items()}
-    captured_on_disk = {did for did, dk in ondisk.items() if (dk["dir"] / "captures.json").exists()}
+    # A REDO BATCH IS BATCH-SCOPED (#647). `captures.json` existing means "this district has been
+    # captured at some point" — the right question for an ordinary batch, the WRONG one for a batch
+    # whose purpose is re-capturing districts that already hold artifacts: every district read `done`,
+    # the rollup read `todo: 0`, and stage3.js disables the Run control (`retriable > 0`), so the redo
+    # could not be started — while `reconcile(redo=True)` would have processed every one of them.
+    # Ordinary batches keep the disk rule byte-for-byte.
+    #
+    # ONE variable feeds BOTH the per-district status loop below and `done_ids`. They are the same
+    # question and must never be able to disagree: the first draft of this fix re-keyed only
+    # `done_ids` and the loop kept reading the disk set, so the status did not move at all.
+    captured = {did for did, dk in ondisk.items() if (dk["dir"] / "captures.json").exists()}
+    if BT.redoes_attempted(batch):
+        captured &= DS.dispatched_by_batch(batch["batch_id"], "capture", ids)
     # `done` = discovered, HAD links, and captured. (No-link districts never capture -> manual_flag_all.)
     done_ids = [d["district_id"] for d in batch["districts"]
-                if d["district_id"] in captured_on_disk and cand_n.get(d["district_id"], 0) > 0]
+                if d["district_id"] in captured and cand_n.get(d["district_id"], 0) > 0]
 
     # Capture FAILURES (timeout / Node crash) leave NO captures.json and write a `failed` capture event
     # with no stage number -- so without this they read as `todo`, indistinguishable from "not attempted"
@@ -170,7 +182,7 @@ def status_for_batch(batch: dict) -> dict:
         if cand_n.get(did, 0) == 0:          # discovered, no links -> terminal manual_flag_all
             districts.append({**row, "status": "manual_flag_all", "outcome": "manual_flag_all"})
             continue
-        if did not in captured_on_disk:
+        if did not in captured:
             if did in failed_caps:           # capture errored/timed out -> failed (retriable), not todo
                 note = failed_caps[did] or ""
                 st = "timed_out" if note.startswith("TimeoutExpired") else "failed"
@@ -297,7 +309,10 @@ def _dispatch_and_finish(todo: list, *, batch_id: str, actor: str, emit, _run,
         try:
             _capture_one(d, retryable_only=retryable_only, plan_sha=d.get("_plan_sha"), _run=_run)
             registry = DS.load()
-            outcome = C3.finish_district(d, registry)   # reads captures.json + upserts the DB cache
+            # batch_id stamps the stage=3 completion event (#647) — the dispatched/failed events
+            # above always carried it; without it here "did THIS batch capture this district" is
+            # unanswerable from gov_db, which is what forced the console onto the filesystem.
+            outcome = C3.finish_district(d, registry, batch_id)   # + upserts the DB cache
             DS.save(registry, export=False)
             results.append({"district_id": did, "name": d["name"], "outcome": outcome})
             emit("completed", district_id=did, name=d["name"], outcome=outcome)

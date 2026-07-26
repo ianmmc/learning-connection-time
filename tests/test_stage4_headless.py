@@ -103,10 +103,10 @@ class TestRunBatch:
             _seed_district(tmp_path, did, f"D{did}")
         orig = C4.finish_district
 
-        def boom(d, registry):
+        def boom(d, registry, batch_id=None):     # mirrors finish_district's #647 signature
             if d["district_id"] == "111":
                 raise RuntimeError("boom")
-            return orig(d, registry)
+            return orig(d, registry, batch_id)
 
         monkeypatch.setattr(C4, "finish_district", boom)
         summary = H4.run_batch(_batch("111", "222"))
@@ -239,3 +239,72 @@ class TestWinningSourcesTopLevelTolerance:
         (tmp_path / "processed.json").write_text('{"not": "a list"}')
         assert H4.winning_sources(tmp_path) == []
         assert H4._disk_doc_count(tmp_path) == 0
+
+
+# ------------------ #647: a redo batch's Stage-4 status is BATCH-scoped ------------------
+@pytest.mark.govdb
+def test_647_a_redo_batch_awaits_this_batchs_capture_before_processing(gov_session, monkeypatch, tmp_path):
+    """The Stage-4 twin, plus the part that is NOT just a copy: `captured` is this stage's UPSTREAM
+    GATE. Leaving it on disk state would tell a redo district it is ready to process while its
+    re-capture has not happened — reading `todo` when the honest answer is `awaiting_capture`, and
+    handing the operator a Run button that would process last round's artifacts."""
+    import contextlib
+    from sqlalchemy import text
+    from infrastructure.acquisition.common import db as gdb
+    from infrastructure.acquisition.common import district_status as DS
+    from infrastructure.acquisition.stage4_process import headless as H4
+    gdb.init_precious_schema()
+    monkeypatch.setattr(DS.gdb, "session_scope", lambda: contextlib.nullcontext(gov_session))
+
+    did = "ZZ647D"
+    ddir = tmp_path / "ZZ647D_Redo"
+    ddir.mkdir(parents=True)
+    (ddir / "captures.json").write_text("[]")
+    (ddir / "processed.json").write_text("[]")
+    (ddir / "candidates.json").write_text('{"candidates": [{"url": "http://z/a"}]}')
+    (ddir / "discovery.json").write_text(
+        '{"district_id": "ZZ647D", "name": "Redo4", "state": "ZZ", "domain": "z.org"}')
+    monkeypatch.setattr(H4, "RAW_DIR", tmp_path)
+    monkeypatch.setattr(H4, "stage2_complete", lambda root: [
+        {"district_id": did, "name": "Redo4", "state": "ZZ", "domain": "z.org", "dir": ddir}])
+
+    batch = {"batch_id": "batch_zz647d", "batch_type": "follow-up", "redo_attempted": True,
+             "districts": [{"district_id": did, "name": "Redo4", "state": "ZZ", "domain": "z.org"}]}
+
+    # nothing dispatched by THIS batch: gated on its own capture, not "todo", not "done"
+    assert H4.status_for_batch(batch)["districts"][0]["status"] == "awaiting_capture"
+
+    # this batch captured it -> now genuinely todo for processing
+    gov_session.execute(text(
+        "INSERT INTO state_event (district_id, stage_name, event_type, batch_id, created_at, actor) "
+        "VALUES (:d, 'capture', 'dispatched', :b, 'now', 'zz')"), {"d": did, "b": "batch_zz647d"})
+    gov_session.flush()
+    assert H4.status_for_batch(batch)["districts"][0]["status"] == "todo"
+
+    # …and once it has processed it too, done
+    gov_session.execute(text(
+        "INSERT INTO state_event (district_id, stage_name, event_type, batch_id, created_at, actor) "
+        "VALUES (:d, 'process', 'dispatched', :b, 'now', 'zz')"), {"d": did, "b": "batch_zz647d"})
+    gov_session.flush()
+    assert H4.status_for_batch(batch)["districts"][0]["status"] == "done"
+
+
+def test_647_stage4_finish_district_stamps_the_batch(monkeypatch, tmp_path):
+    """Every one of the 128 pre-existing stage=4 events carries batch_id NULL. This closes it."""
+    from infrastructure.acquisition.stage4_process import process_stage4 as C4
+    ddir = tmp_path / "ZZ647E_Stamp"
+    ddir.mkdir(parents=True)
+    seen = {}
+    monkeypatch.setattr(C4, "check_file_consistency", lambda d: [])
+    monkeypatch.setattr(C4, "process_district", lambda d: [])
+    monkeypatch.setattr(C4, "write_processed", lambda d, r: None)
+    monkeypatch.setattr(C4, "compute_outcome", lambda r: "processed_all")
+    monkeypatch.setattr(C4.DS, "record_stage", lambda *a, **k: seen.update(k))
+    monkeypatch.setattr(C4.CI, "cache_processed_records", lambda *a, **k: None)
+    district = {"district_id": "ZZ647E", "name": "Stamp4", "state": "ZZ", "dir": ddir}
+
+    C4.finish_district(district, {}, "batch_zz647e")
+    assert seen["batch_id"] == "batch_zz647e" and seen["stage"] == 4
+    seen.clear()
+    C4.finish_district(district, {})            # CLI path, no batch — unchanged
+    assert seen["batch_id"] is None

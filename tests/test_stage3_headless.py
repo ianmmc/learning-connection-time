@@ -281,3 +281,99 @@ class TestRetryPartial:
                              "err": "not_recovered (capture interrupted before completion)"}],
                            cand_urls=["http://111.org/a#top"])
         assert H3._retryable_failures(tmp_path / "111_d111") == 1
+
+
+# ------------------ #647: a redo batch's Stage-3 status is BATCH-scoped ------------------
+@pytest.mark.govdb
+def test_647_a_redo_batch_reports_todo_until_this_batch_has_captured(gov_session, monkeypatch, tmp_path):
+    """THE BUG, one stage on from #620's Stage-2 instance. `captures.json` existing means "captured at
+    some point" — wrong for a batch whose purpose is re-capturing districts that already hold
+    artifacts. All districts read `done`, the rollup read `todo: 0`, and stage3.js disables the Run
+    control (`retriable > 0`), so the redo could not be started — while `reconcile(redo=True)` would
+    have captured every one of them.
+
+    Scoping is by the DISPATCHED event, not the completion event's own batch_id: completion events
+    are only stamped from #647 onward (stage-3 carried it on 28 of 147 rows, stage-4 on 0 of 128), so
+    keying on the stamp alone would declare all 18 historical follow-up batches un-run and invite
+    re-paying for finished work. `dispatched` has always carried batch_id."""
+    import contextlib
+    from sqlalchemy import text
+    from infrastructure.acquisition.common import db as gdb
+    from infrastructure.acquisition.stage3_capture import headless as H3
+    from infrastructure.acquisition.common import district_status as DS
+    gdb.init_precious_schema()
+    monkeypatch.setattr(DS.gdb, "session_scope", lambda: contextlib.nullcontext(gov_session))
+
+    did = "ZZ647A"
+    ddir = tmp_path / "ZZ647A_Redo"
+    (ddir / "captures").mkdir(parents=True)
+    (ddir / "captures.json").write_text("[]")
+    (ddir / "candidates.json").write_text('{"candidates": [{"url": "http://x/a"}]}')
+    (ddir / "discovery.json").write_text(
+        '{"district_id": "ZZ647A", "name": "Redo", "state": "ZZ", "domain": "x.org"}')
+    monkeypatch.setattr(H3, "RAW_DIR", tmp_path)
+    monkeypatch.setattr(H3.C3, "find_districts", lambda root: [
+        {"district_id": did, "name": "Redo", "state": "ZZ", "domain": "x.org", "dir": ddir}])
+
+    batch = {"batch_id": "batch_zz647", "batch_type": "follow-up", "redo_attempted": True,
+             "districts": [{"district_id": did, "name": "Redo", "state": "ZZ", "domain": "x.org"}]}
+
+    rows = H3.status_for_batch(batch)["districts"]
+    assert rows[0]["status"] == "todo"          # was "done" — the button-hiding bug
+
+    # once THIS batch has dispatched it (and the artifact is on disk), it reads done
+    gov_session.execute(text(
+        "INSERT INTO state_event (district_id, stage_name, event_type, batch_id, created_at, actor) "
+        "VALUES (:d, 'capture', 'dispatched', :b, 'now', 'zz')"),
+        {"d": did, "b": "batch_zz647"})
+    gov_session.flush()
+    assert H3.status_for_batch(batch)["districts"][0]["status"] == "done"
+
+
+@pytest.mark.govdb
+def test_647_an_ordinary_batch_still_uses_the_disk_rule(gov_session, monkeypatch, tmp_path):
+    """The non-regression that matters most: a first-run batch keeps the disk rule byte-for-byte, so
+    the 11 pre-existing first-run/benchmark batches are untouched and no completed district reverts
+    to `todo` (which would invite re-paying for capture)."""
+    import contextlib
+    from infrastructure.acquisition.common import db as gdb
+    from infrastructure.acquisition.stage3_capture import headless as H3
+    from infrastructure.acquisition.common import district_status as DS
+    gdb.init_precious_schema()
+    monkeypatch.setattr(DS.gdb, "session_scope", lambda: contextlib.nullcontext(gov_session))
+
+    did = "ZZ647B"
+    ddir = tmp_path / "ZZ647B_Ordinary"
+    (ddir / "captures").mkdir(parents=True)
+    (ddir / "captures.json").write_text("[]")
+    (ddir / "candidates.json").write_text('{"candidates": [{"url": "http://y/a"}]}')
+    (ddir / "discovery.json").write_text(
+        '{"district_id": "ZZ647B", "name": "Ord", "state": "ZZ", "domain": "y.org"}')
+    monkeypatch.setattr(H3, "RAW_DIR", tmp_path)
+    monkeypatch.setattr(H3.C3, "find_districts", lambda root: [
+        {"district_id": did, "name": "Ord", "state": "ZZ", "domain": "y.org", "dir": ddir}])
+
+    batch = {"batch_id": "batch_zz647b", "batch_type": "first-run",
+             "districts": [{"district_id": did, "name": "Ord", "state": "ZZ", "domain": "y.org"}]}
+    assert H3.status_for_batch(batch)["districts"][0]["status"] == "done"   # no dispatched event needed
+
+
+def test_647_finish_district_stamps_the_batch_on_the_completion_event(monkeypatch, tmp_path):
+    """The writer half. The dispatched/failed events always carried batch_id; the COMPLETION event is
+    written inside finish_district, which never received the batch — so stage=3 events landed with
+    batch_id NULL (119 of 147) and stage=4 with 0 of 128. That gap is what made "did THIS batch do
+    this work" unanswerable from gov_db in the first place."""
+    from infrastructure.acquisition.stage3_capture import capture_stage3 as C3
+    ddir = tmp_path / "ZZ647C_Stamp"
+    ddir.mkdir(parents=True)
+    (ddir / "captures.json").write_text("[]")
+    seen = {}
+    monkeypatch.setattr(C3.DS, "record_stage", lambda *a, **k: seen.update(k))
+    monkeypatch.setattr(C3.CI, "cache_capture", lambda *a, **k: None)
+    district = {"district_id": "ZZ647C", "name": "Stamp", "state": "ZZ", "dir": ddir}
+
+    C3.finish_district(district, {}, "batch_zz647c")
+    assert seen["batch_id"] == "batch_zz647c" and seen["stage"] == 3
+    seen.clear()
+    C3.finish_district(district, {})            # the CLI path has no batch — unchanged
+    assert seen["batch_id"] is None
