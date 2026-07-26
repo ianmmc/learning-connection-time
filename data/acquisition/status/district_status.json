@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-26T07:03:18Z",
+  "last_updated": "2026-07-26T08:27:12Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -75,9 +75,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:02:52Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:26:59Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00030"
     },
     "0100810": {
       "name": "Coffee County",
@@ -509,9 +518,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:02:52Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:26:59Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "3315c46d2ce7"
+      "notes": "gate@1 approved batch_00030"
     },
     "0103390": {
       "name": "Tuscaloosa County",
@@ -727,9 +745,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:02:52Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:26:59Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00030"
     },
     "0200600": {
       "name": "Fairbanks North Star Borough School District",
@@ -804,9 +831,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:02:52Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:26:59Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00030"
     },
     "0400023": {
       "name": "Pinon Unified District (4390)",
@@ -971,9 +1007,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:02:52Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:26:59Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00030"
     },
     "0405820": {
       "name": "Page Unified School District #8  (4196)",
@@ -1300,9 +1345,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:02:52Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:26:59Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "f33790e63820"
+      "notes": "gate@1 approved batch_00030"
     },
     "0509000": {
       "name": "LITTLE ROCK SCHOOL DISTRICT",
@@ -1371,9 +1425,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:02:52Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:26:59Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "f33790e63820"
+      "notes": "gate@1 approved batch_00030"
     },
     "0512660": {
       "name": "SPRINGDALE SCHOOL DISTRICT",
@@ -1456,9 +1519,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:02:52Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:26:59Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00030"
     },
     "0513530": {
       "name": "VILONIA SCHOOL DISTRICT",
@@ -2495,9 +2567,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:02:52Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:26:59Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00030"
     },
     "0634320": {
       "name": "San Diego Unified",
@@ -2580,9 +2661,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:03:17Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:27:05Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00031"
     },
     "0802070": {
       "name": "Alamosa School District No. Re-11J",
@@ -3001,9 +3091,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:03:17Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:27:05Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00031"
     },
     "0902790": {
       "name": "New Haven School District",
@@ -3086,9 +3185,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:03:17Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:27:05Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00031"
     },
     "0904830": {
       "name": "Waterbury School District",
@@ -3171,9 +3279,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:03:17Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:27:05Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00031"
     },
     "1000080": {
       "name": "Appoquinimink School District",
@@ -3271,9 +3388,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:03:17Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:27:05Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00031"
     },
     "1100020": {
       "name": "Roots PCS",
@@ -3377,9 +3503,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:03:17Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:27:05Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "f33790e63820"
+      "notes": "gate@1 approved batch_00031"
     },
     "1201440": {
       "name": "ORANGE",
@@ -3462,9 +3597,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:03:17Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:27:05Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00031"
     },
     "1600001": {
       "name": "WEST BONNER COUNTY DISTRICT",
@@ -4691,9 +4835,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:03:17Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:27:05Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00031"
     },
     "1915840": {
       "name": "Knoxville Comm School District",
@@ -5226,9 +5379,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:03:18Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:27:12Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00032"
     },
     "2307320": {
       "name": "Lewiston Public Schools",
@@ -5311,9 +5473,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:03:18Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:27:12Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00032"
     },
     "2500587": {
       "name": "Old Sturbridge Academy Charter Public School",
@@ -5960,9 +6131,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:03:18Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:27:12Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00032"
     },
     "2600209": {
       "name": "Chandler Woods Charter Academy",
@@ -7505,9 +7685,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:03:18Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:27:12Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00032"
     },
     "3300030": {
       "name": "North Country Charter Academy",
@@ -10218,9 +10407,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:03:18Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:27:12Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "gate@1 approved batch_00032"
     },
     "3904519": {
       "name": "Amherst Exempted Village",
@@ -11899,9 +12097,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:03:18Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:27:12Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00032"
     },
     "4812640": {
       "name": "CAMERON ISD",
@@ -12971,9 +13178,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:03:18Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:27:12Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00032"
     },
     "5000425": {
       "name": "Mt. Abraham Unified School District #61",
@@ -13984,9 +14200,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-26T07:03:18Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-26T08:27:12Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00032"
     },
     "5900038": {
       "name": "Circle of Life Academy",
