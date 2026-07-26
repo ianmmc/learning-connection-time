@@ -835,3 +835,66 @@ rather than a fact about the representation).
   follow-up still lands as a **draft and passes gate@1** — `approve_batch` is called by
   `benchmark_batch.py` and nowhere else. No work; recorded so the next reader doesn't mistake the
   posture for a gate-mode feature.
+
+### 11.4 The mixed handoff — the concrete instance of the hole #619 opens
+
+Classifying all **39** frozen handoffs by the rep provenance of their contents (not by district
+identity) gives a strikingly clean picture, and one exception that changes the Phase-3 design:
+
+| class | n | detail |
+|---|---|---|
+| all reps benchmark | **2** | `a2bc80c004ca` (91 reps / 24 districts) + `cb8fabfc32ae` (8 reps / 3 districts) — together **exactly** batch_00000's 27 |
+| no benchmark reps | **36** | pure production, 0 benchmark districts each |
+| **mixed** | **1** | `f33790e63820` — 231 reps across **9** districts, of which **3 reps** in **3** districts are benchmark |
+
+That mixed artifact is a genuine production dispatch that pulled in three `gt://` curated-GT PDFs:
+
+```
+0503060:e6086818dc  gt://…/0503060_BENTONVILLE_SCHOOL_DISTRICT/School Start and Stop Times….pdf
+0509000:09ebf46708  gt://…/0509000_Little Rock/2025-2026-SCHOOL-CALENDAR-updated-09-19-2025.pdf
+1200180:52b4f372cd  gt://…/1200180_BROWARD/FY_25-26_Opening_and_Closing_School_Bell_Times.pdf
+```
+
+Its three extractions are `run_kind='production'` and hold **227 accepted facts** (25 / 1 / 201).
+None of the three districts has a `stage8_approval` row, so nothing has reached Stage 9 — the
+district-keyed wall is what has been holding them, which is precisely the wall #619 retires. Post-#619
+those 227 facts, sourced from hand-curated PDFs of deliberately mixed school years, become gate@8
+reviewable and Stage-9 writable. **This is the epic's own sequencing warning, instantiated in real
+data.**
+
+**Under Phase 2b's guard this dispatch could not be frozen today** — it would be refused, naming the
+three reps. It predates the guard.
+
+#### What it proves about grain
+
+- **Dispatch grain is too coarse.** Tagging `f33790e63820` as a benchmark dispatch would wall all
+  231 reps across all 9 districts — penalizing 6 legitimate production districts for 3 reps they had
+  nothing to do with. That is the "a guard whose unit is coarser than its trigger" harm from §10.3,
+  which is exactly why *freeze* refuses rather than coerces. A retroactive tag would coerce.
+- **The finest grain actually available is `(handoff × district)`.** `extraction` is one row per
+  `(handoff_hash, district_id)` and carries **no** rep link; `school_fact` links only to
+  `extraction_id`. So fact→rep is not traversable — but the frozen artifact holds each district's
+  `rec_key` list, so `(handoff, district) → reps → capture.source` is. That grain isolates the three
+  tainted districts and leaves the other six clean.
+
+> **Correction to §7's Phase 3.** The plan had `incorporate.py` ask *"did this district's approved
+> facts come from a benchmark **dispatch**?"* Dispatch grain gives the wrong answer for
+> `f33790e63820` in whichever direction it is tagged. The guard needs **two arms**:
+>
+> 1. `handoff.dispatch_type = 'benchmark'` — the stamped arm (#618). Covers a future Council Lab A/B
+>    composed entirely of *production* reps, which carries no rep-level signal at all.
+> 2. this `(handoff, district)`'s reps carry benchmark provenance — the **derived** arm, read from the
+>    frozen artifact. Covers every historical dispatch and correctly isolates the mixed one.
+>
+> Neither arm is redundant: arm 1 cannot see the mixed case, arm 2 cannot see an all-production-rep
+> benchmark dispatch.
+
+#### Consequence: Phase 2e's retroactive tagging is unnecessary — and would have been wrong
+
+The plan called for backfilling `dispatch_type='benchmark'` onto batch_00000's historical handoffs.
+Arm 2 **derives** the same answer for all 39 with no mutation, and derivation is the better posture
+here for a specific reason: the two pure-benchmark artifacts are **immutable frozen files that predate
+the `dispatch_type` field**, so stamping the DB row would leave the row and its own artifact
+disagreeing — with the artifact, which is the auditable record, saying nothing. Deriving keeps the
+receipt authoritative (`feedback-derive-provenance-from-receipts`). Verified: arm 2 classifies all 39
+correctly, including the mixed one at district grain (3 tainted of 9).
