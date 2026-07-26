@@ -753,3 +753,85 @@ Per the §10.2 lesson, a fitness function nobody has falsified is decoration.
 derivation or a declaration.* Here the two differ only for batches that already exist — and that is
 exactly the population a derivation silently reclassifies. The declaration costs one nullable column
 and buys a guarantee that no historical batch changes behavior.
+
+---
+
+## 11. Re-anchoring the concept (Ian, 2026-07-25) — what it confirmed, and the gap it exposed
+
+Mid-epic, Ian restated the whole picture from first principles: NCES CCD gives the district list; the
+goal is banded daily instructional minutes in `lct_db`; batches (Stages 1-4) and dispatches (Stages
+6-7) exist as **human-factors constructs** — working in sets rather than one district at a time, so
+supervision attention and approval clicks scale during the high-supervision phase of the ramp-up; and
+the *type* axis was then added as a third construct, **handling instructions for the pipeline**, so
+that testing, measuring and training could happen without experimental output reaching `lct_db`.
+
+That framing is worth recording verbatim in spirit because **it earned its keep**: it confirmed most
+of the design and falsified one shipped assumption.
+
+### 11.1 What it confirmed
+
+- Benchmark's defining property is *"simply isn't on a pathway to get integrated into lct_db"* — the
+  terminus model (§1), not a per-district wall.
+- *"A benchmark dispatch can draw from representations that emerged from any batch type … the two
+  constructs are conceptually related but functionally independent."* This is exactly why Phase 2b
+  keys the freeze guard on **representation** provenance rather than district identity, and why the
+  plan's first draft was wrong (§3, property 3).
+- Non-preclusion in both directions — the four mobility properties, all landed.
+- Follow-up's purpose as *"collect information a first run wasn't able to surface"* — literally
+  `build_followup_batch`'s untried-schools-first / widen-queries shaping (#160/#162).
+
+### 11.2 The gap it exposed — the benchmark-BATCH terminus has no enforcement
+
+Filed as **#640**. #618's freeze guard keys on `capture.source = 'benchmark_gt'`, a value written
+**only** by the one-shot GT injector. A benchmark batch composed through Phase 2c's targeted composer
+captures real URLs, which Node records as `'discovered'` / `'emergent'` — indistinguishable at rep
+grain from first-run output. Measured live: `discovered 1450 · emergent 206 · benchmark_gt 95 ·
+manual 1`.
+
+> **Correction to §7's Phase 2d.** The plan claimed the benchmark-batch terminus would be *"enforced
+> by 2b's forcing rule, so the terminus and the type derivation are ONE rule, not two that can
+> disagree."* That is true **only for the injected corpus**. The planned belt
+> (`batch_guard.assert_runnable` refusing Stage-6+ for a benchmark batch) cannot cover it either:
+> dispatch composition selects `record` rows across districts and is **not batch-scoped at all**, so
+> there is no batch for that guard to see. The terminus is, today, unenforced for anything but
+> batch_00000.
+
+Two constraints make it bigger than a Phase-2d line item, and both are the kind of thing that only
+shows up by reading the write path rather than the read path:
+
+1. **It cannot be a DB-only column.** `cache_ingest.upsert_capture_rows` does
+   `DELETE FROM capture WHERE district_id=:d` then re-inserts from `captures.json`, and the
+   cross-stage cache is regenerable from disk by design. Provenance not present *on the receipt* is
+   erased by the next re-ingest — the "DB is the working store, JSON files are the receipts"
+   invariant, cutting the other way for once. `captures.json` is written by **Node**, which has no
+   notion of a batch (`grep batch_id|batchId capture_discovery.mjs` → nothing). So it is a
+   cross-language change, sequenced into #623's seam.
+2. **One representation can have MORE THAN ONE producing batch.** `capture`'s PK is
+   `(district_id, hash)` and the hash derives from the URL, so a district in both a benchmark and a
+   production batch that captures the same page has **one row, two producers**. A single `batch_id`
+   column is semantically wrong from the start.
+
+**Decided semantics (Ian):** a rep is walled iff it has producers and **every** producer is a
+benchmark batch. Benchmark-only → walled; benchmark + production → allowed; no producers recorded →
+allowed (every pre-stamp row, today's behavior). Rejected: *any benchmark producer walls it* (a
+production batch gets penalized because an experiment found the same page — the #617 district-identity
+pattern, one grain down) and *first producer wins* (the answer depends on run order, an accident
+rather than a fact about the representation).
+
+### 11.3 Two clarifications recorded, no work
+
+- **The dispatch axis stays TWO-valued** (`production | benchmark`), confirmed with Ian. His
+  re-anchoring described three types for *both* constructs; in code, first-run vs follow-up carries
+  no distinct dispatch behavior and is derivable from a district's dispatch history, so a third value
+  would be a label with no behavior — the `batch_type`-string-equality anti-pattern in pure form, and
+  against the derive-over-stamp convention. The asymmetry between the constructs is therefore
+  deliberate, and `common/benchmark.py` says so.
+- **"Follow-up is more automated by default"** describes where the *decision* sits, not a gate
+  setting. Verified: `gate_mode` is keyed by gate alone (`'default' | 'gate@1'..'gate@8'`), with no
+  type dimension, so a gate is manual-or-auto for everything passing through it. What is genuinely
+  automated for a follow-up is its **composition** — the 5→1 and 7→1 back-edges execute a targeting
+  decision a human already approved at gate@5/gate@7, where a first run needs a human to set and
+  review a stratified draw of unknown districts. Precise detail worth knowing: an escalation-composed
+  follow-up still lands as a **draft and passes gate@1** — `approve_batch` is called by
+  `benchmark_batch.py` and nowhere else. No work; recorded so the next reader doesn't mistake the
+  posture for a gate-mode feature.
