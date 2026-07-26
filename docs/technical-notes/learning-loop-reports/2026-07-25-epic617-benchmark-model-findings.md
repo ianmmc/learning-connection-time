@@ -754,6 +754,31 @@ derivation or a declaration.* Here the two differ only for batches that already 
 exactly the population a derivation silently reclassifies. The declaration costs one nullable column
 and buys a guarantee that no historical batch changes behavior.
 
+### 10.6 Phases 0-2c merged — and the one defect that only a fresh DB could show (commit `f5d09b0`, PR #641 = `9865666`)
+
+Phases 0-2c landed on `main` 2026-07-26. One post-hoc fix was needed, and it is worth recording
+because **every local gate was green when it shipped**: `dispatch_type` (Phase 2b) declared an
+ORM-side `default="production"` but no `server_default`, so on a **fresh** DB — where `create_all()`
+builds the table from the model rather than the `_PRECIOUS_ALTERS` string — the column landed
+`NOT NULL` with no server default, and raw `text()` INSERTs omitting it failed. 352 govdb green
+locally, 1 failed + 4 errors on CI, same commit.
+
+The durable invariant now lives in `PIPELINE_GOVERNANCE_AND_STATE.md` §"a `_PRECIOUS_ALTERS` column's
+DDL must be declared TWICE, identically," enforced DB-free by
+`tests/test_precious_alters_parity.py`. Falsified against both real defects before landing, per §10.2.
+
+**Two lessons that generalize past this epic:**
+
+1. **A migrated DB cannot verify a schema change; only a fresh one can.** The local DB had already
+   run the ALTER, so it tested the path that was *not* broken. Reproducing meant standing up a
+   throwaway governance DB — after which the defect was immediate and obvious. Any new precious
+   column should be verified that way before the PR, not after CI says so.
+2. **The same pass found a second, older instance** — `batch.discovery_scope` (#164), the same class
+   in the other direction (the ALTER declares `DEFAULT` without `NOT NULL`; the model declares
+   `NOT NULL`). It was masked twice: its test is **skipped on CI** (it needs the LCT DB) and passes
+   locally on a migrated DB. *A defect whose only two observation points are both blind stays
+   invisible indefinitely* — which is the argument for the fitness function over two point fixes.
+
 ---
 
 ## 11. Re-anchoring the concept (Ian, 2026-07-25) — what it confirmed, and the gap it exposed

@@ -340,6 +340,22 @@ and `paths.REVIEW_DB` have since been **retired** (#126) — the governance Post
   `calibration_event` was registered nowhere in the live app. STAGE-level precious models (like
   `Label`/`ClusterSplit` above) stay each caller's own responsibility; `common/` still doesn't import a
   stage module.
+- **INVARIANT — a `_PRECIOUS_ALTERS` column's DDL must be declared TWICE, identically.**
+  `init_precious_schema()` builds the schema by **two different paths** and they must agree:
+  a **migrated** DB (any long-lived deployment) already has the table, so `create_all()` skips it and the
+  raw `ALTER TABLE … ADD COLUMN` is what adds the column, carrying whatever `NOT NULL` / `DEFAULT` that
+  *string* declares; a **fresh** DB (CI's Postgres service container, a new clone) gets the table from the
+  **model**, and the `ADD COLUMN IF NOT EXISTS` is then a no-op.
+  A SQLAlchemy `default=` is **ORM-side only — it never reaches the DDL**, and `Mapped[str]` (non-Optional)
+  independently infers `NOT NULL`. So a column whose ALTER says `NOT NULL DEFAULT x` but whose model says
+  only `default=x` lands `NOT NULL` with **no server default** on a fresh DB, and every raw `text()` INSERT
+  omitting it fails — **on fresh DBs only**, i.e. green locally and red on CI. Always pair the ORM default
+  with `server_default=` (the `extraction.run_kind` / `calibration_event.blinded` precedent; the latter's
+  comment states the reason outright). Enforced by `tests/test_precious_alters_parity.py`, which parses
+  `_PRECIOUS_ALTERS` and fails on any defaulted column whose model lacks a matching `server_default`
+  (DB-free on purpose, so the class is caught in the main suite before the `govdb` job runs). Discovered
+  2026-07-26 when #618's `dispatch_type` broke CI on PR #641; the same defect was latent in
+  `batch.discovery_scope` (#164), masked twice over — skipped on CI, green locally on a migrated DB.
 
 ### ✅ As built
 - **103b — `build_signals.ingest()`** runs in one `session_scope` transaction (atomic re-ingest).

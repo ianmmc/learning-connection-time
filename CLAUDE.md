@@ -135,16 +135,16 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-25): epic #617 is IN FLIGHT on branch `feat/617-phase0-1-findings-and-621`
-— NOT merged.** Six commits (`b89ef35`…`a9843ec`). Everything before it — REQ-164 receipts + the Stage 9
-campaign (38/38 incorporated), #626/#627, and the pre-merge `/code-review max` sweep that filed and closed
-#630-639 — is on `main` as PR #629 (`a26aee9`).
+**Current status (2026-07-26): epic #617 phases 0-2c are MERGED to `main` (PR #641 = `9865666`).**
+Working tree clean, no feature branch open — branch `feat/617-phase0-1-findings-and-621` is merged and
+deleted. Everything before it (REQ-164 receipts, the Stage 9 campaign 38/38, #626/#627, the #630-639
+review sweep) is on `main` as PR #629 (`a26aee9`).
 
 **#617 in one line: a guard mirrored across five sites asked "has this district EVER been in a
 `batch_type='benchmark'` batch", `batch_district` rows are never deleted, so all 27 batch_00000 districts
 were refused a Stage-9 write FOREVER — including correct minutes from later honest production runs.** The
-fix is a grain change: a run's handling type is a property of **the work**, never of the district. Landed
-so far: **#621** (the `batch_00000` literal), **Phase 2a** (five copies of the benchmark predicate → one
+fix is a grain change: a run's handling type is a property of **the work**, never of the district. Landed:
+**#621** (the `batch_00000` literal — closed), **Phase 2a** (five copies of the benchmark predicate → one
 home, `common/benchmark.py`), **#618/Phase 2b** (`dispatch_type` first-class, folded into
 `handoff._identity`, gate@6 REFUSES a production freeze that selected a benchmark-provenance rep), and
 **Phase 2c** (`batch.redo_attempted` as a DECLARED lever + operator-reachable targeted composers for
@@ -154,7 +154,14 @@ Read `docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-mo
 `PIPELINE_GOVERNANCE_AND_STATE.md` **§13**; spec in `docs/REQUIREMENTS.yaml` **REQ-169** (`in_progress`)
 + **REQ-170**. Governing lesson still standing: **the product is the pipeline, not the district**.
 
-**Next (RESUME HERE — 2026-07-25): Phase 3 / #619 — provenance-scope the guards, with a TWO-ARM
+**Schema invariant added 2026-07-26 (bit us on PR #641):** a `_PRECIOUS_ALTERS` column's DDL must be
+declared TWICE, identically — a SQLAlchemy `default=` never reaches the DDL, so a fresh `create_all()`
+DB diverges from a migrated one and fails raw `text()` INSERTs **on CI only**. Always pair it with
+`server_default=`. Enforced DB-free by `tests/test_precious_alters_parity.py`; rationale in
+`PIPELINE_GOVERNANCE_AND_STATE.md`. **Verify a new precious column against a THROWAWAY governance DB —
+the local migrated one tests the path that isn't broken.**
+
+**Next (RESUME HERE — 2026-07-26): Phase 3 / #619 — provenance-scope the guards, with a TWO-ARM
 predicate.** Real data forced this design change, so do not implement #619 as originally written:
 classifying all 39 frozen handoffs by REP provenance found 2 pure benchmark, 36 pure production, and **1
 MIXED** (`f33790e63820` — a genuine production dispatch holding 3 `gt://` curated PDFs across 3 of its 9
@@ -164,6 +171,11 @@ Dispatch grain is wrong in BOTH directions there. Build in `common/benchmark.py`
 reps carry benchmark provenance (DERIVED from the frozen artifact — `extraction` is one row per
 `(handoff_hash, district_id)` with no rep link, so this is the finest grain that exists). Neither is
 redundant. Details: findings report **§11.4** + the comment on #619.
+**Start with a full-surface grep, not the three guards #619 names** — this epic undercounted twice
+(§2's five guard *spellings* vs three sites; §3's five redo-lever sites vs three), both times from
+grepping only the sites the issue listed. **A fourth site re-keys here:** the mode-stability early-exit,
+whose benchmark exemption inverts at #619 (§10.4) — `test_early_exit_exempts_a_district_in_both_a_
+benchmark_and_a_production_batch` is the deliberate pre-#619 pin that flips.
 **Then, in order:** the gate@7 terminus (`aggregate_districts` rescoped) · **#625** (REQ sync — REQ-117/151/162
 already revised; `COUNCIL_LAB_DESIGN.md:54` "the yardstick GROWS" still contradicts CLAUDE.md and is wrong)
 · **#622/#623** (done-marker→gov_db inversion; 6 steps, one artifact per PR) · **#640** (durable rep-grain
@@ -175,17 +187,27 @@ handoffs — arm 2 derives it, and stamping would leave the two pure-benchmark a
 field) disagreeing with their own immutable receipts.
 **Outstanding:** Playwright-verify the gate@6 + gate@1 console changes (static-source-pinned only so far).
 Also open, unrelated: **#628** (targeted/O(changed) LCT recompute + `--dry-run`).
+**New 2026-07-26, deferred by design (epic #128):** **#642** (content-derived document vintage — a
+governing-year signal from PDF typography; `pdfplumber` already reads font size/weight at Stage 4 and we
+discard it, so the #241 validity floor's `content_school_year` never opens the document) and **#643** (the
+Stage-3 render-facts probe, the HTML half — rides #623's Node seam). **Do #642 first**: retroactive, no
+cross-language change, measurable now against the 95 `benchmark_gt` reps + 440 gate@5 labels. Both pay
+twice — Stage-5 suppression AND REQ-026 vintage accuracy (a content-scoped year would have fixed
+Dickinson at the source instead of needing #626's `human_vouched`). **Open policy question they surface,
+unresolved:** should a stale injected rep be *release-eligible at all* after a fresh run — suppressed
+upstream at Stage 5 rather than caught at gate@6? A gate@5 policy call (§9); #620 walks into it.
 Banked routing: #112 → epic #128. Parked: #475/#476, #103/#80 (+#110); the SEA integration follow-up
 (~9 states, 2026-07-20/21 campaign) is an opt-in backlog item — ask Ian before filing.
 Documented-in-code deferrals: `_satisfied_bands_now` batching (revisit on volume); the #522 guardrail's
 per-rep keyword/table attribution (needs a server payload change); JS behavioral tests (no JS harness —
 static-source pins only); the remediation-receipt exception is not STAGE-scoped (30-day expiry since
 2026-07-20); attribution v1 reads each district's LATEST candidate plan (documented in-module).
-Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config core.hooksPath
-.githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not
-integration"` (expect **1987** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **352**, Postgres
-up) + `pytest tests/test_*_integration.py` (expect **252** pass, 149 skipped, live DB — the old "249" was
-stale doc drift, confirmed by stashing the branch) + `cd infrastructure/scraper && npm test` (expect **90**).
+Resume-essentials (all five verified green on `main` at `9865666`, 2026-07-26): `pip install -e .` →
+Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) →
+`lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **1990** pass, 1
+skipped [pyarrow]) + `pytest -q -m govdb` (expect **352**, Postgres up) + `pytest
+tests/test_*_integration.py` (expect **252** pass, 149 skipped, live DB) + `cd infrastructure/scraper &&
+npm test` (expect **90**).
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (Huntington
 `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters).
 Stage 9 incorporate CLI: `python3 -m infrastructure.acquisition.stage9_incorporate <did> [--dry-run]`;
