@@ -152,21 +152,24 @@ guard, re-keyed at 8 sites), **#644** (two of three freeze paths were entirely u
 **#134** (request-execution walls → directive provenance), **#647** (Stage 2/3/4 console status was
 district-grain, so a redo batch hid its own Run control).
 
-**READ FIRST: #662 — it blocks #620, and it needs Ian's decision.** #619 re-keyed the Stage-9 wall
+**#662 is DECIDED AND FIXED (PR #663) — #620 is unblocked once that merges.** #619 re-keyed the Stage-9 wall
 to provenance, but the GRAIN moved and the SCOPE did not ("ever" vs "this run"), so two layers in
 FRONT of the wall are still district-permanent and an honestly re-run district *still* cannot
 incorporate. Measured on the live DB: all **25 of 25** #620 districts are walled by the gate@8 queue
 predicate TODAY (it asks "has this DISTRICT ever produced a `benchmark_gt` fact" over append-only
 tables — permanently true), and `merge_fact_runs` gives the OLD benchmark facts the win (**957 of
 957** carry `school_year=NULL`, so the year-supersede rule never engages and earliest-run wins). Only
-Stage 9's own wall is receipt-scoped and correct. My rec: reclassify the historical benchmark
-extractions' `run_kind` + add provenance precedence to the merge (caveat: it mutates precious rows,
-and must exclude the mixed handoff whose production reps are genuine).
+Stage 9's own wall is receipt-scoped and correct. Ian decided **(c) + (b)** 2026-07-26: reclassify the 30 historical harness
+extractions to `run_kind='benchmark'` (a receipted, idempotent, refuse-on-mixed migration) + a
+provenance axis in `merge_fact_runs` ahead of the year axis. The "must exclude the mixed handoff"
+caveat was measured FALSE — 0 extractions are mixed; the mixing is at handoff grain. 0 of the 27
+carry a gate@8 approval or a Stage-9 event, so no frozen judgment was disturbed. Also decided:
+queue-predicate shape left alone (#644 sealed the source), #617 closes at **25/27** (#646 follows),
+and `gt://` reps are BADGED at gate@5/6, never filtered.
 
 **Open PRs — all 6/6 CI green, none merged:**
-`#663` test(662) the benchmark-rerun acceptance test — the property declared since §7a, executable
-for the first time and FAILING at two of three layers (both strict `xfail`, so the #662 fix cannot
-land quietly) ·
+`#663` **#662 — the acceptance test, THEN the fix** (two commits, in that order): the property
+declared since §7a, first made executable and failing, then the (c)+(b) fix that makes it pass ·
 `#664` fix(617) guard scoping (#651/#653/#654) — where `run_kind='production'` belongs and where it
 would fail OPEN; arm 2 added to the mode-stability disabler; the fail-closed catch narrowed to
 SQLSTATE 42P01 ·
@@ -178,11 +181,11 @@ Playwright-verified, 26 withheld / 47 queued.
 
 **Next (RESUME HERE — 2026-07-26): (A) review + merge #663-#667.** They are independent of each other
 and of #662; #664/#665 touch `common/benchmark.py` so expect a trivial conflict if merged out of
-order. · **(B) DECIDE #662**, then make PR #663's two strict xfails pass — they will flip to XPASS
-(reported as failure), which is the signal the fix is complete. · **(C) #620 — the epic's ONLY
+order. · **(B) — done; #662 is fixed in #663.** · **(C) #620 — the epic's ONLY
 validation, not its last chore.** `batch_00030/31/32` (25 districts) are approved,
-`redo_attempted=true`, **Stage 2 complete**; Stage 3 is next but **must not start until (B)
-resolves** — anything captured now feeds a merge that cannot produce a writable closing argument.
+`redo_attempted=true`, **Stage 2 complete**; Stage 3 is next and is UNBLOCKED once #663 merges
+(run `reclassify_benchmark_extractions --dry-run` then `--apply` against the live DB first — it is
+not run automatically).
 Ian drives the console; prepare and verify, don't execute stage runs. Prove ONE district end-to-end,
 then 24, then **#646** for 27/27. *Falsifier: if any district needs a hand-edit or a re-adjudicated
 gate@8 call, the mechanism is wrong — fix the pipeline, not the district.* · **(D) structural:**

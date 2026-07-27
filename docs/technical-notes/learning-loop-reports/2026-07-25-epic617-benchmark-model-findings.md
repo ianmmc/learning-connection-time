@@ -1549,3 +1549,54 @@ level up: a claim about the code, plausible on its face, that had never been che
 **The generalization now has a home rather than a lesson.** §10.19 observed that the epic guarded a
 rule instead of a class; `test_one_home_fitness.py` is that observation made executable, and adding a
 consolidated rule to `common/` without a row in it is now a visible omission.
+
+### 12.5 #662 resolved — decided, and two of its own claims corrected (2026-07-26)
+
+**Decision (Ian): (c) + (b).** Reclassify the historical harness extractions out of the production
+pool; add provenance precedence to `merge_fact_runs` as the durable forward rule. Four sub-decisions:
+`run_kind='benchmark'` as a third value (not a reuse of `probe`, which means a council-VARIANT
+measurement); the queue predicate's *shape* left alone because #644 sealed the source that mints such
+facts; #617 closes at **25/27** with #646 following; and `gt://` reps **badged** at gate@5/6, never
+filtered.
+
+**Option (a) withdrawn — for a worse reason than "it doesn't scale."** #662 offered "strike them at
+gate@8 (`band_exclusion`)" as correct-in-shape but ~957 human decisions. Measured, it is not correct
+in shape either: `merge_fact_runs` collapses to ONE row per `(band, school)` *before* exclusions are
+applied (closing_argument.py:220), and exclusion filters by `(band, norm_school)` with no fallback to
+the runner-up. Striking the stale winner therefore **deletes the school from the band** — the fresh
+reading never appears. `band_exclusion` remains what #257 built it for: a per-case hatch for a school
+that genuinely shouldn't count.
+
+**Two of this report's own claims were wrong, both stated at the wrong grain:**
+
+1. §10.8 and #662's option (c) both warned the sweep "must exclude the mixed handoff whose production
+   reps are genuine." **Zero extractions are mixed.** `f33790e63820` is mixed at HANDOFF level (9
+   districts, 3 holding `gt://` reps); every individual extraction is cleanly all-injected or
+   all-discovered. The caveat that made (c) look risky simply does not exist at extraction grain.
+2. The implied auditability risk — reclassifying rows underneath signed decisions — is also absent:
+   **0** of the 27 carry a `stage8_approval` and **0** have any Stage-9 event.
+
+Both were resolvable only by querying. Neither was resolvable by reading the code, which is how they
+survived three drafts of this document.
+
+**Two defects that only running the thing surfaced.** They belong here because both are the same
+lesson as §10.20 in miniature — a thing that looked right and had never been executed:
+
+* The migration's `--dry-run` **wrote receipts**. Receipts are datetime-stamped, so three rehearsals
+  left 81 files across 27 districts and the manifest of a real change would have been
+  indistinguishable from the litter of the rehearsals. Now a dry run writes nothing at all.
+* The gate@5 `gt://` badge shipped **invisible**. The flag was added to `/api/tree`; the console
+  renders `/api/stage5/districts`, whose record projection is an explicit ALLOWLIST that silently
+  dropped it. A payload test against `/api/tree` passed. Playwright against the real console found it
+  in one run. (A third, smaller one: a "receipt landed in the wrong district's directory" alarm was my
+  own error — two `find` invocations returned different orderings and I compared a path from one
+  against a payload from the other. 81/81 were correct.)
+
+**Honest scope on (b).** Post-(c), and with #644 having closed all three freeze paths, **no production
+code path can reach the provenance axis** — the historical rows are relabelled and gate@6 refuses a
+production freeze holding an injected rep. It is defence in depth: the merge's correctness no longer
+depends on that guard being perfect, and a future injection mechanism (a new GT corpus, a different
+`capture.source`) would otherwise re-create #662 silently. Per §10.19's standard the case is
+constructed and tested directly rather than asserted as a future possibility.
+
+**Phase C is unblocked.** Stage 3 on `batch_00030/31/32` can start once PR #663 merges.
