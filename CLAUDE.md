@@ -135,107 +135,105 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-26): epic #617 Phase 3 is on branch `feat/619-provenance-scoped-benchmark-guards`
-— PR #648 is OPEN, 6/6 CI green, awaiting Ian's review. NOT merged.** Base `main` = `9865666` (PR #641,
-phases 0-2c). Working tree clean, branch pushed, `HEAD` == origin at `be09f57`. Everything before #641
-(REQ-164 receipts, the Stage 9 campaign 38/38, #626/#627, the #630-639 review sweep) is on `main` as PR
-#629 (`a26aee9`).
+**Current status (2026-07-26): epic #617 Phase 3 MERGED to `main` as PR #648 (`af1ce77`). Five PRs
+are OPEN and green, awaiting Ian's review — and ONE DECISION (#662) blocks the epic's only
+validation.** Base `main` = `af1ce77`. Everything before it: PR #641 (`9865666`, phases 0-2c), PR
+#629 (`a26aee9`, REQ-164 receipts + the Stage 9 campaign 38/38).
 
 **#617 in one line: a guard mirrored across five sites asked "has this district EVER been in a
-`batch_type='benchmark'` batch", `batch_district` rows are never deleted, so all 27 batch_00000 districts
-were refused a Stage-9 write FOREVER — including correct minutes from later honest production runs.** The
-fix is a grain change: a run's handling type is a property of **the work**, never of the district. Landed:
-**#621** (the `batch_00000` literal — closed), **Phase 2a** (five copies of the benchmark predicate → one
-home, `common/benchmark.py`), **#618/Phase 2b** (`dispatch_type` first-class, folded into
-`handoff._identity`, gate@6 REFUSES a production freeze that selected a benchmark-provenance rep), and
-**Phase 2c** (`batch.redo_attempted` as a DECLARED lever + operator-reachable targeted composers for
-follow-up/benchmark batches — mobility properties 1 and 2). All four mobility properties now hold.
-**On PR #648 (Phase 3, unmerged):** **#619** (the TWO-ARM provenance guard — stamped `dispatch_type`
-OR reps derived from the frozen receipt — re-keyed at 8 sites, not the 3 the issue named), **#644**
-(two of three freeze paths were entirely unguarded; the only thing covering them was the district
-identity #134 was about to remove), **#134** (request-execution walls → directive provenance), **#647**
-(Stage 2/3/4 console status was district-grain, so a redo batch hid its own Run control), and #620's
-three composed batches. Behaviour-preserving today, measured: membership and provenance agree on all
-83 districts with production facts; gate@8 admits the identical 56. Divergence starts with #620.
-Read `docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md` first
-(evidence + §10/§11 log of what the plan got wrong, §12 the Phase 3 implementation log); durable architecture in
-`PIPELINE_GOVERNANCE_AND_STATE.md` **§13**; spec in `docs/REQUIREMENTS.yaml` **REQ-169** (`in_progress`)
-+ **REQ-170**. Governing lesson still standing: **the product is the pipeline, not the district**.
+`batch_type='benchmark'` batch", `batch_district` rows are never deleted, so all 27 batch_00000
+districts were refused a Stage-9 write FOREVER — including correct minutes from later honest
+production runs.** The fix is a grain change: a run's handling type is a property of **the work**,
+never of the district. Landed on `main`: **#621** · **Phase 2a** (five copies of the benchmark
+predicate → one home, `common/benchmark.py`) · **#618/2b** (`dispatch_type` first-class, in
+`handoff._identity`, gate@6 REFUSES a production freeze holding benchmark reps) · **Phase 2c**
+(`batch.redo_attempted` DECLARED + targeted composers) · and now **#619** (the TWO-ARM provenance
+guard, re-keyed at 8 sites), **#644** (two of three freeze paths were entirely unguarded),
+**#134** (request-execution walls → directive provenance), **#647** (Stage 2/3/4 console status was
+district-grain, so a redo batch hid its own Run control).
 
-**Schema invariant added 2026-07-26 (bit us on PR #641):** a `_PRECIOUS_ALTERS` column's DDL must be
-declared TWICE, identically — a SQLAlchemy `default=` never reaches the DDL, so a fresh `create_all()`
-DB diverges from a migrated one and fails raw `text()` INSERTs **on CI only**. Always pair it with
-`server_default=`. Enforced DB-free by `tests/test_precious_alters_parity.py`; rationale in
-`PIPELINE_GOVERNANCE_AND_STATE.md`. **Verify a new precious column against a THROWAWAY governance DB —
-the local migrated one tests the path that isn't broken.**
+**#662 is DECIDED AND FIXED (PR #663) — #620 is unblocked once that merges.** #619 re-keyed the Stage-9 wall
+to provenance, but the GRAIN moved and the SCOPE did not ("ever" vs "this run"), so two layers in
+FRONT of the wall are still district-permanent and an honestly re-run district *still* cannot
+incorporate. Measured on the live DB: all **25 of 25** #620 districts are walled by the gate@8 queue
+predicate TODAY (it asks "has this DISTRICT ever produced a `benchmark_gt` fact" over append-only
+tables — permanently true), and `merge_fact_runs` gives the OLD benchmark facts the win (**957 of
+957** carry `school_year=NULL`, so the year-supersede rule never engages and earliest-run wins). Only
+Stage 9's own wall is receipt-scoped and correct. Ian decided **(c) + (b)** 2026-07-26: reclassify the 30 historical harness
+extractions to `run_kind='benchmark'` (a receipted, idempotent, refuse-on-mixed migration) + a
+provenance axis in `merge_fact_runs` ahead of the year axis. The "must exclude the mixed handoff"
+caveat was measured FALSE — 0 extractions are mixed; the mixing is at handoff grain. 0 of the 27
+carry a gate@8 approval or a Stage-9 event, so no frozen judgment was disturbed. Also decided:
+queue-predicate shape left alone (#644 sealed the source), #617 closes at **25/27** (#646 follows),
+and `gt://` reps are BADGED at gate@5/6, never filtered.
 
-**Next (RESUME HERE — 2026-07-26): a code review of PRs #641+#648 filed 14 issues (#649-#662), and
-one of them — #662 — BLOCKS #620. Full revised plan: findings report §11.**
+**Open PRs — all 6/6 CI green, none merged:**
+`#663` **#662 — the acceptance test, THEN the fix** (two commits, in that order): the property
+declared since §7a, first made executable and failing, then the (c)+(b) fix that makes it pass ·
+`#664` fix(617) guard scoping (#651/#653/#654) — where `run_kind='production'` belongs and where it
+would fail OPEN; arm 2 added to the mode-stability disabler; the fail-closed catch narrowed to
+SQLSTATE 42P01 ·
+`#665` refactor(617) one home again (#650/#658/#655/#661) **+ ONE fitness function over the CLASS**
+(`tests/test_one_home_fitness.py`, a declared table of 7 rules with falsification corpora) ·
+`#666` docs(617) arch-manifest serialization (#656) ·
+`#667` fix(617) gate@6 assembles once + gate@8 stops withholding silently (#659/#660) —
+Playwright-verified, 26 withheld / 47 queued.
 
-**READ FIRST: #662.** #619 re-keyed the Stage-9 wall to provenance, but two layers in FRONT of it are
-still district-permanent, so an honestly re-run district *still* cannot incorporate. Measured on the
-live DB: all **25 of 25** #620 districts are walled by the gate@8 queue predicate TODAY (it asks "has
-this DISTRICT ever produced a `benchmark_gt` fact" over append-only tables — permanently true), and
-`merge_fact_runs` gives the OLD benchmark facts the win over fresh ones (**957 of 957** carry
-`school_year=NULL`, so the year-supersede rule never engages and earliest-run wins). Only Stage 9's own
-wall is receipt-scoped and correct. **§10.11's "the grains diverge only after #620" claim was true for
-the wall and false for the queue and the merge** — every measurement had been taken in the one state
-where all three necessarily agree. **#662 needs Ian's decision** on the supersession mechanism (my rec:
-reclassify the historical benchmark extractions' `run_kind` + add provenance precedence to the merge).
+**Next (RESUME HERE — 2026-07-26): (A) review + merge #663-#667.** They are independent of each other
+and of #662; #664/#665 touch `common/benchmark.py` so expect a trivial conflict if merged out of
+order. · **(B) — done; #662 is fixed in #663.** · **(C) #620 — the epic's ONLY
+validation, not its last chore.** `batch_00030/31/32` (25 districts) are approved,
+`redo_attempted=true`, **Stage 2 complete**; Stage 3 is next and is UNBLOCKED once #663 merges
+(run `reclassify_benchmark_extractions --dry-run` then `--apply` against the live DB first — it is
+not run automatically).
+Ian drives the console; prepare and verify, don't execute stage runs. Prove ONE district end-to-end,
+then 24, then **#646** for 27/27. *Falsifier: if any district needs a hand-edit or a re-adjudicated
+gate@8 call, the mechanism is wrong — fix the pipeline, not the district.* · **(D) structural:**
+#623 → #622 (needs #623's Node half) → #640 (build INSIDE #623) → #645 (REQ-171 blocker) → #624 →
+**#625 LAST** (a REQ sweep over a moving target is wasted). #647's read-side patch gets deleted when
+#622 lands. · **(E) epic #92** — nearly closed (#93/#94/#95 done, 38/38 campaign ran). Open: **#614**
+(console Stage-9 status view) + adjacent **#615**, **#628**. All land AFTER (C). Verified:
+`stage9_incorporate` does NOT trigger a recompute, so #628 is convenience, not a gate.
 
-**Sequence — note this INVERTS the old order; #620 moves FIRST, #625 last (§11.2):**
-**(A) Merge PR #648** — https://github.com/ianmmc/learning-connection-time/pull/648, green, and still
-correct: #662 is a scope defect in the layer in front of it, not a fault in the two-arm predicate.
-Fold in only the text this PR makes false (**#649** REQ-169 still calls the #134 re-key open; **#657**
-the `dispatch_type` comment describes the coercion design the epic REJECTED; **#652**). Then close
-#618/#619/#644/#647. ·
-**(B) Decide #662, and FIRST write the acceptance test that fails** — "seed a benchmark-history
-district, run it honestly, assert it (i) reaches the gate@8 queue, (ii) builds a closing argument on
-FRESH reps, (iii) incorporates." It has been declared since §7a and never been executable; it fails at
-(i) today. ·
-**(C) #620** — the epic's ONLY validation, not its last chore. `batch_00030/31/32` (25 districts) are
-approved, `redo_attempted=true`, **Stage 2 complete**; Stage 3 is next but **must not start until (B)
-resolves**. Ian drives the console; prepare and verify, don't execute stage runs. Prove ONE district
-end-to-end, then 24, then **#646** for 27/27. *Falsifier: if any district needs a hand-edit or a
-re-adjudicated gate@8 call, the mechanism is wrong — fix the pipeline, not the district.* ·
-**(D) review backlog in 4 PRs** — guard scoping (#651/#653/#654) · one-home-again (#650/#658/#655/#661
-— plus ONE fitness function over the CLASS, the generalization the epic missed) · docs truth
-(#652/#656) · gate@6-8 surface (#659/#660). None blocks #620. ·
-**(E) structural:** #623 → #622 (needs #623's Node half) → #640 (build INSIDE #623) → #645 (REQ-171
-blocker) → #624 → **#625 LAST** (a REQ sweep over a moving target is wasted). #647's read-side patch
-gets deleted when #622 lands. ·
-**(F) epic #92** — nearly closed (#93/#94/#95 done, 38/38 campaign ran). Open: **#614** (console Stage-9
-status view) + adjacent **#615**, **#628**. All land AFTER (C) — #614 is worth little with nothing
-moving. Verified: `stage9_incorporate` does NOT trigger a recompute, so #628 is convenience, not a gate.
+Read `docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md`
+first — §10 is the consolidated implementation log (§10.20 = the #662 correction), §11 the revised
+plan, **§12 what actually happened in Phases A/B/D**. Durable architecture in
+`PIPELINE_GOVERNANCE_AND_STATE.md` **§13**; spec in `docs/REQUIREMENTS.yaml` **REQ-169**
+(`in_progress`, now carrying the SCOPE criterion) + **REQ-170**.
 
-**The standing lesson from this round (findings report §10.19/§10.20):** three layers shipped green
-against measurements that could not fail, and the epic's own consolidation didn't generalize —
-`dispatch_type` normalization is inline at 8 sites, `redo_attempted` bypassed at 2, all introduced BY
-this epic. **When a change is justified by "it diverges only in the future case," construct that case
-and test it.** Also: an adversarial review's raw output is a *candidate* list — roughly a third didn't
-survive verification here (one claimed test gap was refuted by #644's own AST fitness function; a
-"7 sites" count was actually 8).
-**Outstanding:** Playwright-verify the gate@6 + gate@1 console changes AND #647's Stage 2/3/4 status/Run
-control (all static-source-pinned only so far — the code is verified, the *rendering* is not).
-**New 2026-07-26, deferred by design (epic #128):** **#642** (content-derived document vintage — note
-#662 makes this MORE valuable: the 957 `school_year=NULL` facts are exactly what a content-derived
-year would have populated) and **#643** (the Stage-3 render-facts probe; rides #623's Node seam).
+**The standing lesson (findings report §10.19/§10.20/§12.4):** three layers shipped green against
+measurements that could not fail, and the epic's own consolidation didn't generalize. **When a change
+is justified by "it diverges only in the future case," construct that case and test it.** Also: an
+adversarial review's raw output is a *candidate* list — roughly a third didn't survive verification,
+and two findings this round were materially wrong as filed in ways only measurement could settle.
+
+**Schema invariant (bit us on PR #641):** a `_PRECIOUS_ALTERS` column's DDL must be declared TWICE,
+identically — a SQLAlchemy `default=` never reaches the DDL, so a fresh `create_all()` DB diverges
+from a migrated one and fails raw `text()` INSERTs **on CI only**. Always pair with `server_default=`.
+Enforced DB-free by `tests/test_precious_alters_parity.py`. **Verify a new precious column against a
+THROWAWAY governance DB — the local migrated one tests the path that isn't broken.**
+
+**Outstanding:** Playwright-verify the gate@6 + gate@1 console changes AND #647's Stage 2/3/4
+status/Run control (static-source-pinned only; #667's gate@8 work IS verified).
+**Deferred by design (epic #128):** **#642** (content-derived document vintage — #662 makes this MORE
+valuable: the 957 `school_year=NULL` facts are exactly what it would have populated) and **#643**
+(the Stage-3 render-facts probe; rides #623's Node seam).
 **Retired, do not do:** Phase 2e's retroactive `dispatch_type='benchmark'` tagging — arm 2 derives it.
 Banked routing: #112 → epic #128. Parked: #475/#476, #103/#80 (+#110); the SEA integration follow-up
-(~9 states, 2026-07-20/21 campaign) is an opt-in backlog item — ask Ian before filing.
-Documented-in-code deferrals: `_satisfied_bands_now` batching (revisit on volume); the #522 guardrail's
-per-rep keyword/table attribution (needs a server payload change); JS behavioral tests (no JS harness —
-static-source pins only); the remediation-receipt exception is not STAGE-scoped (30-day expiry since
-2026-07-20); attribution v1 reads each district's LATEST candidate plan (documented in-module).
-Resume-essentials (all five verified green on `feat/619-provenance-scoped-benchmark-guards` at `be09f57`,
-2026-07-26): `pip install -e .` → Docker up (`docker-compose up -d`) → `git config core.hooksPath
-.githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not
-integration"` (expect **2008** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **368**,
-Postgres up) + `pytest tests/test_*_integration.py` (expect **255** pass, 149 skipped, live DB) + `cd
-infrastructure/scraper && npm test` (expect **90**). On `main` at `9865666` the counts are
-1990/352/252/90 — if you are on `main`, use those.
+(~9 states) is an opt-in backlog item — ask Ian before filing.
+Documented-in-code deferrals: `_satisfied_bands_now` batching; the #522 guardrail's per-rep
+keyword/table attribution (needs a server payload change); JS behavioral tests (no JS harness);
+the remediation-receipt exception is not STAGE-scoped (30-day expiry since 2026-07-20); attribution
+v1 reads each district's LATEST candidate plan.
+Resume-essentials (verified on `main` at `af1ce77`, 2026-07-26): `pip install -e .` → Docker up
+(`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) → `lint-imports`
+(expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **2008** pass, 1 skipped
+[pyarrow]) + `pytest -q -m govdb` (expect **368**, Postgres up) + `pytest tests/test_*_integration.py`
+(expect **255** pass, 149 skipped) + `cd infrastructure/scraper && npm test` (expect **90**).
+With all five PRs merged the DB-free count is **2035** and govdb **370 + 2 xfailed**.
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (Huntington
-`4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters).
+`4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters). Drive the Node Playwright
+from `infrastructure/scraper` (a script in /tmp cannot resolve the package).
 Stage 9 incorporate CLI: `python3 -m infrastructure.acquisition.stage9_incorporate <did> [--dry-run]`;
 sign-off preview: `python3 -m infrastructure.scripts.analyze.per_grade_lct_sample`.
 Full detail: `docs/PROJECT_HISTORY.md`, `STAGE1-9_*_DESIGN.md`, `PIPELINE_GOVERNANCE_AND_STATE.md`,
