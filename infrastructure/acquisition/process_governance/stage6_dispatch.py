@@ -8,6 +8,7 @@ pure `package` assembler — producing the in-memory handoff package (slice 5 pe
 """
 import json
 from pathlib import Path
+from typing import NamedTuple
 
 from infrastructure.acquisition.common import benchmark as BM
 from infrastructure.acquisition.common import calibration as CAL
@@ -246,18 +247,51 @@ def build_handoff_package(session, district_ids, councils=None, cost_model=None,
     guard runs at freeze (`assert_dispatch_type_allowed`), so a preview can still be BUILT and
     displayed for a draft that currently can't be frozen. That is what lets the human see the problem
     and fix it, rather than the console failing to render the draft at all."""
+    return release_bundle(session, district_ids, councils=councils, cost_model=cost_model,
+                          overrides=overrides, verified_only=verified_only,
+                          dispatch_type=dispatch_type).package
+
+
+class ReleaseBundle(NamedTuple):
+    """Everything one assembly of a release produces: the priced `package`, plus the per-district
+    `metas` / `fingerprints` and the `skipped` ids only the freeze path needs.
+
+    It exists so PREVIEW and FREEZE can be the same assembly rather than two independent ones (#659).
+    That is not only a cost saving: `/api/handoff/dispatch`'s staleness gate computed the identity
+    from build A and then froze build B, so anything that changed between them — a label edit, a
+    re-price — passed the gate and was frozen unseen. Reusing one bundle closes that window, which is
+    what the gate (issue #37) was for.
+
+    FINGERPRINTS ARE NOT HERE, deliberately: only the freeze path embeds them, and a preview render
+    (every gate@6 draft view) would otherwise pay a per-district labels/config query it never uses."""
+    package: dict
+    metas: dict
+    skipped: list
+
+
+def release_bundle(session, district_ids, *, councils=None, cost_model=None, overrides=None,
+                   verified_only=False, dispatch_type=BM.DISPATCH_PRODUCTION) -> ReleaseBundle:
+    """Assemble a release ONCE — the single home for "read the DB decision and price it".
+
+    `dispatch_type` is validated but NOT forced (the #618 provenance guard runs at freeze), so a
+    preview can still be BUILT and displayed for a draft that currently cannot be frozen. That is what
+    lets the human see the offending reps and deselect them, rather than the console failing to render
+    the draft at all."""
     councils = councils or C6.load_configs()
     cost_model = cost_model or COST6.load_cost_model()
     BM.validate_dispatch_type(dispatch_type)
-    districts = []
+    districts, metas, skipped = [], {}, []
     for did in district_ids:
         di = district_release_input(session, did, verified_only=verified_only)
-        if di:
-            districts.append(di)
+        if not di:
+            skipped.append(did)      # unknown district — dropped from the package (surfaced by callers)
+            continue
+        districts.append(di)
+        metas[did] = di[0]
     package = PKG6.assemble_package(districts, councils, cost_model, overrides)
     package["verified_only"] = bool(verified_only)
     package["dispatch_type"] = dispatch_type
-    return package
+    return ReleaseBundle(package, metas, skipped)
 
 
 def benchmark_reps_in_package(session, package: dict) -> list:
@@ -365,7 +399,7 @@ def record_dispatch(session, doc: dict, path, actor: str = "human", metas: dict 
 
 def dispatch_handoff(session, district_ids, created_by: str = "human", root=None,
                      councils=None, cost_model=None, overrides=None, verified_only=False,
-                     dispatch_type=BM.DISPATCH_PRODUCTION):
+                     dispatch_type=BM.DISPATCH_PRODUCTION, bundle=None):
     """Freeze + record a dispatch (up to — not including — the paid Stage-7 calls): build the package
     from the DB release decision, freeze it, RECORD the index row + state events (atomic on `session`),
     then write the immutable file LAST — so any DB failure rolls back cleanly with no orphaned record,
@@ -373,26 +407,23 @@ def dispatch_handoff(session, district_ids, created_by: str = "human", root=None
     gate@6 training-grade mode (labeled targets only), frozen into the doc's identity. Returns (doc, path)."""
     councils = councils or C6.load_configs()
     cost_model = cost_model or COST6.load_cost_model()
-    districts_input, metas, fingerprints, skipped = [], {}, {}, []
-    for did in district_ids:
-        di = district_release_input(session, did, verified_only=verified_only)
-        if not di:
-            skipped.append(did)          # unknown district — skipped from the package (surfaced below)
-            continue
-        meta, _records = di
-        districts_input.append(di)
-        metas[did] = meta
-        fingerprints[did] = REL.district_fingerprints(session, did)
-    if not districts_input:
+    # #659: reuse the caller's assembly when it has one (the staleness gate just built it), so the
+    # package whose identity was checked is the package that gets frozen — not an equivalent rebuild.
+    b = bundle or release_bundle(session, district_ids, councils=councils, cost_model=cost_model,
+                                 overrides=overrides, verified_only=verified_only,
+                                 dispatch_type=dispatch_type)
+    metas, skipped = b.metas, b.skipped
+    if not b.package.get("districts"):
         # Refuse to freeze a 0-district handoff (issue #53): an all-unknown (or empty) selection is
         # an operator error, not a dispatchable artifact.
         raise ValueError(
             "dispatch refused: the effective selection is empty — "
             + (f"none of the selected districts exist in the release store "
                f"(unknown ids skipped: {skipped})" if skipped else "no districts were selected"))
-    package = PKG6.assemble_package(districts_input, councils, cost_model, overrides)
-    package["verified_only"] = bool(verified_only)
-    package["dispatch_type"] = BM.validate_dispatch_type(dispatch_type)
+    package = b.package
+    package["dispatch_type"] = BM.validate_dispatch_type(package.get("dispatch_type"))
+    # freeze-only, and after the 0-district refusal so an empty selection costs no queries
+    fingerprints = {did: REL.district_fingerprints(session, did) for did in metas}
     # #618: the provenance guard, BEFORE the freeze — the frozen artifact is immutable, so a wrong
     # dispatch_type is unrecoverable. Raising here rolls the session back with nothing written, the
     # same posture as the 0-district refusal above.

@@ -36,6 +36,7 @@ from infrastructure.acquisition.common import benchmark as BM
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.maintenance import reclassify_benchmark_extractions as RCLS
 from infrastructure.acquisition.stage8_aggregate.aggregate import merge_fact_runs
+from tests import benchmark_seed as BSEED
 
 govdb = pytest.mark.govdb
 
@@ -45,49 +46,19 @@ NEW_REC, NEW_HASH = "ZZRERUN:web", "zzrerunweb"    # an ordinary discovered bell
 
 
 def _run(s, *, rec_key, hash_, source, gross, dispatch_type=BM.DISPATCH_PRODUCTION):
-    """One honest production run over one representation: record + capture (the provenance chain),
-    a dispatched handoff, an extraction, and one accepted fact. Returns (extraction_id, fact_id).
+    """One honest production run over one representation. Returns (extraction_id, fact_id).
 
     `school_year` is left NULL on both runs, which is not a shortcut — it is the measured state of
     the corpus: 957 of 957 accepted benchmark facts carry no parsed year (#662), which is precisely
-    why merge_fact_runs' year-supersede rule never engages on the real data.
-    """
-    s.execute(text("INSERT INTO record (rec_key, district_id, url, hash, tier) "
-                   "VALUES (:k, :d, :u, :h, 'A') ON CONFLICT (rec_key) DO NOTHING"),
-              {"k": rec_key, "d": DID, "u": f"http://x/{hash_}", "h": hash_})
-    s.execute(text("INSERT INTO capture (district_id, hash, url, ok, kind, source) "
-                   "VALUES (:d, :h, :u, 1, 'html', :s) "
-                   "ON CONFLICT (district_id, hash) DO UPDATE SET source = EXCLUDED.source"),
-              {"d": DID, "h": hash_, "u": f"http://x/{hash_}", "s": source})
-    hh = f"zzh{hash_}"
-    s.execute(text(
-        "INSERT INTO handoff (handoff_id, handoff_hash, created_at, created_by, status, path, "
-        "dispatch_type, n_districts, n_reps, total_usd, cost_provenance, district_ids, council_ids) "
-        "VALUES (:hid, :hh, 'now', 'zz', 'dispatched', '/zz/x.json', :dt, 1, 1, 0.0, 'zz', "
-        "'[]', '[]')"), {"hid": f"handoff_{hh}_t", "hh": hh, "dt": dispatch_type})
-    eid = s.execute(text(
-        "INSERT INTO extraction (handoff_hash, district_id, run_kind, created_at, created_by, "
-        "n_reps, n_calls, n_judge_calls, n_errors, prompt_tokens, completion_tokens, cost_usd, "
-        "n_accepted, n_unresolved) VALUES (:hh, :d, 'production', 'now', 'zz', 1, 1, 0, 0, 0, 0, "
-        "0.0, 1, 0) RETURNING extraction_id"), {"hh": hh, "d": DID}).scalar()
-    fid = s.execute(text(
-        "INSERT INTO school_fact (extraction_id, district_id, band, school, status, rec_key, "
-        "gross_minutes, created_at, human_determination) VALUES (:e, :d, 'elementary', 'oak', "
-        "'accepted', :k, :g, 'now', '') RETURNING fact_id"),
-        {"e": eid, "d": DID, "k": rec_key, "g": gross}).scalar()
-    s.flush()
-    return eid, fid
+    why merge_fact_runs' year-supersede rule never engages on the real data. Thin wrapper over the
+    shared seeder (#661) — the SQL lives in tests/benchmark_seed.py, once."""
+    return BSEED.seed_run(s, DID, rec_key=rec_key, hash_=hash_, source=source,
+                          dispatch_type=dispatch_type, gross_minutes=gross)
 
 
 def _seed_rep_only(s, rec_key, hash_, source):
     """A representation with no run behind it — for constructing a MIXED extraction by hand."""
-    s.execute(text("INSERT INTO record (rec_key, district_id, url, hash, tier) "
-                   "VALUES (:k, :d, :u, :h, 'A') ON CONFLICT (rec_key) DO NOTHING"),
-              {"k": rec_key, "d": DID, "u": f"http://x/{hash_}", "h": hash_})
-    s.execute(text("INSERT INTO capture (district_id, hash, url, ok, kind, source) "
-                   "VALUES (:d, :h, :u, 1, 'html', :s) "
-                   "ON CONFLICT (district_id, hash) DO UPDATE SET source = EXCLUDED.source"),
-              {"d": DID, "h": hash_, "u": f"http://x/{hash_}", "s": source})
+    BSEED.seed_rep(s, DID, rec_key, hash_, source)
     s.flush()
 
 
@@ -310,11 +281,8 @@ def test_the_migration_refuses_a_mixed_extraction_rather_than_guessing(gov_sessi
     CI.ensure_cache_schema(s)
     eid, _fid = _run(s, rec_key=OLD_REC, hash_=OLD_HASH, source=BM.BENCHMARK_CAPTURE_SOURCE, gross=400)
     _seed_rep_only(s, NEW_REC, NEW_HASH, "discovered")
-    s.execute(text(                                     # a second, DISCOVERED fact on the SAME run
-        "INSERT INTO school_fact (extraction_id, district_id, band, school, status, rec_key, "
-        "gross_minutes, created_at, human_determination) VALUES (:e, :d, 'high', 'elm', 'accepted', "
-        ":k, 420, 'now', '')"), {"e": eid, "d": DID, "k": NEW_REC})
-    s.flush()
+    BSEED.seed_fact(s, eid, DID, NEW_REC, band="high", school="elm",  # a 2nd, DISCOVERED fact, SAME run
+                    gross_minutes=420)
 
     with pytest.raises(ValueError, match="REFUSING"):
         RCLS.reclassify(s, apply=True)

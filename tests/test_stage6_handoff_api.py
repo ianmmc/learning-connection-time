@@ -146,6 +146,12 @@ def _pkg():
             "verified_only": False}
 
 
+def _bundle():
+    """The gate hashes a bundle, not a bare package (#659) — one assembly, checked and then frozen."""
+    from infrastructure.acquisition.process_governance.stage6_dispatch import ReleaseBundle
+    return ReleaseBundle(package=_pkg(), metas={}, skipped=[])
+
+
 def test_preview_returns_the_identity_token(monkeypatch):
     monkeypatch.setattr(SRV.gdb, "session_scope", _fake_scope)
     monkeypatch.setattr(SRV.H6, "build_handoff_package", lambda con, ids, *a, **k: _pkg())
@@ -156,10 +162,13 @@ def test_preview_returns_the_identity_token(monkeypatch):
 
 
 def test_dispatch_with_stale_identity_is_409(monkeypatch):
-    """The release changed between preview and approve (a label edit / re-ingest): the dispatch
-    rebuild no longer matches what the human reviewed -> 409, nothing frozen."""
+    """The release changed between preview and approve (a label edit / re-ingest): the assembly the
+    gate hashes no longer matches what the human reviewed -> 409, nothing frozen.
+
+    #659: the gate now hashes a `release_bundle` and hands THAT SAME bundle to dispatch_handoff,
+    rather than hashing one build and freezing an independently rebuilt second one."""
     monkeypatch.setattr(SRV.gdb, "session_scope", _fake_scope)
-    monkeypatch.setattr(SRV.H6, "build_handoff_package", lambda con, ids, *a, **k: _pkg())
+    monkeypatch.setattr(SRV.H6, "release_bundle", lambda con, ids, **k: _bundle())
     frozen = {"called": False}
     monkeypatch.setattr(SRV.H6, "dispatch_handoff",
                         lambda *a, **k: frozen.update(called=True) or ({}, ""))
@@ -175,7 +184,7 @@ def test_dispatch_with_stale_identity_is_409(monkeypatch):
 
 def test_dispatch_with_matching_identity_freezes(monkeypatch):
     monkeypatch.setattr(SRV.gdb, "session_scope", _fake_scope)
-    monkeypatch.setattr(SRV.H6, "build_handoff_package", lambda con, ids, *a, **k: _pkg())
+    monkeypatch.setattr(SRV.H6, "release_bundle", lambda con, ids, **k: _bundle())
     doc = {"handoff_hash": "abc123", "created_at": "2026-07-02T00:00:00Z",
            "districts": [{"district_id": "0100810"}],
            "cost": {"total_usd": 0.001, "n_reps": 1, "provenance": "bootstrap"}}
@@ -184,3 +193,55 @@ def test_dispatch_with_matching_identity_freezes(monkeypatch):
                     json={"district_ids": ["0100810"],
                           "expected_identity": HND.package_identity(_pkg())})
     assert r.status_code == 200 and r.json()["handoff_hash"] == "abc123"
+
+
+def test_the_gate_hashes_and_freezes_the_SAME_assembly(monkeypatch):
+    """#659 — the staleness gate's whole purpose is that what was reviewed is what gets frozen.
+
+    It used to compute the identity from one `build_handoff_package` call and then hand
+    `dispatch_handoff` a bare id list, which independently rebuilt an equivalent package. Anything
+    that changed between the two builds — a label edit, a re-price — passed the gate and was frozen
+    unseen. Now one bundle is built, hashed, and passed through.
+
+    Also the expensive half of a dispatch (per-district release input + routing + pricing), so a
+    large in-flight selection was being assembled twice per operator click."""
+    from infrastructure.acquisition.process_governance.stage6_dispatch import ReleaseBundle
+    monkeypatch.setattr(SRV.gdb, "session_scope", _fake_scope)
+    built = []
+
+    def _bundle_once(con, ids, **k):
+        b = ReleaseBundle(package=_pkg(), metas={"0100810": {}}, skipped=[])
+        built.append(b)
+        return b
+
+    seen = {}
+    monkeypatch.setattr(SRV.H6, "release_bundle", _bundle_once)
+    monkeypatch.setattr(SRV.H6, "dispatch_handoff",
+                        lambda con, ids, **k: seen.update(bundle=k.get("bundle")) or (
+                            {"handoff_hash": "h1", "created_at": "2026-07-26T00:00:00Z",
+                             "districts": [], "cost": {}}, "/x.json"))
+    r = client.post("/api/handoff/dispatch",
+                    json={"district_ids": ["0100810"],
+                          "expected_identity": HND.package_identity(_pkg())})
+
+    assert r.status_code == 200
+    assert len(built) == 1, "the release was assembled more than once for one dispatch"
+    assert seen["bundle"] is built[0], "the frozen assembly is not the one the gate hashed"
+
+
+def test_a_dispatch_without_a_staleness_token_still_assembles_exactly_once(monkeypatch):
+    """The bare CLI/test POST path: with no identity to check there is nothing to pre-build, so the
+    endpoint passes bundle=None and dispatch_handoff does its own single assembly. Pinned because
+    the obvious refactor — always pre-build — would add a second build to this path."""
+    monkeypatch.setattr(SRV.gdb, "session_scope", _fake_scope)
+    monkeypatch.setattr(SRV.H6, "release_bundle",
+                        lambda *a, **k: (_ for _ in ()).throw(AssertionError("must not pre-build")))
+    seen = {}
+    monkeypatch.setattr(SRV.H6, "dispatch_handoff",
+                        lambda con, ids, **k: seen.update(bundle=k.get("bundle")) or (
+                            {"handoff_hash": "h2", "created_at": "2026-07-26T00:00:00Z",
+                             "districts": [], "cost": {}}, "/x.json"))
+    r = client.post("/api/handoff/dispatch", json={"district_ids": ["0100810"]})
+
+    assert r.status_code == 200
+    assert seen["bundle"] is None

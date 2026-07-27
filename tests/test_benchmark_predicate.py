@@ -312,11 +312,7 @@ def test_a_probe_touching_an_injected_rep_does_not_wall_a_production_directive(g
     BS.ensure_signal_schema(s)
     CI.ensure_cache_schema(s)
     hh = "zzh651probe"
-    s.execute(text(
-        "INSERT INTO handoff (handoff_id, handoff_hash, created_at, created_by, status, path, "
-        "dispatch_type, n_districts, n_reps, total_usd, cost_provenance, district_ids, council_ids) "
-        "VALUES (:hid, :hh, 'now', 'zz', 'dispatched', '/zz/x.json', 'production', 1, 1, 0.0, 'zz', "
-        "'[]', '[]')"), {"hid": f"handoff_{hh}_t", "hh": hh})
+    BSEED.seed_handoff(s, hh, dispatch_type=BM.DISPATCH_PRODUCTION)
     s.execute(text("INSERT INTO record (rec_key, district_id, url, hash, tier) "
                    "VALUES ('ZZ651:gt', 'ZZ651', 'http://x/g', 'zz651g', 'A')"))
     s.execute(text("INSERT INTO capture (district_id, hash, url, ok, kind, source) "

@@ -21,6 +21,42 @@ def test_aggregate_districts_queue_shape(monkeypatch):
     assert row["district_id"] == "D1" and row["n_accepted"] == 6 and row["disposition"] is None
 
 
+def test_withheld_endpoint_reports_what_the_queue_holds_back(monkeypatch):
+    """#660: a benchmark-provenance district never reaches the queue, so nothing in the console said
+    it existed — and REQ-169's escape hatch (strike the stale rep at gate@8, band_exclusion) is only
+    usable by a human who can open the district. Same row shape as the queue, plus a reason."""
+    _use(monkeypatch, _Con([_Result(rows=[
+        {"district_id": "D9", "name": "Benchy", "state": "AL", "n_accepted": 4,
+         "n_unresolved": 0, "disposition": None}])]))
+    r = client.get("/api/aggregate/withheld")
+    assert r.status_code == 200
+    row = r.json()[0]
+    assert row["district_id"] == "D9" and row["reason"] == "benchmark provenance"
+    assert row["n_accepted"] == 4                       # renderable by the same districtRow()
+
+
+def test_the_queue_and_the_withheld_list_are_exact_complements():
+    """They must partition the same population, or "withheld: N" is a number an operator cannot
+    trust. Asserted on the SQL: identical FROM/WHERE, differing only in the negation of the shared
+    provenance predicate — so a future edit to one that is not mirrored is visible here."""
+    import inspect
+    q = inspect.getsource(SRV.aggregate_districts)
+    w = inspect.getsource(SRV.aggregate_withheld)
+    assert "AND NOT {IS_BENCHMARK_PROVENANCE_SQL" in q
+    assert "AND {IS_BENCHMARK_PROVENANCE_SQL" in w and "AND NOT {IS_BENCHMARK_PROVENANCE_SQL" not in w
+    for clause in ("run_kind='production'", "COALESCE(cf.n_accepted, 0) > 0",
+                   "EX.RQ.OPEN_STATUSES_SQL"):
+        assert clause in q and clause in w, f"the two endpoints disagree on: {clause}"
+
+
+def test_the_withheld_district_is_still_openable():
+    """Deliberately NOT a second wall: the detail endpoint has no provenance guard, which is what
+    makes the withheld list a ROUTE to the escape hatch rather than a second dead end."""
+    import inspect
+    detail = inspect.getsource(SRV.aggregate_district_detail)
+    assert "IS_BENCHMARK_PROVENANCE_SQL" not in detail and "is_benchmark_provenance" not in detail
+
+
 def test_decision_rejects_bad_disposition():
     # validation happens BEFORE any DB access — no session needed
     r = client.post("/api/aggregate/decision/D1", json={"disposition": "maybe"})

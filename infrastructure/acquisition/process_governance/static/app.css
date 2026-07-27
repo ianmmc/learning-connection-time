@@ -239,6 +239,15 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
   padding: 0 3px; border-radius: var(--radius-sm); background: var(--mmm-purple-50);
   color: var(--action-primary); border: var(--border-hair) solid var(--action-primary); }
 
+/* gate@8 withheld set (#660): districts the benchmark-provenance wall holds back. Visually
+   subordinate to the live queue but REACHABLE — the band_exclusion escape hatch is only usable by a
+   human who can open the district. */
+.q-withheld { margin-top: var(--space-5); padding-top: var(--space-4); border-top: var(--border-hair) solid var(--border-subtle);
+  display: flex; flex-direction: column; gap: var(--space-2); }
+.q-withheld-note { margin-bottom: var(--space-2); line-height: 1.5; }
+.q-batch-muted { opacity: 0.72; }
+.q-batch-muted:hover { opacity: 1; }
+
 /* detail */
 .q-detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4); }
 .q-detail-head h2 { margin: 0; }

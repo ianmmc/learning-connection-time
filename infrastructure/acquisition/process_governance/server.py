@@ -2122,18 +2122,22 @@ async def handoff_dispatch(payload: dict):
         raise HTTPException(400, "no districts selected")
     try:
         with gdb.session_scope() as con:
+            # ONE assembly, checked and then frozen (#659). The gate used to compute the identity
+            # from one build and hand dispatch_handoff a second, independent build — so a change
+            # landing between them passed the gate and was frozen unseen, which is the window issue
+            # #37 exists to close. It is also the expensive half of a dispatch, paid once now.
+            bundle = None
             if expected_identity:
-                # Preview→freeze staleness gate (issue #37): rebuild the package the same way the
-                # preview did and compare identities BEFORE freezing anything.
-                pkg = H6.build_handoff_package(con, ids, overrides=overrides,
-                                               verified_only=verified_only,
-                                               dispatch_type=dispatch_type)
-                if HND6.package_identity(pkg) != expected_identity:
+                bundle = H6.release_bundle(con, ids, overrides=overrides,
+                                           verified_only=verified_only,
+                                           dispatch_type=dispatch_type)
+                if HND6.package_identity(bundle.package) != expected_identity:
                     raise HTTPException(409, "release changed since preview — the package that would "
-                                             "be frozen no longer matches what was reviewed; re-preview "
-                                             "before dispatching")
+                                             "be frozen no longer matches what was reviewed; "
+                                             "re-preview before dispatching")
             doc, path = H6.dispatch_handoff(con, ids, created_by=actor, overrides=overrides,
-                                            verified_only=verified_only, dispatch_type=dispatch_type)
+                                            verified_only=verified_only, dispatch_type=dispatch_type,
+                                            bundle=bundle)
     except FileExistsError:
         raise HTTPException(409, "an identical handoff was just dispatched (same content within the "
                                  "same second) — the prior one stands; retry in a moment if intended")
@@ -2731,7 +2735,13 @@ def aggregate_districts():
     since gate@8 is the only door to a Stage-9 write, re-keying Stage 9 alone would have left the fix
     unreachable — an honestly re-run district could never have been approved in the first place.
     Measured across all 83 districts holding production facts, the two rules exclude the SAME 27
-    today; they diverge only when a re-run mints fresh reps (#620)."""
+    today; they diverge only when a re-run mints fresh reps (#620).
+
+    NOT SILENT (#660): what this withholds is reported by `/api/aggregate/withheld`, and the console
+    renders the count. REQ-169 names `band_exclusion` (#257) as the auditable way to clear a stale
+    injected rep — but a district that never appears in the queue is a district no human can act on,
+    so the escape hatch existed with no route to it. The re-key also makes the withheld set DYNAMIC
+    (it changes as reps change), which is precisely what an operator needs to be able to watch."""
     with gdb.session_scope() as con:
         rows = con.execute(text(
             f"""SELECT p.district_id, d.name, d.state,
@@ -2750,6 +2760,40 @@ def aggregate_districts():
                  AND NOT {IS_BENCHMARK_PROVENANCE_SQL.format(alias='p')}
                ORDER BY (s8.disposition IS NOT NULL), n_unresolved DESC, p.district_id""")).mappings().all()
         return [dict(r) for r in rows]
+
+
+@app.get("/api/aggregate/withheld")
+def aggregate_withheld():
+    """The districts `aggregate_districts` WITHHELD for benchmark provenance — the same population,
+    the complementary predicate (#660).
+
+    Same shape as the queue so the console can render them with the same row, plus `reason`. The two
+    endpoints must stay complementary: a district with production facts and a quiesced request loop
+    is in exactly one of them, which is what makes "withheld" a number an operator can trust rather
+    than an inference from a shorter list.
+
+    Deliberately NOT a second wall: `aggregate_district_detail` has no provenance guard, so an ID
+    from here opens normally and the human can strike the stale evidence at gate@8 (`band_exclusion`,
+    REQ-257 — applied BEFORE the mode, so an excluded school is not a source of the band's value and
+    no longer refuses the write on its behalf). This endpoint is the route to that, nothing more."""
+    with gdb.session_scope() as con:
+        rows = con.execute(text(
+            f"""SELECT p.district_id, d.name, d.state,
+                      COALESCE(cf.n_accepted, 0) AS n_accepted,
+                      COALESCE(cf.n_unresolved, 0) AS n_unresolved, s8.disposition
+               FROM (SELECT DISTINCT district_id FROM extraction WHERE run_kind='production') p
+               LEFT JOIN district d ON d.district_id = p.district_id
+               LEFT JOIN ({CUMULATIVE_FACT_COUNTS_SQL}) cf ON cf.district_id = p.district_id
+               LEFT JOIN LATERAL (SELECT disposition FROM stage8_approval a
+                                  WHERE a.district_id = p.district_id
+                                  ORDER BY approval_id DESC LIMIT 1) s8 ON true
+               WHERE COALESCE(cf.n_accepted, 0) > 0
+                 AND NOT EXISTS (SELECT 1 FROM extraction_request r
+                                 WHERE r.district_id = p.district_id
+                                   AND r.status IN {EX.RQ.OPEN_STATUSES_SQL})
+                 AND {IS_BENCHMARK_PROVENANCE_SQL.format(alias='p')}
+               ORDER BY p.district_id""")).mappings().all()
+        return [dict(r, reason="benchmark provenance") for r in rows]
 
 
 @app.get("/api/aggregate/district/{district_id}")
