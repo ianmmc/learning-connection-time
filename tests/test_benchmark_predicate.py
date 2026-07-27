@@ -17,84 +17,20 @@ from sqlalchemy import text
 
 from infrastructure.acquisition.common import benchmark as BM
 from infrastructure.acquisition.common import db as gdb
+from tests import benchmark_seed as BSEED
 
 REPO = Path(__file__).resolve().parent.parent
 ACQ = REPO / "infrastructure" / "acquisition"
 govdb = pytest.mark.govdb
 
 
-# --------------------------- the fitness function (DB-free) ---------------------------
-
-
-# The predicate's SQL is written as ADJACENT STRING LITERALS across several source lines, so a naive
-# line-by-line scan misses it — verified against the real pre-consolidation sources: it caught the
-# backfill's one-line form but MISSED both stage7_execute's and incorporate's. Normalize first.
-_JOINED_LITERALS = re.compile(r"[\"']\s*[\"']")          # "…" "…" (incl. across newlines) -> one string
-# The quotes around 'benchmark' are OPTIONAL on purpose: joining adjacent literals can consume the
-# value's own closing quote when it abuts the string's (`… = 'benchmark'"))` -> `… = 'benchmark))`).
-# `batch_district` within 300 chars keeps it specific — prose mentioning batch_type alone won't trip.
-_INLINE_PREDICATE = re.compile(r"batch_district\b.{0,300}?batch_type\s*=\s*'?benchmark", re.S)
-
-
-def _normalize_source(src: str) -> str:
-    """Collapse adjacent string literals + whitespace so a multi-line SQL string reads as one line."""
-    return re.sub(r"\s+", " ", _JOINED_LITERALS.sub("", src))
-
-
-def test_the_predicate_has_exactly_one_home():
-    """No module outside common/benchmark.py may inline the benchmark JOIN. This is the guard against
-    the exact regression epic #617 cleaned up: five copies that could drift apart, each carrying its
-    own comment explaining why it shouldn't exist. A new call site imports the module; it never
-    re-spells the SQL.
-
-    `test_the_detector_catches_the_real_removed_copies` below proves this actually fires."""
-    offenders = []
-    for py in ACQ.rglob("*.py"):
-        if py.name == "benchmark.py" and py.parent.name == "common":
-            continue
-        if _INLINE_PREDICATE.search(_normalize_source(py.read_text())):
-            offenders.append(str(py.relative_to(REPO)))
-    assert not offenders, (
-        "the benchmark predicate was re-inlined instead of imported from common/benchmark.py:\n  "
-        + "\n  ".join(offenders))
-
-
-# The three copies epic #617 removed, verbatim, as the detector's falsification corpus. Embedded as
-# literals rather than read from git on purpose: a `git show <ref>:<path>` lookup silently stops
-# testing anything once the ref moves past the consolidation (and breaks in a shallow CI clone).
-_REMOVED_COPIES = {
-    "stage7_execute._benchmark_district_ids": '''
-    rows = session.execute(text(
-        "SELECT DISTINCT bd.district_id FROM batch_district bd "
-        "JOIN batch b ON b.batch_id = bd.batch_id "
-        "WHERE b.batch_type = 'benchmark' AND bd.district_id = ANY(:d)"),
-        {"d": list(district_ids)})''',
-    "incorporate._is_benchmark_district": '''
-        return bool(gs.execute(text(
-            "SELECT 1 FROM batch_district bd JOIN batch b ON b.batch_id = bd.batch_id "
-            "WHERE b.batch_type = 'benchmark' AND bd.district_id = :d LIMIT 1"),
-            {"d": district_id}).first())''',
-    "backfill_receipts.load_benchmark_ids": '''
-    rows = session.execute(text(
-        "SELECT DISTINCT bd.district_id FROM batch_district bd "
-        "JOIN batch b ON b.batch_id = bd.batch_id WHERE b.batch_type = 'benchmark'"))''',
-    "server.IS_BENCHMARK_SQL": '''
-IS_BENCHMARK_SQL = """EXISTS (SELECT 1 FROM batch_district bd JOIN batch b ON b.batch_id = bd.batch_id
-                              WHERE bd.district_id = {alias}.district_id
-                                AND b.batch_type = 'benchmark')"""''',
-}
-
-
-@pytest.mark.parametrize("name", sorted(_REMOVED_COPIES))
-def test_the_detector_catches_the_real_removed_copies(name):
-    """A fitness function nobody has falsified is decoration. Each of these is a copy that actually
-    existed in this repo; the detector must trip on every one, or it would not catch a new one.
-
-    This caught two real defects in the detector while it was being written: a line-by-line scan
-    missed the two copies whose SQL spans adjacent string literals, and the literal-joining normalizer
-    then ate the closing quote of `'benchmark'` where it abutted the enclosing string's quote."""
-    assert _INLINE_PREDICATE.search(_normalize_source(_REMOVED_COPIES[name])), (
-        f"detector failed to catch the known inline copy from {name}")
+# --------------------------- the one-home guards: MOVED (#650) ---------------------------
+# `test_the_predicate_has_exactly_one_home`, the provenance-arm twin, and both falsification corpora
+# now live in `tests/test_one_home_fitness.py` as rows of a declared table covering the whole
+# one-home CLASS. The epic wrote a bespoke guard for this rule, then introduced three more rules and
+# hand-copied every one of them; the guard could not see them because it protected a rule rather
+# than a class. What stays here is what is specific to THIS predicate: its shape, its arms, and its
+# behaviour against real SQL.
 
 
 def test_the_sql_fragment_keys_on_type_never_the_batch_00000_literal():
@@ -112,67 +48,6 @@ def test_the_fragment_is_alias_parameterized_and_formats():
         assert "{alias}" in frag
         rendered = frag.format(alias="p")
         assert "p.district_id" in rendered and "{alias}" not in rendered
-
-
-# The #619 provenance predicate gets the SAME one-home guard as the membership one, for the same
-# reason: it is about to acquire call sites at three altitudes (the Stage-9 write wall, the gate@8
-# queue, the request-execution guards), and five hand-copies is exactly how the membership rule got
-# into the state epic #617 had to clean up.
-# Both anchor on FROM/JOIN <table>, which is what makes them SQL-specific. A bare table name is not
-# enough — `batch_district` happens to appear only in SQL, but `handoff` and `capture` are ordinary
-# vocabulary in this codebase's prose, and the first draft of these two fired on stage6_dispatch's
-# docstring (`capture.source='benchmark_gt'`) and its operator error string ("set
-# dispatch_type='benchmark' to run this as a Council Lab…"). A display string mentioning the rule is
-# not a second copy of it, and a detector that cries wolf gets ignored.
-_SQL_FROM = r"(?:FROM|JOIN)\s+"
-_INLINE_DISPATCH_ARM = re.compile(_SQL_FROM + r"handoff\b.{0,200}?dispatch_type\s*=\s*'benchmark", re.S)
-_INLINE_CAPTURE_ARM = re.compile(_SQL_FROM + r"capture\b.{0,200}?source\s*=\s*'benchmark_gt", re.S)
-
-
-def test_the_provenance_predicate_also_has_exactly_one_home():
-    """Both ARMS live in common/benchmark.py. A call site imports the module or embeds
-    IS_BENCHMARK_PROVENANCE_SQL; it never re-spells either arm's SQL.
-
-    Note what is deliberately NOT flagged: referencing the CONSTANTS (`BM.DISPATCH_BENCHMARK`,
-    `BM.BENCHMARK_CAPTURE_SOURCE`) is the sanctioned way to ask the question in Python — the guard is
-    against re-inlining the SQL, which is what can silently drift."""
-    offenders = []
-    for py in ACQ.rglob("*.py"):
-        if py.name == "benchmark.py" and py.parent.name == "common":
-            continue
-        src = _normalize_source(py.read_text())
-        if _INLINE_DISPATCH_ARM.search(src) or _INLINE_CAPTURE_ARM.search(src):
-            offenders.append(str(py.relative_to(REPO)))
-    assert not offenders, (
-        "a benchmark-provenance arm was re-inlined instead of imported from common/benchmark.py:\n  "
-        + "\n  ".join(offenders))
-
-
-@pytest.mark.parametrize("arm,src,caught", [
-    # the two arms as a call site would plausibly hand-inline them — both must trip
-    ("dispatch", '''
-    rows = s.execute(text(
-        "SELECT 1 FROM extraction e JOIN handoff h ON h.handoff_hash = e.handoff_hash "
-        "WHERE h.dispatch_type = 'benchmark' AND e.district_id = :d"), {"d": did})''', True),
-    ("capture", '''
-    rows = s.execute(text(
-        "SELECT r.rec_key FROM record r JOIN capture c ON c.district_id = r.district_id "
-        "AND c.hash = r.hash WHERE c.source = 'benchmark_gt'"))''', True),
-    # …and the three REAL non-copies that must NOT trip, or the detector gets ignored. All three are
-    # verbatim from stage6_dispatch.py, and all three tripped an earlier draft of these patterns.
-    ("prose", "An explicit `dispatch_type='benchmark'` always passes: the Council Lab opt-in.", False),
-    ("error string", '''f"Deselect those records, or set dispatch_type='benchmark' to run this "''',
-     False),
-    ("dotted attr in prose", "(`capture.source='benchmark_gt'`), which is real and mixed after a "
-     "#620 re-run", False),
-])
-def test_the_provenance_detector_catches_a_hand_inlined_arm(arm, src, caught):
-    """Falsification, same standard as the membership detector: a fitness function nobody has
-    falsified is decoration. Both polarities, because the first draft of this detector DID fire on
-    stage6_dispatch's prose and operator error string."""
-    hit = bool(_INLINE_DISPATCH_ARM.search(_normalize_source(src))
-               or _INLINE_CAPTURE_ARM.search(_normalize_source(src)))
-    assert hit is caught, f"{arm}: expected caught={caught}"
 
 
 def test_the_provenance_fragment_scopes_to_production_extractions():
@@ -278,38 +153,15 @@ def test_all_benchmark_district_ids_is_a_superset_of_a_filtered_lookup(gov_sessi
 # --------------------------- the PROVENANCE predicate (govdb, #619) ---------------------------
 
 def _seed_prov(s, did, rec_key, hash_, source, *, dispatch_type=None):
-    """A district's rep (record + capture, the arm-2 path) and optionally a dispatch/extraction/fact
-    chain stamped with `dispatch_type` (the arm-1 path). Returns the fact_id when one was made."""
-    from infrastructure.acquisition.common import cache_ingest as CI
-    from infrastructure.acquisition.stage5_filter import build_signals as BS
-    BS.ensure_signal_schema(s)
-    CI.ensure_cache_schema(s)
-    s.execute(text("INSERT INTO record (rec_key, district_id, url, hash, tier) "
-                   "VALUES (:k, :d, :u, :h, 'A') ON CONFLICT (rec_key) DO NOTHING"),
-              {"k": rec_key, "d": did, "u": f"http://x/{hash_}", "h": hash_})
-    s.execute(text("INSERT INTO capture (district_id, hash, url, ok, kind, source) "
-                   "VALUES (:d, :h, :u, 1, 'html', :s) "
-                   "ON CONFLICT (district_id, hash) DO UPDATE SET source = EXCLUDED.source"),
-              {"d": did, "h": hash_, "u": f"http://x/{hash_}", "s": source})
+    """A district's rep (the arm-2 path) and optionally a whole run stamped with `dispatch_type`
+    (the arm-1 path). Returns the fact_id when a run was made. Thin wrapper over the shared seeders
+    in `tests/benchmark_seed.py` (#661) — the SQL lives there, once."""
+    BSEED.ensure_schema(s)
     if dispatch_type is None:
-        s.flush()
+        BSEED.seed_rep(s, did, rec_key, hash_, source)
         return None
-    hh = f"zzh{hash_}"
-    s.execute(text(
-        "INSERT INTO handoff (handoff_id, handoff_hash, created_at, created_by, status, path, "
-        "dispatch_type, n_districts, n_reps, total_usd, cost_provenance, district_ids, council_ids) "
-        "VALUES (:hid, :hh, 'now', 'zz', 'dispatched', '/zz/x.json', :dt, 1, 1, 0.0, 'zz', "
-        "'[]', '[]')"), {"hid": f"handoff_{hh}_t", "hh": hh, "dt": dispatch_type})
-    eid = s.execute(text(
-        "INSERT INTO extraction (handoff_hash, district_id, run_kind, created_at, created_by, "
-        "n_reps, n_calls, n_judge_calls, n_errors, prompt_tokens, completion_tokens, cost_usd, "
-        "n_accepted, n_unresolved) VALUES (:hh, :d, 'production', 'now', 'zz', 1, 1, 0, 0, 0, 0, "
-        "0.0, 1, 0) RETURNING extraction_id"), {"hh": hh, "d": did}).scalar()
-    fid = s.execute(text(
-        "INSERT INTO school_fact (extraction_id, district_id, band, school, status, rec_key, "
-        "created_at, human_determination) VALUES (:e, :d, 'elementary', 'oak', 'accepted', :k, "
-        "'now', '') RETURNING fact_id"), {"e": eid, "d": did, "k": rec_key}).scalar()
-    s.flush()
+    _eid, fid = BSEED.seed_run(s, did, rec_key=rec_key, hash_=hash_, source=source,
+                               dispatch_type=dispatch_type)
     return fid
 
 

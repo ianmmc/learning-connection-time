@@ -2,11 +2,12 @@
 the paid runner (R7.run_council_streaming) is monkeypatched so the job is a no-op; asserts the endpoint
 guards (404 unknown handoff, 409 already-running) and that a job runs to 'done' streaming progress.
 govdb — needs the governance Postgres (the handoff row + job board)."""
-import json
 import time
 
 import pytest
 from sqlalchemy import text
+
+from tests import benchmark_seed as BSEED
 
 from infrastructure.acquisition.common import db as gdb
 
@@ -17,13 +18,8 @@ HH = "zzextrun01"
 
 def _seed_handoff(con, status="dispatched"):
     con.execute(text("DELETE FROM handoff WHERE handoff_hash = :h"), {"h": HH})
-    con.execute(text(
-        "INSERT INTO handoff (handoff_hash, handoff_id, created_at, created_by, status, path, "
-        "n_districts, n_reps, total_usd, cost_provenance, district_ids, council_ids) VALUES "
-        "(:h, :hid, '2026-07-05T00:00:00Z', 'zz', :st, '/tmp/none.json', 1, 1, 0.0, 'test', "
-        "CAST(:d AS json), CAST(:c AS json))"),
-        {"h": HH, "hid": f"handoff_{HH}_t", "st": status,
-         "d": json.dumps(["ZZED"]), "c": json.dumps(["low-cost-text"])})
+    BSEED.seed_handoff(con, HH, status=status, district_ids=["ZZED"],
+                       council_ids=["low-cost-text"])
 
 
 @pytest.fixture

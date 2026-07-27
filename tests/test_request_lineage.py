@@ -6,6 +6,8 @@ import json
 import pytest
 from sqlalchemy import text
 
+from tests import benchmark_seed as BSEED
+
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.stage1_queue import batch_store as BSTORE
 from infrastructure.acquisition.stage1_queue import models  # noqa: F401
@@ -54,11 +56,7 @@ def _lin(server, con, req):
 
 def test_executed_7to6_points_to_its_handoff(env):
     server, con = env
-    con.execute(text(
-        "INSERT INTO handoff (handoff_hash, handoff_id, created_at, created_by, status, path, "
-        "n_districts, n_reps, total_usd, cost_provenance, district_ids, council_ids) VALUES "
-        "('lin76', 'h_lin76', 't', 'zz', 'dispatched', '/x', 1, 1, 0.0, 'test', "
-        "CAST('[]' AS json), CAST('[]' AS json))"))
+    BSEED.seed_handoff(con, "lin76", handoff_id="h_lin76")
     r = _req(con, "7->6", "executed", ref="lin76")
     lin = _lin(server, con, r)
     assert lin["kind"] == "handoff" and lin["ref"] == "lin76"

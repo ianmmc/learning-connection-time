@@ -189,7 +189,7 @@ def _early_exit_enabled(doc: dict, run_kind: str, gt_data, ms_params: dict) -> b
     `f33790e63820`, 3 reps across 3 of its 9 districts). Arm 2 is per-district and lives in
     `_drop_benchmark_provenance_districts`, applied to the targets this gate lets through (#653)."""
     return bool(ms_params.get("enabled")) and run_kind == "production" and gt_data is None \
-        and (doc.get("dispatch_type") or BM.DISPATCH_PRODUCTION) != BM.DISPATCH_BENCHMARK
+        and not BM.is_benchmark_dispatch(doc)
 
 
 def _drop_benchmark_provenance_districts(targets: dict, by_district: dict) -> dict:

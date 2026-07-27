@@ -2116,7 +2116,7 @@ async def handoff_dispatch(payload: dict):
     actor = payload.get("actor", "ian")
     overrides = payload.get("overrides") or {}
     verified_only = bool(payload.get("verified_only"))
-    dispatch_type = payload.get("dispatch_type") or BM.DISPATCH_PRODUCTION   # #618
+    dispatch_type = BM.effective_dispatch_type(payload)   # #618
     expected_identity = payload.get("expected_identity")   # optional (issue #37) — the console always
     if not ids:                                            # sends it; a bare CLI/test POST still works
         raise HTTPException(400, "no districts selected")
@@ -2145,7 +2145,7 @@ async def handoff_dispatch(payload: dict):
     cost = doc.get("cost") or {}
     return {"handoff_id": HND6.handoff_filename(doc)[:-5], "handoff_hash": doc["handoff_hash"],
             "verified_only": bool(doc.get("verified_only")),
-            "dispatch_type": doc.get("dispatch_type") or BM.DISPATCH_PRODUCTION,
+            "dispatch_type": BM.effective_dispatch_type(doc),
             "n_districts": len(doc.get("districts", [])), "n_reps": cost.get("n_reps", 0),
             "total_usd": cost.get("total_usd", 0.0), "provenance": cost.get("provenance", "unknown"),
             "path": str(path)}
@@ -2369,7 +2369,7 @@ async def dispatch_freeze(draft_id: str, payload: dict):
     cost = doc.get("cost") or {}
     return {"draft_id": draft_id, "handoff_id": HND6.handoff_filename(doc)[:-5],
            "handoff_hash": doc["handoff_hash"], "verified_only": bool(doc.get("verified_only")),
-           "dispatch_type": doc.get("dispatch_type") or BM.DISPATCH_PRODUCTION,
+           "dispatch_type": BM.effective_dispatch_type(doc),
            "n_districts": len(doc.get("districts", [])), "n_reps": cost.get("n_reps", 0),
            "total_usd": cost.get("total_usd", 0.0), "provenance": cost.get("provenance", "unknown")}
 

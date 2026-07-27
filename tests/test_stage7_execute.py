@@ -96,6 +96,7 @@ import pytest  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 from infrastructure.acquisition.common import benchmark as BM  # noqa: E402
 from infrastructure.acquisition.common import db as gdb  # noqa: E402
+from tests import benchmark_seed as BSEED  # noqa: E402
 from infrastructure.acquisition.stage7_extract import models as _M7  # noqa: E402,F401 (registers table)
 
 govdb = pytest.mark.govdb
@@ -487,12 +488,7 @@ def test_compose_excludes_directives_raised_by_a_benchmark_dispatch(gov_session,
     s = gov_session
     hh = "zzbenchdisp"
     _seed_req(s, hh, "ZZBD1", "7->2", "high")
-    s.execute(text(
-        "INSERT INTO handoff (handoff_id, handoff_hash, created_at, created_by, status, path, "
-        "dispatch_type, n_districts, n_reps, total_usd, cost_provenance, district_ids, council_ids) "
-        "VALUES ('handoff_zzbenchdisp_t', :h, 'now', 'zz', 'dispatched', '/zz/x.json', :dt, 1, 1, "
-        "0.0, 'zz', '[]', '[]')"), {"h": hh, "dt": BM.DISPATCH_BENCHMARK})
-    s.flush()
+    BSEED.seed_handoff(s, hh, dispatch_type=BM.DISPATCH_BENCHMARK)
 
     monkeypatch.setattr(EX.Q1, "build_followup_batch",
                         lambda year, bid, targets, **kw: ({"batch_id": bid, "districts":

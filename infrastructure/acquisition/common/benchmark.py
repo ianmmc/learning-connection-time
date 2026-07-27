@@ -78,6 +78,29 @@ DISPATCH_TYPES = (DISPATCH_PRODUCTION, DISPATCH_BENCHMARK)
 RUN_KIND_BENCHMARK = "benchmark"
 
 
+def effective_dispatch_type(doc: dict) -> str:
+    """The dispatch type of a package / frozen handoff doc / API payload, defaulting an absent or
+    empty value to production (#650).
+
+    Every artifact predating #618 is unstamped, and back-stamping was rejected (arm 2 derives the
+    answer for historical work — see the module docstring), so the fallback is permanent rather than
+    a migration window. It shipped as `X.get("dispatch_type") or DISPATCH_PRODUCTION` hand-copied at
+    8 sites across 4 files — including the freeze refusal and the mode-stability gate, which must
+    never disagree about the same doc's effective type. The consolidation the epic performed on the
+    benchmark predicate, applied to the rule the epic itself introduced.
+
+    Deliberately NOT validating: this is a read-path default over data already on disk, and a stored
+    junk value must surface as a mismatch at the gate that cares (`validate_dispatch_type` at the
+    write path), not be swallowed here."""
+    return doc.get("dispatch_type") or DISPATCH_PRODUCTION
+
+
+def is_benchmark_dispatch(doc: dict) -> bool:
+    """Does this doc describe a BENCHMARK dispatch? The predicate form of `effective_dispatch_type`,
+    for the call sites that only ever compare (the freeze refusal, the early-exit gate)."""
+    return effective_dispatch_type(doc) == DISPATCH_BENCHMARK
+
+
 def validate_dispatch_type(value: str) -> str:
     """Return `value` if it is a legal dispatch type, else raise. `batch_type` shipped as an
     unconstrained string with its legal values living only in a comment, which is how the

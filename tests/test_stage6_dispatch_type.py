@@ -17,6 +17,7 @@ from sqlalchemy import text
 
 from infrastructure.acquisition.common import benchmark as BM
 from infrastructure.acquisition.common import db as gdb
+from tests import benchmark_seed as BSEED
 from infrastructure.acquisition.process_governance import stage6_dispatch as BR
 from infrastructure.acquisition.stage6_handoff import handoff as HND
 
@@ -73,16 +74,7 @@ def test_an_invalid_dispatch_type_raises_rather_than_minting_a_third_type():
 
 # --------------------------- the provenance guard (govdb) ---------------------------
 
-def _seed_rec(s, district_id, rec_key, hash_, source):
-    """One record + its capture row, joined on (district_id, hash) — the real provenance path."""
-    s.execute(text("INSERT INTO record (rec_key, district_id, url, hash, tier) "
-                   "VALUES (:k, :d, :u, :h, 'A') ON CONFLICT (rec_key) DO NOTHING"),
-              {"k": rec_key, "d": district_id, "u": f"http://x/{hash_}", "h": hash_})
-    s.execute(text("INSERT INTO capture (district_id, hash, url, ok, kind, source) "
-                   "VALUES (:d, :h, :u, 1, 'html', :s) "
-                   "ON CONFLICT (district_id, hash) DO UPDATE SET source = EXCLUDED.source"),
-              {"d": district_id, "h": hash_, "u": f"http://x/{hash_}", "s": source})
-    s.flush()
+_seed_rec = BSEED.seed_rep     # #661: the record+capture pair lives in one place now
 
 
 @pytest.fixture
