@@ -69,6 +69,14 @@ DISPATCH_PRODUCTION = "production"
 DISPATCH_BENCHMARK = "benchmark"
 DISPATCH_TYPES = (DISPATCH_PRODUCTION, DISPATCH_BENCHMARK)
 
+# The extraction.run_kind value for a run against a BENCHMARK dispatch (#662). A THIRD value beside
+# 'production' and #148's 'probe' — 'probe' means a council-VARIANT measurement, a different axis
+# entirely, and conflating the two would make every run_kind-scoped reader (the gate@8 queue, the
+# closing-argument pool, the Stage-9 wall, the Stage-5 calibration harness) lie about what it counts.
+# Stamped going forward at persist_run_session (stage7_run.py); the historical rows that predate this
+# stamp were relabelled by the one-time reclassify_benchmark_extractions migration.
+RUN_KIND_BENCHMARK = "benchmark"
+
 
 def validate_dispatch_type(value: str) -> str:
     """Return `value` if it is a legal dispatch type, else raise. `batch_type` shipped as an

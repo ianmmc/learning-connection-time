@@ -53,7 +53,8 @@ from infrastructure.acquisition.common import benchmark as BM
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import receipts as RCPT
 
-RUN_KIND_BENCHMARK = "benchmark"
+RUN_KIND_BENCHMARK = BM.RUN_KIND_BENCHMARK   # one home: common/benchmark.py — also stamped going
+                                             # forward at persist_run_session (stage7_run.py, #662)
 RECEIPT_BASENAME = "reclassify_benchmark_extractions"
 
 # Every production extraction holding at least one fact whose representation was benchmark-injected,
@@ -132,8 +133,11 @@ def reclassify(session, *, apply: bool = False) -> dict:
     """Find, receipt, and (with `apply`) reclassify. Returns a summary dict either way."""
     candidates = find_candidates(session)
     clean, mixed = split_mixed(candidates)
+    by_district: dict[str, list[int]] = {}
+    for c in clean:
+        by_district.setdefault(c["district_id"], []).append(c["extraction_id"])
     summary = {"n_candidates": len(candidates), "n_clean": len(clean), "n_mixed": len(mixed),
-               "districts": sorted({c["district_id"] for c in clean}),
+               "districts": sorted(by_district), "extraction_ids_by_district": by_district,
                "extraction_ids": sorted(c["extraction_id"] for c in clean),
                "mixed": mixed, "applied": False, "receipts": []}
     if mixed:
@@ -184,9 +188,13 @@ def main() -> None:
             return
         print(f"[reclassify] {summary['n_clean']} extraction(s) across "
               f"{len(summary['districts'])} district(s)")
+        # #662 review: no re-query here. by_district was already computed inside reclassify() — this
+        # printed exactly the same rows via a fresh find_candidates() call PER DISTRICT (an O(N)
+        # re-run of the full 4-table JOIN), and did it only on the branch that never fires on --apply
+        # (the run that actually matters), so the one live production run's per-district breakdown
+        # never printed at all despite the JSON summary at the end having it all along.
         for did in summary["districts"]:
-            eids = [c for c in find_candidates(s) if c["district_id"] == did] if not args.apply else []
-            print(f"  {did}" + (f"  extractions={[c['extraction_id'] for c in eids]}" if eids else ""))
+            print(f"  {did}  extractions={summary['extraction_ids_by_district'][did]}")
         print(f"[reclassify] receipts written: {len(summary['receipts'])}"
               if summary["applied"] else
               f"[reclassify] would write {len(summary['districts'])} receipt(s) on --apply")

@@ -2033,11 +2033,20 @@ def handoff_candidates():
 
     Also carries a per-district DISPATCH-HISTORY signal (#171) so the console can distinguish fresh
     from already-sent districts (re-selecting a dispatched one is wasted spend): `n_dispatched` /
-    `last_dispatched_at` from the gate@6 `dispatched` state_events; `n_extracted` = PRODUCTION
-    extractions that ACCEPTED >=1 fact (n_accepted>0 — an all-errors run persists a row but has no
-    facts, so bare row-existence would falsely read as 'has data'; #198 review); and `is_benchmark`
-    computed server-side by the SAME rule as the dispatch wall (`batch_type='benchmark'` membership,
-    not the batch_00000 id literal — the GT corpus grows into new benchmark batches; #198 review)."""
+    `last_dispatched_at` from the gate@6 `dispatched` state_events; `n_extracted` = extractions that
+    ACCEPTED >=1 fact (n_accepted>0 — an all-errors run persists a row but has no facts, so bare
+    row-existence would falsely read as 'has data'; #198 review); and `is_benchmark` computed
+    server-side by the SAME rule as the dispatch wall (`batch_type='benchmark'` membership, not the
+    batch_00000 id literal — the GT corpus grows into new benchmark batches; #198 review).
+
+    `n_extracted` deliberately counts EVERY run_kind, not `run_kind='production'` only (#662 review):
+    this signal answers "has extraction work already happened here", the question that prevents a
+    wasted re-dispatch, and a district's `run_kind='benchmark'` extractions (the historical harness,
+    or a Council Lab A/B) answer that just as truly as production ones — walled from the LCT write is
+    not the same question as touched-by-extraction. Scoping this to production would have made all 27
+    batch_00000 districts read `n_extracted=0` the moment #662's migration landed, despite carrying
+    940+ human-verified facts, inviting exactly the wasted redispatch #171 built this signal to
+    prevent. `is_benchmark` is the nuance signal; this stays the raw activity signal."""
     # Target labels are a BOUND list parameter computed per request (issue #62): the old module-level
     # _TARGET_IN froze the vocabulary at import time AND string-interpolated it into the SQL.
     targets = sorted(BS.TARGET_LABELS)
@@ -2073,8 +2082,9 @@ def handoff_candidates():
                     GROUP BY district_id
                 ) disp ON disp.district_id = d.district_id
                 LEFT JOIN (
+                    -- #662: every run_kind counts here, not just 'production' — see the docstring.
                     SELECT district_id, COUNT(*) AS n_extracted
-                    FROM extraction WHERE run_kind = 'production' AND n_accepted > 0
+                    FROM extraction WHERE n_accepted > 0
                     GROUP BY district_id
                 ) ext ON ext.district_id = d.district_id
                 ORDER BY n_send DESC, n_hold DESC, d.district_id"""),

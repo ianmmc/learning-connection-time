@@ -334,6 +334,20 @@ def test_the_migration_is_idempotent(gov_session, monkeypatch):
 
 
 @govdb
+def test_reclassify_groups_extraction_ids_by_district_without_a_requery(gov_session, monkeypatch):
+    """Review finding: `main()`'s per-district printout used to re-run the full 4-table-JOIN candidate
+    query once per district — O(N) redundant scans of already-computed data — and did it only on the
+    branch that never fires on --apply (the run that matters), so the one live production run's
+    breakdown never printed at all. `reclassify()` now returns the grouping directly."""
+    gdb.init_precious_schema()
+    s = gov_session
+    (_old_eid, _old_fid), _new = _seed_the_rerun(s, migrate=False)
+    summary = RCLS.reclassify(s, apply=False)
+    assert summary["extraction_ids_by_district"].get(DID) == [_old_eid]
+    assert summary["districts"] == sorted(summary["extraction_ids_by_district"])
+
+
+@govdb
 def test_the_receipt_names_every_row_and_its_prior_value(gov_session, monkeypatch):
     """The restore point. Commandment #1 is auditability, and the working convention is a manifest
     before a destructive op — so the receipt must carry enough to reconstruct the change without the
