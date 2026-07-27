@@ -1254,6 +1254,64 @@ unenforced for newly-composed benchmark batches — durable per-representation b
 (the full evidence record, including §10-§11's log of what the planning pass got wrong) and, beside it,
 Ian's own statement of intent; `PIPELINE_GOVERNANCE_AND_STATE.md` §13 (the durable architecture).
 
+### 2026-07-26/27 — Epic #617 Phase 3: the grain moved but the SCOPE didn't, and a 6-PR review round found the pattern repeating inside the fix itself
+
+Phase 3 (PR #648, merged as `af1ce77`) shipped the two-arm provenance guard #619 designed: a Stage-9
+write wall keyed on the receipt's own representations rather than district identity. Measured
+behaviour-preserving against 83 districts holding production facts — membership and provenance agreed
+on all of them, and gate@8 admitted the identical 56. On that evidence, the epic's acceptance property
+("a district honestly re-run incorporates") looked satisfied.
+
+**It wasn't, and the reason is the same shape as Phase 0-2c's own lesson, one layer up.** #619 moved
+the *grain* the wall keys on (district → provenance) but never moved its *scope* (all-of-history →
+this-run). Two layers sit in front of that wall — the gate@8 review queue and `merge_fact_runs` — and
+both stayed scoped to "has this district EVER produced a benchmark-provenance fact," which is
+permanently true once true, because `extraction`/`school_fact` are append-only and a fresh run can
+only add facts, never retract the old ones. Filed as #662 once #620's actual re-run batches
+(`batch_00030/31/32`, 25 districts) made the disagreement observable: **25 of 25** were walled by the
+queue today, and **957 of 957** accepted benchmark facts carried no parseable `school_year`, so the
+merge's year-supersede axis never engaged and the earliest (injected) fact always won. Every prior
+"the grains agree" measurement had been taken in the one state — before any re-run existed — where the
+three layers could not possibly disagree.
+
+**The fix, decided by Ian as (c) reclassify + (b) precedence, turned out safer than either side had
+assumed once it was measured rather than reasoned about.** The candidate sweep is 30 extractions across
+exactly 27 districts, and — contrary to the caveat both #662 and the Phase-3 findings report had
+carried forward from the mixed-handoff discovery — **zero of those extractions are mixed**: the one
+real mixed artifact (`f33790e63820`) is mixed at *handoff* grain, not extraction grain, so relabeling
+each extraction's own `run_kind` is surgical. Zero of the 27 carry a gate@8 approval or a Stage-9
+event, so no frozen human judgment was at risk. And the escape hatch #662 first proposed — striking the
+stale fact at gate@8 via `band_exclusion` — was withdrawn outright, not merely deprioritized: the merge
+collapses to one row per `(band, school)` *before* exclusions apply, so striking the injected winner
+deletes the school from the band rather than promoting the runner-up.
+
+**The review round that followed the fix is itself the strongest evidence for the standing lesson.**
+Nine independent review passes across the resulting PRs (#663-#667) surfaced roughly thirty candidate
+findings; most were already-correct code the reviewers had verified rather than broken, but three
+survived scrutiny and were real: `run_kind` was only ever corrected retroactively (a second benchmark
+dispatch would have silently reproduced #662 with no write-time guard), the gate@6 operator dashboard
+would have read all 27 districts as "never extracted" the moment the migration landed (inviting the
+exact wasted re-dispatch its own signal exists to prevent), and the migration script's own dry-run
+diagnostic re-ran its full query once per district while never firing on the one branch that mattered.
+All three were the same family of miss as #662 itself — a fix verified against the state that existed
+*before* the fix, not the state the fix was supposed to produce.
+
+**The merge sequence itself repeated the epic's one-home lesson twice more, mechanically.** #665's
+`test_one_home_fitness.py` — a declared table of consolidated-rule detectors, itself new in this
+round — caught two regressions the moment later PRs rebased onto it: a `dispatch_type` check
+re-inlined instead of routed through the new `is_benchmark_dispatch` helper, and two test files that
+still hand-rolled the precious `handoff` INSERT chain `tests/benchmark_seed.py` exists to own. Both
+were sequencing artifacts (the offending code was written on branches that predated the consolidation
+it violated), and both were caught automatically rather than by a human noticing — which is the
+generalization #665 built after Phase 0-2c shipped a bespoke guard for one rule and then quietly
+re-created the same duplication three more times in the same round of work.
+
+Authority: GitHub issue #662 (closed) + review sub-issues #649-#661 (closed); PRs #663-#668 (merged to
+`main`); `docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md`
+§10.19-§10.20 (the grain-vs-scope correction) and §12 (the Phase A/B/D implementation log); REQ-169's
+SCOPE criterion in `docs/REQUIREMENTS.yaml`. Epic #617 stays open pending #620 (the campaign itself,
+now unblocked) and the deferred structural backlog (#622-#625, #640, #645, #646).
+
 ---
 
 ## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)
