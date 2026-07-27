@@ -182,9 +182,51 @@ def _early_exit_enabled(doc: dict, run_kind: str, gt_data, ms_params: dict) -> b
     and, since #619, a BENCHMARK dispatch (#618 — the Stages-6/7 A/B harness). The third replaced a
     per-district `batch_type='benchmark'` MEMBERSHIP check that could see none of them and answered
     permanently for a district instead; it is also the only form that can see a Council Lab A/B
-    composed entirely of production reps, which carries no rep-level signal at all."""
+    composed entirely of production reps, which carries no rep-level signal at all.
+
+    RUN-WIDE only — this is arm 1. A handoff is stamped with ONE dispatch_type, so it cannot see the
+    mixed case: a genuine production dispatch that pulled in a few `gt://` curated PDFs (the real
+    `f33790e63820`, 3 reps across 3 of its 9 districts). Arm 2 is per-district and lives in
+    `_drop_benchmark_provenance_districts`, applied to the targets this gate lets through (#653)."""
     return bool(ms_params.get("enabled")) and run_kind == "production" and gt_data is None \
         and (doc.get("dispatch_type") or BM.DISPATCH_PRODUCTION) != BM.DISPATCH_BENCHMARK
+
+
+def _drop_benchmark_provenance_districts(targets: dict, by_district: dict) -> dict:
+    """ARM 2 of the early-exit disabler (#653): drop any district whose reps IN THIS RUN carry
+    benchmark provenance, so it pays the full census REQ-151 asks of a measurement run.
+
+    `_early_exit_enabled` reads the run's stamped `dispatch_type`, which is handoff-wide and so is
+    blind to a production dispatch holding a few injected reps — precisely the case `common/benchmark`
+    needed two arms for. Asked per district over the reps this run will actually send, which is the
+    grain the shortcut is decided at.
+
+    Degrades CONSERVATIVELY, unlike `_early_exit_targets`: a lookup failure here drops every district
+    (full census, more paid calls) rather than leaving the shortcut on. The two degradations disagree
+    on purpose — an absent target means "we don't know what to fill", an unknown provenance means
+    "we might be measuring the shortcut", and only the second is a correctness risk."""
+    if not targets:
+        return targets
+    keys_by_did = {did: [r["rec_key"] for r in by_district.get(did, []) if r.get("rec_key")]
+                   for did in targets}
+    all_keys = sorted({k for ks in keys_by_did.values() for k in ks})
+    if not all_keys:
+        return targets
+    try:
+        with gdb.session_scope() as s:
+            flagged = BM.benchmark_provenance_rec_keys(s, all_keys)
+    except Exception as e:  # noqa: BLE001 — unknown provenance ⇒ no shortcut (the safe direction)
+        print(f"[mode-stability] provenance lookup failed ({type(e).__name__}: {str(e)[:80]}) — "
+              f"early-exit disabled this run", flush=True)
+        return {}
+    if not flagged:
+        return targets
+    out = {did: bands for did, bands in targets.items()
+           if not any(k in flagged for k in keys_by_did[did])}
+    for did in sorted(set(targets) - set(out)):
+        print(f"[mode-stability] {did} — benchmark-provenance rep(s) in this run; full census "
+              f"(REQ-151, #653)", flush=True)
+    return out
 
 
 def _early_exit_targets(district_ids) -> dict:
@@ -468,7 +510,8 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
     if run_kind == "production" and (doc.get("dispatch_type") or BM.DISPATCH_PRODUCTION) == BM.DISPATCH_BENCHMARK:
         run_kind = BM.RUN_KIND_BENCHMARK
     ms_params = load_mode_stability()
-    ms_targets = (_early_exit_targets(by_district.keys())
+    ms_targets = (_drop_benchmark_provenance_districts(
+                      _early_exit_targets(by_district.keys()), by_district)
                   if _early_exit_enabled(doc, run_kind, gt_data, ms_params) else {})
     results = {"handoff_hash": hh, "run_kind": run_kind, "districts": {}}
     for did in sorted(by_district):

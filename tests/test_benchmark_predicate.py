@@ -431,3 +431,127 @@ def _bundle_alternate(s, district_id, actor, root):
     fm = _FREEZE_CALL.search(pre_644)
     gm = _GUARD_CALL.search(pre_644)
     assert fm is not None and gm is None, "the detector would not have caught the #644 defect"
+
+
+# --------------------------- #651: where run_kind scoping belongs ---------------------------
+# Not a style rule. A query that ENUMERATES a district's history must scope to production (a probe
+# is not a release path); a query asked about identifiers THE CALLER ALREADY SELECTED must not —
+# narrowing there only removes rows the caller asked about, which on a fail-closed wall is the
+# fail-OPEN direction. Pinned in both directions so neither can be "made consistent" by accident.
+
+def test_the_enumerating_queries_scope_to_production_and_the_caller_selected_ones_do_not():
+    assert BM.IS_BENCHMARK_PROVENANCE_SQL.count("e.run_kind = 'production'") == 2   # both arms
+    prov_reqs = str(BM._BENCH_PROV_REQUESTS_SQL)
+    assert prov_reqs.count("e.run_kind = 'production'") == 1     # arm 2 enumerates; arm 1 needn't
+    # the caller-selected pair: adding a run_kind filter here would fail OPEN
+    assert "run_kind" not in str(BM._REC_PROV_SQL)
+    assert "run_kind" not in str(BM._BENCH_DISPATCH_FACTS_SQL)
+
+
+@govdb
+def test_a_probe_touching_an_injected_rep_does_not_wall_a_production_directive(gov_session):
+    """`extraction` is append-only, so (handoff_hash, district_id) can match several runs and the
+    directive names none of them. Before #651 a probe that read one gt:// rep walled every
+    production directive raised against the same handoff — for an experiment never released."""
+    gdb.init_precious_schema()
+    s = gov_session
+    from infrastructure.acquisition.common import cache_ingest as CI
+    from infrastructure.acquisition.stage5_filter import build_signals as BS
+    BS.ensure_signal_schema(s)
+    CI.ensure_cache_schema(s)
+    hh = "zzh651probe"
+    s.execute(text(
+        "INSERT INTO handoff (handoff_id, handoff_hash, created_at, created_by, status, path, "
+        "dispatch_type, n_districts, n_reps, total_usd, cost_provenance, district_ids, council_ids) "
+        "VALUES (:hid, :hh, 'now', 'zz', 'dispatched', '/zz/x.json', 'production', 1, 1, 0.0, 'zz', "
+        "'[]', '[]')"), {"hid": f"handoff_{hh}_t", "hh": hh})
+    s.execute(text("INSERT INTO record (rec_key, district_id, url, hash, tier) "
+                   "VALUES ('ZZ651:gt', 'ZZ651', 'http://x/g', 'zz651g', 'A')"))
+    s.execute(text("INSERT INTO capture (district_id, hash, url, ok, kind, source) "
+                   "VALUES ('ZZ651', 'zz651g', 'http://x/g', 1, 'html', :s)"),
+              {"s": BM.BENCHMARK_CAPTURE_SOURCE})
+    # the PROBE run is the only one that read the injected rep
+    for kind, rec in (("probe", "ZZ651:gt"), ("production", None)):
+        eid = s.execute(text(
+            "INSERT INTO extraction (handoff_hash, district_id, run_kind, created_at, created_by, "
+            "n_reps, n_calls, n_judge_calls, n_errors, prompt_tokens, completion_tokens, cost_usd, "
+            "n_accepted, n_unresolved) VALUES (:hh, 'ZZ651', :rk, 'now', 'zz', 1, 1, 0, 0, 0, 0, "
+            "0.0, 1, 0) RETURNING extraction_id"), {"hh": hh, "rk": kind}).scalar()
+        if rec:
+            s.execute(text(
+                "INSERT INTO school_fact (extraction_id, district_id, band, school, status, rec_key, "
+                "created_at, human_determination) VALUES (:e, 'ZZ651', 'high', 'oak', 'accepted', "
+                ":k, 'now', '')"), {"e": eid, "k": rec})
+    rid = s.execute(text(
+        "INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, target, reason, "
+        "status, created_at) VALUES ('ZZ651', :hh, 'district', '7->2', 'ZZ651', 'zz', 'approved', "
+        "'now') RETURNING request_id"), {"hh": hh}).scalar()
+    s.flush()
+
+    assert BM.benchmark_provenance_request_ids(s, [rid]) == set()
+
+
+# --------------------------- #654: the fail-closed catch is narrow ---------------------------
+
+def test_only_a_missing_table_is_tolerated_not_any_programming_error():
+    """The docstrings have always said "ONLY a missing table"; before #654 the `except` clause said
+    ProgrammingError, which is also what a renamed column or a SQL typo raises. Swallowing THOSE
+    answers "not benchmark" because the guard could not ask — fail-OPEN on a fail-closed wall."""
+    from sqlalchemy.exc import ProgrammingError
+
+    class _Orig(Exception):
+        def __init__(self, pgcode):
+            self.pgcode = pgcode
+
+    missing = ProgrammingError("stmt", {}, _Orig("42P01"))
+    renamed = ProgrammingError("stmt", {}, _Orig("42703"))       # undefined_column
+    assert BM._is_undefined_table(missing) is True
+    assert BM._is_undefined_table(renamed) is False
+    # no pgcode at all (a driver or a mock): fall back to the message, never crash a real fresh DB
+    assert BM._is_undefined_table(ProgrammingError('relation "handoff" does not exist', {}, None)) \
+        is True
+    assert BM._is_undefined_table(ProgrammingError("syntax error at or near", {}, None)) is False
+
+
+def test_a_non_missing_table_fault_propagates_out_of_both_fail_closed_predicates(monkeypatch):
+    """Asserted on the real functions, not on the helper — the helper being right is worthless if a
+    call site still catches the whole class."""
+    from sqlalchemy.exc import ProgrammingError
+
+    class _Orig(Exception):
+        pgcode = "42703"
+
+    class _Sess:
+        def execute(self, *a, **k):
+            raise ProgrammingError("stmt", {}, _Orig())
+
+        def rollback(self):
+            raise AssertionError("must not swallow a real SQL fault")
+
+    with pytest.raises(ProgrammingError):
+        BM.is_benchmark_district(_Sess(), "ZZ654")
+    with pytest.raises(ProgrammingError):
+        BM.is_benchmark_provenance(_Sess(), rec_keys=["ZZ654:x"])
+
+
+def test_a_missing_table_still_reads_as_not_benchmark():
+    """The tolerance #654 narrowed must survive narrowing — a fresh governance DB with no dispatch
+    history has no provenance, and that is not an error."""
+    from sqlalchemy.exc import ProgrammingError
+
+    class _Orig(Exception):
+        pgcode = "42P01"
+
+    class _Sess:
+        rolled = False
+
+        def execute(self, *a, **k):
+            raise ProgrammingError("stmt", {}, _Orig())
+
+        def rollback(self):
+            self.rolled = True
+
+    s = _Sess()
+    assert BM.is_benchmark_district(s, "ZZ654") is False
+    assert BM.is_benchmark_provenance(s, rec_keys=["ZZ654:x"]) is False
+    assert s.rolled is True

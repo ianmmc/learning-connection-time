@@ -110,6 +110,25 @@ _ALL_SQL = text(
     "JOIN batch b ON b.batch_id = bd.batch_id WHERE b.batch_type = 'benchmark'")
 
 
+# Postgres SQLSTATE 42P01, undefined_table. The fail-closed predicates below tolerate exactly ONE
+# error — "the governance DB has no dispatch history at all yet" — and their docstrings have always
+# said so; before #654 the `except` clause said `ProgrammingError`, which is also what a renamed
+# column or a SQL typo raises. Swallowing THOSE would answer "not benchmark" because the guard could
+# not ask, which is the fail-OPEN direction on a wall whose whole job is to fail closed.
+_UNDEFINED_TABLE = "42P01"
+
+
+def _is_undefined_table(exc: ProgrammingError) -> bool:
+    """True only for a missing-relation error. Reads `pgcode` off the DBAPI original; falls back to
+    the message text for drivers/mocks that don't expose one (never assume a fault is benign, but a
+    driver without pgcode must not turn a real fresh-DB case into a crash)."""
+    orig = getattr(exc, "orig", None)
+    code = getattr(orig, "pgcode", None) or getattr(getattr(orig, "diag", None), "sqlstate", None)
+    if code:
+        return code == _UNDEFINED_TABLE
+    return "does not exist" in str(exc).lower()
+
+
 def benchmark_district_ids(session, district_ids) -> set:
     """The subset of `district_ids` belonging to ANY benchmark batch. Empty input short-circuits
     without a query (`ANY(:d)` on an empty list is a needless round trip). Errors PROPAGATE — a caller
@@ -124,10 +143,13 @@ def is_benchmark_district(session, district_id: str) -> bool:
     """True when the district belongs to ANY benchmark batch — the FAIL-CLOSED single-district form
     Stage 9's write wall uses. Only a MISSING batch/batch_district table (a fresh governance DB) is
     treated as not-benchmark; every other error propagates, so a transient DB fault can never let a
-    benchmark district through (PR #607 R2)."""
+    benchmark district through (PR #607 R2). Narrowed to the missing-table code by #654 — see
+    `_is_undefined_table`; the docstring's "only a MISSING table" is now what the code enforces."""
     try:
         return bool(session.execute(_ONE_SQL, {"d": district_id}).first())
-    except ProgrammingError:
+    except ProgrammingError as e:
+        if not _is_undefined_table(e):
+            raise                # a real SQL fault must never read as "not benchmark" (#654)
         session.rollback()   # relation "batch"/"batch_district" does not exist — fresh DB, no members
         return False
 
@@ -160,6 +182,27 @@ def all_benchmark_district_ids(session) -> set:
 # identical answers; they diverge only once #620's re-run creates the mixed case.
 BENCHMARK_CAPTURE_SOURCE = "benchmark_gt"
 
+# --- WHERE `run_kind='production'` BELONGS, AND WHERE IT WOULD FAIL OPEN (#651) ------------------
+# Three queries below answer "is this benchmark?" and only some carry a run_kind filter. That is not
+# an oversight; the rule is what the query ENUMERATES:
+#
+#   * A query that sweeps a district's HISTORY to decide something about the district must scope to
+#     production — a probe (#148) is not a release path, and folding probes in would wall a district
+#     for an experiment it never released. `IS_BENCHMARK_PROVENANCE_SQL` (both arms) and
+#     `_BENCH_PROV_REQUESTS_SQL`'s arm 2 are this shape.
+#   * A query asked about IDENTIFIERS THE CALLER ALREADY SELECTED must NOT — the caller has already
+#     decided which reps/facts are in scope (the receipt's write-bearing set, the reps in a freeze),
+#     so narrowing here only ever removes rows the caller asked about, which on a fail-CLOSED wall is
+#     the fail-OPEN direction. `_REC_PROV_SQL` and `_BENCH_DISPATCH_FACTS_SQL` are this shape.
+#
+# Adding the filter uniformly "for consistency" would break the second class. Adding it nowhere
+# leaves the first class walling on probes. The distinction is the point.
+# -------------------------------------------------------------------------------------------------
+
+# CALLER-SELECTED grain: rec_keys handed in by gate@6 (the reps being frozen) or by Stage 9 (the
+# receipt's write-bearing reps). Deliberately un-scoped by run_kind — there is no extraction in this
+# join at all, because whether a REPRESENTATION was injected is a property of the representation, not
+# of any run that happened to read it.
 _REC_PROV_SQL = text(
     "SELECT DISTINCT r.rec_key FROM record r "
     "JOIN capture c ON c.district_id = r.district_id AND c.hash = r.hash "
@@ -214,6 +257,8 @@ IS_BENCHMARK_PROVENANCE_SQL = """(
              WHERE e.district_id = {alias}.district_id AND e.run_kind = 'production'
                AND c.source = 'benchmark_gt'))"""
 
+# CALLER-SELECTED grain (see the run_kind note above): fact_ids come from the frozen receipt, which
+# `closing_argument` already built from production extractions only. Un-scoped on purpose.
 _BENCH_DISPATCH_FACTS_SQL = text(
     "SELECT DISTINCT f.fact_id FROM school_fact f "
     "JOIN extraction e ON e.extraction_id = f.extraction_id "
@@ -248,7 +293,7 @@ JOIN extraction e ON e.handoff_hash = er.handoff_hash AND e.district_id = er.dis
 JOIN school_fact f ON f.extraction_id = e.extraction_id
 JOIN record rec ON rec.rec_key = f.rec_key
 JOIN capture c ON c.district_id = rec.district_id AND c.hash = rec.hash
-WHERE c.source = :src AND er.request_id = ANY(:r)""")
+WHERE e.run_kind = 'production' AND c.source = :src AND er.request_id = ANY(:r)""")
 
 
 def benchmark_provenance_request_ids(session, request_ids) -> set:
@@ -259,6 +304,12 @@ def benchmark_provenance_request_ids(session, request_ids) -> set:
     arms, at `(handoff × district)` grain — arm 1 the stamped `handoff.dispatch_type`, arm 2 the reps
     behind the facts that extraction produced. `extraction_request` carries `handoff_hash` +
     `district_id`, which is exactly the key both arms need.
+
+    Arm 2 ENUMERATES: `extraction` is append-only ("a re-run is a new row"), so `(handoff_hash,
+    district_id)` can match several extractions and the directive names none of them. It is therefore
+    scoped to `run_kind='production'` (#651) — without that, a probe run touching one `gt://` rep
+    would wall the production directives raised against the same handoff, for an experiment that was
+    never released. Arm 1 needs no such filter: a dispatch's type is the dispatch's, whoever ran it.
 
     WHAT THIS DOES AND DOES NOT STOP. It stops an EXPERIMENT from silently seeding production work: a
     benchmark dispatch terminates at gate@7, so its findings must not compose themselves into a
@@ -292,11 +343,19 @@ def is_benchmark_provenance(session, *, rec_keys=(), fact_ids=()) -> bool:
     (a fresh governance DB with no dispatch history at all) reads as not-benchmark; every other error
     propagates, so a transient DB fault can never let benchmark data through. Note this is the opposite
     tolerance from bare `benchmark_provenance_rec_keys`, which feeds the gate@6 freeze — there a loud
-    failure is recoverable (retry the freeze) and there is no fresh-DB case to tolerate."""
+    failure is recoverable (retry the freeze) and there is no fresh-DB case to tolerate.
+
+    #651/#654: the catch is NARROWED to the missing-table code rather than the whole ProgrammingError
+    class. A renamed column or a SQL typo in either arm also raises ProgrammingError, and swallowing
+    that would fail OPEN on a wall whose entire job is to fail closed — the guard would answer
+    "not benchmark" because it could not ask. Only 42P01 (undefined_table) is the fresh-DB case the
+    tolerance exists for; everything else propagates."""
     try:
         if benchmark_dispatch_fact_ids(session, fact_ids):
             return True
         return bool(benchmark_provenance_rec_keys(session, rec_keys))
-    except ProgrammingError:
+    except ProgrammingError as e:
+        if not _is_undefined_table(e):
+            raise                # a real SQL fault must never read as "not benchmark" (#654)
         session.rollback()   # relation "handoff"/"record"/"capture" absent — fresh DB, no provenance
         return False
