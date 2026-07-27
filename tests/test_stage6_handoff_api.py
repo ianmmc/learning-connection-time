@@ -99,6 +99,40 @@ def test_candidates_badge_holds_pre_2017_tier_a_via_the_241_floor(gov_session, m
     gov_session.rollback()
 
 
+@pytest.mark.integration
+def test_candidates_n_extracted_counts_benchmark_run_kind_too(gov_session, monkeypatch):
+    """#662 review: n_extracted must NOT be scoped to run_kind='production'. It answers "has
+    extraction work already happened here" — the signal #171 built to prevent a wasted re-dispatch —
+    and a district whose only extractions are run_kind='benchmark' (the historical GT harness, or a
+    future Council Lab A/B) has just as truly been touched. Scoping this to production would have
+    made all 27 batch_00000 districts read n_extracted=0 the moment the #662 migration landed,
+    despite carrying 940+ human-verified facts — inviting the exact wasted redispatch this signal
+    exists to prevent. `is_benchmark` (batch membership) stays the separate nuance signal."""
+    import contextlib
+    from sqlalchemy import text as _text
+    from infrastructure.acquisition.stage6_handoff import models as M6   # noqa: F401 (register)
+    from infrastructure.acquisition.stage7_extract import models as M7   # noqa: F401 (register)
+    SRV.gdb.init_precious_schema()
+    did = "CANDBENCH662"
+    gov_session.execute(_text(
+        "INSERT INTO district (district_id, name, district_dir, labeled_topology, nces_school_count, "
+        "n_records) VALUES (:d, 'T', 'candbench662_dir', 'per_school', 1, 0)"), {"d": did})
+    gov_session.execute(_text(
+        "INSERT INTO extraction (handoff_hash, district_id, run_kind, created_at, created_by, "
+        "n_reps, n_calls, n_judge_calls, n_errors, prompt_tokens, completion_tokens, cost_usd, "
+        "n_accepted, n_unresolved) VALUES ('candbench662h', :d, 'benchmark', 'now', 'zz', 1, 1, 0, "
+        "0, 0, 0, 0.0, 3, 0)"), {"d": did})
+    gov_session.flush()
+
+    @contextlib.contextmanager
+    def _scope():
+        yield gov_session
+    monkeypatch.setattr(SRV.gdb, "session_scope", _scope)
+    row = {r["district_id"]: r for r in SRV.handoff_candidates()}[did]
+    assert row["n_extracted"] == 1, "a run_kind='benchmark' extraction must still count as extracted"
+    gov_session.rollback()
+
+
 # ----------------------------- preview→freeze staleness gate (issue #37) -----------------------------
 from infrastructure.acquisition.stage6_handoff import handoff as HND
 

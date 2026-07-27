@@ -454,6 +454,19 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
         cost_model = None
 
     run_kind = doc.get("run_kind") or "production"    # #148: probes (image_handoff_variant) stamp this
+    # #662: a run against a BENCHMARK dispatch (#618) is never production, whatever #148's own axis
+    # says. Without this, persist_run_session (below) writes run_kind='production' for every benchmark
+    # harness run — which is exactly the mislabel #662's migration existed to correct retroactively.
+    # Stamping it correctly HERE means a second benchmark batch/dispatch (#618/2c made this possible;
+    # #620/mobility-property-2 is the point of building it) never needs that migration re-run. `probe`
+    # takes precedence when both are true — #148's axis answers a narrower, more specific question
+    # (which council variant) than #618's (production vs. benchmark harness), and #148 predates #618.
+    # NOTE (branch-sequencing): this reads dispatch_type inline rather than via BM.is_benchmark_dispatch
+    # because that helper lands in PR #665 (test/617-one-home-again), which this branch predates. When
+    # #665 merges, fold this into BM.is_benchmark_dispatch(doc) — the one-home fitness table in that PR
+    # will need this call site added to its scope.
+    if run_kind == "production" and (doc.get("dispatch_type") or BM.DISPATCH_PRODUCTION) == BM.DISPATCH_BENCHMARK:
+        run_kind = BM.RUN_KIND_BENCHMARK
     ms_params = load_mode_stability()
     ms_targets = (_early_exit_targets(by_district.keys())
                   if _early_exit_enabled(doc, run_kind, gt_data, ms_params) else {})

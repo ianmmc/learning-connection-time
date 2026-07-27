@@ -271,3 +271,80 @@ def test_early_exit_is_disabled_for_a_benchmark_dispatch():
     assert R7._early_exit_enabled({}, "probe", None, on) is False
     assert R7._early_exit_enabled({}, "production", {"x": 1}, on) is False
     assert R7._early_exit_enabled({}, "production", None, {"enabled": False}) is False
+
+
+# ------------------------- #662: run_kind reflects dispatch benchmark provenance -------------------------
+
+def test_persisted_run_kind_for_a_benchmark_dispatch(monkeypatch):
+    """The write-path half of #662 (the migration is the read-path/historical half). Without this,
+    persist_run_session writes run_kind='production' for every run against a BENCHMARK dispatch
+    (#618) — reproducing the exact mislabel the migration exists to correct, every time a SECOND
+    benchmark batch/dispatch happens. #618/2c made a second one possible and #620/mobility-property-2
+    is the whole point of having built it, so this is not a hypothetical.
+
+    Asserted on the actual persisted value, not just that a flag was threaded through — the whole
+    point is what lands in `extraction.run_kind`."""
+    captured = {}
+
+    def _fake_run_district(did, name, groups, councils, ddir, use_judge,
+                           early_exit_bands=None, ms_params=None):
+        return {"district_id": did, "name": name, "n_reps": 1, "n_judged": 0, "reps": [],
+                "accepted": [], "unresolved": [], "bands": {},
+                "telemetry": {"calls": 0, "judge_calls": 0, "errors": 0,
+                              "prompt_tokens": 0, "completion_tokens": 0, "cost_usd": 0.0}}
+
+    def _fake_persist(s, results, **kw):
+        captured["run_kind"] = results["run_kind"]
+        return {"handoff_hash": results["handoff_hash"], "districts": [], "n_facts": 0}
+
+    monkeypatch.setattr(R7, "_run_district", _fake_run_district)
+    monkeypatch.setattr(R7, "_require_key", lambda: None)
+    monkeypatch.setattr(R7, "district_dirs", lambda ids: {})
+    monkeypatch.setattr(R7, "persist_run_session", _fake_persist)
+    monkeypatch.setattr(R7.gdb, "init_precious_schema", lambda: None)
+    monkeypatch.setattr(R7.gdb, "session_scope", lambda: contextlib.nullcontext(None))
+    monkeypatch.setattr(R7, "_early_exit_targets", lambda ids: {})
+    monkeypatch.setattr(R7, "_spend_by_district", lambda **k: {})
+    monkeypatch.setattr(R7, "detect_and_persist_requests", lambda s, pd, hh: None)
+    monkeypatch.setattr(R7, "withdraw_satisfied_requests", lambda s, did: None)
+    monkeypatch.setattr(R7, "write_district_receipt", lambda pd, hh: "/dev/null")
+    monkeypatch.setattr(R7.BM, "benchmark_provenance_rec_keys", lambda s, keys: set())
+
+    R7.run_council_streaming(dict(DOC, dispatch_type="benchmark"), persist=True, resume=False)
+    assert captured["run_kind"] == "benchmark"
+    # #662, a correct side-effect of gating run_kind here rather than only at write time: a benchmark
+    # run must never spawn a follow-up directive (detect_and_persist_requests is production-only,
+    # #148 review) — proven by the mock never firing on the benchmark call above but firing below.
+    detected = []
+    monkeypatch.setattr(R7, "detect_and_persist_requests", lambda s, pd, hh: detected.append(hh))
+    R7.run_council_streaming(dict(DOC, dispatch_type="production"), persist=True, resume=False)
+    assert captured["run_kind"] == "production"
+    assert detected == ["mstest"]
+
+
+def test_probe_takes_precedence_over_benchmark_dispatch(monkeypatch):
+    """#148's axis (probe/production) predates #618's (production/benchmark) and answers a narrower
+    question — which council variant. A probe run against a benchmark dispatch is a rarer shape than
+    either alone, but probe must still win: it is never a candidate for ANY downstream pool, walled or
+    not, so mislabeling it 'benchmark' would be a demotion, not a correction."""
+    captured = {}
+    monkeypatch.setattr(R7, "_run_district", lambda *a, **k: {
+        "district_id": a[0], "name": a[1], "n_reps": 0, "n_judged": 0, "reps": [],
+        "accepted": [], "unresolved": [], "bands": {},
+        "telemetry": {"calls": 0, "judge_calls": 0, "errors": 0,
+                      "prompt_tokens": 0, "completion_tokens": 0, "cost_usd": 0.0}})
+    monkeypatch.setattr(R7, "_require_key", lambda: None)
+    monkeypatch.setattr(R7, "district_dirs", lambda ids: {})
+    monkeypatch.setattr(R7, "persist_run_session",
+                        lambda s, results, **kw: captured.update(run_kind=results["run_kind"]) or
+                        {"handoff_hash": results["handoff_hash"], "districts": [], "n_facts": 0})
+    monkeypatch.setattr(R7.gdb, "init_precious_schema", lambda: None)
+    monkeypatch.setattr(R7.gdb, "session_scope", lambda: contextlib.nullcontext(None))
+    monkeypatch.setattr(R7, "_early_exit_targets", lambda ids: {})
+    monkeypatch.setattr(R7, "_spend_by_district", lambda **k: {})
+    monkeypatch.setattr(R7, "write_district_receipt", lambda pd, hh: "/dev/null")
+    monkeypatch.setattr(R7.BM, "benchmark_provenance_rec_keys", lambda s, keys: set())
+
+    R7.run_council_streaming(dict(DOC, dispatch_type="benchmark", run_kind="probe"), persist=True,
+                             resume=False)
+    assert captured["run_kind"] == "probe"

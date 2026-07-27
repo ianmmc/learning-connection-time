@@ -178,13 +178,21 @@ def tree():
     out = []
     with gdb.session_scope() as con:
         districts = con.execute(text("SELECT * FROM district ORDER BY name")).mappings().all()
+        # #662 decision 4 (Ian, 2026-07-26): carry the capture's SOURCE so gate@5 can BADGE an
+        # injected `gt://` representation instead of silently filtering it. Selected as a plain
+        # column and compared in Python against the constant — re-spelling arm 2's
+        # `source = 'benchmark_gt'` as SQL here would be a second copy of the rule (see
+        # tests/test_one_home_fitness.py). capture's key is (district_id, hash), so this is 1:1.
         q = text("""SELECT r.rec_key, r.url, r.hash, r.kind, r.tier, r.sort_score, r.duplicate_of,
                       r.cluster_id, r.is_cluster_rep, r.cluster_size, r.is_emergent,
-                      l.status, l.primary_label
+                      l.status, l.primary_label, c.source AS capture_source
                FROM record r LEFT JOIN label l ON l.rec_key=r.rec_key
+               LEFT JOIN capture c ON c.district_id=r.district_id AND c.hash=r.hash
                WHERE r.district_id=:did ORDER BY r.tier, r.sort_score DESC""")
         for d in districts:
             recs = [dict(r) for r in con.execute(q, {"did": d["district_id"]}).mappings()]
+            for rec in recs:
+                rec["benchmark_gt"] = rec.pop("capture_source", None) == BM.BENCHMARK_CAPTURE_SOURCE
             t = con.execute(text("SELECT nces_by_level_json FROM district_target WHERE district_id=:did"),
                             {"did": d["district_id"]}).mappings().first()
             out.append({"district_id": d["district_id"], "name": d["name"], "state": d["state"],
@@ -573,13 +581,19 @@ def stage5_districts(
         for r in con.execute(text(f"""
             SELECT r.rec_key, r.district_id, r.url, r.tier, r.attention_score, r.attention_reasons_json,
                    r.is_cluster_rep, r.cluster_id, r.cluster_size, r.is_emergent,
-                   COALESCE(l.status,'unlabeled') AS label_status, l.primary_label
+                   COALESCE(l.status,'unlabeled') AS label_status, l.primary_label, c.source AS capture_source
             FROM record r LEFT JOIN label l ON l.rec_key=r.rec_key
+            LEFT JOIN capture c ON c.district_id=r.district_id AND c.hash=r.hash
             WHERE {' AND '.join(rwhere)}
             ORDER BY r.attention_score DESC NULLS LAST, r.tier"""), rparams).mappings():
             recs_by_did.setdefault(r["district_id"], []).append({
                 **{k: r[k] for k in ("rec_key", "url", "tier", "attention_score", "is_cluster_rep",
                                      "cluster_id", "cluster_size", "is_emergent", "label_status", "primary_label")},
+                # #662 decision 4: the gate@5 gt:// badge. This projection is an explicit ALLOWLIST, so
+                # a new column added to the query above is silently dropped unless it is named here —
+                # which is exactly how the first cut of this shipped invisible (the /api/tree twin
+                # carried the flag and the faceted endpoint the console actually renders did not).
+                "benchmark_gt": r["capture_source"] == BM.BENCHMARK_CAPTURE_SOURCE,
                 "attention_reasons": json.loads(r["attention_reasons_json"]) if r["attention_reasons_json"] else []})
 
     # 3) assemble districts, then group over the page (order preserved from the SQL sort).
@@ -2019,11 +2033,20 @@ def handoff_candidates():
 
     Also carries a per-district DISPATCH-HISTORY signal (#171) so the console can distinguish fresh
     from already-sent districts (re-selecting a dispatched one is wasted spend): `n_dispatched` /
-    `last_dispatched_at` from the gate@6 `dispatched` state_events; `n_extracted` = PRODUCTION
-    extractions that ACCEPTED >=1 fact (n_accepted>0 — an all-errors run persists a row but has no
-    facts, so bare row-existence would falsely read as 'has data'; #198 review); and `is_benchmark`
-    computed server-side by the SAME rule as the dispatch wall (`batch_type='benchmark'` membership,
-    not the batch_00000 id literal — the GT corpus grows into new benchmark batches; #198 review)."""
+    `last_dispatched_at` from the gate@6 `dispatched` state_events; `n_extracted` = extractions that
+    ACCEPTED >=1 fact (n_accepted>0 — an all-errors run persists a row but has no facts, so bare
+    row-existence would falsely read as 'has data'; #198 review); and `is_benchmark` computed
+    server-side by the SAME rule as the dispatch wall (`batch_type='benchmark'` membership, not the
+    batch_00000 id literal — the GT corpus grows into new benchmark batches; #198 review).
+
+    `n_extracted` deliberately counts EVERY run_kind, not `run_kind='production'` only (#662 review):
+    this signal answers "has extraction work already happened here", the question that prevents a
+    wasted re-dispatch, and a district's `run_kind='benchmark'` extractions (the historical harness,
+    or a Council Lab A/B) answer that just as truly as production ones — walled from the LCT write is
+    not the same question as touched-by-extraction. Scoping this to production would have made all 27
+    batch_00000 districts read `n_extracted=0` the moment #662's migration landed, despite carrying
+    940+ human-verified facts, inviting exactly the wasted redispatch #171 built this signal to
+    prevent. `is_benchmark` is the nuance signal; this stays the raw activity signal."""
     # Target labels are a BOUND list parameter computed per request (issue #62): the old module-level
     # _TARGET_IN froze the vocabulary at import time AND string-interpolated it into the SQL.
     targets = sorted(BS.TARGET_LABELS)
@@ -2059,8 +2082,9 @@ def handoff_candidates():
                     GROUP BY district_id
                 ) disp ON disp.district_id = d.district_id
                 LEFT JOIN (
+                    -- #662: every run_kind counts here, not just 'production' — see the docstring.
                     SELECT district_id, COUNT(*) AS n_extracted
-                    FROM extraction WHERE run_kind = 'production' AND n_accepted > 0
+                    FROM extraction WHERE n_accepted > 0
                     GROUP BY district_id
                 ) ext ON ext.district_id = d.district_id
                 ORDER BY n_send DESC, n_hold DESC, d.district_id"""),
