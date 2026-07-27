@@ -33,6 +33,7 @@
   let CURRENT = null;          // { kind: "draft"|"handoff", id }
   let COUNCILS = [];           // council registry (override <select> options)
   let DRAFT_VIEW = null;       // last loaded draft-detail payload (GET /api/dispatch/{id})
+  let BM_KEYS = new Set();     // #662: "<did>::<rec_key>" of injected gt:// reps in this view
 
   window.initStage6 = function () {
     if (!inited) { inited = true; renderShell(); loadCouncils(); }
@@ -174,6 +175,12 @@
     // REFUSE the freeze while this is a production dispatch — surfaced here, not raised, so the human
     // can see exactly what to deselect (or opt the whole dispatch in as benchmark).
     const bmReps = v.benchmark_reps || [];
+    // #662 decision 4: badge the individual records too, not only this aggregate banner — the banner
+    // says WHICH reps block the freeze, but you deselect in the district blocks below, and reading a
+    // rec_key off a list to find it in a long block is exactly the manual step this console exists to
+    // remove. Badged, never filtered: a pool that silently differs by dispatch type is the kind of
+    // invisible scoping epic #617 keeps getting bitten by.
+    BM_KEYS = new Set(bmReps.map((b) => `${b.district_id}::${b.rec_key}`));
     if (bmReps.length && v.dispatch_type !== "benchmark") {
       const items = bmReps.map((b) => `${esc(b.district_id)}:<code>${esc(b.rec_key)}</code>`).join(", ");
       html += `<div class="q-locked" data-feat="s6-benchmark-reps">⚠ ${bmReps.length} representation(s) carry benchmark provenance and will BLOCK this freeze: ${items}. Deselect those records, or tick “benchmark dispatch” to run this as a Council Lab A/B on purpose.</div>`;
@@ -213,6 +220,7 @@
               data-kind="${esc(rep.kind)}" title="click to inspect this representation">${esc(rep.file)}</code> →
         ${councilCell}
         ${rep.fidelity_suspect ? `<span class="badge badge-warn">fidelity-suspect</span>` : ""}
+        ${BM_KEYS.has(`${did}::${recKey}`) ? `<span class="badge badge-red" title="injected curated-GT representation (capture source 'benchmark_gt') — blocks a production freeze">gt:// injected</span>` : ""}
         <span class="s6-usd">${usd(rep.est_usd)}</span></div>`;
   }
 

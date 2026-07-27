@@ -26,6 +26,7 @@ from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.common import school_sampling as SS
 from infrastructure.acquisition.common import slot_spine as SP
 from infrastructure.acquisition.common.school_match import norm_school as _norm
+from infrastructure.acquisition.common import benchmark as BM
 from infrastructure.acquisition.stage8_aggregate import aggregate as AGG
 
 # band -> the single NCES LEVEL key that maps to it (inverse of SS.LEVEL_BAND, 1:1 for the clean
@@ -818,6 +819,17 @@ def load_closing_argument(session, district_id, *, record_drift_event=True):
         WHERE f.district_id = :d AND e.run_kind = 'production'
         ORDER BY f.extraction_id, f.fact_id
     """), {"d": district_id}).all()]
+    # #662: annotate each fact with whether its REPRESENTATION was benchmark-injected, so the merge
+    # can let honest production work supersede an injected artifact for the same school. Asked in
+    # Python through common/benchmark's one home rather than re-spelled as a correlated EXISTS in the
+    # query above — one round trip for the district's whole rec_key set, and no second copy of arm 2.
+    # Expected to flag NOTHING in normal operation (the historical harness runs were reclassified out
+    # of run_kind='production' by the #662 migration, and gate@6 refuses a production freeze holding
+    # an injected rep). It is the merge's own guarantee, independent of that guard holding.
+    rec_keys = sorted({f["rec_key"] for f in facts if f.get("rec_key")})
+    injected = BM.benchmark_provenance_rec_keys(session, rec_keys) if rec_keys else set()
+    for f in facts:
+        f["benchmark_provenance"] = f.get("rec_key") in injected
     # #254: with_superseded surfaces the year-superseded facts; the conflict detector runs on the
     # same raw cross-run rows (it needs group-level visibility the merged winners no longer carry).
     accepted, unresolved, superseded = AGG.merge_fact_runs(facts, with_superseded=True)

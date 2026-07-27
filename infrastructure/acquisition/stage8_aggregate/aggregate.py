@@ -315,6 +315,15 @@ def merge_fact_runs(facts, *, with_superseded=False):
     (accepted, unresolved, superseded) when `with_superseded` — deduped per (band, school):
       - an ACCEPTED fact beats any unresolved for the same school, in either run order — a later
         thin retry cannot knock out an earlier solid extraction (the Brownsville 7→0 case);
+      - among multiple ACCEPTED, PROVENANCE first (#662): a fact from honest production work
+        supersedes one whose representation was benchmark-injected (`benchmark_provenance` truthy on
+        the row, set by the caller), for the same school, regardless of run order or year. An
+        injected artifact is a deliberately-older curated document that was never release data, so
+        it must never outrank a real reading — and it cannot be beaten on the year axis below,
+        because those artifacts overwhelmingly carry no parseable year at all (measured: 957 of 957).
+        Rows with no `benchmark_provenance` key are all honest, so this axis is inert for every
+        existing caller. It applies only when the group holds BOTH kinds — an all-injected group is
+        left alone rather than emptied;
       - among multiple ACCEPTED (#254, the Santa Fe stale-page case): a fact with a known, MORE
         RECENT parseable school_year supersedes a fact with a known OLDER one, regardless of
         extraction order. Precedence applies ONLY between two KNOWN years (Ian, 2026-07-14:
@@ -343,6 +352,14 @@ def merge_fact_runs(facts, *, with_superseded=False):
     for key, rows in groups.items():
         acc = [f for f in rows if f["status"] == "accepted"]
         if acc:
+            # #662, and it runs BEFORE the year axis on purpose: an injected `gt://` artifact carries
+            # a deliberately-older school year and was never release data, so honest production work
+            # must beat it whatever either side's year says. Losing rows are KEPT (superseded), never
+            # dropped — the closing argument surfaces WHY they left the mode (no-silent-caps).
+            honest = [f for f in acc if not f.get("benchmark_provenance")]
+            if honest and len(honest) < len(acc):
+                superseded.extend(f for f in acc if f.get("benchmark_provenance"))
+                acc = honest
             known = [y for f in acc if (y := parse_school_year(f.get("school_year"))) is not None]
             newest = max(known) if known else None
             survivors, losers = [], []

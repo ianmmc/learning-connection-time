@@ -178,13 +178,21 @@ def tree():
     out = []
     with gdb.session_scope() as con:
         districts = con.execute(text("SELECT * FROM district ORDER BY name")).mappings().all()
+        # #662 decision 4 (Ian, 2026-07-26): carry the capture's SOURCE so gate@5 can BADGE an
+        # injected `gt://` representation instead of silently filtering it. Selected as a plain
+        # column and compared in Python against the constant — re-spelling arm 2's
+        # `source = 'benchmark_gt'` as SQL here would be a second copy of the rule (see
+        # tests/test_one_home_fitness.py). capture's key is (district_id, hash), so this is 1:1.
         q = text("""SELECT r.rec_key, r.url, r.hash, r.kind, r.tier, r.sort_score, r.duplicate_of,
                       r.cluster_id, r.is_cluster_rep, r.cluster_size, r.is_emergent,
-                      l.status, l.primary_label
+                      l.status, l.primary_label, c.source AS capture_source
                FROM record r LEFT JOIN label l ON l.rec_key=r.rec_key
+               LEFT JOIN capture c ON c.district_id=r.district_id AND c.hash=r.hash
                WHERE r.district_id=:did ORDER BY r.tier, r.sort_score DESC""")
         for d in districts:
             recs = [dict(r) for r in con.execute(q, {"did": d["district_id"]}).mappings()]
+            for rec in recs:
+                rec["benchmark_gt"] = rec.pop("capture_source", None) == BM.BENCHMARK_CAPTURE_SOURCE
             t = con.execute(text("SELECT nces_by_level_json FROM district_target WHERE district_id=:did"),
                             {"did": d["district_id"]}).mappings().first()
             out.append({"district_id": d["district_id"], "name": d["name"], "state": d["state"],
@@ -573,13 +581,19 @@ def stage5_districts(
         for r in con.execute(text(f"""
             SELECT r.rec_key, r.district_id, r.url, r.tier, r.attention_score, r.attention_reasons_json,
                    r.is_cluster_rep, r.cluster_id, r.cluster_size, r.is_emergent,
-                   COALESCE(l.status,'unlabeled') AS label_status, l.primary_label
+                   COALESCE(l.status,'unlabeled') AS label_status, l.primary_label, c.source AS capture_source
             FROM record r LEFT JOIN label l ON l.rec_key=r.rec_key
+            LEFT JOIN capture c ON c.district_id=r.district_id AND c.hash=r.hash
             WHERE {' AND '.join(rwhere)}
             ORDER BY r.attention_score DESC NULLS LAST, r.tier"""), rparams).mappings():
             recs_by_did.setdefault(r["district_id"], []).append({
                 **{k: r[k] for k in ("rec_key", "url", "tier", "attention_score", "is_cluster_rep",
                                      "cluster_id", "cluster_size", "is_emergent", "label_status", "primary_label")},
+                # #662 decision 4: the gate@5 gt:// badge. This projection is an explicit ALLOWLIST, so
+                # a new column added to the query above is silently dropped unless it is named here —
+                # which is exactly how the first cut of this shipped invisible (the /api/tree twin
+                # carried the flag and the faceted endpoint the console actually renders did not).
+                "benchmark_gt": r["capture_source"] == BM.BENCHMARK_CAPTURE_SOURCE,
                 "attention_reasons": json.loads(r["attention_reasons_json"]) if r["attention_reasons_json"] else []})
 
     # 3) assemble districts, then group over the page (order preserved from the SQL sort).

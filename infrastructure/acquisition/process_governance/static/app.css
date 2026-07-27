@@ -233,6 +233,12 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .q-batch-id { font-weight: var(--fw-semibold); font-size: var(--fs-sm); }
 .q-batch-meta { font-size: var(--fs-xs); color: var(--text-secondary); margin-top: 2px; }
 
+/* #662: the injected curated-GT marker at gate@5. Small and non-blocking — the record stays
+   selectable; gate@6's freeze refusal is the actual guard. */
+.gt-dot { font-size: 9px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  padding: 0 3px; border-radius: var(--radius-sm); background: var(--mmm-purple-50);
+  color: var(--action-primary); border: var(--border-hair) solid var(--action-primary); }
+
 /* detail */
 .q-detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4); }
 .q-detail-head h2 { margin: 0; }

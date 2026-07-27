@@ -296,13 +296,19 @@ function renderRecRow(r, clusterSize) {
   const badge = clusterSize > 1
     ? `<span class="cluster-badge" title="${clusterSize - 1} near-duplicate(s) — click to expand">+${clusterSize - 1}</span>` : "";
   const emergent = r.is_emergent ? `<span class="emergent-dot" title="emergent — captured but not a planned candidate">⚡</span>` : "";
+  // #662 decision 4 (Ian, 2026-07-26): an INJECTED curated-GT representation stays visible and
+  // selectable, but says what it is. 93 of these are live across the 25 #620 re-run districts, and
+  // one selected into a production dispatch is refused at gate@6 — a marker here is cheaper than
+  // discovering it at the freeze. Badged, never filtered: a candidate pool that silently differs by
+  // dispatch type is the invisible scoping epic #617 keeps getting bitten by.
+  const gt = r.benchmark_gt ? `<span class="gt-dot" title="injected curated-GT representation (capture source 'benchmark_gt') — not release evidence; blocks a production freeze at gate@6">gt</span>` : "";
   // the record's dominant attention reason as a tiny dot-chip (the per-URL rationale)
   const reason = (r.attention_reasons || [])[0];
   const rchip = reason && reason !== "resolved" && reason !== "low_signal"
     ? `<span class="rec-attn ${(ATTN_REASON[reason] || ["", "r-low"])[1]}" title="${(ATTN_REASON[reason] || [reason])[0]}"></span>` : "";
   li.innerHTML = `<span class="tier ${r.tier}">${r.tier}</span>
     <span class="rec-label" title="${r.url}">${tail}</span>
-    ${emergent}${rchip}${badge}<span class="status-dot ${status}"></span>
+    ${emergent}${gt}${rchip}${badge}<span class="status-dot ${status}"></span>
     <button class="rec-flagbtn" title="flag this URL for follow-up">⚑</button>`;
   li.onclick = (e) => { e.stopPropagation(); selectRecord(r.rec_key, li); };
   li.querySelector(".rec-flagbtn").onclick = (e) => { e.stopPropagation(); flagTarget("record", r.rec_key, tail); };
