@@ -21,6 +21,15 @@ middle stage). **Unlike Stages 2/3 it does the real extraction work itself** (pd
 camelot/tesseract — fast local calls, no browser, no LLM). `stage4_process/headless.py` is the batch
 runner the console drives.
 
+**Real redo traffic, 2026-07-27/28 (epic #617's #620 campaign, `batch_00030/31/32`, 25 districts):** the
+first genuine follow-up/redo run at this scale since #647 fixed the console's TODO/DONE gate for redo
+batches. Stage 4 produced 2,124 documents, 2,073 usable (97.6%) — and, measured across the whole batch,
+34,491 fresh (production-provenance) time-bearing strings vs 8,168 `gt://` (benchmark-provenance) ones (an
+80.9% fresh share), with **0 of the 25 districts** coming back `gt://`-only — real evidence the pipeline
+now produces genuinely fresh, non-injected evidence at scale on a re-run. It also surfaced the same
+console-observability defects Stage 3 hit (#669/#671, epic #96, open) — see §4a's caveat below; the
+processing WORK itself is correct.
+
 **#608 (2026-07-21): the console runs this in an ISOLATED SUBPROCESS, not an in-process thread.**
 `headless.run_batch` itself is unchanged — still a plain, sequential, in-process Python call per
 district. What changed: camelot's table extraction is backed by native code (pypdfium2/PDFium +
@@ -250,6 +259,20 @@ timeouts). What landed (code is authoritative — this records the shape + the d
   the *only* disk **parse** is `processed.json` for the **tool-effectiveness panel** (the per-text
   `source` is not in the live cache — only `n_texts`/`usable` per doc are). The actual processing WORK
   (process_stage4) of course reads captures.json + the binaries off disk — that's its input.
+  **Caveat (#669, open, epic #96 — same shape as Stage 3's, verified 2026-07-27/28's campaign):** the
+  `rows_by_did` query behind `n_docs`/`n_usable` (`SELECT ... FROM processed_doc WHERE district_id =
+  ANY(:ids)`) filters by district id only — no batch/run column exists on `processed_doc` — so the counts
+  shown reflect whatever the cache currently holds for that district, not necessarily what the batch being
+  viewed just produced. Moot on an ordinary batch (one run per district); on a redo batch, stale until this
+  run's own completion overwrites that district's cache slice (see the next caveat).
+  **Caveat (#671, open, epic #96):** `run_batch` stamps the `process` `dispatched` state_event for every
+  district in `todo` up front, before the sequential per-district loop runs — the same pattern as Stage 3
+  (`stage3_capture/headless.py::_dispatch_and_finish`). The redo branch here (`processed &=
+  DS.dispatched_by_batch(batch["batch_id"], "process", ids)`, line ~158) answers "did this batch dispatch
+  this district," not "has this run's own processed.json actually landed" — so a district holding a prior
+  run's `processed.json` reads `done`-with-stale-metrics until this run's own `finish_district` overwrites
+  it. Measured false-done windows on the campaign (Stage 2/3/4 combined): 45s shortest, ~22min median,
+  38m15s longest.
 - **`server.py`** — `GET /api/process/{batch_id}` (status) + `POST /api/process/{batch_id}/run`
   (background job, `_PROCESS_JOBS`); the batch is resolved from the **DB working store** via the shared
   **`_batch_from_db`** (renamed from `_capture_batch_from_db`; now used by capture + process).
@@ -406,6 +429,22 @@ Stage-4/5 aboutness boundary) whose usable reps all recovered zero clock times �
 (cache_ingest). Unusable/errored records are not flagged — their failure is already visible via
 `usable`. Sized by the 2026-07-19 survey: 61 in-corpus records (CMS document-viewer pages whose
 linked PDF was never fetched, soft-404s, login walls). Tests: TestTimeBlindFidelity.
+
+**2026-07-27/28 — epic #617's #620 campaign: first real redo-batch traffic through Stage 4 since #647,
+confirming the epic's premise and surfacing console display defects (governance §11's "the future case has
+to be constructed, not reasoned about," now doubled).** `batch_00030/31/32` (25 `redo_attempted=true`
+districts): 2,124 documents produced, 2,073 usable (97.6%); 34,491 fresh (production-provenance) time
+strings vs 8,168 `gt://` (benchmark-provenance) ones across the batch (80.9% fresh share), 0 of 25 districts
+`gt://`-only — the first quantitative evidence the pipeline produces genuinely fresh, non-injected evidence
+at scale on a re-run, not just theoretically able to per #617/#662's fix. The processing WORK is correct
+throughout. Two console *display* defects surfaced, the same shape as Stage 3's: **#669** (`n_docs`/
+`n_usable` read from the district-id-keyed `processed_doc` cache with no batch/run scope — can show a stale
+run's numbers on a redo batch) and **#671** (the whole-batch-up-front `dispatched` stamp means a district
+holding a prior run's `processed.json` reads `done`-with-stale-metrics until this run's own completion
+overwrites it; measured windows 45s–38m15s across Stages 2/3/4). Both open, epic #96, not yet fixed — #647
+(the TODO/DONE gate fix) is unaffected and correct; these are the rendering layer #647 didn't touch. See
+§4a for present-state caveats and `docs/technical-notes/learning-loop-reports/
+2026-07-25-epic617-benchmark-model-findings.md` §13 for the full campaign account.
 
 **2026-07-21 — Stage 4 isolated into its own subprocess; the console no longer runs it on an
 in-process thread (issue #608).** Diagnosed a live `zsh: segmentation fault` (no Python traceback —

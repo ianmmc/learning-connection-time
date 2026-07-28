@@ -74,6 +74,41 @@ batches then surfaced two MORE regressions (**#234**, **#235**) and resolved the
 findings above — all four fixed together in **PR #240** (merged 2026-07-12; REQ-123 codifies #233's
 auto-withdraw rule). See the decision-log entry below for the full mechanism.
 
+**Epic #617 (2026-07-26/27) touched three Stage-7 mechanisms — none of them the extraction loop
+itself, all of them the benchmark/provenance plumbing around it.** `Extraction.run_kind` is now
+**THREE-valued** — `production` | `probe` | `benchmark` — not the two-valued `{production, probe}`
+described below and in §0/§6; `benchmark` (#662) marks a run against a benchmark-type dispatch (stamped
+going forward by `persist_run_session`; 30 historical harness runs across `batch_00000`'s 27 districts
+were migrated by a one-time script, `maintenance/reclassify_benchmark_extractions.py`) and is a
+DIFFERENT axis from `probe` (a council-variant measurement, e.g. the `-image` vision compare) — the two
+must never be conflated, since every `run_kind`-scoped reader (gate@7's console filters here, gate@8's
+queue, the Stage-9 wall) would otherwise miscount. Second: the **mode-stability early-exit's**
+benchmark exemption (REQ-151, `stage7_run.py`) moved from asking "is this district EVER a
+`batch_type='benchmark'` member" (permanent, district-grain — #619's bug in a different guard) to
+`dispatch_type != 'benchmark'` read off the frozen handoff — a run-level property, extracted into
+`_early_exit_enabled` so a test pins the live predicate rather than a copy of it. Third: the **7→6
+back-edge freeze paths** (`stage7_execute._bundle_alternate` and `_dispatch_recover_band`) were found
+to bypass `assert_dispatch_type_allowed` entirely — `HND.freeze()` called directly, defaulting to
+`dispatch_type='production'` — meaning a `7→6` naming a `batch_00000` district's injected `gt://` rep
+by `rec_key` could mint a *production* dispatch holding benchmark-provenance evidence (#618's refusal
+exists to prevent exactly this, and it had never fired only because the now-retired district-membership
+wall kept benchmark districts out of these paths first). **Fixed same day (#644):** both sites now call
+the guard through a `_refuse_benchmark_reps` adapter, and a fitness test walks the AST of every function
+containing `HND.freeze` to assert the guard precedes it. None of this changed council extraction,
+consensus, or the request-detection engine — it is entirely about which dispatches/runs may exist, not
+what they contain. Full account: `docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md`
+§10.9–§10.20, §12.5.
+
+**A real, OPEN correctness bug in the request-history union (#333, `sev:major`, re-verified
+2026-07-28):** `stage7_run.py:887` — `hist = p.get("sent_files") or ([p["sent_file"]] if
+p.get("sent_file") else [])` — treats an explicitly-empty `sent_files: []` (meaning "nothing sent this
+round") as falsy and falls back to the legacy singular `sent_file`, which can resurrect a stale
+filename into a request's sent-history and cause the composer to skip a rep it should retry — the
+exact #122/#231 recall-loss class this code exists to prevent. **`stage7_execute.py`'s equivalent
+site (`_sent_files_by_rec`, ~line 815) already unions correctly** (`files = set(p.get("sent_files") or
+[]); if p.get("sent_file"): files.add(...)`) — only the detection-side read in `stage7_run.py` still
+has the falsy-empty-list defect. Not yet fixed; fold into the next Stage-7 touch.
+
 **batch_00013's 7→2 follow-up journey ran to completion.** The four-district follow-up (Union Hill ISD,
 Brownsville Ascend, Redbank Valley, Aspen Ridge) that this second shakedown spawned went through Stage 7
 round 3 and concluded **still barren on model disagreement, not missing data** — i.e. the loop terminated
@@ -163,7 +198,8 @@ exercise against the #200/#209-hardened pipeline, not a distinct issue awaiting 
   matching silently drifts — hence one home in `common`").
 - `models.py` — SQLAlchemy models on the governance DB (`gdb.Base`), all **precious** (append-only,
   human-reviewed, never touched by Stage-5's drop+rebuild ingest): `Extraction` (rollup + telemetry per
-  run — incl. `run_kind` ∈ {production, probe}, first-class since #148/4D; see below), `SchoolFact`
+  run — incl. `run_kind` ∈ {production, probe, benchmark}, first-class since #148/4D, third value added
+  by #662 (see the epic #617 note above); see below), `SchoolFact`
   (per-school accepted/unresolved facts), `ExtractionRequest` (the request-more-evidence
   directives — `altitude`, `route`, `target`, `band`, `params_json`, `reason`,
   `status` ∈ {pending, approved, rejected, executed, withdrawn}, `reviewed_by`/`reviewed_at`/`review_note`).
@@ -207,7 +243,9 @@ exercise against the #200/#209-hardened pipeline, not a distinct issue awaiting 
   Gives the image variant a **distinct `handoff_hash`** (`<base>-<council_id>`, e.g. `-image`) so its
   resume logic can't collide with the source text handoff's already-persisted districts (§6). Also stamps
   `run_kind = "probe"` on the variant doc (#148/4D) — a **first-class column** on `Extraction`
-  (`run_kind` ∈ {production, probe}, `models.py`), not a string match on the hash suffix. The earlier
+  (`run_kind` ∈ {production, probe, benchmark} since #662 — `probe` means a council-VARIANT
+  measurement like this one, `benchmark` means a run against a benchmark dispatch, never conflated;
+  `models.py`), not a string match on the hash suffix. The earlier
   design relied on the console filtering `handoff_hash NOT LIKE '%-image'`, which only ever caught the
   literal `image` council id; a second vision council (e.g. `council_id="vision2"` → hash `…-vision2`)
   would sail past that filter and shadow the district's real production run in the gate@7 review pane —
@@ -294,7 +332,8 @@ APPROVED directives into real back-edge work. Two mechanisms (§3F):
   gate@6 approval IS the go-ahead, no separate approval gate.
 - `GET /api/extract/districts` — attention-sorted (most pending requests first) list; excludes
   `run_kind='probe'` extractions (#148/4D — a first-class column, not a `-image` hash-suffix match; the
-  district-first view shows the primary/production extraction).
+  district-first view shows the primary/production extraction). `run_kind='benchmark'` rows (#662) are
+  excluded the same way `probe` rows are — neither is a production extraction.
 - `GET /api/extract/district/{district_id}` — the LATEST `run_kind='production'` extraction supplies the
   header (cost/handoff/timestamp, per-run telemetry only); accepted/unresolved facts and the band rollup
   are the **CUMULATIVE merge across every production run** (`AGG.merge_fact_runs` → `district_bands_from_facts`,
@@ -337,8 +376,12 @@ APPROVED directives into real back-edge work. Two mechanisms (§3F):
 - Full findings (per-model cost profiles, reader-source yield, the 3 real band misses root-caused, the
   spray-fabrication interaction with the request detector) are in
   `models-and-council-composition/models-and-council-composition.md`.
-- `batch_type == "benchmark"` output is never Stage-9-written or counted in enrichment stats
-  (`STAGE1_QUEUE_DESIGN` §2h; `STAGE6_DISPATCH_DESIGN` §3C C.6).
+- `batch_type == "benchmark"` output is never counted in Stage 1's funnel/enrichment stats
+  (`STAGE1_QUEUE_DESIGN` §2h; `STAGE6_DISPATCH_DESIGN` §3C C.6) — batch-grain, unchanged by #617/#619.
+  The separate Stage-9-write question is **not** batch/district-grain any more: since #619 (epic #617,
+  2026-07-26) the wall asks about the FACT's own provenance (`handoff.dispatch_type='benchmark'` or the
+  fact's rep carrying `capture.source='benchmark_gt'`), not district membership in a benchmark batch —
+  see `STAGE9_INCORPORATE_DESIGN.md`.
 
 **The request-more-evidence detection engine, validated on real data:** `requests.py` run over the
 batch_00000 text results correctly flagged exactly the **4 genuine coverage gaps** the scorecard showed

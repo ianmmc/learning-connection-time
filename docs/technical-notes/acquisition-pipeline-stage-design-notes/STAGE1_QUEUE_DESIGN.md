@@ -173,10 +173,27 @@ for queries + expected sampling units), so a district is "satisfied" when every 
 minutes, not when every school is covered (e.g. Dunseith: one captured page stated "elementary 435 min /
 high 450 min" and the schools became moot). Follow-up batches are created at the **return to Stage 1**
 from a `gate@8`/`gate@7` direction (never minted straight to discovery by 7/8), so they stay reviewable at
-`gate@1`. **BUILT (REQ-118, 2026-07-04):** the concrete targeted builder is `build_followup_batch(year,
+`gate@1`. **BUILT (REQ-118, 2026-07-04):** the concrete builder is `build_followup_batch(year,
 batch_id, targets)` in `queue_batch.py` — distinct from `build_batch()`'s stratified cold-start draw —
 called by `stage7_execute.compose_followup_batch()` when a human approves a 7→2/7→3/7→1 directive at
 gate@7 (`STAGE7_EXTRACT_DESIGN.md` §3F).
+
+**Renamed in role, not in name (epic #617 Phase 2c, 2026-07-25):** `build_followup_batch` is now
+documented as **THE TARGETED BUILDER**, not "the follow-up builder" — the name is historical. It
+composes ANY batch whose district list is NAMED rather than drawn, which is follow-up **and**
+benchmark alike (a benchmark batch composed this way re-runs specific districts as a Stages-2/3/4
+A/B, the same shape as a follow-up, just a different `batch_type` at `persist_batch`).
+`POST /api/queue/create` now routes any non-`first-run` `batch_type` through this targeted composer
+(`server.py` — `if batch_type != BT.FIRST_RUN: ... build_followup_batch(...)`); `build_batch` (the
+stratified draw) remains first-run-only. `batch_type` is now validated at `create_batch`
+(`common/batch_types.py::validate_batch_type` — a legal-value check, previously an unconstrained
+string with its legal values living only in a code comment) and redo-eligibility is a **declared**,
+nullable batch attribute (`redo_attempted`, `common/batch_types.py::redoes_attempted`), not derived
+from `batch_type` — a pre-#617 batch with no declared value falls back to the historical
+`batch_type == 'follow-up'` rule, byte-identical behavior, so `batch_00000`'s frozen artifacts stay
+untouchable by default while a freshly-composed benchmark batch can declare `redo_attempted=True`.
+See the epic's findings report (`docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md`)
+for the full "district-keyed wall → batch/provenance-keyed wall" story.
 
 ### 2h. `batch_type="benchmark"` — the special case (`batch_00000`, 2026-07-02)
 A third batch type, built for the 27 curated-GT districts: `stage1_queue/benchmark_batch.py` builds a
@@ -184,11 +201,43 @@ batch over a **fixed district list** (not a stratified draw — the pre-queue ex
 bypassed by fiat) and injects each district's frozen `data/benchmark/gt_curation_*` artifacts directly at
 the Stage-3 seam (discovery.json/candidates.json/captures.json + copied files, all Stage-4-ready) — no
 discovery, no fetching. Created + approved in one step (`create_and_inject()`), not through gate@1's
-normal draft→edit→approve flow. **The wall:** `batch_type == "benchmark"` marks the batch permanently;
-benchmark districts must never be Stage-9-written or counted in funnel/enrichment statistics — they are
-an accuracy yardstick (per-school times hand-verified against these exact files), not coverage, and
-several source documents are deliberately older school years. See `COUNCIL_LAB_DESIGN.md` §3
-(the cost-benchmark harness design C.1–C.6 migrated there from `STAGE6_DISPATCH_DESIGN.md` §3C).
+normal draft→edit→approve flow. `batch_00000` itself (the batch row) is permanent — never deleted or
+reused — and its injected extractions must never be Stage-9-written or counted in funnel/enrichment
+statistics: they are an accuracy yardstick (per-school times hand-verified against these exact files),
+not coverage, and several source documents are deliberately older school years. See
+`COUNCIL_LAB_DESIGN.md` §3 (the cost-benchmark harness design C.1–C.6 migrated there from
+`STAGE6_DISPATCH_DESIGN.md` §3C).
+
+**The wall is now keyed on run/extraction PROVENANCE, not on district membership in `batch_00000`
+(epic #617, closing #662, 2026-07-26/27).** The original mechanism asked "has this district EVER been
+in a `batch_type='benchmark'` batch" — since `batch_district` rows are never deleted, that permanently
+refused a Stage-9 write for all 27 `batch_00000` districts, including correct minutes from a later,
+honest production run. The fix moved the wall's grain from district to provenance
+(`IS_BENCHMARK_PROVENANCE_SQL`, `common/benchmark.py`, keyed on `extraction.run_kind='benchmark'`) —
+a district can now freely move between a benchmark harness run and a normal production run; what's
+walled is the injected extraction itself, not the district's ability to ever incorporate. A follow-on
+fix (#662) found the grain change alone wasn't sufficient — the gate@8 queue and `merge_fact_runs`
+were still scoped to "ever produced a benchmark extraction," which is permanently true once true on
+append-only tables. Closed via a receipted, idempotent migration
+(`infrastructure/acquisition/maintenance/reclassify_benchmark_extractions.py`, **run against the live
+DB 2026-07-27**) that moved the 27 districts' 30 historical harness extractions from
+`run_kind='production'` (the pre-#148 default, never corrected) to `run_kind='benchmark'`, plus a
+provenance axis in `merge_fact_runs` so honest work supersedes an injected fact for the same school,
+plus a write-path stamp (`stage7_run.py`) so any *future* benchmark run is stamped `run_kind='benchmark'`
+at write time and never needs another one-off migration. Full account: the epic's findings report
+(`docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md`) §7/§10/§11/§13.
+
+**#620 (in progress, 2026-07-27):** re-running `batch_00000`'s 27 districts through the now-fixed
+pipeline is the epic's validation. Three targeted batches (`batch_00030`/`00031`/`00032`, composed via
+the targeted builder above, 25 of the 27 districts) have cleared Stage 2 (discovery) and Stage 3
+(capture)/Stage 4 (process): 2,124 documents, 97.6% usable, and — measuring fresh vs. injected
+time-bearing evidence — 80.9% of time strings are FRESH (production) provenance across the 25, with 0
+districts landing gt://-only. This is the empirical proof the district-keyed wall was blocking
+legitimate re-runs, not protecting a real invariant. **The remaining 2 of 27 are a separate, open gap
+(#646):** a district that is both domain-less AND already-attempted (`furthest_stage >= 3`) is
+unreachable by any Stage-1 composer — `eligible_pool()`'s first-run draw excludes it as attempted
+(§2a #3), and the targeted builder needs a domain to scope discovery. Not fixed as of this writing;
+does not hold #620 open (tracked separately).
 
 `create_and_inject()` never calls `reserve_next_batch()` — it goes straight `create_batch()` +
 `approve_batch()` back-to-back, so the batch is created and approved in one step rather than passing
@@ -603,3 +652,33 @@ Tests: tests/test_discovery_policy_console.py.
   at exactly one approved geo round. This is Stage-1-owned code (`batch_store.py` lives in
   `stage1_queue/`) even though the composers that consume it — the 5→1 zero-yield composer and the
   7→1 scope-split — live in `process_governance/`; see governance §11e for how they actually use it.
+
+**2026-07-25/27 — epic #617 generalizes the benchmark model; district-keyed wall retired in favor of
+provenance.** See §2h (updated in place) for the present-state description: `build_followup_batch` is
+now the targeted builder (not just "follow-up"), `batch_type` is validated at `create_batch`,
+`redo_attempted` is a declared batch attribute, the Stage-9 wall keys on extraction `run_kind` rather
+than district membership in `batch_00000`, and the historical harness extractions were reclassified to
+`run_kind='benchmark'` via a receipted migration (run against the live DB 2026-07-27). #620 (re-running
+`batch_00000`'s 27 districts) is the epic's validation and is IN PROGRESS, not planned — 25 of 27 have
+cleared Stage 2/3/4 with 80.9% fresh (non-injected) time evidence; the remaining 2 are a separate open
+gap, #646 (domain-less AND already-attempted, unreachable by any Stage-1 composer — see §2h). Full
+detail: `docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md`.
+
+**Known live defect, flagged not fixed (#672, opened 2026-07-28, epic #128):** the 5→1 zero-yield
+escalation ladder (`process_governance/stage5_followup.py::compose_zero_yield`, using
+`batch_store.py`'s shared `geo_ladder_exhausted` above) was measured to sometimes make things WORSE,
+not strictly better, when it widens — on a real district (Wyandanch UFSD NY, `3631800`), the widened
+geo rung tripled result volume and diluted the district's own domain's vote share below the
+geo-derivation threshold, causing total derivation failure and discarding URLs (including on-domain
+hits) a standard rung had already used successfully; the ladder terminated the district at
+`manual_flag`, a mechanically-caused failure rather than necessarily evidence of no published
+schedule. So **the ladder's built-in exhaustion order (standard → widened) is not a proven
+strictly-improving escalation** — treat a `manual_flag` outcome from the widened rung as suspect,
+not conclusive, until #672 lands a fix.
+
+**Known console caveat (#671, opened 2026-07-28, epic #96):** the gate@1/2/3/4 status views can show a
+district as prematurely `done`, carrying a PRIOR run's cached numbers, for the entire duration of an
+in-flight re-run (measured windows up to 38 minutes; on one occasion the display showed the OPPOSITE of
+the run's actual outcome). Root cause is a batch-dispatch timing conjunct that goes true at run START,
+not completion — do not trust a console status view as authoritative for a district mid-re-run; verify
+against the DB/`state_event` log instead. Not yet fixed.

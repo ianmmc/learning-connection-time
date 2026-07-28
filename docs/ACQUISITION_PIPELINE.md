@@ -13,6 +13,20 @@
 > **Update this when:** a stage's purpose/IO changes, a new stage is built, or the flow diagram needs a new
 > edge — for implementation detail within an already-mapped stage, update that stage's own design note instead.
 
+**Status update (2026-07-28) — epic #617, campaign phase.** Epic #617 (generalize the benchmark model,
+retire the old district-keyed Stage-9 wall) has Phases A/B/D landed on `main`. The **campaign** (#620 —
+re-running `batch_00000`'s 27 curated-GT districts through the normal pipeline so their evidence earns
+honest production provenance) is IN PROGRESS: 25 of 27 districts (the other 2 are domain-less/unreachable,
+tracked separately as #646) have completed Stages 2-4 with strong results (2,124 documents, 97.6% usable,
+80.9% of time-bearing evidence now fresh/production-provenance). The campaign's first production dispatch
+is currently **BLOCKED at `gate@6` by #679** — dispatch-composition rep-selection doesn't know which
+representations are benchmark-provenance, so it can pick an injected representation as "best" and the
+freeze guard then correctly refuses it. The old "wall keyed on district identity, forever" framing is
+retired; the model is now two declared type axes (`batch_type`, `dispatch_type`), each with a structural
+terminus, plus a two-arm fact-grain provenance guard at Stage 9 (see §7/§8 mentions of `run_kind`/
+provenance below). Full detail: `docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md`
+§13; day-to-day resume state: `CLAUDE.md`.
+
 **Current build state (2026-07-22):** the console runs the pipeline live **end to end through `gate@8`**,
 and **Stage 9's write is now BUILT** (the approved per-band minutes land in the LCT `bell_schedules` DB;
 the LEA-level per-grade projection that lets LCT actually consume them is ALSO BUILT, same day — see §9
@@ -485,6 +499,13 @@ hub-priority** (`_hub_priority_holds` — a HUMAN-LABELED district hub narrows t
 itself; every other surviving send holds for the 7→6 back-edge). Each pass is zero-recall-cost by
 construction (a held rep remains available for cheap re-dispatch). Detail: `STAGE6_DISPATCH_DESIGN.md` §3G.
 
+> **Rep-selection is provenance-blind (#679, open, blocking the #617 campaign as of 2026-07-28).**
+> `dispatch_type` and the freeze guard landed and are verified working live, but the earlier
+> best-representation selection step doesn't consult provenance — it can pick a benchmark-injected
+> representation as "best" for a district that also has fresh production evidence, and the freeze guard
+> then correctly refuses the dispatch rather than silently sending it. Fix is the next thing due before
+> #620's campaign districts can proceed past `gate@6`. Detail: the epic #617 findings report §13.
+
 **Deferred (own tracks):** the **Council Lab**'s remaining backlog (`cost_benchmark` — measured token rates + live OpenRouter pricing; composition re-benchmark on clean data; tracked: #80/#81 — its first experiment, the judge-replay harness, is already built and measured, see `COUNCIL_LAB_DESIGN.md`); gate@6 **auto** mode (tracked: #104 part b — the per-gate manual/auto Settings toggle itself is built,
 #104 part a; only gate@5 has a control law behind it so far, #211); the cross-config cascade (#110, re-homed
 to epic #80 — blocked on the lab producing a measured escalation config: only two councils exist today,
@@ -515,6 +536,13 @@ to epic #80 — blocked on the lab producing a measured escalation config: only 
 > ~83/83/38/6 districts that passed these gates **before** REQ-164 shipped have no receipt yet
 > (going-forward only) — retroactive generation from the surviving sources (handoff files, extraction
 > files, `stage8_approval` rows, the incorporation ledger) is tracked as #624.
+
+> **Epic #92's scope broadened (2026-07-28).** Originally framed narrowly as "build Stage 9" (essentially
+> done — #93/#94/#95 closed) plus a remaining console status view (#614), it has since absorbed **#673**
+> (gate@5 vintage-visibility) and **#674** (a human target label can bypass the validity-floor guard) —
+> reframed around #92's real purpose, "ensure facts that shouldn't reach `lct_db` never get sent down the
+> pipeline in the first place." #674 in particular is now arguably the most important open item under this
+> epic, ahead of the #614 status view.
 
 **Per-grade projection — BUILT** (2026-07-21, #605/#606): the 3-band-minutes → 2-band-staffing mismatch is dissolved by projecting each band's modal minutes down to the grade (via the live `band_grade_span`; floating/merged shapes + an overlap tie-rule), materializing a `district_grade_minutes` table (migration 025), and `calculate_lct_variants.py` summing per-grade minutes × per-grade enrollment to any scope (secondary now weights mid+high, not high-only). The one-time methodology recompute is gated on human sign-off of the before/after sample (`per_grade_lct_sample`). See `STAGE9_INCORPORATE_DESIGN.md` §4.
 

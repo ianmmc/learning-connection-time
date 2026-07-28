@@ -226,8 +226,21 @@ referenced inside `process_governance/` again.
 | **CROSS-STAGE DATA** | the queryable projection of every stage's output — `discovery_school` / `candidate` / `capture` / `processed_doc` (`common/cache_ingest.py`) + `record` / `representation` / `district_target` (Stage 5) | **DB** (working store) | regenerable from disk; **what each stage reads to drive the next**, kept fresh by each stage's finish hook |
 | **LABELS / SPLITS / BATCHES / FLAGS** | human ground truth, cluster-split overrides, the queued/approved batch (incl. `batch_district.domain`), follow-up flags | **DB** | **precious** — never in the ingest drop list; JSON-backed; a label's honest terminal states are `target_present` / `target_absent` / `unusable` / **`unlabeled`** — #228's `reset_labels_bulk` (a plain UPDATE, not a delete) is the one shared path back to `unlabeled` when a label turns out to assert a false non-target ground truth, the case a Millard-style contamination (#227) forces |
 | **CAPTURE BINARIES** | the captured PDFs / PNGs / extracted text files | **disk**, authoritative | regenerable from the **web** (not the DB); referenced by `filename` from `representation`; relocatable as one tree (REQ-087) |
-| **JSON RECEIPTS — fixed-name handoffs** | `discovery.json` / `candidates.json` / `captures.json` / `processed.json` / `batch_*.json` | **disk** | regenerable; the auditable record of each stage's output + the DB-recovery source (`batch_*.json` is generated *from* the DB); **NOT stage-to-stage transmitters**. Each one's EXISTENCE also doubles as that stage's "done" marker (reconcile/redo-skip/self-heal read it by fixed name), which is why REQ-164 could not yet convert them to the always-stamped form below — tracked #617/#622/#623 |
-| **JSON RECEIPTS — always-stamped audit receipts (REQ-164)** | `stage5_filter` / `stage6_dispatch` / `stage7_extract` / `stage8_aggregate` / `stage9_incorporate`, each written `<basename>.<fs_stamp>.<writer>-<h8>.json` via the ONE shared `common/receipts.py::write_receipt` | **disk** | regenerable; a basename is a decl NOT a full filename (always datetime-stamped, first run included — no fixed-'latest' name); NEVER read as input by an active-pipeline stage; naming convention is `stage<N>_<stage_name>` (unified 2026-07-23) so a filesystem/name sort groups a district's receipts in pipeline order; a benchmark-provenance receipt gets `_benchmark` appended to the basename |
+| **JSON RECEIPTS — fixed-name handoffs** | `discovery.json` / `candidates.json` / `captures.json` / `processed.json` / `batch_*.json` | **disk** | regenerable; the auditable record of each stage's output + the DB-recovery source (`batch_*.json` is generated *from* the DB); **NOT stage-to-stage transmitters**. Each one's EXISTENCE also doubles as that stage's "done" marker (reconcile/redo-skip/self-heal read it by fixed name), which is why REQ-164 could not yet convert them to the always-stamped form below — tracked #617/#622/#623 (STILL OPEN, not yet built) |
+| **JSON RECEIPTS — always-stamped audit receipts (REQ-164)** | `stage5_filter` / `stage6_dispatch` / `stage7_extract` / `stage8_aggregate` / `stage9_incorporate`, each written `<basename>.<fs_stamp>.<writer>-<h8>.json` via the ONE shared `common/receipts.py::write_receipt` | **disk** | regenerable; a basename is a decl NOT a full filename (always datetime-stamped, first run included — no fixed-'latest' name); NEVER read as input by an active-pipeline stage; naming convention is `stage<N>_<stage_name>` (unified 2026-07-23) so a filesystem/name sort groups a district's receipts in pipeline order; a benchmark-provenance receipt gets `_benchmark` appended to the basename. **BUILT for Stages 5-9 only** — Stages 2-4 stay on the fixed-name row above |
+
+**#622/#623 is not a hygiene nicety — it is a measured operator-facing correctness gap (2026-07-27/28
+finding, #620 campaign).** Because Stages 2-4 done-ness is `stale-disk-artifact ∧ dispatched_by_batch`
+and a batch stamps `dispatched` for every district up front, a district holding a **prior** artifact
+reads "done" — with the *previous* run's metrics beside it — from t=0 of a fresh redo, not just after a
+race. Measured false-done windows on `batch_00030`: 45s shortest, ~22min median, **38min15s longest**
+(#671). The same root cause produced #669 (cumulative counts shown as this-run counts) and #670 (a
+genuine capture timeout masked as a clean `done`). All three trace to disk-artifact-existence doubling
+as the stage-done marker with no per-run receipt to disambiguate — exactly the inversion (disk-existence-
+is-truth → gov_db-is-truth, disk-as-corroborating-receipt) #622/#623 perform. They were deferred as
+insurance in the original epic plan; the mechanism has since been run end-to-end and found wanting, so
+the argument inverts: this is no longer insurance, it is interest, and it now precedes further redo-batch
+work in the sequencing plan rather than following it.
 
 **Precious vs regenerable is the load-bearing line — not DB vs disk.** The DB holds precious things (labels,
 lifecycle state, batches, flags) *and* the regenerable working store (signals + the cross-stage data
@@ -1230,7 +1243,11 @@ markers), and the ephemeral "what's processing right now" layer is **dropped** (
 Controls: **Start** (kick off full-auto advance) + **Safe-Stop** (let in-flight work complete, with a
 progress bar). **Pause dropped** (not worth the complexity).
 
-### 11d. Two batch types; completion grain = district × BAND
+### 11d. first-run/follow-up batch mechanics; completion grain = district × BAND
+
+*(A third `batch_type`, `benchmark`, was added by epic #617 as a handling-instruction axis, not a
+mechanics change — see §13 for what it is and why it's a separate construct from the first-run/
+follow-up choice described here.)*
 - **first-run** (cold-start stratified draw; excludes already-attempted districts) vs **follow-up**
   (re-discovery / gap-fill; deliberately re-includes attempted districts, targeting **unsatisfied bands**).
   A district can recur across batches. **12-district hard cap on both** — a stages-1–4 blast-radius control
@@ -1832,8 +1849,19 @@ comment explaining why it should have had one definition. `common` is the base l
 import, which is what makes one home possible under the layering contract (§10) — Stage 9 cannot import
 `process_governance`, which is what forced the duplication in the first place.
 
-Two fitness functions in `tests/test_benchmark_predicate.py` keep it that way — one per rule family
-(membership, provenance) — each with a **falsified** detector: every pattern is proven to catch real
+**The guard for this is now table-driven, not bespoke.** The epic's original fitness test protected
+only the benchmark predicate; in the same PRs it then introduced three MORE consolidated rules
+(`dispatch_type` normalization, the `redo_attempted` lever, batch-scoped stage done-ness) and
+hand-copied every one of them, uncaught, because the existing guard watched one rule rather than a
+class. `tests/test_one_home_fitness.py` generalizes: a single `RULES` table, one row per one-home
+rule, each declaring its home module, its scope, a forbid-pattern matched against normalized source
+(adjacent string literals joined, whitespace collapsed — these rules are usually SQL spread across
+several lines), and a **falsification corpus** of copies that really existed and must still trip the
+pattern. Adding a new consolidated rule to `common/` means adding a row; a rule with no row is now a
+visible gap in review rather than an invisible one. It currently covers seven rules, including both
+benchmark-provenance arms individually. `tests/test_benchmark_predicate.py` keeps the guards specific
+to the benchmark predicate's own shape (its arms, its SQL forms, its behavior against real data) —
+each with a **falsified** detector: every pattern is proven to catch real
 hand-inlined copies *and* proven not to fire on the prose and operator error strings that legitimately
 name the rule. A detector that cries wolf gets ignored, which is the same outcome as not having one.
 
@@ -1842,3 +1870,61 @@ function name. The membership forms remain correct for genuinely batch-grain cal
 zero-yield escalation, the receipts backfill's corpus sweep) and for the gate@6 console **badge**,
 where telling an operator "this district is part of the yardstick corpus" is both true and useful.
 What may never key on membership is any guard deciding whether work gets released.
+
+### 13h. The standing lesson: a merged fix is not a landed fix
+
+**For any change that mutates PRECIOUS/live state — not just code — the change is not verified done
+until it has actually RUN against the live system and been measured.** Reviewed and merged is not the
+same claim as landed; CI cannot close the gap, because CI has no live governance DB to be un-migrated.
+
+The concrete instance (2026-07-26 → 2026-07-28): the `common/batch_types.py`/`common/benchmark.py`
+provenance rework (§13a-g) needed one companion migration —
+`infrastructure/acquisition/maintenance/reclassify_benchmark_extractions.py`, a receipted, idempotent,
+refuse-on-mixed script moving the 30 historical harness extractions (27 districts) to
+`run_kind='benchmark'` so they'd stop reading as production-provenance under the new arm-2 predicate.
+It was written, reviewed, tested, and merged to `main` — and then simply never run against the live
+DB. Measured immediately before it finally was: **1,276** production-labeled extraction facts still
+carried `benchmark_gt` provenance, and **0** extractions carried `run_kind='benchmark'`, so the epic's
+own headline acceptance test (`test_benchmark_rerun_acceptance.py`) was **FALSE against the real
+system** the entire time — passing only against a seeded fixture. After `--apply`: 0 and 30
+respectively, 27 receipts written, and the acceptance test passed for the first time against real
+data. This directly followed from driving the epic's stated-only validation (#620, redoing districts
+end-to-end) rather than stopping at "the fix merged" — the same discipline §13d's mobility test
+enforces in code, applied to operational follow-through.
+
+**Consequence for how a migration touching PRECIOUS state gets called done:** merged is a checkpoint,
+not a finish line. The finish line is "ran against the live DB, and the property it exists to restore
+was independently measured to hold" — for a Stage-9/gate@8-adjacent change, that means actually driving
+a district through the affected path, not just re-reading the code.
+
+### 13i. Label inheritance across a harness/run boundary — settled 2026-07-28 (#675, still open)
+
+When a district moves from one harness to another (e.g. a benchmark batch's district later re-runs as
+production, or vice versa), its Stage-5 human labels (`label`, keyed on `rec_key`) carry forward
+unchanged rather than resetting. Measured across the first three #620 redo districts (Bangor, Worcester,
+San Diego): **zero orphaned labels** — every pre-existing label survived the re-run intact, because
+`rec_key` is URL-derived and stable across runs.
+
+**This is intentional, not a gap.** The standing labeling doctrine: **a target label carries SHAPE,
+never fitness-for-use.** A human labeling a document asserts
+"this is/isn't a valid schedule document," not "this document is currently eligible for production."
+Forcing a re-label on every harness change would be wasted human time (REQ-168/commandment #4) — and
+worse, it would corrupt the training signal, since a human forced to mark a validly-shaped,
+already-verified document as non-target merely because its current run is a benchmark dispatch would
+teach the detector the wrong lesson about shape.
+
+**Label inheritance is orthogonal to provenance, by construction, not by accident.** Provenance
+(§13c) is computed purely from `capture.source` (and, eventually, producing-batch — #640) — **never**
+from the `label` table. This generalizes the same "handling type is a property of the work, never of
+the annotation/identity attached to it" principle §13c established for districts (epic #617): the label
+answers "is this shaped like a target," the provenance predicate answers "may this evidence release,"
+and neither may read the other's table.
+
+**The open gap (#675): a label carries no reference to the evidence it was made against.** `label`
+records no run, no capture, and no content fingerprint — so a label made against content that has since
+changed under a stable `rec_key` (a document re-captured with different bytes at the same URL) cannot
+currently be distinguished from a fresh one. This is REQ-165's *"from what evidence"* clause, unmet.
+`record.content_hash` (populated 3,558/3,559 at last measurement) is the existing column that would
+close it, but it is not yet wired to `label`. Until it is, label inheritance should be read as
+correct-and-safe but **not fully auditable** in the sense the rest of this doc's precious-state model
+otherwise guarantees.

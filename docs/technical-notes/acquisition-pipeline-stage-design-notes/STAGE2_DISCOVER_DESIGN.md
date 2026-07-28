@@ -14,6 +14,12 @@
 district, `data/raw/lea-website-captures/<id>_<slug>/discovery.json` (audit trail) + `candidates.json`
 (capture-ready URL list). The `stage2-discover` skill (the retired agent-wave orchestrator) is **obsolete**.
 
+**Current status (2026-07-28):** epic #617's three #620 redo batches (`batch_00030/31/32`, 25
+`batch_00000` districts, `redo_attempted=true`) have completed Stage 2 cleanly — every district landed a
+`found_all` outcome per the reconcile/status machinery, feeding Stage 3. A real defect in the geo
+derivation ladder surfaced on a live production district during this window — **issue #672 (open, epic
+#128)**, not yet fixed: see §2f.
+
 **Code:** `common/discover.py` (`brightdata_search`, `serper_search`, `domain_of`, `is_scoping_domain`,
 the gate — the retired `openrouter_search`/`perplexity_search` were deleted 2026-07-06, #87);
 `stage2_discover/discover_stage2.py` (`build_roster`, `run_wave1(search_fn)`, `run_wave2(search_fn)`,
@@ -181,9 +187,10 @@ Stage-2 code change.
 - **Reconciliation** (before any searching): filesystem is authoritative. Disk-yes/registry-behind
   reconciles up and skips; disk-yes/registry-yes skips; disk-no/registry-says-done is a **hard
   `SystemExit`** (control failure — registry ahead of disk signals lost data or a bad migration,
-  affecting potentially more than one district); disk-no/registry-behind is `todo`. **Follow-up batches
-  are the sanctioned exception** (§2e) — every district in a follow-up batch is `todo` regardless of
-  disk state; the registry-ahead-of-disk control-failure check still applies unchanged.
+  affecting potentially more than one district); disk-no/registry-behind is `todo`. **Redo batches
+  (`redoes_attempted(batch)` true — §2e) are the sanctioned exception** — every included district is
+  `todo` regardless of disk state; the registry-ahead-of-disk control-failure check still applies
+  unchanged.
 - **`run_batch` is sequential** — one registry writer, no race; providers are fast enough at batch scale
   (parallelize via Bright Data's unlimited concurrency later, at full-corpus scale). Before touching the
   batch at all, `run_batch()` and the legacy CLI's `finish` subcommand both call `batch_guard.
@@ -195,16 +202,26 @@ Stage-2 code change.
   (a hub page collapses to one capture target regardless of a topology label). Stage 5 reconstructs a
   *labeled* topology downstream from captured content + the NCES denominator.
 
-### 2e. Follow-up batches: redo-and-merge, not replace (#174)
+### 2e. Redo batches: redo-and-merge, not replace (#174; redo-eligibility axis: #617/#619)
 
-A `batch_type=="follow-up"` batch (a 7→1/7→2/7→3 redo directive) needs materially different Stage-2
-behavior than a first run, because its whole purpose is to re-discover districts Stage 2 already
+A redo batch (a 7→1/7→2/7→3 directive, or a benchmark A/B re-run — see below) needs materially different
+Stage-2 behavior than a first run, because its whole purpose is to re-discover districts Stage 2 already
 finished:
 
-- **`reconcile()`'s follow-up carve-out:** the "disk already has `discovery.json` → skip" rule is
-  *disabled* for a follow-up batch — every included district is `todo`, unconditionally, because a
-  follow-up exists precisely to redo discovery for districts already discovered. The
-  registry-ahead-of-disk control-failure check still applies unchanged (a follow-up district silently
+- **Redo-eligibility is a DECLARED batch attribute, not a `batch_type` derivation** — `common/
+  batch_types.py::redoes_attempted(batch)` reads the batch's own `redo_attempted` field when present;
+  only when it's absent/NULL (every pre-#617 batch row and receipt) does it fall back to the historical
+  `batch_type == "follow-up"` check, byte-identical to the old behavior for those batches. This
+  supersedes the older framing (deriving redo from `batch_type` alone) that this section used to
+  describe: deriving it would have made a `benchmark` batch on `batch_00000` re-run discovery over the
+  27 curated-GT districts and, via `merge=True`, fold fresh SERP candidates into their FROZEN `gt://`
+  candidate sets — that corpus is fixed (CLAUDE.md). A `follow-up`-typed batch still redoes by default
+  (`default_redo_attempted`); a `benchmark`-typed batch redoes only when its composer explicitly
+  declares `redo_attempted=True` (the real Stages-2/3/4 A/B harness case), never implicitly.
+- **`reconcile()`'s redo carve-out:** the "disk already has `discovery.json` → skip" rule is *disabled*
+  whenever `redoes_attempted(batch)` is true — every included district is `todo`, unconditionally,
+  because a redo batch exists precisely to redo discovery for districts already discovered. The
+  registry-ahead-of-disk control-failure check still applies unchanged (a redo district silently
   missing its prior `discovery.json` is exactly as alarming as in a first run).
 - **Crash-tolerant prior-state recovery (#265, review-deepened):** merging needs the prior round's
   manifests, but a crashed merge=True retry can leave the two files in an inconsistent state — e.g. an
@@ -224,8 +241,40 @@ finished:
   inline `batch_id` stamp (the old ones keep their original provenance unstamped), giving round-level
   provenance without touching untouched entries.
 - Both `discover_district()` (headless) and the legacy CLI's `finish` subcommand pass
-  `merge=batch.get("batch_type") == "follow-up"` through to `finish_district()`/`write_discovery()` — the
-  merge decision is made once, off the batch's own type field, not re-derived per call site.
+  `merge=BT.redoes_attempted(batch)` through to `finish_district()`/`write_discovery()` — the merge
+  decision is made once, off the batch's declared redo-eligibility, not re-derived per call site.
+- **Confirmed on live campaign data (epic #617, the #620 redo batches, 2026-07):** the union semantics
+  above hold in production, not just in the fixture suite — a re-discovered district's candidate set is
+  the OLD list plus the new round's, never a fresh replacement. Worcester (`2513230`) kept its 8
+  `gt://`-sourced candidates (Stage 3's `capture_discovery.mjs::seedFromPriorCaptures` carries prior
+  capture records forward verbatim, including `benchmark_gt`-sourced ones — the downstream half of this
+  same union contract) alongside the newly-discovered candidates its redo added, giving a mixed-provenance
+  candidate set rather than the redo silently displacing the frozen GT-sourced entries.
+
+### 2f. Geo derivation is share-based, not count-based — widening is NOT monotonic in recall (#672, open)
+
+`apply_geo_derivation`/`discover.derive_domain` (§2c, decision log 2026-07-19) requires the winning host
+to clear `DERIVE_MIN_SHARE` (40%) of the RAW result tally **and** `DERIVE_MIN_SCHOOLS` (3) — a
+**share**-based threshold over whatever the geo query set returns, not a count-based one. Stage 1's
+5→1 geo-escalation ladder (`stage1_queue/batch_store.py::geo_ladder_exhausted`,
+`queue_batch.py::force_widen_dids`) has two rungs — the standard geo vocabulary, then a widened
+vocabulary if standard fails to derive — on the assumption that a bigger result set can only help. **That
+assumption is false when the extra results are noise, not signal**, because widening the denominator can
+push a real host's *share* below threshold even though its raw hit count didn't drop. Measured on a real
+production district, Wyandanch UFSD NY (`3631800`, issue #672, filed 2026-07-28): the standard rung
+produced 25 gate-eligible results with the district's own domain at exactly 0.400 share — derivation
+succeeded, 10 candidates kept; the widened rung produced 95 gate-eligible results (3.8x more) but the same
+domain's share dropped to 0.179 as the wider vocabulary pulled in far more noise than signal — derivation
+failed (`below threshold`), and because `gate_urls` fail-closes on a blank/undetermined domain, **all 109
+raw URLs from the widened round were discarded**, including 5 genuine on-domain hits plus 2 subdomain
+hits the standard rung had already found and used successfully. The widened round's top host by raw count
+was `core-docs.s3.us-east-1.amazonaws.com` (a school-CMS vendor's document bucket, 16 hits across all 4
+schools), outranking the district's own domain — S3 buckets are deliberately excluded from `cms_hosts`
+(policy, not a bug), so that host could never have derived regardless of share; noted here as a pattern
+that can dominate a widened tally, not a proposed change. Net effect: Wyandanch's ladder terminated at
+`manual_flag` after both geo rungs exhausted, which may be an **artifact of the escalation mechanism**
+rather than genuine evidence the district publishes no bell-schedule information. Not yet fixed — tracked
+as #672 (epic #128); this doc will be updated when a resolution ships.
 
 **Seed-URL injection (dormant, #161):** `write_discovery()` also injects any `seed_urls` present on the
 district entry straight into `candidates.json` (tool `seed_7to3`, deduped by normalized URL against
@@ -291,6 +340,12 @@ header during a run.
 - **Wave-1 subagent under-reporting on large rosters** (historical, from the retired agent-wave design —
   §5) — no longer applicable now that Wave 1 is deterministic, but worth remembering if an agent step is
   ever reintroduced.
+- **Geo ladder's widened rung can defeat a share-based derivation the standard rung already held** (#672,
+  open, §2f) — a real production case (Wyandanch UFSD, `3631800`) where widening tripled the raw result
+  count but dropped the winning host's share below `min_share`, discarding candidates the standard rung
+  had already found and used. Open question: whether the fix is a count-based fallback, a per-rung
+  minimum floor, re-gating against the standard rung's derivation before falling back to the widened
+  one's, or something else — not yet decided.
 
 ---
 
@@ -470,3 +525,21 @@ Live at `GET /api/attribution` (`server.py`), rendered via the shared `attributi
 (`static/outcomes.js`) mounted on both `static/stage2.js` and `static/stage4.js` (Stage 4's own
 `stage4_attribution()` is the processing-tool counterpart, out of scope for this doc). First card:
 emergent one-hop is the highest-yield non-GT discovery source, 38.1% labeled-target rate.
+
+**2026-07-26 — epic #617/#619/#662: redo-eligibility became a DECLARED batch attribute
+(`redo_attempted`), no longer derived from `batch_type=="follow-up"` alone.** §2e's merge/todo
+carve-out now reads `common/batch_types.py::redoes_attempted(batch)`: a `follow-up`-typed batch still
+redoes by default, but a `benchmark`-typed batch (e.g. `batch_00000`) only redoes when its composer
+explicitly declares it — the point being to let a real Stages-2/3/4 A/B harness re-run benchmark
+districts without accidentally reopening `batch_00000`'s frozen `gt://` candidate sets to silent
+`merge=True` mutation any time a benchmark batch happened to exist. Pre-#617 batch rows/receipts (no
+`redo_attempted` field) fall back to the historical `batch_type=="follow-up"` rule, byte-identical
+behavior. Full epic context: `docs/technical-notes/learning-loop-reports/
+2026-07-25-epic617-benchmark-model-findings.md`, CLAUDE.md's "Current status" section.
+
+**2026-07-28 — #672 filed: the geo derivation ladder's widened rung is not monotonically better than
+its standard rung, and can discard candidates the standard rung already held (epic #128, open).** See
+§2f for the mechanism and the Wyandanch UFSD (`3631800`) measurement. Not yet fixed; this is a defect
+against §2c/2026-07-19's derivation design, not a new design decision — logged here per this doc's own
+"design turns and superseded approaches belong in the decision log" convention, and cross-referenced
+from §2f/§4 rather than re-litigated in three places.

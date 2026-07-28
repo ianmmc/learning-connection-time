@@ -51,9 +51,13 @@ ranking as still current but not urgent until reprioritized.
 - `stage7_extract/validate.py` — `score_run`/`score_district`: per-band (modal gross ±15 min) + per-school
   hit-rate vs the curated GT, plus `gap`/`extra` counts. The Lab's scorecard producer.
 - The curated GT yardstick: `data/benchmark/gt_curation_20260621T060008Z/gt_proposals.json` (27 hard-case
-  districts, 940/943 schools human-verified). **The yardstick GROWS** — anything human-approved at gate@8
-  (Stage 8) becomes additional verified GT; we are not limited to these 27. So every Lab result must be
-  **fingerprinted by the GT corpus version** (see §5), never silently compared across a growth event.
+  districts, 940/943 schools human-verified). **This set is FIXED — gate@8 approvals do NOT append to it**
+  (no such code path exists; Stage 9, the writer, is unbuilt). What grows is a separate **confirmed-fact
+  base**: every district approved at gate@8 accrues a `stage8_approval` row + a frozen closing-argument
+  receipt, which the pipeline learns from and improves with (realized as pipeline-improvement work, not as
+  a write into the GT corpus). So every Lab result must still be **fingerprinted by the GT corpus version**
+  (see §5) — the corpus is fixed today, but the fingerprint is what would catch a future intentional
+  revision, never silently compared across such an event.
 - The frozen receipts to replay against: `data/acquisition/extractions/extraction_<hash>_*.json` — per-call
   model/facts/tokens/cost/generation-id for handoff `a2bc80c004ca` (text, 24 districts) and
   `a2bc80c004ca-image` (vision probe, 23). `batch_type=='benchmark'` — never Stage-9-written.
@@ -209,8 +213,9 @@ Mirror `stage5_filter/tuning_ledger.py` exactly: an **append-only JSONL under DA
 `ACQUISITION/council_lab/episodes.jsonl` — a data-root history file, **never a config knob**), one object
 per measured run. Each entry copies the run's fingerprints and records the deltas + the decision:
 - **fingerprint = `config × GT-version × data`** (the three-part md5 scheme from the Stage-5 harness). The
-  **GT-version fingerprint is load-bearing** here: the yardstick grows via Stage-8 approvals, so a result is
-  comparable only *within* a GT version — a growth event is a new fingerprint, never a silent mix.
+  **GT-version fingerprint is load-bearing** here even though the yardstick is fixed today (§0) — it is
+  what would catch a future intentional revision of the corpus, so a result stays comparable only *within*
+  a GT version and any such change is a new fingerprint, never a silent mix.
 - a `pure_config_move` flag (config changed, GT + data held) so a recommender never mistakes a
   yardstick-contaminated move for a config result.
 - knobs touched (council/prompt/cost/judge), before/after metrics (band/school hit-rate, gap, spray count,

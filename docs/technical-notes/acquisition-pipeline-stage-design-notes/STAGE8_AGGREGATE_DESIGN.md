@@ -36,8 +36,9 @@ endpoint block in `process_governance/server.py:2083-2462`. The pure closing-arg
 `stage8_aggregate/closing_argument.py`; the approval write is `stage8_aggregate/approval.py`.
 
 **Endpoints (all live):** `GET /api/aggregate/districts` (the review queue — production-fact districts whose
-gate@7 loop is quiesced, benchmark-walled, badged with the latest gate@8 disposition via a LATERAL join on
-`stage8_approval`) · `GET /api/aggregate/district/{id}` (detail: `closing_argument` + `fingerprint` as the
+gate@7 loop is quiesced, badged with the latest gate@8 disposition via a LATERAL join on
+`stage8_approval`; since epic #617/#660 (2026-07-26) it also SURFACES benchmark-provenance districts
+rather than silently excluding them — see §2 below) · `GET /api/aggregate/district/{id}` (detail: `closing_argument` + `fingerprint` as the
 review token) · `POST /api/aggregate/override` (per-school times override, reason required, validated through
 `gross_from_times`) · `POST /api/aggregate/exclude` (+ `/restore`) · `POST /api/aggregate/human-add`
 (+ `/remove`) · `POST /api/aggregate/slot-assign` (+ `/remove`) · `POST /api/aggregate/recover-band` (#473 —
@@ -183,20 +184,50 @@ place (with tests) rather than deleted; treat them as legacy unless/until they'r
   rule, in precedence order:
   - an **accepted** fact beats an **unresolved** fact for the same school, **regardless of run
     order** — a later thin retry can never make an earlier solid extraction disappear;
+  - **provenance precedence (#662, 2026-07-26 — runs BEFORE the year axis, added by epic #617):**
+    among multiple **accepted** facts, one from honest production work supersedes one whose
+    representation was benchmark-injected (`benchmark_provenance` truthy on the row, set by the
+    caller from `capture.source='benchmark_gt'`), for the same school, **regardless of run order or
+    year** — and it must run first, because the injected artifacts are deliberately-older curated
+    documents that overwhelmingly carry no parseable year at all (measured: 957 of 957), so they would
+    never lose on the year axis below. This is the durable forward rule adopted when #662 found that a
+    re-run district's fresh facts were losing to stale injected `batch_00000` facts at this exact
+    precedence chain — see the design note at the end of this list. Applies only when a `(band,
+    school)` group holds BOTH kinds; an all-injected group is left alone. Rows with no
+    `benchmark_provenance` key (every pre-#662 caller) leave this axis inert;
   - **school-year precedence (#254/REQ-146):** among multiple **accepted** facts, a fact whose
     `school_year` parses to a *known newer* year supersedes one with a known *older* year, regardless of
     run order (a genuinely more-recent schedule wins over a stale one). Unknown-year facts don't compete
     on this axis. **Year-superseded facts are KEPT, not dropped** — returned in a third list when called
     `with_superseded=True` — so the closing argument can still show them; year precedence only ever
     compares accepted-vs-accepted;
-  - when the year axis doesn't decide (both unknown, or equal), among multiple **accepted** facts the
+  - when neither axis decides (both unknown, or equal), among multiple **accepted** facts the
     **earliest** run wins — follow-up rounds fill gaps, they never silently overwrite a solid prior fact
     (correcting one is a gate@8 human determination, not an automatic later-run override);
   - among **unresolved-only** facts, the **latest** run wins (the freshest disagreement diagnostic).
 
   Output is `(accepted, unresolved)` — or `(accepted, unresolved, superseded)` with `with_superseded=True`
   — each deterministically sorted by `(band, school)`. Pure, no I/O; the caller filters to
-  `run_kind='production'` rows.
+  `run_kind='production'` rows (a THREE-valued column since #662: `production` | `probe` | `benchmark` —
+  see `STAGE7_EXTRACT_DESIGN.md`; `probe` and `benchmark` are both excluded here, and are different axes
+  from each other).
+
+  **Why provenance precedence exists, and why the alternative (striking the stale fact at gate@8 via
+  `band_exclusion`) was considered and withdrawn (#662, 2026-07-26):** #619 moved the Stage-9 write wall
+  from district-membership to fact-provenance grain, but a re-run district's honest facts still lost to
+  the historical `batch_00000` harness's injected `benchmark_gt` facts right here, in the merge that
+  precedes the wall — `extraction`/`school_fact` are append-only, so an old injected fact can never be
+  retracted, and (measured) 957 of 957 of the affected rows carry `school_year = NULL`, so the year axis
+  never engaged and precedence fell through to earliest-`extraction_id`, which the injected artifact
+  always wins. Striking the stale winner at gate@8 (`band_exclusion`, #257) was proposed as the fix and
+  withdrawn: this merge collapses to ONE row per `(band, school)` **before** exclusions apply, so
+  excluding the injected winner would **delete the school from the band** — the fresh reading never
+  surfaces — rather than superseding it. `band_exclusion` remains what #257 built it for: a per-case
+  hatch for a school that genuinely shouldn't count, not a way to unwind this merge's own precedence.
+  The historical `batch_00000` harness extractions were separately reclassified to `run_kind='benchmark'`
+  (a one-time migration, `maintenance/reclassify_benchmark_extractions.py`, applied to the live DB
+  2026-07-27) so they no longer enter this merge as `production` rows at all — provenance precedence is
+  now defence in depth for any FUTURE injection mechanism, not the primary fix.
 
   **The dedup key RE-NORMALIZES `school` through the CURRENT `norm_school` at read time** (PR #247
   review), not the raw persisted string: `school_fact.school` is written at extraction time, so a run
@@ -260,13 +291,27 @@ path (§0/§1a); the two gates ask different questions. gate@7: *"are these extr
 evidence?"* gate@8: *"is the whole district's per-band picture complete and defensible enough to PUBLISH?"*
 So a district is **eligible for gate@8 only once gate@7's request loop has quiesced** — no open
 request-more-evidence directives (all satisfied or auto-withdrawn, #233/REQ-123). You don't deliver a
-closing argument while evidence is still being gathered. The queue also **excludes benchmark
-(`batch_type='benchmark'`) districts** — the same wall Stage 9 / the dispatch preview use (server.py's
-`is_benchmark` rule): gate@8 authorizes the Stage-9 LCT write, and benchmark stays walled off. This is
-also consistent with how the GT yardstick grows — a *non-benchmark* district approved here becomes verified
-ground truth, whereas benchmark districts are *already* the yardstick, so they don't re-flow through this
-gate. Keyed on `batch_type`, not the `batch_00000` id literal, because the GT corpus grows into new
-benchmark batches. (Live: 62 production-fact districts → 36 after the quiesced + benchmark filters.)
+closing argument while evidence is still being gathered.
+
+**The benchmark wall (revised by epic #617's #619, 2026-07-26 — supersedes the district-membership
+description below).** The queue used to exclude any district that had EVER been a `batch_type='benchmark'`
+batch member (permanent, district-grain, via `server.py`'s `is_benchmark`/`IS_BENCHMARK_SQL`) — the
+same district-permanent bug #619 retired at the Stage-9 wall (`STAGE9_INCORPORATE_DESIGN.md`). It is
+now keyed at **fact-provenance grain** via the shared `IS_BENCHMARK_PROVENANCE_SQL` (`common/benchmark.py`),
+the SAME two-arm predicate the Stage-9 wall uses — arm 1: `handoff.dispatch_type='benchmark'`; arm 2:
+the fact's own rep carries `capture.source='benchmark_gt'`. A re-run district whose fresh production
+facts no longer trace to benchmark-provenance evidence now clears the queue instead of being refused
+forever. **The queue also changed from silently EXCLUDING to SURFACING** (#660, 2026-07-26): districts
+still walled by the predicate now appear in the queue (visibly withheld, with their evidence traced to
+its `gt_curation_*.pdf` source) rather than having no route to review at all — this is what makes the
+`band_exclusion` escape hatch (§2b below / #662) reachable for a re-run district that still carries a
+stale injected school. `IS_BENCHMARK_SQL` (plain district-membership) is kept as the gate@6 console
+BADGE only ("part of the yardstick corpus" — display, not a gate). This is still consistent with how
+the GT yardstick grows — an approved district's facts become part of the confirmed-fact base, while
+benchmark-provenance facts are already the yardstick and don't re-flow through this gate. Full account:
+`docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md` §10.9–§10.13,
+§10.20, §12.5. (Live 2026-07-26: 47 queued / 26 withheld by the provenance predicate — supersedes the
+"62 → 36" district-membership count this section previously reported.)
 
 ### 2a. What the stage accomplishes
 1. **Dereference the band rollup into an evidence chain — via the IMMUTABLE handoff, not a fragile live
@@ -450,6 +495,11 @@ A max-effort multi-angle review of the manual-gate build confirmed and fixed, be
 - **The benchmark wall inlined a third time** — now ONE `IS_BENCHMARK_SQL` fragment (server.py) used by
   the dispatch preview and the gate@8 queue; Stage 9's write boundary enforces the same benchmark wall
   (built 2026-07-21 — via its own `_is_benchmark_district`, since Stage 9 sits below `process_governance`).
+  **Superseded 2026-07-26 (epic #617's #619):** both `IS_BENCHMARK_SQL` (district-membership) and
+  `_is_benchmark_district` were themselves district-permanent — the SAME shape of bug this consolidation
+  fixed, one level up. The gate@8 queue now runs `IS_BENCHMARK_PROVENANCE_SQL` and Stage 9 now runs
+  `_is_benchmark_receipt`, both re-keyed to fact provenance and both living in the one shared
+  `common/benchmark.py` home. `IS_BENCHMARK_SQL` survives only as the gate@6 display badge. See §2 above.
 - **Single-source stated-minutes read as agreement** — `stated_minutes_agree` is three-state: True only
   with ≥2 models stating the same number, None (rendered "single source") when only one read it.
 - **Falsy-zero `fact_id`** — the override endpoint validates `is None`, and the console guards

@@ -16,6 +16,15 @@ layer (node-owns-shutdown, manifest recovery), iframe/embed capture (REQ-115), f
 (#174), the `batch_guard` abandoned-batch refusal (#168/#206), and an automated `node:test` harness for the
 Node capture layer (REQ-079/#127, PR #239). Drive Tier 2 (OAuth) is deliberately deferred, not built (§5).
 
+**Real redo traffic, 2026-07-27/28 (epic #617's #620 campaign, `batch_00030/31/32`, 25 districts):** the
+first genuine follow-up/redo run at this scale since #647 fixed the console's TODO/DONE gate for redo
+batches. Stage 3 outcome: 25/25 districts completed — 15 `captured_all`, 9 `captured_partial`, and 1
+`failed`-by-subprocess-timeout that nonetheless captured all 119/119 planned records successfully before
+the Node subprocess was killed (Orange County FL, `1201440` — see the #670 caveat in §3). This surfaced
+three real console defects (#669/#670/#671, all open, epic #96) in the status/observability layer described
+in §3 below — the capture WORK itself is correct; what's wrong is what the console displays about it. See
+§6's 2026-07-27/28 entry for the full account.
+
 **Code:** `stage3_capture/capture_stage3.py` (`reconcile`/`compute_outcome`/`finish_district`) imports
 `common.district_status` (state events), `common.cache_ingest` (the Stage-3 cache hook — governance DB
 only, never the LCT DB), and `common.batch_guard` (abandoned-batch refusal — see §3). `stage3_capture/
@@ -200,6 +209,17 @@ capture/ok/failed/emergent counts, the **failure-reason breakdown** (`err`, incl
 blocks), and the batch-level **CMS/host distribution**. NOT a live PNG feed (low governance value). A
 `done`-on-disk-but-not-in-cache district is self-healing (ingested on first console view).
 
+**Caveat (#669, open, epic #96): the per-district counts are not scoped to a run.** `status_for_batch`'s
+`rows_by_did` query (`SELECT ... FROM capture WHERE district_id = ANY(:ids)`) filters by district id only —
+no `batch_id`/run column exists on the `capture` cache table — so `n_captures`/`n_ok`/`n_failed`/
+`n_emergent` reflect whatever the cache currently holds for that district, not necessarily what the batch
+being viewed just did. On an ordinary (non-redo) batch this is moot (one run per district, ever). On a redo
+batch it means the numbers shown beside a district can be stale — from an earlier run — until this run's own
+`finish_district` overwrites that district's cache slice. **Separately, and unconditionally wrong today:**
+the Stage 3 confirm-run dialog's copy (`static/stage3.js`) reads *"Already-captured districts are skipped"*
+— true for a first-run/ordinary batch, **false for a redo batch**, where `reconcile(redo=True)` does the
+opposite (every district in the batch is `todo` regardless of on-disk state, §2a).
+
 **No-link districts skip Playwright:** a district whose Stage-2 outcome is `manual_flag_all` (empty
 `candidates.json`) is dropped before dispatch — no Node subprocess, no empty Stage-3 artifact; it stays
 terminal at Stage 2.
@@ -208,6 +228,27 @@ terminal at Stage 2.
 · `done` · `failed`/`timed_out` (read from the latest `capture` state_event, not a captures.json artifact;
 retriable). The rollup adds `resolved = done + flagged`; a batch's Stage 3 is complete when
 `resolved == total`.
+
+**Caveat (#670, open, epic #96): a late-timing-out district can render as clean `done` with its failure
+masked.** The `failed_caps` check (the latest `capture` state_event) is consulted only inside the
+`if did not in captured:` branch — i.e. only when no `captures.json` exists on disk yet. A district whose
+Node subprocess captured everything (a fully-populated `captures.json` on disk) and *then* hit the
+Python-side subprocess-timeout backstop (§3's `CAPTURE_TIMEOUT_S`) has both a `TimeoutExpired` state_event
+AND a complete manifest — and disk-artifact-existence is checked first, so it renders as ordinary `done`
+with no failure indicator at all. Measured live on the #620 campaign: Orange County FL (`1201440`) recorded
+`TimeoutExpired` while holding 119/119 successfully-captured records; the console showed it as done.
+
+**Caveat (#671, open, epic #96): on a redo batch, every district holding a prior artifact reads `done` —
+with the PRIOR run's metrics — for most or all of the current run's duration.** `_dispatch_and_finish`
+stamps the `dispatched` state_event for **every district in `todo`, up front, before the per-district
+capture loop starts** (§3's dispatch loop above). `status_for_batch`'s redo branch (`captured &=
+DS.dispatched_by_batch(...)`, added by #647 to fix the TODO/DONE gate — that fix is correct and unrelated
+to this defect) can only ask "did this batch dispatch this district," not "has this run's own capture for
+this district actually landed" — so from the moment dispatch is stamped until that district's own
+`finish_district` overwrites its `captures.json`/cache slice, the console shows it as `done` using
+stale, pre-redo data. Measured false-done windows on the campaign: 45s shortest, ~22min median, 38m15s
+longest. Same `stale-disk ∧ dispatched_by_batch` conjunction pattern recurs identically in Stage 2's and
+Stage 4's `headless.py` status views.
 
 **Shared labels + left-pane progress:** `static/outcomes.js` (`outcomeBadge`, `progressBadge`) — the same
 elements Stage 2/4 use. Honest counts: no-link districts report separately, never folded into the
@@ -432,6 +473,23 @@ planned host first (a challenged probe halts the district at one request of IP e
 probe is necessary-not-sufficient — the breaker is the guarantee). Security-blocked districts are
 ineligible for the 5→1 geo escalation (stage5_followup): the domain was fine, the WAF said no —
 manual triage only. Tests: capture_security.test.mjs (the real Millard interstitial is the fixture).
+
+**2026-07-27/28 — epic #617's #620 campaign drove the first real redo-batch traffic since #647, and it
+found what #647 alone couldn't (governance §11's "the future case has to be constructed, not reasoned
+about," now doubled).** `batch_00030/31/32` (25 `redo_attempted=true` districts) ran end-to-end: Stage 3
+completed 25/25 (15 `captured_all`, 9 `captured_partial`, 1 `failed`-by-timeout that still captured its
+full 119/119 planned records — Orange County FL). The capture WORK is correct throughout. Three console
+*display* defects surfaced, all traceable to the same root — disk-artifact-existence as the stage-done
+marker, with no per-run receipt: **#669** (per-district counts read from the district-id-keyed cache with
+no batch/run scope, so a redo's displayed numbers can be a stale run's; the confirm-run dialog's
+"Already-captured districts are skipped" copy is flatly false for a redo batch), **#670** (a district that
+times out on the Python subprocess backstop *after* fully capturing can render as clean `done` — the
+failure-event check is skipped once disk holds a manifest), **#671** (the whole-batch-up-front `dispatched`
+stamp means every district holding a prior artifact reads `done`-with-stale-metrics for most of the run;
+measured windows 45s–38m15s). None of these are #647's fault — #647 fixed the TODO/DONE *gate* (Run-control
+button visibility) correctly; these three are the *rendering* layer #647 didn't touch. All three: open,
+epic #96, not yet fixed. See §3 for the present-state caveats and `docs/technical-notes/learning-loop-
+reports/2026-07-25-epic617-benchmark-model-findings.md` §13 for the full campaign account.
 
 **2026-07-20 — doc correction: §2a's reconciliation halt has a bypass, now noted.** §2a described the
 registry-ahead-of-disk `SystemExit` as unconditional; it isn't — `reconcile()`'s `remediation_receipt`

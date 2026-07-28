@@ -21,7 +21,11 @@
 **incremental Stage 4→5 ingest** (triggered automatically when a Stage-4 batch resolves — see
 `STAGE4_PROCESS_DESIGN` §4b). This is the seam where the batch dissolves: Stage 5 is **district-driven**,
 not batch-driven (governance §12) — its console groups/sorts/filters by district and record facets, with
-no batch concept in the UI.
+no batch concept in the UI. **KNOWN DEFECT (#677, open):** the district list's `ORDER BY name` runs on the
+governance DB's `postgres:16-alpine` image, whose musl libc does not implement the declared `en_US.utf8`
+collation and silently falls back to byte order — ALL-CAPS names (36/116 districts, ~31%, an NCES data-
+quality artifact) sort before mixed-case ones, so the "alphabetical" district list is wrong for roughly a
+third of entries. `server.py`'s district-list queries need `ORDER BY lower(name)` instead.
 
 **Handoff to next stage:** the release decision, read by Stage 6 directly from the governance DB
 (`record`/`representation`/`label` + `release.decide`) — `filtered.json` (an always-datetime-stamped
@@ -351,6 +355,33 @@ veto.**
     `project-auto-act-when-failure-observable`: a hold is reversible and its failure is visible; a
     hard-reject silently destroys a district's only evidence. Resolves the "hard-reject vs. hold" question
     §3G left open.
+  - **KNOWN DEFECT — the HOLD above only fires on the UNLABELED tier-A auto-send path; a human target
+    label bypasses the floor unconditionally, with no way to stop it (#674, open, epic #92, flagged
+    2026-07-28 — likely the single most consequential open finding of the whole #617/#92 campaign).**
+    `release.py::decide()`'s structure is: `label in TARGET_LABELS` → **send, unconditional, first
+    branch, `pre_validity_floor()` never called**; only the unlabeled `tier == "A"` branch below it
+    checks `pre_validity_floor(csy)` before sending. This composes badly with standing labeling doctrine
+    (Ian, 2026-07-27): **a target label carries SHAPE, never fitness-for-use** — a human who finds a
+    correctly-shaped bell-schedule document that happens to predate the floor is REQUIRED to
+    target-label it (marking it non-target to keep it out would corrupt the shape signal every other
+    label trains on). The "human can override" language above was always meant as a one-way escape hatch
+    — labeling an old document a target to PRESERVE a district whose only evidence is old — but there
+    is no complementary force-**hold** control for "this shape is right, but don't send THIS document."
+    Net effect: correctly following the labeling doctrine on a below-floor document GUARANTEES it reaches
+    paid extraction, with no mechanism to stop it. Live instance: Taos Integrated School of Arts
+    (`3500127`, 2026-07-28) froze a production dispatch with 4 send-reps, 2 of them 2013-14/2014-15
+    handbooks below the floor — both correctly target-labeled per doctrine, both bypassing the floor via
+    this gap. **Any fix must NOT become a blanket recency veto** — obs. 6 above already measured that
+    actively harmful at the more-recent floor (1 false-send removed for 17 real targets vetoed); this
+    needs an explicit, orthogonal per-record force-hold control distinct from the shape label itself,
+    likely riding the existing `facets_json` orthogonal-facet mechanism `decide()` already receives as
+    `facets` but does not consult for this purpose.
+  - **KNOWN GAP — the floor's state is invisible to the reviewer making that call (#673, open, epic #92,
+    flagged 2026-07-28).** `content_school_year` is computed in `build_signals.py` and already projected
+    server-side into the gate@5 record view (`process_governance/server.py`'s record-detail SELECT and
+    response dict), but the console CLIENT never renders it — `grep -rn content_school_year static/`
+    returns zero hits. A reviewer sees neither a record's derived vintage nor whether/why the #241 floor
+    held it, which is exactly the information a force-hold decision (above) would need to be made on.
 - **Prefer-recent (§3G / #107) is the half that saves money, and it is a RANKING, not a gate.** Among
   siblings ≥ the 2017-18 floor covering the same school/band, dispatch the most recent and **hold** the
   stale sibling (available for a cheap 7→6 re-dispatch if extraction fails). Zero recall cost *by
@@ -491,6 +522,20 @@ calibration row (consistent with `gate5_label_record` returning `None` for an un
 rewrites prior calibration history — past human decisions stay on the log (auditability). Two console
 entry points: a district-level reset button (`static/app.js`'s `.dist-resetbtn` → `resetLabels("district",
 ...)`) and a record-detail reset button (`#resetLabelBtn` → `resetLabels("record", ...)`).
+
+**Labels carry forward across a district re-run by stable `rec_key` — correctly, but not yet auditably
+(#675, open, epic #96, confirmed decision Ian 2026-07-28).** When a district is re-run (e.g. a benchmark
+run followed by an honest production run), its `label` rows are keyed on `rec_key` (URL-derived, stable
+across runs) and are simply still there for the same URL on the next run — this is INTENTIONAL and
+correct (avoids re-asking a human to re-judge a document they already judged, REQ-168 commandment #4).
+Measured across 3 campaign districts (Bangor, Worcester, San Diego): zero labels were orphaned by a
+re-run. **The gap: the `label` table (`rec_key, primary_label, flags_json, note, status, updated_at,
+facets_json`) records no reference to what evidence (which capture/run/content) the label was made
+against**, so a label today cannot be distinguished as "fresh," "inherited unchanged," or "inherited but
+the underlying content drifted." Content CAN drift under a stable `rec_key` — the key is URL-derived, not
+content-derived — and `record.content_hash` exists and is populated (3,558/3,559 records) but is not
+currently linked to the label. This is a REQ-165 auditability gap, not a correctness bug in current
+behavior: carrying labels forward is the right call, it is just not yet observable.
 
 **Upstream of Stage 5: closing the empty-domain contamination chain that motivated #228 (#229/#227).**
 The Millard case above was possible because a district could enter a batch with a blank or junk NCES
@@ -989,10 +1034,10 @@ it consumes Stage 5's machinery; the full description belongs in Stage 2/4's des
 | **Empty-domain admission guard** (`common/discover.py` `domain_of()`/`is_scoping_domain()`, refuses blank/junk-domain districts at Stage-1 batch build) | **BUILT (#229, 2026-07-11)** — see §4 |
 | **Millard contamination remediation** (`process_governance/remediate_contamination.py`, manifest-first dry-run-by-default cleanup tool) | **BUILT (#227, 2026-07-11)** — see §4 |
 | **Stage-7/8 outcome feedback** (`harness.extract_outcome_calibration` — P(any_accepted) headline + per-tier calibration + detectors-vs-outcome + the two disagreement cells + `unjoined`; fourth `outcome` fingerprint; `extract_outcome_calibration` ledger delta) | **BUILT (#91, 2026-07-14)** — measurement only; see §5 item 2 |
-| **School-year currency** (`infrastructure/utilities/school_year.py::content_school_year` URL/filename signal, incl. month-word dates `December98`→SY 1998-99; the #241 pre-2017-18 **validity floor** in `release.py` — HOLD semantics, floored on the CRDC 2017-18 federal input) | **BUILT (#107/#241/#531, PRs #529/#533, 2026-07-16)** — the money half (prefer-recent ranking) lives in Stage 6 dispatch, see `STAGE6_DISPATCH_DESIGN.md` §3G |
+| **School-year currency** (`infrastructure/utilities/school_year.py::content_school_year` URL/filename signal, incl. month-word dates `December98`→SY 1998-99; the #241 pre-2017-18 **validity floor** in `release.py` — HOLD semantics, floored on the CRDC 2017-18 federal input) | **BUILT (#107/#241/#531, PRs #529/#533, 2026-07-16)** — the money half (prefer-recent ranking) lives in Stage 6 dispatch, see `STAGE6_DISPATCH_DESIGN.md` §3G. **KNOWN DEFECT (#674, open):** the HOLD only fires on the unlabeled tier-A auto-send path — a human target label bypasses the floor unconditionally, no force-hold override exists; see §3a obs. 6. **KNOWN GAP (#673, open):** `content_school_year`/floor state is server-projected but never rendered by the console client |
 | **Console error-review lanes** (FP = tier-A ∩ `target_absent` via `release.MONEY_LEAK_WHERE`, the SSOT shared with `decide()`; FN = the fixed-seed reject-audit sample) + `rec_key` search + right-pane reorder | **BUILT (#516, PR #534, 2026-07-16)** — disagreement as the primary product of labeling, surfaced as first-class lanes |
 | **Relevance-density evidence navigation** for long reps (signed detector events on the char axis → smoothed curve → ranked bookmarks + heat-strip; weights served from `detectors.EVENT_WEIGHTS` via `/api/detector-weights` — display-only mirror of the live Vote confidences, pinned by a no-drift test, NOT a combiner weight surface) | **BUILT (#521, PR #535, 2026-07-17)** — replaces the 20k-char display cap; full text renders with peak anchors |
-| **Content-adaptive center-pane defaults** (evidence classification drives `<details>` open states: densest + unique-adders + instructional/period-phrasing carriers open, ⊆-densest collapsed; rasters demoted to one lazy collapsed gallery; source-PDF iframe = default visual; `\f`-page-mapped bookmarks steer the PDF viewer; hidden-evidence pointer strip + show-all toggle) | **BUILT (#522, PR #536, 2026-07-17)** — guardrail scope is the client-checkable surface (in-window times + instructional/period regexes); per-rep keyword/table attribution needs a server payload change (documented in-code as follow-up) |
+| **Content-adaptive center-pane defaults** (evidence classification drives `<details>` open states: densest + unique-adders + instructional/period-phrasing carriers open, ⊆-densest collapsed; rasters demoted to one lazy collapsed gallery; source-PDF iframe = default visual; `\f`-page-mapped bookmarks steer the PDF viewer; hidden-evidence pointer strip + show-all toggle) | **BUILT (#522, PR #536, 2026-07-17)** — guardrail scope is the client-checkable surface (in-window times + instructional/period regexes); per-rep keyword/table attribution needs a server payload change (documented in-code as follow-up). **KNOWN DEFECT (#676, open, epic #96):** the default-visual pick (`static/app.js` ~line 445) filters representations by `file_kind === "pdf"`, but an HTML-captured record ALSO produces a `capture:pdf` (print-to-PDF) representation alongside its true `capture:png` screenshot — so for HTML records (~89% of the corpus, 3,160/3,559) the print-rendering is wrongly promoted to the default and mis-captioned "source PDF," while the real screenshot collapses. The correct discriminator is `record.kind` (html/pdf/image/drive_export), not a representation's own `file_kind`; true PDF records (`kind='pdf'`, 345) are unaffected and correctly show their `capture:bin`/`original.pdf` rep |
 | **"Non-Regular-Day Schedule" Axis-2 checkbox** (key `other_schedule`, hinted by `lf_nonstandard_day`, glossary definition enumerating the class) — the #537 facet-vocabulary decision: ONE coarse checkbox, never per-cause fragments | **BUILT (#537, 2026-07-17)** — un-freezes `lf_nonstandard_day`'s facet denominator (was frozen at the migration rows since #108); UI-visibility pin `test_non_regular_day_confounder_checkbox_present_in_console` |
 | **Positional non-regular-day evidence** (`NONSTANDARD_TERM_RE` full class + `nonstandard_near_times`/`nonstandard_heading`/`regular_day_language` signals; `lf_nonstandard_day` STRONG variant; combiner `wrong_day_strong` undermines a lone table/pair, STRONG_STRUCTURAL still sends; wrong-day evidence **with time content** and no target → review C — the no-times suppress floor and hard negatives still outrank it, a deliberate precedence pinned by test) | **BUILT + MEASURED (#537 follow-on, 2026-07-18)** — after the PR #538 review round: tier-A precision **0.7817→0.8612**, FP-lane **100→54** (false-send rate 21.8%→**13.9%**), tier-A recall 0.8585→**0.8034** (demoted targets reach REVIEW, not suppress), **A+B recall 0.9928 HELD**, reject-quality 1.0; two ledger episodes recorded. **Hardened by the PR #538 max-effort review (17 findings, all fixed)** — see the change-log entry |
 | **Page-focus negative** (`lf_district_homepage`: `url_rootish` × `roster_school_names_hit ≥ 3` → the feed/calendar hard-undermine class; strong-structural still sends — the obs. 1 gap, closed for the landing-page slice) | **BUILT + MEASURED (#532, 2026-07-18)** — tier-A precision 0.8612→**0.8701**, FP 54→50, tier-A + A+B recall held EXACTLY; the multi-confounder-breadth candidate measured net-negative and was dropped (see change log) |

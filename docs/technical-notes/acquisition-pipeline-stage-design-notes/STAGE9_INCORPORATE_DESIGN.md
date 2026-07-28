@@ -17,14 +17,16 @@ minutes AND projects them to per-grade so LCT consumes them (§4). Remaining is 
 recompute, gated on human sign-off of the before/after sample (§4). Seeded from the APGA console user
 stories (migrated here 2026-06-27).
 
-**Campaign status (verified live 2026-07-22):** an incorporation campaign is running one district at a time
-(dry-run → incorporate → `per_grade_lct_sample` preview → human review). **6 districts incorporated**
-(Brownsville Ascend NY `3601002`, Lincoln MA `2506900`, Coffee County AL `0100810`, Santa Fe NM `3502370`,
-Gallup NM `3501110`, Las Cruces NM `3501500`) out of **38 districts whose latest gate@8 disposition is
-`approved`** — i.e. **32 still in the backlog**. `bell_schedules` + `district_grade_minutes` each hold
-exactly those 6 districts' rows (16 Stage-9 bell rows, 70 grade rows). None are batch_00000 benchmark
-districts. The deliberate pace has already paid for itself, catching production bugs #608/#610/#611 this
-week (CLAUDE.md's Current-Status entry has the running narrative — this note stays mechanism-first).
+**Campaign status (verified live 2026-07-28):** the incorporation campaign that started at 6/38 on
+2026-07-22 has continued; `bell_schedules` now holds `council_extraction` rows for **38 districts**
+(38/38 of what was then the approved backlog, superseding the "6 incorporated, 32 in backlog" 2026-07-22
+snapshot this section previously recorded). Separately and more recently (epic #617, §2g below): 25 of
+`batch_00000`'s 27 benchmark districts were re-run honestly under `batch_00030/31/32` and, as of
+2026-07-28, are in gate@5 review on the way to their FIRST-EVER non-benchmark write — the wall this
+section documents was retired at fact-provenance grain specifically to make that possible (#619), and
+Stage 9's own campaign is what the epic calls its "only validation" (see the note below and
+`docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md` §11.2, §13).
+CLAUDE.md's Current-Status entry has the running narrative — this note stays mechanism-first.
 
 ---
 
@@ -129,11 +131,30 @@ fingerprint.
   missing-LCT-district fails loud. The governance READ half is patched at a documented seam (it is
   unit-tested in `test_closing_argument`/`test_stage8_approval` and exercised by the live-DB smoke).
 
-## 2g. Standing walls (PR #607 max-effort review, 2026-07-21)
-- **Benchmark wall.** batch_00000 (`batch_type='benchmark'`) districts are REFUSED — "Stage 9
-  (non-benchmark only) is the sole promoter to `bell_schedules`" (CLAUDE.md's permanent wall).
-  `_is_benchmark_district` mirrors Stage 7's `_benchmark_district_ids` (which Stage 9 cannot import —
-  process_governance sits above this layer).
+## 2g. Standing walls (PR #607 max-effort review, 2026-07-21; the benchmark wall RE-KEYED 2026-07-26)
+- **Benchmark wall — now FACT-PROVENANCE grain, not district membership (epic #617's #619).** The
+  original wall (built PR #607, described below the line) refused any district that had EVER been a
+  `batch_type='benchmark'` batch member — permanent, because `batch_district` rows are never deleted,
+  which walled off all 27 `batch_00000` districts FOREVER, including correct minutes from later honest
+  production re-runs (`_is_benchmark_district` mirrored Stage 7's then-`_benchmark_district_ids`, which
+  Stage 9 cannot import — process_governance sits above this layer). **Retired 2026-07-26** and replaced
+  by `_is_benchmark_receipt` (`incorporate.py`): it asks whether the APPROVED RECEIPT's own write-bearing
+  evidence (`rec_key`/`fact_id` from `bands[*].schools[*]`, read via `provenance.
+  collect_write_bearing_sources`, this stage's own module) carries benchmark provenance — via the shared two-arm predicate in
+  `common/benchmark.py::is_benchmark_provenance` (arm 1: `handoff.dispatch_type='benchmark'`; arm 2: the
+  fact's rep traces to a `capture.source='benchmark_gt'` injection) — THE SAME predicate the gate@8 queue
+  now uses (`STAGE8_AGGREGATE_DESIGN.md` §2). The check moved to run AFTER the receipt loads, so it
+  interrogates the very artifact Stage 9 writes from rather than a parallel district lookup, and it
+  refuses on ANY benchmark-provenance evidence in the receipt (never drops just the tainted fact — an
+  approved number is never silently changed; #618's "refuse, never coerce"). Measured behaviour-preserving
+  at re-key time (83/83 district agreement between the two rules, 0 disagreements) — the two rules diverge
+  only once a re-run mints fresh reps for a district that ALSO holds injected ones, which is exactly
+  `batch_00000`'s re-run case and the reason the re-key exists. The escape hatch for a re-run district that
+  still traces to a stale injected school it no longer relies on is a human `band_exclusion` (#257) at
+  gate@8, applied BEFORE mode computation — not a code exception (`STAGE8_AGGREGATE_DESIGN.md` §2/`merge_fact_runs`
+  documents why a blanket "drop the injected fact" mechanism was considered and withdrawn as #662's fix
+  instead). Full account: `docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md`
+  §10.9–§10.13, §10.20, §12.5.
 - **Foreign-row collision → FAIL LOUD.** A Stage-9 write whose `(year, grade_level)` key is already
   held by a NON-Stage-9 method (`human_provided`, `tier_*`, legacy) raises — human/legacy work is
   never silently overwritten; a person resolves the conflict (remove the manual row, or exclude the
