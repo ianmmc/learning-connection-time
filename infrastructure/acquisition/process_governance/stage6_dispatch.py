@@ -93,6 +93,12 @@ def _prefer_recent_holds(sendables: list) -> set:
 # hand-retyped copy that a future taxonomy addition could silently miss.
 HUB_LABELS = BS.HUB_LABELS
 
+# #679: the hold reason for a benchmark-provenance rep excluded from a PRODUCTION dispatch's default
+# selection. The console keys a display row on this exact string (a server-computed decision field,
+# like `decision === "send"` — NOT a client-side provenance re-derivation, which the arch manifest
+# forbids), so the two spellings are pinned together by test_stage6_production_eligibility.
+INELIGIBLE_PRODUCTION_REASON = "benchmark-rep:ineligible-for-production"
+
 
 def _hub_priority_holds(sendables: list) -> tuple:
     """REQ-116 (#83) hub-priority narrowing (a DISPATCH decision — STAGE6 §4): when a district's send
@@ -167,14 +173,24 @@ def _sibling_variant_holds(sendables: list) -> dict:
     return holds
 
 
-def district_release_input(session, district_id: str, verified_only: bool = False):
+def district_release_input(session, district_id: str, verified_only: bool = False,
+                           dispatch_type: str = BM.DISPATCH_PRODUCTION):
     """Read one district's release decision from the DB, shaped for stage6 assembly:
     `(district_meta, [records])`. Returns None if the district isn't present.
 
     `verified_only` (gate@6 training-grade mode): dispatch ONLY human-labeled target sends. The
     speculative unlabeled tier-A auto-sends (`reason == auto:tier-A`) are downgraded to `hold` — not
     silently dropped — so they stay traceable and can be labeled later. Stage-5's `filtered.json` is
-    unaffected: this is a dispatch-time choice, not a change to the release rule."""
+    unaffected: this is a dispatch-time choice, not a change to the release rule.
+
+    `dispatch_type` (#679): while `production`, a benchmark-provenance rep (capture source
+    'benchmark_gt') is structurally incapable of being frozen — `assert_dispatch_type_allowed`
+    refuses it — so it must not enter the DEFAULT send set either. Before #679 the selection
+    optimised without that constraint and the guard was handed winners it had to refuse; on Bangor
+    the injected hub tied its fresh twin, won by iteration order, and hub-priority held the fresh
+    one — deselecting the winner left the district with ZERO sends. Excluded reps are HELD (visible,
+    reason `benchmark-rep:ineligible-for-production`), never dropped; an explicit
+    `dispatch_type='benchmark'` re-admits them (the Council Lab opt-in)."""
     district = REL.load_district(session, district_id)
     if not district:
         return None
@@ -202,9 +218,23 @@ def district_release_input(session, district_id: str, verified_only: bool = Fals
                                                and d.get("strength") == "strong"
                                                for d in sig.get("detectors") or []),
                               "schools": rec.get("intended_schools") or []})
+    by_key = {rd["rec_key"]: rd for rd in records}   # O(1) lookup instead of rescanning `records` per hold
+    # #679 production-eligibility — FIRST, before every narrowing pass (prefer-recent,
+    # sibling-variant, hub-priority), so none of them ever sees an ineligible candidate: applied
+    # after, Bangor's fresh hub stays held by a winner that is then removed, and the district
+    # composes zero sends. HOLD, never drop — the rep stays visible/badged (#662 decision 4 governs
+    # display; this governs selection). Skipped for an explicit benchmark dispatch, where gt:// reps
+    # are legitimately eligible.
+    if dispatch_type != BM.DISPATCH_BENCHMARK and sendables:
+        ineligible = BM.benchmark_provenance_rec_keys(session, [s["rec_key"] for s in sendables])
+        for rk in ineligible:
+            rd = by_key.get(rk)
+            if rd is not None and rd["decision"] == "send":
+                rd["decision"], rd["send"] = "hold", []
+                rd["reason"] = INELIGIBLE_PRODUCTION_REASON
+        sendables = [s for s in sendables if s["rec_key"] not in ineligible]
     # #107 prefer-recent (dispatch-time): HOLD a stale same-school sibling — the newest still sends, the
     # older is available for a cheap 7->6 re-dispatch if extraction fails. Composes after verified_only.
-    by_key = {rd["rec_key"]: rd for rd in records}   # O(1) lookup instead of rescanning `records` per hold
     for rk in _prefer_recent_holds(sendables):
         rd = by_key.get(rk)
         if rd is not None and rd["decision"] == "send":
@@ -282,7 +312,8 @@ def release_bundle(session, district_ids, *, councils=None, cost_model=None, ove
     BM.validate_dispatch_type(dispatch_type)
     districts, metas, skipped = [], {}, []
     for did in district_ids:
-        di = district_release_input(session, did, verified_only=verified_only)
+        di = district_release_input(session, did, verified_only=verified_only,
+                                    dispatch_type=dispatch_type)
         if not di:
             skipped.append(did)      # unknown district — dropped from the package (surfaced by callers)
             continue
@@ -295,17 +326,23 @@ def release_bundle(session, district_ids, *, councils=None, cost_model=None, ove
 
 
 def benchmark_reps_in_package(session, package: dict) -> list:
-    """The package's representations carrying BENCHMARK provenance, as [{district_id, rec_key}].
+    """The package's SELECTED representations carrying BENCHMARK provenance, as
+    [{district_id, rec_key}].
 
     REPRESENTATION grain, never district grain (#618). A district that merely *was* in a benchmark
     batch is not the question — epic #617 exists to retire exactly that proxy. The question is whether
     the reps this dispatch actually selected trace back to benchmark injection
     (`capture.source='benchmark_gt'`), which is real and mixed after a #620 re-run: Node's #174
     follow-up seeding carries prior records verbatim into the new manifest, so a re-run district
-    legitimately holds stale `gt://` reps alongside fresh ones."""
+    legitimately holds stale `gt://` reps alongside fresh ones.
+
+    Scoped to records that actually carry send reps (#679): a held/rejected record rides in the
+    package for traceability but dispatches nothing, so its provenance must not refuse the freeze —
+    the eligibility pass in `district_release_input` HOLDS ineligible gt:// reps by design, and
+    flagging those holds here would re-refuse the exact dispatch the hold made freezable."""
     by_key = {r["rec_key"]: d["district_id"]
               for d in package.get("districts", []) for r in d.get("records", [])
-              if r.get("rec_key")}
+              if r.get("rec_key") and r.get("reps")}
     if not by_key:
         return []
     flagged = BM.benchmark_provenance_rec_keys(session, list(by_key))

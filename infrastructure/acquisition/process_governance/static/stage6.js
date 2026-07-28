@@ -197,6 +197,16 @@
   function renderDistrictBlock(d, editable) {
     const sends = d.records.filter((r) => r.decision === "send");
     const reps = sends.flatMap((r) => r.reps.map((rep) => repRow(d.district_id, r.rec_key, rep, editable)));
+    // #679: benchmark-provenance reps excluded from a production dispatch's DEFAULT selection are
+    // HELD server-side, not hidden — render them so the reviewer sees what was excluded and why
+    // (#662 decision 4: badged, never filtered). The reason is a server-computed decision field;
+    // the client never re-derives provenance (arch-manifest rule).
+    const bmHeld = d.records.filter((r) => r.reason === "benchmark-rep:ineligible-for-production");
+    const heldRows = bmHeld.map((r) => `<div class="s6-rep muted" data-feat="s6-bm-ineligible">
+        <span class="badge badge-red" title="injected curated-GT representation (capture source 'benchmark_gt')">gt:// injected</span>
+        <code title="${esc(r.rec_key)}">${esc(r.url || r.rec_key)}</code>
+        <span class="muted">held — ineligible for a production dispatch; tick “benchmark dispatch” to re-admit</span>
+      </div>`);
     const remove = editable
       ? `<button class="s6-remove" data-did="${esc(d.district_id)}" title="remove this district from the draft">✕</button>` : "";
     const head = `${esc(d.name || d.district_id)}${d.state ? ` · ${esc(d.state)}` : ""}
@@ -204,6 +214,7 @@
     return `<div class="s6-dist" data-did="${esc(d.district_id)}">
         <h4>${head} ${remove}</h4>
         ${reps.length ? reps.join("") : `<div class="s6-rep muted">no send-eligible records</div>`}
+        ${heldRows.join("")}
       </div>`;
   }
 

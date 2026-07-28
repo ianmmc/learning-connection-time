@@ -13,6 +13,14 @@ from infrastructure.acquisition.stage5_filter import release as REL
 CLEAN_TEXT = 0.00050 + 0.00022 + 0.5 * 0.00060   # low-cost-text bootstrap = 0.00102
 
 
+def _no_benchmark_provenance(monkeypatch):
+    """#679: `district_release_input`'s production-eligibility pass queries rep provenance, and this
+    file's convention is session=None with the DB readers monkeypatched — stub the provenance reader
+    to 'all fresh' the same way. The eligibility behavior itself is covered by
+    test_stage6_production_eligibility.py."""
+    monkeypatch.setattr(BR.BM, "benchmark_provenance_rec_keys", lambda s, k: set())
+
+
 def _fake_record(rec_key, label, reps):
     # the shape stage5 release.load_district_records yields
     return {"rec_key": rec_key, "url": f"http://x/{rec_key}", "tier": "A", "category": None,
@@ -57,6 +65,7 @@ def test_prefer_recent_co_newest_year_both_kept():
 
 
 def test_bridge_reads_decides_enriches_and_assembles(monkeypatch):
+    _no_benchmark_provenance(monkeypatch)
     reps = [{"source": "extracted", "filename": "extracted.txt", "file_kind": "text",
              "n_chars": 1500, "n_times": 6, "usable": 1}]
     records = [
@@ -88,6 +97,7 @@ def test_bridge_reads_decides_enriches_and_assembles(monkeypatch):
 def test_verified_only_holds_the_unlabeled_tier_A_sends(monkeypatch):
     """gate@6 training-grade mode: keep only human-labeled target sends; the speculative unlabeled
     tier-A auto-send is downgraded to `hold` (traceable), not routed/priced."""
+    _no_benchmark_provenance(monkeypatch)
     reps = [{"source": "extracted", "filename": "extracted.txt", "file_kind": "text",
              "n_chars": 1500, "n_times": 6, "usable": 1}]
     records = [
@@ -200,6 +210,7 @@ def test_unknown_year_hub_loses_to_dated_hub_but_still_narrows_alone():
 def test_hub_priority_composes_after_prefer_recent(monkeypatch):
     """Integration through district_release_input: a STALE hub held by prefer-recent must not win;
     the surviving newest hub narrows the rest. DB readers monkeypatched (the file's convention)."""
+    _no_benchmark_provenance(monkeypatch)
     def rec(rec_key, label, year, schools, n_times=20):
         return {"rec_key": rec_key, "url": f"http://x/{rec_key}", "tier": "A", "category": None,
                 "signals": {"content_school_year": f"{year}-{(year + 1) % 100:02d}" if year else None,
@@ -290,6 +301,7 @@ def test_labeled_hub_survives_its_sibling_family_end_to_end(monkeypatch):
     unlabeled newer/denser sibling was held by the (then label-blind) sibling pass BEFORE
     hub-priority ever saw it — the unlabeled record dispatched instead of the human-verified hub.
     Pin the fix through the full district_release_input composition."""
+    _no_benchmark_provenance(monkeypatch)
     def rec(rec_key, url, label, year, n_times):
         return {"rec_key": rec_key, "url": url, "tier": "A", "category": None,
                 "signals": {"content_school_year": f"{year}-{(year + 1) % 100:02d}",
