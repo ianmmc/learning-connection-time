@@ -46,6 +46,7 @@ from infrastructure.acquisition.stage7_extract import parse as PARSE
 from infrastructure.acquisition.stage7_extract import requests as RQ
 from infrastructure.acquisition.stage7_extract import validate as VALID
 from infrastructure.acquisition.stage8_aggregate import aggregate as AGG
+from infrastructure.acquisition.stage8_aggregate import closing_argument as CA8
 
 # The exceptions that must propagate through BOTH isolation boundaries (per-rep in `_run_district`,
 # per-district in `run_council_streaming`) and HALT the whole run rather than degrade to a skip (#189).
@@ -560,10 +561,13 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
                 # directives would surface as reviewable production work (and an approved one could be
                 # swept into a paid follow-up). A probe is a measurement, never a remedy driver.
                 if run_kind == "production":
-                    detect_and_persist_requests(s, pd, hh)
+                    # ONE closing-argument load serves both calls (#703 review): detect + withdraw
+                    # both need the district's slot view, same txn — share the cache dict.
+                    ca_cache: dict = {}
+                    detect_and_persist_requests(s, pd, hh, ca_cache=ca_cache)
                     # #233, same txn: this round's facts may have satisfied EARLIER rounds' still-open
                     # directives — retire them so the gate@7 queue reflects the cumulative truth.
-                    withdraw_satisfied_requests(s, did)
+                    withdraw_satisfied_requests(s, did, ca_cache=ca_cache)
         _print_district_progress(did, pd, gt_data)
         if on_district:
             on_district(did, pd)
@@ -860,13 +864,44 @@ def covered_bands_for_district(session, district_id: str) -> set:
              "AND e.run_kind = 'production'"), {"d": district_id}).all()}
 
 
-def _district_request_inputs(session, result: dict):
+def _slot_gaps_for_district(session, district_id: str, sbb: dict, ca_cache: dict = None):
+    """#694: the detector's slot-grain view — the live gate@8 closing argument (the SAME projection
+    Stage 8 and the compose gate read; slot state has ONE home, slot_spine via closing_argument)
+    compressed by the pure `RQ.slot_gap_summary`, with the Stage-1 pool (`schools_by_band_json`,
+    extracted by the ONE shared `SS.stage1_pool_ids` — the same spelling gate@8's outside-pool
+    count uses) marking which unfilled slots follow-up chases vs the bounded #696 mode-check class.
+
+    `ca_cache` ({district_id: closing_argument}) is the stage7_execute `_load_ca_cached` pattern:
+    detect + withdraw run back-to-back per district in one transaction (#703 review), so the caller
+    shares one dict to pay for the ~9-query + CCD-roster assembly ONCE, not twice.
+
+    Best-effort (the `_satisfied_bands_now` posture): any failure — CCD roster unavailable, no
+    projection — returns None and the detector falls back to the covered-band boolean; degradation
+    costs precision, never correctness. The failure is PRINTED (#703 review): a genuine bug in this
+    path would otherwise be indistinguishable from the benign no-roster case and silently disable
+    slot-grain detection for the district with no trace in the run log."""
+    try:
+        if ca_cache is not None and district_id in ca_cache:
+            ca = ca_cache[district_id]
+        else:
+            ca = CA8.load_closing_argument(session, district_id, record_drift_event=False)
+            if ca_cache is not None:
+                ca_cache[district_id] = ca
+        return RQ.slot_gap_summary(ca, pool_by_band=SS.stage1_pool_ids(sbb))
+    except Exception as e:  # noqa: BLE001 — best-effort; the covered-band hard gate remains
+        print(f"  [requests] {district_id}: slot view unavailable ({type(e).__name__}: "
+              f"{str(e)[:80]}) — detection falls back to the covered-band boolean", flush=True)
+        return None
+
+
+def _district_request_inputs(session, result: dict, ca_cache: dict = None):
     """The DB-derived inputs the pure detector (`requests.detect_requests`) needs for one district:
     claimed bands + the band's schools (`district_target`), the alternate reps per sent record
     (`representation`, the usable reps of a rec_key other than the one we sent — drives 7→6 vs 7→3),
     the district-wide covered bands (`school_fact` across all extractions — so a partial result
-    can't fabricate band gaps), and the real (fillable) bands (#175/#176).
-    Returns (claimed, band_schools, alts, covered, real_bands) — a 5-tuple."""
+    can't fabricate band gaps), the real (fillable) bands (#175/#176), and the #694 slot-gap
+    summary (None when unavailable).
+    Returns (claimed, band_schools, alts, covered, real_bands, slot_gaps) — a 6-tuple."""
     did = result["district_id"]
     # ALL files sent per rec_key (#145): Stage 6 may dispatch several reps of one record, and a rep we
     # already sent (and that just failed) must never be offered back as its own 7->6 "alternate".
@@ -921,10 +956,14 @@ def _district_request_inputs(session, result: dict):
     # `stage7_execute._covered_bands_now` (the compose gate) so the two never disagree on membership.
     # run_kind='production' only, matching the twin: a probe's accepted fact must not mask a real gap.
     covered = covered_bands_for_district(session, did)
-    return claimed, band_schools, alts, covered, real_bands
+    # #694: this run's facts are already flushed on this session (persist_run_session), so the
+    # closing argument the summary reads includes them — the slot view is never behind `covered`.
+    slot_gaps = _slot_gaps_for_district(session, did, sbb, ca_cache=ca_cache)
+    return claimed, band_schools, alts, covered, real_bands, slot_gaps
 
 
-def detect_and_persist_requests(session, result: dict, handoff_hash: str) -> int:
+def detect_and_persist_requests(session, result: dict, handoff_hash: str,
+                                ca_cache: dict = None) -> int:
     """Detect the request-more-evidence directives for one district's result and persist the NEW ones.
     Dedup is two-layered (#234): (a) same handoff, ANY status — a re-detect/backfill is idempotent and
     never resurrects a directive a human already actioned this round; (b) ANY handoff, OPEN status
@@ -932,11 +971,12 @@ def detect_and_persist_requests(session, result: dict, handoff_hash: str) -> int
     actioning a SIBLING request must not duplicate it. An executed/rejected/withdrawn prior round does
     NOT block re-emission: a new round's identical gap is a genuinely new ask (the depth guard, not
     dedup, bounds how many rounds may fire). Returns the count newly persisted."""
-    claimed, band_schools, alts, covered, real_bands = _district_request_inputs(session, result)
+    claimed, band_schools, alts, covered, real_bands, slot_gaps = \
+        _district_request_inputs(session, result, ca_cache=ca_cache)
     explain: dict = {}
     reqs = RQ.detect_requests(result, claimed_bands=claimed, alternates_by_rec=alts,
                               band_schools=band_schools, covered_bands=covered, real_bands=real_bands,
-                              explain=explain)
+                              slot_gaps=slot_gaps, explain=explain)
     # Detect-time suppression is NON-emission (nothing persists; re-detection re-emits if coverage
     # regresses) — log it so a barren rep with no request next to it is explicable from the run log.
     if explain.get("suppressed_barren_reps") or explain.get("phantom_bands"):
@@ -976,15 +1016,19 @@ def detect_and_persist_requests(session, result: dict, handoff_hash: str) -> int
     return n
 
 
-def withdraw_satisfied_requests(session, district_id: str) -> list:
+def withdraw_satisfied_requests(session, district_id: str, ca_cache: dict = None) -> list:
     """#233: retire OPEN directives whose premise the CUMULATIVE state has satisfied — requests must
     not only grow per round (observed live: Redbank 5->6, Aspen 3->5, Union Hill 4->7 pending), each
     stale one adding to the human's gate@7 load. The premise-check is deterministic code against the
     cumulative production truth (merge_fact_runs semantics, REQ-122), never an LLM judgment:
-      - a BAND-scoped directive (7->2/7->1 with band) is withdrawn once that band has a cumulative
-        accepted fact — its gap no longer exists;
+      - a BAND-scoped directive (7->2/7->1 with band) is withdrawn once that band is DONE — #694:
+        the ONE shared `RQ.band_done` predicate (satisfied / no open unfilled slots at slot grain
+        when the slot view is available, the covered-band boolean otherwise). Emission and
+        withdrawal MUST share this predicate: a directive detect emits for a covered-but-
+        unsatisfied band that a weaker withdraw predicate then retires would churn
+        (emit → withdraw → re-emit) every round;
       - a RECORD/DISTRICT-scoped directive (band NULL: 7->6/7->3 retries) is withdrawn only when NO
-        claimed band remains uncovered — the conservative mirror of detect-time's no-fillable-gap
+        fillable band remains un-done — the conservative mirror of detect-time's no-fillable-gap
         suppression (a record retry might fill ANY remaining gap, so it stays while one exists).
     Withdrawal is reversible by construction: 'withdrawn' is not an OPEN status, so if the gap ever
     re-opens a fresh re-detection re-emits (#234's dedup only blocks on pending/approved); a human
@@ -1006,7 +1050,7 @@ def withdraw_satisfied_requests(session, district_id: str) -> list:
     row = session.execute(text("SELECT lea_claimed_bands_json, schools_by_band_json, nces_by_level_json "
                                "FROM district_target WHERE district_id = :d"), {"d": district_id}).fetchone()
     if row is None:
-        fillable, no_gap_left = [], False   # target data UNKNOWN — never assume satisfied
+        fillable, no_gap_left, slot_gaps = [], False, None  # target data UNKNOWN — never satisfied
     else:
         claimed = json.loads(row[0]) if row[0] else []
         sbb = json.loads(row[1]) if row[1] else {}
@@ -1014,11 +1058,17 @@ def withdraw_satisfied_requests(session, district_id: str) -> list:
         real_bands = SS.real_bands_for_district(by_level, sbb,
                                                 band_rosters=SS.band_rosters_for_district(district_id))
         fillable = [b for b in claimed if b in real_bands]
-        no_gap_left = all(b in covered for b in fillable)   # vacuously True when nothing fillable
+        # #694: the SAME slot-grain done predicate detect uses (RQ.band_done over the same summary)
+        # — see the docstring's churn rationale. Vacuously True when nothing fillable.
+        slot_gaps = _slot_gaps_for_district(session, district_id, sbb, ca_cache=ca_cache)
+        no_gap_left = all(RQ.band_done(b, covered, slot_gaps) for b in fillable)
     withdrawn, now = [], M7.utcnow()
     for req_id, band in open_rows:
-        if band is not None and band in covered:
-            note = f"auto-withdrawn: band '{band}' now has a cumulative accepted fact (#233)"
+        if band is not None and RQ.band_done(band, covered, slot_gaps):
+            g = (slot_gaps or {}).get(band)
+            note = (f"auto-withdrawn: band '{band}' is done at slot grain — satisfied (REQ-149) or "
+                    f"no open unfilled slots (#233/#694)") if g is not None else \
+                   f"auto-withdrawn: band '{band}' now has a cumulative accepted fact (#233)"
         elif band is None and no_gap_left:
             note = (f"auto-withdrawn: every fillable band ({', '.join(fillable)}) now covered — "
                     f"no fillable gap remains (#233)") if fillable else \
@@ -1047,16 +1097,17 @@ def backfill_requests(handoff_hash: str, *, root=None) -> int:
     total = 0
     with gdb.session_scope() as s:
         dids = set()
+        ca_cache: dict = {}   # one closing-argument load per district across detect + withdraw (#703)
         for f in sorted(d.glob(f"extraction_{handoff_hash}_*.json")):
             doc = json.loads(f.read_text())
             pd = doc.get("district")
             if pd:
-                total += detect_and_persist_requests(s, pd, handoff_hash)
+                total += detect_and_persist_requests(s, pd, handoff_hash, ca_cache=ca_cache)
                 dids.add(pd.get("district_id"))
         # #233 must hold on THIS entry point too (PR #240 review): a backfill sweep that persists
         # new requests but never retires satisfied ones would re-accumulate the stale gate@7 load.
         for did in sorted(x for x in dids if x):
-            withdraw_satisfied_requests(s, did)
+            withdraw_satisfied_requests(s, did, ca_cache=ca_cache)
     return total
 
 

@@ -211,6 +211,19 @@ def primary_bands_for(level, gslo, gshi):
     return {b} if b else bands_for(gslo, gshi)
 
 
+def stage1_pool_ids(schools_by_band) -> dict:
+    """{band: {school_id, ...}} from a Stage-1 `schools_by_band_json` snapshot — the pool-membership
+    extraction (#696 relation 1), the ONE spelling shared by gate@8's outside-pool count
+    (`closing_argument.n_outside_pool`) and Stage-7's mode-check targeting
+    (`stage7_run._slot_gaps_for_district`) so the two can never drift (#703 review). A band present
+    with an EMPTY schools list yields an empty set — a KNOWN-empty pool, deliberately distinct from
+    a band absent from the snapshot (unknown): consumers must not collapse the two (the #702
+    absence-read-as-data bug class)."""
+    return {b: {str(x.get("school_id")) for x in ((m or {}).get("schools") or [])
+                if x.get("school_id")}
+            for b, m in (schools_by_band or {}).items()}
+
+
 def real_bands_for_district(by_level, schools_by_band, band_rosters=None) -> set:
     """The bands a district can ACTUALLY satisfy — each SERVED by ≥1 real NCES school. This is
     FILLABILITY, not primary-label classification, so it must agree with `school_index`'s own

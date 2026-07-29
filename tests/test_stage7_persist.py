@@ -186,8 +186,8 @@ def test_detect_and_persist_requests_dedups(gov_session, monkeypatch):
     # claimed elementary+high; high has no facts -> one district 7->2 request. No alternates. Both
     # bands are real (real_bands={elementary,high}), so the #175 phantom gate doesn't suppress high.
     monkeypatch.setattr(R7, "_district_request_inputs",
-                        lambda sess, res: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
-                                           {"elementary", "high"}))
+                        lambda sess, res, **kw: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
+                                           {"elementary", "high"}, None))   # 6-tuple since #694
     result = {"district_id": "ZZREQ1", "reps": [],
               "accepted": [{"band": "elementary", "school": "e"}], "unresolved": []}
 
@@ -237,7 +237,7 @@ def test_request_inputs_exclude_reps_sent_in_prior_rounds(gov_session):
               {"t": rk, "p": json.dumps({"sent_file": "b.txt", "sent_files": ["b.txt", "d.txt"]})})
     # the current (round 3) result sent c.png, barren
     result = {"district_id": "ZZTEST31", "reps": [{"rec_key": rk, "file": "c.png", "accepted": []}]}
-    _, _, alts, _, _ = R7._district_request_inputs(s, result)
+    _, _, alts, _, _, _ = R7._district_request_inputs(s, result)
     # a.txt (round 1), b.txt + d.txt (round 2), c.png (current) are ALL excluded -> nothing remains
     assert rk not in alts or [a["file"] for a in alts[rk]] == []
 
@@ -257,7 +257,7 @@ def test_request_inputs_status_does_not_matter_for_history_exclusion(gov_session
                    "('ZZTEST32', 'h1', 'representation', '7->6', :t, :p, 'r', 'rejected', 't1')"),
               {"t": rk, "p": json.dumps({"sent_file": "a.txt"})})
     result = {"district_id": "ZZTEST32", "reps": [{"rec_key": rk, "file": "zz.txt", "accepted": []}]}
-    _, _, alts, _, _ = R7._district_request_inputs(s, result)
+    _, _, alts, _, _, _ = R7._district_request_inputs(s, result)
     assert [a["file"] for a in alts.get(rk, [])] == ["b.png"]   # only the untried image remains
 
 
@@ -289,13 +289,13 @@ def test_covered_bands_ignore_probe_run_facts(gov_session):
     R7.persist_run_session(s, _run_for(did, "h-probe", accepted=[("elementary", "brick mill")],
                                        run_kind="probe"), created_by="zz-test")
     s.flush()
-    _, _, _, covered, _ = R7._district_request_inputs(s, {"district_id": did, "reps": []})
+    _, _, _, covered, _, _ = R7._district_request_inputs(s, {"district_id": did, "reps": []})
     assert covered == set()                        # the probe's accepted fact is not coverage
     assert EX._covered_bands_now(s, [did]) == {}   # the compose twin agrees
     R7.persist_run_session(s, _run_for(did, "h-prod", accepted=[("middle", "jones middle")]),
                            created_by="zz-test")
     s.flush()
-    _, _, _, covered, _ = R7._district_request_inputs(s, {"district_id": did, "reps": []})
+    _, _, _, covered, _, _ = R7._district_request_inputs(s, {"district_id": did, "reps": []})
     assert covered == {"middle"}                   # production coverage counts; probe's still doesn't
     assert EX._covered_bands_now(s, [did]) == {did: {"middle"}}
 
@@ -354,8 +354,8 @@ def test_detect_dedups_against_an_open_request_from_another_handoff(gov_session,
     gdb.init_precious_schema()
     s = gov_session
     monkeypatch.setattr(R7, "_district_request_inputs",
-                        lambda sess, res: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
-                                           {"elementary", "high"}))
+                        lambda sess, res, **kw: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
+                                           {"elementary", "high"}, None))   # 6-tuple since #694
     result = {"district_id": "ZZREQ2", "reps": [],
               "accepted": [{"band": "elementary", "school": "e"}], "unresolved": []}
     assert R7.detect_and_persist_requests(s, result, "hh-round1") == 1   # round 1 emits the 7->2 high
@@ -372,8 +372,8 @@ def test_detect_reemits_after_a_prior_round_was_actioned(gov_session, monkeypatc
     gdb.init_precious_schema()
     s = gov_session
     monkeypatch.setattr(R7, "_district_request_inputs",
-                        lambda sess, res: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
-                                           {"elementary", "high"}))
+                        lambda sess, res, **kw: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
+                                           {"elementary", "high"}, None))   # 6-tuple since #694
     result = {"district_id": "ZZREQ3", "reps": [],
               "accepted": [{"band": "elementary", "school": "e"}], "unresolved": []}
     assert R7.detect_and_persist_requests(s, result, "hh-r1") == 1
@@ -429,6 +429,26 @@ def test_withdraw_band_scoped_when_covered_record_scoped_only_when_no_gap_left(g
     assert r76.status == "withdrawn" and "no fillable gap remains" in r76.review_note
 
 
+def test_withdraw_shares_the_slot_grain_done_predicate(gov_session, monkeypatch):
+    """#694: withdrawal reads the SAME `RQ.band_done` as emission — a band covered (≥1 fact) but
+    NOT done at slot grain keeps its open directive (else: emit → withdraw → re-emit churn every
+    round); once the slot view reads done, it withdraws with the slot-grain note."""
+    gdb.init_precious_schema()
+    s = gov_session
+    did = "ZZWDR9"
+    _seed_requests(s, did, ["elementary", "high"])
+    R7.persist_run_session(s, _run_for(did, "hw9", accepted=[("high", "hs")]), created_by="zz")
+    s.flush()
+    monkeypatch.setattr(R7, "_slot_gaps_for_district", lambda sess, d, sbb, **kw: {
+        "high": {"satisfied": False, "n_slots": 2, "n_filled": 1, "n_rejected": 0,
+                 "unfilled": [{"school_id": "x", "name": "X High", "in_pool": True}]}})
+    assert R7.withdraw_satisfied_requests(s, did) == []      # covered but open gap -> stays
+    monkeypatch.setattr(R7, "_slot_gaps_for_district",
+                        lambda sess, d, sbb, **kw: {"high": {"satisfied": True, "unfilled": []}})
+    wd = R7.withdraw_satisfied_requests(s, did)
+    assert len(wd) == 1 and "done at slot grain" in wd[0][1]
+
+
 def test_withdraw_ignores_probe_facts_and_actioned_rows(gov_session):
     """#233: a probe's accepted fact is a measurement, never a premise-satisfier; and rows a human
     (or compose) already actioned are untouched -- only OPEN rows are eligible."""
@@ -457,8 +477,8 @@ def test_withdrawn_does_not_block_reemission(gov_session, monkeypatch):
     gdb.init_precious_schema()
     s = gov_session
     monkeypatch.setattr(R7, "_district_request_inputs",
-                        lambda sess, res: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
-                                           {"elementary", "high"}))
+                        lambda sess, res, **kw: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
+                                           {"elementary", "high"}, None))   # 6-tuple since #694
     result = {"district_id": "ZZWDR3", "reps": [],
               "accepted": [{"band": "elementary", "school": "e"}], "unresolved": []}
     assert R7.detect_and_persist_requests(s, result, "hh-w1") == 1

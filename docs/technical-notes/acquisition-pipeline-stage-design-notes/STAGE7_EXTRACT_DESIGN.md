@@ -473,7 +473,7 @@ deterministic post-extraction check with its own back-edge, implemented in `requ
 |---|---|---|
 | **representation** | this rep yielded 0 usable facts / wrong modality — parse returned nothing, `visual_text_gap`, `n_times == 0`, or the council call errored, and an alternate already-captured rep of the same URL exists | **7→6** — re-dispatch the alternate rep (e.g. text→vision). No new capture. |
 | **URL** | all reps of this URL are exhausted and still yield no facts for its band(s) | **7→3** — recapture the URL differently, or mark it barren |
-| **district** | a claimed band (from the NCES grade span) has **0 accepted facts** across all its URLs | **7→2** targeted rediscover for that band, or **7→1** a follow-up batch adding specific schools |
+| **district** | a claimed band is not DONE — **slot grain since #694 (2026-07-29)**: not SATISFIED (REQ-149) and holding open unfilled slots in the gate@8 projection (read via `requests.slot_gap_summary` — the ONE slot-state home, `slot_spine` via the closing argument); the directive names the specific unfilled schools, human dispositions are live (`reject` excludes a slot, `confirm_extra` fills), span-only schools are bounded to `MODE_CHECK_MAX` #696 assumption-checks, and emission, withdrawal (#233) AND compose's suppression gate (`plan_followup`, #703 review) share the one `band_done` predicate. Slot view unavailable ⇒ the prior boolean (**0 accepted facts** across all URLs) | **7→2** targeted rediscover for that band, or **7→1** a follow-up batch adding specific schools |
 
 **(c) Deterministic-first (zero model involvement) — the approach taken.** The loop is *triggered by*
 the council run (you only learn a rep is unreadable by trying to extract it) but detected and routed

@@ -11,8 +11,10 @@ Three altitudes (the pipeline's own hierarchy):
   - **representation** — a sent rep yielded 0 usable facts, but *another captured rep of the same URL
     exists* → **7→6** (re-dispatch the alternate, e.g. text→vision; no new capture).
   - **URL** — a sent rep yielded 0 facts and *no alternate rep exists* → **7→3** (recapture the URL).
-  - **district** — a *claimed band* (from the NCES/LEA span) has 0 accepted facts across all URLs →
-    **7→2** (targeted rediscover for that band / **7→1** add schools).
+  - **district** — a *claimed band* (from the NCES/LEA span) is not DONE → **7→2** (targeted
+    rediscover for that band / **7→1** add schools). #694: with the gate@8 slot projection in hand
+    (slot_gaps), done = SATISFIED (REQ-149) or no open unfilled slots, and the directive names the
+    specific unfilled schools; without it, the legacy boolean (0 accepted facts across all URLs).
 
 Benchmark note: for `batch_type == "benchmark"` (batch_00000) the routes don't *execute* (the batch
 is walled off, and its reps are frozen `gt://` artifacts with no alternates/recapture) — but the
@@ -33,6 +35,92 @@ ROUTE_ADD_SCHOOLS = "7->1"  # follow-up batch adding specific schools
 # form is for inlining into raw text() queries (module constant, never user input).
 OPEN_STATUSES = ("pending", "approved")
 OPEN_STATUSES_SQL = "(" + ", ".join(f"'{s}'" for s in OPEN_STATUSES) + ")"
+
+# #694 x #696: how many span-only (outside-Stage-1-pool) schools a band-gap directive may name as
+# assumption-check targets — bounded by design (the #696 settlement: the pool is what follow-up
+# CHASES; span-only K-8s get a small sample to TEST the Stage-9 tie-rule assumption, never a
+# band-filling campaign).
+MODE_CHECK_MAX = 2
+
+
+def open_unfilled_slots(proj_band: dict) -> list:
+    """The ONE 'truly unheard' slot predicate (#694): unfilled AND no match attached. An AMBIGUOUS
+    slot also reads slot_state 'unfilled', but the pipeline already HOLDS a fact for it — it waits
+    on a human disposition, not on more paid discovery. Shared by `slot_gap_summary` (detect) and
+    `stage7_execute._unfilled_slots_now` (compose) so the two can never diverge."""
+    return [s for s in (proj_band.get("slots") or [])
+            if s.get("slot_state") == "unfilled" and not s.get("match")]
+
+
+def slot_gap_summary(ca: dict, pool_by_band: dict = None):
+    """Compress a gate@8 closing argument into the detector's per-band slot-gap view (#694). PURE.
+
+    Slot state is computed ONLY by `slot_spine.project_slots` via the closing-argument assembly —
+    this reads the artifact, it never re-projects (the one-home fitness the issue requires: Stage 7
+    and Stage 8 derive slot state from the SAME module).
+
+    `pool_by_band` — {band: {school_id, ...}} of the Stage-1 sampling pool (relation 1,
+    `schools_by_band_json`): unfilled slots inside it are the schools follow-up CHASES; unfilled
+    slots outside it (span-only K-8s, relation 2 minus relation 1 — the #696 gap) are eligible only
+    as bounded assumption-check targets. Pool UNKNOWN for a band (band absent from the snapshot /
+    no snapshot) ⇒ every slot counts as in-pool (the honest degradation: no capping without
+    evidence for it). A KNOWN-EMPTY pool (band present, zero schools — Stage 1 selected nothing
+    for it) is NOT unknown: every slot is outside-pool and the #696 cap applies (#703 review —
+    `if pool` would have collapsed the two, the #702 absence-vs-empty bug class).
+
+    A slot carrying a standing human `reject` disposition is EXCLUDED from targets (#694 AC: the
+    human looked and answered; robo-chasing it re-asks). `confirm_extra` needs no handling here —
+    project_slots already turns it into a FILLED human-confirmed slot, so it never appears
+    unfilled. Returns {band: {satisfied, unfilled: [{school_id, name, in_pool}], n_slots,
+    n_filled, n_rejected}}, or None when the artifact has no slot projection (no live roster —
+    the caller falls back to the covered-band boolean)."""
+    sp = (ca or {}).get("slot_projection") or {}
+    if not sp:
+        return None
+    rejects = {(a.get("band"), str(a.get("roster_school_id")))
+               for a in ((ca.get("negative_space") or {}).get("slot_assignments") or [])
+               if a.get("disposition") == "reject" and a.get("roster_school_id")}
+    bands_meta = ca.get("bands") or {}
+    out = {}
+    for band, p in sp.items():
+        # A ZERO-SLOT band (facts landed as extras against no roster — CCD has no rows for the
+        # district, or none serve the band) carries no slot knowledge at all: emitting an empty
+        # unfilled list would read as 'done' — absence of data as completion, the exact bug class
+        # #702's empty-pool finding pinned. Omit the band; band_done falls back to the covered
+        # boolean for it.
+        if not ((p.get("stats") or {}).get("n_slots") or 0):
+            continue
+        pool = (pool_by_band or {}).get(band)
+        unfilled, n_rejected = [], 0
+        for s in open_unfilled_slots(p):
+            sid = str(s.get("school_id") or "")
+            if (band, sid) in rejects:
+                n_rejected += 1
+                continue
+            unfilled.append({"school_id": sid, "name": s.get("roster_school", ""),
+                             "in_pool": (sid in pool) if pool is not None else True})
+        st = p.get("stats") or {}
+        out[band] = {
+            # A zero-fact band has no bands[] entry (and thus no REQ-149 signal) — honestly
+            # unsatisfied, exactly the population slot-grain pursuit most needs to reach.
+            "satisfied": bool(((bands_meta.get(band) or {}).get("satisfied") or {}).get("satisfied")),
+            "unfilled": unfilled,
+            "n_slots": st.get("n_slots") or 0, "n_filled": st.get("n_filled") or 0,
+            "n_rejected": n_rejected}
+    return out
+
+
+def band_done(band: str, have: set, slot_gaps: dict = None) -> bool:
+    """The ONE per-band 'no follow-up needed' predicate (#694): slot-grain when the band's slot
+    state is known — done ⇔ satisfied (REQ-149) or no open unfilled slots — and the covered-band
+    boolean (`band in have`, ≥1 accepted fact) otherwise. Shared by `detect_requests` (emission)
+    and `stage7_run.withdraw_satisfied_requests` (#233 withdrawal) so the two can never disagree —
+    a directive emitted under one predicate and withdrawn under a weaker one would churn
+    (emit → withdraw → re-emit) every round."""
+    g = (slot_gaps or {}).get(band)
+    if g is not None:
+        return bool(g.get("satisfied")) or not g.get("unfilled")
+    return band in have
 
 
 def _accepted_by_record(result: dict) -> dict:
@@ -111,7 +199,7 @@ def _alt_reason(sent: str, ranked: list) -> str:
 
 def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = None,
                     band_schools: dict = None, covered_bands=None, real_bands=None,
-                    explain: dict = None) -> list:
+                    slot_gaps: dict = None, explain: dict = None) -> list:
     """Emit routed request objects for one district's extraction `result` (a `run_council_streaming`
     per-district dict: {district_id, reps[], accepted[], unresolved[], bands}).
 
@@ -138,6 +226,17 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
                           None ⇒ phantom detection is OFF (no per-band drop); the barren-rep coverage
                           gate still applies using the claim alone, and requires a non-empty claimed
                           target set (an all-unknown district keeps its remedies).
+    `slot_gaps`       — #694: `slot_gap_summary(closing_argument, pool_by_band)` — per-band slot
+                          state from the gate@8 projection (the SAME module Stage 8 reads, via the
+                          app layer). When a band's slot state is known, the district-altitude gate
+                          moves from the per-band boolean ('has ≥1 fact') to slot grain: pursue
+                          until the band is SATISFIED (REQ-149) or out of open unfilled slots, and
+                          name the specific unfilled schools in params. Fabrication-safe by
+                          construction: the summary derives from the DISTRICT-WIDE closing argument
+                          (all prior extractions), never from this result alone — a partial result's
+                          silence about a slot is not evidence the slot is empty (the Las Cruces
+                          rule at slot grain). None / band-missing ⇒ the legacy covered-band
+                          boolean for that band (honest degradation; all pre-#694 pins hold).
     `explain`         — optional dict the detector fills with why nothing was emitted (detect-time
                           suppression is NON-emission — nothing persists — so this is the caller's
                           hook to log it; the compose layer's `suppressed` bucket covers its own gate):
@@ -156,15 +255,19 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
     # district-wide covered bands (a partial result alone must not fabricate a gap). `target_bands` =
     # the bands worth chasing = claimed ∩ real (phantoms dropped when real_bands is known); if real is
     # unknown, fall back to the claim. `no_fillable_gap` = no follow-up can add claimed coverage:
-    # every fillable target band already has facts — INCLUDING the all-phantom corner (real known,
-    # target empty): such a district can never satisfy any claimed band, so barren-rep remedies would
-    # loop forever against the depth guard for nothing. With real UNKNOWN an empty claim does NOT
-    # suppress (can't tell all-phantom from no-data).
+    # every fillable target band is DONE — #694: done at slot grain (satisfied / no open unfilled
+    # slots) where slot state is known, covered-band boolean otherwise — INCLUDING the all-phantom
+    # corner (real known, target empty): such a district can never satisfy any claimed band, so
+    # barren-rep remedies would loop forever against the depth guard for nothing. With real UNKNOWN
+    # an empty claim does NOT suppress (can't tell all-phantom from no-data). Slot grain deliberately
+    # WIDENS the barren-rep window (#694): a band covered-but-unsatisfied keeps its 7→6/7→3 remedies
+    # alive — re-reading reps in hand is exactly the cheap evidence a thin band needs.
     have = _bands_with_facts(result) | {b for b in (covered_bands or ()) if b in BANDS}
     claimed_set = {b for b in (claimed_bands or []) if b in BANDS}
     target_bands = claimed_set & set(real_bands) if real_bands is not None else claimed_set
-    no_fillable_gap = (target_bands <= have) if real_bands is not None \
-        else (bool(target_bands) and target_bands <= have)
+    _done = {b for b in target_bands if band_done(b, have, slot_gaps)}
+    no_fillable_gap = (target_bands <= _done) if real_bands is not None \
+        else (bool(target_bands) and target_bands <= _done)
     if explain is not None:
         explain["phantom_bands"] = sorted(claimed_set - target_bands) if real_bands is not None else []
         explain["suppressed_barren_reps"] = 0
@@ -209,18 +312,53 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
     # still empty. (Per-band suppression via name-matching was considered and rejected as fragile.)
     n_alt_rep = sum(1 for r in reqs if r["route"] == ROUTE_ALT_REP)
 
-    # --- district altitude: a fillable claimed band has no accepted facts anywhere (DISTRICT-WIDE:
-    # this result's facts ∪ covered_bands from prior extractions — a partial result alone must not
-    # fabricate a gap). `target_bands` is the ONE predicate source: claimed ∩ BANDS ∩ real-when-known,
-    # so a phantom band (#175: no school serves those grades) never emits a 7->2 here. Iterating
-    # claimed_bands (not the set) preserves the claim's order in the output. ---
+    # --- district altitude: a fillable claimed band is not DONE (DISTRICT-WIDE state — a partial
+    # result alone must not fabricate a gap). `target_bands` is the ONE predicate source: claimed ∩
+    # BANDS ∩ real-when-known, so a phantom band (#175: no school serves those grades) never emits a
+    # 7->2 here. #694: with slot state known, done = satisfied (REQ-149) or no open unfilled slots —
+    # a band with 1 of 12 roster slots filled is a GAP (the Cleveland shape #692 measured), and the
+    # directive names the specific unfilled schools; without slot state, the legacy zero-facts
+    # boolean. Iterating claimed_bands (not the set) preserves the claim's order in the output. ---
     for band in claimed_bands or []:
-        if band not in target_bands or band in have:
+        if band not in target_bands or band in _done:
             continue
         schools = band_schools.get(band) or []
         params = {"band": band, "schools": schools}
-        reason = (f"claimed band '{band}' has 0 accepted facts across all URLs"
-                  + (f" ({len(schools)} school(s) known)" if schools else ""))
+        g = (slot_gaps or {}).get(band)
+        if g is not None:
+            # #694 x #696: pool slots (relation 1) are what follow-up chases; span-only slots
+            # (relation 2 minus relation 1 — K-8s placed in another band's pool) are named only as
+            # a BOUNDED assumption-check sample (does the K-8's bell match the band mode the
+            # Stage-9 tie rule will hand its grades?). Deterministic pick: lowest school_id.
+            # .get() throughout (#703 review): the summary always populates these keys, but this
+            # is a public pure function — an under-shaped slot_gaps entry (a test double, a future
+            # summary variant) must degrade like everything else in this module, never KeyError
+            # the whole district's detection pass.
+            gaps = g.get("unfilled") or []
+            in_pool = [u for u in gaps if u.get("in_pool")]
+            span_only = sorted((u for u in gaps if not u.get("in_pool")),
+                               key=lambda u: u.get("school_id") or "")
+            mode_check = span_only[:MODE_CHECK_MAX]
+            params["unfilled_schools"] = [{"school_id": u.get("school_id") or "",
+                                           "name": u.get("name") or ""} for u in in_pool]
+            params["mode_check_schools"] = [{"school_id": u.get("school_id") or "",
+                                             "name": u.get("name") or ""} for u in mode_check]
+            n_slots, n_filled = g.get("n_slots") or 0, g.get("n_filled") or 0
+            params["n_slots"], params["n_filled"] = n_slots, n_filled
+            names = [u.get("name") or "" for u in in_pool[:3]]
+            more = len(in_pool) - len(names)
+            reason = (f"claimed band '{band}' has {n_filled} of {n_slots} roster slots "
+                      f"filled and is not satisfied (REQ-149)")
+            if in_pool:
+                reason += (f" — {len(in_pool)} unfilled school(s) to pursue: "
+                           + ", ".join(names) + (f" (+{more} more)" if more > 0 else ""))
+            if mode_check:
+                reason += (f"; {len(mode_check)} span-only assumption-check target(s) "
+                           f"(does the K-8 bell match the band mode? #696): "
+                           + ", ".join(u.get("name") or "" for u in mode_check))
+        else:
+            reason = (f"claimed band '{band}' has 0 accepted facts across all URLs"
+                      + (f" ({len(schools)} school(s) known)" if schools else ""))
         if n_alt_rep:
             params["pending_alt_reps"] = n_alt_rep
             reason += (f" — DEFER: {n_alt_rep} barren record(s) with an unexhausted alternate rep "

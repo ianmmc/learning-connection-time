@@ -68,8 +68,8 @@ def _mock_env(monkeypatch, already):
     monkeypatch.setattr(R7.DS, "export_status", lambda s: None)
     # the request-loop detect/persist + #233 withdraw run in the same persist txn — no-op them here
     # (their own tests cover them)
-    monkeypatch.setattr(R7, "detect_and_persist_requests", lambda s, pd, hh: 0)
-    monkeypatch.setattr(R7, "withdraw_satisfied_requests", lambda s, did: [])
+    monkeypatch.setattr(R7, "detect_and_persist_requests", lambda s, pd, hh, **kw: 0)
+    monkeypatch.setattr(R7, "withdraw_satisfied_requests", lambda s, did, **kw: [])
     persisted = []
     monkeypatch.setattr(R7, "persist_run_session",
                         lambda s, results, **kw: persisted.append(next(iter(results["districts"]))))
@@ -120,7 +120,7 @@ def test_probe_run_kind_threaded_to_persist_and_skips_request_loop(monkeypatch):
     monkeypatch.setattr(R7, "persist_run_session",
                         lambda s, results, **kw: kinds.append(results.get("run_kind")))
     monkeypatch.setattr(R7, "detect_and_persist_requests",
-                        lambda s, pd, hh: detected.append(pd["district_id"]) or 0)
+                        lambda s, pd, hh, **kw: detected.append(pd["district_id"]) or 0)
     probe = dict(DOC)
     probe["handoff_hash"] = DOC["handoff_hash"] + "-vision2"
     probe["run_kind"] = "probe"
@@ -137,7 +137,7 @@ def test_production_run_kind_defaults_and_runs_request_loop(monkeypatch):
     monkeypatch.setattr(R7, "persist_run_session",
                         lambda s, results, **kw: kinds.append(results.get("run_kind")))
     monkeypatch.setattr(R7, "detect_and_persist_requests",
-                        lambda s, pd, hh: detected.append(pd["district_id"]) or 0)
+                        lambda s, pd, hh, **kw: detected.append(pd["district_id"]) or 0)
     out = R7.run_council_streaming(DOC, persist=True, resume=True)
     assert kinds == ["production", "production"]
     assert detected == ["ZZS1", "ZZS2"]

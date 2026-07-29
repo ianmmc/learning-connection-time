@@ -38,6 +38,7 @@ from infrastructure.acquisition.common import discovered_domain as DDOM
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import school_sampling as SS
 from infrastructure.acquisition.process_governance import stage6_dispatch as H6
+from infrastructure.acquisition.process_governance import stage7_run as R7RUN
 from infrastructure.acquisition.stage1_queue import batch_store as BSTORE
 from infrastructure.acquisition.stage8_aggregate import closing_argument as CA8
 from infrastructure.acquisition.stage1_queue import queue_batch as Q1
@@ -62,7 +63,7 @@ NEWWORK_ROUTES = (RQ.ROUTE_REDISCOVER, RQ.ROUTE_RECAPTURE, RQ.ROUTE_ADD_SCHOOLS)
 def plan_followup(requests: list, *, claimed_bands: dict, executed_rounds: dict = None,
                   cap: int = 12, max_rounds: int = None, defer_76: set = None,
                   covered_bands: dict = None, real_bands: dict = None,
-                  satisfied_bands: dict = None) -> dict:
+                  satisfied_bands: dict = None, slot_gaps: dict = None) -> dict:
     """Decide the follow-up batch from approved NEW-work request dicts — PURE (unit-testable, the real
     logic). Steps: filter to NEW-work routes → SUPPRESS a request that can no longer add coverage
     (#176 defense-in-depth: a banded request whose band is covered/phantom, OR a band-less one for a
@@ -88,19 +89,34 @@ def plan_followup(requests: list, *, claimed_bands: dict, executed_rounds: dict 
                      SERVING the band — `school_sampling.real_bands_for_district`, fillability incl.
                      Stage 1's gap-fill). A banded request for a band absent here is a PHANTOM,
                      unfillable (#175). A district missing from the dict is unknown (not gated).
+    slot_gaps:       #694 (#703 review) — {district_id: RQ.slot_gap_summary(...)}: the live slot
+                     view. The banded suppression reads the SAME `RQ.band_done` predicate emission
+                     (detect) and withdrawal (#233) use: with slot state known, a band suppresses
+                     only when SATISFIED or out of open unfilled slots — NOT merely covered.
+                     Without this, every covered-but-unsatisfied directive (Cleveland's 1-of-12
+                     headline shape) was auto-rejected here as "already covered" at every compose,
+                     while detect kept re-emitting it — the exact churn the shared predicate
+                     exists to prevent. District/band absent ⇒ the legacy covered boolean.
     Returns {targets, swept_ids, spilled, blocked, deferred, suppressed}."""
     executed_rounds = executed_rounds or {}
     defer_76 = defer_76 or set()
     covered_bands = covered_bands or {}
     real_bands = real_bands or {}
     satisfied_bands = satisfied_bands or {}
+    slot_gaps = slot_gaps or {}
+
+    def _band_done(did, b) -> bool:
+        """The ONE per-band 'no follow-up needed' predicate at compose — RQ.band_done over the
+        district's live slot view, covered-boolean fallback (#694/#703)."""
+        return RQ.band_done(b, covered_bands.get(did, ()), slot_gaps.get(did))
 
     def _fillable_gap(did) -> list:
         """The bands a follow-up for `did` could still fill, in claimed order: claimed ∩
-        real-when-known − covered. The ONE predicate behind the band-less suppression + expansion."""
+        real-when-known − done (#694: done at slot grain when the view exists, covered otherwise)
+        − satisfied. The ONE predicate behind the band-less suppression + expansion."""
         fillable = [b for b in claimed_bands.get(did, []) if b in RQ.BANDS
                     and (did not in real_bands or b in real_bands[did])]
-        return [b for b in fillable if b not in covered_bands.get(did, ())
+        return [b for b in fillable if not _band_done(did, b)
                 and b not in satisfied_bands.get(did, ())]
 
     blocked, deferred, suppressed, eligible = [], [], [], []
@@ -115,11 +131,17 @@ def plan_followup(requests: list, *, claimed_bands: dict, executed_rounds: dict 
         # between approval and compose can add nothing (the stale-request door).
         reason = None
         if band:
-            if band in covered_bands.get(did, ()):
-                reason = f"band '{band}' now has accepted facts — already covered"
-            elif band in satisfied_bands.get(did, ()):
+            g_ = (slot_gaps.get(did) or {}).get(band)
+            if band in satisfied_bands.get(did, ()):
                 reason = (f"band '{band}' is SATISFIED (REQ-149: confident mode/coverage at gate@8)"
                           " — no more spend needed")
+            elif _band_done(did, band):
+                # #694/#703: with a slot view, done ⇔ no open unfilled slots (a covered-but-
+                # unsatisfied band with open slots survives — the Cleveland shape this gate was
+                # auto-rejecting); without one, the legacy covered boolean and its message.
+                reason = (f"band '{band}' has no open unfilled slots at slot grain (#694) — "
+                          f"nothing left to pursue") if g_ is not None else \
+                    f"band '{band}' now has accepted facts — already covered"
             elif did in real_bands and band not in real_bands[did]:
                 reason = f"band '{band}' is phantom (no school serves those grades) — unfillable"
         elif not _fillable_gap(did):
@@ -236,22 +258,24 @@ def _json_col(value, default):
 
 
 def _district_target_bands(session, district_ids: list) -> tuple:
-    """(claimed, real) per district from ONE district_target read: claimed = the LEA's claim
+    """(claimed, real, sbb) per district from ONE district_target read: claimed = the LEA's claim
     (band-less expansion); real = the bands ≥1 real school actually SERVES, via the one shared
     definition (`school_sampling.real_bands_for_district`, which owns the sbb traversal) — so the
-    compose gate can never diverge from the detector's. A district with no row is omitted from
-    `real` (unknown ⇒ not gated)."""
+    compose gate can never diverge from the detector's; sbb = the raw `schools_by_band_json`
+    snapshot (#694: feeds the slot-gap summary's Stage-1 pool). A district with no row is omitted
+    from `real` (unknown ⇒ not gated)."""
     if not district_ids:
-        return {}, {}
-    claimed, real = {}, {}
+        return {}, {}, {}
+    claimed, real, sbb_by_did = {}, {}, {}
     for did, cb, by_level_j, sbb_j in session.execute(text(
             "SELECT district_id, lea_claimed_bands_json, nces_by_level_json, schools_by_band_json "
             "FROM district_target WHERE district_id = ANY(:d)"), {"d": list(district_ids)}):
         claimed[did] = _json_col(cb, [])
+        sbb_by_did[did] = _json_col(sbb_j, {})
         # #498 (PR #500 review round): live roster rides along — see stage7_run's twin call sites.
-        real[did] = SS.real_bands_for_district(_json_col(by_level_j, {}), _json_col(sbb_j, {}),
+        real[did] = SS.real_bands_for_district(_json_col(by_level_j, {}), sbb_by_did[did],
                                                band_rosters=SS.band_rosters_for_district(did))
-    return claimed, real
+    return claimed, real, sbb_by_did
 
 
 def _covered_bands_now(session, district_ids: list) -> dict:
@@ -363,6 +387,7 @@ class Gathered(NamedTuple):
     # field default is ONE object shared by every instance that omits it — a `= {}` here is the
     # mutable-default footgun waiting for the first in-place `g.satisfied[did] = ...`.
     satisfied: dict | None = None    # REQ-149: {district_id: {band,...}} satisfied at gate@8, live
+    slot_gaps: dict | None = None    # #694: {district_id: RQ.slot_gap_summary(...)} — live slot view
 
     @classmethod
     def empty(cls, rows=None, benchmark_excluded=None):
@@ -394,14 +419,24 @@ def _gather(session, handoff_hash: str, max_rounds=None, ca_cache: dict = None) 
     if not rows:
         return Gathered.empty(benchmark_excluded=benchmark_excluded)
     dids = sorted({r["district_id"] for r in rows})
-    claimed, real = _district_target_bands(session, dids)
+    claimed, real, sbb_by_did = _district_target_bands(session, dids)
     exec_rounds = _executed_rounds(session, dids)
     defer_76 = _defer_76_districts(session, dids, max_rounds)
     covered = _covered_bands_now(session, dids)
     satisfied = _satisfied_bands_now(session, dids, ca_cache=ca_cache)
+    # #694 (#703 review): the live slot view, via the ONE detect-side helper (shared code, shared
+    # ca_cache) — so compose's suppression gate reads the SAME band_done predicate as emission and
+    # withdrawal. Without this, every directive detect keeps open for a covered-but-unsatisfied
+    # band was auto-rejected here as "already covered" on every compose, forever.
+    slot_gaps = {}
+    for did in dids:
+        sg = R7RUN._slot_gaps_for_district(session, did, sbb_by_did.get(did) or {},
+                                           ca_cache=ca_cache)
+        if sg:
+            slot_gaps[did] = sg
     batch_id = f"batch_{BSTORE.next_batch_number(session):05d}"
     return Gathered(rows, claimed, exec_rounds, defer_76, covered, real, batch_id,
-                    benchmark_excluded, satisfied)
+                    benchmark_excluded, satisfied, slot_gaps)
 
 
 def _load_ca_cached(session, did, cache):
@@ -454,16 +489,21 @@ def _unfilled_slots_now(session, district_ids: list, ca_cache: dict = None) -> d
     for did in district_ids:
         try:
             ca = _load_ca_cached(session, did, ca_cache)
+            # #703 review: this function must carry its OWN REQ-149 guard, not lean on the caller
+            # happening to intersect plan["targets"] with satisfied_bands upstream — a satisfied
+            # band with open unfilled slots (the Fairbanks shape the detector is pinned silent on)
+            # must never be offered as a preferred pursuit target by ANY caller.
+            sat = {b for b, ob in (ca.get("bands") or {}).items()
+                   if (ob.get("satisfied") or {}).get("satisfied")}
             per_band = {}
             for band, p in (ca.get("slot_projection") or {}).items():
-                # `not match` (review round 2): an AMBIGUOUS slot also reads slot_state
-                # "unfilled", but the pipeline already HOLDS a fact for it — it's waiting on a
-                # human disposition, not on more paid discovery. Pursuing it re-buys data we
-                # have, every compose, until someone clicks. Truly unheard = unfilled AND no
-                # match attached (the same predicate the blanket projection uses).
-                ids = [s_["school_id"] for s_ in (p.get("slots") or [])
-                       if s_.get("slot_state") == "unfilled" and not s_.get("match")
-                       and s_.get("school_id")]
+                if band in sat:
+                    continue
+                # Truly unheard = unfilled AND no match attached (an AMBIGUOUS slot already holds
+                # a fact awaiting a human, not more paid discovery — review round 2). The
+                # predicate's ONE home is RQ.open_unfilled_slots (#694), shared with the
+                # detector's slot_gap_summary so compose and detect can never diverge on it.
+                ids = [s_["school_id"] for s_ in RQ.open_unfilled_slots(p) if s_.get("school_id")]
                 if ids:
                     per_band[band] = ids
             if per_band:
@@ -571,7 +611,7 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
         plan = plan_followup(g.rows, claimed_bands=g.claimed, executed_rounds=g.exec_rounds,
                              cap=cap, max_rounds=b.max_request_rounds, defer_76=g.defer_76,
                              covered_bands=g.covered, real_bands=g.real,
-                             satisfied_bands=g.satisfied or {})
+                             satisfied_bands=g.satisfied or {}, slot_gaps=g.slot_gaps or {})
         if not dry_run:
             # A suppressed directive is RESOLVED, not skipped: its band is covered/phantom (or the
             # district has no fillable gap left), so it could otherwise never leave 'approved' — it
