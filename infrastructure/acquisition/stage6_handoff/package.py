@@ -22,6 +22,7 @@ def assemble_record(rec: dict, councils: dict, cost_model: dict, overrides: dict
     overridden goes to the chosen council instead of the auto-routed one (fidelity flag recomputed)."""
     overrides = overrides or {}
     out = {"rec_key": rec.get("rec_key"), "url": rec.get("url"),
+           "label": rec.get("label"),   # #691: the console's held rows name what a hold suppressed
            "decision": rec.get("decision"), "reason": rec.get("reason"), "reps": []}
     if rec.get("decision") != "send":
         return out

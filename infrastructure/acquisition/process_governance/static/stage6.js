@@ -207,6 +207,23 @@
         <code title="${esc(r.rec_key)}">${esc(r.url || r.rec_key)}</code>
         <span class="muted">held — ineligible for a production dispatch; tick “benchmark dispatch” to re-admit</span>
       </div>`);
+    // #691: records held by REQ-116 hub-priority narrowing (server-computed reason, same display
+    // rule as the #679 rows above — badged, never hidden). The reviewer is the only party who can
+    // see that a labeled "hub" is actually a news feed; this is where they see what it suppressed.
+    const hubHeld = d.records.filter((r) => (r.reason || "").startsWith("hub-priority:first-dispatch-narrowed-to:"));
+    const hubLabeled = hubHeld.filter((r) => r.label).length;
+    if (hubHeld.length) {
+      heldRows.push(`<div class="s6-rep muted" data-feat="s6-hub-held-summary">
+          <span class="badge badge-warn">hub-priority</span>
+          <b>${hubHeld.length}</b> record(s) held — first dispatch narrowed to the labeled hub
+          (${hubLabeled} labeled target(s) among them; held reps stay available to the 7→6 back-edge)
+        </div>`);
+      heldRows.push(...hubHeld.map((r) => `<div class="s6-rep muted" data-feat="s6-hub-held">
+          <span class="badge badge-warn" title="held by hub-priority narrowing — a labeled sibling at ≥2× the hub's in-window times would send instead (#691 yield floor)">hub-priority held</span>
+          ${r.label ? `<span class="s6-kind">${esc(r.label)}</span>` : ""}
+          <code title="${esc(r.rec_key)}">${esc(r.url || r.rec_key)}</code>
+        </div>`));
+    }
     const remove = editable
       ? `<button class="s6-remove" data-did="${esc(d.district_id)}" title="remove this district from the draft">✕</button>` : "";
     const head = `${esc(d.name || d.district_id)}${d.state ? ` · ${esc(d.state)}` : ""}

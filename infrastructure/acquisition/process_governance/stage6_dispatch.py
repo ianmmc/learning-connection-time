@@ -99,6 +99,22 @@ HUB_LABELS = BS.HUB_LABELS
 # forbids), so the two spellings are pinned together by test_stage6_production_eligibility.
 INELIGIBLE_PRODUCTION_REASON = "benchmark-rep:ineligible-for-production"
 
+# #691: hub-priority's hold reason (prefix + the winner's rec_key). Same client/server discipline as
+# INELIGIBLE_PRODUCTION_REASON — the console keys its held-row display on this server-computed
+# spelling; the two are pinned together by test_stage6_dispatch_bridge's console-visibility test.
+HUB_PRIORITY_REASON_PREFIX = "hub-priority:first-dispatch-narrowed-to:"
+
+# #691 (Rule B, measured 2026-07-29): the hub-priority YIELD FLOOR multiple. A LABELED sibling whose
+# `n_times_in_window` is >= this multiple of the winner's is NOT held — the hub label's
+# "covers all bands" presumption is overridden by materially better labeled evidence. k=2 chosen from
+# the corpus measurement (docs/technical-notes/production-quality-control-research/
+# 2026-07-29-issue691-hub-priority-rule-measurement.md): it recovers every observed failure (Essex's
+# 112/61/57 vs a 21-time news feed; Bentonville's 52/49 vs an 8-time page) while leaving every
+# genuinely dense hub's one-send first dispatch intact (Bridgeport 196, Fairbanks 80, Bangor 26 —
+# corpus separation was clean: overridden winners 8-34, untouched winners 75-196). Rule A ("never
+# hold labeled targets") measured +197 sends (+115%) and failed the Bangor regression pin.
+HUB_YIELD_FLOOR_MULT = 2
+
 
 def _hub_priority_holds(sendables: list) -> tuple:
     """REQ-116 (#83) hub-priority narrowing (a DISPATCH decision — STAGE6 §4): when a district's send
@@ -119,12 +135,29 @@ def _hub_priority_holds(sendables: list) -> tuple:
         a hub category today (hub-ness is human/topology knowledge), so an unlabeled tier-A record can
         never satisfy the hub test — when a hub detector exists, it joins this predicate, not a new pass.
     ZERO recall cost by construction: hold, never reject; verified_only composes upstream (a labeled
-    hub IS a labeled target, so it survives training-grade mode)."""
+    hub IS a labeled target, so it survives training-grade mode).
+
+    #691 (Rule B): the presumption above failed measurably — Essex Westford's labeled hub was a
+    news feed with 21 in-window times, and narrowing held a 112-time list plus 61/57-time bell
+    tables behind it; the Stage-7 safety net never fired because the hub was partially productive.
+    The yield floor bounds the presumption with evidence already in hand: a LABELED sibling carrying
+    `n_times_in_window` >= HUB_YIELD_FLOOR_MULT x the winner's stays SENT (labeled only — unlabeled
+    tier-A auto-sends still narrow, which is REQ-116's actual savings). `n_times_in_window` is a
+    text-capture signal, so an image-only hub can under-count and over-send — the safe direction
+    (extra labeled sends, never fewer)."""
     hubs = [r for r in sendables if r.get("label") in HUB_LABELS]
     if not hubs:
         return None, set()
     winner = max(hubs, key=lambda r: (r["year"] if r["year"] is not None else -1, r.get("n_times") or 0))
-    return winner["rec_key"], {r["rec_key"] for r in sendables if r["rec_key"] != winner["rec_key"]}
+    floor = HUB_YIELD_FLOOR_MULT * max(1, winner.get("nitw") or 0)
+    holds = set()
+    for r in sendables:
+        if r["rec_key"] == winner["rec_key"]:
+            continue
+        if r.get("label") and (r.get("nitw") or 0) >= floor:
+            continue                     # #691 yield floor: labeled sibling materially out-yields the hub
+        holds.add(r["rec_key"])
+    return winner["rec_key"], holds
 
 
 # #540: the Edlio bell_schedules APP family — one school's schedule surface materialized as sibling
@@ -203,6 +236,7 @@ def district_release_input(session, district_id: str, verified_only: bool = Fals
             decision, reason, send = "hold", f"verified-only:held({reason})", []
         rd = {
             "rec_key": rec["rec_key"], "url": rec.get("url"),
+            "label": rec.get("label"),   # #691: the gate@6 held-row display names what the hold suppressed
             "decision": decision, "reason": reason,
             "signals": rec.get("signals") or {},
             "send": _enrich_send(send, rec.get("reps"), rec, district.get("district_dir")),
@@ -214,6 +248,8 @@ def district_release_input(session, district_id: str, verified_only: bool = Fals
                               "url": rec.get("url"),
                               "year": _content_start_year(sig),
                               "n_times": max((r.get("n_times") or 0) for r in rec.get("reps") or [{}]),
+                              # #691 yield floor input — the in-window count from the record's signals
+                              "nitw": int(sig.get("n_times_in_window") or 0),
                               "wd_strong": any(d.get("name") == "lf_nonstandard_day"
                                                and d.get("strength") == "strong"
                                                for d in sig.get("detectors") or []),
@@ -255,15 +291,16 @@ def district_release_input(session, district_id: str, verified_only: bool = Fals
             rd["decision"], rd["send"] = "hold", []
             rd["reason"] = f"sibling-variant:same-app-page-sends:{winner_rk}"
     # REQ-116 (#83) hub-priority (dispatch-time): a labeled district hub narrows the FIRST dispatch to
-    # itself; every other surviving send is HELD for the 7→6 back-edge. Runs AFTER prefer-recent so a
-    # stale hub already held by a newer same-school sibling can't be the winner.
+    # itself; every other surviving send is HELD for the 7→6 back-edge — EXCEPT a labeled sibling
+    # clearing the #691 yield floor, which stays sent. Runs AFTER prefer-recent so a stale hub
+    # already held by a newer same-school sibling can't be the winner.
     survivors = [s for s in sendables if by_key[s["rec_key"]]["decision"] == "send"]
     hub_winner, hub_holds = _hub_priority_holds(survivors)
     for rk in hub_holds:
         rd = by_key.get(rk)
         if rd is not None and rd["decision"] == "send":
             rd["decision"], rd["send"] = "hold", []
-            rd["reason"] = f"hub-priority:first-dispatch-narrowed-to:{hub_winner}"
+            rd["reason"] = f"{HUB_PRIORITY_REASON_PREFIX}{hub_winner}"
     return district, records
 
 
