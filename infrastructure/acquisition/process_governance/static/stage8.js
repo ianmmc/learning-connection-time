@@ -158,6 +158,7 @@
         Sampled <strong>${s.n_sampled}</strong> of <strong>${s.n_total == null ? "?" : s.n_total}</strong> schools${denomDetail} ·
         coverage ${pct(s.coverage)} · school agreement (plurality) ${pct(s.plurality_share)}
       </div>
+      ${s.n_outside_pool > 0 && s.n_total != null ? `<p class="s8-note" data-feat="pool-gap">⚠ <strong>${s.n_outside_pool}</strong> of the ${s.n_total} schools in this denominator sit outside this band's Stage-1 sampling pool (queue-time snapshot) — placed in another band by anti-dilution (a K-8 serving middle sits in elementary's pool) and/or dropped by the ≤12/band cap — so discovery and follow-up never target them for this band. Indirect evidence (a district-wide hub page, a human add) can still fill them; any left unfilled inherit this band's modal minutes via the Stage-9 tie rule (#696).</p>` : ""}
       ${renderSlots(band, b)}
       <table class="s8-schools"><thead><tr><th>School</th><th>Times</th><th>Gross</th><th>Models</th><th>Evidence</th><th></th></tr></thead>
         <tbody>${(b.schools || []).map((sc) => renderSchool(sc, band)).join("")}</tbody></table>
