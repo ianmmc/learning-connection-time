@@ -130,7 +130,8 @@ def _hub_priority_holds(sendables: list) -> tuple:
         HELD reps back via 7→6 — the presumption costs at most one cheap retry round, while a correct
         presumption saves every redundant per-school send on round 1 (the REQ's point).
       * "best representation of that URL" = best_send's existing per-record pick; BETWEEN hubs, newest
-        content year wins, then time density (the prefer-recent tie discipline).
+        content year wins, then IN-WINDOW time density (`nitw` — the same metric as the yield floor;
+        see the #691 paragraph below).
       * "or A-scoring" (the REQ's unlabeled arm) is STRUCTURALLY ready but inactive: no detector emits
         a hub category today (hub-ness is human/topology knowledge), so an unlabeled tier-A record can
         never satisfy the hub test — when a hub detector exists, it joins this predicate, not a new pass.
