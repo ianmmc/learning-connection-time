@@ -110,6 +110,34 @@ def test_decide_labeled_non_target_rejects():
     assert d["decision"] == "reject" and d["reason"] == "non-target:board_schedule" and d["send"] == []
 
 
+@pytest.mark.parametrize("label", sorted(BS.NONTARGET_PRIMARIES))
+def test_a_non_target_label_beats_tier_A_auto_send(label):
+    """THE money-leak guard: a tier-A record is the ONE unlabeled shape that auto-sends to the paid
+    council, so a human's `target_absent` / `unusable` verdict has to win against it — that verdict is
+    the only thing standing between a confident-but-wrong detector and a paid call.
+
+    Pinned as its own test because the guarantee rests entirely on BRANCH ORDER in `decide()`: the
+    `if label:` reject precedes the tier read, so `tier` is never consulted once a label exists. Nothing
+    else enforces that — reorder the branches and the general labeled-non-target test above still passes
+    (it uses no tier-A auto-send path), while every A-scored record a reviewer rejected starts spending.
+
+    Live case (#683/#684, Bentonville `0503060:a5f32ff869`): an employee handbook drew FOUR strong
+    target votes off staff report-times plus a `30 minutes of class` false positive, landing tier A with
+    `decision: send`. The human label is what stopped it — and #683/#684 will edit exactly this
+    detector/tier surface, which is why this is pinned before that work rather than after."""
+    # a maximally "sendable" record: dense usable text, current school year (clears the #241 floor)
+    rec = _rec(label=label, tier="A", reps=[_text_rep("handbook.txt", n_times=40, n_chars=5000)],
+               signals={"content_school_year": "2025-26"})
+    d = R.decide(rec)
+    assert d["decision"] == "reject"
+    assert d["reason"] == f"non-target:{label}"
+    assert d["send"] == []          # nothing routed, nothing priced, nothing spent
+    assert d["alternates"] == []    # and no swap-to candidate offered at gate@6 either
+    # the SAME record unlabeled is the thing this label overrode — proves the assertion above is not
+    # passing for some unrelated reason (a broken rep, a floor hold), which would make the pin hollow.
+    assert R.decide(_rec(**{**rec, "label": None}))["decision"] == "send"
+
+
 def test_stale_pre_2017_tier_a_is_held_by_validity_floor():
     # #241: a doc whose content school year predates the CRDC 2017-18 federal baseline breaks REQ-026's
     # blend window against it — HOLD (suppress-to-review) on the auto path; never sent, never lost.

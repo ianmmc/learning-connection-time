@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-29T01:42:02Z",
+  "last_updated": "2026-07-29T03:16:45Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -132,9 +132,27 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-27T23:37:52Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "dispatch",
+          "outcome": null,
+          "at": "2026-07-29T03:15:46Z",
+          "checkpoint": "gate@6",
+          "event_type": "draft_add_district",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "dispatch",
+          "outcome": null,
+          "at": "2026-07-29T03:16:35Z",
+          "checkpoint": "gate@6",
+          "event_type": "draft_remove_district",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00030"
+      "notes": "remove district 0100270"
     },
     "0100810": {
       "name": "Coffee County",
@@ -1642,9 +1660,27 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-27T23:37:52Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "dispatch",
+          "outcome": null,
+          "at": "2026-07-29T03:15:46Z",
+          "checkpoint": "gate@6",
+          "event_type": "draft_add_district",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-29T03:16:45Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "6 security_block (cf-mitigated header)"
+      "notes": "d9a49bcabf0d"
     },
     "0509000": {
       "name": "LITTLE ROCK SCHOOL DISTRICT",
@@ -3703,9 +3739,27 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-27T22:45:44Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "dispatch",
+          "outcome": null,
+          "at": "2026-07-29T03:15:46Z",
+          "checkpoint": "gate@6",
+          "event_type": "draft_add_district",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-29T03:16:45Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "1 security_block (cf-mitigated header)"
+      "notes": "d9a49bcabf0d"
     },
     "0902790": {
       "name": "New Haven School District",
@@ -4307,9 +4361,27 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-27T22:45:44Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "dispatch",
+          "outcome": null,
+          "at": "2026-07-29T03:15:46Z",
+          "checkpoint": "gate@6",
+          "event_type": "draft_add_district",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-29T03:16:45Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "5 security_block (cf-mitigated header); 149 security_block (district capture halted -- 3 challenges with no successful capture between; one-attempt rule)"
+      "notes": "d9a49bcabf0d"
     },
     "1201440": {
       "name": "ORANGE",
