@@ -11,6 +11,33 @@ school 5-to-1).
 For each (district, band) we report the school count N and the finite-population sample size n
 for 95% confidence / 5% margin (worst-case p=0.5). Small N censuses naturally.
 
+THE THREE BAND RELATIONS (#696, settled 2026-07-29). "Band membership" means three DIFFERENT
+things in this pipeline, each with its own home, and every consumer must know which one it reads
+-- #696 was exactly a consumer confusion between the first two (Fairbanks' middle band read
+"4/12 = 33% coverage" with no way to tell the 8-school gap was structural, not a search failure):
+
+  1. PLACEMENT (school -> exactly ONE band): `school_index()` below -- the anti-dilution
+     selection rule. Feeds the Stage-1 pool (`district_target.schools_by_band_json`), discovery
+     targeting, and the Stage-7 school spine. A PK-08 'Elementary' school is placed in
+     elementary ONLY (the gap-fill pass can place a spanner into an otherwise-empty band).
+  2. SERVICE / FILLABILITY (school -> EVERY band it serves): `band_rosters_for_district()`
+     below, via `bands_for_rescue()` -- the #253 denominator + the gate@8 slot projection. The
+     same PK-08 counts toward BOTH elementary and middle (rejecting this was the "200%-coverage
+     lie" #253 measured and fixed -- Santa Fe's middle must read 4-of-9, not 4-of-2).
+  3. GRADE OWNERSHIP (grade -> exactly ONE band, LEA grain): `stage9_incorporate/per_grade.py`
+     -- live slot spans + the canonical tie rule. This is what the Stage-9 write publishes, and
+     it is why the 1-vs-2 gap is an EVIDENCE-BREADTH gap, not a missing-output gap: a K-8's
+     grades 6-8 inherit the middle band's modal minutes (flagged via overlap_flag, never
+     silent) even though the building itself was only ever sampled as an elementary.
+
+  Consequences: relation 2 minus relation 1 = schools a band's denominator counts that the
+  pipeline never seeks for that band (whether placed in another band's pool, or dropped by the
+  <=12/band queue-time sampling cap -- both structural). gate@8 surfaces that number per band
+  (`sampling.n_outside_pool`, closing_argument.py) so a reviewer can tell "structurally
+  unreachable" from "we searched and missed". Follow-up targeting (#694) works the Stage-1 pool
+  (relation 1); sampling a relation-2-only school is a bounded ASSUMPTION CHECK of the tie
+  rule, never band-filling. Pinned by tests/test_696_band_relations.py.
+
 Usage: school_sampling.py [--year 2024_25] [--ids id,id,...] [--summary]
 """
 import csv, sys, math, json, argparse, functools, re

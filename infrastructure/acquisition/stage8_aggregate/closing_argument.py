@@ -376,12 +376,27 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
         else:
             n_total = n_total_level
             denom = {"source": "nces_level", "by_source": None, "nces_year": None}
+        # #696: relation 2 minus relation 1 — how many of this band's denominator schools sit
+        # OUTSIDE its Stage-1 pool. Two structural causes, both meaning "never sought for this
+        # band": anti-dilution placed the school in another band's pool (the K-8-serves-middle
+        # case), or the ≤12/band queue-time cap dropped it (Fairbanks elementary: 20 serve, pool
+        # capped at 12). Either way no discovery/extraction/follow-up can raise coverage past
+        # (n_total - n_outside_pool)/n_total. Server-computed so the console renders, never
+        # re-derives; None when either side is unavailable (no roster, or no Stage-1 pool data).
+        n_outside_pool = None
+        if broster and schools_by_band is not None:
+            pool_ids = {str(x.get("school_id")) for x in
+                        ((schools_by_band or {}).get(band) or {}).get("schools", [])
+                        if x.get("school_id")}
+            n_outside_pool = sum(1 for r in broster.get("slot_recs", [])
+                                 if str(r.get("school_id")) not in pool_ids)
         out_bands[band] = {
             "gross_minutes": b["gross_minutes"], "start_time": b["start_time"],
             "end_time": b["end_time"], "method": b["method"],
             "sampling": {
                 "n_sampled": n_sampled, "n_total": n_total,
                 "n_total_level_only": n_total_level,
+                "n_outside_pool": n_outside_pool,
                 "coverage": round(n_sampled / n_total, 3) if n_total else None,
                 "plurality_share": _plurality_share(b["schools"]),
                 "denominator": denom,

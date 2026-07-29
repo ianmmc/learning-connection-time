@@ -1393,6 +1393,22 @@ corpus-measured effect: 129 schools across 123 districts lose a spurious element
 *(Migrated 2026-06-27 from `docs/scratch-paper/Recognized Grade Bands for Fallback Scenarios.md`;
 four/five-band shapes + the #498 carve-out added 2026-07-15.)*
 
+**The three band relations (#696, settled 2026-07-29).** "Which band does this school belong to"
+has three distinct answers in the pipeline, and every consumer must name the one it reads —
+canonical statement + fitness pins: `common/school_sampling.py` module docstring,
+`tests/test_696_band_relations.py`. In brief: **(1) placement** — `school_index()`, one band per
+school (anti-dilution) → the Stage-1 pool and the Stage-7 spine; **(2) service/fillability** —
+`band_rosters_for_district()`, every band a school serves → the #253 coverage denominator and the
+gate@8 slot projection (a K-8 counts toward both elementary and middle); **(3) grade ownership** —
+`stage9_incorporate/per_grade.py`, one band per grade at LEA grain via live spans + the canonical
+tie rule → the published per-grade minutes. Relation 2 minus relation 1 is the set of schools a
+band's denominator counts that the pipeline never seeks for that band; gate@8 surfaces it per band
+(`sampling.n_outside_pool`) so a permanently-capped coverage number (Fairbanks middle: 4/12 by
+construction) is legible as structural, not mistaken for a search failure. Because relation 3
+already projects a K-8's grades 6-8 onto the middle band's modal minutes (flagged via
+`overlap_flag`), the gap is an *evidence-breadth* question — sampling a relation-2-only school is a
+bounded assumption check of the tie rule (#694), never band-filling.
+
 ---
 
 ## Data Quality & Filtering
