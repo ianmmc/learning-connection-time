@@ -164,9 +164,12 @@ def test_missing_district_is_skipped(monkeypatch):
 
 
 # ---------------------- REQ-116/#83 hub-priority narrowing (pure, DB-free) ----------------------
-def _h(rec_key, label=None, year=None, n_times=0, nitw=0):
-    return {"rec_key": rec_key, "label": label, "year": year, "n_times": n_times, "nitw": nitw,
-            "schools": []}
+def _h(rec_key, label=None, year=None, n_times=0, nitw=None):
+    # nitw defaults to n_times (the common case in these fixtures) — pass it explicitly to test the
+    # #691 divergent-metric path (winner tie-break is by nitw, not n_times; see
+    # test_hub_yield_floor_* below for cases where they differ).
+    return {"rec_key": rec_key, "label": label, "year": year, "n_times": n_times,
+            "nitw": n_times if nitw is None else nitw, "schools": []}
 
 
 def test_hub_priority_narrows_to_the_labeled_hub():
@@ -186,16 +189,32 @@ def test_no_labeled_hub_means_no_narrowing():
 
 
 def test_newest_then_densest_hub_wins_between_hubs():
+    # nitw kept BELOW the #691 yield floor for the non-winners (2x12=24) so this test stays focused
+    # on its subject (year-then-density tie-break for WHICH hub wins), not the floor's hold logic —
+    # that's covered separately by test_hub_yield_floor_*.
     winner, holds = BR._hub_priority_holds([
-        _h("d:old_hub", "district_hub_by_school", 2019, 90),
+        _h("d:old_hub", "district_hub_by_school", 2019, n_times=90, nitw=5),
         _h("d:new_hub", "district_hub_by_band", 2025, 12),
-        _h("d:es", "school_bell_table", 2025, 10)])
+        _h("d:es", "school_bell_table", 2025, n_times=10, nitw=5)])
     assert winner == "d:new_hub" and holds == {"d:old_hub", "d:es"}
     # same year -> density breaks the tie
     winner2, _ = BR._hub_priority_holds([
         _h("d:sparse", "district_hub_by_band", 2025, 5),
         _h("d:dense", "district_hub_by_school", 2025, 40)])
     assert winner2 == "d:dense"
+
+
+def test_between_hub_tiebreak_uses_nitw_not_raw_n_times():
+    """#691 code-review finding: the tie-break must use the SAME metric as the yield floor
+    (in-window density, `nitw`) — not raw `n_times` (rep-level density, inflated by out-of-window
+    matches). A hub with high n_times but low nitw must lose to a same-year sibling hub with lower
+    n_times but higher nitw (measured divergent on 13/42 hub-labeled districts 2026-07-29, though
+    the winning hub never actually changed on that corpus — this pins the metric is now provably
+    consistent, not merely coincidentally so)."""
+    winner, _ = BR._hub_priority_holds([
+        _h("d:noisy", "district_hub_by_band", 2025, n_times=85, nitw=26),   # high n_times, low nitw
+        _h("d:clean", "district_hub_by_school", 2025, n_times=40, nitw=40)])  # lower n_times, higher nitw
+    assert winner == "d:clean"
 
 
 def test_unknown_year_hub_loses_to_dated_hub_but_still_narrows_alone():

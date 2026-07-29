@@ -130,7 +130,8 @@ def _hub_priority_holds(sendables: list) -> tuple:
         HELD reps back via 7→6 — the presumption costs at most one cheap retry round, while a correct
         presumption saves every redundant per-school send on round 1 (the REQ's point).
       * "best representation of that URL" = best_send's existing per-record pick; BETWEEN hubs, newest
-        content year wins, then time density (the prefer-recent tie discipline).
+        content year wins, then IN-WINDOW time density (`nitw` — the same metric as the yield floor;
+        see the #691 paragraph below).
       * "or A-scoring" (the REQ's unlabeled arm) is STRUCTURALLY ready but inactive: no detector emits
         a hub category today (hub-ness is human/topology knowledge), so an unlabeled tier-A record can
         never satisfy the hub test — when a hub detector exists, it joins this predicate, not a new pass.
@@ -144,19 +145,20 @@ def _hub_priority_holds(sendables: list) -> tuple:
     `n_times_in_window` >= HUB_YIELD_FLOOR_MULT x the winner's stays SENT (labeled only — unlabeled
     tier-A auto-sends still narrow, which is REQ-116's actual savings). `n_times_in_window` is a
     text-capture signal, so an image-only hub can under-count and over-send — the safe direction
-    (extra labeled sends, never fewer)."""
+    (extra labeled sends, never fewer).
+
+    Between-hubs tie-break is BY `nitw` (in-window density), matching the floor's basis — not
+    `n_times` (raw rep density), which can diverge materially (13/42 hub-labeled districts measured
+    2026-07-29) even though the winning HUB never changed on the measured corpus either way. Kept
+    consistent so the tie-break and the floor are provably answering the same question."""
     hubs = [r for r in sendables if r.get("label") in HUB_LABELS]
     if not hubs:
         return None, set()
-    winner = max(hubs, key=lambda r: (r["year"] if r["year"] is not None else -1, r.get("n_times") or 0))
-    floor = HUB_YIELD_FLOOR_MULT * max(1, winner.get("nitw") or 0)
-    holds = set()
-    for r in sendables:
-        if r["rec_key"] == winner["rec_key"]:
-            continue
-        if r.get("label") and (r.get("nitw") or 0) >= floor:
-            continue                     # #691 yield floor: labeled sibling materially out-yields the hub
-        holds.add(r["rec_key"])
+    winner = max(hubs, key=lambda r: (r["year"] if r["year"] is not None else -1, r.get("nitw") or 0))
+    floor = HUB_YIELD_FLOOR_MULT * (winner.get("nitw") or 1)
+    holds = {r["rec_key"] for r in sendables
+             if r["rec_key"] != winner["rec_key"]
+             and not (r.get("label") and (r.get("nitw") or 0) >= floor)}
     return winner["rec_key"], holds
 
 
