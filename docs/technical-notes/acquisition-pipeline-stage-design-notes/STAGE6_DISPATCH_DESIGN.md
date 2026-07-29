@@ -23,6 +23,12 @@ console itself — see §0's run-extraction row + §0b for the current console a
 package, not of the operator experience end-to-end. `gate@6` is live in the console (manual approve; a
 preview→freeze identity check closes the staleness gap — §0/§0b).
 
+**`dispatch_type` (production|benchmark) is LANDED (epic #617/#618), and its freeze guard REFUSES, never
+coerces — but the CURRENT OPEN BUG is that the selection logic feeding the guard is provenance-blind,
+actively blocking the #620 campaign's first production dispatches as of 2026-07-28 (issue #679, open).**
+See §0/§0b (`dispatch_type` as a first-class draft/handoff attribute) and §3E-adjacent coverage of the
+freeze guard for the mechanism, and the new §679 callout under §3B for the open bug itself.
+
 ---
 
 ## 0a. Receipt from prior stage / Handoff to next stage
@@ -60,7 +66,8 @@ draft_store 22 + draft_api 18, §0b; incl. govdb Postgres) + a live end-to-end d
 | cost estimator | `stage6_handoff/cost.py` + `common/config/council_cost_model.json` | per-council $ = voters + escalation·judge; reads a config-as-data cost model with `provenance`. Ships a labeled **bootstrap** (flat per-call); the token×**live-OpenRouter-price** split is designed (§3C), not yet wired. The bridge now populates `n_schools` (from `intended_schools`) and `n_bytes` for binary reps (issue #55) — the inputs the future measured model needs; bootstrap dollars unchanged |
 | package assembly | `stage6_handoff/package.py` | release decision → routed + priced in-memory dispatch package (pure). Carries `pages` (the harvest-slice page range) through to the frozen doc (issue #38 — it used to drop at this step, so Stage 7 would have read the whole handbook PDF instead of the materialized slice). An unknown per-rep council override now **raises**, naming the bad id, instead of silently falling back to auto-routing (issue #54) |
 | release→routing bridge | `process_governance/stage6_dispatch.py` | reads the DB release decision (`release.load_district_records`/`decide`), enriches reps with size signals, assembles; the one module that imports **both** stage5 + stage6 (the §12 independence contract). The `district_status.json` backup export now happens only **after** the handoff file write succeeds (issue #39 — it used to export flushed-but-uncommitted events before the file write, so a failed write could leave phantom `dispatched` events in the git-swept backup) |
-| immutable artifact | `stage6_handoff/handoff.py` | `handoff_<hash>_<ts>.json` under `data/acquisition/handoffs/`; a **price-independent** content-identity hash (which also folds in the `verified_only` mode, below), now **order-insensitive** — districts/records/reps are sorted before hashing, so the same selection made in a different order hashes identically (issue #52). `write()` refuses to overwrite. `package_identity()` exposes the hash publicly for the preview→freeze check below |
+| immutable artifact | `stage6_handoff/handoff.py` | `handoff_<hash>_<ts>.json` under `data/acquisition/handoffs/`; a **price-independent** content-identity hash (which also folds in the `verified_only` mode and, since #618, `dispatch_type` — `_identity()` calls `common/benchmark.py::effective_dispatch_type(package)`), now **order-insensitive** — districts/records/reps are sorted before hashing, so the same selection made in a different order hashes identically (issue #52). `write()` refuses to overwrite. `package_identity()` exposes the hash publicly for the preview→freeze check below. Folding `dispatch_type` into the same identity function that already backs the #37 preview→freeze staleness check means a type flip between preview and freeze 409s automatically — no new machinery needed (§0's "free win") |
+| dispatch-type guard | `process_governance/stage6_dispatch.py::benchmark_reps_in_package` / `assert_dispatch_type_allowed` | epic #617/#618 (landed, `bcb4e26`): `DispatchDraft.dispatch_type` (`stage6_handoff/draft_models.py`) and `Handoff.dispatch_type` (`stage6_handoff/models.py`) are real `NOT NULL DEFAULT 'production'` columns, declared identically in ORM + DDL (the `_PRECIOUS_ALTERS` invariant). **REFUSE, never coerce** (a design correction from an earlier draft that would have force-flipped the whole dispatch's type off a single benchmark-provenance rep — a district could then never again compose a production dispatch, breaking mobility): `to_view` reports `benchmark_reps` on the draft so the console can render a warning naming the offending `rec_key`s (mirrors `missing_from_release`) WITHOUT blocking the draft from being viewed/edited; `assert_dispatch_type_allowed`, called at freeze, REFUSES while `dispatch_type='production'` and any selected rep carries benchmark provenance, naming the offending reps — the human either deselects them or flips the whole draft to `dispatch_type='benchmark'` (`POST /api/dispatch/{draft_id}/edit` op `set_dispatch_type`). Confirmed working live 2026-07-28 against `draft_00004` (correctly reported 9 benchmark-provenance reps blocking freeze, by `rec_key`). **Widened to cover ALL freeze paths (#644, closed):** the guard was originally called at only the normal gate@6 freeze site; the two gate@7 back-edges (`stage7_execute.py::_bundle_alternate`, `::_dispatch_recover_band`) called `HND.freeze(...)` directly and could have minted a production dispatch containing injected `gt://` reps. Fixed via a `_refuse_benchmark_reps` adapter at both sites (`stage7_execute.py`), and a fitness test (`tests/test_benchmark_predicate.py::test_every_freeze_call_site_is_preceded_by_the_provenance_guard`) that walks the AST of every function containing an `HND.freeze` call and asserts the guard precedes it — the durable fix targets the *class* of bug (a missing call site), not just the two found instances. **gt:// reps are BADGED, never filtered from view** (#662 decision 4, confirmed settled 2026-07-28) — auditability requires the reviewer to see what exists; only the DEFAULT SELECTION for a production dispatch should exclude them, never their visibility, and that default-selection exclusion is NOT YET BUILT — see #679 below |
 | dispatch record | `stage6_handoff/models.py` (precious `handoff` table) + `stage6_dispatch.record_dispatch` | the index row + a per-district `dispatched` gate@6 `state_event`, recorded **atomically on one session** (current_state is a view); the file is written **last** so a DB failure rolls back cleanly. An empty effective selection now **refuses** rather than freezing a 0-district handoff (issue #53). **Calibration hook (REQ-121/#210, built 2026-07-10):** the same session also writes a `calibration_event` row per district — the proxy is `n_send` (records that actually dispatched a rep, not merely decision-labeled `send` with none — a #218 review fix), the human decision is accept-only by construction (a district not selected leaves no row). Weak by design (auto is near-tautological here — see `PIPELINE_GOVERNANCE_AND_STATE.md` §11b) but logged for a forward-accruing corpus |
 | request assembly (the seam) | `stage6_handoff/prompts.py` + `requests.py` | the ported extraction prompt (reads TIMES only, REQ-054) + a vision variant; `plan_requests` (the first-pass voter calls; judge deferred to Stage 7) + `build_request` (materialize) — the **package** stops here; it never issues the POST. `pages` now flows through to the plan (issue #38) |
 | gate@6 console | `process_governance/server.py` (`/api/dispatch*`, `/api/handoffs/{handoff_id}`, plus the retained `/api/handoff/{candidates,councils,preview,dispatch,inspect}` escape hatch) + `process_governance/stage6_draft_store.py` + `static/stage6.js` | **Superseded by the 2026-07-13 redesign — see §0b for the current architecture** (a persisted, reopenable **draft dispatch**: unified left-pane list of drafts + frozen dispatches, an always-populated editable/read-only center pane, server-persisted district selection + council overrides + verified-only mode, a receipt-derived `origin` badge). This row is kept only as history: the original build (2026-06-30 merge) shipped an ephemeral client-side selection — pick send-eligible districts (`n_send`/`n_verified`/`n_hold`) → **Preview** → **Approve & freeze**, with district removal as *client-side-only* preview editing (no server endpoint) and a flat recent-dispatches list. The **preview→freeze staleness check (issue #37)** and the **already-dispatched indicator (#171)** both survive unchanged in the new architecture (§0b) — just relocated onto the persisted draft. `serve_file`/`inspect` still resolve `source=="harvest_slice"` reps via `resolve_harvest_slice()` (new-location-first, legacy fallback). **Run-extraction control (#152):** now lives on the frozen-handoff detail pane (§0b) — see the dedicated row below |
@@ -185,6 +192,13 @@ double-quote-escape incident) exists to prevent.
 `POST /api/dispatch/{draft_id}/abandon`, `GET /api/handoffs/{handoff_id}` (new — a frozen dispatch's FULL
 district/rep package by id; the old `/api/handoffs` only ever returned list-level summary fields).
 
+**`dispatch_type` is chosen post-hoc, not declared at creation (issue #678, open, epic #96, minor).**
+`POST /api/dispatch/create` takes only `actor` and always defaults the new draft to `dispatch_type='production'`;
+the type is instead flipped later via the `set_dispatch_type` edit op, unlike Stage 1's batch-type
+SELECTOR shown at creation time. The toggle itself is safe — `dispatch_type` is folded into
+`package_identity()` (§0), so a preview→freeze type flip still 409s rather than silently substituting —
+so this is a presentation/declaration-order gap, not a correctness bug.
+
 **`/api/handoff/preview` and `/api/handoff/dispatch` are KEPT, not retired** — `test_stage6_handoff_api.py`
 exercises both directly, and they remain a documented "dispatch without a draft" escape hatch, consistent
 with the 7→6 bridge's own precedent of freezing directly.
@@ -246,6 +260,31 @@ URL the first dispatch sends; every other send holds with `hub-priority:first-di
 request-more-evidence loop pull the held reps back via 7→6 if the hub under-covers (at most one cheap retry
 round vs. every redundant per-school send saved on round 1). The REQ's "or A-scoring" arm is structurally
 ready but inactive (no detector emits a hub category); REQ-116 → `tested`, AC authored with the build.
+
+**CRITICAL OPEN BUG (issue #679, filed 2026-07-28, epic #617) — the selection logic upstream of the
+`dispatch_type` freeze guard is provenance-blind, and it is currently BLOCKING the #620 campaign's first
+production dispatch.** `release.best_send` and `_hub_priority_holds` above both pick a "best" rep with no
+knowledge that `dispatch_type` exists — `_hub_priority_holds`'s own ranking is
+`max(hubs, key=lambda r: (year, n_times))`, with no provenance term at all — so either function can select
+a benchmark-provenance (`gt://`) rep as "best," and the freeze guard then (correctly, per its own design)
+refuses the very selection the logic just made. This does **not** contradict the badge-never-filter
+decision above (#662 decision 4) — that governs DISPLAY; this is about DEFAULT SELECTION, a different axis.
+
+Live measured instance (`draft_00004`, Worcester `2513230` + Bangor `2302820`): Bangor holds exactly two
+`district_hub_by_band`-labeled records — one `gt://` (injected, `content_school_year=None`, `n_times=26`)
+and one `discovered` (fresh, ALSO `content_school_year=None`, ALSO `n_times=26`) — an exact tie on both of
+`_hub_priority_holds`'s ranking terms. `max()` breaks the tie by Python iteration order, and the injected
+copy happened to win, HOLDING the fresh, equivalent capture of the very same page. Consequence: Bangor's
+send set narrows to ONE rep, and it is the `gt://` one — the district cannot compose a production dispatch
+at all right now, since deselecting its only send leaves zero reps. This is worse than Worcester's version
+of the same underlying defect (8 of 34 `gt://` reps entered the send set via plain target-labeling, no
+hub-priority involved, no fresh evidence lost — just deselect-busywork).
+
+**Not yet built.** The fix is to exclude benchmark-provenance reps from the default send/selection set
+while `dispatch_type='production'`, applied BEFORE hub-priority/sibling-variant narrowing runs (so a fresh
+hub is never displaced by a benchmark one it happens to tie with) — while keeping `gt://` reps visible,
+badged, and explicitly re-selectable (selecting one flips the draft to a benchmark dispatch, per the
+`set_dispatch_type` mechanism above).
 
 **Stage-5 v2.1 ripple check (2026-07-01).** The Stage-5 labeling rework (target-shape taxonomy; non-targets →
 confounder facets; REQ-114) flows into Stage 6 **cleanly** — `release.decide` and the gate@6 candidates SQL
@@ -389,7 +428,10 @@ enable the Lab.
 > schema = BUILT. **§3E** gate@6 = *manual* BUILT (console); *auto* DEFERRED. **§3G** recency preference
 > = BUILT (PR #529, 2026-07-16 — see §G). **§3F** request-more-evidence: detection + routing + execution
 > are all BUILT (REQ-117/118, Stage 7 — see `STAGE7_EXTRACT_DESIGN` §3F); the OpenRouter
-> session-persistence question below remains open research, not a blocker.
+> session-persistence question below remains open research, not a blocker. **`dispatch_type` (§B, the
+> hub-priority paragraph) is BUILT and its freeze guard REFUSES correctly (#617/#618, #644 widened its
+> coverage to all freeze paths) — but the SELECTION logic feeding that guard is provenance-blind (#679,
+> OPEN, actively blocking the #620 campaign as of 2026-07-28).**
 
 ### A. What *is* a council configuration? (the heart of Stage 6)
 A first-class, registered object (stories 62–66: view/create/assign/override; default assignment). The
@@ -768,3 +810,37 @@ to two different decimal precisions between `stage6.js` and `stage7.js`. The fiv
 TOCTOU shape on draft creation, a docstring overclaiming crash-atomicity, and a silent name-lookup-miss
 fallback) were all investigated and confirmed real, then fixed. See §0b for the present-state description
 of every fix (the `_locked_draft`/`isCurrent`/`effSend`/`missing_from_release` mechanisms).
+
+**2026-07-25 — `dispatch_type` landed as a rep-grain (not district-grain) attribute (epic #617/#618,
+commit `bcb4e26`).** The initial plan read "if any selected DISTRICT is benchmark-provenance, force
+benchmark" — the exact district-identity coupling the epic exists to retire, relocated one stage
+upstream; it would have permanently walled every `batch_00000` district out of ever composing a
+production dispatch again, regardless of how fresh its representations became. Corrected to
+representation grain, and to **REFUSE, never coerce**: a dispatch carries one type, so auto-forcing it
+off a single benchmark rep would silently wall every OTHER district in that dispatch off from a
+Stage-9 write. Landed shape: preview reports (`benchmark_reps` on the draft view, mirroring
+`missing_from_release`), freeze refuses (naming the offending reps), an explicit
+`dispatch_type='benchmark'` always passes and may knowingly mix provenance (mixing is the point of an
+A/B). Folding `dispatch_type` into `handoff._identity` gave the #37 preview→freeze staleness check
+coverage of a type flip for free — no new machinery. Full derivation: findings report §10.3.
+
+**2026-07-25 — the freeze guard had two bypass paths, both fixed same day (#644).**
+`assert_dispatch_type_allowed` was called at exactly one site (the normal gate@6 freeze); the two
+gate@7 back-edges (`stage7_execute.py::_bundle_alternate`, `::_dispatch_recover_band`) called
+`HND.freeze(...)` directly and could have minted a production dispatch containing injected `gt://`
+reps — it had never fired only because #134's since-retired membership wall kept benchmark districts
+away from both paths, a second instance of a district-identity accident propping up a provenance rule.
+Fixed via a `_refuse_benchmark_reps` adapter at both sites, plus a fitness test that walks the AST of
+every function containing an `HND.freeze` call and asserts the guard precedes it — targeting the
+*class* of bug (a missing call site), not just the two found. Full derivation: findings report §10.16.
+
+**2026-07-28 — gt:// visibility vs. selection separated as two different axes (#662 decision 4,
+confirmed settled), and the selection axis found still broken (#679, open, blocking).** Benchmark-
+provenance reps are deliberately BADGED, never filtered from view, at gate@5/gate@6 — auditability
+requires the reviewer to see what exists. But the DEFAULT SELECTION logic (`release.best_send`,
+`stage6_dispatch._hub_priority_holds`) has no knowledge that `dispatch_type` exists, so it can (and, on
+a live measured draft, did) pick a benchmark-provenance rep as "best" — which the freeze guard then
+correctly refuses, leaving the district unable to compose a production dispatch at all. See §B (the
+paragraph immediately after the hub-priority/REQ-116 description) for the live Bangor/Worcester
+measurement and the not-yet-built fix. Full derivation: task context §10.3/§10.16/§12.3/§13 of the
+2026-07-25 findings report (§10.3/§10.16 appended 2026-07-25, §12.3/§13 appended through 2026-07-28).

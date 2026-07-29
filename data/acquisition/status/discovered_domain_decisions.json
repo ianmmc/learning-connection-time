@@ -198,5 +198,57 @@
     },
     "actor": "ian",
     "created_at": "2026-07-26T08:43:07Z"
+  },
+  {
+    "id": 165,
+    "district_id": "3631800",
+    "domain": "wyandanch.k12.ny.us",
+    "decision": "reject",
+    "reason": "That's already the NCES domain of record.",
+    "derived_in_batch": "batch_00034",
+    "tally_json": {
+      "wyandanch.k12.ny.us": {
+        "n": 10,
+        "n_schools": 4
+      },
+      "donorschoose.org": {
+        "n": 3,
+        "n_schools": 3
+      },
+      "townofbabylonny.gov": {
+        "n": 2,
+        "n_schools": 2
+      },
+      "newyorkschools.us": {
+        "n": 2,
+        "n_schools": 2
+      },
+      "nces.ed.gov": {
+        "n": 2,
+        "n_schools": 2
+      },
+      "sites.google.com": {
+        "n": 2,
+        "n_schools": 2
+      },
+      "mlkingpatriots.org": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "homes.com": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "kinges.seattleschools.org": {
+        "n": 1,
+        "n_schools": 1
+      },
+      "go.boarddocs.com": {
+        "n": 1,
+        "n_schools": 1
+      }
+    },
+    "actor": "ian",
+    "created_at": "2026-07-27T20:26:58Z"
   }
 ]

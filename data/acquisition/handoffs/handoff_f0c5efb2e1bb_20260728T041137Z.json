@@ -1,0 +1,185 @@
+{
+  "handoff_hash": "f0c5efb2e1bb",
+  "created_at": "2026-07-28T04:11:37Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "dispatch_type": "production",
+  "fingerprints": {
+    "3500127": {
+      "config": "f77ddb950061",
+      "labels": "056cf5c98758",
+      "data": "59659919906c"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v4"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.00408,
+    "n_reps": 4,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "3500127",
+      "name": "TAOS INTEGRATED SCHOOL OF ARTS",
+      "state": "NM",
+      "topology": "single_school",
+      "records": [
+        {
+          "rec_key": "3500127:b9bc77392f",
+          "url": "https://www.tisataos.com/apps/bell_schedules/index.jsp?id=10562",
+          "decision": "hold",
+          "reason": "sibling-variant:same-app-page-sends:3500127:f71523b1ee",
+          "reps": []
+        },
+        {
+          "rec_key": "3500127:f71523b1ee",
+          "url": "https://www.tisataos.com/apps/bell_schedules/printerfriendly.jsp",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 12,
+              "n_chars": 1650
+            }
+          ]
+        },
+        {
+          "rec_key": "3500127:7967b71055",
+          "url": "https://www.tisataos.com/apps/bell_schedules/index.jsp?id=10563",
+          "decision": "hold",
+          "reason": "sibling-variant:same-app-page-sends:3500127:1b2b743ef4",
+          "reps": []
+        },
+        {
+          "rec_key": "3500127:1b2b743ef4",
+          "url": "https://www.tisataos.com/apps/bell_schedules/",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 24,
+              "n_chars": 1787
+            }
+          ]
+        },
+        {
+          "rec_key": "3500127:e708cb4cbb",
+          "url": "https://www.tisataos.com/apps/bell_schedules/index.jsp?id=10561",
+          "decision": "hold",
+          "reason": "sibling-variant:same-app-page-sends:3500127:f71523b1ee",
+          "reps": []
+        },
+        {
+          "rec_key": "3500127:47750e00fb",
+          "url": "https://www.tisataos.com/ourpages/auto/2024/1/13/39086098/Parent-Student-Handbook-2014-15.pdf.crdownload?rnd=1705202925593",
+          "decision": "send",
+          "reason": "target-label:school_start_end_prose",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 20,
+              "n_chars": 30871
+            }
+          ]
+        },
+        {
+          "rec_key": "3500127:c40c9a1bcd",
+          "url": "https://www.tisataos.com/ourpages/auto/2024/1/13/39086098/Parent-StudentHandbook-2013-141.pdf.crdownload?rnd=1705202930117",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                6
+              ],
+              "n_times": 14,
+              "n_chars": 2705
+            }
+          ]
+        },
+        {
+          "rec_key": "3500127:ae7eeebd7d",
+          "url": "https://www.tisataos.com/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3500127:34ba2d77b8",
+          "url": "https://www.tisataos.com/apps/events/index.jsp?id=0",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3500127:1e7ac73281",
+          "url": "https://www.tisataos.com/apps/pages/index.jsp?uREC_ID=571201&type=d&termREC_ID=&pREC_ID=1101962",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3500127:574e5844fa",
+          "url": "https://www.tisataos.com/apps/events/?id=0&v=1&m=4&y=2026",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 4,
+      "est_usd": 0.00408
+    }
+  ]
+}

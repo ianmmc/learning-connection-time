@@ -1314,6 +1314,98 @@ now unblocked) and the deferred structural backlog (#622-#625, #640, #645, #646)
 
 ---
 
+### 2026-07-27/28 — The #620 campaign runs, and running it finds more than reading ever did
+
+With #662 merged, the standing question was whether the retired wall would actually let a re-run
+district's evidence reach `lct_db` — or whether it would clear the wall and starve somewhere else
+nobody had looked. Driving the campaign rather than reasoning about it answered that, and along the
+way found six things no amount of code review had surfaced.
+
+**The merged fix had never been applied.** #662's reclassification migration
+(`reclassify_benchmark_extractions.py`) was written, tested, and merged on the 26th — and the live
+governance DB still held its pre-fix state on the 27th: 1,276 production-labelled facts carrying
+`benchmark_gt` provenance, zero extractions at `run_kind='benchmark'`. Running `--apply` was itself
+the finding — the epic's own headline acceptance test had been passing against a seeded fixture the
+whole time, never against the system it was meant to describe. **Generalizes as its own standing
+lesson, sibling to §10.20's:** for a change that mutates precious/live state, merged is a checkpoint,
+not a finish line — CI cannot close that gap, because CI has no live DB to be un-migrated.
+
+**Three redo batches (`batch_00030/31/32`, 25 of batch_00000's 27 districts — 2 are domain-less and
+unreachable by any composer, filed as #646) then ran Stage 2 through Stage 4 cleanly and answered the
+epic's actual question: 2,124 documents, 97.6% usable, and 80.9% of time-bearing evidence fresh
+(production) rather than injected — not one of the 25 districts came back benchmark-only.** The
+premise #617 was built on is now measured, not assumed.
+
+**Driving the campaign also surfaced a failure class the epic's plan never modelled: the console
+itself.** Three defects (#669, #670, #671), all sharing one root cause — a Stage 2/3/4 status view
+computing "is this district done" from stale disk-artifact existence with no per-run receipt to
+disambiguate — meant a redo district could read `done`, showing the *previous* run's numbers, for the
+entire duration of the current one (measured up to 38 minutes), and a genuine capture timeout
+(Orange County FL, `1201440`) could render as a clean success. On one batch the display asserted the
+literal opposite of the run's actual outcome while that run was still in progress. Under the ramp-up
+posture the operator's reading *is* a pipeline stage, so these are correctness defects, not
+cosmetics — and they promote #622/#623 (the disk→gov_db done-marker inversion, previously deferred as
+"insurance on a mechanism nobody had run") from insurance to interest.
+
+**Gate@5 review then surfaced a structural hole in the release path, independent of the console: a
+human target label unconditionally bypasses the #241 validity floor (#674).** Composed with the
+standing labelling doctrine — a target label carries *shape*, never fitness-for-use, so a reviewer who
+finds a correctly-shaped but pre-2017-18 document is *required* to label it — the two rules together
+mean correctly following the labelling doctrine guarantees below-floor material reaches paid
+extraction, with no force-hold override to stop it. Live instance: TAOS (`3500127`) froze a production
+dispatch with two below-floor handbooks, both correctly labelled per doctrine. Filed under epic #92,
+whose scope was reframed the same day from "build Stage 9" to its actual purpose — keeping facts that
+shouldn't reach `lct_db` from being sent down the pipeline in the first place — which made #674 that
+epic's most consequential open item, ahead of the console status view it was originally scoped around.
+
+**Composing the campaign's first production dispatch then found the epic's own guard undefended one
+step upstream (#679).** `release.best_send` and the REQ-116 hub-priority ranking select a "best"
+representation with no knowledge that `dispatch_type` exists, so a benchmark-provenance rep can win a
+selection contest the freeze guard then (correctly) refuses. On Bangor (`2302820`) this was not mere
+deselect-busywork: its one fresh district-hub capture tied exactly with its injected counterpart on
+both ranking terms, `max()` broke the tie by iteration order, and the injected copy won — holding the
+fresh one and leaving the district with zero sends once the guard's "deselect the offending reps"
+instruction is followed. This is currently the blocking item on the campaign: reconciled explicitly
+with the settled badge-never-filter decision (gt:// reps stay visible; only the *default selection*
+needs the provenance check), and sequenced as the immediate next fix.
+
+**A related but separate finding on the discovery side (#672, epic #128): the 5→1 zero-yield ladder's
+widened rung is not monotonically better than the rung before it.** On Wyandanch UFSD (NY, `3631800`),
+widening the query vocabulary tripled SERP result volume and *diluted* the district's own domain's
+vote share below the geo-derivation threshold — a share-based test, defeated by a larger denominator —
+discarding 109 URLs including on-domain hits the standard rung had already used successfully. The
+district's ladder then terminated at `manual_flag`, which may be an artifact of the escalation
+mechanism rather than evidence the district publishes nothing.
+
+**Housekeeping fell out of the same two days of close reading:** three `sev:critical` issues
+(#260-#262, "hardcoded actor name allows impersonation") were re-triaged to `sev:minor` on the
+evidence that the console binds loopback-only with no auth system to impersonate — a generic
+crossfam security lens over-applied to a single-operator local tool, left open with an explicit
+reactivation condition rather than closed outright. A 2026-07-13 crossfam batch (#332-#335) was
+re-verified against code that had moved since filing: two of the four line references had drifted to
+different files/lines entirely, one (#333) turned out to describe a site that was *already fixed*
+while the same defect survived at a different call site (`stage7_run.py:887`, still open — an
+explicitly-empty `sent_files` list falls back to a legacy singular field, which can resurrect a stale
+filename into request history and cause the 7→6 composer to skip a representation it should retry).
+
+Six new issues (#669-#679 minus gaps) plus three console/UX items (#675-#678) were filed, each carrying
+its own "how this was determined" section per REQ-165 — the derivation, not just the claim, since the
+epic's standing risk (three layers shipping green against measurements that could not fail) is only
+avoided by making verification reconstructable rather than assumed. All were attached to their
+governing epics via GitHub's native sub-issue relation (#96 console, #92 Stage-9/release-correctness,
+#128 deferred discovery quality, #617 the guard itself) — a housekeeping pass the epic's own tracker
+had been missing, since cross-reference comments alone don't produce the parent/child relation the
+epic-scoped issue lists render from.
+
+Authority: `docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md`
+§13 (appended 2026-07-28, the current plan — supersedes §11); issues #669-#679 (open) and their
+cross-references; #260-#262, #332-#335 (re-triaged/re-verified, comments carry the evidence). The
+per-stage design notes, `PIPELINE_GOVERNANCE_AND_STATE.md`, and `docs/ACQUISITION_PIPELINE.md` were
+synced to this state the same day — see each file's own dated notes for detail. Epic #617 stays open,
+now blocked on #679; epic #92 absorbed #673/#674 and is no longer "nearly closed."
+
+---
+
 ## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)
 
 ### Strategy: shift from "automate everything" to "AI-assisted human efficiency"

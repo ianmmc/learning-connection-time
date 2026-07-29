@@ -1313,6 +1313,12 @@ property stays vacuous.
 
 ## 11. Revised plan — completing #617, then #92 (2026-07-26)
 
+> **SUPERSEDED as the plan 2026-07-28 by §13.** Kept verbatim as the record of what was believed
+> before Phase C actually ran. **§11.2's central claim — that #620 is the epic's only validation —
+> was correct and is reaffirmed by §13.1, not overturned;** what §13 changes is the ordering of the
+> work that follows it (#622/#623 promoted out of Phase E) and one whole class of defect §11 did not
+> model (the instrument layer, §13.3). Read §13 for the live plan.
+
 §7's plan is superseded. It was written before Ian's re-anchoring (§10.7), before the mixed handoff
 (§10.8), before the review backlog (§10.19), and before #662 (§10.20). This section replaces it.
 
@@ -1600,3 +1606,173 @@ depends on that guard being perfect, and a future injection mechanism (a new GT 
 constructed and tested directly rather than asserted as a future possibility.
 
 **Phase C is unblocked.** Stage 3 on `batch_00030/31/32` can start once PR #663 merges.
+
+---
+
+## 13. Revised plan — what running the campaign taught (2026-07-28)
+
+§11 is superseded as the *plan*; it remains the record of what was believed before Phase C actually
+ran. Appended, not rewritten, per this document's standing convention. **§11's central bet was
+correct and is reaffirmed, not overturned** — what changed is the ordering of the work that follows
+it, and one whole class of defect §11 did not model.
+
+### 13.1 §11.2's bet paid out three times in one day
+
+§11.2 argued that #620 is not the epic's final chore but its **only validation** — *"every guard #617
+built is unexercised until a district with mixed provenance actually moves."* Driving it on
+2026-07-27/28 surfaced, in a single day, three things no amount of code reading had found:
+
+1. **The #662 migration had never been applied to the live governance DB.** Written, reviewed,
+   tested, merged (`ff8fa37`, `018452a`) — and inert. Measured before running it: **1,276**
+   production-labelled facts still carried `benchmark_gt` provenance and **0** extractions carried
+   `run_kind='benchmark'`. After `--apply`: 0 and 30 respectively, 27 receipts written. The epic's
+   own headline acceptance test (`test_benchmark_rerun_acceptance.py`) passed for the first time
+   **against real data** rather than a seeded fixture.
+2. **Three console defects** (#669, #670, #671), none findable without a redo batch actually running.
+3. **The temporal hole** (#673, #674), invisible until a human actually labelled at gate@5.
+
+*Generalizes:* §10.20's lesson ("the future case has to be constructed, not reasoned about") has a
+sibling — **a merged fix is not a landed fix.** A migration that mutates live precious state is not
+done when it is reviewed; it is done when it has run and been verified against the DB. Nothing in
+CI could have caught this, because CI has no live DB to be un-migrated.
+
+### 13.2 The epic's premise is now empirically confirmed
+
+The open question behind #617 was never only "can the wall be retired safely" but "**will these
+districts actually be able to write once it is**" — or will they clear the wall and then starve at
+gate@6, refused for the injected reps that were their only evidence?
+
+Measured across all 25 re-run districts after Stage 4 (2,124 documents, 2,073 usable = 97.6%):
+
+| | |
+|---|---|
+| fresh (production-provenance) time strings | **34,491** |
+| `gt://` (benchmark-provenance) time strings | 8,168 |
+| **fresh share** | **80.9%** |
+| districts with **zero** fresh time evidence | **0 of 25** |
+
+Not one district is `gt://`-only. The honest re-runs produced their own evidence and it dominates the
+injected material roughly 4:1. **This is the result the epic was built to make possible**, and it is
+recorded here because it is the first quantitative answer to the question §1 opened with.
+
+Caveat carried: `n_times` counts time-*shaped strings*, not verified schedules. Only council
+extraction settles what is a real start/end pair.
+
+### 13.3 The failure class §11 did not model: the instrument layer
+
+Every phase in §11 concerned pipeline correctness. But three of the six issues the campaign produced
+(#669, #670, #671) are the **console misreporting to the operator**, and under the ramp-up posture the
+operator *is* a pipeline stage — so these are correctness defects, not cosmetics.
+
+All three trace to one premise: **disk-artifact-existence as the stage-done marker, plus the absence
+of any per-run receipt.** That is precisely the premise #622 inverts and #623 supplies the Node half
+for.
+
+The sharpest instance, measured: Stages 2/3/4 each compute done-ness as
+`stale-disk-artifact ∧ dispatched_by_batch`, and the run stamps `dispatched` for the **entire batch up
+front** (all 9 districts of `batch_00030` at `07:41:59Z`). So at t=0 every district holding a prior
+artifact reads `done`, with the *previous* run's metrics beside it. Measured false-done windows:
+45 s shortest, ~22 min median, **38 min 15 s longest**. Caught live on `batch_00035`, where a single
+API response asserted `job.state = "running"` and `status: "done"` simultaneously — and the displayed
+`found_all` was the **inverse** of that run's actual `manual_flag_all` outcome.
+
+**Consequence for the plan: #622/#623 are promoted out of Phase E.** §11.7 deferred them as
+*"insurance on a mechanism nobody has yet run end-to-end."* The mechanism has now been run, and the
+argument inverts: this is no longer insurance, it is interest. Every further district driven through
+the current console costs operator trust and can mask a real failure (#670 masked a genuine capture
+timeout as a clean `done`).
+
+### 13.4 A new hard gate: the temporal control (#674/#673)
+
+`release.py::decide()` treats a human target label as an **unconditional send** — the #241 validity
+floor is evaluated only on the unlabeled tier-A path. Composed with the standing labeling doctrine
+(the target label carries **shape**, never fitness-for-use, because labelling a valid shape as
+non-target corrupts training), the two rules together mean **following the labelling rule correctly
+guarantees out-of-window material reaches paid extraction.** The human override is one-directional:
+force-send exists, force-hold does not.
+
+Instantiated immediately: `handoff_f0c5efb2e1bb` (TAOS `3500127`) froze with 4 send-reps, **2 of them
+2013-14 / 2014-15 handbooks**, both below the pre-2017-18 floor, both correctly target-labelled. One
+escaped via the label override; the other because `Handbook-2013-141` does not parse (#642).
+
+**But it does not gate the campaign**, and that was settled by measurement rather than argument.
+Applying `SY.content_school_year` to every fresh (non-`gt://`) capture across the 25 districts:
+**86 carry a known year; 2 are below the floor; 1 district of 25 is affected** (Cleveland Metro
+`3904378`). So the control is required, but building it first would delay the epic's only validation
+to protect against a risk confined to 4% of the batch. Cleveland Metro is deferred to after #674.
+
+Constraint carried forward from #241's own measurement: **no automatic recency veto.** A stale veto at
+the bell-year floor was measured to remove 1 false send while vetoing **17 real targets** and *raising*
+the false-send rate — staleness and target-absence are near-independent.
+
+### 13.5 Scope correction: #92 is not "nearly closed"
+
+§11.8 described #92 as one open sub-issue (#614) plus two conveniences (#615, #628). It now also owns
+**#673** (the gate@5 vintage surface) and **#674** (the release-path defect), and by the epic's actual
+purpose — *facts that should not reach `lct_db` should not be sent down the pipeline in the first
+place* — **#674 is its most important open item**, well ahead of the status view.
+
+### 13.6 The revised sequence
+
+| # | work | why here |
+|---|---|---|
+| 0 | **#674 + #673** — temporal control + vintage surface | hard gate on gate@5→6 *after* the first proofs; bounded (`decide()` already receives `facets`) |
+| 1a | **one small district end-to-end** (Bangor `2302820`) | fastest possible first write to `lct_db` |
+| 1b | **Worcester `2513230`, San Diego `0634320`** | genuine mixed provenance (8 and 7 `gt://` reps against 64/105 fresh) — the case the rep-grain guard exists for |
+| 2 | **#623 → #622** | promoted from Phase E; now justified by three measured defects rather than principle |
+| 3 | **the remaining 22** | through a console that tells the truth |
+| 4 | #640 → #645 → #624 → **#625 last** | unchanged from §11.7 |
+| 5 | #92's #614/#615/#628, then **#646** for 27/27 | #614 is worth more once districts are actually moving |
+
+The one structural change from §11 is **step 2 moving ahead of step 3**, and it preserves §11's core
+discipline: prove a district *before* the structural work, not after. De-prioritized: **#672** (the
+5→1 widened-rung dilution) — real, but it bites only geo escalations, and the ladder is exhausted for
+the one district that hit it.
+
+### 13.7 What the first three districts will exercise
+
+Measured 2026-07-28, before any gate@5 work:
+
+| district | captures | `gt://` reps | existing labels | orphaned by re-run | **fresh records carrying a label** |
+|---|---|---|---|---|---|
+| `2302820` Bangor | 17 | 1 | 17 | **0** | **0** |
+| `2513230` Worcester | 117 | 8 | 117 | **0** | **0** |
+| `0634320` San Diego | 162 | 7 | 154 (+8 new) | **0** | **0** |
+
+Two findings fall out. First, **label inheritance across the benchmark→production boundary is clean**
+— zero orphaned labels, because `rec_key` is URL-derived and survives a re-run. Second, **every
+inherited *target* label sits on a `gt://` rep** — Bangor 1/1, Worcester 8/8, San Diego 7/7 — so the
+inherited labels are exactly the set gate@6's rep-grain guard will refuse in a production dispatch.
+**The fresh corpus must therefore carry the dispatch entirely**, via tier-A auto-send plus human
+labels on the B/C hold queue.
+
+That prompted the label-inheritance question resolved in **#675**: inheritance is correct (REQ-168 —
+re-asking a human about the same bytes is the unnecessary touchpoint that commandment exists to
+eliminate) and provenance-safe (provenance reads `capture.source`, never the `label` table), but it is
+**not observable** — the `label` table records no run, no capture, and no fingerprint, so REQ-165's
+*"from what evidence"* clause is unmet. `record.content_hash` (populated 3,558/3,559) is the existing
+column that closes it.
+
+### 13.8 Backlog hygiene
+
+**#260/#261/#262 re-triaged `sev:critical` → `sev:minor`** (Ian-authorised, evidence-based). All three
+are "hardcoded actor name allows impersonation" in `stage7.js`, filed by an automated cross-family
+review applying a generic web-security lens. The console binds **loopback only**
+(`server.py:3403` — `uvicorn.run(app, host="127.0.0.1", port=8005)`), states single-user intent in its
+own module docstring, and has **no authentication machinery at all** — so there is no principal to
+impersonate and `actor` is an attribution field, never an authorization credential. The residual
+concern is **auditability, not security**, and is latent: it becomes a real REQ-165 defect if the
+console ever gains a second operator, binds off-loopback, or lets `actor` influence an authorization
+decision. Left open at `sev:minor` with that reactivation condition recorded.
+
+Conversely **#333 is a real correctness bug sitting quietly at `sev:major`** — the same
+`p.get("sent_files") or ...` falsy-empty-list fallback as an already-fixed instance, still live in
+`stage7_execute.py:583`. Worth folding into whatever next touches Stage 7.
+
+### 13.9 The standing risk, restated
+
+§11.9 named it: *three layers of this epic shipped green against measurements that could not fail.*
+This round adds a fourth variant — **a fix that was merged but never run.** The mitigation is
+unchanged in spirit and sharper in practice: an acceptance property must be executed against the
+system it governs, in the state it will actually be in. Not asserted in a plan, not proven on a
+seeded fixture, and — the new clause — **not assumed to have taken effect because a PR merged.**
