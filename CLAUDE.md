@@ -192,8 +192,9 @@ the #620 campaign"). #128 had become the default home for anything unowned (beca
 All 47 unlabeled open issues were read in that pass — no hidden criticals; they are mostly unbuilt
 console/Council-Lab features, which is why severity was never applied.
 
-**Next (RESUME HERE — 2026-07-29): #691 BLOCKS further gate@6 freezes. Fix it before dispatching
-any more districts.**
+**Next (RESUME HERE — 2026-07-29): SIX issues to address before resuming #620, in this order.
+#691 BLOCKS further gate@6 freezes — fix it before dispatching any more districts; #696 must be
+settled before #694.**
 1. **#691 (`sev:critical`, epic #695) — REQ-116 hub-priority narrows with NO yield check.** Measured
    corpus-wide: **23 of 42 hub-labeled districts are narrowed to exactly 1 send.** The winner is often
    not the best evidence — Bentonville sends an 8-time page while holding a 52-time one; **Fairbanks was
@@ -211,9 +212,19 @@ any more districts.**
 3. **#567 (promoted)** — `import_district_urls.py` still hardcodes the 2023-24 CCD, so 2,051/17,842
    districts have no `website_url` — **including both of #646's "domain-less" districts** (Lincoln
    `3172840`, Joint SD No.2 `1602100`). A cheap re-point + re-run may raise the campaign ceiling 25→27.
-4. **#694** (Stage-7 follow-up onto the Stage-1 school spine — Ian's diagnosis) → then **re-measure
+4. **#696 — SETTLE BEFORE #694.** Stage-1 selection places a school in exactly ONE band
+   (anti-dilution) while the #253 denominator counts every band it SERVES by grade span, and nothing
+   reconciles them: Fairbanks' middle denominator is 12 (4 `level_clean` + **8 `grade_span`** — PK-08 /
+   KG-08 / 07-12 schools sitting in the elementary or high pool), so **middle coverage is capped at
+   4/12 = 33% by construction** — the other 8 are never sought. NOT a denominator bug (#253's docstring
+   rejects the alternative as the "200%-coverage lie"); the gap is pool-vs-denominator. Must be settled
+   first because #694 targets follow-ups at *specific unfilled schools*: spine says 4, denominator says
+   12 → either chase 8 schools outside the pool (spending against #175/#176's measured no-spend guards)
+   or declare the band done at 4 and reproduce #692 under a new name. Cheap interim = surface
+   `n_total_level_only` beside `n_total` at gate@8 (both already in `sampling.denominator.by_source`).
+5. **#694** (Stage-7 follow-up onto the Stage-1 school spine — Ian's diagnosis) → then **re-measure
    #692** (its measured symptom; Essex/Cleveland are the acceptance cases).
-5. **#683** (the `30 minutes of class` false positive), then **#684** (staff-handbook confusable).
+6. **#683** (the `30 minutes of class` false positive), then **#684** (staff-handbook confusable).
 Then resume #620: send back Cleveland + Essex Westford, and **San Diego `0634320`** is next in the
 district sequence → remaining 21 → **#646** for 27/27. After #620: #623 → #622 → #640 → #645 → #624 →
 **#625 LAST**; then epic #92's #614/#615/#628 and the gate@8 wiring gaps **#682** (approve→write) +
