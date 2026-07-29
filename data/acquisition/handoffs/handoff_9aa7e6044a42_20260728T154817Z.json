@@ -1,0 +1,1259 @@
+{
+  "handoff_hash": "9aa7e6044a42",
+  "created_at": "2026-07-28T15:48:17Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "dispatch_type": "production",
+  "fingerprints": {
+    "2513230": {
+      "config": "f77ddb950061",
+      "labels": "ce2c03dfc3b3",
+      "data": "85faae7dfcbe"
+    },
+    "2302820": {
+      "config": "f77ddb950061",
+      "labels": "64ac45ca681f",
+      "data": "71a6e9084578"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v4"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.027540000000000002,
+    "n_reps": 27,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "2513230",
+      "name": "Worcester",
+      "state": "MA",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "2513230:809c4e8677",
+          "url": "https://www.worcesterschools.org/o/dafsms/page/welcome-to-sullivan-middle-school",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 34,
+              "n_chars": 2829
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:dc32188ca9",
+          "url": "gt://gt_curation_20260621T060008Z/2513230_Worcester/Welcome to Sullivan Middle School _ Dr. Arthur F. Sullivan Middle School.pdf",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:f14261e445",
+          "url": "https://www.worcesterschools.org/o/csmcbs/page/about-us",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 2,
+              "n_chars": 3891
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:2a02c9a6f9",
+          "url": "https://www.worcesterschools.org/o/bms/page/about-us",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 2,
+              "n_chars": 1800
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:b524048c03",
+          "url": "https://www.worcesterschools.org/o/qs/page/about-us",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 2,
+              "n_chars": 3201
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:10e4759113",
+          "url": "https://www.worcesterschools.org/o/wdlms/page/about-us",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 2,
+              "n_chars": 2355
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:32098146b0",
+          "url": "https://www.worcesterschools.org/o/bhs/",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 7,
+              "n_chars": 3337
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:938a059595",
+          "url": "https://www.worcesterschools.org/o/bscs/page/about-us",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 2,
+              "n_chars": 3360
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:fde6320875",
+          "url": "gt://gt_curation_20260621T060008Z/2513230_Worcester/About Us _ Burncoat High School.pdf",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:ed68441b1d",
+          "url": "gt://gt_curation_20260621T060008Z/2513230_Worcester/Home _ Elm Park Community School.pdf",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:6d32e3f608",
+          "url": "gt://gt_curation_20260621T060008Z/2513230_Worcester/Home _ May Street School.pdf",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:40be7167eb",
+          "url": "gt://gt_curation_20260621T060008Z/2513230_Worcester/About Us _ North High School.pdf",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:5c7d04005b",
+          "url": "gt://gt_curation_20260621T060008Z/2513230_Worcester/About Us _ Worcester Technical High School.pdf",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:df57290963",
+          "url": "gt://gt_curation_20260621T060008Z/2513230_Worcester/Home _ Grafton Street School.pdf",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:771254395f",
+          "url": "https://www.worcesterschools.org/o/midland/page/about-us",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 2,
+              "n_chars": 3073
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:0d7454e3ed",
+          "url": "gt://gt_curation_20260621T060008Z/2513230_Worcester/Belmont Street Community School _ Home.pdf",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:37cf47845d",
+          "url": "https://www.worcesterschools.org/page/enrollment",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:29beab4426",
+          "url": "https://www.worcesterschools.org/o/vhs/",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 4979
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:9364f89792",
+          "url": "https://www.worcesterschools.org/o/fgms",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 5126
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:03ea24fabd",
+          "url": "https://www.worcesterschools.org/o/dafsms",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 5123
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:4d812815d7",
+          "url": "https://www.worcesterschools.org/o/wems",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 5048
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:a158938615",
+          "url": "https://www.worcesterschools.org/o/cms",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 5028
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:cfd4675128",
+          "url": "https://www.worcesterschools.org/o/dmhs/",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 5063
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:b09c6454b1",
+          "url": "https://www.worcesterschools.org/o/bms",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 5095
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:7037de897b",
+          "url": "https://www.worcesterschools.org/o/qs",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 5000
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:8f50540431",
+          "url": "https://www.worcesterschools.org/o/shcs",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 5123
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:df4543e2e3",
+          "url": "https://www.worcesterschools.org/o/nhs/",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 5131
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:90694d0a92",
+          "url": "https://www.worcesterschools.org/o/up",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 5003
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:b4e22ccc8f",
+          "url": "https://www.worcesterschools.org/o/csmcbs",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 5060
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:a1c0976141",
+          "url": "https://www.worcesterschools.org/o/ca/",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 5110
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:4f9d333b90",
+          "url": "https://www.worcesterschools.org/o/jhms",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 4994
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:67d2a2d9c5",
+          "url": "https://www.worcesterschools.org/o/bscs",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 5020
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:cefb69d53f",
+          "url": "https://www.worcesterschools.org/o/wths",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 5303
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:fa04278918",
+          "url": "https://www.worcesterschools.org/o/midland",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 4978
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:647617cecc",
+          "url": "https://www.worcesterschools.org/o/rss",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 4970
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:3d3e224939",
+          "url": "https://www.worcesterschools.org/o/cecs/live-feed?page_no=7",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:eee699975b",
+          "url": "https://www.worcesterschools.org/o/csmcbs/live-feed?page_no=7",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:323a4addca",
+          "url": "https://www.worcesterschools.org/o/csmcbs/article/1529697",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:1c968e1b8e",
+          "url": "https://www.worcesterschools.org/o/wps/live-feed?page_no=17",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:465160bd0b",
+          "url": "https://www.worcesterschools.org/o/bms/events",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:36f3042e69",
+          "url": "https://www.worcesterschools.org/page/kindergarten",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:7ae6c42977",
+          "url": "https://www.worcesterschools.org/article/2734401",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:f4eea14f7e",
+          "url": "https://www.worcesterschools.org/article/2803549",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:b6230e4acf",
+          "url": "https://www.worcesterschools.org/o/midland/events",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:9759ebe050",
+          "url": "https://www.worcesterschools.org/o/nhs/live-feed",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:229006b0be",
+          "url": "https://www.worcesterschools.org/o/fjmes/live-feed?page_no=4",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:80a0c6f0f9",
+          "url": "https://www.worcesterschools.org/o/bscs/live-feed?page_no=4",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:b37cf42041",
+          "url": "https://www.worcesterschools.org/o/wps/page/preschool",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:5f59fdc8d7",
+          "url": "https://www.worcesterschools.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:22af0ac439",
+          "url": "https://www.worcesterschools.org/o/bscs/events?id=32634120",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:6bbc11a3d6",
+          "url": "https://www.worcesterschools.org/article/2390604",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:7029c247ee",
+          "url": "https://www.worcesterschools.org/o/bhs/article/2390997",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:1d09f66e36",
+          "url": "https://www.worcesterschools.org/o/dafsms/article/2547328",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:a6cf8ffb05",
+          "url": "https://www.worcesterschools.org/o/wems/article/2547330",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:950daf71f3",
+          "url": "https://www.worcesterschools.org/o/bms/article/2547325",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:59cfd09ec1",
+          "url": "https://www.worcesterschools.org/o/fgms/article/2547327",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:3f65b57f11",
+          "url": "https://www.worcesterschools.org/o/bscs/article/2390951",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:0afda497fa",
+          "url": "https://www.worcesterschools.org/o/ca/article/2547331",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:11de5e3bbe",
+          "url": "https://www.worcesterschools.org/o/bhs/article/1745278",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:39907149ca",
+          "url": "https://www.worcesterschools.org/o/midland/article/1745255",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:0504aab1b3",
+          "url": "https://www.worcesterschools.org/article/2366760",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:0cf8da9703",
+          "url": "https://www.worcesterschools.org/o/bscs/live_feeds/12354298",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:bac982b0e2",
+          "url": "https://www.worcesterschools.org/o/bscs/staff",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:e990fafb61",
+          "url": "https://www.worcesterschools.org/o/bscs/live_feeds/11994591",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:8c76058231",
+          "url": "https://www.worcesterschools.org/o/bscs/article/2526244",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:10e62d3a16",
+          "url": "https://www.worcesterschools.org/o/csmcbs/article/2372120",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:2a0663e6c3",
+          "url": "https://www.worcesterschools.org/o/csmcbs/live_feeds/12354516",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:70338c6896",
+          "url": "https://www.worcesterschools.org/page/canterbury-street-school-plan-to-improve-student-outcome-progress-report",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:faaf5bf902",
+          "url": "https://www.worcesterschools.org/o/csmcbs/staff",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:002eb6aee5",
+          "url": "https://www.worcesterschools.org/o/csmcbs/live_feeds/12560530",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:6d10ab98fb",
+          "url": "https://www.worcesterschools.org/o/midland/documents/",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:6423977655",
+          "url": "https://www.worcesterschools.org/o/midland/staff",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:cf4a963f2e",
+          "url": "https://www.worcesterschools.org/page/worcester-public-school-calendar",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:1d01c2d3ca",
+          "url": "https://www.worcesterschools.org/o/qs/live_feeds/12354333",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:516e079c69",
+          "url": "https://www.worcesterschools.org/o/qs/article/1702912",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:0742ef1b5c",
+          "url": "https://www.worcesterschools.org/o/qs/live-feed",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:3bc551f0ad",
+          "url": "https://www.worcesterschools.org/o/rss/article/2349338",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:dee6d64f95",
+          "url": "https://www.worcesterschools.org/page/schools-list",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:bfc6b8458e",
+          "url": "https://www.worcesterschools.org/o/wdlms/live_feeds/12354348",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:c150666ca7",
+          "url": "https://www.worcesterschools.org/o/wdlms/article/1702902",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:156d7290a3",
+          "url": "https://www.worcesterschools.org/o/wps/page/dual-language-program-registration",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:29ceee359a",
+          "url": "https://www.worcesterschools.org/o/cecs/article/2805172",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:cf51e4bbd6",
+          "url": "https://www.worcesterschools.org/o/cms/news",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:53e26974b5",
+          "url": "https://www.worcesterschools.org/o/bms/article/2372158",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:81e938eee0",
+          "url": "https://www.worcesterschools.org/o/bms/live_feeds/12560641",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:53adf4f879",
+          "url": "https://www.worcesterschools.org/o/bms/dining",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:957b8ee97b",
+          "url": "https://www.worcesterschools.org/o/dafsms/live-feed?page_no=2",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:6c9c8d9aa3",
+          "url": "https://www.worcesterschools.org/o/dafsms/article/2349352",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:0d9b803081",
+          "url": "https://www.worcesterschools.org/o/dafsms/page/gsa-application-information",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:a92f25d640",
+          "url": "https://www.worcesterschools.org/o/dafsms/news?page_no=3",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:e6bf9c25d6",
+          "url": "https://www.worcesterschools.org/o/wems/news?page_no=3",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:ff18238afd",
+          "url": "https://www.worcesterschools.org/o/wems/live-feed?page_no=5",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:50380e3545",
+          "url": "https://www.worcesterschools.org/o/rss/live-feed?page_no=6",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:57ccfd4410",
+          "url": "https://www.worcesterschools.org/live-feed?page_no=12",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:c86f7c75bb",
+          "url": "https://www.worcesterschools.org/o/wems/article/1915118",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:ee5cc69160",
+          "url": "https://www.worcesterschools.org/o/ca/article/2349354",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:3abd299944",
+          "url": "https://www.worcesterschools.org/o/ca/news?page_no=4",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:a483bd7051",
+          "url": "https://www.worcesterschools.org/o/bhs/live-feed",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:525dd7318d",
+          "url": "https://www.worcesterschools.org/o/nhs/article/2349359",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:39984e64e6",
+          "url": "https://worcesterschools.org/activities/athletics/athletic-events/",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:35c80dda05",
+          "url": "https://www.worcesterschools.org/o/fgms/live-feed?page_no=6",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:0eeb15d8c1",
+          "url": "https://www.worcesterschools.org/o/jhms/live-feed?page_no=3",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:ecdd5b680c",
+          "url": "https://www.worcesterschools.org/o/uhs/live-feed?page_no=6",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2513230:bf76cc23ee",
+          "url": "https://www.worcesterschools.org/o/wps/page/worcester-public-school-calendar-2025-2026",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 26,
+      "est_usd": 0.026520000000000002
+    },
+    {
+      "district_id": "2302820",
+      "name": "Bangor Public Schools",
+      "state": "ME",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "2302820:fa6e7dd32d",
+          "url": "gt://gt_curation_20260621T060008Z/2302820_Bangor_School_Department/School Hours | Bangor School Department.pdf",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "2302820:d08b186269",
+          "url": "https://www.bangorschools.net/page/school-hours",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 2933
+            }
+          ]
+        },
+        {
+          "rec_key": "2302820:ed602da906",
+          "url": "https://williamcohen.bangorschools.net/o/wscs/page/school-schedule",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:2302820:d08b186269",
+          "reps": []
+        },
+        {
+          "rec_key": "2302820:9718fa9991",
+          "url": "https://jamesdoughty.bangorschools.net/live-feed",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2302820:c62320f282",
+          "url": "https://bangorhigh.bangorschools.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2302820:fc90aa3f8a",
+          "url": "https://williamcohen.bangorschools.net/o/wscs/live-feed?page_no=2",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2302820:8b35c245dc",
+          "url": "https://fourteenthstreet.bangorschools.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2302820:f881c761fe",
+          "url": "https://downeast.bangorschools.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2302820:c8f28cef0e",
+          "url": "https://fruitstreet.bangorschools.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2302820:d56f66808c",
+          "url": "https://marysnow.bangorschools.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2302820:1fc631b87f",
+          "url": "https://jamesdoughty.bangorschools.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2302820:c3ea4ad491",
+          "url": "https://www.bangorschools.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2302820:e4ae69a65b",
+          "url": "https://www.bangorschools.net/live-feed?page_no=2",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2302820:4cd07bac83",
+          "url": "https://bangorhigh.bangorschools.net/live-feed?page_no=6",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2302820:650cd0dded",
+          "url": "https://bangorhigh.bangorschools.net/o/bhs/page/about-bhs",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2302820:cf8d232d24",
+          "url": "https://www.bangorschools.net/news?page_no=2",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    }
+  ]
+}

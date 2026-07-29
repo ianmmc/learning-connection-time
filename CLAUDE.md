@@ -135,63 +135,69 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-28): the #620 campaign is running and is the source of truth for what's
-next — not the plan.** #662 was applied to the live DB (30 extractions/27 districts →
-`run_kind='benchmark'`) and three redo batches (`batch_00030/31/32`, 25 of batch_00000's 27 districts)
-cleared Stages 2-4: 2,124 documents, 97.6% usable, **80.9% of time-bearing evidence is fresh
-(production) provenance — not one of the 25 came back benchmark-only.** That's the epic's premise,
-now measured rather than assumed. Base for anything new: `main` at `578a982`.
+**Current status (2026-07-28): #679 is FIXED and MERGED (PR #680) — the campaign has its first two
+production-provenance districts written to the LCT DB.** Worcester (`2513230`) and Bangor (`2302820`)
+both cleared gate@6 → extraction → gate@8 → Stage 9 today. `district_grade_minutes` now holds 40
+districts total (2 net-new from this pass); every incorporated band traces to fresh (`discovered`)
+provenance via `stage8_approval` 1557/1558. Base for anything new: `main` at `8770130`.
 
-**Driving the campaign found six things code review never would have — full account in
-`docs/PROJECT_HISTORY.md`'s 2026-07-27/28 entry and the findings report's §13 (supersedes §11):**
-- **The #662 migration had been merged but never RUN** — 1,276 stale-provenance facts sat on the live
-  DB for a day before `--apply` actually closed the gap. Standing lesson: *a merged fix is not a
-  landed fix* for anything touching precious/live state — CI has no live DB to be un-migrated.
-- **Three console defects** (#669/#670/#671, epic #96, open) — Stage 2/3/4 status views compute
-  done-ness from stale disk-artifact existence with no per-run receipt, so a redo district can read
-  `done` with the PRIOR run's numbers for up to 38 minutes, and a genuine capture timeout can render
-  as silent success. This promotes **#622/#623 ahead of further redo work** (was Phase E "insurance,"
-  now measured "interest").
-- **#674 (epic #92, open, likely the most consequential single finding):** a human target label
-  UNCONDITIONALLY bypasses the #241 validity floor in `release.py::decide()` — and the standing
-  labeling doctrine (a label carries shape, never fitness-for-use) means correctly following it on an
-  old-but-valid document GUARANTEES the floor is bypassed, with no force-hold override. This is why
-  **epic #92 is no longer "nearly closed"** — its purpose was reframed the same day to "keep
-  disqualified facts from being sent down the pipeline," and #674 is now its top item, ahead of #614.
-- **#679 (epic #617, open) — CURRENTLY BLOCKING the campaign's first production dispatch.** Rep
-  selection (`release.best_send`, REQ-116 hub-priority) is provenance-blind — a benchmark rep can win
-  a "best" contest the freeze guard then correctly refuses. On Bangor (`2302820`) this isn't
-  deselect-busywork: its one fresh hub tied exactly with its injected twin, `max()` broke the tie by
-  iteration order, the injected one won, and deselecting it leaves the district with ZERO sends.
-- **#672 (epic #128, open)** — the 5→1 zero-yield ladder's widened rung can perform strictly worse
-  than the standard rung (measured: Wyandanch UFSD, share-based derivation diluted by a larger,
-  noisier result set). Not blocking; deprioritized.
-- **Housekeeping:** #260-#262 re-triaged `sev:critical`→`sev:minor` (loopback-only console, no auth to
-  impersonate — evidence in each issue's comments). #332-#335 re-verified against code that had moved
-  since the 2026-07-13 filing; #333's defect survived at a DIFFERENT site (`stage7_run.py:887`, still
-  open) than the one it named (which is now fixed).
+**#679's fix (PR #680, merged):** `district_release_input` now excludes benchmark-provenance reps from
+the DEFAULT send set while `dispatch_type='production'` — held (badged, never dropped), applied BEFORE
+prefer-recent/sibling-variant/hub-priority so no narrowing pass ever crowns an ineligible candidate.
+Verified against the acceptance test (Bangor's tied hub now sends the fresh copy) and live: Worcester
+composed 26/34 (8 gt:// held), Bangor composed its 1 fresh hub, `assert_dispatch_type_allowed` passes.
 
-**All 13 architecture docs (per-stage design notes + `PIPELINE_GOVERNANCE_AND_STATE.md` +
-`ACQUISITION_PIPELINE.md`) were synced to this state on 2026-07-28** — verified against current code,
-not just against the findings report. See each file's own dated notes.
+**What actually incorporated, and what it taught:**
+- **Worcester** — clean: 22 accepted facts, zero hand-edits, approved and incorporated straight through
+  (elementary=365, middle=383, high=383).
+- **Bangor** — needed real gate@8 work, and it's diagnostic, not a one-off: **all 3 of Bangor's 3
+  council-agreed facts stored a MEAN-SYNTHESIZED time that appears nowhere in the source** (e.g.
+  elementary's accepted 08:45 blended two different models each reading a DIFFERENT grade-range
+  section — PreK-3 vs Grades 4-5 — of the same hub page). Every one needed a human action: 1
+  `band_exclusion` + 7 per-school `human_added_fact` rows for elementary, 2 `human_determination`
+  time-corrections for middle/high. Filed as **#681** (epic #80, Council Lab) — this is a prompt/rule
+  design gap (band-mapping delegated to the model; tolerance-clustering can agree across DIFFERENT
+  referents), not a bug, and at ~9 manual actions per district it will not scale to the remaining 23
+  without a fix. Incorporated anyway on Bangor per the standing doctrine (a named-human gate@8 action IS
+  the sanctioned mechanism) — elementary=365, middle=375, high=360.
+- **#682 (epic #92, open) — the auto-write gap.** Docs say "gate@8 → Stage 9 then auto-writes"; the
+  approve endpoint (`server.py` decide handler) records the approval/receipt and returns — nothing
+  invokes `stage9_incorporate`. Worcester's approval sat with ZERO `district_grade_minutes` rows for
+  ~25 minutes until the CLI was run by hand. Both districts above were incorporated via the CLI
+  (`python3 -m infrastructure.acquisition.stage9_incorporate <did>`), not automatically. Fix: wire
+  `incorporate_district` post-commit on `disposition='approved'`, fail-loud but never failing the
+  approval; one shared entry point so the endpoint and CLI can't diverge.
 
-**Next (RESUME HERE — 2026-07-28): fix #679 before advancing the campaign past gate@6.**
-Worcester (`2513230`, 26 fresh reps after deselecting 8 gt://) and Bangor (`2302820`, 0 sendable reps
-until #679 lands) are queued in `draft_00004`, unfrozen. #679's fix: exclude benchmark-provenance reps
-from DEFAULT selection while `dispatch_type='production'`, applied BEFORE hub-priority narrowing runs
-(order matters — Bangor's fresh hub must never be displaced by a tied benchmark one), while keeping
-gt:// reps visible/badged (#662 decision 4 stands — display and selection are different axes, don't
-conflate them). Acceptance test: compose Bangor and assert its ONE send is the fresh
-`discovered`-source hub, not the gt:// one — must fail against today's code. After #679: freeze
-Worcester + Bangor → prove ONE district end-to-end through gate@9 (Worcester's mixed provenance is the
-better exercise of the guard; Bangor is the fastest write) → the remaining 23 → **#646** for 27/27 (2
-domain-less districts, unreachable by any composer, separate defect, doesn't hold #620 open). Ian
-drives the console; prepare and verify, don't execute stage runs. *Falsifier unchanged: if any
-district needs a hand-edit or a re-adjudicated gate@8 call, the mechanism is wrong — fix the pipeline,
-not the district.* Consider #674 (the validity-floor bypass) before gate@5 work resumes on the
-remaining 23 — only 1 of the 25 (Cleveland Metro) is known-affected today, so it does not block
-Worcester/Bangor, but it will recur. After #620: #623 → #622 → #640 → #645 → #624 → **#625 LAST**.
-Then epic #92's #614/#615/#628 — worth more once districts are actually moving.
+**Prior findings (2026-07-27/28) still current — full account in `docs/PROJECT_HISTORY.md` and the
+findings report's §13:** the #662 migration merged-but-never-run lesson; three console defects
+(#669/#670/#671, epic #96, open — promotes #622/#623 ahead of further redo work); **#674 (epic #92,
+open, still the most consequential open item)** — a human target label unconditionally bypasses the
+#241 validity floor, so following the labeling doctrine correctly guarantees out-of-window material
+reaches paid extraction; #672 (epic #128, deprioritized); the #260-#262/#332-#335 housekeeping
+re-triage.
+
+**All 13 architecture docs were synced 2026-07-28** — verified against current code. See each file's
+own dated notes; not yet re-synced for #679/#681/#682 (routine touch-up, not urgent).
+
+**Next (RESUME HERE — 2026-07-28): Bangor's gate@8 detour surfaced work; the campaign otherwise
+continues straight through the remaining 23.** Immediate options, no hard ordering:
+1. **Land #682** (wire the auto-write) before approving district #3 — every approval from here on
+   otherwise needs the same manual CLI step Worcester/Bangor did.
+2. **Consider #681** (Council Lab prompt/consensus fix) before extracting many more districts — cheap
+   to defer per-district (gate@8 absorbs it), expensive in reviewer time at scale (~9 actions/district
+   if Bangor's rate holds).
+3. **Consider #674** before gate@5 work resumes broadly — only Cleveland Metro (1 of 25) is
+   known-affected today, so it doesn't block the next few districts, but it will recur.
+4. **Otherwise: San Diego (`0634320`, 7 gt:// / 162 captures) is next up** in the campaign's district
+   sequence (the third of the three originally scoped as first proofs — genuine mixed provenance, the
+   case the rep-grain guard exists for) → the remaining 22 → **#646** for 27/27 (2 domain-less
+   districts, separate defect, doesn't hold #620 open).
+Ian drives the console; prepare and verify, don't execute stage runs (Stage 9 CLI runs are the
+verification exception — read-only intent, idempotent, guarded). *Falsifier unchanged: if any district
+needs a hand-edit or a re-adjudicated gate@8 call, the mechanism is wrong — fix the pipeline, not the
+district.* This round it held: Bangor's hand-edits are because #681 is filed, not because the campaign
+looked away. After #620: #623 → #622 → #640 → #645 → #624 → **#625 LAST**. Then epic #92's
+#614/#615/#628 — worth more once districts are actually moving.
 
 **The standing lesson (now tripled): three separate layers shipped green against measurements that
 could not fail (§10.11), then the fix round's own review findings repeated it (§10.19/§10.20), then a
@@ -216,12 +222,13 @@ Documented-in-code deferrals: `_satisfied_bands_now` batching; the #522 guardrai
 keyword/table attribution (needs a server payload change); JS behavioral tests (no JS harness);
 the remediation-receipt exception is not STAGE-scoped (30-day expiry since 2026-07-20); attribution
 v1 reads each district's LATEST candidate plan.
-Resume-essentials (verified on `main` at `578a982`, 2026-07-28): `pip install -e .` → Docker up
+Resume-essentials (verified on `main` at `8770130`, 2026-07-28): `pip install -e .` → Docker up
 (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) → `lint-imports`
-(expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **2047** pass, 1 skipped
-[pyarrow]) + `pytest -q -m govdb` (expect **377** pass, Postgres up) — both re-verified today, unchanged
-from 2026-07-27. `pytest tests/test_*_integration.py` (expect **255** pass, 149 skipped, not
-re-verified this pass) + `cd infrastructure/scraper && npm test` (expect **90**, not re-verified).
+(expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **2052** pass, 1 skipped
+[pyarrow]) + `pytest -q -m govdb` (expect **380** pass, Postgres up) — both re-verified today (up from
+2047/377 with #679's fix + tests). `pytest tests/test_*_integration.py` (expect **255** pass, 149
+skipped, not re-verified this pass) + `cd infrastructure/scraper && npm test` (expect **90**, not
+re-verified).
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (Huntington
 `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters). Drive the Node Playwright
 from `infrastructure/scraper` (a script in /tmp cannot resolve the package).

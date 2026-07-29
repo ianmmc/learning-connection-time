@@ -1404,6 +1404,59 @@ per-stage design notes, `PIPELINE_GOVERNANCE_AND_STATE.md`, and `docs/ACQUISITIO
 synced to this state the same day — see each file's own dated notes for detail. Epic #617 stays open,
 now blocked on #679; epic #92 absorbed #673/#674 and is no longer "nearly closed."
 
+### 2026-07-28/29 — #679 lands, the campaign writes its first two districts, and finds two more issues on the way
+
+#679's fix (PR #680): the eligibility check moved to BEFORE the narrowing passes, not just at freeze.
+`district_release_input` now excludes benchmark-provenance reps from the default send set while
+`dispatch_type='production'`, applied ahead of prefer-recent/sibling-variant/hub-priority — so none of
+those passes can crown an ineligible rep and then have the freeze guard refuse the winner. Held reps
+stay visible/badged (#662 decision 4 unchanged: display and selection are different axes). Verified
+against the Bangor tie specifically (the fresh hub now wins) and live: Worcester composed 26/34,
+Bangor composed its 1 fresh hub, both passed `assert_dispatch_type_allowed`.
+
+**Both districts then ran the full pipeline to a real LCT write — the campaign's actual deliverable,
+proven twice.** Worcester (`2513230`) went through clean: 22 accepted facts, zero gate@8 hand-edits,
+elementary=365/middle=383/high=383. Bangor (`2302820`) did not, and the *why* is the session's second
+finding.
+
+**Every one of Bangor's 3 council-agreed facts stored a time that appears nowhere in the source
+document (#681, epic #80).** The consensus rule (`aggregate.consensus_school_facts`) clusters two
+models' (start, end) pairs within a ±15 tolerance and stores `round(mean(...))` on agreement. On
+Bangor's district-hub page, the elementary section is declared as two grade ranges (PreK-3, Grades
+4-5) with different bell times; one model quoted the PreK-3 line, the other quoted the Grades-4-5 line,
+and the two landed inside tolerance — "agreement" between two DIFFERENT referents, not a real
+consensus, and the stored 08:45 matches neither source line. The middle and high bands showed a milder
+version (doors-open vs. homeroom-start on the SAME section). Ian corrected all three at gate@8 (1
+`band_exclusion` + 7 per-school `human_added_fact` rows for elementary; 2 `human_determination`
+corrections for middle/high) — the sanctioned mechanism, used exactly as designed. But at roughly 9
+manual actions for a 9-school district, the rate doesn't scale to the remaining 23, which promotes
+#681 from "worth noting" to "worth fixing before extracting many more districts." Filed against epic
+#80 (Council Lab) rather than as a bugfix: the right response is a measured prompt/rule change (elicit
+one row per declared schedule section instead of asking the model to pre-map to a band; or make the
+agreement rule referent-aware, e.g. by checking the evidence quotes anchor to the same locus) —
+exactly the kind of question the Council Lab exists to A/B against the curated GT corpus, not guess at.
+
+**Approving Worcester also surfaced a second gap: the documented "gate@8 → Stage 9 then auto-writes"
+step isn't wired (#682, epic #92).** The approve endpoint records the approval, the calibration row,
+the receipt, and the JSON-twin backup, then returns — nothing calls `stage9_incorporate`. Worcester's
+approval sat with zero `district_grade_minutes` rows for about 25 minutes until the CLI was run by
+hand. Both districts this session were incorporated via the CLI, not the console. Filed with the fix
+shape: invoke `incorporate_district` post-commit on approval, fail-loud but never failing the approval
+itself (the write is idempotent and re-runnable), one shared entry point so the endpoint and CLI can
+never diverge in behavior.
+
+**Reading the falsifier against this round: it held.** "If any district needs a hand-edit or a
+re-adjudicated gate@8 call, the mechanism is wrong — fix the pipeline, not the district" was written to
+catch silent absorption of a pipeline gap into manual district-by-district labor. Bangor needed
+hand-edits, but the response was to file #681 (the pipeline defect) rather than just clear the district
+and move on — the distinction the doctrine draws.
+
+Authority: live governance DB reads (extraction 6508 facts + evidence_json; `stage8_approval` 1557/1558;
+`district_grade_minutes` before/after the CLI run) and the captured source page, all 2026-07-28/29;
+issues #679 (closed via #680), #681, #682 (open) and their comments. `district_grade_minutes` grew from
+38 to 40 districts. Epic #617's #620 campaign has its first 2 of 25 districts written on
+production-provenance; epic #80 and epic #92 each gained one open issue.
+
 ---
 
 ## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)

@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-28T06:18:30Z",
+  "last_updated": "2026-07-29T01:42:02Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -6269,11 +6269,11 @@
     "2302820": {
       "name": "Bangor Public Schools",
       "state": "ME",
-      "furthest_stage": 7,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "furthest_stage": 9,
+      "stage_name": "incorporate",
+      "outcome": null,
       "topology": null,
-      "batch_id": "batch_00032",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -6413,9 +6413,42 @@
           "checkpoint": "gate@6",
           "event_type": "draft_add_district",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-28T15:48:17Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-28T15:49:04Z"
+        },
+        {
+          "stage": 8,
+          "stage_name": "aggregate",
+          "outcome": null,
+          "at": "2026-07-29T01:40:55Z",
+          "checkpoint": "gate@8",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": 9,
+          "stage_name": "incorporate",
+          "outcome": null,
+          "at": "2026-07-29T01:42:02Z",
+          "checkpoint": "incorporated",
+          "event_type": "incorporated",
+          "actor": "auto:stage9"
         }
       ],
-      "notes": "add district 2302820"
+      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
     },
     "2307320": {
       "name": "Lewiston Public Schools",
@@ -7126,11 +7159,11 @@
     "2513230": {
       "name": "Worcester",
       "state": "MA",
-      "furthest_stage": 7,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "furthest_stage": 9,
+      "stage_name": "incorporate",
+      "outcome": null,
       "topology": null,
-      "batch_id": "batch_00032",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -7270,9 +7303,42 @@
           "checkpoint": "gate@6",
           "event_type": "draft_add_district",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-28T15:48:17Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-28T15:51:02Z"
+        },
+        {
+          "stage": 8,
+          "stage_name": "aggregate",
+          "outcome": null,
+          "at": "2026-07-28T16:06:05Z",
+          "checkpoint": "gate@8",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": 9,
+          "stage_name": "incorporate",
+          "outcome": null,
+          "at": "2026-07-28T18:05:55Z",
+          "checkpoint": "incorporated",
+          "event_type": "incorporated",
+          "actor": "auto:stage9"
         }
       ],
-      "notes": "add district 2513230"
+      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
     },
     "2600209": {
       "name": "Chandler Woods Charter Academy",

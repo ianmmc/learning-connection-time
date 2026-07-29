@@ -1,0 +1,3640 @@
+{
+  "handoff_hash": "9aa7e6044a42",
+  "district": {
+    "district_id": "2513230",
+    "name": "Worcester",
+    "reps": [
+      {
+        "rec_key": "2513230:809c4e8677",
+        "file": "pdfplumber_lines.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:47",
+                "end_time": "15:07",
+                "school_name": "DR. ARTHUR F. SULLIVAN MIDDLE SCHOOL",
+                "confidence": "high",
+                "evidence_quote": "The school day is from 8:47 AM - 3:10 PM",
+                "source_locus": "WELCOME TO SULLIVAN MIDDLE SCHOOL",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1888,
+            "completion_tokens": 138,
+            "cost_usd": 0.000244,
+            "latency_ms": 1514,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253744-Nj2gFaGplDcrJqLhX7zc",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:47",
+                "end_time": "15:10",
+                "school_name": "Dr. Arthur F. Sullivan Middle School",
+                "confidence": "high",
+                "evidence_quote": "The school day is from 8:47 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1910,
+            "completion_tokens": 155,
+            "cost_usd": 0.0001079,
+            "latency_ms": 3742,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253746-Yeyvo0JilYHF95vBaDK5",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "dr arthur f sullivan",
+            "start": "08:47",
+            "end": "15:08",
+            "gross": 381,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "The school day is from 8:47 AM - 3:10 PM",
+                "locus": "WELCOME TO SULLIVAN MIDDLE SCHOOL",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "The school day is from 8:47 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "2513230:809c4e8677",
+            "source_file": "pdfplumber_lines.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:f14261e445",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "13:50",
+                "school_name": "CANTERBURY STREET MAGNET COMPUTER-BASED SCHOOL",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:45 AM - 1:50 PM",
+                "source_locus": "ABOUT US",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1613,
+            "completion_tokens": 136,
+            "cost_usd": 0.0002157,
+            "latency_ms": 833,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253749-bjfc6mR4KjVNxIVfbLKN",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "13:50",
+                "school_name": "Canterbury Street Magnet Computer-Based School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:45 AM - 1:50 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1617,
+            "completion_tokens": 146,
+            "cost_usd": 9.253e-05,
+            "latency_ms": 2236,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253750-Ok4CYH8bE2VZTIKvvNz7",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "canterbury street magnet computer based",
+            "start": "07:45",
+            "end": "13:50",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 7:45 AM - 1:50 PM",
+                "locus": "ABOUT US",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 7:45 AM - 1:50 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "2513230:f14261e445",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:2a02c9a6f9",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "Burncoat Middle School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:20 AM - 1:43 PM",
+                "source_locus": "Burncoat Middle School | Middle Schools",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1187,
+            "completion_tokens": 135,
+            "cost_usd": 0.0001727,
+            "latency_ms": 863,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253753-lTsJ1oTLhPBzILSKhHtP",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "Burncoat Middle School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:20 AM - 1:43 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1202,
+            "completion_tokens": 112,
+            "cost_usd": 6.906e-05,
+            "latency_ms": 2533,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253753-1l6q4ZheqWGRY5jCnx1H",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "burncoat",
+            "start": "07:20",
+            "end": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 7:20 AM - 1:43 PM",
+                "locus": "Burncoat Middle School | Middle Schools",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 7:20 AM - 1:43 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "2513230:2a02c9a6f9",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:b524048c03",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Quinsigamond School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25 AM - 2:30 PM",
+                "source_locus": "ABOUT US",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1460,
+            "completion_tokens": 131,
+            "cost_usd": 0.0001984,
+            "latency_ms": 1025,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253756-Nk5jS52frnkJYTVtEfBV",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Quinsigamond School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25 AM - 2:30 PM",
+                "source_locus": "About Quinsigamond School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1478,
+            "completion_tokens": 153,
+            "cost_usd": 8.614e-05,
+            "latency_ms": 2906,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253757-xEAn2qmTbzwASRI2Dp5L",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "quinsigamond",
+            "start": "08:25",
+            "end": "14:30",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 8:25 AM - 2:30 PM",
+                "locus": "ABOUT US",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 8:25 AM - 2:30 PM",
+                "locus": "About Quinsigamond School",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "2513230:b524048c03",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:10e4759113",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Worcester Dual Language Magnet School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25 AM - 2:30 PM",
+                "source_locus": "Elementary Schools",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1261,
+            "completion_tokens": 111,
+            "cost_usd": 0.0001705,
+            "latency_ms": 1812,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253760-rZVcNARBhppQ5Qc5i6LA",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Worcester Dual Language Magnet School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25 AM - 2:30 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1278,
+            "completion_tokens": 146,
+            "cost_usd": 7.558e-05,
+            "latency_ms": 2988,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253762-BrDi91FyVsYASorer4VE",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "worcester dual language magnet",
+            "start": "08:25",
+            "end": "14:30",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 8:25 AM - 2:30 PM",
+                "locus": "Elementary Schools",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 8:25 AM - 2:30 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "2513230:10e4759113",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:32098146b0",
+        "file": "pdfplumber_lines.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "BURNCOAT HIGH SCHOOL",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:20 am - 1:43 pm",
+                "source_locus": "page 1",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1895,
+            "completion_tokens": 130,
+            "cost_usd": 0.0002415,
+            "latency_ms": 878,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253765-pxXhRvulYyggUFNuWlW1",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "Burncoat High School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:20 am - 1:43 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1925,
+            "completion_tokens": 143,
+            "cost_usd": 0.00010769,
+            "latency_ms": 2231,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253766-2TvkXVJCAl6E0andWJhP",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "burncoat",
+            "start": "07:20",
+            "end": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 7:20 am - 1:43 pm",
+                "locus": "page 1",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 7:20 am - 1:43 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "2513230:32098146b0",
+            "source_file": "pdfplumber_lines.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:938a059595",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:20",
+                "school_name": "BELMONT STREET COMMUNITY SCHOOL",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:15 AM - 2:20 PM",
+                "source_locus": "page 1",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1501,
+            "completion_tokens": 157,
+            "cost_usd": 0.0002129,
+            "latency_ms": 994,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253768-KMIlyh66zSskIrjyIrOk",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:20",
+                "school_name": "Belmont Street Community School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:15 AM - 2:20 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1520,
+            "completion_tokens": 152,
+            "cost_usd": 8.816e-05,
+            "latency_ms": 3423,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253769-kALtUJ9OzwLWMBxK7NgM",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "belmont street community",
+            "start": "08:15",
+            "end": "14:20",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 8:15 AM - 2:20 PM",
+                "locus": "page 1",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 8:15 AM - 2:20 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "2513230:938a059595",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:771254395f",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "14:25",
+                "school_name": "MIDLAND STREET SCHOOL",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:20 AM - 2:25 PM",
+                "source_locus": "About Midland Street School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1433,
+            "completion_tokens": 137,
+            "cost_usd": 0.0001981,
+            "latency_ms": 898,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253772-zQVBCXw6xpQI5IJ27EYU",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "14:25",
+                "school_name": "Midland Street School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:20 AM - 2:25 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1444,
+            "completion_tokens": 143,
+            "cost_usd": 8.364e-05,
+            "latency_ms": 2546,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253773-Nvn1ugNK7rDapWv7vMUX",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "midland street",
+            "start": "08:20",
+            "end": "14:25",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 8:20 AM - 2:25 PM",
+                "locus": "About Midland Street School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 8:20 AM - 2:25 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "2513230:771254395f",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:29beab4426",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "13:50",
+                "school_name": "Vernon Hill School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:45 AM - 1:50 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2349,
+            "completion_tokens": 100,
+            "cost_usd": 0.0002749,
+            "latency_ms": 801,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253776-OsszlWeVnHjMF3T2hGps",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "13:50",
+                "school_name": "Vernon Hill School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:45 AM - 1:50 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2428,
+            "completion_tokens": 144,
+            "cost_usd": 0.00013292,
+            "latency_ms": 2277,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253776-YSSF5fnfh4gwEAS1T9Cv",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "vernon hill",
+            "start": "07:45",
+            "end": "13:50",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 7:45 AM - 1:50 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 7:45 AM - 1:50 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "2513230:29beab4426",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:9364f89792",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:47",
+                "end_time": "15:10",
+                "school_name": "Forest Grove Middle School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:47 AM - 3:10 PM",
+                "source_locus": "Welcome to Forest Grove Middle School!",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2377,
+            "completion_tokens": 127,
+            "cost_usd": 0.0002885,
+            "latency_ms": 911,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253779-m16lbSAAYhi4fKj9bTC6",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:47",
+                "end_time": "15:10",
+                "school_name": "Forest Grove Middle",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:47 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2456,
+            "completion_tokens": 110,
+            "cost_usd": 0.0001316,
+            "latency_ms": 2557,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253780-5GNAwlGhjL3FABk09VlJ",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "forest grove",
+            "start": "08:47",
+            "end": "15:10",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 8:47 AM - 3:10 PM",
+                "locus": "Welcome to Forest Grove Middle School!",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 8:47 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "2513230:9364f89792",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:03ea24fabd",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:47",
+                "end_time": "15:10",
+                "school_name": "Dr. Arthur F. Sullivan Middle School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:47 AM - 3:10 PM",
+                "source_locus": "Dr. Arthur F. Sullivan Middle School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2383,
+            "completion_tokens": 113,
+            "cost_usd": 0.0002835,
+            "latency_ms": 817,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253782-Oj2e1gPvgCM4wMgoeqRt",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:47",
+                "end_time": "15:10",
+                "school_name": "Dr. Arthur F. Sullivan Middle School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:47 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2459,
+            "completion_tokens": 115,
+            "cost_usd": 0.00013215,
+            "latency_ms": 2298,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253783-9bZXeIReGVqdWKb8OFmX",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "dr arthur f sullivan",
+            "start": "08:47",
+            "end": "15:10",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 8:47 AM - 3:10 PM",
+                "locus": "Dr. Arthur F. Sullivan Middle School",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 8:47 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "2513230:03ea24fabd",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:4d812815d7",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "Worcester East Middle",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:20 AM - 1:43 PM",
+                "source_locus": "Worcester East Middle",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2327,
+            "completion_tokens": 105,
+            "cost_usd": 0.0002747,
+            "latency_ms": 731,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253785-r9QjzpQiBOd5wxvfNtp0",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "Worcester East Middle",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:20 AM - 1:43 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2407,
+            "completion_tokens": 143,
+            "cost_usd": 0.00013179,
+            "latency_ms": 2607,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253786-E9qpwKhWqSXNCpSdodmT",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "worcester east",
+            "start": "07:20",
+            "end": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 7:20 AM - 1:43 PM",
+                "locus": "Worcester East Middle",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 7:20 AM - 1:43 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "2513230:4d812815d7",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:a158938615",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Worcester Dual Language Magnet School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25 AM - 2:30 PM",
+                "source_locus": "About Us",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2348,
+            "completion_tokens": 105,
+            "cost_usd": 0.0002768,
+            "latency_ms": 1348,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253789-HJnDff1YKJtX5u1ex0Dj",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Worcester Dual Language Magnet School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25 AM - 2:30 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2424,
+            "completion_tokens": 146,
+            "cost_usd": 0.00013288,
+            "latency_ms": 2468,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253790-S7hSb7XbuRx5DRf0TQ7I",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "worcester dual language magnet",
+            "start": "08:25",
+            "end": "14:30",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 8:25 AM - 2:30 PM",
+                "locus": "About Us",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 8:25 AM - 2:30 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "2513230:a158938615",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:cfd4675128",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "Doherty Memorial High School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:20 AM- 1:43 PM",
+                "source_locus": "About Us",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2363,
+            "completion_tokens": 130,
+            "cost_usd": 0.0002883,
+            "latency_ms": 821,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253793-akA2i8KaqKDc6vv2Dxoy",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "Doherty Memorial High School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:20 AM- 1:43 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2444,
+            "completion_tokens": 144,
+            "cost_usd": 0.00013372,
+            "latency_ms": 3163,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253793-JmyCQ7JbFj0p2zHLV85A",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "doherty memorial",
+            "start": "07:20",
+            "end": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 7:20 AM- 1:43 PM",
+                "locus": "About Us",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 7:20 AM- 1:43 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "2513230:cfd4675128",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:b09c6454b1",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "Burncoat Middle",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:20 AM - 1:43 PM",
+                "source_locus": "Burncoat Middle",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2346,
+            "completion_tokens": 108,
+            "cost_usd": 0.0002778,
+            "latency_ms": 894,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253797-5tgf8C0WgUcJiAhUSzte",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "Burncoat Middle",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:20 AM - 1:43 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2433,
+            "completion_tokens": 105,
+            "cost_usd": 0.00013005,
+            "latency_ms": 2861,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253797-5gy9huHTPaTe1z8RCTVu",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "burncoat",
+            "start": "07:20",
+            "end": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 7:20 AM - 1:43 PM",
+                "locus": "Burncoat Middle",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 7:20 AM - 1:43 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "2513230:b09c6454b1",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:7037de897b",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Quinsigamond Elementary School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25 AM - 2:30 PM",
+                "source_locus": "Quinsigamond School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2355,
+            "completion_tokens": 114,
+            "cost_usd": 0.0002811,
+            "latency_ms": 803,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253800-jcK5hMCEOgtqCJgUAYSR",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Quinsigamond Elementary School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25 AM - 2:30 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2438,
+            "completion_tokens": 153,
+            "cost_usd": 0.00013414,
+            "latency_ms": 2423,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253801-b9uuibLJYS7su0smugXa",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "quinsigamond",
+            "start": "08:25",
+            "end": "14:30",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 8:25 AM - 2:30 PM",
+                "locus": "Quinsigamond School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 8:25 AM - 2:30 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "rec_key": "2513230:7037de897b",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:8f50540431",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "South High Community School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:20 AM - 1:43 PM",
+                "source_locus": "South High Community School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2370,
+            "completion_tokens": 132,
+            "cost_usd": 0.0002898,
+            "latency_ms": 1204,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253804-7nsDjt0Uk1jTYOfgVtss",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "South High Community School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:20 AM - 1:43 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2444,
+            "completion_tokens": 142,
+            "cost_usd": 0.00013356,
+            "latency_ms": 2892,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253805-Ujy3qEmUuWlAjnR1SvhO",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "south community",
+            "start": "07:20",
+            "end": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 7:20 AM - 1:43 PM",
+                "locus": "South High Community School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 7:20 AM - 1:43 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "2513230:8f50540431",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:df4543e2e3",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "North High School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:20 AM - 1:43 PM",
+                "source_locus": "North High School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2389,
+            "completion_tokens": 109,
+            "cost_usd": 0.0002825,
+            "latency_ms": 773,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253808-BZ4zhE6GHIPzUte0ppZo",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "North High School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:20 AM - 1:43 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2463,
+            "completion_tokens": 148,
+            "cost_usd": 0.00013499,
+            "latency_ms": 3363,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253808-y8RJEo4CBPqWesORXYRp",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "north",
+            "start": "07:20",
+            "end": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 7:20 AM - 1:43 PM",
+                "locus": "North High School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 7:20 AM - 1:43 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "2513230:df4543e2e3",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:90694d0a92",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "08:00",
+                "end_time": "14:23",
+                "school_name": "University Park Campus School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:00 AM - 2:23 PM",
+                "source_locus": "University Park Campus School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2321,
+            "completion_tokens": 105,
+            "cost_usd": 0.0002741,
+            "latency_ms": 1155,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253812-6eCAH2Q0O1mm4i4k0naf",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:23",
+                "school_name": "University Park Campus School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:00 AM - 2:23 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2392,
+            "completion_tokens": 143,
+            "cost_usd": 0.00013104,
+            "latency_ms": 2262,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253813-58uG0CviBNYw0UIUnJNf",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:23",
+                "school_name": "University Park Campus School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:00 AM - 2:23 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2301,
+            "completion_tokens": 93,
+            "cost_usd": 0.00025824,
+            "latency_ms": 6816,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253815-w6LGxyQLq9w6UbvyBHKp",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "university park campus",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:00"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:23"
+            },
+            "rec_key": "2513230:90694d0a92",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "2513230:b4e22ccc8f",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "07:45",
+                "end_time": "13:50",
+                "school_name": "Canterbury Street Magnet Computer-Based School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:45 AM - 1:50 PM",
+                "source_locus": "About Us",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2350,
+            "completion_tokens": 113,
+            "cost_usd": 0.0002802,
+            "latency_ms": 1740,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253822-nLfGcu0C9a7c6mQLyZhm",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "13:50",
+                "school_name": "Canterbury Street Magnet Computer-Based School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:45 AM - 1:50 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2421,
+            "completion_tokens": 152,
+            "cost_usd": 0.00013321,
+            "latency_ms": 3086,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253824-RLChSESwMeS1LNypvyLF",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "13:50",
+                "school_name": "Canterbury Street Magnet Computer-Based School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:45 AM - 1:50 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2329,
+            "completion_tokens": 98,
+            "cost_usd": 0.00033246,
+            "latency_ms": 2730,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253827-xnVBoNdmHKywy0sQeqxw",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "canterbury street magnet computer based",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "13:50"
+            },
+            "rec_key": "2513230:b4e22ccc8f",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "2513230:a1c0976141",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "07:45",
+                "end_time": "14:08",
+                "school_name": "Claremont Academy",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:45 AM - 2:08 PM",
+                "source_locus": "About Us",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2365,
+            "completion_tokens": 122,
+            "cost_usd": 0.0002853,
+            "latency_ms": 869,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253830-5wAm8L3nzFm1w6w6zh4d",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:08",
+                "school_name": "Claremont Academy",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:45 AM - 2:08 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2442,
+            "completion_tokens": 142,
+            "cost_usd": 0.00013346,
+            "latency_ms": 2570,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253830-eRkGmGo9G29NyL2iBOED",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:08",
+                "school_name": "Claremont Academy",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:45 AM - 2:08 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2349,
+            "completion_tokens": 94,
+            "cost_usd": 0.00026593,
+            "latency_ms": 6834,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253833-DSJN1Mqge6MKVQqKkv6P",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "claremont",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:08"
+            },
+            "rec_key": "2513230:a1c0976141",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "2513230:4f9d333b90",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Jacob Hiatt Magnet School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25 AM - 2:30 PM",
+                "source_locus": "About Us",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2351,
+            "completion_tokens": 115,
+            "cost_usd": 0.0002811,
+            "latency_ms": 864,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253840-2g3DHOqjT702KMQlkpbU",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Jacob Hiatt Magnet School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25 AM - 2:30 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2426,
+            "completion_tokens": 150,
+            "cost_usd": 0.0001333,
+            "latency_ms": 2511,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253841-hFJF8moEzU49FKEFZnFI",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Jacob Hiatt Magnet School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25 AM - 2:30 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2331,
+            "completion_tokens": 94,
+            "cost_usd": 0.00054892,
+            "latency_ms": 3085,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253843-zlucgblDWOILKHqdrwxH",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "jacob hiatt magnet",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:25"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:30"
+            },
+            "rec_key": "2513230:4f9d333b90",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "2513230:67d2a2d9c5",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:20",
+                "school_name": "Belmont Street Community School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:15 AM - 2:20 PM",
+                "source_locus": "About Us",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2348,
+            "completion_tokens": 110,
+            "cost_usd": 0.0002788,
+            "latency_ms": 846,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253846-J8ClkHyjTyjlHRC1wsSN",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:20",
+                "school_name": "Belmont Street Community School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:15 AM - 2:20 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2431,
+            "completion_tokens": 145,
+            "cost_usd": 0.00013315,
+            "latency_ms": 3778,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253847-O3vUOu3HRbNPr6Wlzhmp",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "belmont street community",
+            "start": "08:15",
+            "end": "14:20",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 8:15 AM - 2:20 PM",
+                "locus": "About Us",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 8:15 AM - 2:20 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "2513230:67d2a2d9c5",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:cefb69d53f",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:16",
+                "end_time": "13:43",
+                "school_name": "Worcester Technical High School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:16 AM - 1:43 PM",
+                "source_locus": "Worcester Technical High School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2418,
+            "completion_tokens": 132,
+            "cost_usd": 0.0002946,
+            "latency_ms": 942,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253851-PIkjaV6GiLJsbVAsJB9J",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:16",
+                "end_time": "13:43",
+                "school_name": "Worcester Technical High School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 7:16 AM - 1:43 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2506,
+            "completion_tokens": 151,
+            "cost_usd": 0.00013738,
+            "latency_ms": 2648,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253852-Ox7bstT2HczEKouddllk",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "worcester technical",
+            "start": "07:16",
+            "end": "13:43",
+            "gross": 387,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 7:16 AM - 1:43 PM",
+                "locus": "Worcester Technical High School",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 7:16 AM - 1:43 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "2513230:cefb69d53f",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:fa04278918",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Midland Street School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25 AM - 2:30 PM",
+                "source_locus": "Midland Street School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2344,
+            "completion_tokens": 105,
+            "cost_usd": 0.0002764,
+            "latency_ms": 856,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253855-j5BWOgdb7Aa03zGuPGt5",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Midland Street School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25 AM - 2:30 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2419,
+            "completion_tokens": 150,
+            "cost_usd": 0.00013295,
+            "latency_ms": 2381,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253855-1XSmOUYJyMFuWBG4SDsQ",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "midland street",
+            "start": "08:25",
+            "end": "14:30",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 8:25 AM - 2:30 PM",
+                "locus": "Midland Street School",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Hours: 8:25 AM - 2:30 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "2513230:fa04278918",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:647617cecc",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Rice Square School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25 AM - 2:30 PM",
+                "source_locus": "Rice Square School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2352,
+            "completion_tokens": 109,
+            "cost_usd": 0.0002788,
+            "latency_ms": 896,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253858-UdUIFkEYZnMoUaoZLp2y",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Rice Square School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25 AM - 2:30 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2431,
+            "completion_tokens": 150,
+            "cost_usd": 0.00013355,
+            "latency_ms": 2282,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253859-mjgDHSE20DUhwuLuCuTD",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Rice Square School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25 AM - 2:30 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2334,
+            "completion_tokens": 94,
+            "cost_usd": 0.0005232,
+            "latency_ms": 1157,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253861-wcYyJ36bKFjbCVvR1x7W",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "rice square",
+            "start": "08:25",
+            "end": "14:30",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "School Hours: 8:25 AM - 2:30 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "2513230:647617cecc",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "middle",
+        "school": "dr arthur f sullivan",
+        "start": "08:47",
+        "end": "15:08",
+        "gross": 381,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "The school day is from 8:47 AM - 3:10 PM",
+            "locus": "WELCOME TO SULLIVAN MIDDLE SCHOOL",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "The school day is from 8:47 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "2513230:809c4e8677",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "canterbury street magnet computer based",
+        "start": "07:45",
+        "end": "13:50",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 7:45 AM - 1:50 PM",
+            "locus": "ABOUT US",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 7:45 AM - 1:50 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "2513230:f14261e445",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "burncoat",
+        "start": "07:20",
+        "end": "13:43",
+        "gross": 383,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 7:20 AM - 1:43 PM",
+            "locus": "Burncoat Middle School | Middle Schools",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 7:20 AM - 1:43 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "2513230:2a02c9a6f9",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "quinsigamond",
+        "start": "08:25",
+        "end": "14:30",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 8:25 AM - 2:30 PM",
+            "locus": "ABOUT US",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 8:25 AM - 2:30 PM",
+            "locus": "About Quinsigamond School",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "2513230:b524048c03",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "worcester dual language magnet",
+        "start": "08:25",
+        "end": "14:30",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 8:25 AM - 2:30 PM",
+            "locus": "Elementary Schools",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 8:25 AM - 2:30 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "2513230:10e4759113",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "burncoat",
+        "start": "07:20",
+        "end": "13:43",
+        "gross": 383,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 7:20 am - 1:43 pm",
+            "locus": "page 1",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 7:20 am - 1:43 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "2513230:32098146b0",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "belmont street community",
+        "start": "08:15",
+        "end": "14:20",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 8:15 AM - 2:20 PM",
+            "locus": "page 1",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 8:15 AM - 2:20 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "2513230:938a059595",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "midland street",
+        "start": "08:20",
+        "end": "14:25",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 8:20 AM - 2:25 PM",
+            "locus": "About Midland Street School",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 8:20 AM - 2:25 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "2513230:771254395f",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "vernon hill",
+        "start": "07:45",
+        "end": "13:50",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 7:45 AM - 1:50 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 7:45 AM - 1:50 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "2513230:29beab4426",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "forest grove",
+        "start": "08:47",
+        "end": "15:10",
+        "gross": 383,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 8:47 AM - 3:10 PM",
+            "locus": "Welcome to Forest Grove Middle School!",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 8:47 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "2513230:9364f89792",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "dr arthur f sullivan",
+        "start": "08:47",
+        "end": "15:10",
+        "gross": 383,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 8:47 AM - 3:10 PM",
+            "locus": "Dr. Arthur F. Sullivan Middle School",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 8:47 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "2513230:03ea24fabd",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "worcester east",
+        "start": "07:20",
+        "end": "13:43",
+        "gross": 383,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 7:20 AM - 1:43 PM",
+            "locus": "Worcester East Middle",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 7:20 AM - 1:43 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "2513230:4d812815d7",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "worcester dual language magnet",
+        "start": "08:25",
+        "end": "14:30",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 8:25 AM - 2:30 PM",
+            "locus": "About Us",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 8:25 AM - 2:30 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "2513230:a158938615",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "doherty memorial",
+        "start": "07:20",
+        "end": "13:43",
+        "gross": 383,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 7:20 AM- 1:43 PM",
+            "locus": "About Us",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 7:20 AM- 1:43 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "2513230:cfd4675128",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "burncoat",
+        "start": "07:20",
+        "end": "13:43",
+        "gross": 383,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 7:20 AM - 1:43 PM",
+            "locus": "Burncoat Middle",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 7:20 AM - 1:43 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "2513230:b09c6454b1",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "quinsigamond",
+        "start": "08:25",
+        "end": "14:30",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 8:25 AM - 2:30 PM",
+            "locus": "Quinsigamond School",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 8:25 AM - 2:30 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "rec_key": "2513230:7037de897b",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "south community",
+        "start": "07:20",
+        "end": "13:43",
+        "gross": 383,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 7:20 AM - 1:43 PM",
+            "locus": "South High Community School",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 7:20 AM - 1:43 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "2513230:8f50540431",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "north",
+        "start": "07:20",
+        "end": "13:43",
+        "gross": 383,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 7:20 AM - 1:43 PM",
+            "locus": "North High School",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 7:20 AM - 1:43 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "2513230:df4543e2e3",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "belmont street community",
+        "start": "08:15",
+        "end": "14:20",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 8:15 AM - 2:20 PM",
+            "locus": "About Us",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 8:15 AM - 2:20 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "2513230:67d2a2d9c5",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "worcester technical",
+        "start": "07:16",
+        "end": "13:43",
+        "gross": 387,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 7:16 AM - 1:43 PM",
+            "locus": "Worcester Technical High School",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 7:16 AM - 1:43 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "2513230:cefb69d53f",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "midland street",
+        "start": "08:25",
+        "end": "14:30",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 8:25 AM - 2:30 PM",
+            "locus": "Midland Street School",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Hours: 8:25 AM - 2:30 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "2513230:fa04278918",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "rice square",
+        "start": "08:25",
+        "end": "14:30",
+        "gross": 365,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "School Hours: 8:25 AM - 2:30 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "2513230:647617cecc",
+        "source_file": "page.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "university park campus",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:00"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:23"
+        },
+        "rec_key": "2513230:90694d0a92",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "canterbury street magnet computer based",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "13:50"
+        },
+        "rec_key": "2513230:b4e22ccc8f",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "claremont",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:08"
+        },
+        "rec_key": "2513230:a1c0976141",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "jacob hiatt magnet",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:25"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:30"
+        },
+        "rec_key": "2513230:4f9d333b90",
+        "source_file": "page.txt"
+      }
+    ],
+    "n_reps": 26,
+    "n_judged": 5,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 365,
+        "start_time": "07:45",
+        "end_time": "13:50",
+        "n_schools": 11,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "canterbury street magnet computer based",
+            "start_time": "07:45",
+            "end_time": "13:50",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "quinsigamond",
+            "start_time": "08:25",
+            "end_time": "14:30",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "worcester dual language magnet",
+            "start_time": "08:25",
+            "end_time": "14:30",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "belmont street community",
+            "start_time": "08:15",
+            "end_time": "14:20",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "midland street",
+            "start_time": "08:20",
+            "end_time": "14:25",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "vernon hill",
+            "start_time": "07:45",
+            "end_time": "13:50",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "worcester dual language magnet",
+            "start_time": "08:25",
+            "end_time": "14:30",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "quinsigamond",
+            "start_time": "08:25",
+            "end_time": "14:30",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "belmont street community",
+            "start_time": "08:15",
+            "end_time": "14:20",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "midland street",
+            "start_time": "08:25",
+            "end_time": "14:30",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rice square",
+            "start_time": "08:25",
+            "end_time": "14:30",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 383,
+        "start_time": "07:20",
+        "end_time": "13:43",
+        "n_schools": 6,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "dr arthur f sullivan",
+            "start_time": "08:47",
+            "end_time": "15:08",
+            "gross": 381,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "burncoat",
+            "start_time": "07:20",
+            "end_time": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "forest grove",
+            "start_time": "08:47",
+            "end_time": "15:10",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dr arthur f sullivan",
+            "start_time": "08:47",
+            "end_time": "15:10",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "worcester east",
+            "start_time": "07:20",
+            "end_time": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "burncoat",
+            "start_time": "07:20",
+            "end_time": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 383,
+        "start_time": "07:20",
+        "end_time": "13:43",
+        "n_schools": 5,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "burncoat",
+            "start_time": "07:20",
+            "end_time": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "doherty memorial",
+            "start_time": "07:20",
+            "end_time": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "south community",
+            "start_time": "07:20",
+            "end_time": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "north",
+            "start_time": "07:20",
+            "end_time": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "worcester technical",
+            "start_time": "07:16",
+            "end_time": "13:43",
+            "gross": 387,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 57,
+      "judge_calls": 5,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 122576,
+      "completion_tokens": 7285,
+      "cost_usd": 0.011756289999999994
+    },
+    "state": "MA"
+  }
+}

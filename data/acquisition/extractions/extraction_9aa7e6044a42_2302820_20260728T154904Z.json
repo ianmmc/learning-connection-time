@@ -1,0 +1,614 @@
+{
+  "handoff_hash": "9aa7e6044a42",
+  "district": {
+    "district_id": "2302820",
+    "name": "Bangor Public Schools",
+    "reps": [
+      {
+        "rec_key": "2302820:d08b186269",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:40",
+                "end_time": "15:00",
+                "school_name": "Bangor School Department",
+                "confidence": "high",
+                "evidence_quote": "8:40 am: Students Permitted on Playground\n8:55 am: Students Enter Classrooms\n3:00 pm: Dismissal",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "15:00",
+                "school_name": "Bangor School Department",
+                "confidence": "high",
+                "evidence_quote": "8:35 am: Students Permitted on Playground\n3:00: Dismissal",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "14:30",
+                "school_name": "Bangor School Department",
+                "confidence": "high",
+                "evidence_quote": "8:10 am: Doors open\n8:15-8:20 am: Homeroom\n2:30 pm: Dismissal",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "14:00",
+                "school_name": "Bangor High School",
+                "confidence": "high",
+                "evidence_quote": "7:55 am: Report to Mod 1 class\n8:00 am: Attendance\n2:00 pm: Dismissal",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Bangor Regional Program",
+                "confidence": "high",
+                "evidence_quote": "8:00 am: Students arrive at school\n2:30 pm: Dismissal",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1430,
+            "completion_tokens": 850,
+            "cost_usd": 0.000483,
+            "latency_ms": 3667,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253705-UpwfEut4HgKicTAwsNcE",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:00",
+                "school_name": "Bangor School Department",
+                "confidence": "high",
+                "evidence_quote": "8:50-9:10 am: Homeroom/Attendance",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:15",
+                "end_time": "14:30",
+                "school_name": "Bangor School Department",
+                "confidence": "high",
+                "evidence_quote": "8:15-8:20 am: Homeroom",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:00",
+                "school_name": "Bangor High School",
+                "confidence": "high",
+                "evidence_quote": "8:00 am: Attendance",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1469,
+            "completion_tokens": 405,
+            "cost_usd": 0.00010585,
+            "latency_ms": 11506,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253708-8CJZ1mgoQeuFhVN80zad",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 12,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:00",
+                "school_name": "Abraham Lincoln School",
+                "confidence": "high",
+                "evidence_quote": "8:55 am: Students Enter Classrooms",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:00",
+                "school_name": "Downeast School",
+                "confidence": "high",
+                "evidence_quote": "8:55 am: Students Enter Classrooms",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:00",
+                "school_name": "Fourteenth Street School",
+                "confidence": "high",
+                "evidence_quote": "8:55 am: Students Enter Classrooms",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:00",
+                "school_name": "Fruit Street School",
+                "confidence": "high",
+                "evidence_quote": "8:55 am: Students Enter Classrooms",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:00",
+                "school_name": "Vine Street School",
+                "confidence": "high",
+                "evidence_quote": "8:55 am: Students Enter Classrooms",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:00",
+                "school_name": "Fairmount School",
+                "confidence": "high",
+                "evidence_quote": "8:55 am: Students Enter Classrooms",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:00",
+                "school_name": "Mary Snow School",
+                "confidence": "high",
+                "evidence_quote": "8:55 am: Students Enter Classrooms",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:00",
+                "school_name": "James F. Doughty School",
+                "confidence": "high",
+                "evidence_quote": "8:50-9:10 am: Homeroom/Attendance",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:00",
+                "school_name": "William S. Cohen School",
+                "confidence": "high",
+                "evidence_quote": "8:50-9:10 am: Homeroom/Attendance",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:15",
+                "end_time": "14:30",
+                "school_name": "Bangor School Department",
+                "confidence": "high",
+                "evidence_quote": "8:15-8:20 am: Homeroom",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": "multiple"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:00",
+                "school_name": "Bangor High School",
+                "confidence": "high",
+                "evidence_quote": "8:00 am: Attendance",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Bangor Regional Program",
+                "confidence": "high",
+                "evidence_quote": "8:00 am: Students arrive at school",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1418,
+            "completion_tokens": 1048,
+            "cost_usd": 0.00103692,
+            "latency_ms": 24486,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785253720-oJePzYSeudLQp1oQBZdN",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "bangor department",
+            "start": "08:45",
+            "end": "15:00",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "8:40 am: Students Permitted on Playground\n8:55 am: Students Enter Classrooms\n3:00 pm: Dismissal",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50-9:10 am: Homeroom/Attendance",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "rec_key": "2302820:d08b186269",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "bangor department",
+            "start": "08:12",
+            "end": "14:30",
+            "gross": 378,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "8:10 am: Doors open\n8:15-8:20 am: Homeroom\n2:30 pm: Dismissal",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:15-8:20 am: Homeroom",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "rec_key": "2302820:d08b186269",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "bangor",
+            "start": "07:58",
+            "end": "14:00",
+            "gross": 362,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "7:55 am: Report to Mod 1 class\n8:00 am: Attendance\n2:00 pm: Dismissal",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:00 am: Attendance",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "rec_key": "2302820:d08b186269",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "bangor regional program",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:30"
+            },
+            "rec_key": "2302820:d08b186269",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "bangor department",
+        "start": "08:45",
+        "end": "15:00",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "8:40 am: Students Permitted on Playground\n8:55 am: Students Enter Classrooms\n3:00 pm: Dismissal",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50-9:10 am: Homeroom/Attendance",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "rec_key": "2302820:d08b186269",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "bangor department",
+        "start": "08:12",
+        "end": "14:30",
+        "gross": 378,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "8:10 am: Doors open\n8:15-8:20 am: Homeroom\n2:30 pm: Dismissal",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:15-8:20 am: Homeroom",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "rec_key": "2302820:d08b186269",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "bangor",
+        "start": "07:58",
+        "end": "14:00",
+        "gross": 362,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "7:55 am: Report to Mod 1 class\n8:00 am: Attendance\n2:00 pm: Dismissal",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:00 am: Attendance",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "rec_key": "2302820:d08b186269",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "bangor regional program",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:30"
+        },
+        "rec_key": "2302820:d08b186269",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 375,
+        "start_time": "08:45",
+        "end_time": "15:00",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "bangor department",
+            "start_time": "08:45",
+            "end_time": "15:00",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 378,
+        "start_time": "08:12",
+        "end_time": "14:30",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "bangor department",
+            "start_time": "08:12",
+            "end_time": "14:30",
+            "gross": 378,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 362,
+        "start_time": "07:58",
+        "end_time": "14:00",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "bangor",
+            "start_time": "07:58",
+            "end_time": "14:00",
+            "gross": 362,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 4317,
+      "completion_tokens": 2303,
+      "cost_usd": 0.00162577
+    },
+    "state": "ME"
+  }
+}
