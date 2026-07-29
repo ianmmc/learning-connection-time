@@ -167,8 +167,8 @@ def phase_2_foundation(dry_run: bool = False) -> bool:
             return False
         print(f"  Crosswalk verified: {n} entries")
 
-    # Import district website URLs and grade spans from NCES CCD
-    print("\nImporting district URLs and grade spans...")
+    # Import district website URLs from NCES CCD
+    print("\nImporting district URLs...")
     url_args = []
     if dry_run:
         url_args.append("--dry-run")
