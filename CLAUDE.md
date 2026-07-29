@@ -199,9 +199,12 @@ any more districts.**
    not the best evidence — Bentonville sends an 8-time page while holding a 52-time one; **Fairbanks was
    incorporated on a 1-rep dispatch that held a 137-time bell schedule**; Essex sent a stale news feed
    (21 times) while holding 112/61/57. Bridgeport is the honest counter-case (hub genuinely best), so a
-   blanket change needs the corpus measurement the issue's AC requires. **Open question: after the fix,
-   re-compose Fairbanks/Broward/Bentonville to see whether held evidence changes their numbers?
-   Fairbanks is already written — that is a re-review of a published district, Ian's call.**
+   blanket change needs the corpus measurement the issue's AC requires. **Already-written districts:
+   DECIDED 2026-07-29 — no re-review now** (reviewed at gate@8, minutes trusted; Fairbanks verified:
+   its held reps cover the SAME four middle schools already sampled — redundant, not missing). The
+   "we'll come back" is made mechanical by a standing audit (17 written districts rest on a narrowed
+   dispatch; re-run it when #691 lands and diff against the baseline):
+   `docs/technical-notes/production-quality-control-research/2026-07-29-narrowed-dispatch-audit.md`.
 2. **#688** — `cms_hint`/`embed_hosts` promotion is dead corpus-wide (reads the DB column name off a
    disk row). Two-accessor fix + one `build_signals` re-ingest recovers 2,653 vendor hints. Unblocks
    #687.
@@ -244,7 +247,7 @@ Documented-in-code deferrals: `_satisfied_bands_now` batching; the #522 guardrai
 keyword/table attribution (needs a server payload change); JS behavioral tests (no JS harness);
 the remediation-receipt exception is not STAGE-scoped (30-day expiry since 2026-07-20); attribution
 v1 reads each district's LATEST candidate plan.
-Resume-essentials (verified on `main` at `b5821c7`, 2026-07-29; counts unchanged since): `pip install -e .` → Docker up
+Resume-essentials (verified on `main` at `6b62273`, 2026-07-29): `pip install -e .` → Docker up
 (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) → `lint-imports`
 (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **2054** pass, 1 skipped
 [pyarrow]) + `pytest -q -m govdb` (expect **380** pass, Postgres up) — both re-verified today (up from

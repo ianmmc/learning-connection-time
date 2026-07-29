@@ -1617,3 +1617,14 @@ when the evidence that was silently withheld from it comes back.
 
 Authority: issues #683-#695 (all open, each carrying its own "how this was determined"); the
 `stage8_approval` rows and `extraction` results for the two dispatches; `main` @ `b5821c7`.
+
+**Decision (2026-07-29): districts already written through the #691 narrowing are NOT re-reviewed.**
+Ian: they were reviewed at gate@8, the minutes are trusted, and future information will bring the
+campaign back to them. The adopted amendment is that "eventually" became a **mechanism** — a standing
+audit query, since nothing detects that a written district rests on a narrowed dispatch (17 of the 41
+written do). Challenge-testing the decision also **corrected the report's own framing**: §14.7 reasoned
+from what was withheld rather than what was covered, and Fairbanks turns out to be positively verified
+— its elementary band is 90% sampled and *did* contradict itself (300/355/390 present, 390 winning 16
+of 18), while the three high-yield held reps cover the same four middle schools already sampled, making
+them redundant rather than missing. Recorded with the residual challenges and re-run triggers in
+`docs/technical-notes/production-quality-control-research/2026-07-29-narrowed-dispatch-audit.md`.

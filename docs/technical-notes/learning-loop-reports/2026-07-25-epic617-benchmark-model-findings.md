@@ -1929,6 +1929,24 @@ already written *through* the broken mechanism. Recorded here as an open decisio
 it will recur: every future selection-layer fix raises the same question about everything written
 before it.
 
+> **RESOLVED 2026-07-29 — and this section's framing was CORRECTED in the resolving.** Decision (Ian):
+> **no re-review at this time**; the districts were reviewed at gate@8, the minutes are trusted, and
+> future information will bring the campaign back to them. Adopted amendment: the return trip is made
+> **mechanical** rather than intentional — a standing audit query, since nothing today detects that a
+> written district rests on a narrowed dispatch.
+>
+> **The correction matters more than the decision.** The paragraph above reasons from *what was
+> withheld* rather than *what was already covered* — the same error this report keeps filing issues
+> about. Measured: Fairbanks' elementary band is **18/20 sampled (90%)** and **did** contradict itself
+> (300, 355 and 390 all appeared; 390 won 16 of 18); high is 4/5. And the middle band — the one genuine
+> soft spot at 33% — turns out to be fine: the three highest-yield held reps (`ryn` 137, `tan` 109,
+> `rsm` 82) are **Ryan, Tanana and Randy Smith**, which are three of the *same four* middle schools
+> already sampled. **The held evidence was redundant, not missing.**
+>
+> Full reasoning, the residual challenges that survive (gate@8 confidence is silent about — not
+> evidence for — what gate@6 withheld), the audit query, its 17-district baseline, and the re-run
+> triggers: **`docs/technical-notes/production-quality-control-research/2026-07-29-narrowed-dispatch-audit.md`**.
+
 ### 14.8 The sequence this argues for
 
 1. **#691** — blocking further gate@6 freezes (23 districts affected).
