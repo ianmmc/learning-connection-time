@@ -456,14 +456,11 @@ def _unfilled_slots_now(session, district_ids: list, ca_cache: dict = None) -> d
             ca = _load_ca_cached(session, did, ca_cache)
             per_band = {}
             for band, p in (ca.get("slot_projection") or {}).items():
-                # `not match` (review round 2): an AMBIGUOUS slot also reads slot_state
-                # "unfilled", but the pipeline already HOLDS a fact for it — it's waiting on a
-                # human disposition, not on more paid discovery. Pursuing it re-buys data we
-                # have, every compose, until someone clicks. Truly unheard = unfilled AND no
-                # match attached (the same predicate the blanket projection uses).
-                ids = [s_["school_id"] for s_ in (p.get("slots") or [])
-                       if s_.get("slot_state") == "unfilled" and not s_.get("match")
-                       and s_.get("school_id")]
+                # Truly unheard = unfilled AND no match attached (an AMBIGUOUS slot already holds
+                # a fact awaiting a human, not more paid discovery — review round 2). The
+                # predicate's ONE home is RQ.open_unfilled_slots (#694), shared with the
+                # detector's slot_gap_summary so compose and detect can never diverge on it.
+                ids = [s_["school_id"] for s_ in RQ.open_unfilled_slots(p) if s_.get("school_id")]
                 if ids:
                     per_band[band] = ids
             if per_band:
