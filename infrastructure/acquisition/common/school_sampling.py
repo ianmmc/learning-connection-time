@@ -30,11 +30,13 @@ things in this pipeline, each with its own home, and every consumer must know wh
      grades 6-8 inherit the middle band's modal minutes (flagged via overlap_flag, never
      silent) even though the building itself was only ever sampled as an elementary.
 
-  Consequences: relation 2 minus relation 1 = schools a band's denominator counts that the
-  pipeline never seeks for that band (whether placed in another band's pool, or dropped by the
-  <=12/band queue-time sampling cap -- both structural). gate@8 surfaces that number per band
-  (`sampling.n_outside_pool`, closing_argument.py) so a reviewer can tell "structurally
-  unreachable" from "we searched and missed". Follow-up targeting (#694) works the Stage-1 pool
+  Consequences: relation 2 minus relation 1 = schools a band's denominator counts that discovery
+  and follow-up never directly TARGET for that band (whether placed in another band's pool, or
+  dropped by the <=12/band queue-time sampling cap -- both structural). Not a hard coverage cap:
+  a district-wide hub page or a human add can still fill an outside-pool school's slot (Fairbanks
+  elementary samples 18/20 against its 12-school pool). gate@8 surfaces the number per band
+  (`sampling.n_outside_pool`, closing_argument.py) so a reviewer can tell "never sought" from
+  "sought and missed". Follow-up targeting (#694) works the Stage-1 pool
   (relation 1); sampling a relation-2-only school is a bounded ASSUMPTION CHECK of the tie
   rule, never band-filling. Pinned by tests/test_696_band_relations.py.
 

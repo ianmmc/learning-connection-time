@@ -377,14 +377,21 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
             n_total = n_total_level
             denom = {"source": "nces_level", "by_source": None, "nces_year": None}
         # #696: relation 2 minus relation 1 — how many of this band's denominator schools sit
-        # OUTSIDE its Stage-1 pool. Two structural causes, both meaning "never sought for this
-        # band": anti-dilution placed the school in another band's pool (the K-8-serves-middle
-        # case), or the ≤12/band queue-time cap dropped it (Fairbanks elementary: 20 serve, pool
-        # capped at 12). Either way no discovery/extraction/follow-up can raise coverage past
-        # (n_total - n_outside_pool)/n_total. Server-computed so the console renders, never
-        # re-derives; None when either side is unavailable (no roster, or no Stage-1 pool data).
+        # OUTSIDE its Stage-1 pool. Two structural causes, both meaning "never directly TARGETED
+        # for this band": anti-dilution placed the school in another band's pool (the
+        # K-8-serves-middle case), or the ≤12/band queue-time cap dropped it (Fairbanks
+        # elementary: 20 serve, pool capped at 12). NOT a hard coverage cap — a district-wide hub
+        # page or a human_added_fact can still fill an outside-pool school's slot (Fairbanks
+        # elementary samples 18/20 against its 12-school pool); the number says what discovery +
+        # follow-up will never seek, so the reviewer can tell "never sought" from "sought and
+        # missed". Server-computed so the console renders, never re-derives. None when either
+        # side is unavailable — the pool side is the Stage-1 QUEUE-TIME SNAPSHOT
+        # (schools_by_band_json; `{}` when district_target is absent — the load_closing_argument
+        # default, so `{}` must read as unknown, not as an empty pool), while the roster side is
+        # live ccd_sch: the same snapshot-vs-live vintage mix the `_level_overrides` note below
+        # documents, surfaced in the console copy rather than silently blended.
         n_outside_pool = None
-        if broster and schools_by_band is not None:
+        if broster and schools_by_band:
             pool_ids = {str(x.get("school_id")) for x in
                         ((schools_by_band or {}).get(band) or {}).get("schools", [])
                         if x.get("school_id")}

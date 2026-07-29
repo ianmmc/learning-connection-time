@@ -100,20 +100,41 @@ def test_n_outside_pool_none_when_either_side_is_unavailable():
         "D", merged_accepted=acc, merged_unresolved=[], nces_total=5,
         nces_by_level={"Middle": 2}, schools_by_band={})
     assert out["bands"]["middle"]["sampling"]["n_outside_pool"] is None
-    # roster present but NO Stage-1 pool data at all (schools_by_band=None) -> None, not "all outside"
     rosters, _ = _rosters_fairbanks_shape()
-    out2 = CA.build_closing_argument(
-        "D", merged_accepted=acc, merged_unresolved=[], nces_total=5,
-        nces_by_level={"Middle": 2}, schools_by_band=None, band_rosters=rosters)
-    assert out2["bands"]["middle"]["sampling"]["n_outside_pool"] is None
+    for absent_pool in (None, {}):
+        # roster present but NO Stage-1 pool data -> None, not "all outside". The `{}` case is the
+        # one PRODUCTION emits (load_closing_argument defaults to {} when district_target is
+        # absent/empty) — the #702 review caught `is not None` letting it through, which read the
+        # whole roster as outside-pool for a district that had simply never been queued.
+        out2 = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=5,
+            nces_by_level={"Middle": 2}, schools_by_band=absent_pool, band_rosters=rosters)
+        assert out2["bands"]["middle"]["sampling"]["n_outside_pool"] is None
+
+
+def test_band_absent_from_a_real_pool_reads_all_outside():
+    """Distinct from the empty-dict case: a district WITH Stage-1 pool data where THIS band was
+    simply never selected — every roster school genuinely goes unsought, so all-outside is the
+    honest answer (not None: the pool data exists and says so)."""
+    rosters, _ = _rosters_fairbanks_shape()
+    acc = [_fact("middle", "MS 00", 375)]
+    sbb = {"elementary": {"schools": [{"school_id": "020060009999", "name": "Some Elem"}]}}
+    out = CA.build_closing_argument(
+        "D", merged_accepted=acc, merged_unresolved=[], nces_total=30,
+        nces_by_level={"Middle": 4}, schools_by_band=sbb, band_rosters=rosters)
+    assert out["bands"]["middle"]["sampling"]["n_outside_pool"] == 12
 
 
 def test_gate8_console_renders_the_pool_gap():
-    """The UI-visibility rule (static-source pin, the #691 pattern): the structural cap must be an
+    """The UI-visibility rule (static-source pin, the #691 pattern): the pool gap must be an
     explicit note keyed on the server-computed n_outside_pool — a reviewer must be able to tell
-    'structurally unreachable' from 'we searched and missed' without reading reason strings."""
+    'never sought' from 'sought and missed' without reading reason strings. The copy must NOT
+    claim a hard coverage cap (the #702 review disproved that on Fairbanks' own elementary:
+    18/20 sampled against a 12-school pool — hub pages and human adds fill outside-pool slots)."""
     js = (Path(__file__).resolve().parent.parent
           / "infrastructure/acquisition/process_governance/static/stage8.js").read_text()
     assert 'data-feat="pool-gap"' in js
     assert "n_outside_pool" in js                       # renders the server's number, never re-derives
-    assert "structurally capped" in js
+    assert "never target" in js                         # the mechanism-true claim
+    assert "structurally capped" not in js              # the disproven claim must not return
+    assert "queue-time snapshot" in js                  # the pool side's vintage is named (finding 4)

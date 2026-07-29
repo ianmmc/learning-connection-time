@@ -1402,9 +1402,11 @@ school (anti-dilution) → the Stage-1 pool and the Stage-7 spine; **(2) service
 gate@8 slot projection (a K-8 counts toward both elementary and middle); **(3) grade ownership** —
 `stage9_incorporate/per_grade.py`, one band per grade at LEA grain via live spans + the canonical
 tie rule → the published per-grade minutes. Relation 2 minus relation 1 is the set of schools a
-band's denominator counts that the pipeline never seeks for that band; gate@8 surfaces it per band
-(`sampling.n_outside_pool`) so a permanently-capped coverage number (Fairbanks middle: 4/12 by
-construction) is legible as structural, not mistaken for a search failure. Because relation 3
+band's denominator counts that discovery and follow-up never directly target for that band; gate@8
+surfaces it per band (`sampling.n_outside_pool`) so a low coverage number (Fairbanks middle: 4/12,
+with 8 never sought) is legible as structural, not mistaken for a search failure. It is not a hard
+cap — indirect evidence (a district-wide hub page, a human add) can still fill an outside-pool
+school's slot, which is how Fairbanks' elementary samples 18/20 against its 12-school pool. Because relation 3
 already projects a K-8's grades 6-8 onto the middle band's modal minutes (flagged via
 `overlap_flag`), the gap is an *evidence-breadth* question — sampling a relation-2-only school is a
 bounded assumption check of the tie rule (#694), never band-filling.
