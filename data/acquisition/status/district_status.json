@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-29T03:16:45Z",
+  "last_updated": "2026-07-29T06:30:48Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -923,11 +923,11 @@
     "0200600": {
       "name": "Fairbanks North Star Borough School District",
       "state": "AK",
-      "furthest_stage": 7,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "furthest_stage": 9,
+      "stage_name": "incorporate",
+      "outcome": null,
       "topology": null,
-      "batch_id": "batch_00030",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -1050,9 +1050,51 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-27T23:37:52Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "dispatch",
+          "outcome": null,
+          "at": "2026-07-29T06:07:38Z",
+          "checkpoint": "gate@6",
+          "event_type": "draft_add_district",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-29T06:08:38Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-29T06:10:46Z"
+        },
+        {
+          "stage": 8,
+          "stage_name": "aggregate",
+          "outcome": null,
+          "at": "2026-07-29T06:16:58Z",
+          "checkpoint": "gate@8",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": 9,
+          "stage_name": "incorporate",
+          "outcome": null,
+          "at": "2026-07-29T06:18:57Z",
+          "checkpoint": "incorporated",
+          "event_type": "incorporated",
+          "actor": "auto:stage9"
         }
       ],
-      "notes": "2 security_block (cf-mitigated header)"
+      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
     },
     "0400023": {
       "name": "Pinon Unified District (4390)",
@@ -1540,10 +1582,10 @@
       "name": "BENTONVILLE SCHOOL DISTRICT",
       "state": "AR",
       "furthest_stage": 7,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00030",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -1678,6 +1720,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-29T03:19:37Z"
         }
       ],
       "notes": "d9a49bcabf0d"
@@ -3604,11 +3652,11 @@
     "0900450": {
       "name": "Bridgeport School District",
       "state": "CT",
-      "furthest_stage": 7,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "furthest_stage": 8,
+      "stage_name": "aggregate",
+      "outcome": null,
       "topology": null,
-      "batch_id": "batch_00031",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -3756,6 +3804,21 @@
           "at": "2026-07-29T03:16:45Z",
           "checkpoint": "gate@6",
           "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-29T03:23:03Z"
+        },
+        {
+          "stage": 8,
+          "stage_name": "aggregate",
+          "outcome": null,
+          "at": "2026-07-29T04:05:27Z",
+          "checkpoint": "gate@8",
+          "event_type": "approved",
           "actor": "ian"
         }
       ],
@@ -4232,11 +4295,11 @@
     "1200180": {
       "name": "BROWARD",
       "state": "FL",
-      "furthest_stage": 7,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "furthest_stage": 8,
+      "stage_name": "aggregate",
+      "outcome": null,
       "topology": null,
-      "batch_id": "batch_00031",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -4379,9 +4442,24 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-29T03:24:03Z"
+        },
+        {
+          "stage": 8,
+          "stage_name": "aggregate",
+          "outcome": null,
+          "at": "2026-07-29T05:10:12Z",
+          "checkpoint": "gate@8",
+          "event_type": "sent_back",
+          "actor": "ian"
         }
       ],
-      "notes": "d9a49bcabf0d"
+      "notes": "Broward is a massive district and the sample is thin. I want to see if we can find an updated version of the PDF we found with the benchmark batch_00000 run."
     },
     "1201440": {
       "name": "ORANGE",
@@ -11911,11 +11989,11 @@
     "3904378": {
       "name": "Cleveland Municipal",
       "state": "OH",
-      "furthest_stage": 7,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "furthest_stage": 8,
+      "stage_name": "aggregate",
+      "outcome": null,
       "topology": null,
-      "batch_id": "batch_00032",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -12040,9 +12118,42 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-27T23:31:05Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "dispatch",
+          "outcome": null,
+          "at": "2026-07-29T05:55:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "draft_add_district",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-29T06:08:38Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-29T06:12:15Z"
+        },
+        {
+          "stage": 8,
+          "stage_name": "aggregate",
+          "outcome": null,
+          "at": "2026-07-29T06:30:48Z",
+          "checkpoint": "gate@8",
+          "event_type": "sent_back",
+          "actor": "ian"
         }
       ],
-      "notes": "3 security_block (cf-mitigated header); 13 security_block (district capture halted -- 3 challenges with no successful capture between; one-attempt rule)"
+      "notes": "thin coverage plus duplicate entities (#693), flagged in issue #674"
     },
     "3904519": {
       "name": "Amherst Exempted Village",
@@ -14794,11 +14905,11 @@
     "5000395": {
       "name": "Essex Westford Educational Community Unified Union SD #51",
       "state": "VT",
-      "furthest_stage": 7,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "furthest_stage": 8,
+      "stage_name": "aggregate",
+      "outcome": null,
       "topology": null,
-      "batch_id": "batch_00032",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -14944,9 +15055,42 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-27T23:31:05Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "dispatch",
+          "outcome": null,
+          "at": "2026-07-29T05:55:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "draft_add_district",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-29T06:08:38Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-29T06:12:36Z"
+        },
+        {
+          "stage": 8,
+          "stage_name": "aggregate",
+          "outcome": null,
+          "at": "2026-07-29T06:30:10Z",
+          "checkpoint": "gate@8",
+          "event_type": "sent_back",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00032"
+      "notes": "hub-priority suppression of other viable times with no follow-up (#691)"
     },
     "5000425": {
       "name": "Mt. Abraham Unified School District #61",

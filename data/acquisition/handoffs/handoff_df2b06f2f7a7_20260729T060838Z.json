@@ -1,0 +1,1544 @@
+{
+  "handoff_hash": "df2b06f2f7a7",
+  "created_at": "2026-07-29T06:08:38Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "dispatch_type": "production",
+  "fingerprints": {
+    "5000395": {
+      "config": "f77ddb950061",
+      "labels": "3f14418847bc",
+      "data": "bf1a122121e7"
+    },
+    "3904378": {
+      "config": "f77ddb950061",
+      "labels": "517bbd2b1dd7",
+      "data": "c27ca2d665da"
+    },
+    "0200600": {
+      "config": "f77ddb950061",
+      "labels": "714cb15ac3a9",
+      "data": "bfb34760f220"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v4"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.00918,
+    "n_reps": 9,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "5000395",
+      "name": "Essex Westford Educational Community Unified Union SD #51",
+      "state": "VT",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "5000395:6f8beade93",
+          "url": "https://docs.google.com/document/d/1vndewfgZ49RJcaDOy4NJtWvzMlWTngj1JuN3PoS4f4w/edit?usp=sharing",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:2945f3d474",
+          "url": "gt://gt_curation_20260621T060008Z/5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51/Home _ Westford School (Elementary).pdf",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:179b4a1c55",
+          "url": "gt://gt_curation_20260621T060008Z/5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51/Home _ Essex Middle School.pdf",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:642c632e75",
+          "url": "gt://gt_curation_20260621T060008Z/5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51/Home _ Essex Elementary School.pdf",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:c5e56759e1",
+          "url": "https://www.ewsd.org/o/hia/live-feed?page_no=6",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:e41157a6d2",
+          "url": "https://www.ewsd.org/o/wes/article/1063696",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:0bce30c44b",
+          "url": "https://www.ewsd.org/o/ees/article/2144727",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:766fc1f21c",
+          "url": "https://www.ewsd.org/o/hia/page/harvey-karen",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:ba31b8eed7",
+          "url": "https://www.ewsd.org/o/ems/live-feed?page_no=6",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:b70abbb549",
+          "url": "https://www.ewsd.org/o/ehs/live-feed?page_no=31",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:99c43518cc",
+          "url": "https://www.ewsd.org/o/fms/article/2144724",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:072ef9e2ea",
+          "url": "https://www.ewsd.org/o/ehs/article/1165102",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:a4b83995b2",
+          "url": "https://www.ewsd.org/o/sum/staff/",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:606868c2c8",
+          "url": "https://www.ewsd.org/o/sum/news/",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:74bdab3110",
+          "url": "https://www.ewsd.org/o/hia/documents/our-school/22766390",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:17df68b26d",
+          "url": "https://www.ewsd.org/o/ees",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:b17346dc78",
+          "url": "https://www.ewsd.org/o/wes/article/2144723",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:978e08c699",
+          "url": "gt://gt_curation_20260621T060008Z/5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51/Essex High School Bell Schedule.jpeg",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:af824533da",
+          "url": "https://www.ewsd.org/page/calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:6a2db9365b",
+          "url": "https://www.ewsd.org/o/wes/page/calendar",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:f63253879e",
+          "url": "https://www.ewsd.org/o/sum/",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:5e1b10f742",
+          "url": "https://www.ewsd.org/o/sum/events?id=54459404",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:2b6f84551f",
+          "url": "https://www.ewsd.org/o/sum/article/1683935",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:f55a96a301",
+          "url": "https://www.ewsd.org/o/sum/article/1350965",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:cfa9f4adfc",
+          "url": "https://www.ewsd.org/o/fle/page/calendar",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:7f958633a6",
+          "url": "https://www.ewsd.org/o/adl/live-feed?page_no=13",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:ae18873483",
+          "url": "https://www.ewsd.org/o/ehs/page/calendars-time-management",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:7c8b5d95c0",
+          "url": "https://www.ewsd.org/ehs",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:4705ac365b",
+          "url": "https://www.ewsd.org/o/hia/page/calendar",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:b84094a129",
+          "url": "https://www.ewsd.org/o/hia",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:fcfbe38101",
+          "url": "https://www.ewsd.org/o/adl",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:5c0cabc0b9",
+          "url": "https://www.ewsd.org/o/ees/page/calendar",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:534e277706",
+          "url": "https://www.ewsd.org/o/ehs/live_feeds/11809343",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:eafd8b1db5",
+          "url": "https://www.ewsd.org/o/hia/page/caforia-joseph-hia",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:18bb04b36b",
+          "url": "https://www.ewsd.org/o/fle",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:598ab6e252",
+          "url": "https://www.ewsd.org/EMS",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:3c89540c7a",
+          "url": "https://www.ewsd.org/o/sum/article/1398383",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:04d959b1db",
+          "url": "https://www.ewsd.org/o/ems/page/calendar",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:221e8f46e8",
+          "url": "https://www.ewsd.org/o/adl/page/calendar",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:1f0c7990f2",
+          "url": "https://www.ewsd.org/o/ehs/page/calendar",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:2b0994d4ca",
+          "url": "https://www.ewsd.org/o/ees/documents/calendar/429800",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:658f2a85e6",
+          "url": "https://www.ewsd.org/wes",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:f56b70f85b",
+          "url": "https://www.ewsd.org/o/sum/article/1345746",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:1498c18c23",
+          "url": "https://www.ewsd.org/o/fms/live-feed?page_no=14",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 40,
+              "n_chars": 11262
+            }
+          ]
+        },
+        {
+          "rec_key": "5000395:ca0448b9c0",
+          "url": "https://www.ewsd.org/page/transportation-procedures",
+          "decision": "hold",
+          "reason": "unlabeled-tier-C",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:8bcf6af7b8",
+          "url": "https://www.ewsd.org/",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:bfce061e96",
+          "url": "https://drive.google.com/file/d/1QC1Pn6BY_T3vcw3heRX2fwWxPp45ayi3/view?usp=sharing",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:121644b2f3",
+          "url": "https://www.ewsd.org/live-feed?page_no=2",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "3904378",
+      "name": "Cleveland Municipal",
+      "state": "OH",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "3904378:5fb2f9df3f",
+          "url": "https://mct.clevelandmetroschools.org/about-our-school/bell-schedule",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 48,
+              "n_chars": 1720
+            }
+          ]
+        },
+        {
+          "rec_key": "3904378:6316d3e16b",
+          "url": "https://lmm.clevelandmetroschools.org/about/building-schudule",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 54,
+              "n_chars": 1775
+            }
+          ]
+        },
+        {
+          "rec_key": "3904378:4253474e43",
+          "url": "https://www.clevelandmetroschools.org/about-us/district-calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:ecd98c21b2",
+          "url": "https://morgan.clevelandmetroschools.org/about-us/bell-schedule",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 21,
+              "n_chars": 756
+            }
+          ]
+        },
+        {
+          "rec_key": "3904378:e51613860e",
+          "url": "gt://gt_curation_20260621T060008Z/3904378_Cleveland_Municipal/StartEndTimesFlier_7-11-25.webp",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:399eb500e7",
+          "url": "https://rses.clevelandmetroschools.org/parents-students/bell-schedule",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 30,
+              "n_chars": 808
+            }
+          ]
+        },
+        {
+          "rec_key": "3904378:806162d880",
+          "url": "https://gibbons.clevelandmetroschools.org/parents-students/policies/school-hours",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 12,
+              "n_chars": 2524
+            }
+          ]
+        },
+        {
+          "rec_key": "3904378:c16fe93a8e",
+          "url": "https://lmm.clevelandmetroschools.org/old-homepage",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:eb71b73264",
+          "url": "https://csa.clevelandmetroschools.org/students-6e/daily-schedule",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 54,
+              "n_chars": 1069
+            }
+          ]
+        },
+        {
+          "rec_key": "3904378:96b5d889bb",
+          "url": "https://jfk.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:481e1fa224",
+          "url": "https://johnhay.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:3cf45eea9d",
+          "url": "https://rickoff.clevelandmetroschools.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:0f09ef46a2",
+          "url": "https://franklin.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:05794dc3bc",
+          "url": "https://jamison.clevelandmetroschools.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:5cb9e4e91d",
+          "url": "https://eastclark.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:91b6fc606a",
+          "url": "https://www.clevelandmetroschools.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:5728b661cb",
+          "url": "https://clark.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:36964d5eb2",
+          "url": "https://glenville.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:40abcad220",
+          "url": "https://morgan.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:cd67a1bca5",
+          "url": "https://so1.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:c32dace9a5",
+          "url": "https://wadepark.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:4f15f3bd38",
+          "url": "https://milespark.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:4e3d783019",
+          "url": "https://memorial.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:adc171a63c",
+          "url": "https://harveyrice.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:083b5d5bee",
+          "url": "https://denison.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:4e3995486e",
+          "url": "https://easttech.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:1ad5cc7c8b",
+          "url": "https://csa.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:bf2d0d6866",
+          "url": "https://npina.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:2015edc90d",
+          "url": "https://jmhs.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:7f69de2759",
+          "url": "https://gmhs.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:7cbf18753a",
+          "url": "https://maxshayes.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:a813b0fbaf",
+          "url": "https://perry.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:d7f9577ffc",
+          "url": "https://bard.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:d10b7341bc",
+          "url": "https://lwhs.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:c2da03ecee",
+          "url": "https://young.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:a9bea780b6",
+          "url": "https://cis.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:f4e2b7341b",
+          "url": "https://hart.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:21ef6745d5",
+          "url": "https://sterling.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:4f6213a9b9",
+          "url": "https://lmm.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:5dc1bf6e3b",
+          "url": "https://buhrer.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:f2c8ab8ee9",
+          "url": "https://stj.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:41fbc06291",
+          "url": "https://garfield.clevelandmetroschools.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:a94e9f55c5",
+          "url": "https://lwsh.clevelandmetroschools.org/about/school-hours-and-policies",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 14,
+              "n_chars": 2975
+            }
+          ]
+        },
+        {
+          "rec_key": "3904378:c34a284988",
+          "url": "https://npina.clevelandmetroschools.org/about-us/natividad-pagan-international-newcomers-academy-calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:e7eab48489",
+          "url": "https://maxshayes.clevelandmetroschools.org/about-us/max-s-hayes-high-school-calendar",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:956c8b3327",
+          "url": "https://jmsoe.clevelandmetroschools.org/class-of-2025/important-dates",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:cfb4d45290",
+          "url": "https://www.clevelandmetroschools.org/academics/office-of-teaching-and-learning/curriculum-instruction/science-education/beaker-journal-springsummer-2020-edition",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:3ffa4cfcad",
+          "url": "https://www.clevelandmetroschools.org/building-brighter-futures/bbf-school-events",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:7f4f77a6b7",
+          "url": "https://gibbons.clevelandmetroschools.org/about-our-school/school-tours",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:7b5009b064",
+          "url": "https://www.clevelandmetroschools.org/fs/resource-manager/view/9907b60e-3d5b-45ff-bb86-c4b29b089705",
+          "decision": "hold",
+          "reason": "unlabeled-tier-C",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:ed754154cc",
+          "url": "https://ina.clevelandmetroschools.org/students",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:d9dad6d82a",
+          "url": "https://ina.clevelandmetroschools.org/district-calendars",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:d74a7f7dc5",
+          "url": "http://swmc.clevelandmetroschools.org/about-us/school-policies/school-hours",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:42a15c5494",
+          "url": "https://lwgs.clevelandmetroschools.org/district-forms",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:f53c21bbf1",
+          "url": "https://www.clevelandmetroschools.org/fs/resource-manager/view/d85538c8-08f0-42e6-ac1e-2a97dd1c7d54",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:484db2edfb",
+          "url": "https://maxshayes.clevelandmetroschools.org/district-calendars",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:fd69c822b6",
+          "url": "https://maxshayes.clevelandmetroschools.org/about-us/dress-code",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:b17bec24e3",
+          "url": "https://www.clevelandmetroschools.org/academics/office-of-student-services/special-education/frequently-asked-questions",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:2176836f90",
+          "url": "https://csa.clevelandmetroschools.org/all-news",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:553ab0e43f",
+          "url": "https://jmit.clevelandmetroschools.org/district-calendars",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:0ac6b71cc5",
+          "url": "https://jmit.clevelandmetroschools.org/about-us/john-marshall-it-calendar",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:6d1b40eafd",
+          "url": "https://jmit.clevelandmetroschools.org/about-us",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:ff455bdc68",
+          "url": "https://so1.clevelandmetroschools.org/all-news/post-details/~board/in-the-district-cleveland-metropolitan-school-district-36618/post/my-future-starts-here-summer-college-tour-series",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:d00ff695b1",
+          "url": "https://jmsoe.clevelandmetroschools.org/families/family-community-engagement/district-calendar",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:55b3f34676",
+          "url": "https://rses.clevelandmetroschools.org/about/about-us/history-of-rhodes",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:c95ea70354",
+          "url": "https://jmit.clevelandmetroschools.org/faculty-staff-52",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:2c8fd57f94",
+          "url": "https://www.clevelandmetroschools.org/about-us/connect-with-us",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:37520c7248",
+          "url": "https://www.clevelandmetroschools.org/building-brighter-futures/building-brighter-futures-recommendations",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:330db781db",
+          "url": "https://www.clevelandmetroschools.org/parents/powerschool",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:5a9bcd231b",
+          "url": "https://lwsh.clevelandmetroschools.org/about/science-and-health-calendar",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:15192b7feb",
+          "url": "https://lwsh.clevelandmetroschools.org/about",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:1f0f4e2451",
+          "url": "https://gibbons.clevelandmetroschools.org/district-directory",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:067186afb1",
+          "url": "https://gibbons.clevelandmetroschools.org/about-our-school/principals-message",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:d5fcc9eb7e",
+          "url": "https://gibbons.clevelandmetroschools.org/about-our-school/staff-directory",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:9aac64c398",
+          "url": "https://gibbons.clevelandmetroschools.org/about-our-school",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:2fb2a004c6",
+          "url": "https://gibbons.clevelandmetroschools.org/about-our-school/bell-schedule-24-25",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:44d93b5d91",
+          "url": "https://gibbons.clevelandmetroschools.org/about-our-school/hannah-gibbons-calendar",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:4b468c4472",
+          "url": "https://www.clevelandmetroschools.org/academics/office-of-student-services/special-education/gifted-education/major-work-program",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:5efa6fabf1",
+          "url": "https://www.clevelandmetroschools.org/schools/registration-and-enrollment",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:88644a929e",
+          "url": "https://www.clevelandmetroschools.org/Page/4140",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:24bbd7324f",
+          "url": "https://www.clevelandmetroschools.org/fs/resource-manager/view/6afb7ea0-2360-41ff-94e3-ade530a28031",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:cc696bc6c1",
+          "url": "https://www.clevelandmetroschools.org/cms/lib/OH01915844/Centricity/domain/39/yearlybudget/CMSDFY22BudgetBookFinal.pdf",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:e5fc8e3ed0",
+          "url": "https://www.clevelandmetroschools.org/schools",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:0b67025357",
+          "url": "https://www.clevelandmetroschools.org/schools/2026-graduation-schedule/natividad-pagan-international-newcomers-academy",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:014b56601e",
+          "url": "https://www.clevelandmetroschools.org/division-of-legal-services/office-of-contract-implementation/historical-memorandum-of-understandings",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3904378:7eda250f73",
+          "url": "https://gmsei.clevelandmetroschools.org/our-school/gmsei-resources/bell-schedule",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 7,
+      "est_usd": 0.0071400000000000005
+    },
+    {
+      "district_id": "0200600",
+      "name": "Fairbanks North Star Borough School District",
+      "state": "AK",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "0200600:3c67a1639b",
+          "url": "https://www.k12northstar.org/fs/resource-manager/view/6417af46-f4ff-4c2b-a38c-0ac9bde93b09",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:30004779df",
+          "url": "https://wvh.k12northstar.org/about",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:2753d64d1c",
+          "url": "https://docs.google.com/document/d/12334vtHCGHWdj2IORiBFMdTZb1pVy93OM2GybUU9dbg/edit",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:2861de9006",
+          "url": "https://wvh.k12northstar.org/daily-bulletin/daily-bulletin",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:0f2d15c953",
+          "url": "https://npm.k12northstar.org/about",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:9fceb985de",
+          "url": "https://www.k12northstar.org/fs/resource-manager/view/177f9628-bb20-4b53-9784-aac0138a4309",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 80,
+              "n_chars": 2670
+            }
+          ]
+        },
+        {
+          "rec_key": "0200600:e24629f5d1",
+          "url": "https://tan.k12northstar.org/about/bell-schedule",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:8dc34bd30a",
+          "url": "https://wvh.k12northstar.org/about/bell-schedule",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:f47b641795",
+          "url": "https://lth.k12northstar.org/about/bell-schedule",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:89317a1904",
+          "url": "https://rsm.k12northstar.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:59d0a7306e",
+          "url": "https://upk.k12northstar.org/about",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:4bada4b592",
+          "url": "https://wrv.k12northstar.org/about",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:57a77ce3ec",
+          "url": "https://rsm.k12northstar.org/about/bell-schedule-2023-2024",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:1cde1bba85",
+          "url": "https://wvh.k12northstar.org/calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:d058002450",
+          "url": "https://ryn.k12northstar.org/about/families/ryan-bell-schedule",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:e6486d2470",
+          "url": "https://www.k12northstar.org/view-all-news/post-details/~board/district-news/post/updated-school-start-end-times-for-2025-26-letter-from-superintendent",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:19e64eb740",
+          "url": "https://htr.k12northstar.org/",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:351cb3942c",
+          "url": "https://bsc.k12northstar.org/about/frequently-asked-questions",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:8f0e8be40e",
+          "url": "https://www.k12northstar.org/fs/resource-manager/view/f170452b-bfd1-4d9f-8be9-a2aff72efa47",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:9c9219b3c7",
+          "url": "https://wvh.k12northstar.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:66a91df936",
+          "url": "https://lad.k12northstar.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:39c4473787",
+          "url": "https://npe.k12northstar.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:3a43ed48d5",
+          "url": "https://nph.k12northstar.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:2e0632f808",
+          "url": "https://npm.k12northstar.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:2b73c86a93",
+          "url": "https://nph.k12northstar.org/calendar",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:2dc561da4e",
+          "url": "https://nsc.k12northstar.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:2932aff2c4",
+          "url": "https://wvh.k12northstar.org/counseling/testing",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:63d0eb641f",
+          "url": "https://www.k12northstar.org/departments/alternative-schools-programs/star-of-the-north",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:6d4a7f6307",
+          "url": "https://tan.k12northstar.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:9b1683d313",
+          "url": "https://lth.k12northstar.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-C",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:2b24ea9c6b",
+          "url": "https://ekc.k12northstar.org/about-us/school-calendar-start-time",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:dfee50dd59",
+          "url": "https://ryn.k12northstar.org/",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:10e5cc1cba",
+          "url": "https://www.k12northstar.org/",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:d052d0c70d",
+          "url": "https://wrv.k12northstar.org/",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:c05955c1cb",
+          "url": "https://www.k12northstar.org/calendar",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:5af99595a9",
+          "url": "https://ekc.k12northstar.org/calendar",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:7f1500dac4",
+          "url": "https://lad.k12northstar.org/calendar",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:cc9f9a4e30",
+          "url": "https://www.k12northstar.org/departments/transportation/route-information",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:c8c674f5ff",
+          "url": "https://rsm.k12northstar.org/activities/fysa-soccer",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:a51c1831a6",
+          "url": "https://www.k12northstar.org/departments/alternative-schools-programs/cec",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:155a202148",
+          "url": "https://www.k12northstar.org/enroll/kindergarten-information",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:c3d3f14dc5",
+          "url": "https://www.k12northstar.org/departments/nutrition-services/five-star-menus",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:d62fc2b05f",
+          "url": "https://www.k12northstar.org/departments/transportation",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:573ab87555",
+          "url": "https://www.k12northstar.org/about",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:6b2d6b5376",
+          "url": "https://arc.k12northstar.org/calendar",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:a0a75bcacd",
+          "url": "https://upk.k12northstar.org/~board/university-park-elementary-news/post/make-and-take",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:c05f768c7e",
+          "url": "https://upk.k12northstar.org/calendar",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:bd5790f65d",
+          "url": "https://htr.k12northstar.org/calendar",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:a2f897f594",
+          "url": "https://npm.k12northstar.org/calendar",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:2477979fa0",
+          "url": "https://npe.k12northstar.org/counseling/schedule-standards",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:7d6c23cebf",
+          "url": "https://lth.k12northstar.org/calendar",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:807be46306",
+          "url": "https://upk.k12northstar.org/",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:12daa0c2d2",
+          "url": "https://lth.k12northstar.org/1counseling",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:d929ce6bc4",
+          "url": "https://www.k12northstar.org/families/back-to-school",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:96cf7a0089",
+          "url": "https://rsm.k12northstar.org/calendar",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:20ac83dba9",
+          "url": "https://tan.k12northstar.org/calendar",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:95c73d56e9",
+          "url": "https://www.k12northstar.org/news/district-news",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:3a015ae7e4",
+          "url": "https://lth.k12northstar.org/news",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    }
+  ]
+}

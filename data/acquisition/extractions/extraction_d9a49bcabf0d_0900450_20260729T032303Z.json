@@ -1,0 +1,4524 @@
+{
+  "handoff_hash": "d9a49bcabf0d",
+  "district": {
+    "district_id": "0900450",
+    "name": "Bridgeport School District",
+    "reps": [
+      {
+        "rec_key": "0900450:ba56934af1",
+        "file": "pdfplumber_lines.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 41,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Barnum",
+                "confidence": "high",
+                "evidence_quote": "Barnum | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:55",
+                "school_name": "Blackham",
+                "confidence": "high",
+                "evidence_quote": "Blackham | 8:25 AM | 2:55 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Batalla",
+                "confidence": "high",
+                "evidence_quote": "Batalla | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Beardsley",
+                "confidence": "high",
+                "evidence_quote": "Beardsley | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Black Rock",
+                "confidence": "high",
+                "evidence_quote": "Black Rock | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Bryant",
+                "confidence": "high",
+                "evidence_quote": "Bryant | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Classical Studies",
+                "confidence": "high",
+                "evidence_quote": "Classical Studies | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Columbus",
+                "confidence": "high",
+                "evidence_quote": "Columbus | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Geraldine Claytor",
+                "confidence": "high",
+                "evidence_quote": "Geraldine Claytor | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:05",
+                "school_name": "Curiale",
+                "confidence": "high",
+                "evidence_quote": "Curiale | 8:45 AM | 3:05 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "Curiale",
+                "confidence": "high",
+                "evidence_quote": "Curiale | 7:50 AM | 2:20 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Discovery",
+                "confidence": "high",
+                "evidence_quote": "Discovery | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Dunbar",
+                "confidence": "high",
+                "evidence_quote": "Dunbar | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Edison",
+                "confidence": "high",
+                "evidence_quote": "Edison | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Geraldine Johnson",
+                "confidence": "high",
+                "evidence_quote": "Geraldine Johnson | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Hall",
+                "confidence": "high",
+                "evidence_quote": "Hall | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Hallen",
+                "confidence": "high",
+                "evidence_quote": "Hallen | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:55",
+                "school_name": "High Horizon",
+                "confidence": "high",
+                "evidence_quote": "High Horizon | 8:35 AM | 2:55 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Jettie Tisdale",
+                "confidence": "high",
+                "evidence_quote": "Jettie Tisdale | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "John Winthrop",
+                "confidence": "high",
+                "evidence_quote": "John Winthrop | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Marin",
+                "confidence": "high",
+                "evidence_quote": "Marin | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Madison",
+                "confidence": "high",
+                "evidence_quote": "Madison | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:55",
+                "school_name": "Multicultural",
+                "confidence": "high",
+                "evidence_quote": "Multicultural | 8:35 AM | 2:55 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:55",
+                "school_name": "Park City Magnet",
+                "confidence": "high",
+                "evidence_quote": "Park City Magnet | 8:35 AM | 2:55 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:00",
+                "school_name": "Read",
+                "confidence": "high",
+                "evidence_quote": "Read | 8:30 AM | 3:00 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "Read",
+                "confidence": "high",
+                "evidence_quote": "Read | 7:50 AM | 2:20 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Roosevelt",
+                "confidence": "high",
+                "evidence_quote": "Roosevelt | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Thomas Hooker",
+                "confidence": "high",
+                "evidence_quote": "Thomas Hooker | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Waltersville",
+                "confidence": "high",
+                "evidence_quote": "Waltersville | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Wilbur Cross",
+                "confidence": "high",
+                "evidence_quote": "Wilbur Cross | 8:50 AM | 3:10 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:00",
+                "school_name": "Bpt. Learning Ctr.",
+                "confidence": "high",
+                "evidence_quote": "Bpt. Learning Ctr. | 8:15 AM | 2:00 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "10:20",
+                "school_name": "Skane (AM)",
+                "confidence": "high",
+                "evidence_quote": "Skane (AM) | 7:40 AM | 10:20 AM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "11:20",
+                "end_time": "14:00",
+                "school_name": "Skane (PM)",
+                "confidence": "high",
+                "evidence_quote": "Skane (PM) | 11:20 AM | 2:00 PM",
+                "source_locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:53",
+                "end_time": "14:30",
+                "school_name": "Bassick",
+                "confidence": "high",
+                "evidence_quote": "Bassick 7:53 AM 2:30 PM",
+                "source_locus": "Full Day Half Day High Schools",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:53",
+                "end_time": "14:30",
+                "school_name": "Central",
+                "confidence": "high",
+                "evidence_quote": "Central 7:53 AM 2:30 PM",
+                "source_locus": "Full Day Half Day High Schools",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:53",
+                "end_time": "14:30",
+                "school_name": "Harding",
+                "confidence": "high",
+                "evidence_quote": "Harding 7:53 AM 2:30 PM",
+                "source_locus": "Full Day Half Day High Schools",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "14:00",
+                "school_name": "Brpt. Learning Ctr.",
+                "confidence": "high",
+                "evidence_quote": "Brpt. Learning Ctr. 8:15 AM 2:00 PM",
+                "source_locus": "Full Day Half Day High Schools",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "14:05",
+                "school_name": "Fairchild Wheeler",
+                "confidence": "high",
+                "evidence_quote": "Fairchild Wheeler 7:50 AM 2:05 PM",
+                "source_locus": "Full Day Half Day High Schools",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "14:10",
+                "school_name": "Bpt. Military Academy",
+                "confidence": "high",
+                "evidence_quote": "Bpt. Military Academy 7:55 AM 2:10 PM",
+                "source_locus": "Full Day Half Day High Schools",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Aquaculture",
+                "confidence": "high",
+                "evidence_quote": "Aquaculture 8:00 AM 2:05 PM",
+                "source_locus": "Full Day Half Day High Schools",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Classical Studies (K-6)",
+                "confidence": "high",
+                "evidence_quote": "Classical Studies (K-6) bell times: Aug/Sept: 8:50 AM to 3:10 PM",
+                "source_locus": "Classical Studies (K-6) bell times:",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 3084,
+            "completion_tokens": 5654,
+            "cost_usd": 0.00257,
+            "latency_ms": 14219,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785295181-50k9FDBMvfYQZLvhF16i",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 40,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Barnum",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:55",
+                "school_name": "Blackham",
+                "confidence": "high",
+                "evidence_quote": "8:25 AM - 2:55 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Battala",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Beardsley",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Black Rock",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Bryant",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Classical Studies",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Columbus",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Geraldine Claytor",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:05",
+                "school_name": "Curiale",
+                "confidence": "high",
+                "evidence_quote": "8:45 AM - 3:05 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Discovery",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Dunbar",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Edison",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Geraldine Johnson",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Hall",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Hallen",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:55",
+                "school_name": "High Horizon",
+                "confidence": "high",
+                "evidence_quote": "8:35 AM - 2:55 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Jettie Tisdale",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "John Winthrop",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Marin",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Madison",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:55",
+                "school_name": "Multicultural",
+                "confidence": "high",
+                "evidence_quote": "8:35 AM - 2:55 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:55",
+                "school_name": "Park City Magnet",
+                "confidence": "high",
+                "evidence_quote": "8:35 AM - 2:55 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:00",
+                "school_name": "Read",
+                "confidence": "high",
+                "evidence_quote": "8:30 AM - 3:00 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Roosevelt",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Thomas Hooker",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Waltersville",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Wilbur Cross",
+                "confidence": "high",
+                "evidence_quote": "8:50 AM - 3:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:00",
+                "school_name": "Bpt. Learning Ctr.",
+                "confidence": "high",
+                "evidence_quote": "8:15 AM - 2:00 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "Curiale",
+                "confidence": "high",
+                "evidence_quote": "7:50 AM - 2:20 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "12:00",
+                "school_name": "Curiale",
+                "confidence": "high",
+                "evidence_quote": "7:50 AM - 12:00 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "Read",
+                "confidence": "high",
+                "evidence_quote": "7:50 AM - 2:20 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "12:00",
+                "school_name": "Read",
+                "confidence": "high",
+                "evidence_quote": "7:50 AM - 12:00 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:53",
+                "end_time": "14:30",
+                "school_name": "Bassick",
+                "confidence": "high",
+                "evidence_quote": "7:53 AM - 2:30 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:53",
+                "end_time": "14:30",
+                "school_name": "Central",
+                "confidence": "high",
+                "evidence_quote": "7:53 AM - 2:30 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:53",
+                "end_time": "14:30",
+                "school_name": "Harding",
+                "confidence": "high",
+                "evidence_quote": "7:53 AM - 2:30 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "14:00",
+                "school_name": "Bpt. Learning Ctr.",
+                "confidence": "high",
+                "evidence_quote": "8:15 AM - 2:00 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "14:05",
+                "school_name": "Fairchild Wheeler",
+                "confidence": "high",
+                "evidence_quote": "7:50 AM - 2:05 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "14:10",
+                "school_name": "Bpt. Military Academy",
+                "confidence": "high",
+                "evidence_quote": "7:55 AM - 2:10 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Aquaculture",
+                "confidence": "high",
+                "evidence_quote": "8:00 AM - 2:05 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 3044,
+            "completion_tokens": 5157,
+            "cost_usd": 0.00056476,
+            "latency_ms": 73982,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785295192-4wokSn2pBherfoJildDJ",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 38,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Barnum",
+                "confidence": "high",
+                "evidence_quote": "Barnum | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:55",
+                "school_name": "Blackham",
+                "confidence": "high",
+                "evidence_quote": "Blackham | 8:25 AM | 2:55 PM |  |  | 8:25 AM | 12:35 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Batalla",
+                "confidence": "high",
+                "evidence_quote": "Batalla | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Beardsley",
+                "confidence": "high",
+                "evidence_quote": "Beardsley | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Black Rock",
+                "confidence": "high",
+                "evidence_quote": "Black Rock | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Bryant",
+                "confidence": "high",
+                "evidence_quote": "Bryant | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Classical Studies",
+                "confidence": "high",
+                "evidence_quote": "Classical Studies | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Columbus",
+                "confidence": "high",
+                "evidence_quote": "Columbus | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Geraldine Claytor",
+                "confidence": "high",
+                "evidence_quote": "Geraldine Claytor | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:05",
+                "school_name": "Curiale",
+                "confidence": "high",
+                "evidence_quote": "Curiale | 8:45 AM | 3:05 PM | 7:50 AM | 2:20 PM | 8:45 AM | 12:45 PM | 7:50 AM | 12:00 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Discovery",
+                "confidence": "high",
+                "evidence_quote": "Discovery | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Dunbar",
+                "confidence": "high",
+                "evidence_quote": "Dunbar | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Edison",
+                "confidence": "high",
+                "evidence_quote": "Edison | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Geraldine Johnson",
+                "confidence": "high",
+                "evidence_quote": "Geraldine Johnson | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Hall",
+                "confidence": "high",
+                "evidence_quote": "Hall | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Hallen",
+                "confidence": "high",
+                "evidence_quote": "Hallen | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:00 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:55",
+                "school_name": "High Horizon",
+                "confidence": "high",
+                "evidence_quote": "High Horizon | 8:35 AM | 2:55 PM |  |  | 8:35 AM | 12:35 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Jettie Tisdale",
+                "confidence": "high",
+                "evidence_quote": "Jettie Tisdale | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "John Winthrop",
+                "confidence": "high",
+                "evidence_quote": "John Winthrop | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Marin",
+                "confidence": "high",
+                "evidence_quote": "Marin | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Madison",
+                "confidence": "high",
+                "evidence_quote": "Madison | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:55",
+                "school_name": "Multicultural",
+                "confidence": "high",
+                "evidence_quote": "Multicultural | 8:35 AM | 2:55 PM |  |  | 8:35 AM | 12:35 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:55",
+                "school_name": "Park City Magnet",
+                "confidence": "high",
+                "evidence_quote": "Park City Magnet | 8:35 AM | 2:55 PM |  |  | 8:35 AM | 12:35 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:00",
+                "school_name": "Read",
+                "confidence": "high",
+                "evidence_quote": "Read | 8:30 AM | 3:00 PM | 7:50 AM | 2:20 PM | 8:30 AM | 12:40 PM | 7:50 AM | 12:00 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Roosevelt",
+                "confidence": "high",
+                "evidence_quote": "Roosevelt | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Thomas Hooker",
+                "confidence": "high",
+                "evidence_quote": "Thomas Hooker | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Waltersville",
+                "confidence": "high",
+                "evidence_quote": "Waltersville | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Wilbur Cross",
+                "confidence": "high",
+                "evidence_quote": "Wilbur Cross | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:00",
+                "school_name": "Bpt. Learning Ctr.",
+                "confidence": "high",
+                "evidence_quote": "Bpt. Learning Ctr. | 8:15 AM | 2:00 PM |  |  | 8:15 AM | 12:15 PM |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "Curiale",
+                "confidence": "high",
+                "evidence_quote": "Curiale | 8:45 AM | 3:05 PM | 7:50 AM | 2:20 PM | 8:45 AM | 12:45 PM | 7:50 AM | 12:00 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "Read",
+                "confidence": "high",
+                "evidence_quote": "Read | 8:30 AM | 3:00 PM | 7:50 AM | 2:20 PM | 8:30 AM | 12:40 PM | 7:50 AM | 12:00 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:53",
+                "end_time": "14:30",
+                "school_name": "Bassick",
+                "confidence": "high",
+                "evidence_quote": "Bassick | 7:53 AM | 2:30 PM | 7:53 AM | 11:53 AM |  |  |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:53",
+                "end_time": "14:30",
+                "school_name": "Central",
+                "confidence": "high",
+                "evidence_quote": "Central | 7:53 AM | 2:30 PM | 7:53 AM | 11:53 AM |  |  |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:53",
+                "end_time": "14:30",
+                "school_name": "Harding",
+                "confidence": "high",
+                "evidence_quote": "Harding | 7:53 AM | 2:30 PM | 7:53 AM | 11:53 AM |  |  |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "14:00",
+                "school_name": "Brpt. Learning Ctr.",
+                "confidence": "high",
+                "evidence_quote": "Brpt. Learning Ctr. | 8:15 AM | 2:00 PM | 8:15 AM | 11:53 AM |  |  |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "14:05",
+                "school_name": "Fairchild Wheeler",
+                "confidence": "high",
+                "evidence_quote": "Fairchild Wheeler | 7:50 AM | 2:05 PM | 7:50 AM | 11:50 AM |  |  |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "14:10",
+                "school_name": "Bpt. Military Academy",
+                "confidence": "high",
+                "evidence_quote": "Bpt. Military Academy | 7:55 AM | 2:10 PM | 7:55 AM | 11:55 AM |  |  |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Aquaculture",
+                "confidence": "high",
+                "evidence_quote": "Aquaculture | 8:00 AM | 2:05 PM | 8:00 AM | 11:50 AM |  |  |  |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 3018,
+            "completion_tokens": 4586,
+            "cost_usd": 0.00409132,
+            "latency_ms": 117226,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785295266-2hBcR2FQ00PQPbfiEHm0",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "barnum",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Barnum | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "blackham",
+            "start": "08:25",
+            "end": "14:55",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Blackham | 8:25 AM | 2:55 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:25 AM - 2:55 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "batalla",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "Batalla | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "beardsley",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Beardsley | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "black rock",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Black Rock | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "bryant",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Bryant | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "classical studies",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Classical Studies | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "columbus",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Columbus | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "geraldine claytor",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Geraldine Claytor | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "curiale",
+            "start": "08:45",
+            "end": "15:05",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Curiale | 8:45 AM | 3:05 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:45 AM - 3:05 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "middle",
+            "school": "curiale",
+            "start": "07:50",
+            "end": "14:20",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Curiale | 7:50 AM | 2:20 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:50 AM - 2:20 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "discovery",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Discovery | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "dunbar",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Dunbar | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "edison",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Edison | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "geraldine johnson",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Geraldine Johnson | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "hall",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Hall | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "hallen",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Hallen | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "horizon",
+            "start": "08:35",
+            "end": "14:55",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "High Horizon | 8:35 AM | 2:55 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:35 AM - 2:55 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "jettie tisdale",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Jettie Tisdale | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "john winthrop",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "John Winthrop | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "marin",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Marin | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "madison",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Madison | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "multicultural",
+            "start": "08:35",
+            "end": "14:55",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Multicultural | 8:35 AM | 2:55 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:35 AM - 2:55 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "park city magnet",
+            "start": "08:35",
+            "end": "14:55",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Park City Magnet | 8:35 AM | 2:55 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:35 AM - 2:55 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "read",
+            "start": "08:30",
+            "end": "15:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Read | 8:30 AM | 3:00 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:30 AM - 3:00 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "middle",
+            "school": "read",
+            "start": "07:50",
+            "end": "14:20",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Read | 7:50 AM | 2:20 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:50 AM - 2:20 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "roosevelt",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Roosevelt | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "thomas hooker",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Thomas Hooker | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "waltersville",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Waltersville | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "wilbur cross",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Wilbur Cross | 8:50 AM | 3:10 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 AM - 3:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "bpt learning ctr",
+            "start": "08:15",
+            "end": "14:00",
+            "gross": 345,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Bpt. Learning Ctr. | 8:15 AM | 2:00 PM",
+                "locus": "Bell Times -Effective 9/16/2024",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:15 AM - 2:00 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "high",
+            "school": "bassick",
+            "start": "07:53",
+            "end": "14:30",
+            "gross": 397,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Bassick 7:53 AM 2:30 PM",
+                "locus": "Full Day Half Day High Schools",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:53 AM - 2:30 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "high",
+            "school": "central",
+            "start": "07:53",
+            "end": "14:30",
+            "gross": 397,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Central 7:53 AM 2:30 PM",
+                "locus": "Full Day Half Day High Schools",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:53 AM - 2:30 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "high",
+            "school": "harding",
+            "start": "07:53",
+            "end": "14:30",
+            "gross": 397,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Harding 7:53 AM 2:30 PM",
+                "locus": "Full Day Half Day High Schools",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:53 AM - 2:30 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "high",
+            "school": "brpt learning ctr",
+            "start": "08:15",
+            "end": "14:00",
+            "gross": 345,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "Brpt. Learning Ctr. | 8:15 AM | 2:00 PM | 8:15 AM | 11:53 AM |  |  |  |  |",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "high",
+            "school": "fairchild wheeler",
+            "start": "07:50",
+            "end": "14:05",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Fairchild Wheeler 7:50 AM 2:05 PM",
+                "locus": "Full Day Half Day High Schools",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:50 AM - 2:05 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "high",
+            "school": "bpt military",
+            "start": "07:55",
+            "end": "14:10",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Bpt. Military Academy 7:55 AM 2:10 PM",
+                "locus": "Full Day Half Day High Schools",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:55 AM - 2:10 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "high",
+            "school": "aquaculture",
+            "start": "08:00",
+            "end": "14:05",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Aquaculture 8:00 AM 2:05 PM",
+                "locus": "Full Day Half Day High Schools",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:00 AM - 2:05 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "skane am",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:40"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "10:20"
+            },
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "skane pm",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "11:20"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:00"
+            },
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "classical studies k 6",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:10"
+            },
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "battala",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:50"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:10"
+            },
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "high",
+            "school": "bpt learning ctr",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:15"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:00"
+            },
+            "rec_key": "0900450:ba56934af1",
+            "source_file": "pdfplumber_lines.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "barnum",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Barnum | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "blackham",
+        "start": "08:25",
+        "end": "14:55",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Blackham | 8:25 AM | 2:55 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:25 AM - 2:55 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "batalla",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "Batalla | 8:50 AM | 3:10 PM |  |  | 8:50 AM | 12:50 PM |  |  |",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "beardsley",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Beardsley | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "black rock",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Black Rock | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "bryant",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Bryant | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "classical studies",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Classical Studies | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "columbus",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Columbus | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "geraldine claytor",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Geraldine Claytor | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "curiale",
+        "start": "08:45",
+        "end": "15:05",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Curiale | 8:45 AM | 3:05 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:45 AM - 3:05 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "middle",
+        "school": "curiale",
+        "start": "07:50",
+        "end": "14:20",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Curiale | 7:50 AM | 2:20 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:50 AM - 2:20 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "discovery",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Discovery | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "dunbar",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Dunbar | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "edison",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Edison | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "geraldine johnson",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Geraldine Johnson | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hall",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Hall | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hallen",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Hallen | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "horizon",
+        "start": "08:35",
+        "end": "14:55",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "High Horizon | 8:35 AM | 2:55 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:35 AM - 2:55 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "jettie tisdale",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Jettie Tisdale | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "john winthrop",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "John Winthrop | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "marin",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Marin | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "madison",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Madison | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "multicultural",
+        "start": "08:35",
+        "end": "14:55",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Multicultural | 8:35 AM | 2:55 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:35 AM - 2:55 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "park city magnet",
+        "start": "08:35",
+        "end": "14:55",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Park City Magnet | 8:35 AM | 2:55 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:35 AM - 2:55 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "read",
+        "start": "08:30",
+        "end": "15:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Read | 8:30 AM | 3:00 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:30 AM - 3:00 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "middle",
+        "school": "read",
+        "start": "07:50",
+        "end": "14:20",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Read | 7:50 AM | 2:20 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:50 AM - 2:20 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "roosevelt",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Roosevelt | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "thomas hooker",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Thomas Hooker | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "waltersville",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Waltersville | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "wilbur cross",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Wilbur Cross | 8:50 AM | 3:10 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 AM - 3:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "bpt learning ctr",
+        "start": "08:15",
+        "end": "14:00",
+        "gross": 345,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Bpt. Learning Ctr. | 8:15 AM | 2:00 PM",
+            "locus": "Bell Times -Effective 9/16/2024",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:15 AM - 2:00 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "high",
+        "school": "bassick",
+        "start": "07:53",
+        "end": "14:30",
+        "gross": 397,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Bassick 7:53 AM 2:30 PM",
+            "locus": "Full Day Half Day High Schools",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:53 AM - 2:30 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "high",
+        "school": "central",
+        "start": "07:53",
+        "end": "14:30",
+        "gross": 397,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Central 7:53 AM 2:30 PM",
+            "locus": "Full Day Half Day High Schools",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:53 AM - 2:30 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "high",
+        "school": "harding",
+        "start": "07:53",
+        "end": "14:30",
+        "gross": 397,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Harding 7:53 AM 2:30 PM",
+            "locus": "Full Day Half Day High Schools",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:53 AM - 2:30 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "high",
+        "school": "brpt learning ctr",
+        "start": "08:15",
+        "end": "14:00",
+        "gross": 345,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "Brpt. Learning Ctr. | 8:15 AM | 2:00 PM | 8:15 AM | 11:53 AM |  |  |  |  |",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "high",
+        "school": "fairchild wheeler",
+        "start": "07:50",
+        "end": "14:05",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Fairchild Wheeler 7:50 AM 2:05 PM",
+            "locus": "Full Day Half Day High Schools",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:50 AM - 2:05 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "high",
+        "school": "bpt military",
+        "start": "07:55",
+        "end": "14:10",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Bpt. Military Academy 7:55 AM 2:10 PM",
+            "locus": "Full Day Half Day High Schools",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:55 AM - 2:10 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "high",
+        "school": "aquaculture",
+        "start": "08:00",
+        "end": "14:05",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Aquaculture 8:00 AM 2:05 PM",
+            "locus": "Full Day Half Day High Schools",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:00 AM - 2:05 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "skane am",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:40"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "10:20"
+        },
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "skane pm",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "11:20"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:00"
+        },
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "classical studies k 6",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:10"
+        },
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "battala",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:50"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:10"
+        },
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "high",
+        "school": "bpt learning ctr",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:15"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:00"
+        },
+        "rec_key": "0900450:ba56934af1",
+        "source_file": "pdfplumber_lines.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 380,
+        "start_time": "08:50",
+        "end_time": "15:10",
+        "n_schools": 29,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "barnum",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "blackham",
+            "start_time": "08:25",
+            "end_time": "14:55",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "batalla",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "beardsley",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "black rock",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "bryant",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "classical studies",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "columbus",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "geraldine claytor",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "curiale",
+            "start_time": "08:45",
+            "end_time": "15:05",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "discovery",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dunbar",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "edison",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "geraldine johnson",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hall",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hallen",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "horizon",
+            "start_time": "08:35",
+            "end_time": "14:55",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "jettie tisdale",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "john winthrop",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "marin",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "madison",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "multicultural",
+            "start_time": "08:35",
+            "end_time": "14:55",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "park city magnet",
+            "start_time": "08:35",
+            "end_time": "14:55",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "read",
+            "start_time": "08:30",
+            "end_time": "15:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "roosevelt",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "thomas hooker",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "waltersville",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "wilbur cross",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "bpt learning ctr",
+            "start_time": "08:15",
+            "end_time": "14:00",
+            "gross": 345,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 390,
+        "start_time": "07:50",
+        "end_time": "14:20",
+        "n_schools": 2,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "curiale",
+            "start_time": "07:50",
+            "end_time": "14:20",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "read",
+            "start_time": "07:50",
+            "end_time": "14:20",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 397,
+        "start_time": "07:53",
+        "end_time": "14:30",
+        "n_schools": 7,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "bassick",
+            "start_time": "07:53",
+            "end_time": "14:30",
+            "gross": 397,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "central",
+            "start_time": "07:53",
+            "end_time": "14:30",
+            "gross": 397,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "harding",
+            "start_time": "07:53",
+            "end_time": "14:30",
+            "gross": 397,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "brpt learning ctr",
+            "start_time": "08:15",
+            "end_time": "14:00",
+            "gross": 345,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "fairchild wheeler",
+            "start_time": "07:50",
+            "end_time": "14:05",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "bpt military",
+            "start_time": "07:55",
+            "end_time": "14:10",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "aquaculture",
+            "start_time": "08:00",
+            "end_time": "14:05",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 9146,
+      "completion_tokens": 15397,
+      "cost_usd": 0.007226079999999999
+    },
+    "state": "CT"
+  }
+}

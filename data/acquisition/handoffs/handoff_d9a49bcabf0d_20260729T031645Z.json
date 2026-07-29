@@ -1,0 +1,1221 @@
+{
+  "handoff_hash": "d9a49bcabf0d",
+  "created_at": "2026-07-29T03:16:45Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "dispatch_type": "production",
+  "fingerprints": {
+    "0900450": {
+      "config": "f77ddb950061",
+      "labels": "aebd29319cae",
+      "data": "e658cfa3d8ae"
+    },
+    "0503060": {
+      "config": "f77ddb950061",
+      "labels": "d02a911d0a91",
+      "data": "48f8c5631abf"
+    },
+    "1200180": {
+      "config": "f77ddb950061",
+      "labels": "a31c1b8425df",
+      "data": "7f845df89aac"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v4"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.0030600000000000002,
+    "n_reps": 3,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "0900450",
+      "name": "Bridgeport School District",
+      "state": "CT",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "0900450:a3e47dcfc0",
+          "url": "https://marin.bridgeportedu.net/our-school/school-hours",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0900450:ba56934af1",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:e0dacd9e87",
+          "url": "https://barnum.bridgeportedu.net/our-school/school-hours",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0900450:ba56934af1",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:279a2c51b5",
+          "url": "https://johnson.bridgeportedu.net/our-school/school-hours",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0900450:ba56934af1",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:20b73ab411",
+          "url": "https://fwc.bridgeportedu.net/our-school/school-hours",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0900450:ba56934af1",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:a6030f7fe4",
+          "url": "https://pcm.bridgeportedu.net/our-school/school-hours",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0900450:ba56934af1",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:06b719f5cb",
+          "url": "https://read.bridgeportedu.net/our-school/school-hours",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0900450:ba56934af1",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:8a9c7a0611",
+          "url": "https://csma.bridgeportedu.net/our-school/school-hours",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0900450:ba56934af1",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:da9c031f3b",
+          "url": "https://blackham.bridgeportedu.net/our-school/school-hours",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0900450:ba56934af1",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:5691d5cd37",
+          "url": "https://hallen.bridgeportedu.net/our-school/school-hours",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0900450:ba56934af1",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:6bc0caab05",
+          "url": "https://csmx.bridgeportedu.net/our-school/school-hours",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0900450:ba56934af1",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:dbc12cee46",
+          "url": "https://hhms.bridgeportedu.net/our-school/school-hours",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0900450:ba56934af1",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:c791385e8b",
+          "url": "https://bma.bridgeportedu.net/our-school/school-hours",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0900450:ba56934af1",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:5871d50091",
+          "url": "https://central.bridgeportedu.net/our-school/school-hours",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0900450:ba56934af1",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:691c283227",
+          "url": "https://skane.bridgeportedu.net/our-school/school-hours",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:748e6ae545",
+          "url": "https://bassick.bridgeportedu.net/our-school/school-hours",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0900450:ba56934af1",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:54a3628536",
+          "url": "https://discovery.bridgeportedu.net/our-school-discovery/school-calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:ba56934af1",
+          "url": "https://resources.finalsite.net/images/v1726515916/bridgeportedunet/rmzibqaw37ogccbauyn3/Bell_24_25_schedule_updated.pdf",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 198,
+              "n_chars": 3975
+            }
+          ]
+        },
+        {
+          "rec_key": "0900450:5b6a17a5e1",
+          "url": "https://marin.bridgeportedu.net/our-school/principals-corner",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0900450:ba56934af1",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:f22a26fb6b",
+          "url": "https://www.bridgeportedu.net/bell-schedule",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0900450:ba56934af1",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:e54d2eed66",
+          "url": "https://barnum.bridgeportedu.net/our-school/barnum-school-calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:36b97d7f8c",
+          "url": "https://www.bridgeportedu.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:acb3dafe1f",
+          "url": "https://www.bridgeportedu.net/departments/buisness-office/introduction",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:bc8b552337",
+          "url": "https://blackham.bridgeportedu.net/",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0900450:ba56934af1",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:ae291747ec",
+          "url": "https://www.bridgeportedu.net/information/student-registration/student-registration-home",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:044d906181",
+          "url": "https://curiale.bridgeportedu.net/",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:8b2faa32d5",
+          "url": "https://bma.bridgeportedu.net/",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:0f36a53935",
+          "url": "https://www.bridgeportedu.net/p/~board/bridgeport-public-schools-news/post/advocacy-ad-hoc-committee-thursday-ferbruary5-2026",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:343ec7a43f",
+          "url": "https://www.bridgeportedu.net/p/~board/bridgeport-public-schools-news/post/regular-board-of-education-monday-august-25-2025-at-630-pm-1757107455185",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:8d6d655297",
+          "url": "https://central.bridgeportedu.net/families-community/parent-resources",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:fad401bd96",
+          "url": "https://marin.bridgeportedu.net/our-school/our-school-overview",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:6282b3868b",
+          "url": "https://fwc.bridgeportedu.net/our-school/contact-information",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:fc35586b48",
+          "url": "https://fwc.bridgeportedu.net/infotech",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:aea284cc02",
+          "url": "https://fwc.bridgeportedu.net/our-school/our-school-overview",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:613a573d00",
+          "url": "https://fwc.bridgeportedu.net/aero",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:aea03ef655",
+          "url": "https://fwc.bridgeportedu.net/recruitment-corner/recruitment-corner-post",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:caae1da25b",
+          "url": "https://www.bridgeportedu.net/view-all-news",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:67df6e14c3",
+          "url": "https://cross.bridgeportedu.net/activities-athletics/sports-teams",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:2420372510",
+          "url": "https://www.bridgeportedu.net/p/~board/bridgeport-public-schools-news/post/bridgeport-central-high-school-hilltoppers-end-61-game-losing-streak-with-inspiring-win",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:b5039f774a",
+          "url": "https://www.bridgeportedu.net/p/~board/bridgeport-public-schools-news/post/new-hr-site-join-bps-today",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:957944b97d",
+          "url": "https://www.bridgeportedu.net/programs-services/meal-menus/httpslinqconnectcompublicmenuddj8evbuildingid386cd649-a0fe-ea11-a2c3-dfa7d91ea239",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:b3c2fd163c",
+          "url": "https://www.bridgeportedu.net/students/student-handbook-clone",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:84b5b68653",
+          "url": "https://www.bridgeportedu.net/csde",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:afe4ea1bac",
+          "url": "https://www.bridgeportedu.net/p/~board/bridgeport-public-schools-news/post/new-york-giants-name-central-high-schools-brendan-miller-coach-of-the-week",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:d7647a009c",
+          "url": "https://edison.bridgeportedu.net/our-school/our-school-overview",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:c9816a70f2",
+          "url": "https://www.bridgeportedu.net/p/~board/bridgeport-public-schools-news/post/interim-superintendent-engages-students-districtwide-to-hear-what-they-need-to-succeed",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:94adbb9f57",
+          "url": "https://www.bridgeportedu.net/information/student-registration/school-choice/bps-magnet-schools",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:194ade48bd",
+          "url": "https://hall.bridgeportedu.net/our-school/school-mission",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:26c193abff",
+          "url": "https://www.bridgeportedu.net/view-all-events",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:f275336013",
+          "url": "https://johnson.bridgeportedu.net/our-school/our-school-overview",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:ea5b7175aa",
+          "url": "https://johnson.bridgeportedu.net/our-school/principals-corner",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:03dc8bdf88",
+          "url": "https://dunbar.bridgeportedu.net/our-school/principals-corner",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:dfad1daabb",
+          "url": "https://dunbar.bridgeportedu.net/our-school/our-school-overview",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:9981cf82a4",
+          "url": "https://www.bridgeportedu.net/departments/adult-education/staff-clone",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:9b8f4be33e",
+          "url": "https://www.bridgeportedu.net/p/~board/bridgeport-public-schools-news/post/magnet-school-lottery-applications-2025-26",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:3cee3a4f66",
+          "url": "https://bassick.bridgeportedu.net/our-school/contact-information/staff",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:b6e547f5c4",
+          "url": "https://barnum.bridgeportedu.net/our-school/our-school-overview",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:fd7541d7a7",
+          "url": "https://blackrock.bridgeportedu.net/our-school/our-school-overview",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:29141281b9",
+          "url": "https://blackrock.bridgeportedu.net/our-school/school-mission",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:098686450d",
+          "url": "https://www.bridgeportedu.net/p/~board/bridgeport-public-schools-news/post/board-of-education-members-community-forum-wednesday-july-16-2025",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:4bc6a1a947",
+          "url": "https://www.bridgeportedu.net/domain/3205",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:6dcb5df0d7",
+          "url": "https://www.bridgeportedu.net/p/~board/bridgeport-public-schools-news/post/finalsite-test-post-1",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0900450:ee9ea76352",
+          "url": "https://marin.bridgeportedu.net/our-school/bpsschool-calendar",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "0503060",
+      "name": "BENTONVILLE SCHOOL DISTRICT",
+      "state": "AR",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "0503060:a5f32ff869",
+          "url": "https://www.bentonvillek12.org/fs/resource-manager/view/6a6b699f-93f0-48f6-b661-9a5b3d38993d",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:b52d8e9cd2",
+          "url": "https://rbms.bentonvillek12.org/home/school-start-and-stop-times",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 2259
+            }
+          ]
+        },
+        {
+          "rec_key": "0503060:a3613ff147",
+          "url": "https://ljhs.bentonvillek12.org/fs/resource-manager/view/131084b5-2e65-4d75-a1e3-67ba63b84420",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0503060:b52d8e9cd2",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:7390f48b30",
+          "url": "https://docs.google.com/document/d/1uvpOHkmO7Y3A36Hcs4OlUA9rO8W4pcJzJ95rwNS7mQA/edit?usp=sharing",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0503060:b52d8e9cd2",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:55586405a4",
+          "url": "https://www.bentonvillek12.org/fs/resource-manager/view/d58eaefc-c0b5-49b1-a297-23a2abd73d11",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:6eb6e9e135",
+          "url": "https://drive.google.com/file/d/1Tj5Bk7OwvKL91eDO_6wSa78qU0kD6YbO/view?usp=sharing",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0503060:b52d8e9cd2",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:1a2ab03841",
+          "url": "https://rbms.bentonvillek12.org/home/bell-schedule",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0503060:b52d8e9cd2",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:634527e288",
+          "url": "https://ljhs.bentonvillek12.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:afdf1bb602",
+          "url": "https://tjes.bentonvillek12.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:0e7c4a204c",
+          "url": "https://gateway.bentonvillek12.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:96c7d3eb96",
+          "url": "https://oces.bentonvillek12.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:e6086818dc",
+          "url": "gt://gt_curation_20260621T060008Z/0503060_BENTONVILLE_SCHOOL_DISTRICT/School Start and Stop Times | Bentonville Schools.pdf",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:13cbb7df51",
+          "url": "https://fjhs.bentonvillek12.org/calendar-link",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:0ddf203d85",
+          "url": "https://sces.bentonvillek12.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:aae1e22094",
+          "url": "https://ljhs.bentonvillek12.org/fs/resource-manager/view/fabfd4c1-b38c-44c4-8797-f671aa63f8cd",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0503060:b52d8e9cd2",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:b809a033ad",
+          "url": "https://aams.bentonvillek12.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:fbc6673b95",
+          "url": "https://www.bentonvillek12.org/parents-students/start-stop-times",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0503060:b52d8e9cd2",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:48df0301b2",
+          "url": "https://ties.bentonvillek12.org/parents/school-start-and-stop-times",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0503060:b52d8e9cd2",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:03383889c0",
+          "url": "https://ages.bentonvillek12.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:645e0195f2",
+          "url": "https://cpes.bentonvillek12.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:223c19f49a",
+          "url": "https://bhs.bentonvillek12.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:43e87396b5",
+          "url": "https://cges.bentonvillek12.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:c49c3fb3cd",
+          "url": "https://wes.bentonvillek12.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:ab971aaf09",
+          "url": "https://eses.bentonvillek12.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:0c57d262fc",
+          "url": "https://bwhs.bentonvillek12.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:66f7da0892",
+          "url": "https://bhs.bentonvillek12.org/calendar-link",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:2489663920",
+          "url": "https://fjhs.bentonvillek12.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:efad0ce4a5",
+          "url": "https://rebes.bentonvillek12.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:73bdeb6fb8",
+          "url": "https://etes.bentonvillek12.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:d338840794",
+          "url": "https://wjhs.bentonvillek12.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:1a591099c5",
+          "url": "https://bfms.bentonvillek12.org/",
+          "decision": "hold",
+          "reason": "unlabeled-tier-C",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:4e23315d7c",
+          "url": "https://www.bentonvillek12.org/o/gjhs/page/clubs",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:582443cafe",
+          "url": "https://ties.bentonvillek12.org/parents/visitor-check-in",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:01716c8c33",
+          "url": "https://www.bentonvillek12.org/o/ohms/article/992124",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:75ead9c39e",
+          "url": "https://www.bentonvillek12.org/o/rbms/article/798786",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:2fc1b65ecb",
+          "url": "https://bwhs.bentonvillek12.org/students/bell-schedule",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:ecd53cdc2f",
+          "url": "https://bhs.bentonvillek12.org/departments-link2/bhs-bike-shop",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:0656728886",
+          "url": "https://www.bentonvillek12.org/fs/resource-manager/view/89ad6499-8b58-4bfc-a6de-f45bfab224de",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:46a2fa5aa4",
+          "url": "https://bwhs.bentonvillek12.org/parents/sample-schedules",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:6b9058f1a5",
+          "url": "https://virtual.bentonvillek12.org/bus-routes",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:6d5c0c7df6",
+          "url": "https://ljhs.bentonvillek12.org/fs/resource-manager/view/ab8f0dda-797d-4ffd-8fd9-0e169ec9049e",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:010c2af7b1",
+          "url": "https://ljhs.bentonvillek12.org/fs/resource-manager/view/793d395b-5a34-4e24-ae5f-5bf29c443450",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:f41c389f0f",
+          "url": "https://www.bentonvillek12.org/fs/pages/777",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:28ec601317",
+          "url": "https://www.bentonvillek12.org/fs/pages/963",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:2ae90856b7",
+          "url": "https://gjhs.bentonvillek12.org/calendar-link",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:efd3a1301e",
+          "url": "https://www.bentonvillek12.org/",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:eb0038cc41",
+          "url": "https://www.bentonvillek12.org/academics/elementary",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:e5a42dde61",
+          "url": "https://www.bentonvillek12.org/academics/high/comunity-service-requirement",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:51db7bae48",
+          "url": "https://www.bentonvillek12.org/departments/student-services",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:5ee78b8be8",
+          "url": "https://www.bentonvillek12.org/academics/visual-performing-arts1",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:6ff66f51e1",
+          "url": "https://www.bentonvillek12.org/site-pages/departments/special-services",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:fa7a45cb8f",
+          "url": "https://www.bentonvillek12.org/site-pages/departments/food-and-nutrition",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:05351ad3bc",
+          "url": "https://ties.bentonvillek12.org/",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:602f234b2d",
+          "url": "https://www.bentonvillek12.org/parents-students/calendar",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:6c7c4f7ae0",
+          "url": "https://ties.bentonvillek12.org/lunch-menus",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:5a561482f3",
+          "url": "https://cges.bentonvillek12.org/calendar-link",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:d4059a895f",
+          "url": "https://cges.bentonvillek12.org/parents/newsletters",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:1de77b38c9",
+          "url": "https://www.bentonvillek12.org/our-district/state-required-information",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:cc767865de",
+          "url": "https://www.bentonvillek12.org/academics/visual-performing-arts1/art-centers/arend-arts-center",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:a18e9b3de2",
+          "url": "https://www.bentonvillek12.org/site-pages/staff-resources/employee-resources/employee-pay-schedule",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:fce8b424d4",
+          "url": "https://www.bentonvillek12.org/academics/high/academic-transcripts",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:2938c74b5d",
+          "url": "https://bwhs.bentonvillek12.org/parent-choice-schools1",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:17043fc49b",
+          "url": "https://ljhs.bentonvillek12.org/parents/bell-schedule",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:3bd22664e2",
+          "url": "https://ljhs.bentonvillek12.org/departments11",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:f5dfa79702",
+          "url": "https://ljhs.bentonvillek12.org/parents/visitor-check-in-procedures",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:a17811f77f",
+          "url": "https://ljhs.bentonvillek12.org/about-us",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:8d9c843351",
+          "url": "https://ljhs.bentonvillek12.org/departments11/7th-grade",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:cc77bde1a4",
+          "url": "https://ljhs.bentonvillek12.org/course-selection/2025-2026-academic-year",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:d8ad5f9597",
+          "url": "https://rbms.bentonvillek12.org/calendar-link",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:1fa6157068",
+          "url": "https://fjhs.bentonvillek12.org/students",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:6cf84dccbf",
+          "url": "https://fjhs.bentonvillek12.org/about-us/school-story",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:12cbbefeb4",
+          "url": "https://fjhs.bentonvillek12.org/leadership",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:ad10f79c94",
+          "url": "https://gjhs.bentonvillek12.org/parents/bell-schedule",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:a3bcd1cff0",
+          "url": "https://gjhs.bentonvillek12.org/parents/technology",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:0a955407e7",
+          "url": "https://gjhs.bentonvillek12.org/leadership/principal",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:bb7f51b7e3",
+          "url": "https://gjhs.bentonvillek12.org/about-us/school-story",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:557b11baa4",
+          "url": "https://gjhs.bentonvillek12.org/grades-attendance",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:dc7661946e",
+          "url": "https://bwhs.bentonvillek12.org/parents/bell-schedule",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:6d926768b8",
+          "url": "https://bwhs.bentonvillek12.org/parents/announcements",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0503060:b12bd0c67e",
+          "url": "https://www.bentonvillek12.org/academics/middle/junior-high-school-78/2026-27-ab-calendar",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "1200180",
+      "name": "BROWARD",
+      "state": "FL",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "1200180:d5eb62e7a4",
+          "url": "https://miramarhigh.browardschools.com/our-school/school-info",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1200180:aed9c3a7fc",
+          "reps": []
+        },
+        {
+          "rec_key": "1200180:1df2fda424",
+          "url": "https://coralspringsmid.browardschools.com/our-school/school-information/bell-schedule",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1200180:aed9c3a7fc",
+          "reps": []
+        },
+        {
+          "rec_key": "1200180:fc2370ec29",
+          "url": "https://westbroward.browardschools.com/our-school/school-info/news-and-calendars",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1200180:aed9c3a7fc",
+          "reps": []
+        },
+        {
+          "rec_key": "1200180:2e86777163",
+          "url": "https://indianridge.browardschools.com/p/~board/indian-ridge-middle-news/post/back-to-school",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1200180:aed9c3a7fc",
+          "reps": []
+        },
+        {
+          "rec_key": "1200180:27b7aa8d9d",
+          "url": "https://miramarhigh.browardschools.com/our-school/school-info/school-info",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1200180:aed9c3a7fc",
+          "reps": []
+        },
+        {
+          "rec_key": "1200180:695698385e",
+          "url": "https://atlantictechhigh.browardschools.com/our-school/school-info/bell-schedule",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1200180:aed9c3a7fc",
+          "reps": []
+        },
+        {
+          "rec_key": "1200180:3c2c279c0c",
+          "url": "https://cypressbay.browardschools.com/students-parents/bell-schedule/regular-day-schedule",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1200180:aed9c3a7fc",
+          "reps": []
+        },
+        {
+          "rec_key": "1200180:52b4f372cd",
+          "url": "gt://gt_curation_20260621T060008Z/1200180_BROWARD/FY_25-26_Opening_and_Closing_School_Bell_Times.pdf",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "1200180:aed9c3a7fc",
+          "url": "https://www.browardschools.com/directory/our-schools/school-information-resources",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 12,
+              "n_chars": 3238
+            }
+          ]
+        },
+        {
+          "rec_key": "1200180:9a544dfac6",
+          "url": "https://meadowbrook.browardschools.com/",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1200180:153eea96fa",
+          "url": "https://www.browardschools.com/backtoschool",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1200180:c8cc46320f",
+          "url": "https://western.browardschools.com/our-school/bell-schedule-school-calendar/bell-schedule",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1200180:9bf01fb62a",
+          "url": "https://pioneer.browardschools.com/our-school/school-info/bell-schedules",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1200180:2d89964ae5",
+          "url": "https://meadowbrook.browardschools.com/our-school/school-info/news-and-calendars",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1200180:696b452e7c",
+          "url": "https://novahigh.browardschools.com/students-parents/bell-schedules",
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    }
+  ]
+}

@@ -1,0 +1,910 @@
+{
+  "handoff_hash": "df2b06f2f7a7",
+  "district": {
+    "district_id": "5000395",
+    "name": "Essex Westford Educational Community Unified Union SD #51",
+    "reps": [
+      {
+        "rec_key": "5000395:1498c18c23",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 10,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "15:15",
+                "school_name": "OEHS",
+                "confidence": "high",
+                "evidence_quote": "OEHS 8:40-3:15 p.m.",
+                "source_locus": "START AND END TIMES 2024-2025",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "EMS",
+                "confidence": "high",
+                "evidence_quote": "EMS 8:35-3:35 p.m.",
+                "source_locus": "START AND END TIMES 2024-2025",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "FMS",
+                "confidence": "high",
+                "evidence_quote": "FMS 7:40-2:40 p.m.",
+                "source_locus": "START AND END TIMES 2024-2025",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "WES",
+                "confidence": "high",
+                "evidence_quote": "WES 8:15-3:15 p.m.",
+                "source_locus": "START AND END TIMES 2024-2025",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "OHIA",
+                "confidence": "high",
+                "evidence_quote": "OHIA 7:30-2:30 p.m.",
+                "source_locus": "START AND END TIMES 2024-2025",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "QOEES",
+                "confidence": "high",
+                "evidence_quote": "QOEES 7:30-2:30 p.m.",
+                "source_locus": "START AND END TIMES 2024-2025",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "SUM",
+                "confidence": "high",
+                "evidence_quote": "SUM 7:40-2:40 p.m.",
+                "source_locus": "START AND END TIMES 2024-2025",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:45",
+                "school_name": "OFLe",
+                "confidence": "high",
+                "evidence_quote": "OFLe 7:45-2:45 p.m.",
+                "source_locus": "START AND END TIMES 2024-2025",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "14:45",
+                "school_name": "CTE",
+                "confidence": "high",
+                "evidence_quote": "CTE 8:30-2:45 p.m.",
+                "source_locus": "START AND END TIMES 2024-2025",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "ADL",
+                "confidence": "high",
+                "evidence_quote": "ADL 8:35-3:35 p.m.",
+                "source_locus": "START AND END TIMES 2024-2025",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 4241,
+            "completion_tokens": 1654,
+            "cost_usd": 0.0010857,
+            "latency_ms": 4678,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305536-DuxNcGdnglRjT3aZZv2H",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Founders Memorial School",
+                "confidence": "high",
+                "evidence_quote": "FMS 7:40-2:40 p.m.",
+                "source_locus": "START AND END TIMES 2024-2025",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 4490,
+            "completion_tokens": 164,
+            "cost_usd": 0.00023762,
+            "latency_ms": 2693,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305540-oO92NPLPPhsIKYnU86jd",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 10,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "FMS",
+                "confidence": "high",
+                "evidence_quote": "FMS 7:40-2:40 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "FMS",
+                "confidence": "high",
+                "evidence_quote": "FMS 7:40-2:40 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "WES",
+                "confidence": "high",
+                "evidence_quote": "WES 8:15-3:15 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "OEES",
+                "confidence": "high",
+                "evidence_quote": "OEES 7:30-2:30 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:45",
+                "school_name": "OFLe",
+                "confidence": "high",
+                "evidence_quote": "OFLe 7:45-2:45 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "15:15",
+                "school_name": "OEHS",
+                "confidence": "high",
+                "evidence_quote": "OEHS 8:40-3:15 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "EMS",
+                "confidence": "high",
+                "evidence_quote": "EMS 8:35-3:35 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "ADL",
+                "confidence": "high",
+                "evidence_quote": "ADL 8:35-3:35 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "SUM",
+                "confidence": "high",
+                "evidence_quote": "SUM 7:40-2:40 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "14:45",
+                "school_name": "CTE",
+                "confidence": "high",
+                "evidence_quote": "CTE 8:30-2:45 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 4246,
+            "completion_tokens": 906,
+            "cost_usd": 0.001176565,
+            "latency_ms": 12640,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305543-W73XIKNAe8EDJlHg9xbc",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "oehs",
+            "start": "08:40",
+            "end": "15:15",
+            "gross": 395,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "OEHS 8:40-3:15 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "5000395:1498c18c23",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "ems",
+            "start": "08:35",
+            "end": "15:35",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "EMS 8:35-3:35 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "5000395:1498c18c23",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "fms",
+            "start": "07:40",
+            "end": "14:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "FMS 7:40-2:40 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "5000395:1498c18c23",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "wes",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "WES 8:15-3:15 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "5000395:1498c18c23",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "sum",
+            "start": "07:40",
+            "end": "14:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "SUM 7:40-2:40 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "5000395:1498c18c23",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "ofle",
+            "start": "07:45",
+            "end": "14:45",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "OFLe 7:45-2:45 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "5000395:1498c18c23",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "cte",
+            "start": "08:30",
+            "end": "14:45",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "CTE 8:30-2:45 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "5000395:1498c18c23",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "adl",
+            "start": "08:35",
+            "end": "15:35",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "ADL 8:35-3:35 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "5000395:1498c18c23",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "ohia",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:30"
+            },
+            "rec_key": "5000395:1498c18c23",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "qoees",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:30"
+            },
+            "rec_key": "5000395:1498c18c23",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "founders memorial",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:40"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:40"
+            },
+            "rec_key": "5000395:1498c18c23",
+            "source_file": "tesseract_raster.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "oehs",
+        "start": "08:40",
+        "end": "15:15",
+        "gross": 395,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "OEHS 8:40-3:15 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "5000395:1498c18c23",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "ems",
+        "start": "08:35",
+        "end": "15:35",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "EMS 8:35-3:35 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "5000395:1498c18c23",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "fms",
+        "start": "07:40",
+        "end": "14:40",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "FMS 7:40-2:40 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "5000395:1498c18c23",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "wes",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "WES 8:15-3:15 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "5000395:1498c18c23",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "sum",
+        "start": "07:40",
+        "end": "14:40",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "SUM 7:40-2:40 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "5000395:1498c18c23",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ofle",
+        "start": "07:45",
+        "end": "14:45",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "OFLe 7:45-2:45 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "5000395:1498c18c23",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "cte",
+        "start": "08:30",
+        "end": "14:45",
+        "gross": 375,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "CTE 8:30-2:45 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "5000395:1498c18c23",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "adl",
+        "start": "08:35",
+        "end": "15:35",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "ADL 8:35-3:35 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "5000395:1498c18c23",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "ohia",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:30"
+        },
+        "rec_key": "5000395:1498c18c23",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "qoees",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:30"
+        },
+        "rec_key": "5000395:1498c18c23",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "founders memorial",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:40"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:40"
+        },
+        "rec_key": "5000395:1498c18c23",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 420,
+        "start_time": "07:40",
+        "end_time": "14:40",
+        "n_schools": 5,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "fms",
+            "start_time": "07:40",
+            "end_time": "14:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "wes",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "sum",
+            "start_time": "07:40",
+            "end_time": "14:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ofle",
+            "start_time": "07:45",
+            "end_time": "14:45",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "adl",
+            "start_time": "08:35",
+            "end_time": "15:35",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 420,
+        "start_time": "08:35",
+        "end_time": "15:35",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "ems",
+            "start_time": "08:35",
+            "end_time": "15:35",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 385,
+        "start_time": null,
+        "end_time": null,
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "oehs",
+            "start_time": "08:40",
+            "end_time": "15:15",
+            "gross": 395,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "cte",
+            "start_time": "08:30",
+            "end_time": "14:45",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 12977,
+      "completion_tokens": 2724,
+      "cost_usd": 0.0024998850000000003
+    },
+    "state": "VT"
+  }
+}

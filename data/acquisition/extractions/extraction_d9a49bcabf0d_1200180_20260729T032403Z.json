@@ -1,0 +1,776 @@
+{
+  "handoff_hash": "d9a49bcabf0d",
+  "district": {
+    "district_id": "1200180",
+    "name": "BROWARD",
+    "reps": [
+      {
+        "rec_key": "1200180:aed9c3a7fc",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 7,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:00",
+                "school_name": "Annabel C. Perry PK - 8",
+                "confidence": "high",
+                "evidence_quote": "Hours: 8:00 a.m. - 2:00 p.m.",
+                "source_locus": "Annabel C. Perry PK - 8",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:30",
+                "end_time": "16:00",
+                "school_name": "Apollo Middle",
+                "confidence": "high",
+                "evidence_quote": "Hours: 9:30 a.m. - 4:00 p.m.",
+                "source_locus": "Apollo Middle",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:05",
+                "end_time": "13:50",
+                "school_name": "Atlantic Technical High",
+                "confidence": "high",
+                "evidence_quote": "Hours: 7:05 a.m. - 1:50 p.m.",
+                "source_locus": "Atlantic Technical High",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Atlantic West Elementary",
+                "confidence": "high",
+                "evidence_quote": "Hours: 7:45 a.m. - 2:15 p.m.",
+                "source_locus": "Atlantic West Elementary",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:25",
+                "school_name": "Attucks Middle",
+                "confidence": "high",
+                "evidence_quote": "Hours: 8:55 a.m. - 3:25 p.m.",
+                "source_locus": "Attucks Middle",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "Bair Middle",
+                "confidence": "high",
+                "evidence_quote": "Hours: 9:15 a.m. - 3:45 p.m.",
+                "source_locus": "Bair Middle",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:00",
+                "school_name": "Banyan Elementary",
+                "confidence": "high",
+                "evidence_quote": "Hours: 8:00 a.m. - 2:00 p.m.",
+                "source_locus": "Banyan Elementary",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1709,
+            "completion_tokens": 1086,
+            "cost_usd": 0.0006053,
+            "latency_ms": 6771,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785295386-J4GdvL6oe7qCcowf74xH",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Atlantic West Elementary",
+                "confidence": "high",
+                "evidence_quote": "Hours: 7:45 a.m. - 2:15 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:30",
+                "end_time": "16:00",
+                "school_name": "Apollo Middle",
+                "confidence": "high",
+                "evidence_quote": "Hours: 9:30 a.m. - 4:00 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:25",
+                "school_name": "Attucks Middle",
+                "confidence": "high",
+                "evidence_quote": "Hours: 8:55 a.m. - 3:25 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "Bair Middle",
+                "confidence": "high",
+                "evidence_quote": "Hours: 9:15 a.m. - 3:45 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:00",
+                "school_name": "Annabel C. Perry PK - 8",
+                "confidence": "high",
+                "evidence_quote": "Hours: 8:00 a.m. - 2:00 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1752,
+            "completion_tokens": 659,
+            "cost_usd": 0.00014032,
+            "latency_ms": 9366,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785295390-BDUCb3YRw845ASLO6fvd",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 7,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Atlantic West Elementary",
+                "confidence": "high",
+                "evidence_quote": "Hours: 7:45 a.m. - 2:15 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:00",
+                "school_name": "Annabel C. Perry PK - 8",
+                "confidence": "high",
+                "evidence_quote": "Hours: 8:00 a.m. - 2:00 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:30",
+                "end_time": "16:00",
+                "school_name": "Apollo Middle",
+                "confidence": "high",
+                "evidence_quote": "Hours: 9:30 a.m. - 4:00 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:25",
+                "school_name": "Attucks Middle",
+                "confidence": "high",
+                "evidence_quote": "Hours: 8:55 a.m. - 3:25 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "Bair Middle",
+                "confidence": "high",
+                "evidence_quote": "Hours: 9:15 a.m. - 3:45 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:05",
+                "end_time": "13:50",
+                "school_name": "Atlantic Technical High",
+                "confidence": "high",
+                "evidence_quote": "Hours: 7:05 a.m. - 1:50 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "00:00",
+                "end_time": "00:00",
+                "school_name": "Banyan Elementary",
+                "confidence": "low",
+                "evidence_quote": "Hours: ",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1690,
+            "completion_tokens": 622,
+            "cost_usd": 0.0004942,
+            "latency_ms": 44347,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785295399-E4BbNQjwz3tL0vLiERqG",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "apollo",
+            "start": "09:30",
+            "end": "16:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Hours: 9:30 a.m. - 4:00 p.m.",
+                "locus": "Apollo Middle",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Hours: 9:30 a.m. - 4:00 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "1200180:aed9c3a7fc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "atlantic technical",
+            "start": "07:05",
+            "end": "13:50",
+            "gross": 405,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "Hours: 7:05 a.m. - 1:50 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "1200180:aed9c3a7fc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "atlantic west",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Hours: 7:45 a.m. - 2:15 p.m.",
+                "locus": "Atlantic West Elementary",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Hours: 7:45 a.m. - 2:15 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "1200180:aed9c3a7fc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "attucks",
+            "start": "08:55",
+            "end": "15:25",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Hours: 8:55 a.m. - 3:25 p.m.",
+                "locus": "Attucks Middle",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Hours: 8:55 a.m. - 3:25 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "1200180:aed9c3a7fc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "bair",
+            "start": "09:15",
+            "end": "15:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Hours: 9:15 a.m. - 3:45 p.m.",
+                "locus": "Bair Middle",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Hours: 9:15 a.m. - 3:45 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "1200180:aed9c3a7fc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "annabel c perry pk 8",
+            "start": "08:00",
+            "end": "14:00",
+            "gross": 360,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "Hours: 8:00 a.m. - 2:00 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "1200180:aed9c3a7fc",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "annabel c perry pk 8",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:00"
+            },
+            "rec_key": "1200180:aed9c3a7fc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "banyan",
+            "gross": 0,
+            "reason": "implausible",
+            "rec_key": "1200180:aed9c3a7fc",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "middle",
+        "school": "apollo",
+        "start": "09:30",
+        "end": "16:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Hours: 9:30 a.m. - 4:00 p.m.",
+            "locus": "Apollo Middle",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Hours: 9:30 a.m. - 4:00 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "1200180:aed9c3a7fc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "atlantic technical",
+        "start": "07:05",
+        "end": "13:50",
+        "gross": 405,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "Hours: 7:05 a.m. - 1:50 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "1200180:aed9c3a7fc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "atlantic west",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Hours: 7:45 a.m. - 2:15 p.m.",
+            "locus": "Atlantic West Elementary",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Hours: 7:45 a.m. - 2:15 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "1200180:aed9c3a7fc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "attucks",
+        "start": "08:55",
+        "end": "15:25",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Hours: 8:55 a.m. - 3:25 p.m.",
+            "locus": "Attucks Middle",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Hours: 8:55 a.m. - 3:25 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "1200180:aed9c3a7fc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "bair",
+        "start": "09:15",
+        "end": "15:45",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Hours: 9:15 a.m. - 3:45 p.m.",
+            "locus": "Bair Middle",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Hours: 9:15 a.m. - 3:45 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "1200180:aed9c3a7fc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "annabel c perry pk 8",
+        "start": "08:00",
+        "end": "14:00",
+        "gross": 360,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "Hours: 8:00 a.m. - 2:00 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "1200180:aed9c3a7fc",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "annabel c perry pk 8",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:00"
+        },
+        "rec_key": "1200180:aed9c3a7fc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "banyan",
+        "gross": 0,
+        "reason": "implausible",
+        "rec_key": "1200180:aed9c3a7fc",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 375,
+        "start_time": null,
+        "end_time": null,
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "atlantic west",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "annabel c perry pk 8",
+            "start_time": "08:00",
+            "end_time": "14:00",
+            "gross": 360,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 390,
+        "start_time": "09:30",
+        "end_time": "16:00",
+        "n_schools": 3,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "apollo",
+            "start_time": "09:30",
+            "end_time": "16:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "attucks",
+            "start_time": "08:55",
+            "end_time": "15:25",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "bair",
+            "start_time": "09:15",
+            "end_time": "15:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 405,
+        "start_time": "07:05",
+        "end_time": "13:50",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "atlantic technical",
+            "start_time": "07:05",
+            "end_time": "13:50",
+            "gross": 405,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 5151,
+      "completion_tokens": 2367,
+      "cost_usd": 0.00123982
+    },
+    "state": "FL"
+  }
+}
