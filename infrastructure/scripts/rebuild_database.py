@@ -313,8 +313,10 @@ def main():
     )
     parser.add_argument(
         "--year",
-        default="2023-24",
-        help="School year for staff/enrollment data"
+        # NCES_PRIMARY_YEAR, not a hardcoded vintage (#567): the phase functions already default to
+        # it, but this CLI default OVERRODE them — a bare run silently rebuilt against the old CCD.
+        default=NCES_PRIMARY_YEAR,
+        help=f"School year for staff/enrollment data (default: {NCES_PRIMARY_YEAR}, the primary NCES vintage)"
     )
 
     args = parser.parse_args()
