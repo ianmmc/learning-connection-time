@@ -164,8 +164,9 @@ def test_missing_district_is_skipped(monkeypatch):
 
 
 # ---------------------- REQ-116/#83 hub-priority narrowing (pure, DB-free) ----------------------
-def _h(rec_key, label=None, year=None, n_times=0):
-    return {"rec_key": rec_key, "label": label, "year": year, "n_times": n_times, "schools": []}
+def _h(rec_key, label=None, year=None, n_times=0, nitw=0):
+    return {"rec_key": rec_key, "label": label, "year": year, "n_times": n_times, "nitw": nitw,
+            "schools": []}
 
 
 def test_hub_priority_narrows_to_the_labeled_hub():
@@ -326,3 +327,82 @@ def test_hub_labels_is_the_canonical_taxonomy_object():
     # the review found a hand-retyped copy that a future taxonomy addition could silently miss
     from infrastructure.acquisition.stage5_filter import build_signals as BS
     assert BR.HUB_LABELS is BS.HUB_LABELS
+
+
+# ---------------------- #691 hub-priority yield floor (Rule B, k=2 — measured 2026-07-29) ----------------------
+def test_hub_yield_floor_releases_high_yield_labeled_siblings():
+    """The Essex Westford shape (the #691 defect): the labeled 'hub' is a news feed with 21 in-window
+    times; labeled siblings carrying 112/61/57 must SEND (>= 2x21=42), a labeled 15 and an UNLABELED
+    100 still hold (the floor releases labeled evidence only — unlabeled tier-A auto-sends are
+    REQ-116's actual savings)."""
+    winner, holds = BR._hub_priority_holds([
+        _h("d:hub", "district_hub_by_school", 2025, 40, nitw=21),
+        _h("d:list", "school_start_end_list", 2025, 112, nitw=112),
+        _h("d:table", "school_bell_table", 2024, 61, nitw=61),
+        _h("d:gdoc", "school_bell_table", 2024, 57, nitw=57),
+        _h("d:thin", "school_start_end_list", 2024, 15, nitw=15),
+        _h("d:auto", None, 2025, 100, nitw=100)])
+    assert winner == "d:hub"
+    assert holds == {"d:thin", "d:auto"}
+
+
+def test_hub_yield_floor_bangor_pin_dense_hub_still_narrows():
+    """REQ-116's real case must survive (the measurement's regression pin): Bangor's genuine hub
+    (26 in-window times) still narrows past its 45-time labeled sibling — 45 < 2x26."""
+    winner, holds = BR._hub_priority_holds([
+        _h("d:hub", "district_hub_by_band", None, 26, nitw=26),
+        _h("d:table", "school_bell_table", None, 45, nitw=45)])
+    assert winner == "d:hub" and holds == {"d:table"}
+
+
+def test_hub_yield_floor_zero_yield_winner_floor_is_two():
+    """A zero/unknown-nitw winner (image-only hub the text capture never resolved) gets floor
+    2x max(1,0)=2 — any labeled sibling with 2+ in-window times escapes the hold. Over-send in the
+    safe direction, never fewer labeled sends."""
+    winner, holds = BR._hub_priority_holds([
+        _h("d:hub", "district_hub_by_school", 2025, 10, nitw=0),
+        _h("d:table", "school_bell_table", 2024, 9, nitw=9),
+        _h("d:bare", "school_start_end_list", 2024, 1, nitw=1)])
+    assert winner == "d:hub" and holds == {"d:bare"}
+
+
+def test_essex_acceptance_high_yield_labeled_tables_compose_into_the_dispatch(monkeypatch):
+    """#691's acceptance case, end to end: Essex `5000395` must compose a dispatch containing its
+    61-time school_bell_table AND its 57-time bell-schedule Google Doc alongside the labeled hub.
+    (Failed against the pre-#691 composer: 1 send, everything else hub-priority-held.)"""
+    _no_benchmark_provenance(monkeypatch)
+    def rec(rec_key, label, nitw, n_times):
+        return {"rec_key": rec_key, "url": f"http://x/{rec_key}", "tier": "A", "category": None,
+                "signals": {"content_school_year": None, "n_times_in_window": nitw},
+                "is_emergent": 0, "intended_schools": [], "label": label, "facets": {},
+                "reps": [{"source": "extracted", "filename": "e.txt", "file_kind": "text",
+                          "n_chars": 1000, "n_times": n_times, "usable": 1}]}
+    records = [rec("d:hub", "district_hub_by_school", 21, 40),
+               rec("d:table61", "school_bell_table", 61, 61),
+               rec("d:gdoc57", "school_bell_table", 57, 57),
+               rec("d:thin", "school_start_end_list", 15, 15)]
+    monkeypatch.setattr(REL, "load_district", lambda s, d: {"district_id": d, "name": "X", "state": "VT",
+                                                            "district_dir": "x", "labeled_topology": None,
+                                                            "nces_denominator": {"total": 9, "by_level": {}}})
+    monkeypatch.setattr(REL, "load_district_records", lambda s, d: records)
+    _, out = BR.district_release_input(None, "5000395")
+    by = {r["rec_key"]: r for r in out}
+    assert by["d:hub"]["decision"] == "send"
+    assert by["d:table61"]["decision"] == "send"          # 61 >= 2x21
+    assert by["d:gdoc57"]["decision"] == "send"           # 57 >= 2x21
+    assert by["d:thin"]["decision"] == "hold"
+    assert by["d:thin"]["reason"].startswith(BR.HUB_PRIORITY_REASON_PREFIX)
+    assert by["d:thin"]["reason"].endswith("d:hub")
+
+
+def test_gate6_console_renders_the_hub_priority_holds():
+    """#691 acceptance line 4 (the UI-visibility rule; static-source pin): 'N labeled targets held
+    by hub-priority' must be VISIBLE at gate@6, not inferable from reason strings — the reviewer is
+    the only party who can see the winner is a news feed. The client keys its held rows on the
+    server-computed reason spelling; one spelling, pinned here against the Python constant."""
+    from pathlib import Path
+    js = (Path(__file__).resolve().parent.parent
+          / "infrastructure/acquisition/process_governance/static/stage6.js").read_text()
+    assert 'data-feat="s6-hub-held-summary"' in js         # the aggregate count row
+    assert 'data-feat="s6-hub-held"' in js                 # the per-record rows
+    assert BR.HUB_PRIORITY_REASON_PREFIX in js             # the client keys on the server's spelling

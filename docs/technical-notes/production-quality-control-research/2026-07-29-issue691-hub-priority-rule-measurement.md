@@ -86,10 +86,10 @@ targets held by hub-priority" as a server-computed console row, so the reviewer 
 label suppressed. Keep hold-never-reject semantics; the yield floor only moves labeled siblings
 from `hold` back to `send`.
 
-## Decision (to be filled by Ian)
+## Decision
 
-- [ ] Rule: A / **B (k=2)** / B (other k) / other
-- [ ] gate@6 surfacing: yes / defer
+- [x] **Rule B, k=2** (Ian, 2026-07-29 — accepted the recommendation)
+- [x] **gate@6 surfacing: yes** ("make it visible at gate@6")
 
 ---
 *Implementation notes for phase B, whichever rule wins: `n_times_in_window` is not on the sendable
