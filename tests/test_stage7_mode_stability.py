@@ -365,8 +365,8 @@ def test_persisted_run_kind_for_a_benchmark_dispatch(monkeypatch):
     monkeypatch.setattr(R7.gdb, "session_scope", lambda: contextlib.nullcontext(None))
     monkeypatch.setattr(R7, "_early_exit_targets", lambda ids: {})
     monkeypatch.setattr(R7, "_spend_by_district", lambda **k: {})
-    monkeypatch.setattr(R7, "detect_and_persist_requests", lambda s, pd, hh: None)
-    monkeypatch.setattr(R7, "withdraw_satisfied_requests", lambda s, did: None)
+    monkeypatch.setattr(R7, "detect_and_persist_requests", lambda s, pd, hh, **kw: None)
+    monkeypatch.setattr(R7, "withdraw_satisfied_requests", lambda s, did, **kw: None)
     monkeypatch.setattr(R7, "write_district_receipt", lambda pd, hh: "/dev/null")
     monkeypatch.setattr(R7.BM, "benchmark_provenance_rec_keys", lambda s, keys: set())
 
@@ -376,7 +376,7 @@ def test_persisted_run_kind_for_a_benchmark_dispatch(monkeypatch):
     # run must never spawn a follow-up directive (detect_and_persist_requests is production-only,
     # #148 review) — proven by the mock never firing on the benchmark call above but firing below.
     detected = []
-    monkeypatch.setattr(R7, "detect_and_persist_requests", lambda s, pd, hh: detected.append(hh))
+    monkeypatch.setattr(R7, "detect_and_persist_requests", lambda s, pd, hh, **kw: detected.append(hh))
     R7.run_council_streaming(dict(DOC, dispatch_type="production"), persist=True, resume=False)
     assert captured["run_kind"] == "production"
     assert detected == ["mstest"]

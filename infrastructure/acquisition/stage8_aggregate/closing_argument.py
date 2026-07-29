@@ -392,9 +392,12 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
         # documents, surfaced in the console copy rather than silently blended.
         n_outside_pool = None
         if broster and schools_by_band:
-            pool_ids = {str(x.get("school_id")) for x in
-                        ((schools_by_band or {}).get(band) or {}).get("schools", [])
-                        if x.get("school_id")}
+            # ONE spelling of pool membership (SS.stage1_pool_ids), shared with Stage-7's
+            # mode-check targeting (#703 review) — band absent from the snapshot reads as an
+            # empty pool HERE deliberately: with the snapshot itself non-empty, this band was
+            # simply never selected, so its whole roster is genuinely outside (pinned by
+            # test_band_absent_from_a_real_pool_reads_all_outside).
+            pool_ids = SS.stage1_pool_ids(schools_by_band).get(band) or set()
             n_outside_pool = sum(1 for r in broster.get("slot_recs", [])
                                  if str(r.get("school_id")) not in pool_ids)
         out_bands[band] = {

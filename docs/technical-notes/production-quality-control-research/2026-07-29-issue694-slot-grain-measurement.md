@@ -64,6 +64,13 @@ same-named extra candidate is pending-disposition, not unheard") — deliberatel
 - **Withdraw (#233) aligned:** `withdraw_satisfied_requests` now reads the SAME `band_done`
   predicate — without this, every covered-but-unsatisfied directive above would churn
   (emit → withdraw → re-emit) each round.
+- **Compose (#703 review round) aligned:** `plan_followup`'s suppression gate was the third
+  disagreement — as first shipped it still auto-rejected every covered-but-unsatisfied directive
+  as "already covered" at compose (the emit → approve → auto-reject → re-emit churn), making the
+  58 directives above unreachable through execution. Fixed in the review round: the banded
+  suppression and the band-less fillable-gap expansion both read `band_done` over the same live
+  slot view (`Gathered.slot_gaps`, shared `ca_cache`); numbers above re-verified unchanged after
+  the fix.
 - **Zero-slot bands are omitted, not "done"** — a facts-only projection band (no CCD roster)
   falls back to the covered boolean (the #702 empty-pool lesson, pinned in
   `test_694_slot_grain_requests.py`).

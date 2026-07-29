@@ -580,6 +580,57 @@ def test_compose_gate_leaves_real_uncovered_band_untouched():
     assert plan["suppressed"] == []
 
 
+# --- #694/#703 review: compose reads the SAME band_done predicate as detect + withdraw ---
+
+def test_compose_covered_but_unsatisfied_band_with_open_slots_survives():
+    """#703 review (CRITICAL, fails against the pre-fix gate): the Cleveland shape — a band with
+    1 of 12 slots filled is covered (≥1 fact) but NOT done at slot grain. Pre-fix, the compose
+    gate auto-rejected exactly the directives #694's detector was built to emit ('already
+    covered'), while detect kept re-emitting them — the emit → approve → auto-reject → re-emit
+    churn the shared band_done predicate exists to prevent."""
+    sg = {"D1": {"high": {"satisfied": False, "n_slots": 12, "n_filled": 1, "n_rejected": 0,
+                          "unfilled": [{"school_id": "x1", "name": "X High", "in_pool": True}]}}}
+    plan = EX.plan_followup([_req(1, "D1", "7->2", "high")], claimed_bands={},
+                            covered_bands={"D1": {"high"}}, slot_gaps=sg)
+    assert plan["targets"] == {"D1": ["high"]}
+    assert plan["swept_ids"] == [1] and plan["suppressed"] == []
+
+
+def test_compose_slot_grain_done_band_suppresses_with_the_694_reason():
+    # with a slot view, done = no open unfilled slots — suppressed under the #694 reason, and the
+    # legacy 'already covered' message stays reserved for the no-slot-view fallback path.
+    sg = {"D1": {"high": {"satisfied": False, "n_slots": 2, "n_filled": 2, "n_rejected": 0,
+                          "unfilled": []}}}
+    plan = EX.plan_followup([_req(1, "D1", "7->2", "high")], claimed_bands={},
+                            covered_bands={"D1": {"high"}}, slot_gaps=sg)
+    assert [s["request_id"] for s in plan["suppressed"]] == [1]
+    assert "no open unfilled slots" in plan["suppressed"][0]["reason"]
+    assert "already covered" not in plan["suppressed"][0]["reason"]
+
+
+def test_compose_bandless_expansion_includes_covered_but_not_done_band():
+    # the band-less fillable-gap expansion widens with the same predicate: a 7->3's district whose
+    # only claimed band is covered-but-unsatisfied still HAS a fillable gap (pre-fix: suppressed).
+    sg = {"D1": {"high": {"satisfied": False, "n_slots": 3, "n_filled": 1, "n_rejected": 0,
+                          "unfilled": [{"school_id": "x1", "name": "X High", "in_pool": True}]}}}
+    plan = EX.plan_followup([_req(1, "D1", "7->3", None)], claimed_bands={"D1": ["high"]},
+                            covered_bands={"D1": {"high"}}, slot_gaps=sg)
+    assert plan["targets"] == {"D1": ["high"]}
+
+
+def test_unfilled_slots_now_carries_its_own_satisfied_guard():
+    """#703 review: a REQ-149-satisfied band with open unfilled slots (the Fairbanks shape the
+    detector is pinned silent on) must never be offered as a pursuit target by this function
+    itself — not merely filtered by one caller's discipline upstream."""
+    slot = lambda sid: {"school_id": sid, "slot_state": "unfilled", "match": None}  # noqa: E731
+    ca = {"bands": {"middle": {"satisfied": {"satisfied": True}},
+                    "high": {"satisfied": {"satisfied": False}}},
+          "slot_projection": {"middle": {"slots": [slot("M1"), slot("M2")]},
+                              "high": {"slots": [slot("H1")]}}}
+    out = EX._unfilled_slots_now(None, ["D9"], ca_cache={"D9": ca})   # cache hit — no DB touched
+    assert out == {"D9": {"high": ["H1"]}}                            # satisfied middle excluded
+
+
 def test_compose_gate_unknown_district_not_gated():
     # a district absent from real_bands is treated as unknown (not gated) — back-compat safety.
     plan = EX.plan_followup([_req(1, "D1", "7->2", "middle")], claimed_bands={}, real_bands={})

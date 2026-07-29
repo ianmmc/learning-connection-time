@@ -62,8 +62,11 @@ def slot_gap_summary(ca: dict, pool_by_band: dict = None):
     `pool_by_band` — {band: {school_id, ...}} of the Stage-1 sampling pool (relation 1,
     `schools_by_band_json`): unfilled slots inside it are the schools follow-up CHASES; unfilled
     slots outside it (span-only K-8s, relation 2 minus relation 1 — the #696 gap) are eligible only
-    as bounded assumption-check targets. Pool unknown for a band ⇒ every slot counts as in-pool
-    (the honest degradation: no capping without evidence for it).
+    as bounded assumption-check targets. Pool UNKNOWN for a band (band absent from the snapshot /
+    no snapshot) ⇒ every slot counts as in-pool (the honest degradation: no capping without
+    evidence for it). A KNOWN-EMPTY pool (band present, zero schools — Stage 1 selected nothing
+    for it) is NOT unknown: every slot is outside-pool and the #696 cap applies (#703 review —
+    `if pool` would have collapsed the two, the #702 absence-vs-empty bug class).
 
     A slot carrying a standing human `reject` disposition is EXCLUDED from targets (#694 AC: the
     human looked and answered; robo-chasing it re-asks). `confirm_extra` needs no handling here —
@@ -95,7 +98,7 @@ def slot_gap_summary(ca: dict, pool_by_band: dict = None):
                 n_rejected += 1
                 continue
             unfilled.append({"school_id": sid, "name": s.get("roster_school", ""),
-                             "in_pool": (sid in pool) if pool else True})
+                             "in_pool": (sid in pool) if pool is not None else True})
         st = p.get("stats") or {}
         out[band] = {
             # A zero-fact band has no bands[] entry (and thus no REQ-149 signal) — honestly
@@ -327,18 +330,24 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
             # (relation 2 minus relation 1 — K-8s placed in another band's pool) are named only as
             # a BOUNDED assumption-check sample (does the K-8's bell match the band mode the
             # Stage-9 tie rule will hand its grades?). Deterministic pick: lowest school_id.
-            in_pool = [u for u in g["unfilled"] if u.get("in_pool")]
-            span_only = sorted((u for u in g["unfilled"] if not u.get("in_pool")),
-                               key=lambda u: u["school_id"])
+            # .get() throughout (#703 review): the summary always populates these keys, but this
+            # is a public pure function — an under-shaped slot_gaps entry (a test double, a future
+            # summary variant) must degrade like everything else in this module, never KeyError
+            # the whole district's detection pass.
+            gaps = g.get("unfilled") or []
+            in_pool = [u for u in gaps if u.get("in_pool")]
+            span_only = sorted((u for u in gaps if not u.get("in_pool")),
+                               key=lambda u: u.get("school_id") or "")
             mode_check = span_only[:MODE_CHECK_MAX]
-            params["unfilled_schools"] = [{"school_id": u["school_id"], "name": u["name"]}
-                                          for u in in_pool]
-            params["mode_check_schools"] = [{"school_id": u["school_id"], "name": u["name"]}
-                                            for u in mode_check]
-            params["n_slots"], params["n_filled"] = g["n_slots"], g["n_filled"]
-            names = [u["name"] for u in in_pool[:3]]
+            params["unfilled_schools"] = [{"school_id": u.get("school_id") or "",
+                                           "name": u.get("name") or ""} for u in in_pool]
+            params["mode_check_schools"] = [{"school_id": u.get("school_id") or "",
+                                             "name": u.get("name") or ""} for u in mode_check]
+            n_slots, n_filled = g.get("n_slots") or 0, g.get("n_filled") or 0
+            params["n_slots"], params["n_filled"] = n_slots, n_filled
+            names = [u.get("name") or "" for u in in_pool[:3]]
             more = len(in_pool) - len(names)
-            reason = (f"claimed band '{band}' has {g['n_filled']} of {g['n_slots']} roster slots "
+            reason = (f"claimed band '{band}' has {n_filled} of {n_slots} roster slots "
                       f"filled and is not satisfied (REQ-149)")
             if in_pool:
                 reason += (f" — {len(in_pool)} unfilled school(s) to pursue: "
@@ -346,7 +355,7 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
             if mode_check:
                 reason += (f"; {len(mode_check)} span-only assumption-check target(s) "
                            f"(does the K-8 bell match the band mode? #696): "
-                           + ", ".join(u["name"] for u in mode_check))
+                           + ", ".join(u.get("name") or "" for u in mode_check))
         else:
             reason = (f"claimed band '{band}' has 0 accepted facts across all URLs"
                       + (f" ({len(schools)} school(s) known)" if schools else ""))

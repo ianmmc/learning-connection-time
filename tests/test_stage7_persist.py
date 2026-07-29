@@ -186,7 +186,7 @@ def test_detect_and_persist_requests_dedups(gov_session, monkeypatch):
     # claimed elementary+high; high has no facts -> one district 7->2 request. No alternates. Both
     # bands are real (real_bands={elementary,high}), so the #175 phantom gate doesn't suppress high.
     monkeypatch.setattr(R7, "_district_request_inputs",
-                        lambda sess, res: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
+                        lambda sess, res, **kw: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
                                            {"elementary", "high"}, None))   # 6-tuple since #694
     result = {"district_id": "ZZREQ1", "reps": [],
               "accepted": [{"band": "elementary", "school": "e"}], "unresolved": []}
@@ -354,7 +354,7 @@ def test_detect_dedups_against_an_open_request_from_another_handoff(gov_session,
     gdb.init_precious_schema()
     s = gov_session
     monkeypatch.setattr(R7, "_district_request_inputs",
-                        lambda sess, res: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
+                        lambda sess, res, **kw: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
                                            {"elementary", "high"}, None))   # 6-tuple since #694
     result = {"district_id": "ZZREQ2", "reps": [],
               "accepted": [{"band": "elementary", "school": "e"}], "unresolved": []}
@@ -372,7 +372,7 @@ def test_detect_reemits_after_a_prior_round_was_actioned(gov_session, monkeypatc
     gdb.init_precious_schema()
     s = gov_session
     monkeypatch.setattr(R7, "_district_request_inputs",
-                        lambda sess, res: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
+                        lambda sess, res, **kw: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
                                            {"elementary", "high"}, None))   # 6-tuple since #694
     result = {"district_id": "ZZREQ3", "reps": [],
               "accepted": [{"band": "elementary", "school": "e"}], "unresolved": []}
@@ -439,12 +439,12 @@ def test_withdraw_shares_the_slot_grain_done_predicate(gov_session, monkeypatch)
     _seed_requests(s, did, ["elementary", "high"])
     R7.persist_run_session(s, _run_for(did, "hw9", accepted=[("high", "hs")]), created_by="zz")
     s.flush()
-    monkeypatch.setattr(R7, "_slot_gaps_for_district", lambda sess, d, sbb: {
+    monkeypatch.setattr(R7, "_slot_gaps_for_district", lambda sess, d, sbb, **kw: {
         "high": {"satisfied": False, "n_slots": 2, "n_filled": 1, "n_rejected": 0,
                  "unfilled": [{"school_id": "x", "name": "X High", "in_pool": True}]}})
     assert R7.withdraw_satisfied_requests(s, did) == []      # covered but open gap -> stays
     monkeypatch.setattr(R7, "_slot_gaps_for_district",
-                        lambda sess, d, sbb: {"high": {"satisfied": True, "unfilled": []}})
+                        lambda sess, d, sbb, **kw: {"high": {"satisfied": True, "unfilled": []}})
     wd = R7.withdraw_satisfied_requests(s, did)
     assert len(wd) == 1 and "done at slot grain" in wd[0][1]
 
@@ -477,7 +477,7 @@ def test_withdrawn_does_not_block_reemission(gov_session, monkeypatch):
     gdb.init_precious_schema()
     s = gov_session
     monkeypatch.setattr(R7, "_district_request_inputs",
-                        lambda sess, res: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
+                        lambda sess, res, **kw: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
                                            {"elementary", "high"}, None))   # 6-tuple since #694
     result = {"district_id": "ZZWDR3", "reps": [],
               "accepted": [{"band": "elementary", "school": "e"}], "unresolved": []}

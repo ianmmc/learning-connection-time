@@ -165,6 +165,55 @@ def test_pool_unknown_means_no_span_capping():
     assert all(u["in_pool"] for u in gaps["middle"]["unfilled"])
 
 
+def test_known_empty_pool_is_all_span_only_and_capped():
+    """#703 review: a KNOWN-empty pool (band present in the snapshot, zero schools — Stage 1
+    selected nothing for it) is NOT 'unknown': every unfilled slot is outside-pool and the #696
+    MODE_CHECK_MAX cap applies. `if pool` (truthiness) collapsed the two — the #702
+    absence-vs-empty bug class, one level down."""
+    gaps = RQ.slot_gap_summary(_cleveland_middle(), pool_by_band={"middle": set()})
+    assert all(not u["in_pool"] for u in gaps["middle"]["unfilled"])
+    res = _result(accepted=[{"band": "middle", "school": "MS 00"}])
+    r = next(r for r in RQ.detect_requests(res, claimed_bands=["middle"], real_bands={"middle"},
+                                           covered_bands={"middle"}, slot_gaps=gaps)
+             if r["altitude"] == "district")
+    assert r["params"]["unfilled_schools"] == []
+    assert len(r["params"]["mode_check_schools"]) == RQ.MODE_CHECK_MAX
+
+
+def test_stage1_pool_ids_distinguishes_empty_from_absent():
+    """The ONE shared pool-membership extraction (#703 review): band with an empty schools list ->
+    empty set (KNOWN empty); band absent from the snapshot -> absent from the result (unknown)."""
+    from infrastructure.acquisition.common import school_sampling as SS
+    pools = SS.stage1_pool_ids({"middle": {"schools": []},
+                                "high": {"schools": [{"school_id": "X1"}, {"school_id": None}]}})
+    assert pools == {"middle": set(), "high": {"X1"}}
+    assert "elementary" not in pools
+
+
+def test_under_shaped_slot_gaps_degrades_never_keyerrors():
+    """#703 review (reproduced pre-fix as a live KeyError): detect_requests must tolerate a
+    slot_gaps entry carrying only the keys band_done itself accepts (satisfied/unfilled) —
+    an under-shaped input degrades (n_slots/n_filled read 0), never crashes the district's
+    detection pass."""
+    sg = {"middle": {"satisfied": False,
+                     "unfilled": [{"school_id": "a", "name": "A Middle", "in_pool": True}]}}
+    res = _result(accepted=[{"band": "middle", "school": "MS 00"}])
+    r = next(r for r in RQ.detect_requests(res, claimed_bands=["middle"], real_bands={"middle"},
+                                           covered_bands={"middle"}, slot_gaps=sg)
+             if r["altitude"] == "district")
+    assert r["params"]["n_slots"] == 0 and r["params"]["n_filled"] == 0
+    assert r["params"]["unfilled_schools"] == [{"school_id": "a", "name": "A Middle"}]
+
+
+def test_slot_gaps_for_district_reads_the_shared_ca_cache():
+    """#703 review: detect + withdraw (and compose's _gather) share one closing-argument load per
+    district via ca_cache — a cache hit must serve the summary without touching the session at
+    all (session=None would explode on any DB read)."""
+    from infrastructure.acquisition.process_governance import stage7_run as R7
+    out = R7._slot_gaps_for_district(None, "3904378", {}, ca_cache={"3904378": _cleveland_middle()})
+    assert out["middle"]["n_slots"] == 12 and len(out["middle"]["unfilled"]) == 11
+
+
 # ------------------------- fitness + degradation -------------------------
 def test_band_done_is_the_one_shared_predicate():
     """Emission (detect) and withdrawal (#233) both read `band_done` — slot grain when the band's
