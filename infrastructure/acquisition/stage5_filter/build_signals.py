@@ -216,24 +216,34 @@ def rootish_url(url: str) -> bool:
     return bool(ROOTISH_URL_RE.match(url or ""))
 
 
+def _capture_fingerprint(cap: dict) -> dict:
+    """A capture row's Stage-3 fingerprint, whichever shape the caller holds (#688): a DISK
+    captures.json row carries `fingerprint` (a nested dict); a DB `capture` row carries
+    `fingerprint_json` (a JSON string — cache_ingest maps disk→DB). The promotion accessors read
+    disk rows at ingest but were written against the DB key, so cms_hint/embed_hosts were None/[]
+    on all 3,559 records while 2,653 capture fingerprints held real vendor hints — invisible
+    because None is a legal value and nothing asserted corpus-level non-nullness (the seam is now
+    pinned by assert_fingerprint_promotion, run inside every full ingest)."""
+    fp = cap.get("fingerprint")
+    if isinstance(fp, dict):
+        return fp
+    try:
+        return json.loads(cap.get("fingerprint_json") or "{}") or {}
+    except (json.JSONDecodeError, TypeError):
+        return {}
+
+
 def cms_hint_of(cap: dict) -> str | None:
     """The Stage-3 cms_hint for a capture (REQ-115): promoted from the buried fingerprint into a record signal
     — a GROUPING key for per-detector accuracy, not a score input."""
-    try:
-        return (json.loads(cap.get("fingerprint_json") or "{}") or {}).get("cms_hint")
-    except (json.JSONDecodeError, TypeError):
-        return None
+    return _capture_fingerprint(cap).get("cms_hint")
 
 
 def embed_hosts_of(cap: dict) -> list:
     """Categorized iframe/embed host tags for a capture (REQ-115) — social/calendar/doc-viewer/other, from
     the Stage-3 fingerprint. Empty for pre-REQ-115 captures (the field isn't on disk yet); populated for
     future captures + used structurally by lf_news_feed / lf_calendar_widget."""
-    try:
-        fp = json.loads(cap.get("fingerprint_json") or "{}") or {}
-    except (json.JSONDecodeError, TypeError):
-        return []
-    return list(fp.get("embed_hosts") or [])
+    return list(_capture_fingerprint(cap).get("embed_hosts") or [])
 
 
 def in_window_positions(text: str):
@@ -1323,6 +1333,24 @@ def ingest_batch(district_ids: list, root: Path = RAW_DIR, *, regenerate_filtere
     return summary
 
 
+def assert_fingerprint_promotion(sess) -> tuple:
+    """#688 seam fitness (corpus-level, two COUNT queries): if ANY capture fingerprint carries a
+    cms_hint, SOME record signal must carry one — the promotion path reads disk rows the accessors
+    must match, and a key-shape mismatch here is silent (None is a legal 'unknown CMS', no detector
+    fires differently, so the bug survived from REQ-115 until 2026-07-29). Raises SystemExit INSIDE
+    the ingest transaction (the assert_floor discipline: the broken ingest never commits)."""
+    n_fp = sess.execute(text(
+        "SELECT COUNT(*) FROM capture WHERE (fingerprint_json::jsonb ->> 'cms_hint') IS NOT NULL")).scalar()
+    n_rec = sess.execute(text(
+        "SELECT COUNT(*) FROM record WHERE (signals_json::jsonb ->> 'cms_hint') IS NOT NULL")).scalar()
+    if n_fp and not n_rec:
+        raise SystemExit(
+            f"fingerprint promotion is DEAD (#688): {n_fp} capture fingerprint(s) carry cms_hint but "
+            f"0 record signals do — the cms_hint_of/embed_hosts_of accessors no longer match the "
+            f"capture-row shape they are handed. Aborting before commit.")
+    return n_fp, n_rec
+
+
 def ingest(root: Path, assert_floor: bool = False):
     """FULL ingest into the isolated governance Postgres DB (REQ-103): drop + rebuild every derived
     signal table over EVERY Stage-4-complete district on disk. The PRECIOUS tables are created from the
@@ -1371,6 +1399,9 @@ def ingest(root: Path, assert_floor: bool = False):
                  for t in ("discovery_school", "candidate", "capture", "processed_doc")}
         exported = export_labels(sess)        # keep the JSON backups in sync with the DB
         exported_splits = export_splits(sess)
+        # #688 seam fitness — always on (structural invariant, not config-dependent): a full ingest
+        # that would leave the fingerprint promotion dead aborts inside the transaction.
+        n_fp_hint, n_rec_hint = assert_fingerprint_promotion(sess)
         if assert_floor:
             # ENFORCE the recall floor INSIDE the transaction (#208): a violation raises SystemExit here,
             # session_scope never commits, and close() discards the whole re-ingest (transactional DDL) —
@@ -1383,6 +1414,7 @@ def ingest(root: Path, assert_floor: bool = False):
           f"({restored} restored from labels.json), {exported} exported to labels.json")
     print(f"clustering: {n_clustered} records in {n_clusters} clusters; {exported_splits} splits backed up")
     print(f"stage-1/2 ingest: {n_targeted} districts with batch targeting; {n_emergent} emergent records (captured, not a candidate)")
+    print(f"fingerprint promotion (#688): {n_fp_hint} capture fingerprints with cms_hint -> {n_rec_hint} records with the signal")
     print(f"cross-stage cache: {cache['discovery_school']} discovery_school, {cache['candidate']} candidate, "
           f"{cache['capture']} capture, {cache['processed_doc']} processed_doc rows")
     print("by tier:", by_tier)
