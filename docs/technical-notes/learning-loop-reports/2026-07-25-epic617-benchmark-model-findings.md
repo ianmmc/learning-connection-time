@@ -1776,3 +1776,171 @@ This round adds a fourth variant — **a fix that was merged but never run.** Th
 unchanged in spirit and sharper in practice: an acceptance property must be executed against the
 system it governs, in the state it will actually be in. Not asserted in a plan, not proven on a
 seeded fixture, and — the new clause — **not assumed to have taken effect because a PR merged.**
+
+## 14. What six more districts taught (2026-07-29)
+
+§13 remains the record of what was believed after the first two districts. Appended, not rewritten,
+per this document's standing convention. **§13's central claim — that driving the campaign finds what
+reading cannot — held for a third consecutive round**, and this time what it found was not a defect in
+the epic's own work but a defect in the machinery *upstream* of it that #617's guards had been
+quietly compensating for.
+
+### 14.1 The scoreboard
+
+Two dispatches (`d9a49bcabf0d`: Bridgeport/Bentonville/Broward; `df2b06f2f7a7`:
+Essex Westford/Cleveland/Fairbanks) took the campaign to **4 of 25 written**. Fairbanks `0200600` is
+the cleanest district yet — 26 accepted facts, staggered starts 07:30→09:50, nearly all computing to
+exactly 390 gross minutes. Broward was sent back; Cleveland and Essex Westford remain undecided.
+
+The provenance premise (§13.2) continues to hold: every band written across Worcester, Bangor and
+Fairbanks traces to `capture.source='discovered'` under `run_kind='production'`, with zero
+benchmark-provenance reps among the accepted facts.
+
+### 14.2 The finding that changes the epic's own risk assessment (#691)
+
+`_hub_priority_holds` (REQ-116/#83) narrows a district's first dispatch to its best labeled hub and
+**holds every other send, with no check that the winner carries any yield.** Essex Westford: 44
+target-labeled records, **1 dispatched** — page 14 of a school's two-year-old social-media feed, whose
+one relevant line ("🕒 Take a look at what time your school starts and ends! 👇") points at an image the
+text capture never resolved. Held behind it: a 112-time list, a 61-time `school_bell_table`, a 57-time
+schedule document.
+
+Measured across all 42 hub-labeled districts afterward:
+
+| | |
+|---|---|
+| districts with ≥1 labeled hub | 42 |
+| **currently narrowed to exactly 1 send** | **23** |
+| districts where the winner is NOT the highest-yield rep | many — Bentonville sends 8 times while holding 52; Essex sends 21 while holding 112 |
+| **already written on a narrowed dispatch** | **Fairbanks `0200600`** (winner 80 times; held 137, 109, 82) |
+
+Bridgeport `0900450` is the honest counter-case (winner 196 times vs held 141) — the rule is not
+always wrong, which is exactly why a blanket change requires the corpus measurement the issue's
+acceptance criteria demand rather than a reflex.
+
+**Why this matters to THIS epic specifically.** #679 taught that selection functions optimise without
+knowing the constraints the guards enforce, and the fix was to move eligibility *ahead* of the
+narrowing passes. #691 is the same lesson at the next altitude: the narrowing passes themselves
+optimise without knowing whether what they crown can carry the district. §13.9's standing risk —
+*shipping green against a measurement that could not fail* — has a sibling shape worth naming:
+**a guard can be correct and still be handed a selection made without reference to what it protects.**
+#644, #679 and #691 are three instances of it in eight days.
+
+**The doctrinal reading.** `district_hub_by_school` asserts **shape** ("a page listing schedules across
+schools"), per the standing labeling doctrine that a label carries shape and never fitness-for-use.
+Hub-priority reads it as **fitness** ("this page suffices for the district"). That is #674's structure
+one stage later — a shape label silently authorising an outcome the reviewer never approved — and it
+means a correctly-labeling reviewer cannot prevent it.
+
+### 14.3 The failure class §13.3 named, now found upstream of the console (#692/#694)
+
+§13.3 identified the *instrument layer* — the console misreporting to the operator — as a failure class
+the plan had not modelled. This round extends it: **the pipeline can also mis-ask.**
+
+Neither Cleveland nor Essex Westford raised a single gate@7 follow-up directive, despite Cleveland's
+middle band standing on **1 of 12 known schools (1.5% coverage)** and its elementary band on 2 of ~64
+(3.1%, `mean_tiebreak` — i.e. no mode existed). `detect_requests` computes `no_fillable_gap` from band
+**presence**: a band counts as covered the moment one school in it resolves.
+
+Ian identified the root cause, and it is architectural drift rather than a logic bug (#694): Stage 1 now
+carries a **per-school spine** forward (`schools_by_band_json`, with `school_id`/`name`/`level`/grade
+span); Stage 8 consumes it at **slot grain** to produce `sampling.coverage`, `n_sampled`/`n_total`,
+`plurality_share` and negative space; and **Stage 7's follow-up detection was never refactored onto
+it.** `_district_request_inputs` flattens the roster to bare names, `detect_requests` uses that list in
+exactly one place — to *narrate* a request it has already decided to emit — and `slot_assignment` is
+referenced **zero** times anywhere in Stage 7, so human slot dispositions cannot influence follow-up at
+all.
+
+So Stage 7 held Cleveland's roster showing 11 of 12 middle schools blank and asked for nothing, because
+the band was not *empty*. The generalisation: **when one stage gains a finer grain, every stage that
+consumes the same data inherits an obligation to re-ask its question at that grain** — and nothing in
+the test suite fails when it doesn't.
+
+### 14.4 Referent identity, the second mechanism (#693, with #681)
+
+§13's Bangor finding (#681) showed tolerance-clustering manufacturing agreement across *different*
+referents. This round found the inverse: name normalization manufacturing **disagreement across the
+same referent.**
+
+Cleveland's cleanest instance — both council models read `08:35-15:35` for the same school, but one
+wrote `lincoln west science health` and the other `lincoln west science and health`. `_norm_school`
+grouped them separately, neither reached the 2-vote cross-family threshold, and the result was one
+judge-rescued accepted fact beside an unresolved phantom of the same school. Essex Westford shows the
+systematic form: every accepted school is an acronym (`adl`, `fms`, `ems`), every unresolved one is
+spelled out (`founders memorial`, `ohia`).
+
+**Consequence for the Council Lab (#80):** `n_unresolved` is a headline model-quality signal, and it is
+currently measuring a normalizer defect as if it were model disagreement. Any composition A/B run today
+is scored partly on that noise — which makes #693 a prerequisite for trusting #80's instrument, not
+merely a data-quality nicety.
+
+### 14.5 A district-built app is the best source we have met, and the pipeline could not receive it (#686)
+
+Broward's school-information page embeds an AngularJS application over an open REST API returning **231
+schools with 229 parseable `School_Hours` pairs**, current school year, in one structured document —
+more complete and more machine-readable than any vendor CMS page or PDF the campaign has processed. The
+capture holds **six** of them: the frame-text pass caught the app shell and the table header while the
+445KB XHR was still in flight; only the later `page.pdf()` artifacts caught the first viewport.
+
+The dev-URL trail shipped in the service file (`web01cdev`, `localhost:56084`) establishes it was built
+on the district's own network. Ian's reading — professional internal IT working under time and
+technology constraints, not an amateur — is what the evidence supports, and it is worth recording as a
+finding about the *domain* rather than about one district: **districts with real technology departments
+build things, those things are often the best data available, and no vendor fingerprint will ever match
+them.** Deliberately filed with a recurrence trigger rather than a fix, since every instance will be
+bespoke.
+
+Adjacent, and the same shape one layer down (#685): Cedar Rapids' bell-schedule page is a Finalsite tab
+widget where two of three panels sit at `display:none`. Captured 54 time strings; the DOM holds 110. The
+`innerText` choice that drops them is *correct* — its comment records the measurement (98KB of hidden
+menus vs 3KB visible on Marion) — so hidden **cruft** and hidden **content** are indistinguishable to
+it. Ian reframed the fix from "mutate the DOM before reading" to "**emit an additional representation
+under a detected trigger**," which preserves what every existing artifact means and lets the pipeline's
+existing yield-ranking pick the fuller rep on merit.
+
+### 14.6 The re-triage, and why the diagnosis was structural
+
+By 2026-07-29 #128 held 19 open sub-issues, which read as overload but was not: it was **two unrelated
+populations sharing a label** — nine genuine deferrals filed 2026-07-04/12 and untouched since, and
+eight active-frontier defects filed in a single day, seven `sev:major`/`sev:critical`, each with a live
+district as its pin. The cause was that **#106 (Stage 5/6 filter & dispatch refinements) closed on
+2026-07-19**, leaving Stage-5/6/7 defects with no owner; #128 became the default. Opened **#695** for
+them; #128 returns to its charter.
+
+In the same pass all **47 unlabeled open issues** were read — no hidden criticals; they are
+predominantly unbuilt console (#96) and Council Lab (#80) features, which is why severity was never
+applied. One promotion fell out of it: **#567**'s stale 2023-24 CCD import leaves 2,051 of 17,842
+districts without a `website_url`, **including both districts #646 treats as "domain-less and
+unreachable by any composer"** (Lincoln `3172840`, Joint SD No.2 `1602100`). A cheap re-point and re-run
+may raise the campaign's ceiling from 25 to 27 — a case where a housekeeping issue turns out to gate an
+epic's completion criterion.
+
+### 14.7 The question this round opens
+
+**#691 means Fairbanks was approved and incorporated on a dispatch that silently withheld a 137-time
+bell schedule from it.** Its numbers look clean and may well be right — but the district was never
+given the chance to contradict itself, and the same is true of Broward and Bentonville from this
+session's other dispatch.
+
+That poses a question the campaign has not faced: **when a defect is found that silently narrowed the
+evidence behind an already-published district, is re-composition and re-review warranted?** The
+falsifier says fix the pipeline, not the district — but it is silent on what to do about districts
+already written *through* the broken mechanism. Recorded here as an open decision (Ian's call), because
+it will recur: every future selection-layer fix raises the same question about everything written
+before it.
+
+### 14.8 The sequence this argues for
+
+1. **#691** — blocking further gate@6 freezes (23 districts affected).
+2. **#688** — `cms_hint`/`embed_hosts` promotion is dead corpus-wide (an accessor reads the DB column
+   name off a disk row); two lines plus a re-ingest recovers 2,653 vendor hints, and it gates #687.
+3. **#567** — promoted; may close #646 and lift the ceiling to 27/27.
+4. **#694** → re-measure **#692** (its measured symptom; Essex/Cleveland are the acceptance cases).
+5. **#683** → **#684**.
+
+Then resume: send back Cleveland + Essex Westford, and San Diego `0634320` is next in the district
+sequence. The gate@8 wiring gaps (**#682** approve→write, **#689** send-back→requeue) remain open and
+are the reason both of this session's verdicts required manual follow-through.
+
+*Authority: issues #683-#695; live governance DB reads (the 42-district hub-priority sweep, both
+extractions' facts, the `stage8_approval` rows); `main` @ `b5821c7`.*

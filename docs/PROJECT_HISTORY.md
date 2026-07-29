@@ -1536,3 +1536,84 @@ git show <commit>:docs/archive/<filename>   # view a specific archived file
 ```
 
 The cleanup happened immediately after restore-point commit `59603c3`; the archived files were last present in that commit's tree.
+
+### 2026-07-29 — Six more districts through the gates, and the backlog gets re-triaged around what they found
+
+Three dispatches later (`d9a49bcabf0d`: Bridgeport/Bentonville/Broward; `df2b06f2f7a7`:
+Essex Westford/Cleveland/Fairbanks) the campaign stands at **4 of 25 districts written** — Fairbanks
+`0200600` joining Worcester and Bangor, and it is the cleanest yet: 26 accepted facts, staggered start
+times from 07:30 to 09:50, and nearly every school computing to exactly 390 gross minutes. A district
+running deliberate staggered bells on a uniform instructional day, which is what the metric was built
+to see.
+
+The other five did not go through, and each stall was diagnostic rather than incidental.
+
+**The gate@8 verdict button routes nothing (#689).** Broward was sent back with a reason naming
+re-discovery. Three docstrings and the console's own hint text promise a `sent_back → 8→1/8→6`
+back-edge; no code composes either. The verdict half is fully auditable — precious row, frozen
+receipt, state_event, Stage-9 block — and the routing half does not exist, so the reason a human
+writes *is* the routing instruction, executed by hand. Filed as the sibling of #682: gate@8's two
+arrows, approve→write and send-back→requeue, are both unwired.
+
+**A district-built web app turned out to be the best data source we have met, and the pipeline could
+not receive it (#686).** Broward's school-hours page embeds an AngularJS app over an open REST API
+that returns 231 schools with 229 parseable `School_Hours` pairs, current year, in one document. The
+capture holds six of them — the frame-text pass caught the app shell and the table header while the
+XHR was still in flight; only the later `page.pdf()` artifacts caught the first viewport. The dev-URL
+trail left in the shipped service file (`web01cdev`, `localhost:56084`) says district staff built it
+on their own network. Ian's reading — a professional working under time and technology constraints,
+not an amateur — is the one the evidence supports, and it reframes the finding: *some of the best
+bell-schedule data out there was put up by people who wanted it found, in shapes no vendor
+fingerprint will ever match.* Recorded with a recurrence trigger rather than a fix, since each
+instance will be bespoke.
+
+**Two districts stalled at gate@8 and produced four issues between them.** Cleveland `3904378` and
+Essex Westford `5000395` both came back thin, and inspecting the records Ian had labeled explained
+why:
+
+- **#691 (`sev:critical`) — REQ-116 hub-priority narrows with no yield check.** Essex had 44
+  target-labeled records; exactly one was dispatched, and the winner was page 14 of a school's
+  two-year-old social-media feed, whose only relevant line points at an image the text capture never
+  resolved. It displaced a 112-time list, a 61-time bell table, and a 57-time schedule document.
+  Measured corpus-wide afterward: **23 of 42 hub-labeled districts are currently narrowed to exactly
+  one send**, and the winner is frequently not the best evidence — Bentonville dispatches an 8-time
+  page while holding a 52-time one, and **Fairbanks was incorporated on a one-rep dispatch that held a
+  137-time bell schedule.** Bridgeport is the honest counter-case where the hub genuinely is best,
+  which is why the fix needs a corpus measurement rather than a blanket rule change. The structural
+  reading: `district_hub_by_school` asserts *shape* per the labeling doctrine, and hub-priority reads
+  it as *fitness* — the #674 shape one stage later.
+- **#692/#694 — gate@7 asked a coarser question than the one that matters.** Neither district raised
+  a single follow-up directive despite middle bands standing on one school (1.5% coverage for
+  Cleveland). `detect_requests` treats a band as covered when *one* fact lands in it. Ian identified
+  the root cause: Stage 1 now carries a per-school spine forward, Stage 8 consumes it at slot grain to
+  compute coverage and negative space, and Stage 7's follow-up detection was never refactored onto it
+  — it receives the roster and uses it only to narrate a request it has already decided to emit, while
+  `slot_assignment` is referenced nowhere in Stage 7 at all.
+- **#693 — name normalization mints false disagreement.** Cleveland's cleanest instance: both council
+  models read `08:35-15:35` for the same school, but one wrote "lincoln west science health" and the
+  other "…science **and** health", so they grouped separately, neither reached consensus, and one
+  became an accepted fact beside an unresolved phantom of itself. Essex shows the systematic form,
+  acronyms against spelled-out names. This inflates `n_unresolved`, which is a headline Council Lab
+  quality metric — so composition A/Bs today are partly scoring a normalizer defect as model
+  disagreement.
+
+**The backlog was re-triaged, and the diagnosis was structural rather than volumetric.** #128 had
+grown to 19 open sub-issues, but they were two unrelated populations sharing a label: nine genuine
+deferrals filed in early July and untouched since, and eight active-frontier defects filed in a single
+day, seven of them major or critical, each with a live district as its pin. The cause was that
+**#106 (Stage 5/6 filter & dispatch refinements) had closed**, leaving Stage-5/6/7 defects without a
+home. Opened **#695** for them; #128 returns to its charter. In the same pass all 47 unlabeled open
+issues were read — no hidden criticals, mostly unbuilt console and Council-Lab features, which is why
+severity had never been applied to them. One promotion fell out of it: **#567**'s stale 2023-24 CCD
+import leaves 2,051 districts without a `website_url`, **including both districts #646 treats as
+"domain-less and unreachable"** — so a cheap re-point may raise the campaign's ceiling from 25 to 27.
+
+*The methodological note worth keeping:* the decision to re-triage now rather than push on was argued
+from the shape of the backlog, and the decision of **what to fix first** was settled by measurement —
+#691 looked like an Essex problem until it was run across all 42 hub-labeled districts, at which point
+it became a precondition for any further gate@6 freeze and raised a question the campaign had not
+faced before: whether a district already written to `lct_db` should be re-composed and re-reviewed
+when the evidence that was silently withheld from it comes back.
+
+Authority: issues #683-#695 (all open, each carrying its own "how this was determined"); the
+`stage8_approval` rows and `extraction` results for the two dispatches; `main` @ `b5821c7`.

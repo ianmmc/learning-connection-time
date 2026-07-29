@@ -179,25 +179,47 @@ re-triage.
 **All 13 architecture docs were synced 2026-07-28** — verified against current code. See each file's
 own dated notes; not yet re-synced for #679/#681/#682 (routine touch-up, not urgent).
 
-**Next (RESUME HERE — 2026-07-28): Bangor's gate@8 detour surfaced work; the campaign otherwise
-continues straight through the remaining 23.** Immediate options, no hard ordering:
-1. **Land #682** (wire the auto-write) before approving district #3 — every approval from here on
-   otherwise needs the same manual CLI step Worcester/Bangor did.
-2. **Consider #681** (Council Lab prompt/consensus fix) before extracting many more districts — cheap
-   to defer per-district (gate@8 absorbs it), expensive in reviewer time at scale (~9 actions/district
-   if Bangor's rate holds).
-3. **Consider #674** before gate@5 work resumes broadly — only Cleveland Metro (1 of 25) is
-   known-affected today, so it doesn't block the next few districts, but it will recur.
-4. **Otherwise: San Diego (`0634320`, 7 gt:// / 162 captures) is next up** in the campaign's district
-   sequence (the third of the three originally scoped as first proofs — genuine mixed provenance, the
-   case the rep-grain guard exists for) → the remaining 22 → **#646** for 27/27 (2 domain-less
-   districts, separate defect, doesn't hold #620 open).
+**Campaign progress (2026-07-29): 4 of 25 districts written** — Worcester `2513230`, Bangor
+`2302820`, Fairbanks `0200600` (elementary/middle/high all 390, clean: 26 facts, staggered starts,
+uniform day). Broward `1200180` **sent back** (thin sample; hunting a fresher Opening & Closing PDF —
+#686). Cleveland `3904378` + Essex Westford `5000395` extracted but **undecided** — both messy, and
+diagnosing them produced #691/#692/#693/#694. Two dispatches this pass: `d9a49bcabf0d`
+(Bridgeport/Bentonville/Broward), `df2b06f2f7a7` (Essex/Cleveland/Fairbanks).
+
+**Backlog re-triaged 2026-07-29 — NEW EPIC #695** ("pipeline-correctness defects surfaced by driving
+the #620 campaign"). #128 had become the default home for anything unowned (because #106 closed), mixing
+9 genuine deferrals with 8 same-day active defects. The 8 moved to #695; #128 is back to its charter.
+All 47 unlabeled open issues were read in that pass — no hidden criticals; they are mostly unbuilt
+console/Council-Lab features, which is why severity was never applied.
+
+**Next (RESUME HERE — 2026-07-29): #691 BLOCKS further gate@6 freezes. Fix it before dispatching
+any more districts.**
+1. **#691 (`sev:critical`, epic #695) — REQ-116 hub-priority narrows with NO yield check.** Measured
+   corpus-wide: **23 of 42 hub-labeled districts are narrowed to exactly 1 send.** The winner is often
+   not the best evidence — Bentonville sends an 8-time page while holding a 52-time one; **Fairbanks was
+   incorporated on a 1-rep dispatch that held a 137-time bell schedule**; Essex sent a stale news feed
+   (21 times) while holding 112/61/57. Bridgeport is the honest counter-case (hub genuinely best), so a
+   blanket change needs the corpus measurement the issue's AC requires. **Open question: after the fix,
+   re-compose Fairbanks/Broward/Bentonville to see whether held evidence changes their numbers?
+   Fairbanks is already written — that is a re-review of a published district, Ian's call.**
+2. **#688** — `cms_hint`/`embed_hosts` promotion is dead corpus-wide (reads the DB column name off a
+   disk row). Two-accessor fix + one `build_signals` re-ingest recovers 2,653 vendor hints. Unblocks
+   #687.
+3. **#567 (promoted)** — `import_district_urls.py` still hardcodes the 2023-24 CCD, so 2,051/17,842
+   districts have no `website_url` — **including both of #646's "domain-less" districts** (Lincoln
+   `3172840`, Joint SD No.2 `1602100`). A cheap re-point + re-run may raise the campaign ceiling 25→27.
+4. **#694** (Stage-7 follow-up onto the Stage-1 school spine — Ian's diagnosis) → then **re-measure
+   #692** (its measured symptom; Essex/Cleveland are the acceptance cases).
+5. **#683** (the `30 minutes of class` false positive), then **#684** (staff-handbook confusable).
+Then resume #620: send back Cleveland + Essex Westford, and **San Diego `0634320`** is next in the
+district sequence → remaining 21 → **#646** for 27/27. After #620: #623 → #622 → #640 → #645 → #624 →
+**#625 LAST**; then epic #92's #614/#615/#628 and the gate@8 wiring gaps **#682** (approve→write) +
+**#689** (send-back→requeue), both still unwired.
 Ian drives the console; prepare and verify, don't execute stage runs (Stage 9 CLI runs are the
 verification exception — read-only intent, idempotent, guarded). *Falsifier unchanged: if any district
 needs a hand-edit or a re-adjudicated gate@8 call, the mechanism is wrong — fix the pipeline, not the
-district.* This round it held: Bangor's hand-edits are because #681 is filed, not because the campaign
-looked away. After #620: #623 → #622 → #640 → #645 → #624 → **#625 LAST**. Then epic #92's
-#614/#615/#628 — worth more once districts are actually moving.
+district.* It held again this round: Bangor's and Broward's hand-work each produced a filed pipeline
+issue rather than a quiet local fix.
 
 **The standing lesson (now tripled): three separate layers shipped green against measurements that
 could not fail (§10.11), then the fix round's own review findings repeated it (§10.19/§10.20), then a
@@ -222,9 +244,9 @@ Documented-in-code deferrals: `_satisfied_bands_now` batching; the #522 guardrai
 keyword/table attribution (needs a server payload change); JS behavioral tests (no JS harness);
 the remediation-receipt exception is not STAGE-scoped (30-day expiry since 2026-07-20); attribution
 v1 reads each district's LATEST candidate plan.
-Resume-essentials (verified on `main` at `8770130`, 2026-07-28): `pip install -e .` → Docker up
+Resume-essentials (verified on `main` at `b5821c7`, 2026-07-29; counts unchanged since): `pip install -e .` → Docker up
 (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) → `lint-imports`
-(expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **2052** pass, 1 skipped
+(expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **2054** pass, 1 skipped
 [pyarrow]) + `pytest -q -m govdb` (expect **380** pass, Postgres up) — both re-verified today (up from
 2047/377 with #679's fix + tests). `pytest tests/test_*_integration.py` (expect **255** pass, 149
 skipped, not re-verified this pass) + `cd infrastructure/scraper && npm test` (expect **90**, not
@@ -235,7 +257,7 @@ from `infrastructure/scraper` (a script in /tmp cannot resolve the package).
 Stage 9 incorporate CLI: `python3 -m infrastructure.acquisition.stage9_incorporate <did> [--dry-run]`;
 sign-off preview: `python3 -m infrastructure.scripts.analyze.per_grade_lct_sample`.
 Full detail: `docs/PROJECT_HISTORY.md`, `STAGE1-9_*_DESIGN.md`, `PIPELINE_GOVERNANCE_AND_STATE.md`,
-`docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md` §13,
+`docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md` §14,
 `docs/REQUIREMENTS.yaml`.
 
 ---
