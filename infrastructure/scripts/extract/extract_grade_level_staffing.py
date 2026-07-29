@@ -27,7 +27,7 @@ Examples:
 
     # Using raw file (if slim not available):
     python extract_grade_level_staffing.py \\
-        data/raw/federal/nces-ccd/2023_24/ccd_lea_059_2324_l_1a_073124.csv \\
+        data/raw/federal/nces-ccd/2024_25/ccd_lea_059_2425_l_1a_073025.csv \\
         data/processed/normalized/grade_level_enrollment_2324.csv
 """
 

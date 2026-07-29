@@ -8,6 +8,20 @@ updates the districts table with:
 - grade_span_low: Lowest grade offered (PK, KG, 01-12)
 - grade_span_high: Highest grade offered (PK, KG, 01-12)
 
+Vintage (#567): the file is DERIVED from `NCES_PRIMARY_YEAR` (the single hand-bumped vintage
+authority in infrastructure/utilities/school_year.py) — this script was previously pinned to the
+2023-24 file and got left behind when the 2024-25 CCD was ingested as primary, leaving 2,051
+districts URL-less against a vintage the sampler had already rolled past. Columns are resolved BY
+HEADER NAME, not position, so a layout shift in a future vintage fails loudly instead of silently
+reading the wrong field.
+
+Retention semantics (#567, Ian 2026-07-29): update-only, KEEP-LAST-KNOWN — a district absent from
+the new vintage's file (or with a blank WEBSITE) simply retains its existing DB value; nothing is
+ever blanked here. That is deliberate: URLs are transient by nature, and the durable record is the
+extracted facts + captures + receipts (REQ-026/REQ-165), which persist regardless of URL
+availability. A district that disappears from the NCES dataset entirely is a RETIREMENT question
+(lct_db retire, gov_db records persist) — tracked separately, not this script's job.
+
 Usage:
     python infrastructure/scripts/import_district_urls.py [--dry-run]
     python infrastructure/scripts/import_district_urls.py --grade-span-only [--dry-run]
@@ -24,16 +38,37 @@ sys.path.insert(0, str(project_root))
 
 from sqlalchemy import text
 from infrastructure.database.connection import session_scope
+from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
 
 
-# NCES CCD file path (2023-24 data)
-NCES_CCD_FILE = project_root / "data/raw/federal/nces-ccd/2023_24/ccd_lea_029_2324_w_1a_073124.csv"
+def nces_ccd_lea_file(primary_year: str = NCES_PRIMARY_YEAR) -> Path:
+    """The LEA directory file (ccd_lea_029) for the primary NCES vintage — "2024-25" -> the single
+    ccd_lea_029_*.csv under data/raw/federal/nces-ccd/2024_25/. Fails loudly on zero or many."""
+    vdir = project_root / "data/raw/federal/nces-ccd" / primary_year.replace("-", "_")
+    hits = sorted(vdir.glob("ccd_lea_029_*.csv"))
+    if len(hits) != 1:
+        raise SystemExit(
+            f"expected exactly one ccd_lea_029_*.csv under {vdir} for NCES_PRIMARY_YEAR="
+            f"{primary_year!r}; found {[h.name for h in hits]} — has the new CCD been dropped in, "
+            f"or was NCES_PRIMARY_YEAR bumped before the file landed?")
+    return hits[0]
 
-# Column indices (0-based)
-LEAID_COL = 8     # Column 9 in 1-based indexing
-WEBSITE_COL = 24  # Column 25 in 1-based indexing
-GSLO_COL = 53     # Column 54 - Grade Span Low (PK, KG, 01-12)
-GSHI_COL = 54     # Column 55 - Grade Span High (PK, KG, 01-12)
+
+NCES_CCD_FILE = nces_ccd_lea_file()
+
+# Columns resolved by HEADER NAME (#567) — the file uses positional CSV, and integer offsets would
+# silently read the wrong field if a future vintage inserts a column.
+REQUIRED_COLS = ("LEAID", "WEBSITE", "GSLO", "GSHI")
+
+
+def resolve_columns(header: list) -> dict:
+    """{name: index} for REQUIRED_COLS, matched case-insensitively; fails loudly on any miss."""
+    idx = {c.strip().upper(): i for i, c in enumerate(header)}
+    missing = [n for n in REQUIRED_COLS if n not in idx]
+    if missing:
+        raise SystemExit(f"{NCES_CCD_FILE.name}: header is missing {missing} — "
+                         f"layout changed; refusing to guess positions")
+    return {n: idx[n] for n in REQUIRED_COLS}
 
 
 def normalize_url(url: str) -> str:
@@ -67,12 +102,13 @@ def load_urls_from_csv() -> dict:
 
     with open(NCES_CCD_FILE, 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
-        header = next(reader)  # Skip header
+        cols = resolve_columns(next(reader))
+        leaid_col, website_col = cols["LEAID"], cols["WEBSITE"]
 
         for row in reader:
-            if len(row) > max(LEAID_COL, WEBSITE_COL):
-                leaid = normalize_nces_id(row[LEAID_COL].strip())
-                website = normalize_url(row[WEBSITE_COL])
+            if len(row) > max(leaid_col, website_col):
+                leaid = normalize_nces_id(row[leaid_col].strip())
+                website = normalize_url(row[website_col])
 
                 if leaid and website:
                     urls[leaid] = website
@@ -97,13 +133,14 @@ def load_grade_spans_from_csv() -> dict:
 
     with open(NCES_CCD_FILE, 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
-        header = next(reader)  # Skip header
+        cols = resolve_columns(next(reader))
+        leaid_col, gslo_col, gshi_col = cols["LEAID"], cols["GSLO"], cols["GSHI"]
 
         for row in reader:
-            if len(row) > max(LEAID_COL, GSLO_COL, GSHI_COL):
-                leaid = normalize_nces_id(row[LEAID_COL].strip())
-                gslo = normalize_grade(row[GSLO_COL])
-                gshi = normalize_grade(row[GSHI_COL])
+            if len(row) > max(leaid_col, gslo_col, gshi_col):
+                leaid = normalize_nces_id(row[leaid_col].strip())
+                gslo = normalize_grade(row[gslo_col])
+                gshi = normalize_grade(row[gshi_col])
 
                 if leaid and gslo and gshi:
                     grade_spans[leaid] = (gslo, gshi)
@@ -168,7 +205,19 @@ def import_urls(dry_run: bool = False):
 
 
 def import_grade_spans(dry_run: bool = False):
-    """Import grade spans into the database."""
+    """Import grade spans into the database.
+
+    GUARDED (#567, 2026-07-29): the live `districts` table carries NO grade_span_low/high columns —
+    this half of the script targets a schema that no longer exists (the acquisition pipeline reads
+    grade spans LIVE from the CCD via common/school_sampling, so a stored copy was never missed).
+    Skips with a message rather than crashing the default both-imports path."""
+    with session_scope() as session:
+        have = {r[0] for r in session.execute(text(
+            "SELECT column_name FROM information_schema.columns WHERE table_name='districts'"))}
+    if not {"grade_span_low", "grade_span_high"} <= have:
+        print("SKIP grade spans: districts table has no grade_span_low/grade_span_high columns "
+              "(grade spans are read live from the CCD by school_sampling; this import is vestigial)")
+        return
     print(f"Loading grade spans from: {NCES_CCD_FILE}")
     grade_spans = load_grade_spans_from_csv()
     print(f"Found {len(grade_spans)} districts with valid grade spans in CSV")
