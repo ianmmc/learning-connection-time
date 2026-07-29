@@ -21,7 +21,7 @@ Examples:
     python extract_grade_level_enrollment.py data/processed/slim/enrollment_by_grade_slim.csv
 
     # Using raw file (if slim not available):
-    python extract_grade_level_enrollment.py data/raw/federal/nces-ccd/2023_24/ccd_lea_052_2324_l_1a_073124.csv
+    python extract_grade_level_enrollment.py data/raw/federal/nces-ccd/2024_25/ccd_lea_052_2425_l_1a_073025.csv
 """
 
 import argparse

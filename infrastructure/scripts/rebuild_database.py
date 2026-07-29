@@ -167,8 +167,8 @@ def phase_2_foundation(dry_run: bool = False) -> bool:
             return False
         print(f"  Crosswalk verified: {n} entries")
 
-    # Import district website URLs and grade spans from NCES CCD
-    print("\nImporting district URLs and grade spans...")
+    # Import district website URLs from NCES CCD
+    print("\nImporting district URLs...")
     url_args = []
     if dry_run:
         url_args.append("--dry-run")
@@ -313,8 +313,10 @@ def main():
     )
     parser.add_argument(
         "--year",
-        default="2023-24",
-        help="School year for staff/enrollment data"
+        # NCES_PRIMARY_YEAR, not a hardcoded vintage (#567): the phase functions already default to
+        # it, but this CLI default OVERRODE them — a bare run silently rebuilt against the old CCD.
+        default=NCES_PRIMARY_YEAR,
+        help=f"School year for staff/enrollment data (default: {NCES_PRIMARY_YEAR}, the primary NCES vintage)"
     )
 
     args = parser.parse_args()
