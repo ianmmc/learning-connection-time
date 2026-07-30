@@ -1628,3 +1628,54 @@ from what was withheld rather than what was covered, and Fairbanks turns out to 
 of 18), while the three high-yield held reps cover the same four middle schools already sampled, making
 them redundant rather than missing. Recorded with the residual challenges and re-run triggers in
 `docs/technical-notes/production-quality-control-research/2026-07-29-narrowed-dispatch-audit.md`.
+
+### 2026-07-29/30 — Epic #695 closes in one sitting: nine fixes, and twice the measurement overturned the issue's own diagnosis
+
+The whole pre-#620 correctness queue — #691 → #688 → #567 → #696 → #694 (+ re-measured #692) →
+#683 → #684 — landed as seven sequential PRs (#697/#698/#700-#705), one per issue, each merged on
+Ian's review before the next began. Epic #695 closed with all six sub-issues done, roughly 24 hours
+after it was opened. The mechanics live in the issues, the PRs, and the dated reports under
+`production-quality-control-research/`; what belongs here is what the batch proved about method.
+
+**The measure-first protocol earned its cost, twice, by rejecting the fix the issue itself
+prescribed.** #691's fix was picked from a corpus report across all 42 hub-labeled districts, not
+from Essex's anecdote. But #684 is the clean specimen: the issue proposed widening `OFFICE_HOURS_KW`
+and voting on a staff word near a time — measured over all 3,559 records, that rule is a **coin flip**
+(acc 0.512) that would have demoted 59 tier-A real targets to remove 10 false sends, and the
+doc-level `/employee handbook/` fallback is net-negative too (11 of its 17 labeled hits are real
+targets — districts publish bell tables inside their staff handbooks). What discriminates is the
+employment-obligation **clause** — staff subject → duty verb → the governed time — scored
+*relationally* against student-referent language, per text basis: acc 1.000, exactly one record
+corpus-wide (Bentonville, the issue's own pin), deliberately threshold-free so there is no number
+tuned on a single record. Sibling #683 has the same shape: 15 firings, wrong on 13, and the bank's
+worst target detector (0.4545) became its most accurate (1.0) with recall unchanged. The standing
+lesson now has a positive form: *the intuitive keyword fix measures out net-negative often enough
+that the measurement is not overhead — it is where the design comes from.*
+
+**The max-review rounds kept catching the same structural class: a guard wired into one member of a
+set whose other members share the property.** #705's review found `staff_day_owned()` consulted only
+by `lf_heading_hours` while `lf_footer_hours` and `lf_explicit_minutes` — the other two
+STRONG_STRUCTURAL detectors, which send *unconditionally* — could re-open the exact auto-send #684
+closed. #703's review found the same shape in Stage 7 (compose didn't join the shared `band_done`
+predicate detect/withdraw used). The countermeasure that stuck is the **closure pin**: a test that
+iterates the *set* (`C.STRONG_STRUCTURAL`) and asserts every member consults the predicate, so a
+fourth member can't ship unguarded. That is the #199 join-the-set discipline generalized from
+registries to behavior.
+
+**#696 was settled as a design decision, not a bug fix** — the three band relations (placement /
+service-fillability / grade ownership) each keep their own consumer, the pool-vs-denominator gap is
+surfaced at gate@8 rather than "fixed" (the alternative was the 200%-coverage lie), and #694's
+bounded K-8 mode-check class (≤2 span-only schools per band) is the measured compromise that tests
+the tie-rule assumption without chasing schools outside the pool against the no-spend guards.
+
+**The falsifier held for the whole queue:** no district was hand-fixed; every wrong outcome became a
+pipeline change with a failing-first pin. And the #662 merged-but-never-run lesson got its
+counter-practice — every scoring change shipped with the full re-ingest + harness A/B + tuning-ledger
+episode run *before* the PR, with the scorecard fingerprints in the report, and #705's regex
+tightening was re-measured to be corpus-neutral (the identical 7-record duty-clause cohort) so the
+no-re-ingest call was verified rather than assumed.
+
+Authority: epic #695 (closed, with per-issue closing evidence); PRs #697-#705; the dated
+measurement reports + rerunnable scripts under
+`docs/technical-notes/production-quality-control-research/` (issues 683/684/691/694); `main` @
+`f094555`.
