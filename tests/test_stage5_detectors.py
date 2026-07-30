@@ -217,6 +217,7 @@ def test_event_weights_match_live_detector_confidence():
         "calendar":       (D.lf_calendar_widget,  {"negative_kw": {"calendar": ["a", "b"]}}),
         "wrong_day":      (D.lf_nonstandard_day,  {"nonstandard_near_times": 1}),
         "wrong_day_soft": (D.lf_nonstandard_day,  {"nonstandard_day": True}),
+        "staff_duty":     (D.lf_staff_day,        {"staff_duty_times": 2, "student_ref_times": 0}),
     }
     assert set(triggers) == set(D.EVENT_CONFIDENCE_SOURCE), "trigger set must cover every anchored event"
     for event, (fn, sig) in triggers.items():
@@ -231,7 +232,8 @@ def test_event_weights_match_live_detector_confidence():
 def test_event_weights_shape_and_polarity_signs():
     """Positive events vote +1 toward a schedule, negatives -1 away; positive_kw is present but unanchored."""
     pos = {"instructional", "table_times", "proximity_pair", "in_window_time", "positive_kw"}
-    neg = {"board", "sports", "transport", "office_hours", "calendar", "wrong_day", "wrong_day_soft"}
+    neg = {"board", "sports", "transport", "office_hours", "calendar", "wrong_day", "wrong_day_soft",
+           "staff_duty"}
     assert set(D.EVENT_WEIGHTS) == pos | neg
     assert all(D.EVENT_WEIGHTS[e][0] == +1 and D.EVENT_WEIGHTS[e][1] > 0 for e in pos)
     assert all(D.EVENT_WEIGHTS[e][0] == -1 and D.EVENT_WEIGHTS[e][1] > 0 for e in neg)

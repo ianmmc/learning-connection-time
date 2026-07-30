@@ -240,6 +240,7 @@ DETECTOR_POLARITY = {
     "lf_footer_hours": "target", "lf_heading_hours": "target", "lf_weak_times": "target",
     "lf_no_times": "negative", "lf_news_feed": "negative", "lf_calendar_widget": "negative",
     "lf_nonstandard_day": "negative", "lf_office_hours": "negative", "lf_district_homepage": "negative",
+    "lf_staff_day": "negative",
     "lf_board": "negative", "lf_sports": "negative", "lf_transport": "negative",
 }
 
@@ -262,6 +263,12 @@ DETECTOR_FACET = {
     # pre-#537 rows written by the one-time v2.0→v2.1 migration seed it.
     "lf_nonstandard_day": {"other_schedule"},
     "lf_office_hours": {"office_building_hours"},
+    # #684 shares `office_building_hours` with lf_office_hours deliberately: to a human at gate@5 the
+    # claim is the same one ("these hours are not the student day"), and a separate staff-day checkbox
+    # would fragment a denominator that is already thin — the Stage-5 labeling principle (coarsest
+    # LEARNABLE distinction, not a taxonomy of real-world categories). The two detectors stay distinct
+    # because only this one earns a HARD undermine.
+    "lf_staff_day": {"office_building_hours"},
     "lf_board": {"board"},
     "lf_sports": {"sports"},
     "lf_transport": {"transportation"},

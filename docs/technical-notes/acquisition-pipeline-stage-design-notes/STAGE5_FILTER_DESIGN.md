@@ -131,14 +131,31 @@ list is involved (config-as-data, §5). Seed set — the polarity is the directi
 | `lf_nonstandard_day` | non-regular-day schedule language (the #537 `other_schedule` class). **Two strengths (2026-07-18):** STRONG when POSITIONAL — the term titles a schedule or sits within 140 chars of in-window times (`nonstandard_near_times`/`nonstandard_heading`), guarded by `regular_day_language` (a page declaring its regular day is a regular page listing variants — rule S3, measured); SOFT on a bare anywhere-mention | **−negative (strong/soft)** | genuine bell-shape but the *wrong* schedule; the strong form undermines a lone table/pair in the combiner (DASD "Early Dismissal Bell Schedule"); STRONG_STRUCTURAL still sends |
 | `lf_no_times` | zero in-window times anywhere (incl. raw reps) | **−suppress** | §2a-3, the corrected suppress floor |
 | `lf_district_homepage` | a rootish URL (domain root / bare `/o/<slug>`) whose text hits ≥`homepage_roster_min` (3) distinct roster school names | **−negative (strong)** | #532, obs. 1's page-focus gap; a many-schools landing page's times are incidental, not the student day; joins the `UNDERMINE_CLASS` hard set alongside `lf_news_feed`/`lf_calendar_widget` |
+| `lf_staff_day` | the STAFF day (**#684**, 2026-07-29): employment-obligation CLAUSES (a staff subject → a duty verb → the time: *"Elementary staff … are to report to work by 7:15 a.m. and remain until 3:00 p.m."*) govern MORE of a text basis's in-window times than student-referent language does — `build_signals.staff_duty_positional` per basis, `detectors.staff_day_owned` as the ONE predicate | **−negative (strong)**, `UNDERMINE_CLASS` **hard** | an employee handbook's report-time table has every shape a bell schedule has (real table, in-window pairs, the literal words `bell schedule`/`school start time`) — the shape is right, the **referent** is wrong. **Hard, not soft:** a soft wrong-*day* mention leaves a real table sending (#60/#528) because the table is still the student day; here the table *is* the staff day. Also consulted by `lf_heading_hours` — a negative vote alone could not fix #684, since nothing undermines `STRONG_STRUCTURAL` |
 
-**`lf_office_hours` is not a 14th standalone detector** — there is no `lf_office_hours` function in the
+**`lf_office_hours` is not a standalone detector** — there is no `lf_office_hours` function in the
 `DETECTORS` registry (`detectors.py`). It is a shared **negative Vote** that `lf_footer_hours` and
 `lf_heading_hours` each emit inline, as a side effect, when their own evidence (a time-range whose
-nearest heading/segment reads `office`/`staff`/`workday`) points to building/office hours rather than the
-school day — the office-vs-school-hours confusable (research §5.2; the LCPS staff-hours page). Both
-producing functions are already counted above; this row exists so a reader doesn't go hunting for a
-`def lf_office_hours(...)` that doesn't exist.
+nearest heading/segment reads `office`/`staff`/`workday`, or — since #684 — a heading sitting over
+staff-owned duty times) points to building/office hours rather than the school day — the
+office-vs-school-hours confusable (research §5.2; the LCPS staff-hours page). Both producing functions
+are already counted above; this row exists so a reader doesn't go hunting for a
+`def lf_office_hours(...)` that doesn't exist. `lf_staff_day` **is** a real registry entry, and the two
+deliberately share the coarse `office_building_hours` Axis-2 facet: to a human the claim is the same one
+("these hours are not the student day"), and splitting it would fragment an already-thin denominator.
+
+**What #684 measured, and why the obvious fix was the wrong one** (the standing REQ-093 lesson, third
+occurrence). #684's own shape-of-fix proposed widening `OFFICE_HOURS_KW` and voting on a staff word *near*
+a time. Over all 3,559 text-bearing records that is a **coin flip**: `OFFICE_HOURS_KW` within 140 chars of
+an in-window time fires on **84 labeled targets vs 88 non-targets** (acc 0.512) and, as a hard underminer,
+would have demoted **59 tier-A targets to save 10** false sends; widening the vocabulary made it *worse*
+(acc 0.532), and a document-level `/employee handbook/` match is net-negative too (**11 of its 17** labeled
+hits are real targets — districts publish bell tables inside and beside staff handbooks). Staff language is
+simply everywhere on real school pages. What discriminates is the obligation **clause** scored
+**relationally** against student-referent language: acc **1.000**, zero labeled targets, and deliberately a
+*comparison* rather than a tuned dominance threshold (a threshold picked off one record is the
+"measurement that could not fail"). Both rejections are reproducible —
+`2026-07-29-issue684-staff-day-measure.py --presence --doc`.
 
 **The combiner** (`combiner.py`) is deliberately transparent — a **weighted vote** first (weights =
 config-as-data), *not* a learned model, per the research's "start with weighted majority vote; only

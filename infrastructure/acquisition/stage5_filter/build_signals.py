@@ -229,6 +229,78 @@ def nonstandard_positional(text: str, tpos: list) -> tuple:
     return near, heading
 
 
+# ---- The STAFF-DAY confusable (#684) — the research's #1 confusable, §5.2, at CLAUSE grain ----
+# An employee handbook's report-time table has every shape a bell schedule has (in-window pairs, a real
+# table, "bell schedule"/"school start time"/"school hours" verbatim) — the shape is right, the REFERENT
+# is wrong. #684's opening hypothesis was to widen OFFICE_HOURS_KW to the observed phrasings and vote on
+# a staff word NEAR a time. MEASURED over the labeled corpus (3,559 records; see the dated report in
+# production-quality-control-research/), that is a COIN FLIP: "an OFFICE_HOURS_KW term within 140 chars
+# of an in-window time" fires on 84 labeled targets and 88 labeled non-targets (acc 0.512) and would
+# demote 59 tier-A TARGETS to save 10 false sends. Widening the vocabulary made it worse, not better
+# (acc 0.532), and a doc-level /employee handbook/ match is net-NEGATIVE too — 11 of its 17 labeled hits
+# are real targets (districts publish bell tables inside and beside staff handbooks). Presence of staff
+# language is simply not the signal; it is everywhere on real school pages.
+#
+# What DOES discriminate is the employment-obligation CLAUSE — a staff SUBJECT governing a duty VERB
+# governing the time ("Elementary staff ... are to report to work by 7:15 a.m. and remain until 3:00
+# p.m.") — scored RELATIONALLY against student-referent language over the same times: do the duty
+# clauses govern MORE of this basis's in-window times than student referents do? Measured: acc 1.000,
+# ZERO labeled targets, 7 records carry a duty clause at all and exactly ONE reads staff-owned
+# (Bentonville `0503060:a5f32ff869`, #684's case). Deliberately a COMPARISON, not a tuned dominance
+# threshold — a threshold picked off one record is the "measurement that could not fail" (CLAUDE.md's
+# standing lesson). Stable: the verdict is identical for student windows of 140 / 220 / 300 chars.
+STAFF_DUTY_SUBJ_RE = re.compile(
+    r"staff|faculty|teachers?|employees?|certified (?:staff|personnel|employees?)|"
+    r"classified (?:staff|personnel|employees?)|paraprofessionals?|instructional assistants?|"
+    r"principals?|administrators?|secretar(?:y|ies)|custodians?|bus drivers?", re.I)
+# The obligation VERB. Every arm is an employment duty, never a student instruction — a student handbook
+# says "students should arrive by", not "are to report to work by" / "remain until" / "clock in".
+STAFF_DUTY_RE = re.compile(
+    r"report(?:s|ing)?\s+(?:to\s+work|to\s+school|for\s+duty|at|by)|are\s+to\s+report|"
+    r"is\s+to\s+report|must\s+report|remain\s+until|remain\s+on\s+duty|on\s+duty\s+(?:from|by|until)|"
+    r"duty\s+(?:begins|ends|day)|clock\s+in|sign\s+in|work\s*day\s+(?:is|begins|shall)|"
+    r"contract(?:ed)?\s+day", re.I)
+# The competing referent: whose day is this time? A page that talks about students at its times has a
+# student day on it, whatever else it also carries (#241's HOLD posture — a document can hold both).
+STUDENT_REF_RE = re.compile(
+    r"\bstudents?\b|\bpupils?\b|\bchildren\b|kindergart|\bgrades?\s+\d|\bk-?\d|\bpre-?k\b|"
+    r"classes\s+(?:begin|start)|first\s+bell|tardy\s+bell|car\s+rider|bus\s+rider|breakfast|"
+    r"\bhomeroom\b|\bdismissal\b|\barrival\b", re.I)
+STAFF_DUTY_SUBJ_CHARS = 90    # a staff SUBJECT this far BEFORE the duty verb governs it
+STAFF_DUTY_TIME_CHARS = 90    # a time this far AFTER the duty verb is the one it governs
+STUDENT_REF_NEAR_CHARS = 140  # same "near a time" grain as NONSTANDARD_NEAR_CHARS (measured plateau)
+
+
+def staff_duty_positional(text: str, tpos: list) -> tuple:
+    """(duty_governed, student_governed) in-window time COUNTS for ONE text basis (#684).
+    `tpos` = in-window time char offsets in the SAME text — offsets never cross texts (the #538 lesson),
+    which is why this is per-basis and the caller compares within a basis, never across them.
+    A duty-governed time needs the full clause: a staff SUBJECT before the verb AND a time after it."""
+    tpos = sorted(tpos)
+    if not text or not tpos:
+        return 0, 0
+    duty, student = set(), set()
+    for m in STAFF_DUTY_RE.finditer(text):
+        if not STAFF_DUTY_SUBJ_RE.search(text[max(0, m.start() - STAFF_DUTY_SUBJ_CHARS):m.start()]):
+            continue
+        i = bisect.bisect_left(tpos, m.end())
+        while i < len(tpos) and tpos[i] <= m.end() + STAFF_DUTY_TIME_CHARS:
+            duty.add(tpos[i])
+            i += 1
+    # The student scan runs ONLY when there is a duty clause for it to weigh against — the same
+    # scan-only-when-there-is-evidence-to-guard shape as the #537 S3 guard above it, and load-bearing
+    # for ingest cost: 7 of 3,559 corpus records carry a duty clause at all, so this skips a whole-text
+    # regex pass on 99.8% of records (and on the 130-330k-char handbooks it matters most).
+    if not duty:
+        return 0, 0
+    for m in STUDENT_REF_RE.finditer(text):
+        i = bisect.bisect_left(tpos, m.start() - STUDENT_REF_NEAR_CHARS)
+        while i < len(tpos) and tpos[i] <= m.end() + STUDENT_REF_NEAR_CHARS:
+            student.add(tpos[i])
+            i += 1
+    return len(duty), len(student)
+
+
 # A heading-like occurrence of an hours-intent phrase (heading-proximity, research §2.2/§4.3).
 HEADING_HOURS_RE = re.compile(
     r"(office hours|school hours|school day hours|hours of operation|bell schedule|school day|"
@@ -719,15 +791,37 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
     # closes a PR #538 review find: the lf_time_table evidence this signal undermines comes from
     # table_reps, which can be a DIFFERENT physical representation than best_text — a camelot-extracted
     # "Early Dismissal Bell Schedule" table whose surrounding prose (the best_text) never says so.
-    ns_near, ns_heading = nonstandard_positional(best_text, [off for off, _ in in_window])
-    for t in table_reps:
-        tn, th = nonstandard_positional(t, [off for off, _ in in_window_positions(t)])
+    # Every positional signal below reads the same (text, its own in-window offsets) pairs, computed ONCE
+    # — the offset scan is a regex pass over the whole rep, and a big handbook has several table reps.
+    time_bases = [(best_text, [off for off, _ in in_window])]
+    time_bases += [(t, [off for off, _ in in_window_positions(t)]) for t in table_reps]
+    ns_near = ns_heading = 0
+    for t, offs in time_bases:
+        tn, th = nonstandard_positional(t, offs)
         ns_near, ns_heading = max(ns_near, tn), max(ns_heading, th)
     # The S3 guard scans the SAME bases the positional evidence came from, and only when there is
     # positional evidence to guard (it is consulted nowhere else — a per-record regex saved on the
     # majority of records, PR #538 review).
     regular_day_language = bool((ns_near or ns_heading) and any(
         NONSTANDARD_REGULAR_RE.search(t) for t in [best_text, *table_reps]))
+    # Staff-day ownership (#684) — the SAME bases the wrong-day positional evidence scans, for the same
+    # reason: the staff report-time table can live in a camelot rep whose surrounding prose (the
+    # best_text) never frames it. Reported as the counts of the basis reading MOST strongly staff-owned
+    # (max duty − student margin), so the detector's `staff_duty_times > student_ref_times` test
+    # reproduces exactly "ANY basis is staff-owned" from two stored integers — no third field to drift.
+    # ANY, not ALL: a mixed page (a real student table AND a staff table) is precisely the record a human
+    # should adjudicate, and the sensitivity scan showed ALL is the fragile combinator (it drops
+    # Bentonville at a 500-char student window; ANY holds from 100 to 500).
+    # NB the stored pair is the VERDICT's basis, not a page census: a record whose only duty clause loses
+    # the comparison (Alliance `3805460:84db5b8100` — 1 duty clause vs 23 student-referent times) stores
+    # 0/0, because no basis reached a positive margin. So `staff_duty_times == 0` means "no basis reads
+    # staff-owned", NOT "no duty clause on the page" — the two are different questions and only the first
+    # one scores.
+    staff_duty_times = student_ref_times = 0
+    for t, offs in time_bases:
+        d, s = staff_duty_positional(t, offs)
+        if d - s > staff_duty_times - student_ref_times:
+            staff_duty_times, student_ref_times = d, s
 
     # visual exists but text is thin -> possible missed content
     has_visual = bool(files.get("png") or (files.get("bin") and not files.get("txt"))) or "pdf" in files
@@ -758,6 +852,7 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
         "nonstandard_day": nonstandard_day,
         "nonstandard_near_times": ns_near, "nonstandard_heading": ns_heading,
         "regular_day_language": regular_day_language,
+        "staff_duty_times": staff_duty_times, "student_ref_times": student_ref_times,   # #684
     }
     # Clustering dedups by WHOLE-page content, so it uses the full best text, not the de-chromed main.
     return sig, full_best
