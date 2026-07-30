@@ -619,7 +619,25 @@ const DN_RENDER_CAP = 1000000;     // hard ceiling on chars rendered into one <p
 const DN_PROXIMITY = 220, DN_WIN_LO = 420, DN_WIN_HI = 960;   // mirror build_signals PROXIMITY_CHARS / WINDOW
 const DN_OFFICE_KW = ["office hours", "office is open", "main office", "front office", "staff hours",
   "staff day", "workday", "work day", "teacher hours", "building hours", "administrative"];
-const DN_INSTRUCTIONAL = /(\d{2,4})\s*(?:minutes|mins)\s+(?:of|per)\s+(?:instruction|instructional|class|learning)|(?:instructional\s+minutes|minutes\s+per\s+day|minutes\s+of\s+instruction)/gi;
+const DN_INSTRUCTIONAL = /(\d{2,4})\s*(?:minutes|mins)\s+(?:of\s+)?instruction(?:al)?\s*(?:time\s+)?per\s+(?:school\s+)?day|(\d{2,4})\s*instructional\s+(?:minutes|mins)\s+per\s+(?:school\s+)?day/gi;
+// #683: the regex is only HALF the predicate — a match preceded by an INTERVAL antecedent
+// ("during the first 30 minutes of...") is not a declaration of the day, and build_signals
+// rejects it. Ported so the heat-strip never marks evidence the scorer refused to count. Both
+// this and DN_INSTRUCTIONAL are pinned verbatim against the Python by the #521 no-drift test.
+// (Threshold hedges are deliberately absent — the #704 review: "at least N minutes of
+// instruction per day" IS the statutory declaration shape.)
+const DN_INSTRUCTIONAL_NEG_ANTE = /(?:first|last|final|within|during|after|every|each)\s+(?:or\s+\w+\s+)?$/i;
+function dnInstructionalMatches(text) {
+  // Lookback is 80 UTF-16 units vs Python's 40 codepoints (#704 review): JS slices count UTF-16
+  // units, so astral chars (emoji) shrink the effective window. The guard regex is $-anchored —
+  // only the LAST ~25 chars before the match can ever decide it — so any window that strictly
+  // contains that ASCII tail is equivalent; 80 units covers 40 codepoints even if all-astral.
+  const out = []; let m; DN_INSTRUCTIONAL.lastIndex = 0;
+  while ((m = DN_INSTRUCTIONAL.exec(text)))
+    if (!DN_INSTRUCTIONAL_NEG_ANTE.test(text.slice(Math.max(0, m.index - 80), m.index)))
+      out.push(m.index);
+  return out;
+}
 const DN_PERIOD = /\bperiod\s*\d|\b\d(?:st|nd|rd|th)\s+period/gi;
 // Verbatim port of build_signals.NONSTANDARD_TERM_RE (#537 follow-on) — pinned by a no-drift test, like
 // DN_INSTRUCTIONAL/DN_PERIOD. Without it the heat-strip could not show the wrong-day evidence that can
@@ -629,8 +647,8 @@ const DN_NONSTANDARD = /early dismissal|early release|late start|minimum day|hal
 // STRONGEST detector, lf_explicit_minutes 0.95, which needs no colon-times at all) and period-table hits.
 // Same ported regexes the density nav uses; the lastIndex resets are load-bearing (module-level /g).
 function dnOtherEvidence(text) {
-  DN_INSTRUCTIONAL.lastIndex = 0; DN_PERIOD.lastIndex = 0;
-  return DN_INSTRUCTIONAL.test(text) || DN_PERIOD.test(text);
+  DN_PERIOD.lastIndex = 0;
+  return dnInstructionalMatches(text).length > 0 || DN_PERIOD.test(text);
 }
 const DN_TYPE_LABEL = { proximity_pair: "start/end pair", table_times: "schedule table",
   instructional: "instructional minutes", in_window_time: "in-window times", positive_kw: "hours keyword" };
@@ -666,8 +684,8 @@ function dnEvents(text, sig, W) {
   for (let i = 0; i < tps.length; i++)
     for (let j = i + 1; j < tps.length && tps[j].off - tps[i].off <= DN_PROXIMITY; j++)
       if (tps[i].mins !== tps[j].mins) { push(tps[i].off, "proximity_pair"); break; }   // anchor on the first time (a real clock time for the bookmark)
-  let m; DN_INSTRUCTIONAL.lastIndex = 0;
-  while ((m = DN_INSTRUCTIONAL.exec(text))) push(m.index, "instructional");
+  let m;
+  dnInstructionalMatches(text).forEach((off) => push(off, "instructional"));   // #683 guard applied
   DN_PERIOD.lastIndex = 0;
   while ((m = DN_PERIOD.exec(text))) push(m.index, "table_times");
   (sig.positive_kw || []).forEach((k) => dnAllIndexOf(lc, k).forEach((o) => push(o, "positive_kw")));

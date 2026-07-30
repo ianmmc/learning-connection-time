@@ -26,8 +26,15 @@ def test_keywords_loaded_from_config_including_class_schedule():
 
 
 def test_instructional_regex_is_minutes_only_no_hours_false_positives():
-    assert BS.INSTRUCTIONAL_RE.search("students receive 450 minutes of instruction")
-    assert BS.INSTRUCTIONAL_RE.search("instructional minutes per day")
+    """REQ-093's standing intent — MINUTES only, hours stay reverted (a vision problem, not a
+    regex one) and board 'minutes' never false-positives. #683 (2026-07-29) narrowed the POSITIVE
+    side deliberately: a declaration now needs a NUMBER + an instruction referent + DAY scope, so
+    the two shapes this test used to pin ('450 minutes of instruction' with no day scope — per
+    week? per year? — and the number-less 'instructional minutes per day') are no longer matches.
+    That is measured, not stylistic: over the labeled corpus the old form fired on 15 records and
+    was wrong on 13. The hours/board assertions below are the part REQ-093 actually protects."""
+    assert BS.INSTRUCTIONAL_RE.search("students receive 450 minutes of instruction per day")
+    assert BS.INSTRUCTIONAL_RE.search("240 instructional minutes per school day")
     # hours reverted (vision problem) -> must NOT match, so no marketing-copy false positives:
     assert not BS.INSTRUCTIONAL_RE.search("our instructional hours are flexible")
     assert not BS.INSTRUCTIONAL_RE.search("147 days x 7.5 hrs/day")

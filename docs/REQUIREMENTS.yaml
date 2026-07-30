@@ -2771,6 +2771,11 @@ requirements:
       - weak-target routing requires a proximity pair; the suppress floor is n_times_in_window==0; both verified to cost 0 targets on the canonical labels via the harness
       - new signals (footer_times, header_times, heading_hours_hits + heading label, table_time_density, cms_hint) are stored in signals_json at ingest with no re-capture
       - harness reports per-detector coverage/accuracy/overlap/conflict against the human facets/labels; a re-ingest before/after episode is recorded in the tuning ledger
+      - "`instructional_time` marks a DECLARATION of the school day, never an interval/rate inside it (#683, 2026-07-29): a number + an instruction referent + DAY scope, with an interval/threshold antecedent guard; the ONE home is build_signals.instructional_declaration() (the bare INSTRUCTIONAL_RE is not the predicate — the guard is half the rule, source-pinned). MEASURED over the labeled corpus: fired on 15 records, wrong on 13; lf_explicit_minutes accuracy 0.4545 -> 1.0 (the bank's worst target detector became its most accurate), tier-A non-targets 62 -> 58, tier-A precision +0.0069 with recall UNCHANGED (every target-labeled record that lost the signal stays tier A on other detectors). Strictly narrowing, 0 records gained. Widening stays disproven (REQ-093's hours reversion). Report: 2026-07-29-issue683-instructional-declaration-measurement.md"
+    tests:
+      - tests/test_683_instructional_declaration.py
+      - tests/test_stage5_scoring.py
+      - tests/test_stage5_detectors.py
     created: "2026-07-01T00:00:00Z"
     updated: "2026-07-01T00:00:00Z"
     notes: "MERGED to main (PR #3, cde04e9). Measured over 440 labels: tier-A precision 0.79 / recall 0.88 /
