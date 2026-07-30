@@ -253,6 +253,16 @@ def test_density_nav_js_regexes_match_build_signals_python():
     assert m_instr and m_period, "DN_INSTRUCTIONAL/DN_PERIOD declarations must be present and in this exact shape"
     assert m_instr.group(1) == BS.INSTRUCTIONAL_RE.pattern
     assert m_period.group(1) == BS.PERIOD_RE.pattern
+    # #683: the regex is only HALF the predicate — the interval/threshold antecedent guard decides
+    # whether a match counts. The heat-strip must port BOTH, or it marks evidence the scorer
+    # refused (the console would show a 0.95 "instructional minutes" bookmark on an attendance
+    # deadline). Pinned verbatim for the same no-drift reason as the pattern above.
+    m_ante = re.search(r"const DN_INSTRUCTIONAL_NEG_ANTE = /(.+)/i;", js)
+    assert m_ante, "DN_INSTRUCTIONAL_NEG_ANTE declaration must be present and in this exact shape"
+    assert m_ante.group(1) == BS.INSTRUCTIONAL_NEG_ANTE.pattern
+    # and it must actually be APPLIED — the raw regex must not be re-exec'd for evidence offsets
+    assert "dnInstructionalMatches" in js
+    assert "while ((m = DN_INSTRUCTIONAL.exec(text))) push(" not in js
 
 
 def test_non_regular_day_confounder_checkbox_present_in_console():

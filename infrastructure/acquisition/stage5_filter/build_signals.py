@@ -106,9 +106,55 @@ NEG_TRANSPORT = config_loader.values("stage5_neg_transport")
 # phrasings ("instructional hours", "hours per day") false-positived on marketing copy
 # (Lindamood-Bell) and wrongly rescued a `none` record to tier B. Conclusion: hours-in-calendar is
 # a VISION / de-chrome problem (REQ-091 / Tier-3), not a keyword-regex one. Reverted to minutes-only.
+#
+# #683 (2026-07-29, MEASURED over the labeled corpus — see the dated report in
+# production-quality-control-research/): the prior form matched any "N minutes of class" and the
+# bare phrase "minutes per day", which is an INTERVAL/RATE shape, not a DECLARATION of the day.
+# Corpus truth: the signal fired on 15 records and was WRONG on 13 — "first 30 minutes of class"
+# (an attendance deadline, #683's Bentonville case), "miss more than 15 minutes of class", "at
+# least 30 minutes per day" of physical activity, "practice 10 minutes per day", "just a few
+# minutes per day" (marketing), and bare "instructional minutes" state-compliance prose with no
+# number at all. Only 2 were genuine ("240 instructional minutes per school day [Ed Code]",
+# "181 instructional days with 495 minutes of instruction per day").
+#
+# A DECLARATION therefore requires all three, and the corpus says nothing weaker discriminates:
+#   (1) a NUMBER — bare "instructional minutes" compliance prose declares no length;
+#   (2) an INSTRUCTION referent — "minutes per class/subject/week" is a portion, not the day;
+#   (3) DAY scope — "per day" / "per school day".
+# Plus a preceding-token guard: an interval antecedent (first/last/within/during/after/each) or a
+# threshold hedge (more than / at least / no more than / approximately / up to) means the number
+# bounds a PART of the day. Measured effect: 13 wrong signals removed, both genuine ones kept,
+# ZERO tier-A target-labeled records demoted (every one is carried by other detectors), 4 of the 6
+# `target_absent` false-sends demoted out of tier A.
+#
+# STILL MINUTES-ONLY, deliberately. REQ-093 tried adding HOURS patterns ("7.5 hrs/day") to rescue
+# DUNSEITH, but the MEASUREMENT HARNESS proved the broadening net-NEGATIVE: DUNSEITH's real
+# "147 days x 7.5 hrs/day" sits in a VISUAL CALENDAR GRID that text extraction mangles into
+# "...5 hrs" (no contiguous "/day"), so the regex can't match the real targets, while broad hours
+# phrasings ("instructional hours", "hours per day") false-positived on marketing copy
+# (Lindamood-Bell) and wrongly rescued a `none` record to tier B. Conclusion: hours-in-calendar is
+# a VISION / de-chrome problem (REQ-091 / Tier-3), not a keyword-regex one. Reverted to minutes-only.
 INSTRUCTIONAL_RE = re.compile(
-    r"(\d{2,4})\s*(?:minutes|mins)\s+(?:of|per)\s+(?:instruction|instructional|class|learning)"
-    r"|(?:instructional\s+minutes|minutes\s+per\s+day|minutes\s+of\s+instruction)", re.I)
+    r"(\d{2,4})\s*(?:minutes|mins)\s+(?:of\s+)?instruction(?:al)?\s*(?:time\s+)?"
+    r"per\s+(?:school\s+)?day"
+    r"|(\d{2,4})\s*instructional\s+(?:minutes|mins)\s+per\s+(?:school\s+)?day", re.I)
+# Tokens immediately BEFORE the number that make it an interval/threshold inside the day, not the
+# day's length. Anchored to the end of the preceding text so only the adjacent phrase counts;
+# `(?:or\s+\w+\s+)?` catches the "first or last 10 minutes" conjunction (live: KIPP OKC).
+INSTRUCTIONAL_NEG_ANTE = re.compile(
+    r"(?:first|last|final|within|during|after|every|each|more\s+than|at\s+least|no\s+more\s+than"
+    r"|approximately|about|up\s+to|just\s+a\s+few)\s+(?:or\s+\w+\s+)?$", re.I)
+
+
+def instructional_declaration(text: str) -> bool:
+    """Does the text DECLARE the instructional length of the school day? (#683) The ONE home for
+    this question — `INSTRUCTIONAL_RE` alone is not the predicate: a match still has to survive the
+    interval/threshold antecedent guard, and callers that skip it re-introduce the measured
+    false-positive class (a 0.95-confidence `lf_explicit_minutes` vote on an attendance rule)."""
+    for m in INSTRUCTIONAL_RE.finditer(text or ""):
+        if not INSTRUCTIONAL_NEG_ANTE.search(text[max(0, m.start() - 40):m.start()]):
+            return True
+    return False
 PERIOD_RE = re.compile(r"\bperiod\s*\d|\b\d(?:st|nd|rd|th)\s+period", re.I)
 
 # ---- V2 (REQ-113) content-shape signals ----
@@ -656,7 +702,7 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
     neg = {"board": keyword_hits(all_lc, NEG_BOARD), "sports": keyword_hits(all_lc, NEG_SPORTS),
            "calendar": keyword_hits(all_lc, NEG_CALENDAR), "transport": keyword_hits(all_lc, NEG_TRANSPORT)}
     neg_total = sum(len(v) for v in neg.values())
-    instructional = bool(INSTRUCTIONAL_RE.search(all_text))
+    instructional = instructional_declaration(all_text)
     # table time-DENSITY, not just a boolean: the in-window time count in the richest table rep + its period rows.
     table_reps = [read(t) for t in usable if t.get("source", "") in
                   ("pdfplumber_lines", "camelot_stream", "camelot_hybrid") and "---" in read(t)]
