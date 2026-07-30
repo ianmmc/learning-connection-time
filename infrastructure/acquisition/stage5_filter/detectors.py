@@ -36,8 +36,21 @@ DEFAULT_DETECTOR_PARAMS = {
 # ----------------------------- target detectors (evidence FOR a bell schedule) -----------------------------
 def lf_explicit_minutes(sig, p):
     """An explicit 'NNN minutes of instruction/day' declaration — the strongest, rarest target (the
-    'golden nugget' path; see memory two-paths-to-instructional-minutes)."""
+    'golden nugget' path; see memory two-paths-to-instructional-minutes).
+
+    #684 (PR #705 review [0]): EVERY STRONG_STRUCTURAL detector must consult the staff-day verdict,
+    because nothing downstream can undermine a structural send — guarding only lf_heading_hours left
+    this one (and lf_footer_hours) able to auto-send the exact confusable #684 targets. On a
+    staff-owned page the declaration itself is still real instruction-referent evidence (unlike a
+    heading/footer, which the staff day co-opts wholesale), so it downgrades to a WEAK target — the
+    combiner then routes it to review on the lf_staff_day hard undermine, keeping the declaration
+    visible to the human instead of either auto-sending or (via a silent abstain) letting the record
+    fall through to suppress."""
     if sig.get("instructional_time") and not _all_after5(sig):
+        if staff_day_owned(sig):
+            return Vote("lf_explicit_minutes", "target", "weak", 0.4,
+                        "instructional-minutes declaration on a page whose times read staff-owned — "
+                        "held for the human", "explicit_instructional_time")
         return Vote("lf_explicit_minutes", "target", "strong", 0.95,
                     "explicit instructional-minutes declaration", "explicit_instructional_time")
     return None
@@ -81,21 +94,58 @@ def lf_footer_hours(sig, p):
         return None
     school_seg = any(not s.get("office") for s in segs)   # a genuine, non-office block in either segment
     if school_seg or sig.get("positive_kw"):
+        # #684 (PR #705 review [0]): the segment's own `office` flag is the presence test the #684
+        # measurement rejected (acc 0.512 — an 11-term keyword list). When the page's times read
+        # staff-owned at clause grain, a non-"office"-flagged hours block is the SAME confusable
+        # reached past the keyword list, and this detector is STRONG_STRUCTURAL — unguarded, it
+        # re-opens the exact auto-send #684 closed, just via the footer path instead of the heading.
+        if staff_day_owned(sig):
+            return Vote("lf_office_hours", "negative", "soft", 0.5,
+                        "footer/header hours block over STAFF duty times, not the student day",
+                        "other_schedule")
         return Vote("lf_footer_hours", "target", "strong", 0.75,
                     "school-hours block in the footer/header", "school_start_end_list")
     return Vote("lf_office_hours", "negative", "soft", 0.5,
                 "footer/header hours read as office/staff hours", "other_schedule")
 
 
+def staff_day_owned(sig) -> bool:
+    """The ONE staff-day predicate (#684): do this record's employment-obligation clauses govern MORE of
+    a basis's in-window times than student-referent language does? Read by `lf_staff_day` (which votes
+    on it) and by EVERY STRONG_STRUCTURAL detector — `lf_footer_hours`, `lf_heading_hours`,
+    `lf_explicit_minutes` — because a structural target sends UNCONDITIONALLY (nothing undermines it
+    downstream, by design), so each must refuse to emit one when the verdict holds. The PR #705 review
+    proved guarding only lf_heading_hours left the footer path re-opening #684's exact auto-send; a
+    test now pins that every STRONG_STRUCTURAL member's source consults this predicate. One home,
+    because a second spelling of the comparison is how the consumers would drift apart.
+    Absent signals are 0/0 → False: a record with no staff evidence is never staff-owned, and a record
+    the signal builder predates simply doesn't fire (the #702 absence-vs-empty discipline — absence must
+    not read as a verdict in either direction)."""
+    return sig.get("staff_duty_times", 0) > sig.get("student_ref_times", 0)
+
+
 def lf_heading_hours(sig, p):
     """A time-range sitting right under an hours-intent HEADING (heading-proximity). Non-office headings
-    are a target; office/staff headings are the confusable negative."""
+    are a target; office/staff headings are the confusable negative.
+
+    #684: the heading LABEL is not the only way a page's hours can belong to the staff. Bentonville's
+    employee handbook carries the literal heading `bell schedule` over a staff report-time table, so the
+    label test passes and this detector emitted a strong-STRUCTURAL target — which the combiner sends
+    UNCONDITIONALLY (nothing can undermine STRONG_STRUCTURAL, by design). A negative vote alone therefore
+    could not have fixed #684; the staff-day verdict has to be consulted HERE, at the source of the
+    structural target. When it holds, this is the same office/staff confusable the label test catches,
+    so it emits the same shared `lf_office_hours` negative rather than a silent abstain (the evidence
+    stays in reasons[] and on the heat-strip)."""
     if sig.get("heading_hours_hits", 0) < 1:
         return None
     labels = sig.get("heading_hours_labels") or []
     if any("office" in l for l in labels):
         return Vote("lf_office_hours", "negative", "soft", 0.5,
                     f"time under an office-hours heading ({', '.join(labels)})", "other_schedule")
+    if staff_day_owned(sig):
+        return Vote("lf_office_hours", "negative", "soft", 0.5,
+                    f"hours heading ({', '.join(labels) or 'hours'}) over STAFF duty times, not the "
+                    f"student day", "other_schedule")
     return Vote("lf_heading_hours", "target", "strong", 0.7,
                 f"time under a school-hours heading ({', '.join(labels) or 'hours'})", "school_start_end_list")
 
@@ -169,6 +219,27 @@ def lf_nonstandard_day(sig, p):
     return None
 
 
+def lf_staff_day(sig, p):
+    """The STAFF DAY: a genuine, well-formed table of times that is the EMPLOYEE day, not the student day
+    (#684 — the research's #1 confusable, §5.2, at clause grain). Fires when employment-obligation clauses
+    ("Elementary staff ... are to report to work by 7:15 a.m. and remain until 3:00 p.m.") govern more of
+    a basis's in-window times than student-referent language does — see
+    `build_signals.staff_duty_positional` for why presence of staff vocabulary is NOT the signal (measured
+    acc 0.512, it would demote 59 tier-A targets) and the clause/relational form is (acc 1.000).
+
+    A DOWN-WEIGHT in the `hard` undermine class, not a veto (#241's HOLD posture, and the issue's own
+    read): an employee handbook can carry the student bell table too, so the outcome is REVIEW at gate@5,
+    where a human decides — never a drop. Firing ALONE (no target vote at all) it lands on the combiner's
+    hard-negative suppress, which is counterfactually identical to `lf_news_feed`/`lf_district_homepage`:
+    a page with staff-owned times and no pair/table/structure had nothing extractable anyway (with a pair,
+    `lf_weak_times` fires and the combiner routes to review)."""
+    if not staff_day_owned(sig):
+        return None
+    return Vote("lf_staff_day", "negative", "strong", 0.7,
+                f"staff duty-day times ({sig.get('staff_duty_times', 0)} governed by report/remain "
+                f"clauses vs {sig.get('student_ref_times', 0)} near student language)", "other_schedule")
+
+
 def lf_district_homepage(sig, p):
     """A district/landing HOMEPAGE — a rootish URL (domain root or bare /o/<slug>) whose text hits MANY
     distinct roster school names (#532, §3a obs. 1's page-focus gap). A many-topics landing page's times
@@ -222,8 +293,8 @@ def _neg_dominant(sig, p):
 # The registry — order is documentation only; the combiner treats votes as an unordered set.
 DETECTORS = [
     lf_explicit_minutes, lf_time_table, lf_prose_pair, lf_footer_hours, lf_heading_hours, lf_weak_times,
-    lf_no_times, lf_news_feed, lf_calendar_widget, lf_nonstandard_day, lf_district_homepage,
-    lf_board, lf_sports, lf_transport,
+    lf_no_times, lf_news_feed, lf_calendar_widget, lf_nonstandard_day, lf_staff_day,
+    lf_district_homepage, lf_board, lf_sports, lf_transport,
 ]
 
 # Undermine-class registration (the #199 join-the-set discipline made STRUCTURAL, post-#532 review):
@@ -233,9 +304,14 @@ DETECTORS = [
 # two set literals in combiner.py (the review found nothing enforced that both got edited).
 #   hard: the times are the page's own post/event/teaser times (feed, calendar widget, landing page)
 #   soft: a real bell-shape but the WRONG schedule (the #60/#537 wrong-day mention)
+#   #684 `lf_staff_day` is HARD, not soft: the wrong-REFERENT case is not the wrong-DAY case. A soft
+#   wrong-day mention leaves a real schedule TABLE sending (structure beats a bare mention, #60/#528) —
+#   correct there, because the table is still the student day. Here the table IS the staff day, so the
+#   table must demote too; the clause+relational test is what earns that strength (acc 1.000 vs the
+#   presence test's 0.512, which would have been far too weak to hard-undermine anything).
 UNDERMINE_CLASS = {
     "lf_news_feed": "hard", "lf_calendar_widget": "hard", "lf_district_homepage": "hard",
-    "lf_nonstandard_day": "soft",
+    "lf_staff_day": "hard", "lf_nonstandard_day": "soft",
 }
 
 
@@ -263,6 +339,11 @@ EVENT_WEIGHTS = {
     "sports":         (-1, 0.65),   # lf_sports
     "transport":      (-1, 0.65),   # lf_transport
     "office_hours":   (-1, 0.50),   # lf_office_hours     — "office/staff hours" language
+    "staff_duty":     (-1, 0.70),   # lf_staff_day        — a staff duty CLAUSE governing a time (#684).
+                                    #  Placed at the duty verb, and (like wrong_day) painted only when
+                                    #  the record's OWN stored lf_staff_day vote is present: the strip
+                                    #  mirrors the score, it never re-derives the duty>student comparison
+                                    #  client-side (#521 guardrail).
     "calendar":       (-1, 0.50),   # lf_calendar_widget  — calendar-keyword context (weak variant)
     "wrong_day":      (-1, 0.70),   # lf_nonstandard_day  — a non-regular-day term (STRONG positional
                                     #  variant's confidence; #537 follow-on — without this event the
@@ -282,7 +363,7 @@ EVENT_CONFIDENCE_SOURCE = {
     "instructional": "lf_explicit_minutes", "table_times": "lf_time_table", "proximity_pair": "lf_prose_pair",
     "in_window_time": "lf_weak_times", "board": "lf_board", "sports": "lf_sports", "transport": "lf_transport",
     "office_hours": "lf_office_hours", "calendar": "lf_calendar_widget", "wrong_day": "lf_nonstandard_day",
-    "wrong_day_soft": "lf_nonstandard_day",
+    "wrong_day_soft": "lf_nonstandard_day", "staff_duty": "lf_staff_day",
 }
 
 

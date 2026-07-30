@@ -229,6 +229,95 @@ def nonstandard_positional(text: str, tpos: list) -> tuple:
     return near, heading
 
 
+# ---- The STAFF-DAY confusable (#684) — the research's #1 confusable, §5.2, at CLAUSE grain ----
+# An employee handbook's report-time table has every shape a bell schedule has (in-window pairs, a real
+# table, "bell schedule"/"school start time"/"school hours" verbatim) — the shape is right, the REFERENT
+# is wrong. #684's opening hypothesis was to widen OFFICE_HOURS_KW to the observed phrasings and vote on
+# a staff word NEAR a time. MEASURED over the labeled corpus (3,559 records; see the dated report in
+# production-quality-control-research/), that is a COIN FLIP: "an OFFICE_HOURS_KW term within 140 chars
+# of an in-window time" fires on 84 labeled targets and 88 labeled non-targets (acc 0.512) and would
+# demote 59 tier-A TARGETS to save 10 false sends. Widening the vocabulary made it worse, not better
+# (acc 0.532), and a doc-level /employee handbook/ match is net-NEGATIVE too — 11 of its 17 labeled hits
+# are real targets (districts publish bell tables inside and beside staff handbooks). Presence of staff
+# language is simply not the signal; it is everywhere on real school pages.
+#
+# What DOES discriminate is the employment-obligation CLAUSE — a staff SUBJECT governing a duty VERB
+# governing the time ("Elementary staff ... are to report to work by 7:15 a.m. and remain until 3:00
+# p.m.") — scored RELATIONALLY against student-referent language over the same times: do the duty
+# clauses govern MORE of this basis's in-window times than student referents do? Measured: acc 1.000,
+# ZERO labeled targets, 7 records carry a duty clause at all and exactly ONE reads staff-owned
+# (Bentonville `0503060:a5f32ff869`, #684's case). Deliberately a COMPARISON, not a tuned dominance
+# threshold — a threshold picked off one record is the "measurement that could not fail" (CLAUDE.md's
+# standing lesson). Stable: the verdict is identical for student windows of 140 / 220 / 300 chars.
+# Word-bounded on purpose (PR #705 review [1] — the same substring-collision class the
+# NONSTANDARD_SCHED_RE fix below already guards): bare "staff" substring-matched inside
+# "staffed"/"understaffed"/"staffing", so a real bell page saying "the building remains fully
+# staffed" near a "remain until" phrase read as a duty clause and was wrongly pulled out of auto-send.
+STAFF_DUTY_SUBJ_RE = re.compile(
+    r"\b(?:staff|faculty|teachers?|employees?|certified (?:staff|personnel|employees?)|"
+    r"classified (?:staff|personnel|employees?)|paraprofessionals?|instructional assistants?|"
+    r"principals?|administrators?|secretar(?:y|ies)|custodians?|bus drivers?)\b", re.I)
+# The obligation VERB. Every arm is an employment duty, never a student instruction — a student handbook
+# says "students should arrive by", not "are to report to work by" / "remain until" / "clock in".
+# "report" ALWAYS requires a duty destination/preposition (PR #705 review [2]): the first-shipped bare
+# "are to report"/"must report" alternatives matched every sense of the verb — "teachers are to report
+# ATTENDANCE by 7:45" is attendance-taking beside a genuine bell schedule, not a workday declaration —
+# and `at`/`by`/`from` are \b-anchored so "report at" can't substring-match "report attendance".
+STAFF_DUTY_RE = re.compile(
+    r"report(?:s|ing)?\s+(?:to\s+work|to\s+school|for\s+duty|at\b|by\b|from\b)|"
+    r"remain\s+until|remain\s+on\s+duty|on\s+duty\s+(?:from|by|until)|"
+    r"duty\s+(?:begins|ends|day)|clock\s+in|sign\s+in|work\s*day\s+(?:is|begins|shall)|"
+    r"contract(?:ed)?\s+day", re.I)
+# The competing referent: whose day is this time? A page that talks about students at its times has a
+# student day on it, whatever else it also carries (#241's HOLD posture — a document can hold both).
+STUDENT_REF_RE = re.compile(
+    r"\bstudents?\b|\bpupils?\b|\bchildren\b|kindergart|\bgrades?\s+\d|\bk-?\d|\bpre-?k\b|"
+    r"classes\s+(?:begin|start)|first\s+bell|tardy\s+bell|car\s+rider|bus\s+rider|breakfast|"
+    r"\bhomeroom\b|\bdismissal\b|\barrival\b", re.I)
+STAFF_DUTY_SUBJ_CHARS = 90    # a staff SUBJECT this far BEFORE the duty verb governs it
+STAFF_DUTY_TIME_CHARS = 90    # a time this far AFTER the duty verb is the one it governs
+STUDENT_REF_NEAR_CHARS = 140  # same "near a time" grain as NONSTANDARD_NEAR_CHARS (measured plateau)
+
+
+def _offsets_between(tpos: list, lo: int, hi: int) -> set:
+    """The sorted in-window offsets falling in [lo, hi] — ONE spelling of the bisect-window collect
+    (PR #705 review [5]: the duty and student scans each hand-rolled this loop, and a windowing tweak
+    applied to one and not the other would silently desync the two counts the #684 comparison rests on)."""
+    out = set()
+    i = bisect.bisect_left(tpos, lo)
+    while i < len(tpos) and tpos[i] <= hi:
+        out.add(tpos[i])
+        i += 1
+    return out
+
+
+def staff_duty_positional(text: str, tpos: list) -> tuple:
+    """(duty_governed, student_governed) in-window time COUNTS for ONE text basis (#684).
+    `tpos` = in-window time char offsets in the SAME text — offsets never cross texts (the #538 lesson),
+    which is why this is per-basis and the caller compares within a basis, never across them.
+    A duty-governed time needs the full clause: a staff SUBJECT before the verb AND a time after it."""
+    tpos = sorted(tpos)
+    if not text or not tpos:
+        return 0, 0
+    duty, student = set(), set()
+    for m in STAFF_DUTY_RE.finditer(text):
+        if not STAFF_DUTY_SUBJ_RE.search(text[max(0, m.start() - STAFF_DUTY_SUBJ_CHARS):m.start()]):
+            continue
+        duty |= _offsets_between(tpos, m.end(), m.end() + STAFF_DUTY_TIME_CHARS)
+    # The student scan runs ONLY when there is a duty clause for it to weigh against — the same
+    # scan-only-when-there-is-evidence-to-guard shape as the #537 S3 guard above it, and load-bearing
+    # for ingest cost: 7 of 3,559 corpus records carry a duty clause at all (re-measured unchanged
+    # after the #705 review tightened the verbs — every corpus clause was already a destination form),
+    # so this skips a whole-text regex pass on 99.8% of records (and on the 130-330k-char handbooks it
+    # matters most).
+    if not duty:
+        return 0, 0
+    for m in STUDENT_REF_RE.finditer(text):
+        student |= _offsets_between(tpos, m.start() - STUDENT_REF_NEAR_CHARS,
+                                    m.end() + STUDENT_REF_NEAR_CHARS)
+    return len(duty), len(student)
+
+
 # A heading-like occurrence of an hours-intent phrase (heading-proximity, research §2.2/§4.3).
 HEADING_HOURS_RE = re.compile(
     r"(office hours|school hours|school day hours|hours of operation|bell schedule|school day|"
@@ -647,15 +736,24 @@ def harvest_schedule_pages(pages: list, min_times: int = HANDBOOK_HARVEST_MIN) -
     return [p["page"] for p in pages if p["n_times"] >= cut]
 
 
-def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dict, main_text: str = None):
-    """All deterministic, no AI. `texts` = processed.json texts[]; `files` = captures.json files{}.
-    `main_text` = the Stage-3 DE-CHROMED page (page.main.txt) when present (REQ-091): the time /
-    keyword / roster signals are then computed over MAIN instead of the full page, so footer
-    building-hours and school-switcher nav can't inject false signal. Graceful: a too-thin main
-    falls back to the full text, so segmentation can never make things worse."""
-    # Gather text: best (max n_times, usable) for time density; union of usable reps for keywords.
+def text_bases(record_dir: Path, texts: list, main_text: str = None) -> dict:
+    """The record's text-basis SELECTION — the ONE home (PR #705 review [4]: the rerunnable #684
+    measurement script hand-copied this logic, and a hand copy silently drifts from what the live
+    scorer actually stores, invalidating a re-run without anyone noticing). Returns
+    {usable, full_best, full_all, max_chars, dechromed, all_text, best_text, table_reps}:
+      - best_text: the TIME-signal basis (max in-window of {full_best, main}) — REQ-113 §2a-1
+      - all_text:  the KEYWORD/roster basis (de-chromed main when usable, else the union)
+      - table_reps: the table-source usable reps (lf_time_table's evidence basis)
+    Consumed by compute_signals and by any measurement script replaying per-basis signals.
+
+    De-chrome: KEYWORD/roster signals over MAIN when a usable page.main.txt segment exists (its measured
+    win: footer building-hours + school-switcher nav can't inject false CATEGORY signal). But TIME signals
+    use the MAX-EVIDENCE source: de-chrome must never *zero* a real school-hours time that lives in the
+    footer or survives only in an OCR/raster rep. So the time basis is whichever of {main, full_best}
+    carries more in-window times — never main exclusively."""
     usable = [t for t in texts if t.get("usable") and t.get("text_file")]
     _read_cache: dict = {}
+
     def read(t):
         # #353: memoize by text_file — a usable rep is read for full_best/full_all AND (for table
         # sources) once more in the table_reps filter + value; without caching a table rep was read
@@ -669,21 +767,34 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
             txt = ""
         _read_cache[fn] = txt
         return txt
+
     best = max(usable, key=lambda t: t.get("n_times", 0), default=None)
     full_best = read(best) if best else ""
     full_all = "\n".join(read(t) for t in usable)
     max_chars = max((t.get("n_chars", 0) for t in texts), default=0)
-
-    # De-chrome: KEYWORD/roster signals over MAIN when a usable page.main.txt segment exists (its measured
-    # win: footer building-hours + school-switcher nav can't inject false CATEGORY signal). But TIME signals
-    # use the MAX-EVIDENCE source (REQ-113 §2a-1): de-chrome must never *zero* a real school-hours time that
-    # lives in the footer or survives only in an OCR/raster rep. So the time basis is whichever of {main,
-    # full_best} carries more in-window times — never main exclusively.
     dechromed = bool(main_text and len(main_text.strip()) >= USABLE_MIN_CHARS)
     all_text = main_text if dechromed else full_all      # keyword/roster basis (de-chrome win preserved)
-    all_lc = all_text.lower()
     candidates = [full_best] + ([main_text] if dechromed else [])
     best_text = max(candidates, key=lambda t: len(in_window_positions(t)), default="")  # time-signal basis
+    table_reps = [read(t) for t in usable if t.get("source", "") in
+                  ("pdfplumber_lines", "camelot_stream", "camelot_hybrid") and "---" in read(t)]
+    return {"usable": usable, "full_best": full_best, "full_all": full_all, "max_chars": max_chars,
+            "dechromed": dechromed, "all_text": all_text, "best_text": best_text,
+            "table_reps": table_reps}
+
+
+def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dict, main_text: str = None):
+    """All deterministic, no AI. `texts` = processed.json texts[]; `files` = captures.json files{}.
+    `main_text` = the Stage-3 DE-CHROMED page (page.main.txt) when present (REQ-091): the time /
+    keyword / roster signals are then computed over MAIN instead of the full page, so footer
+    building-hours and school-switcher nav can't inject false signal. Graceful: a too-thin main
+    falls back to the full text, so segmentation can never make things worse.
+    Text-basis selection (best/all/table) lives in `text_bases` — shared with the measurement scripts."""
+    tb = text_bases(record_dir, texts, main_text)
+    full_best, full_all, max_chars = tb["full_best"], tb["full_all"], tb["max_chars"]
+    dechromed, all_text, best_text, table_reps = (
+        tb["dechromed"], tb["all_text"], tb["best_text"], tb["table_reps"])
+    all_lc = all_text.lower()
 
     # Time signals (on the max-evidence single representation).
     tps = time_positions(best_text)
@@ -706,8 +817,6 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
     neg_total = sum(len(v) for v in neg.values())
     instructional = instructional_declaration(all_text)
     # table time-DENSITY, not just a boolean: the in-window time count in the richest table rep + its period rows.
-    table_reps = [read(t) for t in usable if t.get("source", "") in
-                  ("pdfplumber_lines", "camelot_stream", "camelot_hybrid") and "---" in read(t)]
     table_time_density = max((len(in_window_positions(t)) for t in table_reps), default=0)
     table_period_rows = max((len(PERIOD_RE.findall(t)) for t in table_reps), default=0)
     has_table = bool(table_reps)
@@ -719,15 +828,37 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
     # closes a PR #538 review find: the lf_time_table evidence this signal undermines comes from
     # table_reps, which can be a DIFFERENT physical representation than best_text — a camelot-extracted
     # "Early Dismissal Bell Schedule" table whose surrounding prose (the best_text) never says so.
-    ns_near, ns_heading = nonstandard_positional(best_text, [off for off, _ in in_window])
-    for t in table_reps:
-        tn, th = nonstandard_positional(t, [off for off, _ in in_window_positions(t)])
+    # Every positional signal below reads the same (text, its own in-window offsets) pairs, computed ONCE
+    # — the offset scan is a regex pass over the whole rep, and a big handbook has several table reps.
+    time_bases = [(best_text, [off for off, _ in in_window])]
+    time_bases += [(t, [off for off, _ in in_window_positions(t)]) for t in table_reps]
+    ns_near = ns_heading = 0
+    for t, offs in time_bases:
+        tn, th = nonstandard_positional(t, offs)
         ns_near, ns_heading = max(ns_near, tn), max(ns_heading, th)
     # The S3 guard scans the SAME bases the positional evidence came from, and only when there is
     # positional evidence to guard (it is consulted nowhere else — a per-record regex saved on the
     # majority of records, PR #538 review).
     regular_day_language = bool((ns_near or ns_heading) and any(
         NONSTANDARD_REGULAR_RE.search(t) for t in [best_text, *table_reps]))
+    # Staff-day ownership (#684) — the SAME bases the wrong-day positional evidence scans, for the same
+    # reason: the staff report-time table can live in a camelot rep whose surrounding prose (the
+    # best_text) never frames it. Reported as the counts of the basis reading MOST strongly staff-owned
+    # (max duty − student margin), so the detector's `staff_duty_times > student_ref_times` test
+    # reproduces exactly "ANY basis is staff-owned" from two stored integers — no third field to drift.
+    # ANY, not ALL: a mixed page (a real student table AND a staff table) is precisely the record a human
+    # should adjudicate, and the sensitivity scan showed ALL is the fragile combinator (it drops
+    # Bentonville at a 500-char student window; ANY holds from 100 to 500).
+    # NB the stored pair is the VERDICT's basis, not a page census: a record whose only duty clause loses
+    # the comparison (Alliance `3805460:84db5b8100` — 1 duty clause vs 23 student-referent times) stores
+    # 0/0, because no basis reached a positive margin. So `staff_duty_times == 0` means "no basis reads
+    # staff-owned", NOT "no duty clause on the page" — the two are different questions and only the first
+    # one scores.
+    staff_duty_times = student_ref_times = 0
+    for t, offs in time_bases:
+        d, s = staff_duty_positional(t, offs)
+        if d - s > staff_duty_times - student_ref_times:
+            staff_duty_times, student_ref_times = d, s
 
     # visual exists but text is thin -> possible missed content
     has_visual = bool(files.get("png") or (files.get("bin") and not files.get("txt"))) or "pdf" in files
@@ -758,6 +889,7 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
         "nonstandard_day": nonstandard_day,
         "nonstandard_near_times": ns_near, "nonstandard_heading": ns_heading,
         "regular_day_language": regular_day_language,
+        "staff_duty_times": staff_duty_times, "student_ref_times": student_ref_times,   # #684
     }
     # Clustering dedups by WHOLE-page content, so it uses the full best text, not the de-chromed main.
     return sig, full_best

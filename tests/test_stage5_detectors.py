@@ -9,6 +9,9 @@ from infrastructure.acquisition.stage5_filter import detectors as D
 
 
 def sig(**kw):
+    """The canonical default signal shape for detector tests — ONE home (PR #705 review [6]:
+    test_684_staff_day_confusable.py imports THIS rather than keeping its own near-copy, so a new
+    signal key added here can't silently leave a sibling file testing a stale baseline)."""
     base = dict(n_times=0, n_times_in_window=0, times_after_5pm=0, proximity_pairs=0,
                 positive_kw=[], negative_kw={"board": [], "sports": [], "calendar": [], "transport": []},
                 neg_total=0, instructional_time=False, has_table=False, period_hits=0,
@@ -16,7 +19,8 @@ def sig(**kw):
                 footer_hours={"hit": False, "times": 0, "office": False},
                 header_hours={"hit": False, "times": 0, "office": False},
                 heading_hours_hits=0, heading_hours_labels=[], nonstandard_day=False,
-                harvest_pages=[], url_feed_pattern=False, embed_hosts=[])
+                harvest_pages=[], url_feed_pattern=False, embed_hosts=[],
+                staff_duty_times=0, student_ref_times=0)
     base.update(kw)
     return base
 
@@ -217,6 +221,7 @@ def test_event_weights_match_live_detector_confidence():
         "calendar":       (D.lf_calendar_widget,  {"negative_kw": {"calendar": ["a", "b"]}}),
         "wrong_day":      (D.lf_nonstandard_day,  {"nonstandard_near_times": 1}),
         "wrong_day_soft": (D.lf_nonstandard_day,  {"nonstandard_day": True}),
+        "staff_duty":     (D.lf_staff_day,        {"staff_duty_times": 2, "student_ref_times": 0}),
     }
     assert set(triggers) == set(D.EVENT_CONFIDENCE_SOURCE), "trigger set must cover every anchored event"
     for event, (fn, sig) in triggers.items():
@@ -231,7 +236,8 @@ def test_event_weights_match_live_detector_confidence():
 def test_event_weights_shape_and_polarity_signs():
     """Positive events vote +1 toward a schedule, negatives -1 away; positive_kw is present but unanchored."""
     pos = {"instructional", "table_times", "proximity_pair", "in_window_time", "positive_kw"}
-    neg = {"board", "sports", "transport", "office_hours", "calendar", "wrong_day", "wrong_day_soft"}
+    neg = {"board", "sports", "transport", "office_hours", "calendar", "wrong_day", "wrong_day_soft",
+           "staff_duty"}
     assert set(D.EVENT_WEIGHTS) == pos | neg
     assert all(D.EVENT_WEIGHTS[e][0] == +1 and D.EVENT_WEIGHTS[e][1] > 0 for e in pos)
     assert all(D.EVENT_WEIGHTS[e][0] == -1 and D.EVENT_WEIGHTS[e][1] > 0 for e in neg)

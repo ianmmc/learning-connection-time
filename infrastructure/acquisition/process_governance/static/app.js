@@ -25,7 +25,10 @@ const CONFOUNDERS = [
   ["community_calendar", "Community / events calendar", "lf_calendar_widget"],
   ["transportation", "Bus / transportation", "lf_transport"],
   ["news_feed", "News / social feed", "lf_news_feed"],
-  ["office_building_hours", "Building / office hours (not the student day)", "lf_office_hours"],
+  // #684: two detectors claim this ONE facet (harness.DETECTOR_FACET agrees) — the office/staff-hours
+  // heading or footer, and the employee-handbook duty day. Same claim to a human ("not the student
+  // day"), so the checkbox stays coarse rather than fragmenting an already-thin denominator.
+  ["office_building_hours", "Building / office hours (not the student day)", ["lf_office_hours", "lf_staff_day"]],
   ["other_schedule", "Non-Regular-Day Schedule", "lf_nonstandard_day"],
 ];
 // AXIS 3 (checkboxes): where the target hides / how to read it. `sig` = the signal that hints it.
@@ -51,7 +54,7 @@ const DEFS = {
   community_calendar: "A community / events calendar — not the academic calendar, not a schedule.",
   transportation: "Bus / transport times.",
   news_feed: "A news / social-media feed whose post timestamps are spurious time signal.",
-  office_building_hours: "Building/office hours (often a footer “Building Hours 7:15–3:15”) that mimic a start/end pair but are NOT the student day.",
+  office_building_hours: "Building/office hours (often a footer “Building Hours 7:15–3:15”) that mimic a start/end pair but are NOT the student day. Also the EMPLOYEE/STAFF day (#684): an employee handbook's report-time table (“staff are to report to work by 7:15 a.m. and remain until 3:00 p.m.”) has every shape a bell schedule has — the shape is right, the referent is wrong.",
   other_schedule: "Times/schedule for something other than the regular full school day: early dismissal, late start / delay, remote/virtual, inclement (snow/fog), minimum/half day, exam day, summer school/ESY, or special events (open house, registration, back-to-school).",
   // location (Axis 3)
   buried_handbook: "The target is present but inside a long multi-topic document (e.g. a handbook) — record the page(s).",
@@ -639,6 +642,34 @@ function dnInstructionalMatches(text) {
   return out;
 }
 const DN_PERIOD = /\bperiod\s*\d|\b\d(?:st|nd|rd|th)\s+period/gi;
+// #684: verbatim ports of build_signals.STAFF_DUTY_RE / STAFF_DUTY_SUBJ_RE, pinned by the #521 no-drift
+// test. Placement only — the strip marks WHERE the staff duty clauses are; whether they OWN the page
+// (the duty > student-referent comparison) is a server truth the client never re-decides, so these are
+// painted only when the record's own stored lf_staff_day vote is present (the wrong_day pattern).
+const DN_STAFF_DUTY = /report(?:s|ing)?\s+(?:to\s+work|to\s+school|for\s+duty|at\b|by\b|from\b)|remain\s+until|remain\s+on\s+duty|on\s+duty\s+(?:from|by|until)|duty\s+(?:begins|ends|day)|clock\s+in|sign\s+in|work\s*day\s+(?:is|begins|shall)|contract(?:ed)?\s+day/gi;
+const DN_STAFF_SUBJ = /\b(?:staff|faculty|teachers?|employees?|certified (?:staff|personnel|employees?)|classified (?:staff|personnel|employees?)|paraprofessionals?|instructional assistants?|principals?|administrators?|secretar(?:y|ies)|custodians?|bus drivers?)\b/i;
+const DN_STAFF_SUBJ_CHARS = 90;   // mirrors build_signals.STAFF_DUTY_SUBJ_CHARS
+const DN_STAFF_TIME_CHARS = 90;   // mirrors build_signals.STAFF_DUTY_TIME_CHARS
+function dnStaffDutyOffsets(text) {
+  // The lookback must be CODEPOINT-exact, not UTF-16-unit-exact: unlike #683's `$`-anchored guard, this
+  // subject regex is unanchored, so a wider window would genuinely match more and a narrower one less.
+  // Slice generously (2x, the worst case if every char were astral), then keep the last 90 CODE POINTS.
+  // PR #705 review [3]: the clause test is THREE-part — the verb must also GOVERN an in-window time
+  // within STAFF_DUTY_TIME_CHARS after it, or Python never counts the match into staff_duty_times.
+  // The first-shipped port dropped that condition, so the strip could mark a duty sentence the score
+  // never counted (#521: the strip mirrors the score). Forward window is codepoint-exact too.
+  const out = []; let m; DN_STAFF_DUTY.lastIndex = 0;
+  const tps = dnTimeOffsets(text).map((t) => t.off);
+  while ((m = DN_STAFF_DUTY.exec(text))) {
+    const wide = text.slice(Math.max(0, m.index - 2 * DN_STAFF_SUBJ_CHARS), m.index);
+    if (!DN_STAFF_SUBJ.test(Array.from(wide).slice(-DN_STAFF_SUBJ_CHARS).join(""))) continue;
+    const end = m.index + m[0].length;
+    const fwd = Array.from(text.slice(end, end + 2 * DN_STAFF_TIME_CHARS))
+      .slice(0, DN_STAFF_TIME_CHARS).join("").length;   // UTF-16 span of 90 codepoints
+    if (tps.some((o) => o >= end && o <= end + fwd)) out.push(m.index);
+  }
+  return out;
+}
 // Verbatim port of build_signals.NONSTANDARD_TERM_RE (#537 follow-on) — pinned by a no-drift test, like
 // DN_INSTRUCTIONAL/DN_PERIOD. Without it the heat-strip could not show the wrong-day evidence that can
 // demote a lone table to review (PR #538 review find).
@@ -701,6 +732,12 @@ function dnEvents(text, sig, W) {
   const wdType = wdVote.strength === "strong" ? "wrong_day" : "wrong_day_soft";
   DN_NONSTANDARD.lastIndex = 0;
   while ((m = DN_NONSTANDARD.exec(text))) push(m.index, wdType);
+  // #684 staff-duty clauses — painted only when the server actually voted lf_staff_day, for the same
+  // reason wrong_day reads its own vote: the clause regex matching is NOT the verdict (a page can carry
+  // one staff-report sentence beside a real student table and still be a target — measured, 6 of the 7
+  // duty-clause records are exactly that), so painting on raw matches would contradict the score.
+  if ((sig.detectors || []).some((d) => d.name === "lf_staff_day"))
+    dnStaffDutyOffsets(text).forEach((o) => push(o, "staff_duty"));
   return ev;
 }
 
@@ -843,6 +880,10 @@ function renderPanel(d) {
     <span class="k">real table present</span><span class="v">${s.has_table ? "yes" : "no"}</span>
     <span class="k">period-table hits</span><span class="v">${s.period_hits}</span>
     <span class="k">roster school names hit</span><span class="v">${s.roster_school_names_hit}</span>
+    <span class="k" title="${DEFS.office_building_hours}">staff duty-day times (#684)</span><span class="v">${
+      (s.staff_duty_times || 0) > 0
+        ? `${s.staff_duty_times} governed by report/remain clauses, vs ${s.student_ref_times || 0} near student language`
+        : "no"}</span>
     <span class="k">visual/text gap</span><span class="v">${s.visual_text_gap ? "yes" : "no"}</span>
   </div>
   <div class="sig-kw"><b>positive kw:</b> ${kw(s.positive_kw)}</div>
@@ -865,7 +906,10 @@ function renderPanel(d) {
     FACET_WHERE.map((w) => `<option value="${w}" ${savedFacets._where === w ? "selected" : ""}>${w || "where? (optional)"}</option>`).join("")}</select>`;
   const pageInput = `<input id="facetPage" class="facet-page" type="text" placeholder="pages, e.g. 4, 7-9" value="${savedFacets._pages || ""}"/>`;
   // AXIS 2 — confounders (checkbox multi-select; a fired negative detector HINTS but doesn't check it).
-  const confChecks = CONFOUNDERS.map(([id, t, det]) => check(id, t, fired.has(det))).join("");
+  // A facet may be hinted by MORE THAN ONE detector (#684: office_building_hours is claimed by both
+  // lf_office_hours and lf_staff_day) — a bare string stays valid, an array means "any of these".
+  const confChecks = CONFOUNDERS.map(([id, t, det]) =>
+    check(id, t, (Array.isArray(det) ? det : [det]).some((n) => fired.has(n)))).join("");
 
   // #516 order (Ian 2026-07-15): the LABEL controls (the decision) come first; the cluster banner stays
   // above them (a cascade warning to see BEFORE labeling); provenance + the objective Signals block (the
