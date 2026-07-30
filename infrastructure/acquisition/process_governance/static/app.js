@@ -620,15 +620,21 @@ const DN_PROXIMITY = 220, DN_WIN_LO = 420, DN_WIN_HI = 960;   // mirror build_si
 const DN_OFFICE_KW = ["office hours", "office is open", "main office", "front office", "staff hours",
   "staff day", "workday", "work day", "teacher hours", "building hours", "administrative"];
 const DN_INSTRUCTIONAL = /(\d{2,4})\s*(?:minutes|mins)\s+(?:of\s+)?instruction(?:al)?\s*(?:time\s+)?per\s+(?:school\s+)?day|(\d{2,4})\s*instructional\s+(?:minutes|mins)\s+per\s+(?:school\s+)?day/gi;
-// #683: the regex is only HALF the predicate — a match preceded by an interval/threshold token
-// ("during the first 30 minutes of class") is not a declaration of the day, and build_signals
+// #683: the regex is only HALF the predicate — a match preceded by an INTERVAL antecedent
+// ("during the first 30 minutes of...") is not a declaration of the day, and build_signals
 // rejects it. Ported so the heat-strip never marks evidence the scorer refused to count. Both
 // this and DN_INSTRUCTIONAL are pinned verbatim against the Python by the #521 no-drift test.
-const DN_INSTRUCTIONAL_NEG_ANTE = /(?:first|last|final|within|during|after|every|each|more\s+than|at\s+least|no\s+more\s+than|approximately|about|up\s+to|just\s+a\s+few)\s+(?:or\s+\w+\s+)?$/i;
+// (Threshold hedges are deliberately absent — the #704 review: "at least N minutes of
+// instruction per day" IS the statutory declaration shape.)
+const DN_INSTRUCTIONAL_NEG_ANTE = /(?:first|last|final|within|during|after|every|each)\s+(?:or\s+\w+\s+)?$/i;
 function dnInstructionalMatches(text) {
+  // Lookback is 80 UTF-16 units vs Python's 40 codepoints (#704 review): JS slices count UTF-16
+  // units, so astral chars (emoji) shrink the effective window. The guard regex is $-anchored —
+  // only the LAST ~25 chars before the match can ever decide it — so any window that strictly
+  // contains that ASCII tail is equivalent; 80 units covers 40 codepoints even if all-astral.
   const out = []; let m; DN_INSTRUCTIONAL.lastIndex = 0;
   while ((m = DN_INSTRUCTIONAL.exec(text)))
-    if (!DN_INSTRUCTIONAL_NEG_ANTE.test(text.slice(Math.max(0, m.index - 40), m.index)))
+    if (!DN_INSTRUCTIONAL_NEG_ANTE.test(text.slice(Math.max(0, m.index - 80), m.index)))
       out.push(m.index);
   return out;
 }

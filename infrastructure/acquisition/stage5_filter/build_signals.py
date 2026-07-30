@@ -121,29 +121,31 @@ NEG_TRANSPORT = config_loader.values("stage5_neg_transport")
 #   (1) a NUMBER — bare "instructional minutes" compliance prose declares no length;
 #   (2) an INSTRUCTION referent — "minutes per class/subject/week" is a portion, not the day;
 #   (3) DAY scope — "per day" / "per school day".
-# Plus a preceding-token guard: an interval antecedent (first/last/within/during/after/each) or a
-# threshold hedge (more than / at least / no more than / approximately / up to) means the number
-# bounds a PART of the day. Measured effect: 13 wrong signals removed, both genuine ones kept,
-# ZERO tier-A target-labeled records demoted (every one is carried by other detectors), 4 of the 6
+# Plus a preceding-token guard for INTERVAL antecedents only (first/last/within/during/after/…):
+# "during the first 30 minutes of instruction per day" bounds a PART of the day. Threshold hedges
+# (at least / more than / no more than / approximately) are deliberately NOT in the guard — the
+# #704 review proved they reject the canonical STATUTORY phrasing ("at least 330 minutes of
+# instruction per day" is a minimum-day declaration, semantically identical to Aspire's kept
+# "a minimum of 240 instructional minutes per school day"), while doing ZERO corpus work: under
+# the number+instruction+day-scope regex, every measured FP ("miss more than 15 minutes of
+# class", "at least 30 minutes per day" of PE) already fails the regex itself — measured guard-
+# changed-outcome records on the full corpus: 0 (see the measure script's --guard-audit).
+# Overall measured effect: 13 wrong signals removed, both genuine ones kept, ZERO tier-A
+# target-labeled records demoted (every one is carried by other detectors), 4 of the 6
 # `target_absent` false-sends demoted out of tier A.
 #
-# STILL MINUTES-ONLY, deliberately. REQ-093 tried adding HOURS patterns ("7.5 hrs/day") to rescue
-# DUNSEITH, but the MEASUREMENT HARNESS proved the broadening net-NEGATIVE: DUNSEITH's real
-# "147 days x 7.5 hrs/day" sits in a VISUAL CALENDAR GRID that text extraction mangles into
-# "...5 hrs" (no contiguous "/day"), so the regex can't match the real targets, while broad hours
-# phrasings ("instructional hours", "hours per day") false-positived on marketing copy
-# (Lindamood-Bell) and wrongly rescued a `none` record to tier B. Conclusion: hours-in-calendar is
-# a VISION / de-chrome problem (REQ-091 / Tier-3), not a keyword-regex one. Reverted to minutes-only.
+# STILL MINUTES-ONLY, deliberately — the REQ-093 hours reversion (see the block above) stands:
+# hours-in-calendar is a VISION problem, not a keyword-regex one.
 INSTRUCTIONAL_RE = re.compile(
     r"(\d{2,4})\s*(?:minutes|mins)\s+(?:of\s+)?instruction(?:al)?\s*(?:time\s+)?"
     r"per\s+(?:school\s+)?day"
     r"|(\d{2,4})\s*instructional\s+(?:minutes|mins)\s+per\s+(?:school\s+)?day", re.I)
-# Tokens immediately BEFORE the number that make it an interval/threshold inside the day, not the
-# day's length. Anchored to the end of the preceding text so only the adjacent phrase counts;
+# INTERVAL antecedents immediately BEFORE the number — the match bounds a part of the day, not
+# its length. Anchored to the end of the preceding text so only the adjacent phrase counts;
 # `(?:or\s+\w+\s+)?` catches the "first or last 10 minutes" conjunction (live: KIPP OKC).
+# Threshold hedges are deliberately absent — see the declaration comment above (#704 review).
 INSTRUCTIONAL_NEG_ANTE = re.compile(
-    r"(?:first|last|final|within|during|after|every|each|more\s+than|at\s+least|no\s+more\s+than"
-    r"|approximately|about|up\s+to|just\s+a\s+few)\s+(?:or\s+\w+\s+)?$", re.I)
+    r"(?:first|last|final|within|during|after|every|each)\s+(?:or\s+\w+\s+)?$", re.I)
 
 
 def instructional_declaration(text: str) -> bool:

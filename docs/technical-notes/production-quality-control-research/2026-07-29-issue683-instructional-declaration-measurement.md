@@ -3,6 +3,20 @@
 **Date:** 2026-07-29 · **Issue:** #683 (epic #695) · **Branch:** `fix/683-instructional-declaration`
 **Protocol:** edit → full `build_signals` re-ingest → `harness.py` A/B scorecards → `tuning_ledger record`
 (the standing protocol for signal-level changes — the frontier can't see them).
+**Rerunnable:** `2026-07-29-issue683-instructional-declaration-measure.py` alongside this report
+(the old regex frozen as a literal; `--guard-audit` splits regex-vs-guard) — committed in the #704
+review round, which found the first version's claims verifiable-but-unreproducible.
+
+> **#704 review-round CORRECTION:** the guard as first shipped included threshold hedges
+> (`at least` / `more than` / `no more than` / `approximately` / `up to` / `just a few`), which the
+> review proved REJECTS the canonical statutory phrasing — *"at least 330 minutes of instruction
+> per day"* is a minimum-day **declaration**, semantically identical to Aspire's kept *"a minimum
+> of 240 instructional minutes per school day"* — and was internally asymmetric (*"no fewer
+> than"* passed). Measured with `--guard-audit`: on the full corpus the hedges changed the outcome
+> of **zero** records — every real FP already fails the number+instruction+day-scope regex itself
+> — so they only cost the false-negative class. The guard is now **interval antecedents only**
+> (`first|last|final|within|during|after|every|each`, across an `or` conjunction). Corpus-neutral:
+> still exactly 2 records fire, 0 gained; scorecards and the ledger episode below are unaffected.
 
 ## What the issue reported, and what the corpus said
 
@@ -44,9 +58,11 @@ A DECLARATION requires all three — each one is load-bearing against a real cor
 3. **DAY scope** (`per day` / `per school day`) — the bare `N minutes per day` shape is what the
    PE-rate, practice-rate, reading-rate and marketing FPs all matched (4 records).
 
-Plus a **preceding-token guard**: `first|last|final|within|during|after|every|each` (interval) or
-`more than|at least|no more than|approximately|about|up to|just a few` (threshold), optionally
-across a conjunction (`first **or last** 10 minutes` — the live KIPP OKC shape).
+Plus a **preceding-token guard** for INTERVAL antecedents only:
+`first|last|final|within|during|after|every|each`, optionally across a conjunction (`first **or
+last** 10 minutes` — the live KIPP OKC shape). *(Threshold hedges were in the guard as first
+shipped and removed in the #704 review round — see the correction note at the top: they rejected
+genuine statutory declarations while changing zero corpus outcomes.)*
 
 `INSTRUCTIONAL_RE` alone is deliberately **not** the predicate: the guard is half the rule, so the
 one home is `build_signals.instructional_declaration()` and a source pin forbids a caller from

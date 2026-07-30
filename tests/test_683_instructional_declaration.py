@@ -21,7 +21,11 @@ def test_bentonville_attendance_deadline_is_not_a_declaration():
         "Attendance must be submitted during the first 30 minutes of class.")
 
 
-def test_interval_and_threshold_antecedents_are_not_declarations():
+def test_corpus_fp_class_still_rejected():
+    """The measured false-positive class, pinned verbatim. Since the #704 review round these are
+    rejected by the REGEX SHAPE itself (no instruction referent / no day scope / a parenthetical
+    breaking adjacency), not by the antecedent guard — the threshold hedges were removed from the
+    guard because they did zero corpus work while rejecting statutory declarations."""
     for s in (
         # KIPP OKC `4000766:97161c6a76` / `:2f764d7fa2` — the "first or last" conjunction
         "not permitted to use the restroom during the first or last 10 minutes of class.",
@@ -104,3 +108,104 @@ def test_predicate_is_the_one_home_not_the_bare_regex():
     # the guard really is load-bearing: same sentence, antecedent removed -> it fires
     assert BS.INSTRUCTIONAL_RE.search("during the first 30 minutes of instruction per day")
     assert not BS.instructional_declaration("during the first 30 minutes of instruction per day")
+
+
+# ---------------- #704 review round: the guard is INTERVAL-only, thresholds are declarations ----------------
+def test_statutory_threshold_declarations_fire():
+    """#704 review (CONFIRMED, fails against the first-shipped guard): "at least N minutes of
+    instruction per day" IS the canonical statutory-minimum phrasing — semantically identical to
+    the kept Aspire case ("a minimum of 240..."), differing only in wording. The threshold hedges
+    were removed from the antecedent guard: measured on the full corpus they changed the outcome
+    of ZERO records (every real FP already fails the number+instruction+day-scope regex), so they
+    only cost this false-negative class. Symmetry pinned too ("no fewer than" was already True)."""
+    for s in ("Elementary schools shall provide at least 330 minutes of instruction per day.",
+              "The school day shall consist of no more than 400 minutes of instruction per day.",
+              "The district requires no fewer than 330 minutes of instruction per day.",
+              "Approximately 350 minutes of instruction per day are provided."):
+        assert BS.instructional_declaration(s), s
+
+
+def test_interval_guard_still_rejects_with_full_day_scope():
+    """The guard's REAL work, exercised against the actual regex (#704 review: the old KIPP test
+    string had no day scope, so the regex never matched and the or-conjunction clause was dead
+    weight in that test) — a day-scoped interval must be rejected BY THE GUARD, incl. across the
+    "or" conjunction, and at the very start of the string (the lookback's m.start()<40 edge)."""
+    for s in ("during the first 30 minutes of instruction per day",
+              "during the first or last 10 minutes of instruction per day",
+              "first 30 minutes of instruction per day"):        # match near offset 0
+        assert not BS.instructional_declaration(s), s
+    # identical sentence, antecedent removed -> the regex fires: proves the guard did the work
+    assert BS.instructional_declaration("30 minutes of instruction per day")
+
+
+def test_empty_and_none_inputs_are_false():
+    assert not BS.instructional_declaration("")
+    assert not BS.instructional_declaration(None)
+
+
+# ---------------- #704 review round: the recall-unchanged claim, enforced hermetically ----------------
+# The measurement report claims the 4 target-labeled records that LOST the signal stay tier A on
+# other detectors. That was verified live but enforced nowhere — a future weakening of
+# lf_time_table / lf_prose_pair / lf_heading_hours could silently regress it. These are the REAL
+# signals_json rows (trimmed of bulky page-level lists; trim verified tier-preserving), embedded
+# 2026-07-29 with instructional_time already False.
+import json as _json
+
+_DEMOTED_SIGNAL_FIXTURES = _json.loads("""\
+{"3800038:f962d4236d":{"cms_hint":null,"content_school_year":"2025-\n\
+26","dechromed":false,"decision":"send","embed_hosts":[],"footer_hours":{"hit":false,"office":fa\n\
+lse,"times":0},"harvest_pages":[5],"has_table":true,"header_hours":{"hit":false,"office":false,"\n\
+times":0},"heading_hours_hits":3,"heading_hours_labels":["school day"],"instructional_time":fals\n\
+e,"is_handbook":true,"max_text_chars":321019,"n_times":63,"n_times_in_window":59,"neg_total":14,\n\
+"negative_kw":{"board":["school board"],"calendar":["school calendar","holiday","early\n\
+release","early dismissal","no school","in service","first day of\n\
+school"],"sports":["athletic","athletics","sports","varsity"],"transport":["bus\n\
+route","transportation department"]},"nonstandard_day":false,"nonstandard_heading":0,"nonstandar\n\
+d_near_times":2,"period_hits":2,"positive_kw":["school hours","school day","dismissal","pick\n\
+up","class schedule"],"proximity_pairs":730,"regular_day_language":true,"roster_school_names_hit\n\
+":2,"schedule_link_only":false,"table_period_rows":0,"table_time_density":51,"times_after_5pm":2\n\
+,"url_feed_pattern":false,"url_rootish":false,"visual_text_gap":false},"4000766:2f764d7fa2":{"cm\n\
+s_hint":null,"content_school_year":"2022-\n\
+23","dechromed":false,"decision":"send","embed_hosts":[],"footer_hours":{"hit":false,"office":fa\n\
+lse,"times":0},"harvest_pages":[13,14],"has_table":true,"header_hours":{"hit":false,"office":fal\n\
+se,"times":0},"heading_hours_hits":4,"heading_hours_labels":["school day","school hours"],"instr\n\
+uctional_time":false,"is_handbook":true,"max_text_chars":119292,"n_times":47,"n_times_in_window"\n\
+:33,"neg_total":3,"negative_kw":{"board":["agenda"],"calendar":["first day of school"],"sports":\n\
+["sports"],"transport":[]},"nonstandard_day":false,"nonstandard_heading":1,"nonstandard_near_tim\n\
+es":4,"period_hits":0,"positive_kw":["school hours","school day","arrival","homeroom","pick up"]\n\
+,"proximity_pairs":22,"regular_day_language":false,"roster_school_names_hit":1,"schedule_link_on\n\
+ly":false,"table_period_rows":0,"table_time_density":21,"times_after_5pm":6,"url_feed_pattern":f\n\
+alse,"url_rootish":false,"visual_text_gap":false},"4000766:97161c6a76":{"cms_hint":null,"content\n\
+_school_year":"2023-\n\
+24","dechromed":false,"decision":"send","embed_hosts":[],"footer_hours":{"hit":false,"office":fa\n\
+lse,"times":0},"harvest_pages":[8,13,22],"has_table":true,"header_hours":{"hit":false,"office":f\n\
+alse,"times":0},"heading_hours_hits":4,"heading_hours_labels":["school day","school hours"],"ins\n\
+tructional_time":false,"is_handbook":true,"max_text_chars":130756,"n_times":80,"n_times_in_windo\n\
+w":71,"neg_total":2,"negative_kw":{"board":["agenda"],"calendar":["first day of school"],"sports\n\
+":[],"transport":[]},"nonstandard_day":true,"nonstandard_heading":1,"nonstandard_near_times":5,"\n\
+period_hits":0,"positive_kw":["school hours","school day","dismissal","arrival","homeroom","pick\n\
+up"],"proximity_pairs":525,"regular_day_language":false,"roster_school_names_hit":1,"schedule_li\n\
+nk_only":false,"table_period_rows":0,"table_time_density":12,"times_after_5pm":5,"url_feed_patte\n\
+rn":false,"url_rootish":false,"visual_text_gap":false},"4824000:af06722adb":{"cms_hint":"sharpsc\n\
+hool.com","content_school_year":"2025-\n\
+26","dechromed":false,"decision":"send","embed_hosts":[],"footer_hours":{"hit":false,"office":fa\n\
+lse,"times":0},"harvest_pages":[],"has_table":true,"header_hours":{"hit":false,"office":false,"t\n\
+imes":0},"heading_hours_hits":0,"heading_hours_labels":[],"instructional_time":false,"is_handboo\n\
+k":true,"max_text_chars":333197,"n_times":7,"n_times_in_window":5,"neg_total":11,"negative_kw":{\n\
+"board":["board of education","board of trustees","board meeting","school\n\
+board","trustees","agenda"],"calendar":["early\n\
+dismissal"],"sports":["athletic","athletics","sports"],"transport":["bus route"]},"nonstandard_d\n\
+ay":true,"nonstandard_heading":0,"nonstandard_near_times":0,"period_hits":0,"positive_kw":["scho\n\
+ol hours","school day","start time","dismissal","arrival","drop-off","pick up","class schedule"]\n\
+,"proximity_pairs":3,"regular_day_language":false,"roster_school_names_hit":2,"schedule_link_onl\n\
+y":false,"table_period_rows":0,"table_time_density":5,"times_after_5pm":2,"url_feed_pattern":fal\n\
+se,"url_rootish":false,"visual_text_gap":false}}""".replace("\n", ""))
+
+
+def test_target_records_that_lost_the_signal_stay_tier_A():
+    for rk, sig in _DEMOTED_SIGNAL_FIXTURES.items():
+        assert sig["instructional_time"] is False, rk       # the fixture really lacks the signal
+        out = COMB.score_record(dict(sig))
+        assert out["tier"] == "A" and out["decision"] == "send", \
+            f"{rk}: a target-labeled record lost tier A without instructional_time — " \
+            f"the #683 recall-unchanged claim regressed (see the measurement report)"
