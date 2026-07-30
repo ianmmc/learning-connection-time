@@ -16,23 +16,10 @@ from infrastructure.acquisition.stage5_filter import build_signals as BS
 from infrastructure.acquisition.stage5_filter import combiner as C
 from infrastructure.acquisition.stage5_filter import detectors as D
 
-
-def sig(**kw):
-    base = dict(n_times=0, n_times_in_window=0, times_after_5pm=0, proximity_pairs=0,
-                positive_kw=[], negative_kw={"board": [], "sports": [], "calendar": [], "transport": []},
-                neg_total=0, instructional_time=False, has_table=False, period_hits=0,
-                table_time_density=0, table_period_rows=0, roster_school_names_hit=0,
-                footer_hours={"hit": False, "times": 0, "office": False},
-                header_hours={"hit": False, "times": 0, "office": False},
-                heading_hours_hits=0, heading_hours_labels=[], nonstandard_day=False,
-                harvest_pages=[], url_feed_pattern=False, embed_hosts=[],
-                staff_duty_times=0, student_ref_times=0)
-    base.update(kw)
-    return base
-
-
-def decide(**kw):
-    return C.score_record(sig(**kw))
+# ONE canonical default-signal helper (PR #705 review [6]): importing the sibling file's sig()/decide()
+# instead of keeping a near-copy, so a future signal key added there can't leave this file silently
+# testing a stale baseline (the #199 join-the-set failure class, at test grain).
+from test_stage5_detectors import decide, sig  # noqa: E402
 
 
 # ---------------------------------------------------------------- the signal
@@ -85,6 +72,39 @@ def test_a_duty_verb_without_a_staff_subject_does_not_count():
     # the full clause is required: SUBJECT governs VERB governs TIME.
     duty, _ = _counts("All students are to report at 8:05 a.m. and remain until 3:15 p.m.")
     assert duty == 0
+
+
+def test_staffed_is_not_a_staff_subject():
+    """PR #705 review [1]: the subject regex is \\b-anchored — bare "staff" substring-matched inside
+    "staffed"/"staffing", so a genuine bell page saying "the building remains fully staffed" near a
+    "remain until" phrase read as a duty clause and was wrongly pulled out of auto-send. MUST FAIL
+    against the unanchored regex (verified duty=1 pre-fix)."""
+    text = ("School hours are 7:50 a.m. to 3:15 p.m. Our building remains fully staffed and secure "
+            "each morning. Everyone must remain until 3:15 p.m., when the buses leave the front loop.")
+    duty, _ = _counts(text)
+    assert duty == 0
+    # and the same page still auto-sends (the whole point — it is a genuine target)
+    r = decide(n_times_in_window=3, proximity_pairs=2, positive_kw=["school hours"],
+               staff_duty_times=duty, student_ref_times=0)
+    assert r["decision"] == "send" and r["tier"] == "A"
+
+
+def test_report_attendance_is_not_a_duty_clause():
+    """PR #705 review [2]: "report" always requires a duty destination/preposition — the bare
+    "are to report"/"must report" alternatives matched every sense of the verb, so routine
+    attendance-taking prose beside a genuine bell schedule demoted the real tier-A send. The `at`
+    alternative is \\b-anchored so "report at" can't substring-match "report attendance". MUST FAIL
+    against the first-shipped regex (verified duty=1 pre-fix)."""
+    duty, _ = _counts("Teachers are to report attendance by 7:45 a.m. daily using the electronic "
+                      "system. The instructional day runs from 7:50 a.m. to 3:00 p.m.")
+    assert duty == 0
+    # while the genuinely-destinationed forms all still count (the Bentonville shapes):
+    for phrase in ("Staff are to report to work by 7:15 a.m.",
+                   "Junior High staff are to report at 8:05 a.m.",
+                   "Zero Hour staff members are to report from 7:00 a.m.",
+                   "High School staff report to school by 8:25 a.m."):
+        d, _ = _counts(phrase)
+        assert d >= 1, phrase
 
 
 def test_a_staff_subject_without_a_duty_verb_does_not_count():
@@ -169,6 +189,45 @@ def test_absent_signal_fields_are_inert():
     assert "lf_staff_day" not in r["fired"] and "lf_heading_hours" in r["fired"]
 
 
+def test_footer_hours_on_a_staff_owned_page_is_the_office_confusable():
+    """PR #705 review [0]: lf_footer_hours is STRONG_STRUCTURAL too, and its own `office` flag is the
+    11-term presence test the #684 measurement rejected (acc 0.512) — unguarded, a staff-duty page
+    whose footer block slips those keywords re-opened the exact auto-send #684 closed, just via the
+    footer path instead of the heading. MUST FAIL pre-fix (verified: send/A with lf_staff_day fired
+    but powerless)."""
+    r = decide(footer_hours={"hit": True, "times": 2, "office": False},
+               n_times_in_window=9, proximity_pairs=3, positive_kw=["school hours"],
+               staff_duty_times=9, student_ref_times=0)
+    assert r["decision"] == "review" and r["tier"] == "B", r
+    assert "lf_footer_hours" not in r["fired"] and "lf_office_hours" in r["fired"]
+    assert "lf_staff_day" in r["fired"]
+
+
+def test_explicit_minutes_on_a_staff_owned_page_holds_for_review():
+    """PR #705 review [0], third STRONG_STRUCTURAL member: on a staff-owned page the declaration
+    downgrades to a WEAK target (still visible evidence — unlike a heading/footer, the declaration is
+    instruction-referent by construction), and the lf_staff_day hard undermine routes it to review.
+    MUST FAIL pre-fix (send/A)."""
+    r = decide(instructional_time=True, n_times_in_window=9, proximity_pairs=3,
+               positive_kw=["school day"], staff_duty_times=9, student_ref_times=0)
+    assert r["decision"] == "review" and r["tier"] == "B", r
+    # the declaration evidence is downgraded, not silenced — and never falls through to suppress
+    assert "lf_explicit_minutes" in r["fired"] and "lf_staff_day" in r["fired"]
+    r2 = decide(instructional_time=True, staff_duty_times=3, student_ref_times=0)
+    assert r2["decision"] == "review", "a lone declaration on a staff-owned page must HOLD, never drop"
+
+
+def test_every_strong_structural_detector_consults_the_staff_day_predicate():
+    """The structural closure pin (PR #705 review [0]): a STRONG_STRUCTURAL vote sends
+    UNCONDITIONALLY, so EVERY member's source must consult staff_day_owned — adding a fourth
+    structural detector without the guard fails here, not in production."""
+    import inspect
+    for name in C.STRONG_STRUCTURAL:
+        fn = getattr(D, name)
+        assert "staff_day_owned" in inspect.getsource(fn), \
+            f"{name} is STRONG_STRUCTURAL but never consults staff_day_owned()"
+
+
 def test_an_explicit_office_heading_still_wins_over_the_staff_day_arm():
     """Ordering pin: the pre-existing label test runs first, so its more specific reason survives."""
     r = decide(heading_hours_hits=1, heading_hours_labels=["office hours"],
@@ -224,6 +283,12 @@ def test_console_ports_the_staff_duty_regexes_verbatim():
     assert m_subj.group(1) == BS.STAFF_DUTY_SUBJ_RE.pattern
     assert f"DN_STAFF_SUBJ_CHARS = {BS.STAFF_DUTY_SUBJ_CHARS};" in js
     assert "Array.from(wide).slice(-DN_STAFF_SUBJ_CHARS)" in js, "the lookback must be codepoint-exact"
+    # PR #705 review [3]: the clause test is THREE-part — the port must also require the verb to
+    # govern an in-window time within STAFF_DUTY_TIME_CHARS after it, or the strip marks duty
+    # sentences the score never counted (contradicting #521's mirrors-never-re-derives guardrail).
+    assert f"DN_STAFF_TIME_CHARS = {BS.STAFF_DUTY_TIME_CHARS};" in js
+    assert "const tps = dnTimeOffsets(text)" in js, "the port must consult the in-window time offsets"
+    assert "o >= end && o <= end + fwd" in js, "a match with no governed time must not paint"
     # and it must be gated on the SERVER's vote, never re-derived client-side
     assert 'd.name === "lf_staff_day"' in js
     assert "dnStaffDutyOffsets" in js
@@ -248,6 +313,21 @@ def test_console_surfaces_the_staff_day_confusable_to_the_labeler():
         "the row must tolerate a record whose signals predate the field (#702 absence-vs-empty)"
     # Playwright-verified end-to-end against the live record on 2026-07-29 (11/11 checks):
     # infrastructure/scraper/verify_684_console.mjs
+
+
+def test_measure_script_reads_the_shared_text_bases():
+    """PR #705 review [4]: the rerunnable measurement script must derive its text bases from the LIVE
+    `build_signals.text_bases` — a hand-copied duplicate silently drifts from what the scorer stores,
+    invalidating a re-run's 'acc 1.000' claim without anyone noticing."""
+    from pathlib import Path
+    src = (Path(__file__).resolve().parent.parent / "docs/technical-notes/"
+           "production-quality-control-research/2026-07-29-issue684-staff-day-measure.py").read_text()
+    assert "BS.text_bases(" in src
+    # the tell-tale of a re-implemented basis selection is the table-source list spelled locally
+    assert "camelot_hybrid" not in src, "basis selection must not be re-implemented in the script"
+    # and compute_signals itself must consume the same helper (one selection, two consumers)
+    import inspect
+    assert "text_bases(" in inspect.getsource(BS.compute_signals)
 
 
 def test_event_weight_is_registered_and_signed():

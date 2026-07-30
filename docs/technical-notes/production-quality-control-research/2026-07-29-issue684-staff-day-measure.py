@@ -16,8 +16,9 @@ committing this script is that the rejections are reproducible, not just the acc
                shipped choice (ANY @ 140) must be stable and ALL must be the fragile one, or the
                "measurement could not fail".
 
-No flags = all four. Text bases mirror `compute_signals` exactly (best_text = max-in-window of
-{full_best, page.main.txt}; table_reps = the table-source usable reps) — offsets never cross texts.
+No flags = all four. Text bases come from the LIVE `build_signals.text_bases` — the same selection
+compute_signals stores signals from (PR #705 review [4]: the first version hand-copied that logic, and
+a hand copy silently drifts, invalidating a re-run without anyone noticing). Offsets never cross texts.
 
 Run:  python3 docs/technical-notes/production-quality-control-research/2026-07-29-issue684-staff-day-measure.py
 """
@@ -61,7 +62,8 @@ def _near(pattern, text, tpos, near):
 
 
 def record_bases():
-    """(rec_key, bases, full_all) per Stage-4-complete record. `bases` mirrors compute_signals."""
+    """(rec_key, bases, full_all) per Stage-4-complete record — basis selection is the LIVE
+    `build_signals.text_bases`, never a local copy (PR #705 review [4])."""
     for ddir in sorted(p for p in BS.RAW_DIR.glob("*") if p.is_dir()):
         if not all((ddir / f).exists() for f in ("captures.json", "processed.json", "discovery.json")):
             continue
@@ -73,27 +75,10 @@ def record_bases():
         for prec in processed:
             h = prec["hash"]
             rdir = ddir / "captures" / h
-            usable = [t for t in prec.get("texts", []) if t.get("usable") and t.get("text_file")]
-            cache: dict = {}
-
-            def read(t):
-                fn = t["text_file"]
-                if fn not in cache:
-                    p = rdir / fn
-                    cache[fn] = p.read_text(errors="replace") if p.exists() else ""
-                return cache[fn]
-
-            best = max(usable, key=lambda t: t.get("n_times", 0), default=None)
-            full_best = read(best) if best else ""
-            full_all = "\n".join(read(t) for t in usable)
             mp = rdir / "page.main.txt"
             main_text = mp.read_text(errors="replace") if mp.exists() else None
-            dechromed = bool(main_text and len(main_text.strip()) >= BS.USABLE_MIN_CHARS)
-            cands = [full_best] + ([main_text] if dechromed else [])
-            best_text = max(cands, key=lambda t: len(BS.in_window_positions(t)), default="")
-            table_reps = [read(t) for t in usable if t.get("source", "") in
-                          ("pdfplumber_lines", "camelot_stream", "camelot_hybrid") and "---" in read(t)]
-            yield f"{did}:{h}", [best_text, *table_reps], full_all
+            tb = BS.text_bases(rdir, prec.get("texts", []), main_text)
+            yield f"{did}:{h}", [tb["best_text"], *tb["table_reps"]], tb["full_all"]
 
 
 def main():

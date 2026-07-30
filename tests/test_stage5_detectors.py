@@ -9,6 +9,9 @@ from infrastructure.acquisition.stage5_filter import detectors as D
 
 
 def sig(**kw):
+    """The canonical default signal shape for detector tests — ONE home (PR #705 review [6]:
+    test_684_staff_day_confusable.py imports THIS rather than keeping its own near-copy, so a new
+    signal key added here can't silently leave a sibling file testing a stale baseline)."""
     base = dict(n_times=0, n_times_in_window=0, times_after_5pm=0, proximity_pairs=0,
                 positive_kw=[], negative_kw={"board": [], "sports": [], "calendar": [], "transport": []},
                 neg_total=0, instructional_time=False, has_table=False, period_hits=0,
@@ -16,7 +19,8 @@ def sig(**kw):
                 footer_hours={"hit": False, "times": 0, "office": False},
                 header_hours={"hit": False, "times": 0, "office": False},
                 heading_hours_hits=0, heading_hours_labels=[], nonstandard_day=False,
-                harvest_pages=[], url_feed_pattern=False, embed_hosts=[])
+                harvest_pages=[], url_feed_pattern=False, embed_hosts=[],
+                staff_duty_times=0, student_ref_times=0)
     base.update(kw)
     return base
 

@@ -646,17 +646,27 @@ const DN_PERIOD = /\bperiod\s*\d|\b\d(?:st|nd|rd|th)\s+period/gi;
 // test. Placement only — the strip marks WHERE the staff duty clauses are; whether they OWN the page
 // (the duty > student-referent comparison) is a server truth the client never re-decides, so these are
 // painted only when the record's own stored lf_staff_day vote is present (the wrong_day pattern).
-const DN_STAFF_DUTY = /report(?:s|ing)?\s+(?:to\s+work|to\s+school|for\s+duty|at|by)|are\s+to\s+report|is\s+to\s+report|must\s+report|remain\s+until|remain\s+on\s+duty|on\s+duty\s+(?:from|by|until)|duty\s+(?:begins|ends|day)|clock\s+in|sign\s+in|work\s*day\s+(?:is|begins|shall)|contract(?:ed)?\s+day/gi;
-const DN_STAFF_SUBJ = /staff|faculty|teachers?|employees?|certified (?:staff|personnel|employees?)|classified (?:staff|personnel|employees?)|paraprofessionals?|instructional assistants?|principals?|administrators?|secretar(?:y|ies)|custodians?|bus drivers?/i;
+const DN_STAFF_DUTY = /report(?:s|ing)?\s+(?:to\s+work|to\s+school|for\s+duty|at\b|by\b|from\b)|remain\s+until|remain\s+on\s+duty|on\s+duty\s+(?:from|by|until)|duty\s+(?:begins|ends|day)|clock\s+in|sign\s+in|work\s*day\s+(?:is|begins|shall)|contract(?:ed)?\s+day/gi;
+const DN_STAFF_SUBJ = /\b(?:staff|faculty|teachers?|employees?|certified (?:staff|personnel|employees?)|classified (?:staff|personnel|employees?)|paraprofessionals?|instructional assistants?|principals?|administrators?|secretar(?:y|ies)|custodians?|bus drivers?)\b/i;
 const DN_STAFF_SUBJ_CHARS = 90;   // mirrors build_signals.STAFF_DUTY_SUBJ_CHARS
+const DN_STAFF_TIME_CHARS = 90;   // mirrors build_signals.STAFF_DUTY_TIME_CHARS
 function dnStaffDutyOffsets(text) {
   // The lookback must be CODEPOINT-exact, not UTF-16-unit-exact: unlike #683's `$`-anchored guard, this
   // subject regex is unanchored, so a wider window would genuinely match more and a narrower one less.
   // Slice generously (2x, the worst case if every char were astral), then keep the last 90 CODE POINTS.
+  // PR #705 review [3]: the clause test is THREE-part — the verb must also GOVERN an in-window time
+  // within STAFF_DUTY_TIME_CHARS after it, or Python never counts the match into staff_duty_times.
+  // The first-shipped port dropped that condition, so the strip could mark a duty sentence the score
+  // never counted (#521: the strip mirrors the score). Forward window is codepoint-exact too.
   const out = []; let m; DN_STAFF_DUTY.lastIndex = 0;
+  const tps = dnTimeOffsets(text).map((t) => t.off);
   while ((m = DN_STAFF_DUTY.exec(text))) {
     const wide = text.slice(Math.max(0, m.index - 2 * DN_STAFF_SUBJ_CHARS), m.index);
-    if (DN_STAFF_SUBJ.test(Array.from(wide).slice(-DN_STAFF_SUBJ_CHARS).join(""))) out.push(m.index);
+    if (!DN_STAFF_SUBJ.test(Array.from(wide).slice(-DN_STAFF_SUBJ_CHARS).join(""))) continue;
+    const end = m.index + m[0].length;
+    const fwd = Array.from(text.slice(end, end + 2 * DN_STAFF_TIME_CHARS))
+      .slice(0, DN_STAFF_TIME_CHARS).join("").length;   // UTF-16 span of 90 codepoints
+    if (tps.some((o) => o >= end && o <= end + fwd)) out.push(m.index);
   }
   return out;
 }

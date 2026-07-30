@@ -14,6 +14,37 @@ code.
 > below are the **pre-fix** state (the decision context); a re-run today shows arm 1's "tier-A non-target"
 > at 9 rather than 10, and arm 3's at 0 rather than 1, for exactly that reason.
 
+> **#705 review-round CORRECTIONS (2026-07-29, max review — 4 confirmed correctness findings, all
+> fixed the same day):**
+> 1. **The guard was wired into only one of the three `STRONG_STRUCTURAL` detectors.** A structural
+>    target sends unconditionally, so guarding `lf_heading_hours` alone left `lf_footer_hours` (whose
+>    own `office` flag is exactly the 11-term presence test arm 1 rejected) and `lf_explicit_minutes`
+>    able to re-open #684's auto-send through an unguarded path — reproduced live by the review. All
+>    three now consult `staff_day_owned()`; footer emits the shared office confusable, the declaration
+>    downgrades to a WEAK target (still-visible evidence, routed to review on the hard undermine); a
+>    test pins that every `STRONG_STRUCTURAL` member's source consults the predicate, so a fourth
+>    member can't ship unguarded.
+> 2. **`STAFF_DUTY_SUBJ_RE` lacked word boundaries** — "the building remains fully **staffed**" near a
+>    "remain until" phrase read as a duty clause and demoted a genuine bell page (the same
+>    substring-collision class the file's own #538 `NONSTANDARD_SCHED_RE` fix guards). Now `\b`-anchored.
+> 3. **Bare `are to report`/`must report` matched every sense of the verb** — "teachers are to report
+>    **attendance** by 7:45" beside a real bell schedule demoted the real send. "report" now always
+>    requires a duty destination/preposition, `\b`-anchored so `report at` can't prefix-match
+>    "report attendance".
+> 4. **The JS port dropped the time-after-verb condition** — the strip could paint a duty sentence the
+>    score never counted (violating #521's mirrors-never-re-derives rule; latent on Bentonville, whose
+>    clauses all happen to govern a time). `dnStaffDutyOffsets` now requires a governed in-window time
+>    within a codepoint-exact 90-char forward window, matching Python on all four review scenarios.
+>
+> **Corpus effect of the regex tightening: NONE.** Re-measured (`--clause --sensitivity`): the
+> duty-clause cohort is the identical 7 records with identical per-basis counts — every corpus clause
+> was already a destination form — so arm 3 (acc 1.000, Bentonville the only owned record), the
+> sensitivity table, and every stored signal are unchanged; no re-ingest, no ledger delta. The
+> tightening buys robustness on text the corpus doesn't yet contain, which is exactly where the review
+> found the failures. Three cleanup findings (a hand-copied basis selection in the measure script, a
+> duplicated bisect loop, a duplicated test fixture) were also fixed — each now has ONE home
+> (`build_signals.text_bases`, `_offsets_between`, `test_stage5_detectors.sig`), with source pins.
+
 ## The record, and what it proves about shape detectors
 
 Bentonville's **employee handbook** (`0503060:a5f32ff869`, human label `target_absent`) was a **tier-A
@@ -115,12 +146,16 @@ combinator, which settles a choice the corpus alone could not — see below.
    soft, because the wrong-**referent** case is not the wrong-**day** case: a soft wrong-day *mention*
    deliberately leaves a real schedule TABLE sending (#60/#528) since the table is still the student day,
    whereas here the table **is** the staff day. This demotes `lf_time_table` and `lf_prose_pair`.
-2. **`lf_heading_hours` consults the same predicate.** `lf_heading_hours` is `STRONG_STRUCTURAL`, and by
-   deliberate design **nothing undermines `STRONG_STRUCTURAL`** (`combiner.py`'s first branch is
-   unconditional). So step 1 alone would have left this record a tier-A auto-send. The verdict has to be
-   read at the *source* of the structural target, where it emits the shared `lf_office_hours` negative —
-   the same confusable the pre-existing heading-**label** test already caught, just reached a second way.
-   `staff_day_owned()` is the ONE home for the comparison, source-pinned by test.
+2. **Every `STRONG_STRUCTURAL` detector consults the same predicate** *(as first shipped, only
+   `lf_heading_hours` did — closed in the #705 review round, see the correction note above)*. A
+   structural vote sends unconditionally (`combiner.py`'s first branch), so step 1 alone would have
+   left this record a tier-A auto-send, and any unguarded structural sibling re-opens the same leak.
+   The verdict is read at the *source* of each structural target: heading and footer emit the shared
+   `lf_office_hours` negative (the same confusable their own label/`office` tests already catch,
+   reached a second way); the explicit-minutes declaration downgrades to a WEAK target instead —
+   it is instruction-referent by construction, so the evidence stays visible while the hard undermine
+   routes it to review. `staff_day_owned()` is the ONE home for the comparison, source-pinned by test,
+   and a second test pins that every `STRONG_STRUCTURAL` member consults it.
 
 **ANY, not ALL** (the corpus rated them identically at 140): a page carrying *both* a real student table
 and a staff table is precisely the record a human should adjudicate, and the risk is asymmetric — a false

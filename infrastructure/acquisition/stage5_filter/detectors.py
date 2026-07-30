@@ -36,8 +36,21 @@ DEFAULT_DETECTOR_PARAMS = {
 # ----------------------------- target detectors (evidence FOR a bell schedule) -----------------------------
 def lf_explicit_minutes(sig, p):
     """An explicit 'NNN minutes of instruction/day' declaration — the strongest, rarest target (the
-    'golden nugget' path; see memory two-paths-to-instructional-minutes)."""
+    'golden nugget' path; see memory two-paths-to-instructional-minutes).
+
+    #684 (PR #705 review [0]): EVERY STRONG_STRUCTURAL detector must consult the staff-day verdict,
+    because nothing downstream can undermine a structural send — guarding only lf_heading_hours left
+    this one (and lf_footer_hours) able to auto-send the exact confusable #684 targets. On a
+    staff-owned page the declaration itself is still real instruction-referent evidence (unlike a
+    heading/footer, which the staff day co-opts wholesale), so it downgrades to a WEAK target — the
+    combiner then routes it to review on the lf_staff_day hard undermine, keeping the declaration
+    visible to the human instead of either auto-sending or (via a silent abstain) letting the record
+    fall through to suppress."""
     if sig.get("instructional_time") and not _all_after5(sig):
+        if staff_day_owned(sig):
+            return Vote("lf_explicit_minutes", "target", "weak", 0.4,
+                        "instructional-minutes declaration on a page whose times read staff-owned — "
+                        "held for the human", "explicit_instructional_time")
         return Vote("lf_explicit_minutes", "target", "strong", 0.95,
                     "explicit instructional-minutes declaration", "explicit_instructional_time")
     return None
@@ -81,6 +94,15 @@ def lf_footer_hours(sig, p):
         return None
     school_seg = any(not s.get("office") for s in segs)   # a genuine, non-office block in either segment
     if school_seg or sig.get("positive_kw"):
+        # #684 (PR #705 review [0]): the segment's own `office` flag is the presence test the #684
+        # measurement rejected (acc 0.512 — an 11-term keyword list). When the page's times read
+        # staff-owned at clause grain, a non-"office"-flagged hours block is the SAME confusable
+        # reached past the keyword list, and this detector is STRONG_STRUCTURAL — unguarded, it
+        # re-opens the exact auto-send #684 closed, just via the footer path instead of the heading.
+        if staff_day_owned(sig):
+            return Vote("lf_office_hours", "negative", "soft", 0.5,
+                        "footer/header hours block over STAFF duty times, not the student day",
+                        "other_schedule")
         return Vote("lf_footer_hours", "target", "strong", 0.75,
                     "school-hours block in the footer/header", "school_start_end_list")
     return Vote("lf_office_hours", "negative", "soft", 0.5,
@@ -89,9 +111,13 @@ def lf_footer_hours(sig, p):
 
 def staff_day_owned(sig) -> bool:
     """The ONE staff-day predicate (#684): do this record's employment-obligation clauses govern MORE of
-    a basis's in-window times than student-referent language does? Read by BOTH `lf_staff_day` (which
-    votes on it) and `lf_heading_hours` (which must not emit a STRONG_STRUCTURAL target when it holds) —
-    one home, because a second spelling of the comparison is how the two would drift apart.
+    a basis's in-window times than student-referent language does? Read by `lf_staff_day` (which votes
+    on it) and by EVERY STRONG_STRUCTURAL detector — `lf_footer_hours`, `lf_heading_hours`,
+    `lf_explicit_minutes` — because a structural target sends UNCONDITIONALLY (nothing undermines it
+    downstream, by design), so each must refuse to emit one when the verdict holds. The PR #705 review
+    proved guarding only lf_heading_hours left the footer path re-opening #684's exact auto-send; a
+    test now pins that every STRONG_STRUCTURAL member's source consults this predicate. One home,
+    because a second spelling of the comparison is how the consumers would drift apart.
     Absent signals are 0/0 → False: a record with no staff evidence is never staff-owned, and a record
     the signal builder predates simply doesn't fire (the #702 absence-vs-empty discipline — absence must
     not read as a verdict in either direction)."""
