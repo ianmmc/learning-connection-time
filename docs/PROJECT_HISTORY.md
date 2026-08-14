@@ -1743,6 +1743,7 @@ core — the calculation engine and its inputs, distinct from #128's deferred qu
 epic-attachment audit over all 100 open issues left five deliberate orphans.
 
 Authority: issues #714-#722 (epics #706/#96/#80/#482) and epics #723/#724; REQ-172 in
-`docs/REQUIREMENTS.yaml`; the gov_db/lct_db reads and frozen extraction receipts each issue cites.
-(The 27-district working trace was written to the gitignored `docs/scratch-paper/` whiteboard and
-is deliberately NOT cited as authority — promote it to `docs/technical-notes/` if it should last.)
+`docs/REQUIREMENTS.yaml`; the gov_db/lct_db reads and frozen extraction receipts each issue cites;
+the per-district trace in
+`docs/technical-notes/production-quality-control-research/2026-08-14-batch00000-27-district-production-trace.md`
+(promoted from the scratch-paper whiteboard by Ian, 2026-08-14).
