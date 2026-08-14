@@ -1,0 +1,608 @@
+{
+  "handoff_hash": "88c1cf5b5e37",
+  "district": {
+    "district_id": "1906540",
+    "name": "Cedar Rapids Comm School District",
+    "reps": [
+      {
+        "rec_key": "1906540:cc7b74c835",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:50",
+                "school_name": "CEDAR RIVER ACADEMY",
+                "confidence": "high",
+                "evidence_quote": "8:50 am: School begins\n3:50 pm: Regular Dismissal TIme",
+                "source_locus": "DAILY SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1259,
+            "completion_tokens": 167,
+            "cost_usd": 0.0001927,
+            "latency_ms": 1014,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690329-fwUmruSWJOyYpMNZyOSD",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:50",
+                "school_name": "Cedar River Academy",
+                "confidence": "high",
+                "evidence_quote": "8:50 am:\u00a0 School begins...3:50 pm: Regular Dismissal TIme",
+                "source_locus": "DAILY SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1304,
+            "completion_tokens": 158,
+            "cost_usd": 7.784e-05,
+            "latency_ms": 2307,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690330-Xfd1IORRr8RUV7AELU1I",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "cedar river",
+            "start": "08:50",
+            "end": "15:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "8:50 am: School begins\n3:50 pm: Regular Dismissal TIme",
+                "locus": "DAILY SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:50 am:\u00a0 School begins...3:50 pm: Regular Dismissal TIme",
+                "locus": "DAILY SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "1906540:cc7b74c835",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "1906540:e9dac4f507",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "1st Block 7:50-9:20 am",
+                "source_locus": "MONDAY - FRIDAY",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": null,
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "1st Block 7:50-9:10 am",
+                "source_locus": "HOMEROOM SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": null,
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "Block 1 | 7:50-8:50 am",
+                "source_locus": "ASSEMBLY SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": null,
+                "start_time": "09:50",
+                "end_time": "14:50",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "1st Block | 9:50-10:45 am",
+                "source_locus": "2 HOUR DELAY",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1943,
+            "completion_tokens": 464,
+            "cost_usd": 0.0003799,
+            "latency_ms": 4693,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690335-ZsglcmVhh5DFFCF97Ux0",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "",
+                "confidence": "high",
+                "evidence_quote": "1st Block 7:50-9:20 am 4th Block 1:20-2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1925,
+            "completion_tokens": 150,
+            "cost_usd": 0.00010825,
+            "latency_ms": 3816,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690337-exKQQGdgoAMRUE1aGMQm",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1864,
+            "completion_tokens": 6,
+            "cost_usd": 0.00017124,
+            "latency_ms": 747,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690341-hWpUeNsc7Dy2w4j5PUUU",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:50"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:50"
+            },
+            "rec_key": "1906540:e9dac4f507",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "1906540:8c9a7352a3",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:50",
+                "school_name": "Harrison at Madison Elementary School",
+                "confidence": "high",
+                "evidence_quote": "8:50 School begins\n3:50 Students dismissed",
+                "source_locus": "DAILY SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1205,
+            "completion_tokens": 102,
+            "cost_usd": 0.0001613,
+            "latency_ms": 845,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690342-NcmDGATcys0LPD9ya73X",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:50",
+                "school_name": "Harrison@Madison Elementary School",
+                "confidence": "high",
+                "evidence_quote": "8:50 School begins 3:50 Students dismissed",
+                "source_locus": "DAILY SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1253,
+            "completion_tokens": 151,
+            "cost_usd": 7.473e-05,
+            "latency_ms": 4375,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690343-1wLpTX1PAtbrnoPe09V4",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:50",
+                "school_name": "Harrison@Madison Elementary School",
+                "confidence": "high",
+                "evidence_quote": "8:50 School begins\n3:50 Students dismissed",
+                "source_locus": "DAILY SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1195,
+            "completion_tokens": 98,
+            "cost_usd": 0.00016439,
+            "latency_ms": 3155,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690347-Xvb6nHtzpiQzuDh75MKH",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "harrisonmadison",
+            "start": "08:50",
+            "end": "15:50",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "8:50 School begins\n3:50 Students dismissed",
+                "locus": "DAILY SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "1906540:8c9a7352a3",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "harrison madison",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:50"
+            },
+            "rec_key": "1906540:8c9a7352a3",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "1906540:98be08e574",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "09:15",
+                "end_time": "14:50",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "2nd Block | 9:15-10:35 am\n4th Block | 1:30-2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": null,
+                "start_time": "09:50",
+                "end_time": "14:50",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "1st Block | 9:50-10:45 am\n4th Block | 1:55-2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": null,
+                "start_time": "07:50",
+                "end_time": "10:05",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "1st Block | 7:50-8:55\n2nd | 9:00-10:05",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": null,
+                "start_time": "10:10",
+                "end_time": "13:20",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "3rd Block | 10:10-12:10\n4th Block | 12:15-1:20",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": null,
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "1st Block | 7:50-8:50 am\n4th Block | 1:50-2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1563,
+            "completion_tokens": 793,
+            "cost_usd": 0.0004735,
+            "latency_ms": 2037,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690350-93Qy24U1tIzlOpZI6xKL",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1525,
+            "completion_tokens": 577,
+            "cost_usd": 0.00012241,
+            "latency_ms": 21786,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690354-tWdwAWodhZYMOOFNzvpM",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "cedar river",
+        "start": "08:50",
+        "end": "15:50",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "8:50 am: School begins\n3:50 pm: Regular Dismissal TIme",
+            "locus": "DAILY SCHEDULE",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:50 am:\u00a0 School begins...3:50 pm: Regular Dismissal TIme",
+            "locus": "DAILY SCHEDULE",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "1906540:cc7b74c835",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "harrisonmadison",
+        "start": "08:50",
+        "end": "15:50",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "8:50 School begins\n3:50 Students dismissed",
+            "locus": "DAILY SCHEDULE",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "1906540:8c9a7352a3",
+        "source_file": "page.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "high",
+        "school": "",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:50"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:50"
+        },
+        "rec_key": "1906540:e9dac4f507",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "harrison madison",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:50"
+        },
+        "rec_key": "1906540:8c9a7352a3",
+        "source_file": "page.txt"
+      }
+    ],
+    "n_reps": 4,
+    "n_judged": 2,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 420,
+        "start_time": "08:50",
+        "end_time": "15:50",
+        "n_schools": 2,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "cedar river",
+            "start_time": "08:50",
+            "end_time": "15:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "harrisonmadison",
+            "start_time": "08:50",
+            "end_time": "15:50",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 10,
+      "judge_calls": 2,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 15036,
+      "completion_tokens": 2666,
+      "cost_usd": 0.00192626
+    },
+    "state": "IA"
+  }
+}

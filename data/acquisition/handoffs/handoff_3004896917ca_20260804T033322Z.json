@@ -1,0 +1,3649 @@
+{
+  "handoff_hash": "3004896917ca",
+  "created_at": "2026-08-04T03:33:22Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "dispatch_type": "production",
+  "fingerprints": {
+    "0200510": {
+      "config": "f77ddb950061",
+      "labels": "c471c386a9d8",
+      "data": "6c33ddbe8f1f"
+    },
+    "4700148": {
+      "config": "f77ddb950061",
+      "labels": "e8ed83da5af2",
+      "data": "644ea4b69938"
+    },
+    "0200600": {
+      "config": "f77ddb950061",
+      "labels": "941a96505c2a",
+      "data": "be3e8a26d189"
+    },
+    "2307320": {
+      "config": "f77ddb950061",
+      "labels": "f9a838af3565",
+      "data": "1be71ea15b56"
+    },
+    "0509000": {
+      "config": "f77ddb950061",
+      "labels": "ce63d0223f20",
+      "data": "647782bbb71e"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v4"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.048960000000000004,
+    "n_reps": 48,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "0200510",
+      "name": "Matanuska-Susitna Borough School District",
+      "state": "AK",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "0200510:62bb8cad48",
+          "url": "https://tke.matsuk12.us/about-us/bus-stop-locations-and-times",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:2beef12197",
+          "url": "https://gbe.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 4645
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:586e6cbefc",
+          "url": "https://sse.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 97,
+              "n_chars": 42700
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:10949d22a1",
+          "url": "https://ble.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 5731
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:a9988697bd",
+          "url": "https://www.matsuk12.us/fs/resource-manager/view/52a17ac2-62a1-4706-b567-655a27b45ab7",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 37,
+              "n_chars": 8170
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:43e7d5fa43",
+          "url": "https://resources.finalsite.net/images/v1755121361/matsuk12us/ihbklaynvsbtveadsqj3/FY26KCSSecondaryBellSchedule.pdf",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 80,
+              "n_chars": 3094
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:e089ddd8c5",
+          "url": "https://chs.matsuk12.us/fs/resource-manager/view/426e63b0-558d-4ee3-a574-a82784a9757b",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 136,
+              "n_chars": 4715
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:f7239296e9",
+          "url": "https://kne.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 12,
+              "n_chars": 5564
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:b38d7acdfb",
+          "url": "https://msm.matsuk12.us/fs/resource-manager/view/c48f01b6-4568-4656-80f9-6eb21b8bae50",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 38,
+              "n_chars": 5002
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:d7e92635e9",
+          "url": "https://amc.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 7,
+              "n_chars": 1450
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:2414f6831a",
+          "url": "https://jse.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 4,
+              "n_chars": 5385
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:9d2e5333a3",
+          "url": "https://hhs.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 3706
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:5960ef782b",
+          "url": "https://phs.matsuk12.us/about-us/phs-bell-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 58,
+              "n_chars": 1438
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:d310544ff9",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Cottonwood Creek Elementary School.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:fb3b5bd096",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Machetanz Elementary School.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:c533d50626",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Colony High School 2526BellSchedule.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:26998ca8e2",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Big Lake Elementary School.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:dc43ea83c3",
+          "url": "https://msm.matsuk12.us/counseling/master-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 67,
+              "n_chars": 6649
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:ca8789c188",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Goose Bay Elementary School.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:ccbf550749",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Houston High School.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:b0f10fc418",
+          "url": "https://chs.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 4175
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:d757bf679a",
+          "url": "https://hms.matsuk12.us/about-us/hms-bell-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 18,
+              "n_chars": 1235
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:d993c30406",
+          "url": "https://cms.matsuk12.us/about-us/cms-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 5,
+              "n_chars": 3614
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:a4a455c2ea",
+          "url": "https://mds.matsuk12.us/about-us/mds-bell-schedule-wed",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 24,
+              "n_chars": 882
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:03f9588bc1",
+          "url": "https://rjs.matsuk12.us/counseling/2025-2026-bell-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 77,
+              "n_chars": 2084
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:1ab255edc1",
+          "url": "https://pjm.matsuk12.us/about-us/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 42,
+              "n_chars": 1248
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:7bbb56a4d5",
+          "url": "https://msm.matsuk12.us/fs/resource-manager/view/c6594d66-b34e-4a6c-8cf0-ecc252678f20",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 53,
+              "n_chars": 8962
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:bfdf6a7e3d",
+          "url": "https://hms.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 40,
+              "n_chars": 26916
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:3fe512d0ab",
+          "url": "https://knc.matsuk12.us/about-us/secondary-bell-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 80,
+              "n_chars": 1185
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:3dbea79928",
+          "url": "https://whs.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 24,
+              "n_chars": 10587
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:da76278d47",
+          "url": "https://mnc.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 6458
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:4341daaf24",
+          "url": "https://knc.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 7777
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:93ab2f5bd7",
+          "url": "https://swe.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 15,
+              "n_chars": 5600
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:a0b18e0e75",
+          "url": "https://cwe.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 9,
+              "n_chars": 4565
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:6be6a9d5b6",
+          "url": "https://wms.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 4781
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:7f7efd2da0",
+          "url": "https://ppe.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 5493
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:d7de0f3dc6",
+          "url": "https://mze.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 18,
+              "n_chars": 6544
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:b08aabe7d0",
+          "url": "https://cms.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 4,
+              "n_chars": 4676
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:3aa61e9f03",
+          "url": "https://tms.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 21,
+              "n_chars": 4586
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:463ded248f",
+          "url": "https://whs.matsuk12.us/about-us/whs-calendar",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:4c5a701688",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Colony Middle School.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:bad3915333",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Palmer High School.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:bb527be739",
+          "url": "https://bzs.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 4,
+              "n_chars": 5380
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:5449f84374",
+          "url": "https://bzs.matsuk12.us/site-map",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:eefb1e30c3",
+          "url": "https://fle.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 5326
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:2826dfaba8",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Shaw Elementary School.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:c70e77ddfb",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Teeland Middle School.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:2e7f0399fc",
+          "url": "https://phs.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 6773
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:48410835e2",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Palmer Jr Middle School.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:2cfe56f4d7",
+          "url": "https://mds.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 4,
+              "n_chars": 5369
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:0d94045996",
+          "url": "https://cts.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 15,
+              "n_chars": 61972
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:dd7f8f846d",
+          "url": "https://svs.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 10,
+              "n_chars": 4601
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:0a536345f9",
+          "url": "https://bte.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 67,
+              "n_chars": 53987
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:93eebeadee",
+          "url": "https://pjm.matsuk12.us/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 34,
+              "n_chars": 5927
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:407c448f53",
+          "url": "https://msm.matsuk12.us/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:d6f77d18c8",
+          "url": "https://msm.matsuk12.us/about-us/faq",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:f5a2c460f4",
+          "url": "https://hhs.matsuk12.us/about-us/hhs-calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:b40f444263",
+          "url": "https://www.matsuk12.us/post-detail/~board/mat-su-career-tech-news/post/updated-bell-schedule-09-23-24",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:547841f5bf",
+          "url": "https://phs.matsuk12.us/about-us/phs-calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:dd5b4fdcf3",
+          "url": "https://whs.matsuk12.us/about-us/calendarbell-schedule",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:d30d74451b",
+          "url": "https://bzs.matsuk12.us/about-us/bzs-calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:711a181e40",
+          "url": "https://www.matsuk12.us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:72ef65c340",
+          "url": "https://wms.matsuk12.us/about-us/wms-calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:f9956406ce",
+          "url": "https://pjm.matsuk12.us/about-us/pjm-calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:094f67d524",
+          "url": "https://gvs.matsuk12.us/about-us/staff-directory",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:474f549088",
+          "url": "https://mze.matsuk12.us/about-us/mze-calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:6254ec797a",
+          "url": "https://mze.matsuk12.us/about-us/aboutus",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:76bb961af1",
+          "url": "https://tms.matsuk12.us/about-us/tms-calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:9a77a69d5a",
+          "url": "https://mnc.matsuk12.us/about-us/newsletter",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:8a10ba820a",
+          "url": "https://mnc.matsuk12.us/about-us/staff-directory",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:62dde6c976",
+          "url": "https://mnc.matsuk12.us/about-us/school-supply-lists",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:431286e9ce",
+          "url": "https://mnc.matsuk12.us/about-us/aboutus",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:3dab565364",
+          "url": "https://mnc.matsuk12.us/about-us/mnc-calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:437dce3a73",
+          "url": "https://www.matsuk12.us/about-us/calendars",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:8e197f518e",
+          "url": "https://msm.matsuk12.us/about-us/mat-su-middle-college-calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:7613ec20f1",
+          "url": "https://msm.matsuk12.us/about-us/program-overview-and-school-profile",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:8251210c01",
+          "url": "https://www.matsuk12.us/fs/resource-manager/view/1cf411f4-d125-4962-b5d9-ead48f8150f2",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 40,
+      "est_usd": 0.0408
+    },
+    {
+      "district_id": "4700148",
+      "name": "Memphis-Shelby County Schools",
+      "state": "TN",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "4700148:027bfdca56",
+          "url": "https://resources.finalsite.net/images/v1771285656/schoolsscsk12org/dtpl8guv9zmto0kn6hrz/HMSBellSchedule2025-2026.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:4700148:018fedcbc9",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:12a6827c95",
+          "url": "https://resources.finalsite.net/images/v1745901094/schoolsscsk12org/iiwfriqwjvqd4pstwllc/Bell_Schedule.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:4700148:018fedcbc9",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:db02681983",
+          "url": "https://richland-es.scsk12.org/teachers/malland-olivia/class-materials-links/daily-class-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:4700148:018fedcbc9",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:2517e157bc",
+          "url": "https://balmoralridgeway-es.scsk12.org/about-us/our-administration/principals-corner",
+          "label": "school_start_end_prose",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:4700148:018fedcbc9",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:8d563fa172",
+          "url": "https://central-hs.scsk12.org/about-us/our-school/school-hours",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:4700148:018fedcbc9",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:1a014e1e50",
+          "url": "https://belleforest-es.scsk12.org/parents-students/services",
+          "label": "target_other_shape",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:4700148:018fedcbc9",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:aac2f7a36e",
+          "url": "https://www.scsk12.org/charter/files/2020/CharterApplications/MemphisSchoolofExcellenceCordova/2020MSECordovaCharterApplication_COMBINEDFinal.pdf",
+          "label": "school_start_end_prose",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:4700148:018fedcbc9",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:7192868ecc",
+          "url": "https://resources.finalsite.net/images/v1783355618/schoolsscsk12org/iah1ao48jl2rwg36usnt/24-25_CHS_Bell_Schedule.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:4700148:018fedcbc9",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:fa657b1916",
+          "url": "https://www.scsk12.org/finance/files/2019/Department%20of%20Finance%20Resource%20Guide.pdf",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:fbaaec0f48",
+          "url": "https://www.scsk12.org/esser/files/2021/ESSER%20Plan%20Book%20-%20Final-v2.pdf?PID=2018",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:018fedcbc9",
+          "url": "https://www.scsk12.org/transportation/files/25/Bell%20Times%202025-2026.pdf",
+          "label": "district_hub_by_school",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 306,
+              "n_chars": 10163
+            }
+          ]
+        },
+        {
+          "rec_key": "4700148:00f553bcfc",
+          "url": "https://www.scsk12.org/charter/files/2020/CharterApplications/LuceoCollegiateSchooloftheArtsCharterSchool/LuceoCollegiateSchooloftheArtsFullApplication.pdf",
+          "label": "explicit_instructional_time",
+          "decision": "send",
+          "reason": "target-label:explicit_instructional_time",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 838,
+              "n_chars": 1154556
+            }
+          ]
+        },
+        {
+          "rec_key": "4700148:70de7265f9",
+          "url": "https://havenview-ms.scsk12.org/parents-students/bell-schedulecalendar",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:4700148:018fedcbc9",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:4711d2ae29",
+          "url": "https://craigmont-hs.scsk12.org/about-us/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:4700148:018fedcbc9",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:3e1017e10e",
+          "url": "https://hamilton-hs.scsk12.org/parents-students/academics/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:4700148:018fedcbc9",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:1a847206c1",
+          "url": "https://balmoralridgeway-es.scsk12.org/about-us/our-school/school-hours",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:4700148:018fedcbc9",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:ce476b3252",
+          "url": "https://eejeter-k8.scsk12.org/parents-students/new-student-info",
+          "label": "school_start_end_prose",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:4700148:018fedcbc9",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:5e61a4856c",
+          "url": "https://overton-hs.scsk12.org/parents-students/academics/ohs-bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:4700148:018fedcbc9",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:8d0058ac10",
+          "url": "https://www.scsk12.org/calendar25/api/fetch_events.php?category=",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:29413d6cfb",
+          "url": "https://bolton-hs.scsk12.org/parents-students/bell-schedules",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:4700148:018fedcbc9",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:fc8fe6da33",
+          "url": "https://www.scsk12.org/leaderboard25/?page=issue_details&issue_id=526",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:11cb503a76",
+          "url": "https://middlecollege-hs.scsk12.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:47f90d29d0",
+          "url": "https://whitestation-hs.scsk12.org/calendar",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:bd5655ddb2",
+          "url": "https://www.scsk12.org/calendar/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:e3db1a5a4c",
+          "url": "http://www.scsk12.org/calendar/files/2022/2022%20Commencement%20Date%20Order.pdf",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:1c67320cc5",
+          "url": "https://www.scsk12.org/grad/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:ad7cd5c01c",
+          "url": "https://whitestation-hs.scsk12.org/fs/resource-manager/view/0819bac8-08a7-4bc6-b72a-bf399b648cbe",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:4700148:018fedcbc9",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:495f3a3586",
+          "url": "https://balmoralridgeway-es.scsk12.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:debc8f044c",
+          "url": "https://whitestation-hs.scsk12.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:6b580aa06d",
+          "url": "https://bellevue-ms.scsk12.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:ec1408fc8e",
+          "url": "https://balmoralridgeway-es.scsk12.org/calendar",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:86d6c79bd7",
+          "url": "https://havenview-ms.scsk12.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:1f2d8a6183",
+          "url": "https://www.scsk12.org/summer/files/26/2026%20Summer%20Site%20Times.pdf",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:2551f597e2",
+          "url": "https://cordova-hs.scsk12.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:b51866ad50",
+          "url": "https://www.scsk12.org/registration/",
+          "label": null,
+          "decision": "hold",
+          "reason": "unlabeled-tier-C",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:080dd05c22",
+          "url": "https://www.scsk12.org/academic/?PN=344",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:4b6a582c07",
+          "url": "https://www.scsk12.org/apecs/files/2013/Dept%20of%20Finance%20Reference%20Guide_rev101113.pdf",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:427f5b9b91",
+          "url": "https://scsk12-my.sharepoint.com/:w:/g/personal/smitha_scsk12_org/EWcdMeYfP7VGofkBLZViJnsBupZi4KjSEpvNnHo00OGPxQ?e=9lhSDg",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:46250fa5c2",
+          "url": "https://whitestation-es.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:d3cc1149ff",
+          "url": "https://highlandoaks-es.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:25a1d6e445",
+          "url": "https://central-hs.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:2812c9a6e5",
+          "url": "https://northeastprepacademy.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:21e5519f13",
+          "url": "https://germantown-ms.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:dccb8d1cdc",
+          "url": "https://katebond-es.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:545492047e",
+          "url": "https://kingsbury-hs.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:30dc68082f",
+          "url": "https://richland-es.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:44a08bf0ce",
+          "url": "https://sherwood-es.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:b779e30f74",
+          "url": "https://downtown-es.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:1b84e83c44",
+          "url": "https://idlewild-es.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:ee2d8069ea",
+          "url": "https://www.scsk12.org/finance/files/2015/FY16%20District%20Budget.pdf",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:3a38f5de9b",
+          "url": "https://www.scsk12.org/board/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:83cbe7a2d4",
+          "url": "https://snowden-k8.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:ec7f4dfc8e",
+          "url": "https://www.scsk12.org/nr/?PN=article&aid=2225",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:d65eb53088",
+          "url": "https://sheffield-hs.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:5aef3e9590",
+          "url": "https://hollisfprice-hs.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:e4d3529315",
+          "url": "https://oakhaven-hs.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:991b1c758c",
+          "url": "https://www.scsk12.org/charter/files/2017/2017-CHARTER-ANNUAL-REPORT.pdf?PID=1158",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:68f0d95993",
+          "url": "https://resources.finalsite.net/files/v1745913051/schoolsscsk12org/sa5oexhuntodff4gsewm/BellSchedule-2022.docx",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:d5d124a4d7",
+          "url": "https://www.scsk12.org/board/files/25/MSCS%20BOARD%20MEETING%20SCHEDULE%20%2025-26.pdf",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:5180114057",
+          "url": "https://www.scsk12.org/summer/files/25/Revised%202025%20SLA%20Sites%20with%20Cluster%20Schools%20Start%20Times.pdf",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:38649ef0cc",
+          "url": "http://www.scsk12.org/virtualorientation/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:be8184477f",
+          "url": "https://www.scsk12.org/assessment/files/25/MSCS%20Assessment%20Calendar%202025_2026%20FINAL%2007_15_25.pdf",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:413736b441",
+          "url": "http://www.scsk12.org/nr/?PN=article&aid=1290",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:63a541ee92",
+          "url": "http://www.scsk12.org/learningoptions/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:ad49256ced",
+          "url": "https://scsk12.sharepoint.com/sites/DAIMSupport/SitePages/Virtual-Office-Hours.aspx",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:415d56a1c3",
+          "url": "https://www.scsk12.org/%22http:////www.scsk12.org//optional/%22",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:558f76e7fc",
+          "url": "https://colonial-ms.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:aade144980",
+          "url": "https://www.scsk12.org/charter/?PN=931",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:fcb73d944c",
+          "url": "https://www.scsk12.org/powerschool/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:e82719df07",
+          "url": "https://www.scsk12.org/news2/?page=12",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:ab5b4add6a",
+          "url": "https://www.scsk12.org/elop/?PN=970",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:fca89a0aa8",
+          "url": "https://whitestation-hs.scsk12.org/parents-students/choose-white-station-high-school/home",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:33717f1705",
+          "url": "https://colonial-ms.scsk12.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:f12f839304",
+          "url": "https://whitestation-hs.scsk12.org/parents-students/bell-schedule-with-lunch-202223",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:44538725c0",
+          "url": "https://www.scsk12.org/projectbuild/?PN=381",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:e020975a9b",
+          "url": "https://balmoralridgeway-es.scsk12.org/calendar-3/calendar-3-instructions",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:18e05008a2",
+          "url": "https://richland-es.scsk12.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:ab3c704e68",
+          "url": "https://hickoryridge-ms.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:d93f49407c",
+          "url": "https://kingsbury-ms.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:240b86031c",
+          "url": "https://www.scsk12.org/summer/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:f8e4523d26",
+          "url": "https://katebond-ms.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:a81ccf56fd",
+          "url": "https://www.scsk12.org/choice/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:160ea559e4",
+          "url": "https://kirby-hs.scsk12.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:c8990d1138",
+          "url": "https://central-hs.scsk12.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:bdbcf154a4",
+          "url": "https://www.scsk12.org/transportation/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:247e9bbf26",
+          "url": "https://www.scsk12.org/calendar25/files/25/Revision%20Draft%202025-26_MSCS_Students_Calendar.pdf",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:0a1448dd10",
+          "url": "https://maxinesmithsteamacademy.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:14ad5b2dcd",
+          "url": "https://east-hs.scsk12.org/parents-students/parents-students-resources/course-information",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:bec03f4bb2",
+          "url": "https://hollisfprice-hs.scsk12.org/about-us/contact-us",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:b67a07e8f6",
+          "url": "https://hollisfprice-hs.scsk12.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:bdbf9e2ffa",
+          "url": "https://hollisfprice-hs.scsk12.org/all-events",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:af898ae6bd",
+          "url": "https://hollisfprice-hs.scsk12.org/parents-students/academics/curriculum",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:e9c11560dd",
+          "url": "https://hollisfprice-hs.scsk12.org/parents-students/resources",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:2dbc59bd88",
+          "url": "https://www.scsk12.org/finance/files/2015/FY%202014%20CAFR%20.pdf",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:14cf6a039b",
+          "url": "https://www.scsk12.org/calendar25/files/26/SY2026-27%20MSCS%20Student%20Calendar.pdf",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:3cf824f685",
+          "url": "https://www.scsk12.org/rpm/files/2018/SCBE%20Monthly%20KPIs_05-2018%20FINAL.pdf",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:633df1e141",
+          "url": "https://www.scsk12.org/calendar/files/23/2024-25_MSCS_Students_Calendar.pdf",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:47c36edc14",
+          "url": "https://www.scsk12.org/calendar25/files/26/Graduation-Schedule-FY26-Website.pdf",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:851807129a",
+          "url": "https://berclair-es.scsk12.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:968ab9e53f",
+          "url": "https://cordova-ms.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:e253fe0f22",
+          "url": "https://cordova-hs.scsk12.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:466db88a52",
+          "url": "https://mtpisgah-ms.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:726e784156",
+          "url": "https://whitestation-ms.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:2f995b533b",
+          "url": "https://ridgeway-ms.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:ee8705a157",
+          "url": "https://germantown-hs.scsk12.org/parents-students/student-life/student-faqs/student-life-10218/useful-documents/bell-schedule",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:16bfa89066",
+          "url": "https://www.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:864ab18b73",
+          "url": "https://whitehaven-hs.scsk12.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:d4c7827a00",
+          "url": "https://www.scsk12.org/counseling/files/24/Secondary%20Education%20Book%202024.pdf",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:0592d40826",
+          "url": "https://www.scsk12.org/eda/files/25/Student%20Parent%20Handbook%202024-25%20Final.pdf",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "4700148:03f7f0c6c7",
+          "url": "https://whitestation-hs.scsk12.org/about-us/counselors-corner/summer-enrichment",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 2,
+      "est_usd": 0.00204
+    },
+    {
+      "district_id": "0200600",
+      "name": "Fairbanks North Star Borough School District",
+      "state": "AK",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "0200600:3c67a1639b",
+          "url": "https://www.k12northstar.org/fs/resource-manager/view/6417af46-f4ff-4c2b-a38c-0ac9bde93b09",
+          "label": "district_hub_by_school",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:2753d64d1c",
+          "url": "https://docs.google.com/document/d/12334vtHCGHWdj2IORiBFMdTZb1pVy93OM2GybUU9dbg/edit",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:30004779df",
+          "url": "https://wvh.k12northstar.org/about",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:9fceb985de",
+          "url": "https://www.k12northstar.org/fs/resource-manager/view/177f9628-bb20-4b53-9784-aac0138a4309",
+          "label": "district_hub_by_school",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 80,
+              "n_chars": 2670
+            }
+          ]
+        },
+        {
+          "rec_key": "0200600:2861de9006",
+          "url": "https://wvh.k12northstar.org/daily-bulletin/daily-bulletin",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:4bada4b592",
+          "url": "https://wrv.k12northstar.org/about",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:e6486d2470",
+          "url": "https://www.k12northstar.org/view-all-news/post-details/~board/district-news/post/updated-school-start-end-times-for-2025-26-letter-from-superintendent",
+          "label": "school_start_end_prose",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:89317a1904",
+          "url": "https://rsm.k12northstar.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:57a77ce3ec",
+          "url": "https://rsm.k12northstar.org/about/bell-schedule-2023-2024",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:f47b641795",
+          "url": "https://lth.k12northstar.org/about/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:8dc34bd30a",
+          "url": "https://wvh.k12northstar.org/about/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:e24629f5d1",
+          "url": "https://tan.k12northstar.org/about/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:d058002450",
+          "url": "https://ryn.k12northstar.org/about/families/ryan-bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:1cde1bba85",
+          "url": "https://wvh.k12northstar.org/calendar",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:59d0a7306e",
+          "url": "https://upk.k12northstar.org/about",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:19e64eb740",
+          "url": "https://htr.k12northstar.org/",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:351cb3942c",
+          "url": "https://bsc.k12northstar.org/about/frequently-asked-questions",
+          "label": "school_start_end_prose",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:8f0e8be40e",
+          "url": "https://www.k12northstar.org/fs/resource-manager/view/f170452b-bfd1-4d9f-8be9-a2aff72efa47",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:0f2d15c953",
+          "url": "https://npm.k12northstar.org/about",
+          "label": "school_start_end_prose",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0200600:9fceb985de",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:2932aff2c4",
+          "url": "https://wvh.k12northstar.org/counseling/testing",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:2e0632f808",
+          "url": "https://npm.k12northstar.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:2b73c86a93",
+          "url": "https://nph.k12northstar.org/calendar",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:3a43ed48d5",
+          "url": "https://nph.k12northstar.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:9c9219b3c7",
+          "url": "https://wvh.k12northstar.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:39c4473787",
+          "url": "https://npe.k12northstar.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:66a91df936",
+          "url": "https://lad.k12northstar.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:63d0eb641f",
+          "url": "https://www.k12northstar.org/departments/alternative-schools-programs/star-of-the-north",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:6d4a7f6307",
+          "url": "https://tan.k12northstar.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:2dc561da4e",
+          "url": "https://nsc.k12northstar.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:9b1683d313",
+          "url": "https://lth.k12northstar.org/",
+          "label": null,
+          "decision": "hold",
+          "reason": "unlabeled-tier-C",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:2b24ea9c6b",
+          "url": "https://ekc.k12northstar.org/about-us/school-calendar-start-time",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:dfee50dd59",
+          "url": "https://ryn.k12northstar.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:10e5cc1cba",
+          "url": "https://www.k12northstar.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:d052d0c70d",
+          "url": "https://wrv.k12northstar.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:7d6c23cebf",
+          "url": "https://lth.k12northstar.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:c05955c1cb",
+          "url": "https://www.k12northstar.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:d929ce6bc4",
+          "url": "https://www.k12northstar.org/families/back-to-school",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:807be46306",
+          "url": "https://upk.k12northstar.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:c05f768c7e",
+          "url": "https://upk.k12northstar.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:a0a75bcacd",
+          "url": "https://upk.k12northstar.org/~board/university-park-elementary-news/post/make-and-take",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:6b2d6b5376",
+          "url": "https://arc.k12northstar.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:573ab87555",
+          "url": "https://www.k12northstar.org/about",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:d62fc2b05f",
+          "url": "https://www.k12northstar.org/departments/transportation",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:c3d3f14dc5",
+          "url": "https://www.k12northstar.org/departments/nutrition-services/five-star-menus",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:155a202148",
+          "url": "https://www.k12northstar.org/enroll/kindergarten-information",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:a51c1831a6",
+          "url": "https://www.k12northstar.org/departments/alternative-schools-programs/cec",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:bd5790f65d",
+          "url": "https://htr.k12northstar.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:cc9f9a4e30",
+          "url": "https://www.k12northstar.org/departments/transportation/route-information",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:96cf7a0089",
+          "url": "https://rsm.k12northstar.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:20ac83dba9",
+          "url": "https://tan.k12northstar.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:c8c674f5ff",
+          "url": "https://rsm.k12northstar.org/activities/fysa-soccer",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:a2f897f594",
+          "url": "https://npm.k12northstar.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:2477979fa0",
+          "url": "https://npe.k12northstar.org/counseling/schedule-standards",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:7f1500dac4",
+          "url": "https://lad.k12northstar.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:12daa0c2d2",
+          "url": "https://lth.k12northstar.org/1counseling",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:5af99595a9",
+          "url": "https://ekc.k12northstar.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:3a015ae7e4",
+          "url": "https://lth.k12northstar.org/news",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0200600:95c73d56e9",
+          "url": "https://www.k12northstar.org/news/district-news",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "2307320",
+      "name": "Lewiston Public Schools",
+      "state": "ME",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "2307320:86c104bfdf",
+          "url": "gt://gt_curation_20260621T060008Z/2307320_Lewiston_Public_Schools/2023 Start and end times.png",
+          "label": "district_hub_by_school",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:0c8fca7764",
+          "url": "https://lhs.lewistonpublicschools.org/en-US/pages/85f43887-5fad-4149-a70b-49f69471c5b0",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:2307320:76ff8b02ba",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:3b6acf2d32",
+          "url": "https://lhs.lewistonpublicschools.org/pages/69db48cc-a6d3-4413-aa91-7390182dd1d5",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 160,
+              "n_chars": 5255
+            }
+          ]
+        },
+        {
+          "rec_key": "2307320:2e36be8ee8",
+          "url": "https://farwell.lewistonpublicschools.org/en-US",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:76ff8b02ba",
+          "url": "https://www.lewistonpublicschools.org/en-US/calendar-a2df5e6c",
+          "label": "district_hub_by_school",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 52,
+              "n_chars": 1211
+            }
+          ]
+        },
+        {
+          "rec_key": "2307320:6405728446",
+          "url": "https://lhs.lewistonpublicschools.org/en-US/graduation-ddeb4e33/class-of-2025-graduation-information-2600d011",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:e08171fb25",
+          "url": "https://www.lewistonpublicschools.org/pages/a2df5e6c-ca4b-431e-b449-560795dec9c7",
+          "label": "district_hub_by_school",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:2307320:76ff8b02ba",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:1be6d20248",
+          "url": "https://lhs.lewistonpublicschools.org/en-US/graduation-ddeb4e33",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:a77724a4c3",
+          "url": "https://geiger.lewistonpublicschools.org/en-US",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:3bb1796402",
+          "url": "https://mcmahon.lewistonpublicschools.org/en-US/mcmahon-school-news-feed-777a9638",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:e5cec67d22",
+          "url": "https://geiger.lewistonpublicschools.org/en-US/groups",
+          "label": null,
+          "decision": "hold",
+          "reason": "unlabeled-tier-C",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:c96939423f",
+          "url": "https://farwell.lewistonpublicschools.org/en-US/search",
+          "label": null,
+          "decision": "hold",
+          "reason": "unlabeled-tier-C",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:caa7002e4a",
+          "url": "https://lhs.lewistonpublicschools.org/en-US/bell-schedule-85f43887",
+          "label": null,
+          "decision": "hold",
+          "reason": "unlabeled-tier-C",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:97111d1643",
+          "url": "https://geiger.lewistonpublicschools.org/en-US/staff",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:a2437dee8f",
+          "url": "https://www.lewistonpublicschools.org/en-US/sections",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:ecc150a848",
+          "url": "https://connors.lewistonpublicschools.org/en-US",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:988c3d4416",
+          "url": "https://farwell.lewistonpublicschools.org/en-US/cms/user/settings",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:2ce5a36a5b",
+          "url": "https://www.lewistonpublicschools.org/en-US/prek-k-registration-8d84a71c",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:692ac66458",
+          "url": "https://farwell.lewistonpublicschools.org/en-US/staff",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:c0e9f4d1e9",
+          "url": "https://www.lewistonpublicschools.org/en-US/nutrition-51a88fe3",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:bc7e013b44",
+          "url": "https://geiger.lewistonpublicschools.org/en-US/classrooms",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:6e6db06bdd",
+          "url": "https://www.lewistonpublicschools.org/en-US/groups",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:af8d620c33",
+          "url": "https://lewistonpublicschools.org/pages/a1625286-7a70-4513-900c-eba680aca2bb",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:e19575cc8f",
+          "url": "https://www.lewistonpublicschools.org/en-US/schools",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:1ca0fcea94",
+          "url": "https://www.lewistonpublicschools.org/en-US",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:884ea67212",
+          "url": "https://lhs.lewistonpublicschools.org/en-US/school-newspaper-0d34fa56",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:80a36df507",
+          "url": "https://lhs.lewistonpublicschools.org/en-US",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:ba712952eb",
+          "url": "https://lms.lewistonpublicschools.org/en-US/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:5e6b7fee21",
+          "url": "https://lhs.lewistonpublicschools.org/en-US/athletics-7ae92a10",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:c7e7e11375",
+          "url": "https://lhs.lewistonpublicschools.org/en-US/lhs-aspirations-c5cddb74/college-highlights-36128eec",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:16bd15324c",
+          "url": "https://www.lewistonpublicschools.org/en-US/district-accountability-information-32a6891d",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:576e8a470c",
+          "url": "https://lms.lewistonpublicschools.org/en-US",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:8cda03b02d",
+          "url": "https://www.plymouth.edu/prospective/visit/visit/schedule-a-visit/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:c3c4c37a60",
+          "url": "https://lms.lewistonpublicschools.org/en-US/login",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "2307320:c84752878a",
+          "url": "https://lms.lewistonpublicschools.org/en-US/lms-student-handbook-2023-2024-dc094f76",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 2,
+      "est_usd": 0.00204
+    },
+    {
+      "district_id": "0509000",
+      "name": "LITTLE ROCK SCHOOL DISTRICT",
+      "state": "AR",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "0509000:9f652a5606",
+          "url": "https://5il.co/2vv3f",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 36,
+              "n_chars": 633
+            }
+          ]
+        },
+        {
+          "rec_key": "0509000:2cded811a6",
+          "url": "https://www.lrsd.org/o/phms",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:2ab113e99e",
+          "url": "https://www.lrcentralhigh.net/o/central/page/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 21,
+              "n_chars": 1449
+            }
+          ]
+        },
+        {
+          "rec_key": "0509000:86d3928fb4",
+          "url": "https://www.lrsd.org/page/bell-schedules",
+          "label": "district_hub_by_band",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 953
+            }
+          ]
+        },
+        {
+          "rec_key": "0509000:382cab08ba",
+          "url": "https://www.lrsd.org/o/pvms/events",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:2e6e92b48b",
+          "url": "https://www.lrsd.org/o/phms/live-feed?page_no=32",
+          "label": "district_hub_by_band",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0509000:86d3928fb4",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:9f4158e90d",
+          "url": "https://www.lrsd.org/o/phms/article/1747776",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:85511ca442",
+          "url": "https://www.lrsd.org/o/phms/article/3036206",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:fd7f59eeb8",
+          "url": "https://www.lrsd.org/o/alc/live-feed?page_no=2",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:0a5c7c2836",
+          "url": "https://www.lrsd.org/o/phes/live-feed?page_no=7",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:4c1d7a5d7f",
+          "url": "https://www.lrsd.org/o/ja-fair/live-feed?page_no=2",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:97e2324690",
+          "url": "https://www.lrsd.org/o/bale/live-feed?page_no=8",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:528bb9d056",
+          "url": "https://www.lrsd.org/o/mabelvale-es/live-feed?page_no=5",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:9901f4eb57",
+          "url": "https://www.lrsd.org/page/early-childhood",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:09ebf46708",
+          "url": "gt://gt_curation_20260621T060008Z/0509000_Little Rock/2025-2026-SCHOOL-CALENDAR-updated-09-19-2025.pdf",
+          "label": "district_hub_by_band",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:caecfbc0b9",
+          "url": "https://www.lrsd.org/events",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:5056c4646a",
+          "url": "https://www.lrsd.org/o/mann/events",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:5040a19e20",
+          "url": "https://www.lrsd.org/pinnacleview",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:5f06d2f00e",
+          "url": "https://www.lrsd.org/o/fair-park",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:c04171281a",
+          "url": "https://www.lrsd.org/o/pvms/live-feed?page_no=20",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:33252cf477",
+          "url": "https://www.lrsd.org/o/stephens/live-feed?page_no=4",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:ee7d096ad6",
+          "url": "https://www.lrsd.org/o/lrsw/live-feed?page_no=10",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:f6528cb9b0",
+          "url": "https://www.lrsd.org/o/mglk8/live-feed?page_no=11",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:16f9ec1c3a",
+          "url": "https://www.lrsd.org/o/phes/live_feeds/12463984",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:bc51c6df7e",
+          "url": "https://www.lrsd.org/o/dunbar/live-feed?page_no=1",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:039a569011",
+          "url": "https://www.lrsd.org/Parkview",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:10caad6324",
+          "url": "https://www.lrsd.org/o/lrsd/page/student-registration",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:f14773c534",
+          "url": "https://www.lrsd.org/o/terry/live-feed?page_no=14",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:3a26c19b97",
+          "url": "https://www.lrsd.org/o/hall/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:ba68d9619b",
+          "url": "https://www.lrsd.org/live-feed?page_no=11",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:99e47a46b3",
+          "url": "https://www.lrsd.org/o/cwms/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:426e76a22c",
+          "url": "https://www.lrsd.org/o/forest-park/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:58db15d0fa",
+          "url": "https://www.lrsd.org/o/mann/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:b83677397d",
+          "url": "https://www.lrsd.org/o/pvms/page/backtoschoolhq",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:c0665253ae",
+          "url": "https://www.lrsd.org/central",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:62e631abc6",
+          "url": "https://www.lrsd.org/o/mabelvale-ms/live-feed?page_no=5",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:6499da8a16",
+          "url": "https://www.lrsd.org/o/mann/article/1663763",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:c177e318a6",
+          "url": "https://www.lrsd.org/o/fhsa/live-feed?page_no=22",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:fa3c0f38ac",
+          "url": "https://www.lrsd.org/o/carver/live-feed?page_no=9",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:ea811acf35",
+          "url": "https://www.lrsd.org/o/cwms/live_feeds/12584213",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:b715e4a57c",
+          "url": "https://www.lrsd.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:7708d63f02",
+          "url": "https://www.lrsd.org/o/phms/article/2895047",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:c241c2ab86",
+          "url": "https://ardepted.my.canva.site/belltobell",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:be92f17c9a",
+          "url": "https://www.lrsd.org/o/lrsd/page/carver",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:bcc7af1bc2",
+          "url": "https://www.lrsd.org/o/carver/article/2316511",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:1d648103ee",
+          "url": "https://www.lrsd.org/o/fulbright/events",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:ab13cf1a32",
+          "url": "https://www.lrsd.org/Page/3146",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:16f7f3ef81",
+          "url": "https://www.lrsd.org/o/fulbright/page/parent-and-students/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:fa7e196b7b",
+          "url": "https://www.lrsd.org/o/fulbright/staff",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:359c2dc62d",
+          "url": "https://www.lrsd.org/o/lrsd/page/history-fulbright",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:bea5893c15",
+          "url": "https://www.lrsd.org/o/fulbright/article/2329041",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:c6aec77216",
+          "url": "https://www.lrsd.org/o/phes/events",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:da42fec73a",
+          "url": "https://www.lrsd.org/o/lrsd/page/history-pulaski-heights-middle",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:b4fc910463",
+          "url": "https://www.lrsd.org/page/9",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:277bd930d6",
+          "url": "https://www.lrsd.org/o/lrsd/page/history-pulaski-heights-elementary",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:790cc9de1a",
+          "url": "https://www.lrsd.org/domain/1774",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:56ad490cb3",
+          "url": "https://www.lrsd.org/Page/10",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:1bc5ab980b",
+          "url": "https://www.lrsd.org/page/calendars",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:11e838bb5a",
+          "url": "https://www.lrsd.org/documents/calendars/15290748",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:0817fc0042",
+          "url": "https://www.lrsd.org/page/history-little-rock-central-high-school",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:2a64e8fad4",
+          "url": "https://www.lrsd.org/page/special-education-and-students-with-disabilities",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:b43664a100",
+          "url": "https://www.lrsd.org/page/sealed-for-success",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:ce1cb01f05",
+          "url": "https://www.lrsd.org/o/mann/staff?page_no=4",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:df1f8995cb",
+          "url": "https://www.lrsd.org/o/lrsd/page/history-mann",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:652586a946",
+          "url": "https://www.lrsd.org/o/phms/article/2353164",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:77269df79a",
+          "url": "https://securek12.lrsd.org/SummerSchool/CreditRecovery/Default.aspx?CreditRecovery",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:a40f79fbca",
+          "url": "https://www.lrsd.org/o/hall/page/facility",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:de80be9f3b",
+          "url": "https://www.lrsd.org/o/lrsw/article/2329048",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:6d2262f1ea",
+          "url": "https://www.lrsd.org/o/lrsw/news",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:c75d5b905c",
+          "url": "https://www.lrsd.org/o/phms/news?page_no=14",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:03bc7e8f7c",
+          "url": "https://www.lrsd.org/o/mann",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:c793e348a6",
+          "url": "https://www.lrsd.org/o/dunbar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:efd59d134e",
+          "url": "https://www.lrsd.org/o/bale",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:cd5f9d904e",
+          "url": "https://www.lrsd.org/o/don-roberts",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:a5f51b7ee9",
+          "url": "https://www.lrsd.org/o/washington/news",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:ad986ec3bd",
+          "url": "https://www.lrsd.org/o/phes",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:2001909b25",
+          "url": "https://www.lrsd.org/o/fulbright",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:f49ba2d049",
+          "url": "https://www.lrsd.org/ALC",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:4130e7a7b1",
+          "url": "https://www.lrsd.org/o/mglk8",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:2e6d069613",
+          "url": "https://www.lrsd.org/MabelvaleMiddle",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:9023e11ff1",
+          "url": "https://www.lrsd.org/o/FHSA",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:be5ee90db4",
+          "url": "https://www.lrsd.org/o/forest-park",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:5a378121a3",
+          "url": "https://www.lrsd.org/o/cwms/news",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0509000:95fb9c3b62",
+          "url": "https://www.lrsd.org/Williams",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 3,
+      "est_usd": 0.0030600000000000002
+    }
+  ]
+}

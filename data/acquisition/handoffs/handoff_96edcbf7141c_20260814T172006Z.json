@@ -1,0 +1,134 @@
+{
+  "handoff_hash": "96edcbf7141c",
+  "created_at": "2026-08-14T17:20:06Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "dispatch_type": "production",
+  "fingerprints": {
+    "0102370": {
+      "config": "f77ddb950061",
+      "labels": "c9938fb7290c",
+      "data": "fbcde4efe811"
+    }
+  },
+  "councils": {
+    "image": {
+      "id": "image",
+      "name": "Image / vision council",
+      "input_kinds": [
+        "image"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash",
+        "mistralai/mistral-large-2512"
+      ],
+      "judge": "qwen/qwen3-vl-235b-a22b-instruct",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.vision.v4"
+      }
+    },
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v4"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.006795000000000001,
+    "n_reps": 3,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "0102370",
+      "name": "Mobile County",
+      "state": "AL",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "0102370:74f1245f99",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/5395/Clsms/8c4c2ded-01d7-4f75-ad58-be493ea06af9/Bell_Schedule.pdf?disposition=inline",
+          "label": null,
+          "decision": "send",
+          "reason": "7->6 alternate-rep re-dispatch (REQ-118)",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 20,
+              "n_chars": 778
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:dc2701d508",
+          "url": "https://www.mcpss.com/o/blhs/page/24-25-bell-schedule",
+          "label": null,
+          "decision": "send",
+          "reason": "7->6 alternate-rep re-dispatch (REQ-118)",
+          "reps": [
+            {
+              "file": "page.png",
+              "kind": "image",
+              "councils": [
+                "image"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "override:image",
+              "est_usd": 0.0047550000000000005
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:338b2454b9",
+          "url": "https://www.mcpss.com/o/csms/live-feed?page_no=1",
+          "label": null,
+          "decision": "send",
+          "reason": "7->6 alternate-rep re-dispatch (REQ-118)",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 25,
+              "n_chars": 15986
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 3,
+      "est_usd": 0.006795000000000001
+    }
+  ]
+}

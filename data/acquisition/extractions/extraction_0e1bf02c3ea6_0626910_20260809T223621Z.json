@@ -1,0 +1,589 @@
+{
+  "handoff_hash": "0e1bf02c3ea6",
+  "district": {
+    "district_id": "0626910",
+    "name": "New Haven Unified",
+    "reps": [
+      {
+        "rec_key": "0626910:3706ad5b99",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Elementary School",
+                "confidence": "high",
+                "evidence_quote": "8:00 AM - 2:05 PM",
+                "source_locus": "Elementary School (Grades TK-5)",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:15",
+                "end_time": "14:44",
+                "school_name": "Middle School",
+                "confidence": "high",
+                "evidence_quote": "8:15 AM - 2:44 PM",
+                "source_locus": "Middle School (Grades 6-8)",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:35",
+                "school_name": "James Logan High School",
+                "confidence": "high",
+                "evidence_quote": "8:30 AM - 3:35 PM (1st - 7th periods)",
+                "source_locus": "High School (9-12)",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "13:45",
+                "school_name": "Conley-Caraballo High School",
+                "confidence": "high",
+                "evidence_quote": "9:00 AM - 1:45 PM (1st - 6th periods)",
+                "source_locus": "High School (9-12)",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:00",
+                "end_time": "15:00",
+                "school_name": "Decoto School for Independent Study",
+                "confidence": "high",
+                "evidence_quote": "9:00 AM - 3:00 PM",
+                "source_locus": "Alternative Learning Programs (Grades K-12)",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1875,
+            "completion_tokens": 816,
+            "cost_usd": 0.0005139,
+            "latency_ms": 4210,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314953-OsFh1gbJ3aSZdY6ULZQM",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Elementary School",
+                "confidence": "high",
+                "evidence_quote": "Regular Day Student Hours 8:00 AM - 2:05 PM",
+                "source_locus": "Elementary School (Grades TK-5)",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:15",
+                "end_time": "14:44",
+                "school_name": "Middle School",
+                "confidence": "high",
+                "evidence_quote": "Regular Day Student Hours (M,T,Th,F) 8:15 AM - 2:44 PM",
+                "source_locus": "Middle School (Grades 6-8)",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:35",
+                "school_name": "James Logan High School",
+                "confidence": "high",
+                "evidence_quote": "Regular Day Student Hours (M,T,Th,F) 8:30 AM - 3:35 PM",
+                "source_locus": "High School (9-12)",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "13:45",
+                "school_name": "Conley-Caraballo High School",
+                "confidence": "high",
+                "evidence_quote": "Regular Day Student Hours 9:00 AM - 1:45 PM",
+                "source_locus": "Conley-Caraballo High School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:00",
+                "school_name": "Decoto School for Independent Study",
+                "confidence": "high",
+                "evidence_quote": "Regular Day Student Hours 9:00 AM - 3:00 PM",
+                "source_locus": "Alternative Learning Programs (Grades K-12)",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1863,
+            "completion_tokens": 751,
+            "cost_usd": 0.00015323,
+            "latency_ms": 9837,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314955-VtsjvUKQFMPQe2cIENE2",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Elementary School (Grades TK-5)",
+                "confidence": "high",
+                "evidence_quote": "Regular Day Student Hours\n\n8:00 AM - 2:05 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:15",
+                "end_time": "14:44",
+                "school_name": "Middle School (Grades 6-8)",
+                "confidence": "high",
+                "evidence_quote": "Regular Day Student Hours (M,T,Th,F)\n\n8:15 AM - 2:44 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:35",
+                "school_name": "James Logan High School",
+                "confidence": "high",
+                "evidence_quote": "8:30 AM - 3:35 PM (1st - 7th periods)",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "13:45",
+                "school_name": "Conley-Caraballo High School",
+                "confidence": "high",
+                "evidence_quote": "9:00 AM - 1:45 PM (1st - 6th periods)",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:00",
+                "school_name": "Decoto School for Independent Study",
+                "confidence": "high",
+                "evidence_quote": "Regular Day Student Hours\n9:00 AM - 3:00 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1792,
+            "completion_tokens": 512,
+            "cost_usd": 0.00044288,
+            "latency_ms": 15719,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314965-72mHHo9rtIODmU1mUV2M",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "james logan",
+            "start": "08:30",
+            "end": "15:35",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "8:30 AM - 3:35 PM (1st - 7th periods)",
+                "locus": "High School (9-12)",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Regular Day Student Hours (M,T,Th,F) 8:30 AM - 3:35 PM",
+                "locus": "High School (9-12)",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "0626910:3706ad5b99",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "conley caraballo",
+            "start": "09:00",
+            "end": "13:45",
+            "gross": 285,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "9:00 AM - 1:45 PM (1st - 6th periods)",
+                "locus": "High School (9-12)",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Regular Day Student Hours 9:00 AM - 1:45 PM",
+                "locus": "Conley-Caraballo High School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "0626910:3706ad5b99",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "decoto for independent study",
+            "start": "09:00",
+            "end": "15:00",
+            "gross": 360,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "Regular Day Student Hours\n9:00 AM - 3:00 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "0626910:3706ad5b99",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "elementary school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00",
+              "mistralai/mistral-small-24b-instruct-2501": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:05",
+              "mistralai/mistral-small-24b-instruct-2501": "14:05"
+            },
+            "rec_key": "0626910:3706ad5b99",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "middle school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:15",
+              "mistralai/mistral-small-24b-instruct-2501": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:44",
+              "mistralai/mistral-small-24b-instruct-2501": "14:44"
+            },
+            "rec_key": "0626910:3706ad5b99",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "decoto for independent study",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "0626910:3706ad5b99",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "james logan",
+        "start": "08:30",
+        "end": "15:35",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "8:30 AM - 3:35 PM (1st - 7th periods)",
+            "locus": "High School (9-12)",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Regular Day Student Hours (M,T,Th,F) 8:30 AM - 3:35 PM",
+            "locus": "High School (9-12)",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "0626910:3706ad5b99",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "conley caraballo",
+        "start": "09:00",
+        "end": "13:45",
+        "gross": 285,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "9:00 AM - 1:45 PM (1st - 6th periods)",
+            "locus": "High School (9-12)",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Regular Day Student Hours 9:00 AM - 1:45 PM",
+            "locus": "Conley-Caraballo High School",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "0626910:3706ad5b99",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "decoto for independent study",
+        "start": "09:00",
+        "end": "15:00",
+        "gross": 360,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "Regular Day Student Hours\n9:00 AM - 3:00 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "0626910:3706ad5b99",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "elementary school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00",
+          "mistralai/mistral-small-24b-instruct-2501": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:05",
+          "mistralai/mistral-small-24b-instruct-2501": "14:05"
+        },
+        "rec_key": "0626910:3706ad5b99",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "middle school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:15",
+          "mistralai/mistral-small-24b-instruct-2501": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:44",
+          "mistralai/mistral-small-24b-instruct-2501": "14:44"
+        },
+        "rec_key": "0626910:3706ad5b99",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "decoto for independent study",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "0626910:3706ad5b99",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 360,
+        "start_time": "09:00",
+        "end_time": "15:00",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "decoto for independent study",
+            "start_time": "09:00",
+            "end_time": "15:00",
+            "gross": 360,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 355,
+        "start_time": null,
+        "end_time": null,
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "james logan",
+            "start_time": "08:30",
+            "end_time": "15:35",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "conley caraballo",
+            "start_time": "09:00",
+            "end_time": "13:45",
+            "gross": 285,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 5530,
+      "completion_tokens": 2079,
+      "cost_usd": 0.0011100099999999998
+    },
+    "state": "CA"
+  }
+}

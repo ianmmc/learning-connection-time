@@ -1,0 +1,1545 @@
+{
+  "handoff_hash": "88c1cf5b5e37",
+  "district": {
+    "district_id": "0102370",
+    "name": "Mobile County",
+    "reps": [
+      {
+        "rec_key": "0102370:a46dac7d6b",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:15",
+                "end_time": "14:36",
+                "school_name": "DAVIDSON HIGH SCHOOL",
+                "confidence": "high",
+                "evidence_quote": "7:15 - 8:04                                              1st Period\n1:47 - 2:36                                              7th Period",
+                "source_locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1166,
+            "completion_tokens": 148,
+            "cost_usd": 0.0001758,
+            "latency_ms": 5145,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689678-1tEP6hxe3HRKrvmevGJ5",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:15",
+                "end_time": "14:36",
+                "school_name": "Davidson High School",
+                "confidence": "high",
+                "evidence_quote": "7:15 - 8:04 1st Period",
+                "source_locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1165,
+            "completion_tokens": 150,
+            "cost_usd": 7.025e-05,
+            "latency_ms": 2126,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689679-jJ1BVovFotSlbIF8e3Pe",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "davidson",
+            "start": "07:15",
+            "end": "14:36",
+            "gross": 441,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "7:15 - 8:04                                              1st Period\n1:47 - 2:36                                              7th Period",
+                "locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:15 - 8:04 1st Period",
+                "locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "0102370:a46dac7d6b",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0102370:74f1245f99",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "07:15",
+                "end_time": "14:26",
+                "school_name": "Clark-Shaw",
+                "confidence": "high",
+                "evidence_quote": "7:15-8:05         1               2                   3                   4                    5         6th",
+                "source_locus": "Clark-Shaw\u2019s Rotating Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1247,
+            "completion_tokens": 176,
+            "cost_usd": 0.0001951,
+            "latency_ms": 994,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689682-BdViuH9gZRVdkc5v7PJA",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:08",
+                "end_time": "14:31",
+                "school_name": "Clark-Shaw",
+                "confidence": "high",
+                "evidence_quote": "8:08-8:28 Advisory 2:31 Bell rings for Car Riders",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1282,
+            "completion_tokens": 153,
+            "cost_usd": 7.634e-05,
+            "latency_ms": 2607,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689683-fl2nTxWbOIxBikiXA0l6",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:15",
+                "end_time": "14:31",
+                "school_name": "Clark-Shaw",
+                "confidence": "high",
+                "evidence_quote": "7:15-8:05         1st               2nd                   3rd                   4th                    5th         6th",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1258,
+            "completion_tokens": 115,
+            "cost_usd": 0.00037796,
+            "latency_ms": 5428,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689685-rLn7zDZYmoeIPQYE3iBF",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "clark shaw",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:08"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:31"
+            },
+            "rec_key": "0102370:74f1245f99",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0102370:7ba54986be",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:15",
+                "end_time": "14:35",
+                "school_name": "KATHERINE H. HANKINS MIDDLE SCHOOL",
+                "confidence": "high",
+                "evidence_quote": "7:15 Tardy Bell/Homeroom Begins\n2:30 Car Riders/Walkers Dismissal/Boys & Girls Club",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1405,
+            "completion_tokens": 125,
+            "cost_usd": 0.0001905,
+            "latency_ms": 848,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689691-GEubqLlZW24ajOWFxJxM",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:20",
+                "end_time": "14:30",
+                "school_name": "KATHERINE H. HANKINS MIDDLE SCHOOL",
+                "confidence": "high",
+                "evidence_quote": "7:20-8:05 Period 1 (Enrichment) ... 2:30 Car Riders/Walkers Dismissal/Boys & Girls Club",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1394,
+            "completion_tokens": 182,
+            "cost_usd": 8.426e-05,
+            "latency_ms": 2289,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689691-HKJNhrWJT3gQbR4AhTwz",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "katherine h hankins",
+            "start": "07:18",
+            "end": "14:32",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "7:15 Tardy Bell/Homeroom Begins\n2:30 Car Riders/Walkers Dismissal/Boys & Girls Club",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:20-8:05 Period 1 (Enrichment) ... 2:30 Car Riders/Walkers Dismissal/Boys & Girls Club",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "0102370:7ba54986be",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0102370:dc2701d508",
+        "file": "tesseract_screenshot.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:15",
+                "end_time": "14:25",
+                "school_name": "Mattie T. Blount High School",
+                "confidence": "high",
+                "evidence_quote": "SY 24-25 Bell Schedule",
+                "source_locus": "SY 24-25 Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1277,
+            "completion_tokens": 113,
+            "cost_usd": 0.0001729,
+            "latency_ms": 850,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689694-qwwbLCXupWmpjKQxR2fT",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:08",
+                "end_time": "14:25",
+                "school_name": "Mattie T. Blount High School",
+                "confidence": "high",
+                "evidence_quote": "24 [8:08 AM\u2014 8:56 AM (49) 7 __[ 1:38 PM\u2014 2:25 PM (a9)",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1279,
+            "completion_tokens": 176,
+            "cost_usd": 7.803e-05,
+            "latency_ms": 2622,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689695-FmuwxfeZ3TGtRVhx6JcU",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:15",
+                "end_time": "14:25",
+                "school_name": "Mattie T. Blount High School",
+                "confidence": "high",
+                "evidence_quote": "1st: [7:15 AM\u2014 8:03 AM (49)",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1244,
+            "completion_tokens": 106,
+            "cost_usd": 0.00035028,
+            "latency_ms": 3143,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689697-zD465olshRgrPvdB0I51",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "mattie t blount",
+            "start": "07:15",
+            "end": "14:25",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "1st: [7:15 AM\u2014 8:03 AM (49)",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0102370:dc2701d508",
+            "source_file": "tesseract_screenshot.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0102370:62bda974a3",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:05",
+                "end_time": "14:30",
+                "school_name": "Murphy High School",
+                "confidence": "high",
+                "evidence_quote": "School Day Hours: 7:05 a.m. - 2:30 p.m.",
+                "source_locus": "Murphy High School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2120,
+            "completion_tokens": 116,
+            "cost_usd": 0.0002584,
+            "latency_ms": 701,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689700-Jf3IMblZXEYm5JrNzjdZ",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:05",
+                "end_time": "14:30",
+                "school_name": "Murphy High School",
+                "confidence": "high",
+                "evidence_quote": "School Day Hours: 7:05 a.m. - 2:30 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2179,
+            "completion_tokens": 153,
+            "cost_usd": 0.00012119,
+            "latency_ms": 2125,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689701-QAhkaPBlRZ1l35BB4HPK",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "murphy",
+            "start": "07:05",
+            "end": "14:30",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Day Hours: 7:05 a.m. - 2:30 p.m.",
+                "locus": "Murphy High School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Day Hours: 7:05 a.m. - 2:30 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "0102370:62bda974a3",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0102370:8b1844e939",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:10",
+                "end_time": "14:40",
+                "school_name": "Baker High School",
+                "confidence": "high",
+                "evidence_quote": "School Day Hours: 7:10 a.m. - 2:40 p.m.",
+                "source_locus": "Baker High School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2533,
+            "completion_tokens": 116,
+            "cost_usd": 0.0002997,
+            "latency_ms": 720,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689703-UUrFAmbREqJAeaL6I1z7",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:10",
+                "end_time": "14:40",
+                "school_name": "Baker High School",
+                "confidence": "high",
+                "evidence_quote": "School Day Hours: 7:10 a.m. - 2:40 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2593,
+            "completion_tokens": 116,
+            "cost_usd": 0.00013893,
+            "latency_ms": 1865,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689704-9trCrTIa4uu3gp8IEfbO",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "baker",
+            "start": "07:10",
+            "end": "14:40",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Day Hours: 7:10 a.m. - 2:40 p.m.",
+                "locus": "Baker High School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Day Hours: 7:10 a.m. - 2:40 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "0102370:8b1844e939",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0102370:6277511362",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:10",
+                "end_time": "14:25",
+                "school_name": "B.C. Rain High School",
+                "confidence": "high",
+                "evidence_quote": "School Day Hours: 7:10 a.m. - 2:25 p.m.",
+                "source_locus": "Home",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2720,
+            "completion_tokens": 123,
+            "cost_usd": 0.0003212,
+            "latency_ms": 836,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689706-CO6pnT8QAxIQPWzKAxr0",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:10",
+                "end_time": "14:25",
+                "school_name": "Ben C. Rain High School",
+                "confidence": "high",
+                "evidence_quote": "School Day Hours: 7:10 a.m. - 2:25 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2895,
+            "completion_tokens": 155,
+            "cost_usd": 0.00015715,
+            "latency_ms": 2101,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689707-UNvW28NrQsEULijMxHZ3",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:10",
+                "end_time": "14:25",
+                "school_name": "Ben C. Rain High School",
+                "confidence": "high",
+                "evidence_quote": "School Day Hours: 7:10 a.m. - 2:25 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2714,
+            "completion_tokens": 105,
+            "cost_usd": 0.00065814,
+            "latency_ms": 5235,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689709-90V86IhQAPINCN0EimTf",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "ben c rain",
+            "start": "07:10",
+            "end": "14:25",
+            "gross": 435,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "School Day Hours: 7:10 a.m. - 2:25 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "0102370:6277511362",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "bc rain",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:10"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:25"
+            },
+            "rec_key": "0102370:6277511362",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0102370:a7a4a30f2a",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:25",
+                "end_time": "14:30",
+                "school_name": "Williamson High School and Middle Grades Preparatory Academy",
+                "confidence": "high",
+                "evidence_quote": "School Day Hours: 7:25 a.m. - 2:30 p.m.",
+                "source_locus": "Williamson High School and Middle Grades Preparatory Academy",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:30",
+                "school_name": "Williamson High School and Middle Grades Preparatory Academy",
+                "confidence": "high",
+                "evidence_quote": "School Day Hours: 7:25 a.m. - 2:30 p.m.",
+                "source_locus": "Williamson High School and Middle Grades Preparatory Academy",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2626,
+            "completion_tokens": 362,
+            "cost_usd": 0.0004074,
+            "latency_ms": 1120,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689714-cGtCVChb9KQnN2Do8d6Y",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:25",
+                "end_time": "14:30",
+                "school_name": "Williamson High School and Middle Grades Preparatory Academy",
+                "confidence": "high",
+                "evidence_quote": "School Day Hours: 7:25 a.m. - 2:30 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:30",
+                "school_name": "Williamson High School and Middle Grades Preparatory Academy",
+                "confidence": "high",
+                "evidence_quote": "School Day Hours: 7:25 a.m. - 2:30 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2740,
+            "completion_tokens": 304,
+            "cost_usd": 0.00016132,
+            "latency_ms": 3834,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689715-mAfWGZLfrQYZ0C1dBh1R",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "williamson and grades preparatory",
+            "start": "07:25",
+            "end": "14:30",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Day Hours: 7:25 a.m. - 2:30 p.m.",
+                "locus": "Williamson High School and Middle Grades Preparatory Academy",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Day Hours: 7:25 a.m. - 2:30 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "rec_key": "0102370:a7a4a30f2a",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "williamson and grades preparatory",
+            "start": "07:25",
+            "end": "14:30",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Day Hours: 7:25 a.m. - 2:30 p.m.",
+                "locus": "Williamson High School and Middle Grades Preparatory Academy",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Day Hours: 7:25 a.m. - 2:30 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "rec_key": "0102370:a7a4a30f2a",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0102370:338b2454b9",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 10,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": null,
+                "end_time": null,
+                "school_name": "Calloway-Smith Middle School",
+                "confidence": "low",
+                "evidence_quote": "Registration will be held June 16-17 from 8:00 a.m. to 12:00 p.m. at Calloway-Smith Middle School.",
+                "source_locus": "ABOUT 2 MONTHS AGO, CALLOWAY-SMITH MIDDLE SCHOOL",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": null,
+                "end_time": null,
+                "school_name": "Calloway-Smith Middle School",
+                "confidence": "low",
+                "evidence_quote": "Returning Student Registration Dates\n'\" May 6 - June 4 | 8:00 AM - 12:00 PM",
+                "source_locus": "3 MONTHS AGO, CALLOWAY-SMITH MIDDLE SCHOOL",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": null,
+                "end_time": null,
+                "school_name": "Calloway-Smith Middle School",
+                "confidence": "low",
+                "evidence_quote": "Incoming 6th Graders & New Students\n\u2018 June 16, 17 & July 21, 22 | 8:00 AM - 12:00 PM",
+                "source_locus": "3 MONTHS AGO, CALLOWAY-SMITH MIDDLE SCHOOL",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": null,
+                "end_time": null,
+                "school_name": "Calloway-Smith Middle School",
+                "confidence": "low",
+                "evidence_quote": "ONLINE REGISTRATION IS NOW OPEN | Returning Students\nOnline Registration instructions: 6 }e 4th | 8:00 AM-1\n1d | 1:00 PM \u2014 3:00 PI\nJuly 23rd | 8:00 AM - 12:00 PM & 1:00 PM ~ 4:00 PM",
+                "source_locus": "3 MONTHS AGO, CALLOWAY-SMITH MIDDLE SCHOOL",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": null,
+                "end_time": null,
+                "school_name": "Calloway-Smith Middle School",
+                "confidence": "low",
+                "evidence_quote": "incoming 6th Graders & New Students\nJune 16th, 17th & Jul 2:",
+                "source_locus": "3 MONTHS AGO, CALLOWAY-SMITH MIDDLE SCHOOL",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "14:30",
+                "end_time": "16:00",
+                "school_name": "Calloway-Smith Middle School",
+                "confidence": "high",
+                "evidence_quote": "Calloway-Smith Middle School will host a Football Training session on Tuesday, April 28, from 2:30 PM to 4:00 PM.",
+                "source_locus": "3 MONTHS AGO, CALLOWAY-SMITH MIDDLE SCHOOL",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "14:30",
+                "end_time": "16:30",
+                "school_name": "Calloway-Smith Middle School",
+                "confidence": "high",
+                "evidence_quote": "CALLOWAY-SMITH MIDDLE SCHOOL\nTRYOUT DATES 4 \u00a9 TIME * \nAPRIL 215\" - 22\"0 2:30 pm - 4:30 pm",
+                "source_locus": "4 MONTHS AGO, CALLOWAY-SMITH MIDDLE SCHOOL",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "14:30",
+                "end_time": "16:00",
+                "school_name": "Calloway-Smith Middle School",
+                "confidence": "high",
+                "evidence_quote": "CALLOWAY-SMITH MIDDLE SCHOOL\n% VOLLEYBALL! * \nRYOUTS! : \nApril 21-23, 2026 2:30-4:00",
+                "source_locus": "4 MONTHS AGO, CALLOWAY-SMITH MIDDLE SCHOOL",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:00",
+                "end_time": "12:00",
+                "school_name": "Calloway-Smith Middle School",
+                "confidence": "high",
+                "evidence_quote": "Kites of Calloway-Smith will take place on Saturday, April 25, from 9:00 a.m. to 12:00 p.m.",
+                "source_locus": "3 MONTHS AGO, CALLOWAY-SMITH MIDDLE SCHOOL",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:00",
+                "end_time": "12:00",
+                "school_name": "Calloway-Smith Middle School",
+                "confidence": "high",
+                "evidence_quote": "Join us for Kites Over Calloway-Smith on April 25 from 9:00 AM-12:00 PM!",
+                "source_locus": "4 MONTHS AGO, CALLOWAY-SMITH MIDDLE SCHOOL",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 5833,
+            "completion_tokens": 1573,
+            "cost_usd": 0.0012125,
+            "latency_ms": 3756,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689719-K4iJI6tn9tDEbbNSGGVq",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "12:00",
+                "school_name": "Calloway-Smith Middle School",
+                "confidence": "high",
+                "evidence_quote": "Registration will be held June 16-17 from 8:00 a.m. to 12:00 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 6177,
+            "completion_tokens": 163,
+            "cost_usd": 0.00032189,
+            "latency_ms": 3945,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689723-y9rf3Y03Db9vAKwFNmPv",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 5848,
+            "completion_tokens": 6,
+            "cost_usd": 0.00082352,
+            "latency_ms": 815,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786689727-CvV5cpmI384VE0Lb9TnA",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "calloway smith",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "14:30",
+              "mistralai/mistral-small-24b-instruct-2501": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "16:00",
+              "mistralai/mistral-small-24b-instruct-2501": "12:00"
+            },
+            "rec_key": "0102370:338b2454b9",
+            "source_file": "tesseract_raster.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "davidson",
+        "start": "07:15",
+        "end": "14:36",
+        "gross": 441,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "7:15 - 8:04                                              1st Period\n1:47 - 2:36                                              7th Period",
+            "locus": "Bell Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:15 - 8:04 1st Period",
+            "locus": "Bell Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "0102370:a46dac7d6b",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "katherine h hankins",
+        "start": "07:18",
+        "end": "14:32",
+        "gross": 434,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "7:15 Tardy Bell/Homeroom Begins\n2:30 Car Riders/Walkers Dismissal/Boys & Girls Club",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:20-8:05 Period 1 (Enrichment) ... 2:30 Car Riders/Walkers Dismissal/Boys & Girls Club",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "0102370:7ba54986be",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "high",
+        "school": "mattie t blount",
+        "start": "07:15",
+        "end": "14:25",
+        "gross": 430,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "1st: [7:15 AM\u2014 8:03 AM (49)",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0102370:dc2701d508",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "high",
+        "school": "murphy",
+        "start": "07:05",
+        "end": "14:30",
+        "gross": 445,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Day Hours: 7:05 a.m. - 2:30 p.m.",
+            "locus": "Murphy High School",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Day Hours: 7:05 a.m. - 2:30 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "0102370:62bda974a3",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "baker",
+        "start": "07:10",
+        "end": "14:40",
+        "gross": 450,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Day Hours: 7:10 a.m. - 2:40 p.m.",
+            "locus": "Baker High School",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Day Hours: 7:10 a.m. - 2:40 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "0102370:8b1844e939",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "ben c rain",
+        "start": "07:10",
+        "end": "14:25",
+        "gross": 435,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "School Day Hours: 7:10 a.m. - 2:25 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "0102370:6277511362",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "williamson and grades preparatory",
+        "start": "07:25",
+        "end": "14:30",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Day Hours: 7:25 a.m. - 2:30 p.m.",
+            "locus": "Williamson High School and Middle Grades Preparatory Academy",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Day Hours: 7:25 a.m. - 2:30 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "rec_key": "0102370:a7a4a30f2a",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "williamson and grades preparatory",
+        "start": "07:25",
+        "end": "14:30",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Day Hours: 7:25 a.m. - 2:30 p.m.",
+            "locus": "Williamson High School and Middle Grades Preparatory Academy",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Day Hours: 7:25 a.m. - 2:30 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "rec_key": "0102370:a7a4a30f2a",
+        "source_file": "page.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "clark shaw",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:08"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:31"
+        },
+        "rec_key": "0102370:74f1245f99",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "bc rain",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:10"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:25"
+        },
+        "rec_key": "0102370:6277511362",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "calloway smith",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "14:30",
+          "mistralai/mistral-small-24b-instruct-2501": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "16:00",
+          "mistralai/mistral-small-24b-instruct-2501": "12:00"
+        },
+        "rec_key": "0102370:338b2454b9",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "n_reps": 9,
+    "n_judged": 4,
+    "bands": {
+      "middle": {
+        "gross_minutes": 430,
+        "start_time": null,
+        "end_time": null,
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "katherine h hankins",
+            "start_time": "07:18",
+            "end_time": "14:32",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "williamson and grades preparatory",
+            "start_time": "07:25",
+            "end_time": "14:30",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 438,
+        "start_time": null,
+        "end_time": null,
+        "n_schools": 6,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "davidson",
+            "start_time": "07:15",
+            "end_time": "14:36",
+            "gross": 441,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mattie t blount",
+            "start_time": "07:15",
+            "end_time": "14:25",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "murphy",
+            "start_time": "07:05",
+            "end_time": "14:30",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "baker",
+            "start_time": "07:10",
+            "end_time": "14:40",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ben c rain",
+            "start_time": "07:10",
+            "end_time": "14:25",
+            "gross": 435,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "williamson and grades preparatory",
+            "start_time": "07:25",
+            "end_time": "14:30",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 22,
+      "judge_calls": 4,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 53695,
+      "completion_tokens": 4736,
+      "cost_usd": 0.00665276
+    },
+    "state": "AL"
+  }
+}

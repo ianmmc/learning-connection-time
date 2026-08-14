@@ -1,0 +1,2936 @@
+{
+  "handoff_hash": "0e1bf02c3ea6",
+  "created_at": "2026-08-09T22:34:53Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "dispatch_type": "production",
+  "fingerprints": {
+    "0512660": {
+      "config": "f77ddb950061",
+      "labels": "700ca658fc1f",
+      "data": "ae7973069532"
+    },
+    "1201440": {
+      "config": "f77ddb950061",
+      "labels": "1ed44d01c04f",
+      "data": "ba60ed5b4dc1"
+    },
+    "0626910": {
+      "config": "f77ddb950061",
+      "labels": "9988e02bec46",
+      "data": "430457ec5907"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v4"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.00918,
+    "n_reps": 9,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "0512660",
+      "name": "SPRINGDALE SCHOOL DISTRICT",
+      "state": "AR",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "0512660:d4a5ad6660",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/Attendance & Bell Schedule | Harp Elementary.pdf",
+          "label": "school_start_end_prose",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:f420754317",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/Attendance & Bell Schedule | Monitor Elementary.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:47ccd92c19",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/Attendance & Bell Schedule | Walter Turnbow Elementary.pdf",
+          "label": "school_start_end_prose",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:214f7f4fdc",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/Attendance & Bell Schedule | Elmdale Elementary.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:5064d6b238",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/Attendance & Bell Schedule | Helen Tyson Middle School.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:a599227d33",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/SMS 2025-2026 Bell Schedule.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:c892bd1955",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/Bell Schedule and Attendance Policies | Bayyari Elementary.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:515c2fd557",
+          "url": "https://secure.smore.com/n/ycapd-trailblazer-times",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:9308dd14dc",
+          "url": "https://docs.google.com/document/d/1qp5OVTThn5A6IgSoRynzM0UT_qyjczK6P9pD6mGkPkE/edit",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "md.md",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 140,
+              "n_chars": 2963
+            }
+          ]
+        },
+        {
+          "rec_key": "0512660:abe873329d",
+          "url": "https://www.sdale.org/article/792552",
+          "label": "district_hub_by_band",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 24,
+              "n_chars": 2873
+            }
+          ]
+        },
+        {
+          "rec_key": "0512660:1d1021f960",
+          "url": "https://parson-hills.sdale.org/o/parson-hills-elementary/page/attendance-bell-schedule",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0512660:abe873329d",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:6f0fdb8bd3",
+          "url": "https://knapp.sdale.org/o/linda-childers-knapp/page/attendance-and-schedule",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0512660:abe873329d",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:6ba01b41a9",
+          "url": "https://rollins.sdale.org/o/rollins-elementary/page/attendance-and-bell-schedule",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0512660:abe873329d",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:d8f961b410",
+          "url": "https://kelly.sdale.org/o/j-o-kelly-middle-school/page/attendance-bell-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 48,
+              "n_chars": 1762
+            }
+          ]
+        },
+        {
+          "rec_key": "0512660:e5bce2daa5",
+          "url": "https://swjh.sdale.org/o/southwest-junior-high-school/page/attendance-bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0512660:abe873329d",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:83eaa6c2f0",
+          "url": "https://walker.sdale.org/o/walker-elementary/page/attendance-bell-schedule",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0512660:abe873329d",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:81dd581987",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/Attendance and Bell Schedule | Har-Ber High School.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:7083dbcc4e",
+          "url": "https://hunt.sdale.org/o/hunt-elementary/page/attendance-bell-schedule",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 58,
+              "n_chars": 4375
+            }
+          ]
+        },
+        {
+          "rec_key": "0512660:2f11b6f5f0",
+          "url": "https://www.sdale.org/o/springdale-high-school",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:38dc49ca26",
+          "url": "https://sonora.sdale.org/o/sonora-elementary/page/parking-drop-off",
+          "label": "school_start_end_prose",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0512660:abe873329d",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:870777a871",
+          "url": "https://knapp.sdale.org/o/linda-childers-knapp/page/parking-drop-off",
+          "label": "school_start_end_prose",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0512660:abe873329d",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:343a5984b7",
+          "url": "https://hellstern.sdale.org/o/hellstern-middle-school/page/attendance-bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0512660:abe873329d",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:4235eb4ea8",
+          "url": "https://bayyari.sdale.org/o/bayyari-elementary/page/attendance-and-bell-schedule-policies",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0512660:abe873329d",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:6b19aadacb",
+          "url": "https://www.sdale.org/o/don-tyson-school-of-innovation/page/dtsoi-daily",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:2aa74f2b92",
+          "url": "https://har-ber.sdale.org/page/attendance-and-bell-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 47,
+              "n_chars": 6023
+            }
+          ]
+        },
+        {
+          "rec_key": "0512660:ff9a5eb65a",
+          "url": "https://www.sdale.org/o/george-junior-high-school/page/attendance-bell-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 52,
+              "n_chars": 2940
+            }
+          ]
+        },
+        {
+          "rec_key": "0512660:acb71ebad7",
+          "url": "https://www.sdale.org/o/springdale-high-school/page/attendance-bell-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 68,
+              "n_chars": 5875
+            }
+          ]
+        },
+        {
+          "rec_key": "0512660:7846c5ae0e",
+          "url": "https://tyson.sdale.org/o/john-tyson-school-of-innovation/page/attendance-bell-schedule",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0512660:abe873329d",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:9e2a8c64e4",
+          "url": "https://www.sdale.org/o/don-tyson-school-of-innovation/page/attendance-bell-schedule",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:68e835ef49",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/Attendance & Bell Schedule | Central Junior High.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:1292cc908a",
+          "url": "https://monitor.sdale.org/o/monitor-elementary/page/attendance-bell-schedule",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0512660:abe873329d",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:2974999eab",
+          "url": "https://www.sdale.org/o/parson-hills-elementary/live-feed?page_no=8",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:202b0a461c",
+          "url": "https://cjh.sdale.org/o/central-junior-high/page/attendance-bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0512660:abe873329d",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:797305207b",
+          "url": "https://harp.sdale.org/o/walker-elementary/live-feed?page_no=57",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:0f7ac99630",
+          "url": "https://www.sdale.org/o/john-tyson-school-of-innovation/live-feed?page_no=43",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:c97b6605d5",
+          "url": "https://sonora.sdale.org/o/sonora-elementary/page/attendance-bell-schedule",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0512660:abe873329d",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:11caa697bd",
+          "url": "https://young.sdale.org/o/bernice-young-elementary/live-feed?page_no=6",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:cefc8dff5f",
+          "url": "https://www.sdale.org/o/walker-elementary/live-feed?page_no=30",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:c520704ba1",
+          "url": "https://hunt.sdale.org/live-feed?page_no=11",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:779521c57b",
+          "url": "https://soi.sdale.org/o/lakeside-junior-high-school/live-feed?page_no=31",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:a06a9ec634",
+          "url": "https://turnbow.sdale.org/o/walter-turnbow-elementary/live-feed?page_no=1",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:7de57ea98d",
+          "url": "https://www.sdale.org/o/george-junior-high-school/live-feed?page_no=43",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:3ea0fc62c4",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/Attendance & Bell Schedule | Springdale High School.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:00fd13906d",
+          "url": "https://www.sdale.org/o/sonora-elementary/live-feed?page_no=6",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:78c665158f",
+          "url": "https://www.sdale.org/o/westwood-elementary/live-feed?page_no=1",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:8cf982d0e0",
+          "url": "https://rollins.sdale.org/o/rollins-elementary/live-feed?page_no=3",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:3e93fc2872",
+          "url": "https://sonora.sdale.org/o/sonora-elementary/news",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:508ecdd85a",
+          "url": "https://htms.sdale.org/o/walker-elementary/live-feed?page_no=41",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:abd55504f4",
+          "url": "https://soi.sdale.org/o/walker-elementary/live-feed?page_no=14",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:03cbac4982",
+          "url": "https://har-ber.sdale.org/o/har-ber-high-school/live-feed?page_no=2",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:d1183e31b8",
+          "url": "https://ecc.sdale.org/o/har-ber-high-school/live-feed?page_no=73",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:18c660bcf9",
+          "url": "https://cjh.sdale.org/o/central-junior-high/live-feed?page_no=3",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:891cc64aa2",
+          "url": "https://ecc.sdale.org/o/walker-elementary/live-feed?page_no=1",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:7c292a311f",
+          "url": "https://www.sdale.org/o/linda-childers-knapp/live-feed?page_no=26",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:6197bf99d5",
+          "url": "https://www.sdale.org/o/southwest-junior-high-school/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:2572f8534a",
+          "url": "https://www.sdale.org/o/monitor-elementary/live-feed?page_no=17",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:ac71db1e53",
+          "url": "https://www.sdale.org/o/central-junior-high/live-feed?page_no=36",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:23b8b88d1d",
+          "url": "https://www.sdale.org/o/don-tyson-school-of-innovation/live-feed?page_no=10",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:b496ac526c",
+          "url": "https://www.sdale.org/o/sonora-middle-school/live-feed?page_no=2",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:206dc28c35",
+          "url": "https://www.sdale.org/o/k8connect/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:209d750015",
+          "url": "https://www.sdale.org/o/springdale-prek/live-feed?page_no=11",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:322084c12f",
+          "url": "https://young.sdale.org/o/bernice-young-elementary/news?page_no=3",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:a0bdd7cc77",
+          "url": "https://parson-hills.sdale.org/o/parson-hills-elementary/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:fa2fa81d73",
+          "url": "https://knapp.sdale.org/o/walker-elementary/live-feed?page_no=52",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:4be5492951",
+          "url": "https://www.sdale.org/o/rollins-elementary/live-feed?page_no=9",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:ec1a02731e",
+          "url": "https://www.sdale.org/o/don-tyson-school-of-innovation/article/511806",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:9557e4c22a",
+          "url": "https://www.sdale.org/o/don-tyson-school-of-innovation/page/about-dtsoi",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:083cf08bea",
+          "url": "https://sms.sdale.org/o/sonora-middle-school/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:6e8bafde84",
+          "url": "https://soi.sdale.org/o/george-junior-high-school/live-feed?page_no=21",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:8178628bd3",
+          "url": "https://www.sdale.org/o/bernice-young-elementary/live-feed?page_no=13",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:dd1ab8e93c",
+          "url": "https://www.sdale.org/o/helen-tyson-middle-school/live-feed?page_no=36",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:3cecfae17d",
+          "url": "https://kelly.sdale.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:f7514699cc",
+          "url": "https://www.sdale.org/o/don-tyson-school-of-innovation",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:4c6bb9e88f",
+          "url": "https://www.sdale.org/o/helen-tyson-middle-school",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:02340a7724",
+          "url": "https://www.sdale.org/o/lakeside-junior-high-school/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:332aee9ec7",
+          "url": "https://www.sdale.org/o/har-ber-high-school/live-feed?page_no=17",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:4f51de272c",
+          "url": "https://www.sdale.org/o/bayyari-elementary/live-feed?page_no=31",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:0274ba214b",
+          "url": "https://www.sdale.org/o/elmdale-elementary/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:3a79b685a9",
+          "url": "https://young.sdale.org/",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0512660:abe873329d",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:efdeb28028",
+          "url": "https://hellstern.sdale.org/o/helen-tyson-middle-school/live-feed?page_no=1",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:c2788eecd7",
+          "url": "https://www.sdale.org/o/archer-learning-center/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:79d29f757f",
+          "url": "https://walker.sdale.org/o/bernice-young-elementary/live-feed?page_no=34",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:b0e9b0ff5a",
+          "url": "https://shaw.sdale.org/o/george-junior-high-school/live-feed?page_no=16",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:cc8b463674",
+          "url": "https://sonora.sdale.org/o/sonora-elementary/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:c9ed8811be",
+          "url": "https://shs.sdale.org/o/rollins-elementary/live-feed?page_no=6",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:ae5763b06d",
+          "url": "https://hunt.sdale.org/o/hunt-elementary/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:2ca939ee2d",
+          "url": "https://sms.sdale.org/",
+          "label": null,
+          "decision": "hold",
+          "reason": "unlabeled-tier-C",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:6657229569",
+          "url": "https://www.sdale.org/o/lakeside-junior-high-school",
+          "label": null,
+          "decision": "hold",
+          "reason": "unlabeled-tier-C",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:255a4e77f7",
+          "url": "https://hunt.sdale.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:90f6b728f5",
+          "url": "https://bayyari.sdale.org/o/bayyari-elementary/page/bayyaris-programs",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:c38a16c26b",
+          "url": "https://soi.sdale.org/o/parson-hills-elementary/live-feed?page_no=59",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:a1c9be4bac",
+          "url": "https://parson-hills.sdale.org/live-feed?page_no=10",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:c2d9eeba8e",
+          "url": "https://knapp.sdale.org/o/linda-childers-knapp/live-feed?page_no=3",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:03e2923a93",
+          "url": "https://hellstern.sdale.org/o/harp-elementary/live-feed?page_no=33",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:364d643374",
+          "url": "https://www.sdale.org/o/george-junior-high-school",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:5324567af6",
+          "url": "https://www.sdale.org/o/harp-elementary/live-feed?page_no=9",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:3eec5ef495",
+          "url": "https://bayyari.sdale.org/o/bayyari-elementary/live-feed?page_no=50",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:e81c9beadb",
+          "url": "https://www.sdale.org/o/southwest-junior-high-school/live_feeds/12421038",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:2af5919a2f",
+          "url": "https://www.sdale.org/o/southwest-junior-high-school/article/738820",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:79f09c0873",
+          "url": "https://www.sdale.org/o/southwest-junior-high-school",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:6aa0cebc59",
+          "url": "https://hellstern.sdale.org/o/hellstern-middle-school/article/1460043",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:0460c87242",
+          "url": "https://rollins.sdale.org/o/rollins-elementary/page/contact-us",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:0558a8e1e9",
+          "url": "https://rollins.sdale.org/o/rollins-elementary/page/our-programs",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:8e78c95844",
+          "url": "https://rollins.sdale.org/o/rollins-elementary/events",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:71606fe890",
+          "url": "https://www.sdale.org/o/rollins-elementary/live_feeds/11679038",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:140b73e088",
+          "url": "https://rollins.sdale.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:f435989d8a",
+          "url": "https://knapp.sdale.org/o/linda-childers-knapp/news",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:bb641bd88c",
+          "url": "https://knapp.sdale.org/o/linda-childers-knapp/page/our-programs",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:08db02f3b9",
+          "url": "https://knapp.sdale.org/o/linda-childers-knapp/staff",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:360c01db17",
+          "url": "https://knapp.sdale.org/o/linda-childers-knapp/page/contact-us",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:c55dda00d8",
+          "url": "https://knapp.sdale.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:86d34405bb",
+          "url": "https://knapp.sdale.org/o/linda-childers-knapp/events",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:d180be63aa",
+          "url": "https://sonora.sdale.org/o/sonora-elementary/page/mascots-logos",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:e7b885932a",
+          "url": "https://sonora.sdale.org/o/sonora-elementary/article/1994144",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:fd64cef755",
+          "url": "https://www.sdale.org/page/school-board",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:3a6dfbe5db",
+          "url": "https://sonora.sdale.org/o/sonora-elementary/page/volunteering",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:8976e99cbc",
+          "url": "https://sonora.sdale.org/o/sonora-elementary/events",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:0486ed6115",
+          "url": "https://sonora.sdale.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:6504e03ba1",
+          "url": "https://shaw.sdale.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:ecfb981a53",
+          "url": "https://www.sdale.org/o/springdale-high-school/page/our-history",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:ffafc01fc0",
+          "url": "https://www.sdale.org/o/hellstern-middle-school/live-feed?page_no=33",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:398985f726",
+          "url": "https://www.sdale.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:057575d7b4",
+          "url": "https://walker.sdale.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:b65877edcb",
+          "url": "https://parson-hills.sdale.org/o/parson-hills-elementary/article/845305",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:8c5d474fa4",
+          "url": "https://parson-hills.sdale.org/o/parson-hills-elementary/news",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:d2c833f75e",
+          "url": "https://parson-hills.sdale.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:000c69b0c4",
+          "url": "https://www.sdale.org/o/sonora-elementary/article/1163538",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:4e613103dc",
+          "url": "https://hunt.sdale.org/o/hunt-elementary/dining",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:e0b5eb05ff",
+          "url": "https://hunt.sdale.org/o/hunt-elementary/staff",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:d8ff61c4c4",
+          "url": "https://hunt.sdale.org/o/hunt-elementary/news",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:22cf6790ae",
+          "url": "https://www.sdale.org/o/hunt-elementary/events?id=46582341",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:8ac3d40f8a",
+          "url": "https://hunt.sdale.org/o/hunt-elementary/page/our-programs",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:81de58fb46",
+          "url": "https://hunt.sdale.org/o/hunt-elementary/events",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:4daf9b2a92",
+          "url": "https://www.sdale.org/o/bayyari-elementary/news?page_no=2",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:dd061510d7",
+          "url": "https://bayyari.sdale.org/o/bayyari-elementary/staff",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:9bc73d603e",
+          "url": "https://bayyari.sdale.org/o/bayyari-elementary/article/1126252",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:206f5fad59",
+          "url": "https://bayyari.sdale.org/o/bayyari-elementary/events",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:a0083a6697",
+          "url": "https://bayyari.sdale.org/o/bayyari-elementary/news",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:e7e1b947a5",
+          "url": "https://bayyari.sdale.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:467bade5d7",
+          "url": "https://har-ber.sdale.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:a29aef4eac",
+          "url": "https://ecc.sdale.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:4d6632ff68",
+          "url": "https://jones.sdale.org/o/jones-elementary/page/attendance-bell-schedule",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:b0823320b1",
+          "url": "https://www.sdale.org/page/early-childhood-pre-k",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:77b411d271",
+          "url": "https://www.sdale.org/documents/academic-calendars/313578",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:4842cedce6",
+          "url": "https://www.sdale.org/page/state-required",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:1bc3f29abe",
+          "url": "https://docs.google.com/document/d/1jYg4xH5UWkLPh0f36vXfBlKNqMErM82Kdj41pcBnXDE/edit?usp=sharing",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:1f33ba2c11",
+          "url": "https://htms.sdale.org/o/central-junior-high/live-feed?page_no=14",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:bdc2d6a79a",
+          "url": "https://www.sdale.org/o/lakeside-junior-high-school/page/block-bell-schedule",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:f43511cc48",
+          "url": "https://hellstern.sdale.org/o/hellstern-middle-school/article/1623735",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:f1bfe433db",
+          "url": "https://hellstern.sdale.org/o/hellstern-middle-school/events",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:1a0109fc59",
+          "url": "https://hellstern.sdale.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:e6dd9258d7",
+          "url": "https://hellstern.sdale.org/o/hellstern-middle-school/news?page_no=2",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:33da273639",
+          "url": "https://hellstern.sdale.org/o/hellstern-middle-school/live-feed?page_no=39",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:36773c3597",
+          "url": "https://harp.sdale.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:b7bdedc1fe",
+          "url": "https://gjhs.sdale.org/o/george-junior-high-school/article/1340933",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:76563d668b",
+          "url": "https://har-ber.sdale.org/o/har-ber-high-school/events",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:0c73b96b52",
+          "url": "https://sms.sdale.org/o/sonora-middle-school/page/our-programs",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:9063eed699",
+          "url": "https://tyson.sdale.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:114c3c55d4",
+          "url": "https://www.sdale.org/o/don-tyson-school-of-innovation/news",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0512660:53c075f544",
+          "url": "https://shaw.sdale.org/o/rollins-elementary/live-feed?page_no=7",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 7,
+      "est_usd": 0.0071400000000000005
+    },
+    {
+      "district_id": "1201440",
+      "name": "ORANGE",
+      "state": "FL",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "1201440:1e265c23fe",
+          "url": "https://pershingk8.ocps.net/235240_2",
+          "label": "school_start_end_prose",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1201440:b8f930171d",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:a0108adc35",
+          "url": "https://freedomhs.ocps.net/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1201440:b8f930171d",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:58ab717ed5",
+          "url": "gt://gt_curation_20260621T060008Z/1201440_ORANGE/current_bell_times.pdf",
+          "label": "district_hub_by_school",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:b8f930171d",
+          "url": "https://files.smartsites.parentsquare.com/6888/ro105_2026-27_bell_times.pdf",
+          "label": "district_hub_by_school",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 1020,
+              "n_chars": 14661
+            }
+          ]
+        },
+        {
+          "rec_key": "1201440:6725bf56ae",
+          "url": "https://files.smartsites.parentsquare.com/6993/bellschedule_2526_-_google_sheets.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1201440:b8f930171d",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:7632ecaa9e",
+          "url": "https://timbercreekhs.ocps.net/",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1201440:b8f930171d",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:ff3edfa4e5",
+          "url": "https://lakenonahs.ocps.net/251079_2",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:acdebe27b1",
+          "url": "https://windermerehs.ocps.net/bellschedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1201440:b8f930171d",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:906736f9e6",
+          "url": "https://edgewaterhs.ocps.net/237305_2",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1201440:b8f930171d",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:09c2a0600c",
+          "url": "https://colonialhs.ocps.net/",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1201440:b8f930171d",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:b3d5ff5041",
+          "url": "https://lakenonahs.ocps.net/251051_2",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1201440:b8f930171d",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:f3c0778784",
+          "url": "https://washingtonshoreses.ocps.net/",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1201440:b8f930171d",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:e03d40b34e",
+          "url": "https://timbercreekhs.ocps.net/bellschedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1201440:b8f930171d",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:36495e9d3f",
+          "url": "https://glenridgems.ocps.net/",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1201440:b8f930171d",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:4135810fdd",
+          "url": "https://robinswoodms.ocps.net/",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1201440:b8f930171d",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:c3fea8e204",
+          "url": "https://westridgems.ocps.net/",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1201440:b8f930171d",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:401d4cf72f",
+          "url": "https://olympiahs.ocps.net/index.php?pageID=smartSiteFeed&psqFeed=true&articleID=70952721",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:1e7a5da71c",
+          "url": "https://legacyms.ocps.net/index.php?pageID=smartSiteFeed&feed=%5B%22%7B%5C%22id%5C%22%3A%5C%2237626%5C%22%2C%5C%22source%5C%22%3A%5C%22schools%5C%22%7D%22%5D&articleID=55139851",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1201440:b8f930171d",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:b7ac0e0ff8",
+          "url": "https://freedomhs.ocps.net/",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1201440:b8f930171d",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:d3c13926cf",
+          "url": "https://freedomhs.ocps.net/index.php?pageID=smartSiteFeed&psqFeed=true&articleID=79461920",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:8530c9ad7e",
+          "url": "https://windermerehs.ocps.net/index.php?pageID=smartSiteFeed&psqFeed=true&articleID=67420829",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:a611cae444",
+          "url": "https://colonialhs.ocps.net/index.php?pageID=smartSiteFeed&feed=%5B%22%7B%5C%22id%5C%22%3A%5C%2237670%5C%22%2C%5C%22source%5C%22%3A%5C%22schools%5C%22%7D%22%5D&articleID=59737885",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1201440:b8f930171d",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:7383cfe512",
+          "url": "https://glenridgems.ocps.net/211776_2?articleID=51822",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:3a7ebf4096",
+          "url": "https://lakebuenavistahs.ocps.net/school-information-home",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1201440:b8f930171d",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:6eacb38d48",
+          "url": "https://www.ocps.net/110676_3",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:241fca80d4",
+          "url": "https://robinswoodms.ocps.net/207694_2?articleID=52714",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:ff42f7a1fa",
+          "url": "https://edgewaterhs.ocps.net/school-information-home",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:1201440:b8f930171d",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:ca42aec284",
+          "url": "https://glenridgems.ocps.net/index.php?pageID=smartSiteFeed&psqFeed=true&articleID=72948540",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:b57c3e975a",
+          "url": "https://timbercreekhs.ocps.net/index.php?pageID=smartSiteFeed&psqFeed=true&articleID=80370960",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:9f856ae973",
+          "url": "https://www.ocps.net/110684_3",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:ed03454c89",
+          "url": "https://www.ocps.net/skyward",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:7e74b5826f",
+          "url": "https://www.ocps.net/42130_4",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:4685ff6d88",
+          "url": "https://windermerehs.ocps.net/191767_2",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:d563d929d4",
+          "url": "https://libertyms.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:21c2cedb65",
+          "url": "https://hunterscreekms.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:f3460eb1ef",
+          "url": "https://carverms.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:f1bfde5341",
+          "url": "https://cypresscreekhs.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:7ff55c35b2",
+          "url": "https://www.ocps.net/careers-home",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:0021898dc2",
+          "url": "https://freedomms.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:fc227f871f",
+          "url": "https://cornerlakems.ocps.net/index.php?pageID=smartSiteFeed&psqFeed=true&articleID=60379944",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:97a0fdadfc",
+          "url": "https://legacyms.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:2ed1a9a825",
+          "url": "https://avalonms.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:1a23feee22",
+          "url": "https://lakenonams.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:0bff1ebcab",
+          "url": "https://horizonwestms.ocps.net/bellschedule",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:321b5734cf",
+          "url": "https://edgewaterhs.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:76f00b17b3",
+          "url": "https://www.ocps.net/dual-enrollment",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:63e57cece4",
+          "url": "https://apopkahs.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:03a831fe80",
+          "url": "https://apopkahs.ocps.net/students-home",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:17de2affc6",
+          "url": "https://apopkams.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:6c77cad0ae",
+          "url": "https://timberspringsms.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:37c31fa2be",
+          "url": "https://olympiahs.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:1e52543ca3",
+          "url": "https://www.ocps.net/find-my-school-home",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:110ec4c04a",
+          "url": "https://www.ocps.net/find-my-bus-2",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:b76f760e7f",
+          "url": "https://www.ocps.net/42020_4",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:3b18cce78e",
+          "url": "https://www.ocps.net/134235_2",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:02bd390be8",
+          "url": "https://www.ocps.net/bright-futures-scholarship",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:46b98c24b4",
+          "url": "https://www.ocps.net/emergency-response-actions",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:abb8f8fcfd",
+          "url": "https://www.ocps.net/school-directory",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:01f11e2896",
+          "url": "https://www.ocps.net/charter-schools-home",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:fe0f8cb35a",
+          "url": "https://windermerehs.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:634e8b54f8",
+          "url": "https://www.ocps.net/110641_3",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:2c7aee252a",
+          "url": "https://lakenonahs.ocps.net/263093_2",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:779138db1d",
+          "url": "https://www.ocps.net/title-i-schools-and-poverty-percent",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:686e117d1e",
+          "url": "https://avalones.ocps.net/extended-day",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:034220a890",
+          "url": "https://www.ocps.net/schoolcash",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:f478083f60",
+          "url": "https://luminaryms.ocps.net/263151_2",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:5264682a33",
+          "url": "https://lakebuenavistahs.ocps.net/site_map",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:5eb12e729f",
+          "url": "https://lakebuenavistahs.ocps.net/243237_2",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:1dbee9a5f0",
+          "url": "https://lakebuenavistahs.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:5dc5e052f0",
+          "url": "http://www.ocps.net/133908_2",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:0068d3256b",
+          "url": "https://www.ocps.net/middle-school-magnet-programs",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:9638427110",
+          "url": "https://blanknerk8.ocps.net/262544_2",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:be8423e299",
+          "url": "https://www.ocps.net/index.php?pageID=smartSiteFeed&psqFeed=true&articleID=71915414",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:ab3eb7305f",
+          "url": "https://tildenvillees.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:c5a8307351",
+          "url": "https://hamlinms.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:808a45dc9a",
+          "url": "https://bridgewaterms.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:59d278d096",
+          "url": "https://horizonhs.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:6853eae291",
+          "url": "https://evanshs.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:1145586814",
+          "url": "https://pershingk8.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:130edd5634",
+          "url": "https://pinehillses.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:9302d7c284",
+          "url": "https://rollinghillses.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:cd00ffbbb3",
+          "url": "https://dovershoreses.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:20be1a848d",
+          "url": "https://hiawasseees.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:20505cc381",
+          "url": "https://waterspringms.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:72fd5d62f2",
+          "url": "https://www.ocps.net/schools-home",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:c7c9b9b732",
+          "url": "https://www.ocps.net/current-list-of-charter-schools",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:767fbc9e11",
+          "url": "https://alomaes.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:31e9379413",
+          "url": "https://www.ocps.net/school-report-cards",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:f3ae7127ce",
+          "url": "https://howardms.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:2d6659b326",
+          "url": "https://www.ocps.net/school-attendance-zone-maps",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:6d7622be44",
+          "url": "https://riverdalees.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:d558163cef",
+          "url": "https://www.ocps.net/transportation-services-home",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:13cbe64efa",
+          "url": "https://southwestms.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:c5335ed18f",
+          "url": "https://waterspringes.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:384860fb6e",
+          "url": "https://camelotes.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:0f214add32",
+          "url": "https://hamlines.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:995b9d4e43",
+          "url": "https://horizonwestms.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:4577d8f8a5",
+          "url": "https://villageparkes.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:4bc93b0316",
+          "url": "https://piedmontlakesms.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:a6c135666f",
+          "url": "https://unionparkes.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:8b2314fbaf",
+          "url": "https://baldwinparkes.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:0ee4ceff97",
+          "url": "https://wolflakems.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:74a0241276",
+          "url": "https://chainoflakesms.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1201440:82766fbcdf",
+          "url": "https://drphillipshs.ocps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "0626910",
+      "name": "New Haven Unified",
+      "state": "CA",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "0626910:0db5b5bdaf",
+          "url": "https://www.google.com/calendar/event?eid=MHEydmZpOHZnOGplZWk3M2RvaDBkMW00MnUgY185YjIxdHY5aHM2bmc5M3MzbWF0ZXVrYmZjNEBn",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:372eb50773",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/EAS 2025-26 Bell Sched.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:bc16805d20",
+          "url": "https://ivcms.mynhusd.org/blog/uncategorized/2025-orientation-schedule/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:c559f4af14",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/AES 2025-26 Bell Sched.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:49bf8beb4a",
+          "url": "https://www.mynhusd.org/families/beyond-the-bell/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:0a0b114129",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/EMA 2025-26 Bell Sched.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:405237661a",
+          "url": "https://ivcms.mynhusd.org/blog/uncategorized/2025-orientation-schedule-2/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:0f256f559d",
+          "url": "https://mynhusd.org/departments/teaching-learning/educational-options/",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0626910:3706ad5b99",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:6871d926a9",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/PIO 2025-26 Bell Sched.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:91c9dde70c",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/HVC 2025-26 Bell Sched.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:db22077a79",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/NHA 2025-26 Bell Sched.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:602419209e",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/KIT 2025-26 Bell Sched.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:7438aaa13d",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/SEA 2025-26 Bell Sched.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:9db0573cd0",
+          "url": "https://ivcms.mynhusd.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:5e6ffc71ef",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/JLHS 2025-26 Bell Sched.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:d5771bd18c",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/CCHS 2025-26 Bell Sched.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:55ae7c3c7d",
+          "url": "https://www.google.com/calendar/event?eid=NWw2ZGUzb3RhdDBibDFoNzkyZms3anU1NG4gY185YjIxdHY5aHM2bmc5M3MzbWF0ZXVrYmZjNEBn",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:3706ad5b99",
+          "url": "https://mynhusd.org/schools/student-calendar-bell-schedules/",
+          "label": "district_hub_by_band",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 58,
+              "n_chars": 4763
+            }
+          ]
+        },
+        {
+          "rec_key": "0626910:192c052d7b",
+          "url": "https://ivcms.mynhusd.org/newsroom/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:89e4824fdc",
+          "url": "https://ivcms.mynhusd.org/about-us/bell-schedule/",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0626910:3706ad5b99",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:57a1961beb",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/IVCMS 2025-26 Bell Sched.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:51ecb4808d",
+          "url": "https://alvarado.mynhusd.org/calendar/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:20b723b3d2",
+          "url": "https://ivcms.mynhusd.org/wp-content/uploads/sites/15/2024/07/IVC-Parent-Newsletter-July-2024.pdf",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:6019b8fbfa",
+          "url": "https://alvarado.mynhusd.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:1f7758a20e",
+          "url": "https://ccms.mynhusd.org/about-us/latest-news/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:4b1c46732d",
+          "url": "https://ccms.mynhusd.org/blog/uncategorized/2026-2027-orientation-dates-times/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:e99fba1b1e",
+          "url": "https://docs.google.com/document/d/13YwWz8Uevo_az4cfgPLROUxbd2YEMlCYSRlmrX1Ftm8/edit?usp=sharing",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:17e538bbd3",
+          "url": "https://kitayama.mynhusd.org/calendar/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:2ae20a3a38",
+          "url": "https://kitayama.mynhusd.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:8d1136ccbd",
+          "url": "https://mynhusd.org/departments/teaching-learning/student-and-family-services/enrollment/school-attendance-areas/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:3a6a87119d",
+          "url": "https://ccms.mynhusd.org/about-us/",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0626910:3706ad5b99",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:c45dde5a25",
+          "url": "https://mynhusd.org/departments/teaching-learning/student-and-family-services/enrollment/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:dba6fd60b2",
+          "url": "https://www.google.com/calendar/event?eid=Mm5wMWEzb2JyY2hrYjIzODFjaDNjc2k3bWkgbmh1c2QuazEyLmNhLnVzX24zZm8yZmI0cWFiNzFsOGpoYXBmYTVpcnZzQGc",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:b59295fc1a",
+          "url": "https://www.google.com/calendar/event?eid=N3BocTFpYTJjMHIxZzA3bWkzN2lrZ2Q3M3Ugbmh1c2QuazEyLmNhLnVzX3B0YWxraHQyY3E2NWZjcjA4bjRwbTVuMm5jQGc",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:1344daf4b5",
+          "url": "https://www.mynhusd.org/wp-content/uploads/2022/04/214557-e247553c-d66f-43a7-94c4-ee4f493acdfe.pdf",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:a1bb09ebf0",
+          "url": "https://ccms.mynhusd.org/blog/uncategorized/beyond-the-bell-interest-enrollment-for-2026-2027/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:9815d6a639",
+          "url": "https://ccms.mynhusd.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:a00592febb",
+          "url": "https://cchs.mynhusd.org/about-us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:fc27855ac5",
+          "url": "https://mynhusd.org/departments/teaching-learning/student-and-family-services/enrollment/faq/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:e7437cfdd0",
+          "url": "https://mynhusd.org/newsroom/page/45/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:1f9c44ad70",
+          "url": "https://www.google.com/calendar/event?eid=MWo1MXBvYnVtOGhpZTE1cHVyY2Q1amwxcDEgbmh1c2QuazEyLmNhLnVzX3B0YWxraHQyY3E2NWZjcjA4bjRwbTVuMm5jQGc",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:862fb5bb1e",
+          "url": "https://alvarado.mynhusd.org/families/beyond-the-bell/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:ec6ad1ae13",
+          "url": "https://app.informedk12.com/link_campaigns/hourly-timesheet-certificated-white?token=rRWr4viZv2txsDSWqbGCxBqE",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:14af533d43",
+          "url": "https://app.informedk12.com/link_campaigns/district-wide-extra-hours-timesheet-white-certificated?token=5DZSt7ntdGxLuf9m6faz3P99",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:f408fdc51b",
+          "url": "https://app.informedk12.com/link_campaigns/substitute-timesheet-elementary-teachers?token=ERFbU22oET1KdF9opxMWzYgw",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:4ce263f9ca",
+          "url": "https://app.informedk12.com/link_campaigns/substitute-timesheet-secondary-teachers?token=f47iW4DSmy5PovZ332SzTGGf",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:09406850cf",
+          "url": "https://www.google.com/calendar/event?eid=M3Q0MTZpbDlsZGI1MnRnODA3MGw3OGJqZHIgbmh1c2QuazEyLmNhLnVzX24zZm8yZmI0cWFiNzFsOGpoYXBmYTVpcnZzQGc",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:76617a5d35",
+          "url": "https://ivcms.mynhusd.org/families-2/beyond-the-bell/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:2b4bac49e6",
+          "url": "https://www.google.com/calendar/event?eid=NGhyY2lucjVyOWd0M2ZxMGkzZmlvcWdicTYgbmh1c2QuazEyLmNhLnVzX24zZm8yZmI0cWFiNzFsOGpoYXBmYTVpcnZzQGc",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:6fefd90e30",
+          "url": "https://www.google.com/calendar/event?eid=NzZvYXBwc2NtOTliZm82ZGpvbGVkZGtsM20gbmh1c2QuazEyLmNhLnVzX24zZm8yZmI0cWFiNzFsOGpoYXBmYTVpcnZzQGc",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:03ea12acb8",
+          "url": "https://mynhusd.org/departments/teaching-learning/student-and-family-services/beyond-the-bell/beyond-the-bell-alliance-6-8-program-enrollment-info/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:cb2ab7697a",
+          "url": "https://www.google.com/calendar/event?eid=NXVrZGNna2w3ajk3ZmNjbnR0MGo0ZzRramYgbmh1c2QuazEyLmNhLnVzX3B0YWxraHQyY3E2NWZjcjA4bjRwbTVuMm5jQGc",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:4d52f2d587",
+          "url": "https://kitayama.mynhusd.org/about-us/beyond-the-bell/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:8b9ff99955",
+          "url": "https://eastin.mynhusd.org/families/2022-2023-school-schedule/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:b942625f30",
+          "url": "https://eastin.mynhusd.org/families/beyond-the-bell/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:13ca2a7ab2",
+          "url": "https://mynhusd.org/school-board/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:31238ef4dc",
+          "url": "https://emanuele.mynhusd.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:5bdd036327",
+          "url": "https://emanuele.mynhusd.org/calendar/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:f44e0c1b78",
+          "url": "https://mynhusd.org/departments/business/fiscal-services/payroll-general-information/time-cards/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:75af505ed7",
+          "url": "https://eastin.mynhusd.org/calendar/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:661d95ef59",
+          "url": "https://mynhusd.org/calendar/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:ef28786e91",
+          "url": "https://mynhusd.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:986b75441a",
+          "url": "https://hillview.mynhusd.org/calendar/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:8fc8914656",
+          "url": "https://pioneer.mynhusd.org/blog/principals-message/2023-2024-home-school-connection-week-32/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:49ee455999",
+          "url": "https://eastin.mynhusd.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:492ee51fc1",
+          "url": "https://ccms.mynhusd.org/calendar/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:54d9f3f748",
+          "url": "https://mynhusd.org/schools/summer-school-at-nhusd/middle-school/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:43e6a89188",
+          "url": "https://mynhusd.org/schools/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:692f6914a7",
+          "url": "https://ccms.mynhusd.org/contactus/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:ca12db4316",
+          "url": "https://ccms.mynhusd.org/blog/principals-message/principals-newsletter-2/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:63f3f68891",
+          "url": "https://mynhusd.org/departments/business/maintenance-operations-transportation/pac-theater-rental/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:a3fdcef064",
+          "url": "https://mynhusd.org/departments/employment/job-descriptions/supervisor-high-school-operations/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:10056ac788",
+          "url": "https://ivcms.mynhusd.org/student-overview/clubs-at-ivc/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:0a9c0901a0",
+          "url": "https://ivcms.mynhusd.org/calendar/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:ec85dfeb24",
+          "url": "https://mynhusd.org/staff/district-calendars/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:7c2bd8b20b",
+          "url": "https://pioneer.mynhusd.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:3e325c59a9",
+          "url": "https://pioneer.mynhusd.org/calendar/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0626910:1594efe675",
+          "url": "https://kitayama.mynhusd.org/families/frequently-used-online-learning-websites/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    }
+  ]
+}

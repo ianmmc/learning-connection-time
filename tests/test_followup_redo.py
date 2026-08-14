@@ -154,3 +154,48 @@ class TestStage34Redo:
         d = self._district(tmp_path, "0000001", "Alpha", files=("processed.json",))
         todo, skipped, quarantined = C4.reconcile([d], _reg(("0000001", 4)), redo=True)
         assert todo == [] and quarantined == [d]
+
+
+# ---------------------------------------------------------------- REQ-172: local-only reprocess
+class TestStage4ReprocessIsLocalOnly:
+    """REQ-172: a Stage-4 redo rebuilds processed.json IN FULL from the union manifest, and that is
+    acceptable ONLY because the rebuild is local CPU — the package must hold no path back to the
+    network. If someone wires a re-fetch 'convenience' into Stage 4, unlimited-reprocess becomes
+    unlimited-recapture and the delta-only invariant dies where no unit test is looking. Source-level
+    fitness pin, same posture as the REQ-172 wiring pin in capture_records.test.mjs."""
+
+    FORBIDDEN_IMPORTS = ("playwright", "requests", "httpx", "aiohttp",
+                         "urllib.request", "http.client", "socket")
+
+    def _package_sources(self):
+        from pathlib import Path
+        import infrastructure.acquisition.stage4_process as pkg
+        pkg_dir = Path(pkg.__file__).parent
+        return {p.name: p.read_text() for p in sorted(pkg_dir.glob("*.py"))}
+
+    def test_no_network_client_import_in_stage4_package(self):
+        import re
+        for fname, src in self._package_sources().items():
+            for mod in self.FORBIDDEN_IMPORTS:
+                pat = rf"^\s*(?:import\s+{re.escape(mod)}\b|from\s+{re.escape(mod)}\b)"
+                assert not re.search(pat, src, re.M), (
+                    f"{fname} imports {mod}: Stage 4's redo reprocesses every record in full, "
+                    f"which is only safe local-only (REQ-172) — recapture belongs to Stage 3's "
+                    f"delta-seeded path, never here")
+
+    def test_stage4_never_invokes_the_capture_runner(self):
+        # Docstrings may MENTION the capturer (process_stage4.write_processed cites its versioned-
+        # write convention); what's forbidden is the mjs appearing as a call argument — the only
+        # shape an actual subprocess invocation can take.
+        import ast
+        for fname, src in self._package_sources().items():
+            for node in ast.walk(ast.parse(src)):
+                if not isinstance(node, ast.Call):
+                    continue
+                for arg in ast.walk(node):
+                    if isinstance(arg, ast.Constant) and isinstance(arg.value, str) \
+                            and "capture_discovery.mjs" in arg.value:
+                        raise AssertionError(
+                            f"{fname}:{arg.lineno} passes capture_discovery.mjs to a call — "
+                            f"Stage 4 must never shell out to the capturer (REQ-172: reprocess "
+                            f"is local-only, recapture is delta-only)")

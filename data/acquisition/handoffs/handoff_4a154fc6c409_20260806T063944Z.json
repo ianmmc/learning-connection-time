@@ -1,0 +1,4963 @@
+{
+  "handoff_hash": "4a154fc6c409",
+  "created_at": "2026-08-06T06:39:44Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "dispatch_type": "production",
+  "fingerprints": {
+    "0902790": {
+      "config": "f77ddb950061",
+      "labels": "54f9c83d3789",
+      "data": "003fcbd0b673"
+    },
+    "0404970": {
+      "config": "f77ddb950061",
+      "labels": "ef8135368a26",
+      "data": "33c88b6b08a3"
+    },
+    "0102370": {
+      "config": "f77ddb950061",
+      "labels": "7e2f61ef5f77",
+      "data": "fbcde4efe811"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v4"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.14586000000000002,
+    "n_reps": 143,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "0902790",
+      "name": "New Haven School District",
+      "state": "CT",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "0902790:ef81b3f0e5",
+          "url": "https://www.nhps.net/o/obama/page/contact-us",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 2,
+              "n_chars": 1189
+            }
+          ]
+        },
+        {
+          "rec_key": "0902790:8f789ce38f",
+          "url": "gt://gt_curation_20260621T060008Z/0902790_New_Haven_School_District/New Haven Publc Schools Bell Times.pdf",
+          "label": "district_hub_by_school",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:7e42092333",
+          "url": "https://www.nhps.net/o/hsc/page/daily-schedules",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 60,
+              "n_chars": 2138
+            }
+          ]
+        },
+        {
+          "rec_key": "0902790:72840979c9",
+          "url": "https://www.nhps.net/o/obama/page/school-schedule-information",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 1017
+            }
+          ]
+        },
+        {
+          "rec_key": "0902790:f9aa30e51d",
+          "url": "https://coop.nhps.net/o/coop/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:1325965e9c",
+          "url": "https://wilburcross.nhps.net/o/wilburcross/page/attendance",
+          "label": "school_start_end_prose",
+          "decision": "send",
+          "reason": "target-label:school_start_end_prose",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 6545
+            }
+          ]
+        },
+        {
+          "rec_key": "0902790:92a180f83e",
+          "url": "https://www.nhps.net/o/lwbeecher/page/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 10,
+              "n_chars": 1344
+            }
+          ]
+        },
+        {
+          "rec_key": "0902790:25f0a06ca5",
+          "url": "https://jdc.nhps.net/o/conte/live-feed?page_no=3",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:05f50dbfc0",
+          "url": "https://bishopwoods.nhps.net/o/bishopwoods/live-feed",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 10746
+            }
+          ]
+        },
+        {
+          "rec_key": "0902790:624c9bb644",
+          "url": "https://coop.nhps.net/o/coop/live_feeds/12519606",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:a5d4f815a9",
+          "url": "https://truman.nhps.net/o/rossarts/live-feed?page_no=1",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:ca9b03b998",
+          "url": "https://hillcentral.nhps.net/o/hillcentral/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:30aaa2a507",
+          "url": "https://hillcentral.nhps.net/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:87fa0255c3",
+          "url": "https://career.nhps.net/o/career/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:0ccbcdc2a9",
+          "url": "https://www.nhps.net/o/rossarts",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:ff7f15f447",
+          "url": "https://career.nhps.net/o/career/article/2680954",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:73811c687d",
+          "url": "https://www.nhps.net/o/esum/page/attendance",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:f62e3b3145",
+          "url": "https://www.nhps.net/page/nhps-summer-programs",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:a1f678f510",
+          "url": "https://rosswoodward.nhps.net/o/rossw/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:bbd07376f9",
+          "url": "https://career.nhps.net/o/career/news",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:5408696856",
+          "url": "https://5il.co/3mb2f",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:d857065dd1",
+          "url": "https://hsc.nhps.net/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:bb43a87dc4",
+          "url": "https://career.nhps.net/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:1cc9e3ddb2",
+          "url": "https://bishopwoods.nhps.net/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:621f779a6f",
+          "url": "https://newhavenacademy.nhps.net/o/jameshillhouse/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:c02382101f",
+          "url": "https://coop.nhps.net/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:097ce5cdad",
+          "url": "https://sound.nhps.net/o/career/article/2936135",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:45f451fa8b",
+          "url": "https://coop.nhps.net/o/coop/events",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:38b6f69249",
+          "url": "https://coop.nhps.net/o/coop/news",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:8f5479262b",
+          "url": "https://www.nhps.net/o/obama",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:97f30d2512",
+          "url": "https://www.nhps.net/o/obama/page/apply",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:d67e1ad7b2",
+          "url": "https://career.nhps.net/o/career/article/2830226",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:3f170eb0f0",
+          "url": "https://career.nhps.net/o/career/page/calendar",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:f3ac7d60f1",
+          "url": "https://www.nhps.net/o/rossarts/events",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:9a41de3a6c",
+          "url": "https://www.nhps.net/o/bishopwoods/events?id=53732352",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:aa91b16ce5",
+          "url": "https://jameshillhouse.nhps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:b43e8a7acd",
+          "url": "https://wilburcross.nhps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:e2f7759b59",
+          "url": "https://wilburcross.nhps.net/o/wilburcross/live-feed",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:bec9a1c0bb",
+          "url": "https://www.nhps.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:0ebe3e9930",
+          "url": "https://jcd.nhps.net/o/obama/live_feeds/12537446",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:ebbcceef81",
+          "url": "https://www.nhps.net/o/bishopwoods/page/magnet-school-information",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:fe88216c17",
+          "url": "https://coop.nhps.net/o/coop/events?id=52319549",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:0bbebfbfcb",
+          "url": "mailto:Terry.Bella@new-haven.k12.ct.us",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:58b2505e14",
+          "url": "https://hsc.nhps.net/o/hsc/events?id=52320173",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:928e82c7dc",
+          "url": "https://www.nhps.net/o/rossarts/events?id=52319081",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:67fa6b1399",
+          "url": "https://www.nhps.net/o/obama/events?id=52321976",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:2cb144b9a1",
+          "url": "https://jameshillhouse.nhps.net/o/jameshillhouse/events?id=52319939",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:c42d5e5a2e",
+          "url": "https://hillcentral.nhps.net/o/hillcentral/events?id=52321820",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:f26ad7a85f",
+          "url": "https://wilburcross.nhps.net/o/wilburcross/events?id=52320878",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:f365dda8e7",
+          "url": "https://bishopwoods.nhps.net/o/bishopwoods/events?id=52321585",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:47818ebdf8",
+          "url": "https://coop.nhps.net/o/coop/page/co-op-after-school",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:1f1dea1a16",
+          "url": "https://www.nhps.net/o/coop/events?id=45188681",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:91d6514538",
+          "url": "https://www.nhps.net/page/online-student-registration",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:823e60c966",
+          "url": "https://www.nhps.net/page/transportation",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:aaf1a96503",
+          "url": "https://www.nhps.net/page/summary-of-2022-2023-school-climate-connectedness-survey-results",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:cbe3edf344",
+          "url": "https://coop.nhps.net/o/coop/page/history",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:756f3c3ae0",
+          "url": "https://www.nhps.net/o/rossarts/page/contact-us",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:e8d13ed2b9",
+          "url": "https://www.nhps.net/o/rossarts/page/apply-to-brada",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:55bdf0f0a4",
+          "url": "https://truman.nhps.net/o/obama/events?id=47323595",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:11b6d9f1ac",
+          "url": "https://www.nhps.net/o/obama/events?id=44257439",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:c8a6a77a17",
+          "url": "https://www.nhps.net/o/obama/page/meet-our-staff",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:30c16e5f13",
+          "url": "https://www.nhps.net/o/obama/page/about-barack-obama-school",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:6fda9dcf00",
+          "url": "https://www.nhps.net/page/powerschool-student-information-system",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:6bc8342395",
+          "url": "https://www.nhps.net/page/our-schools",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:b728a08ce0",
+          "url": "https://www.nhps.net/o/bishopwoods/page/staff-directory",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:3e328a3c14",
+          "url": "https://coop.nhps.net/o/coop/article/2879694",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:f3126a0071",
+          "url": "https://www.nhps.net/documents/calendars/16622363",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:a925e551dd",
+          "url": "https://www.nhps.net/page/calendars",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:9d2bc6c175",
+          "url": "https://bishopwoods.nhps.net/o/bishopwoods/events?id=44259352",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0902790:8bee7e1a57",
+          "url": "https://www.nhps.net/live-feed",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 6,
+      "est_usd": 0.0061200000000000004
+    },
+    {
+      "district_id": "0404970",
+      "name": "Mesa Unified District (4235)",
+      "state": "AZ",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "0404970:74b1a631a4",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/2394/Skyline/f22239fc-4684-460f-9ec6-677811c6d8d0/EVIT_Bus_Schedule_25-26__1_.pdf?disposition=inline",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:a1f9719945",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/2394/Skyline/9aa302c2-acf1-44b4-967f-04ca8882c09a/EVIT_bus_schedule_24-25_3.pdf?disposition=inline",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:82e0dc5b70",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/2394/Skyline/3d451605-3cbd-4b71-a985-b9d1e42a607f/EVIT_MODIFIED_SCHEDULE_25-26.pdf?disposition=inline",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:fe9d0bcc53",
+          "url": "https://docs.google.com/document/d/1loSH670piWOUz1_-3Mf-sfk03YCqFuiZX509QgVunQg/edit?usp=sharing",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 40,
+              "n_chars": 1044
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:8a7dac99ad",
+          "url": "https://docs.google.com/document/d/1lETW8eFwIK9Kdd-h-hVbfkv-gh0S2bXKPO9uUYu9GC0/edit",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:0c5ac62c56",
+          "url": "https://lindbergh.mpsaz.org/page/about/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 9,
+              "n_chars": 5934
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:efa7cb519e",
+          "url": "https://poston.mpsaz.org/o/poston/events?id=57831067",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 10,
+              "n_chars": 2169
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:12bfb03d6d",
+          "url": "https://skyline.mpsaz.org/o/skyline/documents/bell-&-bus-schedules/387399",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 2739
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:2fcee65b72",
+          "url": "https://westwood.mpsaz.org/o/westwood/documents/information/326923",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 2391
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:e1a4eaf9cb",
+          "url": "https://shepherd.mpsaz.org/page/bookstore/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 1964
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:b038abfbf7",
+          "url": "https://field.mpsaz.org/page/bell-schedule/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 12,
+              "n_chars": 2015
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:07294d0ab8",
+          "url": "https://smith.mpsaz.org/o/smith/events?id=58968993",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 10,
+              "n_chars": 2124
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:5b9b0d81ec",
+          "url": "https://rhodes.mpsaz.org/o/rhodes/events",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 1904
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:79c73d619a",
+          "url": "https://fremont.mpsaz.org/o/fremont/events?id=53986071",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 12,
+              "n_chars": 1913
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:8603676b06",
+          "url": "https://franklinjr.mpsaz.org/page/bell-schedule/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 42,
+              "n_chars": 2501
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:786092c1ea",
+          "url": "gt://gt_curation_20260621T060008Z/0404970_Mesa_Unified_District_4235/Bell Schedule | Field Elementary.pdf",
+          "label": "school_start_end_prose",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:3ec2902755",
+          "url": "https://stapley.mpsaz.org/o/stapley/documents/bell-schedule/380128",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 3,
+              "n_chars": 1878
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:e457000534",
+          "url": "gt://gt_curation_20260621T060008Z/0404970_Mesa_Unified_District_4235/Bell Schedule | Franklin Junior High School.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:5cf32da401",
+          "url": "https://fremont.mpsaz.org/page/bell-schedule/",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 192,
+              "n_chars": 4178
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:8d0cab8a04",
+          "url": "https://www.mpsaz.org/o/pomeroy/page/grade-levels",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 1630
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:a60caf7097",
+          "url": "https://www.mpsaz.org/o/pomeroy/page/2nd-grade",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 1748
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:d2a70a8d99",
+          "url": "https://www.mpsaz.org/o/lindbergh/page/kindergarten",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 1776
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:8440bea61a",
+          "url": "https://carson.mpsaz.org/o/carson/documents/information/schedules/bell-schedule/307256",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 1852
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:04ce9ec12e",
+          "url": "https://www.mpsaz.org/o/rmhs/page/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 65,
+              "n_chars": 1684
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:7b1778fbf8",
+          "url": "https://www.mpsaz.org/o/lindbergh/page/grade-levels",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 1441
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:6cb970a472",
+          "url": "https://eagleridgeenrichment.mpsaz.org/o/eagleridge/page/tuesday-thursday-class-descriptions",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 4,
+              "n_chars": 1514
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:f1b926f55d",
+          "url": "https://poston.mpsaz.org/o/poston/article/1945957",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 46,
+              "n_chars": 11193
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:f908f08412",
+          "url": "https://mtnview.mpsaz.org/o/mtnview/article/1172328",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 9,
+              "n_chars": 5514
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:c80b28c3d2",
+          "url": "https://lindbergh.mpsaz.org/o/lindbergh/news",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 4177
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:c457469685",
+          "url": "https://rmhs.mpsaz.org/o/rmhs/page/core",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 14,
+              "n_chars": 3678
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:fad13c23e0",
+          "url": "https://kino.mpsaz.org/o/poston/article/1069523",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 15,
+              "n_chars": 5624
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:ba2bb0096f",
+          "url": "https://mtnview.mpsaz.org/o/mtnview/article/2280873",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 16,
+              "n_chars": 2165
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:5d3c35c117",
+          "url": "https://kino.mpsaz.org/o/poston/article/1060606",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 15,
+              "n_chars": 6081
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:21d26e939c",
+          "url": "https://academy.mpsaz.org/o/academy/news",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 5649
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:cf114f61ce",
+          "url": "https://eagleridgeenrichment.mpsaz.org/o/eagleridge/news",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 3997
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:0e640a74c9",
+          "url": "https://lindbergh.mpsaz.org/o/lindbergh/article/3040832",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 6620
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:5a4c9675b2",
+          "url": "https://franklinwilson.mpsaz.org/o/fremont/news",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 18,
+              "n_chars": 6014
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:29081d0a10",
+          "url": "https://kino.mpsaz.org/o/mtnview/article/1895387",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 4276
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:4816e93483",
+          "url": "https://poston.mpsaz.org/o/poston/article/3040804",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 6727
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:7ef1a064bd",
+          "url": "https://poston.mpsaz.org/o/poston/article/1078155",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 23,
+              "n_chars": 6155
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:d83434dc44",
+          "url": "https://taft.mpsaz.org/o/taft/page/bell-schedule",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 12,
+              "n_chars": 1117
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:e3b6417b74",
+          "url": "https://fremont.mpsaz.org/o/fremont/news",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 16,
+              "n_chars": 8620
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:28712bf578",
+          "url": "https://pomeroy.mpsaz.org/o/pomeroy/news",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 7019
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:7db7249a84",
+          "url": "https://www.mpsaz.org/fremont",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 14,
+              "n_chars": 3419
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:b1a0b20095",
+          "url": "https://poston.mpsaz.org/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1,
+                5
+              ],
+              "n_times": 14,
+              "n_chars": 3142
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:11b92705b1",
+          "url": "https://smith.mpsaz.org/page/bell-schedule/",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 66,
+              "n_chars": 2030
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:f2df7c5bf2",
+          "url": "https://mtnview.mpsaz.org/o/mtnview/article/1193983",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 12772
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:ace6a41ea3",
+          "url": "https://poston.mpsaz.org/o/poston/article/1177067",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 10,
+              "n_chars": 6324
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:231a58af32",
+          "url": "https://www.mpsaz.org/rhodes",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1,
+                5
+              ],
+              "n_times": 12,
+              "n_chars": 2879
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:e1f47f7ece",
+          "url": "https://rmhs.mpsaz.org/o/rmhs/documents/bell-schedules/394037",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 1748
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:d8ea955916",
+          "url": "https://poston.mpsaz.org/o/poston/article/1188783",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 13,
+              "n_chars": 5129
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:0f7662b82d",
+          "url": "https://poston.mpsaz.org/page/bell-schedule/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 1815
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:031dbee160",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/2394/Stapley/7b0ac6cd-35d0-4896-88ad-32cad2ceff9f/Bell_Schedule_2023-24.pdf?disposition=inline",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 84,
+              "n_chars": 961
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:0c9e93c5d1",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/2394/Carson/6f181298-7f07-49c7-bdd5-b471ae7fa20e/Bell_Schedule_24-25_New.pdf?disposition=inline",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 62,
+              "n_chars": 1577
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:0d132275a6",
+          "url": "https://shepherd.mpsaz.org/o/shepherd/article/2331469",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 9,
+              "n_chars": 3213
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:7568450b44",
+          "url": "https://www.mpsaz.org/live-feed?page_no=3",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:5eefe0145b",
+          "url": "https://www.mpsaz.org/smith",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1,
+                5
+              ],
+              "n_times": 14,
+              "n_chars": 3313
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:da4d5c6688",
+          "url": "https://franklindowntown.mpsaz.org/o/franklindowntown/news",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 5937
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:0b53c4fe56",
+          "url": "https://shepherd.mpsaz.org/o/shepherd/news",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 12,
+              "n_chars": 6083
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:7715e5373c",
+          "url": "https://kino.mpsaz.org/o/kino/article/1190863",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 140,
+              "n_chars": 2002
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:32247c5e2e",
+          "url": "https://shepherd.mpsaz.org/page/parent-information/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                3
+              ],
+              "n_times": 6,
+              "n_chars": 1093
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:0e8d8dbd1a",
+          "url": "https://franklineast.mpsaz.org/o/franklineast/events",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 3,
+              "n_chars": 1960
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:aa7ad1279a",
+          "url": "https://docs.google.com/document/d/1xnmLEajMyKR5qWKhwTmxfGRGAxzPuP0ISy3EzdwrjwA/edit?usp=sharing",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:50b907c240",
+          "url": "https://docs.google.com/document/d/1AgR5Lkp1v8h-Fq-In2ZXHWJgZu6YZJvBz-Qj6bp7Qqo/edit?usp=sharing",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:7bffb2d1d3",
+          "url": "https://shepherd.mpsaz.org/page/contact-us",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 12,
+              "n_chars": 2390
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:ec0ae901b7",
+          "url": "https://smith.mpsaz.org/page/athletics/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 3991
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:c650b763b1",
+          "url": "https://shepherd.mpsaz.org/o/shepherd/events",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 7,
+              "n_chars": 2028
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:010ca9ab1b",
+          "url": "https://franklindowntown.mpsaz.org/page/contact-us",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 12,
+              "n_chars": 2181
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:8ab21b559b",
+          "url": "https://shepherd.mpsaz.org/o/shepherd/events?id=59003074",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 1946
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:50330314d9",
+          "url": "https://docs.google.com/document/d/16sqXFSziD4YebS9Sq0vj1hm8CEhA9uk8nDYCME3wCps/edit?usp=sharing",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:c8a19e5b13",
+          "url": "https://docs.google.com/document/d/1exv9qJLElxJ0ft5p5JMAIPguDGOThQ3u7oWJf8eDdwk/edit?usp=sharing",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:aec09e6444",
+          "url": "https://franklindowntown.mpsaz.org/o/franklindowntown/page/grade-levels",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 1447
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:1a3ae39d04",
+          "url": "https://kino.mpsaz.org/o/kino/page/avid",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 7133
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:88f88fe51e",
+          "url": "https://pomeroy.mpsaz.org/o/pomeroy/events",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 2321
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:a0c68cf26f",
+          "url": "https://lindbergh.mpsaz.org/staff",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 3600
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:bd2d579fb7",
+          "url": "https://mesa.mpsaz.org/page/about/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 5779
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:b4e29096b4",
+          "url": "https://poston.mpsaz.org/o/poston/page/bookstore",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 12,
+              "n_chars": 3176
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:c2d1625b2f",
+          "url": "https://careers.mpsaz.org/o/eagleridge/events?id=46628991",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 4,
+              "n_chars": 1747
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:4b245c9975",
+          "url": "https://eagleridgeenrichment.mpsaz.org/page/contact-us",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:3d03364cf2",
+          "url": "https://carson.mpsaz.org/o/carson/events",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 1888
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:01b2bf8489",
+          "url": "https://rmhs.mpsaz.org/o/rmhs/page/yearbook",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 5928
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:ad99bc51fa",
+          "url": "https://pomeroy.mpsaz.org/page/contact-us",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 12,
+              "n_chars": 2261
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:6d8921c8cc",
+          "url": "https://eagleridgeenrichment.mpsaz.org/o/eagleridge/events",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:619a82c82b",
+          "url": "https://eagleridgeenrichment.mpsaz.org/o/eagleridge/page/about",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:e7d23ed0f0",
+          "url": "https://lindbergh.mpsaz.org/o/lindbergh/events",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 2026
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:1c050793f2",
+          "url": "https://taylor.mpsaz.org/o/taylor/events",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 4,
+              "n_chars": 1996
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:49860942b6",
+          "url": "https://poston.mpsaz.org/o/poston/events",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 1929
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:aa24518636",
+          "url": "https://roosevelt.mpsaz.org/o/eagleridge/events?id=58736110",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 4,
+              "n_chars": 1614
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:5bb205380f",
+          "url": "https://mtnview.mpsaz.org/o/mtnview/events",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 2101
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:23a7d83124",
+          "url": "https://mtnview.mpsaz.org/page/graduation-information",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 16,
+              "n_chars": 8951
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:70ffbfbd41",
+          "url": "https://westwood.mpsaz.org/o/westwood/events",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 1997
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:0b8e954dcf",
+          "url": "https://skyline.mpsaz.org/o/skyline/events",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 3311
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:f3bc2b8b32",
+          "url": "https://rmhs.mpsaz.org/o/rmhs/events",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 1914
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:27ce38c8d4",
+          "url": "https://www.mpsaz.org/salk",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 10,
+              "n_chars": 3645
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:38745edc1b",
+          "url": "gt://gt_curation_20260621T060008Z/0404970_Mesa_Unified_District_4235/25-26 Red Mtn. Block Schedule & Calendar.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:7f1abe4f26",
+          "url": "https://shepherd.mpsaz.org/page/academics/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                3
+              ],
+              "n_times": 6,
+              "n_chars": 1093
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:28152fb10b",
+          "url": "https://franklindowntown.mpsaz.org/o/franklindowntown/article/2544602",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 3638
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:2bcbe592f4",
+          "url": "https://www.mpsaz.org/shepherd",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1,
+                5
+              ],
+              "n_times": 13,
+              "n_chars": 2854
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:423a1adbf0",
+          "url": "https://docs.google.com/spreadsheets/d/15okcfRpcI357ysg3HtWG7cChLYuQ7VpC8TLLjnreZkY/edit?gid=0",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:6dc6e80995",
+          "url": "https://shepherd.mpsaz.org/live-feed?page_no=2",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 16,
+              "n_chars": 7591
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:0e79fec7f1",
+          "url": "https://franklindowntown.mpsaz.org/o/franklindowntown/article/2285816",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 2390
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:896177c1f5",
+          "url": "https://www.mpsaz.org/franklineast",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 5,
+              "n_chars": 1939
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:a1694c8b7c",
+          "url": "https://franklindowntown.mpsaz.org/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 229,
+              "n_chars": 160113
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:feb66ebb91",
+          "url": "https://www.mpsaz.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:dcf0ef0992",
+          "url": "https://kino.mpsaz.org/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1,
+                5
+              ],
+              "n_times": 12,
+              "n_chars": 3182
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:d518bf4ab7",
+          "url": "https://franklindowntown.mpsaz.org/o/franklindowntown/article/1844669",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 38,
+              "n_chars": 9520
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:2a3eff5c8b",
+          "url": "https://rmhs.mpsaz.org/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1,
+                5
+              ],
+              "n_times": 12,
+              "n_chars": 2784
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:bf78216b73",
+          "url": "https://emerson.mpsaz.org/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1,
+                5
+              ],
+              "n_times": 12,
+              "n_chars": 2853
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:c86258b2f0",
+          "url": "https://hughes.mpsaz.org/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 10,
+              "n_chars": 3665
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:9e8e243fdf",
+          "url": "https://www.mpsaz.org/washington",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 12,
+              "n_chars": 1906
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:4b613244c7",
+          "url": "https://www.mpsaz.org/webster",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1,
+                5
+              ],
+              "n_times": 14,
+              "n_chars": 3073
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:686d1e9494",
+          "url": "https://lindbergh.mpsaz.org/o/lindbergh/article/2549419",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 3032
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:1efab61d81",
+          "url": "https://pomeroy.mpsaz.org/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 257,
+              "n_chars": 165943
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:d44039e6dd",
+          "url": "https://academy.mpsaz.org/page/about/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 4521
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:fa43e3c2f5",
+          "url": "https://academy.mpsaz.org/page/contact-us",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 12,
+              "n_chars": 2462
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:b741396605",
+          "url": "https://mtnview.mpsaz.org/o/mtnview/article/949044",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 2441
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:600bb47dbd",
+          "url": "https://academy.mpsaz.org/documents",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 2252
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:797cc59955",
+          "url": "https://academy.mpsaz.org/page/faq/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 2942
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:aaf2a30bbc",
+          "url": "https://academy.mpsaz.org/o/academy/events?id=42246263",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 1877
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:7d773eb499",
+          "url": "https://www.mpsaz.org/zaharis",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 10,
+              "n_chars": 3748
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:a4d79ffcb6",
+          "url": "https://eagleridgeenrichment.mpsaz.org/o/eagleridge/article/2549357",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 4,
+              "n_chars": 2695
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:ce006da084",
+          "url": "https://www.mpsaz.org/brinton",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                5
+              ],
+              "n_times": 6,
+              "n_chars": 1461
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:de5d299b00",
+          "url": "https://www.mpsaz.org/kerr",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 264,
+              "n_chars": 159359
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:819c6b39d9",
+          "url": "https://www.mpsaz.org/westwood",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1,
+                5
+              ],
+              "n_times": 12,
+              "n_chars": 2720
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:03e8b88ba5",
+          "url": "https://www.mpsaz.org/rmre",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1,
+                5
+              ],
+              "n_times": 14,
+              "n_chars": 2708
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:7265daafd6",
+          "url": "https://www.mpsaz.org/lindbergh",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1,
+                5
+              ],
+              "n_times": 12,
+              "n_chars": 3010
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:23a39b368e",
+          "url": "https://dobson.mpsaz.org/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 10,
+              "n_chars": 3858
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:d789e4b481",
+          "url": "https://summitel.mpsaz.org/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1,
+                5
+              ],
+              "n_times": 18,
+              "n_chars": 3199
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:fd9bf3d2f9",
+          "url": "https://mesa.mpsaz.org/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1,
+                5
+              ],
+              "n_times": 12,
+              "n_chars": 3031
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:6960be7281",
+          "url": "https://www.mpsaz.org/eisenhower",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 3685
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:1d279cd69c",
+          "url": "https://carson.mpsaz.org/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1,
+                5
+              ],
+              "n_times": 14,
+              "n_chars": 2710
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:e9b8b71b2c",
+          "url": "https://franklinbrimhall.mpsaz.org/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1,
+                5
+              ],
+              "n_times": 12,
+              "n_chars": 3048
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:1e9f475e26",
+          "url": "https://skyline.mpsaz.org/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1,
+                5
+              ],
+              "n_times": 15,
+              "n_chars": 2660
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:ec128bf2be",
+          "url": "https://www.mpsaz.org/falconhill",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 257,
+              "n_chars": 159530
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:6976e8ebfc",
+          "url": "https://www.mpsaz.org/adams",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 10,
+              "n_chars": 3606
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:a586304c96",
+          "url": "https://www.mpsaz.org/Eagleridge",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 3343
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:db61f04ae3",
+          "url": "https://mtnview.mpsaz.org/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 10,
+              "n_chars": 4092
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:af568ffee7",
+          "url": "https://www.mpsaz.org/irving",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 260,
+              "n_chars": 157911
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:69f59d544b",
+          "url": "https://www.mpsaz.org/academy",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1,
+                5
+              ],
+              "n_times": 12,
+              "n_chars": 3052
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:33dd6794f0",
+          "url": "https://www.mpsaz.org/jefferson",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 174,
+              "n_chars": 159162
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:07b6601b5d",
+          "url": "https://fremont.mpsaz.org/o/pomeroy/article/1688915",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 5115
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:b0f98d4e9e",
+          "url": "https://www.mpsaz.org/oconnor",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 14,
+              "n_chars": 3629
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:497b1206e4",
+          "url": "https://oconnor.mpsaz.org/o/oconnor/article/3010521",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 2222
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:6431913acf",
+          "url": "https://stapley.mpsaz.org/o/stapley/news",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 5,
+              "n_chars": 5297
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:a0c919b819",
+          "url": "https://www.mpsaz.org/stapley",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 9,
+              "n_chars": 3738
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:b866eae5dc",
+          "url": "https://www.mpsaz.org/o/cte/article/3040845",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:c45585c41d",
+          "url": "https://skyline.mpsaz.org/o/skyline/page/bell-schedules",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:d92de1d121",
+          "url": "https://www.mpsaz.org/page/dresscode",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:4c298afd98",
+          "url": "https://drive.google.com/file/d/1HOqDdA5tlsHJwxBBrPareCZyGk7kvTo9/view?usp=sharing",
+          "label": "unusable",
+          "decision": "reject",
+          "reason": "non-target:unusable",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:8c46b92f3a",
+          "url": "https://www.mpsaz.org/enroll",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:b2353365af",
+          "url": "http://www.mpsaz.org/summitclimb/parent_info/bellschedules/slideshow",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:68c7c6c698",
+          "url": "https://www.mpsaz.org/page/back-to-school",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:f689fdbf3a",
+          "url": "https://www.mpsaz.org/o/departments/page/preschool",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:a81351b3c1",
+          "url": "https://www.mpsaz.org/o/mpsaz/page/tours-elem",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:d8175ef578",
+          "url": "https://www.mpsaz.org/article/1994461",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:477a0e3f49",
+          "url": "https://www.mpsaz.org/page/calendars",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:b5fd765b85",
+          "url": "https://www.mpsaz.org/transportation",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:78c7744463",
+          "url": "https://www.mpsaz.org/o/mpsaz/page/graduation-ceremonies",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:0c01637975",
+          "url": "https://www.mpsaz.org/article/1326009",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0404970:36b0069b3b",
+          "url": "https://www.mpsaz.org/o/mpsaz/page/summer-school",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 128,
+      "est_usd": 0.13056
+    },
+    {
+      "district_id": "0102370",
+      "name": "Mobile County",
+      "state": "AL",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "0102370:a46dac7d6b",
+          "url": "https://www.mcpss.com/o/dhs/page/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 23,
+              "n_chars": 1599
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:a6b3da66c4",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/About the School | Holloway Elementary School.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:35a6ed41bd",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/2025-2026-Mary G Montgomery High School-Bell-Schedule.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:059ddd4a31",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Causey Middle School 25-26-Bell-Schedule.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:74f1245f99",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/5395/Clsms/8c4c2ded-01d7-4f75-ad58-be493ea06af9/Bell_Schedule.pdf?disposition=inline",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 20,
+              "n_chars": 1764
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:7ba54986be",
+          "url": "https://aptg.co/9hX4Fv",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 24,
+              "n_chars": 1132
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:d6814c1db4",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Dodge Elementary School Parent Handbook 20212022.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:4b559ca901",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Class Schedule | Collier Elementary School.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:510e64749e",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/School Schedule | Tanner Williams Elementary School.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:785b5912fa",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Pillans Middle School _Bell_Schedule_2023-2024.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:f49a4a9376",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Hutchens_Student-Parent_Handbook_2024-2025.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:bd50a2bef1",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Allentown Elementary School Parent-Student-Handbook-2025-2026.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:26ac75d68c",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Blount High School.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:dc2701d508",
+          "url": "https://www.mcpss.com/o/blhs/page/24-25-bell-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 19,
+              "n_chars": 929
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:62bda974a3",
+          "url": "https://www.mcpss.com/o/mhs",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 4,
+              "n_chars": 4538
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:8b1844e939",
+          "url": "https://www.mcpss.com/o/bhs",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 6424
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:6277511362",
+          "url": "https://www.mcpss.com/o/bcrhs",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 6625
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:a7a4a30f2a",
+          "url": "https://www.mcpss.com/o/whmgpa",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 9,
+              "n_chars": 6122
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:6765e0bce2",
+          "url": "https://www.mcpss.com/o/wes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:016d9606c6",
+          "url": "https://www.mcpss.com/o/ngdes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:ef7ede444d",
+          "url": "https://mcpss.edurooms.com/engage/causey-middle/newsletters/the-tiger-times-cms-weekly-newsletter-february-9-2026",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:570ef76ad3",
+          "url": "https://mcpss.edurooms.com/engage/causey-middle/newsletters/the-tiger-times-cms-weekly-newsletter-march-16-2026",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:729921ddab",
+          "url": "https://mcpss.edurooms.com/engage/causey-middle/newsletters/the-tiger-times-cms-weekly-newsletter-may-18-2026",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:ab8400d1bd",
+          "url": "https://mcpss.edurooms.com/engage/causey-middle/newsletters/the-tiger-times-cms-weekly-newsletter-february-23-2026",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:baefe51080",
+          "url": "https://mcpss.edurooms.com/engage/causey-middle/newsletters/the-tiger-times-cms-weekly-newsletter-march-23-2026",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:d3b49316e8",
+          "url": "https://mcpss.edurooms.com/engage/causey-middle/newsletters/the-tiger-times-cms-weekly-newsletter-march-9-2026",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:ae32cb4264",
+          "url": "https://mcpss.edurooms.com/engage/causey-middle/newsletters/the-tiger-times-cms-weekly-newsletter-march-2-2026",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:58d2164c0e",
+          "url": "https://www.mcpss.com/o/ghes/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:24ff7adbdc",
+          "url": "https://www.mcpss.com/o/bcrhs/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:338b2454b9",
+          "url": "https://www.mcpss.com/o/csms/live-feed?page_no=1",
+          "label": "school_start_end_prose",
+          "decision": "send",
+          "reason": "target-label:school_start_end_prose",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 39,
+              "n_chars": 18589
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:ad9d0f08a3",
+          "url": "https://www.mcpss.com/o/mses/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:6bf32c3267",
+          "url": "https://www.mcpss.com/o/mses/live_feeds/12467160",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:e92bf5b836",
+          "url": "https://www.mcpss.com/o/baaws/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:70f3ed41bc",
+          "url": "https://www.mcpss.com/events?id=54155350",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:e4aaa28c91",
+          "url": "https://www.mcpss.com/o/bcrhs/events?id=40962574",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:f5f9bd3506",
+          "url": "https://www.mcpss.com/o/dmst",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:ed79273bf1",
+          "url": "https://www.mcpss.com/o/aes/events?id=49235703",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:e262f13930",
+          "url": "https://www.mcpss.com/o/btwms",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:665c9f4264",
+          "url": "https://www.mcpss.com/o/pk5s",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:7ba52d91db",
+          "url": "https://www.mcpss.com/o/twes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:33ff55a720",
+          "url": "https://www.mcpss.com/o/meaes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:eef6a8f96d",
+          "url": "https://www.mcpss.com/o/gres",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:b6d6844d79",
+          "url": "https://www.mcpss.com/o/jwes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:906822eae3",
+          "url": "https://www.mcpss.com/o/ams",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:bfa0a813c5",
+          "url": "https://www.mcpss.com/o/coes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:adb0cf7c28",
+          "url": "https://www.mcpss.com/o/hms",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:9104d55b21",
+          "url": "https://www.mcpss.com/o/caes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:750bfa8b52",
+          "url": "https://www.mcpss.com/o/whes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:53f00f21d6",
+          "url": "https://www.mcpss.com/o/ges",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:e27a465d06",
+          "url": "https://www.mcpss.com/o/erdes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:a08e4a882c",
+          "url": "https://www.mcpss.com/o/ngdes/live-feed?page_no=3",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:90c014ac65",
+          "url": "https://www.mcpss.com/o/mcts",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:83f4158cce",
+          "url": "https://www.mcpss.com/o/ses",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:c1a6fd419b",
+          "url": "https://www.mcpss.com/o/mbaes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:e46942836c",
+          "url": "https://www.mcpss.com/o/res/live-feed?page_no=2",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:43a3303418",
+          "url": "https://www.mcpss.com/o/cms/live_feeds/12368849",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:bf5fd2947d",
+          "url": "https://www.mcpss.com/o/bcrhs/live_feeds/12315434",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:4565238f15",
+          "url": "https://www.mcpss.com/o/mgmhs/live-feed?page_no=5",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:84adfc463b",
+          "url": "https://www.mcpss.com/o/sms/live_feeds/12487874",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:00af80e904",
+          "url": "https://www.mcpss.com/o/hies",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:fa83adfc59",
+          "url": "https://www.mcpss.com/o/pk5s/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:9433f249a5",
+          "url": "https://www.mcpss.com/o/ches/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:98ec7d475a",
+          "url": "https://www.mcpss.com/o/dees/events?id=45474103",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:fe09633a1b",
+          "url": "https://www.mcpss.com/o/mses",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:0744653ae4",
+          "url": "https://www.mcpss.com/o/howes/live-feed?page_no=3",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:7afde2b59b",
+          "url": "https://www.mcpss.com/o/osscpa/live-feed?page_no=3",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:b44291e821",
+          "url": "https://www.mcpss.com/o/mses/live_feeds/12569983",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:925540c438",
+          "url": "https://www.mcpss.com/o/ores/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:21a7e22962",
+          "url": "https://www.mcpss.com/o/btwms/live-feed?page_no=1",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:310096ff7b",
+          "url": "https://www.mcpss.com/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:c6d95b2f5a",
+          "url": "https://www.mcpss.com/o/coes/live-feed?page_no=2",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:65d43671f1",
+          "url": "https://www.mcpss.com/o/lfhs",
+          "label": null,
+          "decision": "hold",
+          "reason": "unlabeled-tier-C",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:0a38e02476",
+          "url": "https://www.mcpss.com/magnetschools",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:c1f26d2310",
+          "url": "https://www.mcpss.com/o/dhs/live-feed?page_no=20",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:7e98752389",
+          "url": "https://www.mcpss.com/live-feed?page_no=15",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:3a72cfbff4",
+          "url": "https://www.mcpss.com/o/hms/live_feeds/11660330",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:be16356cd5",
+          "url": "https://www.mcpss.com/o/cms/live-feed?page_no=4",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:4d8bff5196",
+          "url": "https://www.mcpss.com/o/ges/live-feed?page_no=5",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:0f27e54bc3",
+          "url": "https://www.mcpss.com/o/lfhs/events",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:59e88d1a34",
+          "url": "https://www.mcpss.com/o/dees/live_feeds/9183615",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:3d9b990b11",
+          "url": "https://www.mcpss.com/o/dees/live_feeds/9081686",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:3097691666",
+          "url": "https://www.mcpss.com/o/dees/staff?page_no=4",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:10cfff393b",
+          "url": "https://www.mcpss.com/o/dees/page/title-1-forms",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:70a58eaa22",
+          "url": "https://www.mcpss.com/o/dees/article/2677595",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:009902bc63",
+          "url": "https://www.mcpss.com/o/mses/events?id=41917962&view=list-month",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:b608e11f98",
+          "url": "https://www.mcpss.com/o/mses/article/2653140",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:ba717e8f83",
+          "url": "https://www.mcpss.com/o/mses/article/2792590",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:9e03dcf867",
+          "url": "https://www.mcpss.com/documents/system/mcpss-calendars/806415",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:30cbd6c75f",
+          "url": "https://www.mcpss.com/o/mcps/page/registration",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:79c3f4247a",
+          "url": "https://www.mcpss.com/page/enrollment",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:8ecd3cf74a",
+          "url": "https://www.mcpss.com/o/mcps/page/pre-kindergarten",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:4cc0f4398f",
+          "url": "https://www.mcpss.com/o/mcps/page/job-opportunities",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:337c086176",
+          "url": "https://www.mcpss.com/o/whes/live_feeds/11039267",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:2e7ce3545a",
+          "url": "https://www.mcpss.com/o/whes/live_feeds/12620995",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:47032061f4",
+          "url": "https://www.mcpss.com/o/whes/live_feeds/8494259",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:854f8f64df",
+          "url": "https://www.mcpss.com/o/whes/article/2937307",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:122ba8e1b9",
+          "url": "https://www.mcpss.com/o/whes/article/2769556",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:04e6985bac",
+          "url": "https://www.mcpss.com/o/res/article/2165214",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:9f51490485",
+          "url": "https://www.mcpss.com/o/ores/events?id=57993380",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:1e36abc68b",
+          "url": "https://www.mcpss.com/o/ores/documents/parent-resources/parent-resources/16306204",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:92b11fe7ad",
+          "url": "https://www.mcpss.com/o/ores/staff?page_no=2",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:03b6a9f8f5",
+          "url": "https://www.mcpss.com/o/ses/article/2563707",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:422fda22cb",
+          "url": "https://www.mcpss.com/o/ores/article/2165537",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:b43c4c41bf",
+          "url": "https://www.mcpss.com/o/clsms/documents/about/bell-schedule/16303277",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:5842cd2c2d",
+          "url": "https://www.mcpss.com/o/sms/live-feed?page_no=4",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:2759664dbb",
+          "url": "https://www.mcpss.com/o/mcts/news",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:7a8972f8f2",
+          "url": "https://www.mcpss.com/o/mcps/page/tickets-and-game-schedules",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:dcfe4ddd0c",
+          "url": "https://www.mcpss.com/o/sms/documents/parent-resources/forms-and-documents/782204",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:14ff7a1c27",
+          "url": "https://www.mcpss.com/o/sms/events?id=45507959",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:77ca5ab835",
+          "url": "https://www.mcpss.com/o/sms/live_feeds/12250488",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:82641390fd",
+          "url": "https://www.mcpss.com/o/sms/page/contact-us",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:99dae300ea",
+          "url": "https://www.mcpss.com/o/hms/page/2025-2026-school-year",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:dc0380766c",
+          "url": "https://www.mcpss.com/o/hms/documents",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:eda57ff0fb",
+          "url": "https://www.mcpss.com/o/mcps/page/transportation",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:afae80b2f7",
+          "url": "https://www.mcpss.com/o/cms/page/student-resources",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:c233a090ed",
+          "url": "https://www.mcpss.com/o/cms/page/parent-resources",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:733aa06a2d",
+          "url": "https://www.mcpss.com/o/bcrhs/live_feeds/11916985",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:e445b0ba52",
+          "url": "https://www.mcpss.com/o/bcrhs/live_feeds/12147692",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:47af35b2ba",
+          "url": "https://www.mcpss.com/o/bcrhs/live_feeds/11191755",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:1268a5f29d",
+          "url": "https://www.mcpss.com/o/dhs/news",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:430b1ed41c",
+          "url": "https://www.mcpss.com/live_feeds/12229841",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:b4f28e0063",
+          "url": "https://www.mcpss.com/page/about-mcpss",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:a97676f8a4",
+          "url": "https://www.mcpss.com/o/mgmhs/events?id=40538929",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:0afec29fb3",
+          "url": "https://www.mcpss.com/o/mgmhs/documents/parent-resources/parent-information/mgm-information/daily-schedule-and-tardy-policy/782669",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:6921f42b29",
+          "url": "https://www.mcpss.com/o/mgmhs/live_feeds/12449047",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:c3fa20b8d4",
+          "url": "https://www.mcpss.com/o/mgmhs/live_feeds/12341984",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:f8ef7e8af1",
+          "url": "https://www.mcpss.com/o/lfhs/documents/parent-resources/library/online-learning/782766",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:df868ea726",
+          "url": "https://www.mcpss.com/o/mgmhs/documents/clubs-and-organizations/mgm-first-class-pre-k/782420",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:bca51a1576",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/5395/Sms/be129189-6373-4ca9-93a8-30070560707b/Bell-Schedule.docx?disposition=inline",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:0718c59b49",
+          "url": "https://www.mcpss.com/o/p68s/live-feed",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:f2f429123c",
+          "url": "https://www.mcpss.com/o/vhs/article/2164925",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:785f65ed42",
+          "url": "https://www.mcpss.com/o/pk5s/article/2732211",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:7e54ca38b3",
+          "url": "https://www.mcpss.com/o/sms/article/2732218",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:dc9570e186",
+          "url": "https://www.mcpss.com/o/sms/article/2164914",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:9b3f5090a2",
+          "url": "https://www.mcpss.com/o/mcts/article/2732202",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:78ec00c950",
+          "url": "https://www.mcpss.com/o/ores/article/2732207",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:7070246c98",
+          "url": "https://www.mcpss.com/o/mses/article/2164900",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:9cf661ce4d",
+          "url": "https://www.mcpss.com/article/2164835",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 9,
+      "est_usd": 0.00918
+    }
+  ]
+}

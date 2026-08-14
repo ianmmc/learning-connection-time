@@ -1,0 +1,5499 @@
+{
+  "handoff_hash": "88c1cf5b5e37",
+  "created_at": "2026-08-14T06:41:09Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "dispatch_type": "production",
+  "fingerprints": {
+    "0634320": {
+      "config": "f77ddb950061",
+      "labels": "5f8d663ab517",
+      "data": "ffd71383d0e3"
+    },
+    "3200480": {
+      "config": "f77ddb950061",
+      "labels": "1f3405e797e4",
+      "data": "7df57f8ce2ea"
+    },
+    "0904830": {
+      "config": "f77ddb950061",
+      "labels": "9814581c1441",
+      "data": "c7e4a5b4da89"
+    },
+    "5605302": {
+      "config": "f77ddb950061",
+      "labels": "9314ef3e61d6",
+      "data": "e1f32f2aa079"
+    },
+    "1906540": {
+      "config": "f77ddb950061",
+      "labels": "0e2cf393163a",
+      "data": "ef8fcdc6868c"
+    },
+    "1000080": {
+      "config": "f77ddb950061",
+      "labels": "97e1fd1c7562",
+      "data": "ebf48bb3d9b1"
+    },
+    "0102370": {
+      "config": "f77ddb950061",
+      "labels": "c9938fb7290c",
+      "data": "fbcde4efe811"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v4"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.07242000000000001,
+    "n_reps": 71,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "0634320",
+      "name": "San Diego Unified",
+      "state": "CA",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "0634320:ab0676483d",
+          "url": "https://lmec.sandiegounified.org/Students",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:5dfea2ef17",
+          "url": "https://dana.sandiegounified.org/online/3__learn_how_your_school_day_is_structured",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:02ea686562",
+          "url": "https://zamorano.sandiegounified.org/about/general_information/bell_times",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 109,
+              "n_chars": 2791
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:0ce3885abc",
+          "url": "https://hoover.sandiegounified.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:16761a6879",
+          "url": "https://standley.sandiegounified.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:cec31d4757",
+          "url": "https://horton.sandiegounified.org/about/bell_schedule",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 45,
+              "n_chars": 2475
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:bc76843606",
+          "url": "https://kumeyaay.sandiegounified.org/about/daily_schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 31,
+              "n_chars": 6648
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:dd49f86fc2",
+          "url": "https://birney.sandiegounified.org/about_us/daily_schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 117,
+              "n_chars": 3703
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:58e0c7e6b9",
+          "url": "https://languageacademy.sandiegounified.org/current_families/bell_schedule_overview",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:b9576df3bc",
+          "url": "https://marshallmiddle.sandiegounified.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:3f9cdaa432",
+          "url": "https://morse.sandiegounified.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:162d872bcf",
+          "url": "https://lmec.sandiegounified.org/montessori/Bellschedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 77,
+              "n_chars": 1126
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:a48d8df4a0",
+          "url": "https://bell.sandiegounified.org/about_us/daily_bell_schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 45,
+              "n_chars": 3892
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:5cfd3e93e7",
+          "url": "https://hoover.sandiegounified.org/parents/helpful_links_for_parents/bell_schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 44,
+              "n_chars": 999
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:f71378e4f5",
+          "url": "gt://gt_curation_20260621T060008Z/0634320_San_Diego_Unified/Bell Middle School Schedule 2025.png",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:c88aa2ff40",
+          "url": "https://boone.sandiegounified.org/about_us/hours_calendar_and_location",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 4,
+              "n_chars": 5482
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:51d2306102",
+          "url": "https://marston.sandiegounified.org/cms/One.aspx?portalId=27926546&pageId=31343353",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:dfee91c1b7",
+          "url": "https://missionbay.sandiegounified.org/m_b_h_s_news/2026-2027_welcome_back_bucs",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 9,
+              "n_chars": 6612
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:079d16c0eb",
+          "url": "https://uchs.sandiegounified.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:78f0b804d5",
+          "url": "https://lewis.sandiegounified.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:b63d75773a",
+          "url": "https://canyonhills.sandiegounified.org/bell_schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 42,
+              "n_chars": 1131
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:9159694d85",
+          "url": "https://sdmet.sandiegounified.org/about_us/bell_schedule_and_academic_calendar",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 12,
+              "n_chars": 5043
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:766d2cef3c",
+          "url": "https://tierrasanta.sandiegounified.org/about/daily_schedule",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 51,
+              "n_chars": 5159
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:bd1935b4bc",
+          "url": "https://bell.sandiegounified.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:af84f65075",
+          "url": "https://sdhs.sandiegounified.org/about_us/2025-2026_bell_schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 58,
+              "n_chars": 1887
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:b0d4b6727e",
+          "url": "https://sherman.sandiegounified.org/about/daily_schedule",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 50,
+              "n_chars": 3217
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:141838b26e",
+          "url": "https://walker.sandiegounified.org/about_us/bell_schedule",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 5,
+              "n_chars": 5267
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:ab392ec0ab",
+          "url": "https://bethune.sandiegounified.org/about_us/bell_schedule",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 16,
+              "n_chars": 5688
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:5bbcc7d3de",
+          "url": "https://webster.sandiegounified.org/about/daily_schedule",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                4
+              ],
+              "n_times": 22,
+              "n_chars": 1603
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:e62bf9d6db",
+          "url": "https://sandburg.sandiegounified.org/about/schedules/bell_schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 71,
+              "n_chars": 3611
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:c4f924dd97",
+          "url": "https://oceanbeach.sandiegounified.org/about/daily_schedule/",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 96,
+              "n_chars": 3692
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:f275e83d2c",
+          "url": "https://knox.sandiegounified.org/about_us/2023-2024_bell_schedules",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 34,
+              "n_chars": 5657
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:dc95b3e187",
+          "url": "https://central.sandiegounified.org/about_us/hours__calendar_and_location/calendar",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 5029
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:e37b5fe7b3",
+          "url": "https://spreckels.sandiegounified.org/about_us/daily_schedule",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:92e5ca87d3",
+          "url": "https://marshall.sandiegounified.org/about_/hours_calendar_and_location",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 12,
+              "n_chars": 2775
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:c34bc933a6",
+          "url": "https://central.sandiegounified.org/parents/hours_calendar_location",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                4
+              ],
+              "n_times": 6,
+              "n_chars": 1502
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:907f7855b0",
+          "url": "gt://gt_curation_20260621T060008Z/0634320_San_Diego_Unified/Dailard Elementary Bell Schedule 2025-2026.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:2994e043cc",
+          "url": "https://itd.sandiegounified.org/it_resources/power_school/power_school_news/bell_schedule_and_calendar_info_for_2026-27",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:36b0abe0c0",
+          "url": "https://bell.sandiegounified.org/contact_us/hours_calendar_and_location",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:74d44c7a9b",
+          "url": "https://emerson.sandiegounified.org/about_us/communication/location_hours_and_calendar",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 6,
+              "n_chars": 5345
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:968c60e461",
+          "url": "https://fulton.sandiegounified.org/contact",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 13,
+              "n_chars": 1855
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:4248a3b4bc",
+          "url": "https://emerson.sandiegounified.org/about_us/schedule__hours__and_location",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 5278
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:2cc32a635c",
+          "url": "https://standley.sandiegounified.org/information/standley_calendar",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:fb882436d5",
+          "url": "gt://gt_curation_20260621T060008Z/0634320_San_Diego_Unified/Canyon Hills 25-26 Bell Schedule 1.jpg",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:8a3af94247",
+          "url": "https://challenger.sandiegounified.org/about_us/calendar_bell_schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 55,
+              "n_chars": 6930
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:49d258d061",
+          "url": "https://marvin.sandiegounified.org/about_us/location_and_hours",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 32,
+              "n_chars": 7946
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:4868c26904",
+          "url": "https://pershing.sandiegounified.org/students/student_schedule/bell_schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 38,
+              "n_chars": 5801
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:4fbd5c6183",
+          "url": "https://pershing.sandiegounified.org/about_us/contact_u_s",
+          "label": "school_start_end_prose",
+          "decision": "send",
+          "reason": "target-label:school_start_end_prose",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 7,
+              "n_chars": 5938
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:8262ec7106",
+          "url": "https://fletcher.sandiegounified.org/about/contact_us",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 13,
+              "n_chars": 2731
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:1fc9a421a0",
+          "url": "https://dana.sandiegounified.org/news/school_news/get_ready_for_1st_day_of_school_-_aug__21",
+          "label": "school_start_end_prose",
+          "decision": "send",
+          "reason": "target-label:school_start_end_prose",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 6504
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:722637cf38",
+          "url": "gt://gt_curation_20260621T060008Z/0634320_San_Diego_Unified/2025-2026 Bell Schedule Mission Bay High School.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:683c4e8a5d",
+          "url": "https://curie.sandiegounified.org/bell_schedule",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 11,
+              "n_chars": 5171
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:49f3d4e3c0",
+          "url": "https://www.clark.sandiegounified.org/about/bell_schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 176,
+              "n_chars": 5081
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:32bc87a325",
+          "url": "https://longfellow.sandiegounified.org/about/bell_schedule/",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 179,
+              "n_chars": 4731
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:fe76e5c504",
+          "url": "https://pershing.sandiegounified.org/students/student_schedule/minimum_day_schedule",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:5592ac7cc8",
+          "url": "https://pointloma.sandiegounified.org/about_us/bell_schedules",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 100,
+              "n_chars": 3720
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:8bc5dc9934",
+          "url": "https://goldenhill.sandiegounified.org/academics/daily_schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 112,
+              "n_chars": 3705
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:3ade71f33b",
+          "url": "https://hardy.sandiegounified.org/about/bell_schedule",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 72,
+              "n_chars": 3181
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:e6341a6c89",
+          "url": "https://itd.sandiegounified.org/UserFiles/Servers/Server_27969467/File/IT%20Resources/PowerSchool/PowerSchool%20Handbooks%20and%20Job%20Aids/System%20Administration/Bell_Schedule_and_Calendar_Setup_Job_Aid.pdf",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:f525f78eca",
+          "url": "gt://gt_curation_20260621T060008Z/0634320_San_Diego_Unified/Mount View School UTK-8.png",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:ae4aed3dab",
+          "url": "https://miramesa.sandiegounified.org/academics/bell_schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 63,
+              "n_chars": 6066
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:2b50e70434",
+          "url": "gt://gt_curation_20260621T060008Z/0634320_San_Diego_Unified/Pershing Middle School Bell Schedule_25-26.jpg",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:fd892f18a1",
+          "url": "https://marshallmiddle.sandiegounified.org/weekly_news/2026-27_bell_schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 184,
+              "n_chars": 7004
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:5968fef1b6",
+          "url": "https://barnard.sandiegounified.org/about_us/bell_times",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 63,
+              "n_chars": 3048
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:c0b957db30",
+          "url": "https://www.sandiegounified.org/cms/one.aspx?portalid=27962744&pageid=89063008",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 186,
+              "n_chars": 6966
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:271c5fd4c4",
+          "url": "https://marshallmiddle.sandiegounified.org/general_info/bell_schedules/",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 72,
+              "n_chars": 9460
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:3977de68bb",
+          "url": "https://knox.sandiegounified.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:a26d00c7c5",
+          "url": "https://missionbay.sandiegounified.org/about_us/bell_schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 30,
+              "n_chars": 4050
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:9ffab193ff",
+          "url": "https://marvin.sandiegounified.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:be054da3ab",
+          "url": "https://pershing.sandiegounified.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:1703839cf3",
+          "url": "https://miramesa.sandiegounified.org/news/what_s_new/schedule_update_8_29",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:5330f1a596",
+          "url": "https://silvergate.sandiegounified.org/enrollment_info/bell_schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 102,
+              "n_chars": 7175
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:dbdb14b5ee",
+          "url": "https://marston.sandiegounified.org/parents/prime_time_extended_day_program",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:a79b8159b2",
+          "url": "https://cpma.sandiegounified.org/about_us/office_hours",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 5281
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:ad7a91b356",
+          "url": "https://mckinley.sandiegounified.org/contact_us/location_directions_and_bell_times",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 126,
+              "n_chars": 4782
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:99696e5b91",
+          "url": "https://torreypines.sandiegounified.org/general_info/bell_schedule",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 84,
+              "n_chars": 3182
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:fe5380bcdf",
+          "url": "https://wilson.sandiegounified.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:160e9a8ef3",
+          "url": "https://tierrasanta.sandiegounified.org/",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 3,
+              "n_chars": 4175
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:333a632d7a",
+          "url": "https://miramesa.sandiegounified.org/calendar",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:df2eb1d7be",
+          "url": "https://miramesa.sandiegounified.org/parents__guardians/attendance/m6_formerly_saturday_school",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:1e90e79b4f",
+          "url": "https://crawford.sandiegounified.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:0d781fba86",
+          "url": "https://crawford.sandiegounified.org/community/i_m_i_n_at_crawford/schedule",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:dbb280e523",
+          "url": "https://emerson.sandiegounified.org/parents/prime_time_extended_day_program",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:9caffa784e",
+          "url": "gt://gt_curation_20260621T060008Z/0634320_San_Diego_Unified/Mira Mesa High School 5. Marauder.Minutes.25.26_Official.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:1b6c72ed79",
+          "url": "https://lmec.sandiegounified.org/what_s_new",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:59a2ed3876",
+          "url": "https://marshallmiddle.sandiegounified.org/parents/Daily_Schedules",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 48,
+              "n_chars": 1887
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:e831a09723",
+          "url": "https://millennialtech.sandiegounified.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:ab134cb466",
+          "url": "https://pointloma.sandiegounified.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:77b7fa4fad",
+          "url": "https://wilson.sandiegounified.org/calendar",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:923a8e0e5d",
+          "url": "https://missionbay.sandiegounified.org/about_us/calendar",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:c51e24c8a6",
+          "url": "https://fletcher.sandiegounified.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:489bb22c5f",
+          "url": "https://millennialtech.sandiegounified.org/mtm_calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:4424d044ce",
+          "url": "https://marston.sandiegounified.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:460bb30561",
+          "url": "https://pershing.sandiegounified.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:5132a49c2d",
+          "url": "https://emerson.sandiegounified.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:846e475576",
+          "url": "https://fulton.sandiegounified.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:a3e3bfa57e",
+          "url": "https://scpa.sandiegounified.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:ec2e4ef989",
+          "url": "https://tierrasanta.sandiegounified.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:92889c3e32",
+          "url": "https://millennialtech.sandiegounified.org/programs_and_services/saturday_academy",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:72ab898018",
+          "url": "https://lajollahigh.sandiegounified.org/health___wellness/health_and_wellness_information",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:8182fe539c",
+          "url": "https://crawford.sandiegounified.org/cms/One.aspx?portalId=27836929&pageId=28577278",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:5176bbba87",
+          "url": "https://lajollahigh.sandiegounified.org/cms/One.aspx?portalId=27919182&pageId=37656857",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:896475c1e0",
+          "url": "https://marston.sandiegounified.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:7f3ca7be63",
+          "url": "https://sandiegounified.org/academics/academic_calendars/2025-2026",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:a03cbc6251",
+          "url": "https://uchs.sandiegounified.org/general_info",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:c15b50e8ab",
+          "url": "https://kearnybst.sandiegounified.org/our_school/about_us",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:149892c39f",
+          "url": "https://kearny.sandiegounified.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:b259523ee0",
+          "url": "https://sandiegounified.org/a-to-_z_index/site_map",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:e2830d8cdc",
+          "url": "https://kearnybst.sandiegounified.org/a_t_t_e_n_d_a_n_c_e",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:c25b1c4964",
+          "url": "https://kearnyeid.sandiegounified.org/about_us/bell_schedule",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:5440b5065b",
+          "url": "https://lmec.sandiegounified.org/about_us/bell_schedules",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:1162bf4bf8",
+          "url": "https://lmec.sandiegounified.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:418194ffca",
+          "url": "https://lmec.sandiegounified.org/families",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:7ac3516939",
+          "url": "https://lmec.sandiegounified.org/cms/One.aspx?portalId=27932343&pageId=190802292",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:4f259156f1",
+          "url": "https://lmec.sandiegounified.org/about_us",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:b012d28e7f",
+          "url": "https://lmec.sandiegounified.org/calendar/?portalId=27932343&pageId=27932359&objectId.313693=28926936&contextId.313693=28926935&parentId.313693=28926936&action.313693=subscribeToICalAndRssFeeds&objectType.313693=workspace_calendar&CalendarName=Calendar&PageName=Calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:4f544e7e7b",
+          "url": "https://boone.sandiegounified.org/gateway/Login.aspx?returnUrl=%2fabout_us%2fhours_calendar_and_location",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:2218aa9e1c",
+          "url": "https://muirlands.sandiegounified.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:273604c415",
+          "url": "https://lajollahigh.sandiegounified.org/students/student_schedules",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:0c94dfd4d0",
+          "url": "https://lajollahigh.sandiegounified.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:e34f779420",
+          "url": "https://lajollahigh.sandiegounified.org/discover_ljhs/bell_schedule_2025-26",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:e467a5432a",
+          "url": "https://cpma.sandiegounified.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:b9fd3ea7c4",
+          "url": "https://marshallmiddle.sandiegounified.org/parents/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:c92195ff74",
+          "url": "https://www.clark.sandiegounified.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:fea357e5f3",
+          "url": "https://kearny.sandiegounified.org/students/bell_schedule_and_important_dates",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:23e384c879",
+          "url": "https://marston.sandiegounified.org/about",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:8f22974954",
+          "url": "https://silvergate.sandiegounified.org/for_parents/familiyresourceguide",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:6d7b7db5e0",
+          "url": "https://mann.sandiegounified.org/cms/One.aspx?portalId=27865045&pageId=190802292",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:23ba99bba1",
+          "url": "https://mann.sandiegounified.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:ae1dff5aa6",
+          "url": "https://marvin.sandiegounified.org/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:ecd9d10505",
+          "url": "https://fulton.sandiegounified.org/cms/One.aspx?portalId=27850881&pageId=28034780",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:3f5943c6e0",
+          "url": "https://fulton.sandiegounified.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:406e39a6fa",
+          "url": "https://www.sandiegounified.org/cms/One.aspx?portalId=27844113&pageId=31343353",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:7858005dd6",
+          "url": "https://emerson.sandiegounified.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:dbf3e4fef5",
+          "url": "https://central.sandiegounified.org/about_us/hours__calendar_and_location",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:6183588a7b",
+          "url": "https://miramesa.sandiegounified.org/cms/One.aspx?portalId=27932816&pageId=190796155",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:3b196ecd0d",
+          "url": "https://miramesa.sandiegounified.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:e58cd6dbe3",
+          "url": "https://missionbay.sandiegounified.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0634320:bdf34d2a66",
+          "url": "https://missionbay.sandiegounified.org/about_us",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 50,
+      "est_usd": 0.051000000000000004
+    },
+    {
+      "district_id": "3200480",
+      "name": "Washoe County",
+      "state": "NV",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "3200480:c1779dcbd1",
+          "url": "https://damonteranch.washoeschools.net/fs/resource-manager/view/aff206e0-8236-4802-a606-cc3e6ce9253a",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:dc0b2ef055",
+          "url": "https://damonteranch.washoeschools.net/fs/resource-manager/view/5e5f073e-2f21-4fef-8c90-0f27337c3657",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:231229ef61",
+          "url": "https://swope.washoeschools.net/fs/resource-manager/view/8af1fcb0-eecd-401b-957b-a508f24e8cc8",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:113c826925",
+          "url": "https://skyranch.washoeschools.net/our-school/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:3c12f8421b",
+          "url": "https://obrien.washoeschools.net/our-school/prideland-handbook",
+          "label": "school_start_end_prose",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:23e6c784ed",
+          "url": "https://www.washoeschools.net/fs/resource-manager/view/8c37e4e7-be1d-495b-885d-597c5d10c19a",
+          "label": "district_hub_by_school",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "camelot_stream.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 386,
+              "n_chars": 5265
+            }
+          ]
+        },
+        {
+          "rec_key": "3200480:75de3031fb",
+          "url": "https://damonteranch.washoeschools.net/fs/resource-manager/view/41c40aba-79b6-4459-b79e-2887713b29ef",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:92020a63db",
+          "url": "https://mcqueen.washoeschools.net/our-school/daily-announcements",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:1a57c01fa5",
+          "url": "https://marceherz.washoeschools.net/fs/resource-manager/view/10264326-9450-4af0-848a-546e1d6eeb36",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:41d2095b61",
+          "url": "https://damonteranch.washoeschools.net/fs/resource-manager/view/fdf62da6-33c2-4f7a-8b20-b7d3d6a30173",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:5c58ee11d9",
+          "url": "https://swope.washoeschools.net/fs/resource-manager/view/b82d207d-bebd-4ec8-bb4d-5290b55dfa63",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:36291b23b4",
+          "url": "https://marceherz.washoeschools.net/fs/resource-manager/view/29c01254-4985-41c9-94fd-1de6bcb76e26",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:9a554f4714",
+          "url": "https://swope.washoeschools.net/fs/resource-manager/view/56d1e576-1837-4edc-9b53-488d10e14901",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:a14f6bc953",
+          "url": "https://www.washoeschools.net/fs/resource-manager/view/65cc7e6f-64d9-41c2-b069-fd55f3a6c9ed",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:325cf509da",
+          "url": "https://sparkshs.washoeschools.net/our-school/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:10e144454b",
+          "url": "https://inclinems.washoeschools.net/our-school/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:5c5fd6faae",
+          "url": "https://dilworth.washoeschools.net/our-school/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:4ad94d70ce",
+          "url": "https://galena.washoeschools.net/families/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:8f6fd67c49",
+          "url": "https://hug.washoeschools.net/our-school/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:0a9fa0d28d",
+          "url": "https://hiddenvalley.washoeschools.net/our-school/bell-schedule",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:5387a3ec8d",
+          "url": "https://clayton.washoeschools.net/our-school/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:bffbb89a3d",
+          "url": "https://katesmith.washoeschools.net/our-school/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:9c37cf5e3d",
+          "url": "https://verdi.washoeschools.net/families/student-handbook",
+          "label": "school_start_end_prose",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:414f216caa",
+          "url": "https://marceherz.washoeschools.net/fs/resource-manager/view/4896e58e-d264-4092-914a-938ac8d9c790",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:cab02e78a4",
+          "url": "https://pine.washoeschools.net/our-school/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:aceea99e47",
+          "url": "https://inclinems.washoeschools.net/fs/resource-manager/view/ed7b4504-3ea0-4f37-bc1e-d88caa53dc7c",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:9397706bf9",
+          "url": "https://dunn.washoeschools.net/our-school/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:0576277354",
+          "url": "https://silverlake.washoeschools.net/our-school/bell-schedule",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:36d3fb30f2",
+          "url": "https://corbett.washoeschools.net/our-school/home",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:714fbcd85c",
+          "url": "https://damonteranch.washoeschools.net/fs/resource-manager/view/6a7cd4aa-359c-47c5-ae23-67645e8916e1",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:5334a20b0c",
+          "url": "https://sepulveda.washoeschools.net/our-school/bell-schedule-and-campus-information",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:53001e823d",
+          "url": "https://verdi.washoeschools.net/our-school/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:b2b3c09c3b",
+          "url": "https://innovations.washoeschools.net/our-school/bell-schedules",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:0539ba975e",
+          "url": "https://clayton.washoeschools.net/fs/resource-manager/view/cd6abd10-4a90-4348-9744-6f4ed1a02e01",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:22e6e85027",
+          "url": "https://billinghurst.washoeschools.net/our-school/bell-schedules",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:d022b2e01e",
+          "url": "https://mcqueen.washoeschools.net/our-school/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:4ba22536af",
+          "url": "https://vaughn.washoeschools.net/our-school/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:e785bd98ec",
+          "url": "https://reed.washoeschools.net/our-school/homepage/bell-schedule/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:fb4177c0ed",
+          "url": "https://www.washoeschools.net/student-and-families/graduation",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:f36be295f6",
+          "url": "https://coldsprings.washoeschools.net/fs/resource-manager/view/d95830ee-a5c8-4d7c-92dc-aac787b2f6e9",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:2710061062",
+          "url": "https://mcqueen.washoeschools.net/fs/resource-manager/view/899fe82f-76c0-422f-9f2d-62595fb67a31",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:3002c47a81",
+          "url": "https://damonteranch.washoeschools.net/our-school/bell-schedule",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:6caf916ced",
+          "url": "https://reed.washoeschools.net/our-school/homepage",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:3200480:23e6c784ed",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:e569e822de",
+          "url": "https://reed.washoeschools.net/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:a762416ecd",
+          "url": "https://obrien.washoeschools.net/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:be138bca9a",
+          "url": "https://corbett.washoeschools.net/our-school/latest-news",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:ac7b453073",
+          "url": "https://wooster.washoeschools.net/academics/ccc",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:f95c3c6915",
+          "url": "https://reed.washoeschools.net/our-school/homepage/bell-schedule",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:c28bbaf207",
+          "url": "https://reed.washoeschools.net/our-school/calendar",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:754ef9a0ff",
+          "url": "https://mcqueen.washoeschools.net/our-school/calendar",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:19f465dbc4",
+          "url": "https://www.washoeschools.net/fs/resource-manager/view/6c4e7a08-fede-42a8-b709-5db1a0827f0c",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:5fe6d035d0",
+          "url": "https://aact.washoeschools.net/families/forms-and-record-requests",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:539e11822d",
+          "url": "https://www.washoeschools.net/trustees/board-of-trustees/board-meetings-calendar",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:c1d47af6f7",
+          "url": "https://www.washoeschools.net/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:b6dc719200",
+          "url": "https://marceherz.washoeschools.net/fs/resource-manager/view/39f7c97d-d475-4a43-9feb-bbe9dfb99b5f",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:3bdd718720",
+          "url": "https://desertskies.washoeschools.net/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:f464da6e4a",
+          "url": "https://wooster.washoeschools.net/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:8d5251950f",
+          "url": "https://depoali.washoeschools.net/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:a2afa435c8",
+          "url": "https://swope.washoeschools.net/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:9c5468d76e",
+          "url": "https://swope.washoeschools.net/our-school/calendar",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:0f99692f03",
+          "url": "https://vangorder.washoeschools.net/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:30486d4a86",
+          "url": "https://spanishspringshs.washoeschools.net/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:6337bdf7be",
+          "url": "https://beasley.washoeschools.net/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:cdd54aec35",
+          "url": "https://resources.finalsite.net/images/v1776701877/washoeschoolsnet/avquxacbsf0evb4gnth1/FinalsScheduleSpring2026.pdf",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:4476814c21",
+          "url": "https://reed.washoeschools.net/our-school/homepage/bell-schedule/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:562caaff99",
+          "url": "https://www.washoeschools.net/directory/student-enrollment-and-records/school-of-choice/school-of-choice-faqs",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:a3e3cdf6af",
+          "url": "https://galena.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:997a59d70f",
+          "url": "https://inclinehs.washoeschools.net/our-school/latest-news",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:d418d2bd1d",
+          "url": "https://www.washoeschools.net/trustees/committees/safe-and-healthy-schools-commission",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:27bfd1bd10",
+          "url": "https://www.washoeschools.net/directory/student-enrollment-and-records/register-for-school/kindergarten-registration",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:c0fde17441",
+          "url": "https://coldsprings.washoeschools.net/our-school/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:744c779f1f",
+          "url": "https://www.washoeschools.net/our-schools/bell-schedule",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:63bf5d3883",
+          "url": "https://greenbrae.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:7a4d37b41a",
+          "url": "https://www.washoeschools.net/directory/student-enrollment-and-records/school-calendars/upcoming-approved-2026-2027-school-year-calendars",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:b4e387f900",
+          "url": "https://towles.washoeschools.net/our-school/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:35e8483a7b",
+          "url": "https://www.washoeschools.net/directory/student-enrollment-and-records/school-calendars",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:6506a3a9b0",
+          "url": "https://towles.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:fe5b9d33c2",
+          "url": "https://towles.washoeschools.net/programs",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:6c76af4dfd",
+          "url": "https://www.washoeschools.net/directory/nutrition-services/school-menus",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:9737654b9c",
+          "url": "https://pleasantvalley.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:7aab9d1f48",
+          "url": "https://pleasantvalley.washoeschools.net/our-school/calendars",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:56a15e37cf",
+          "url": "https://www.washoeschools.net/directory/student-enrollment-and-records/school-of-choice",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:193a18a3da",
+          "url": "https://corbett.washoeschools.net/our-school/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:5f6a6df022",
+          "url": "https://corbett.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:2b6eb444c3",
+          "url": "https://corbett.washoeschools.net/programs",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:48a44b6933",
+          "url": "https://mcqueen.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:ea9960e461",
+          "url": "https://marceherz.washoeschools.net/families/bell-schedules",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:2d80db5231",
+          "url": "https://www.washoeschools.net/careers/careers/job-opportunities",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:e1a992c91a",
+          "url": "https://dilworth.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:f394336a28",
+          "url": "https://sparksms.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:aca0072140",
+          "url": "https://wooster.washoeschools.net/our-school",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:a71d4a3e3e",
+          "url": "https://katesmith.washoeschools.net/our-school/about-our-school",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:7e8275dabb",
+          "url": "https://www.washoeschools.net/cms/lib/NV01912265/Centricity/Domain/261/2024-2025%20SPPs/ClaytonMSSPP24-25.pdf",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:b870a7e18c",
+          "url": "https://www.washoeschools.net/directory/communications-and-public-relations/active-emergency-information",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:54bbc7a4ad",
+          "url": "https://swope.washoeschools.net/our-school/bell-schedules",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:c8e8cd8a13",
+          "url": "https://www.washoeschools.net/trustees/board-of-trustees/board-meeting-archive/2023-board-archive",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:df12d90bc0",
+          "url": "https://www.washoeschools.net/directory/gifted-talented-education-programs/models-of-service/magnet",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:d7d769f6ec",
+          "url": "https://pine.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:ecfcd0b989",
+          "url": "https://pine.washoeschools.net/our-school/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:b4c38d4980",
+          "url": "https://www.washoeschools.net/homepage-post-page/~board/wcsd-home-page/post/pine-middle-school-hosts-community-farewell-night",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:61b75dce3c",
+          "url": "https://www.washoeschools.net/Page/20088",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:94b165d29f",
+          "url": "https://northvalleys.washoeschools.net/our-school/bell-schedule",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:9fc7826938",
+          "url": "https://winterbusstops.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:7339928d74",
+          "url": "https://inclinems.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:b95ae26be7",
+          "url": "https://moss.washoeschools.net/programs/boys-and-girls-club",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:5cbab5b203",
+          "url": "https://www.washoeschools.net/directory/transportation",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:a19fef478e",
+          "url": "https://inclinehs.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:be5886faec",
+          "url": "https://debbiesmith.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:3f29b67cfd",
+          "url": "https://coldsprings.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:4422640c1d",
+          "url": "https://coldsprings.washoeschools.net/our-school/bell-schedules",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:c44a68b4d6",
+          "url": "https://mendive.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:b4cd96b40d",
+          "url": "https://allen.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:254ff63809",
+          "url": "https://vaughn.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:2c3bb22227",
+          "url": "https://www.washoeschools.net/directory/assessment/calendars",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:f43cfd8546",
+          "url": "https://vaughn.washoeschools.net/our-school/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:1b1aca48ad",
+          "url": "https://inclinehs.washoeschools.net/our-school/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:2af3fa3d00",
+          "url": "https://reno.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:93a7f775c7",
+          "url": "https://sparkshs.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:690601b958",
+          "url": "https://sparkshs.washoeschools.net/our-school/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:9c5d96fd5e",
+          "url": "https://shaw.washoeschools.net/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:0f6049fcdf",
+          "url": "https://www.washoeschools.net/directory/infinite-campus",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:37aad82ad9",
+          "url": "https://mcqueen.washoeschools.net/our-school/staff-directory",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:8c7bd9b8a4",
+          "url": "https://northvalleys.washoeschools.net/our-school/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:def8e814cc",
+          "url": "https://aact.washoeschools.net/our-school/calendar/school-calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:66aea528ac",
+          "url": "https://spanishspringshs.washoeschools.net/academics/curriculum/26-27-course-catalog/fine-arts",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:3291807a53",
+          "url": "https://www.washoeschools.net/directory/nutrition-services/meal-application-guidelines",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:3de7301390",
+          "url": "https://marceherz.washoeschools.net/fs/resource-manager/view/63f2ae39-646a-47e3-aa16-9dc2f591ee70",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:c50d8d6ba9",
+          "url": "https://reed.washoeschools.net/academics/reed-course-catalog/fine-arts",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:e3a3f61285",
+          "url": "https://galena.washoeschools.net/academics/course-catalog",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:b4e246f165",
+          "url": "https://sparkshs.washoeschools.net/fs/resource-manager/view/60e0250b-642e-4c23-94bd-ce53410ef7b4",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:e574732978",
+          "url": "https://wooster.washoeschools.net/fs/resource-manager/view/2c0f4ab9-1f1f-40c6-85c0-a6ef00008f6a",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:e7e9a7b131",
+          "url": "https://www.washoeschools.net/directory/transportation/inclement-weather-procedures",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "3200480:f59fa94872",
+          "url": "https://towles.washoeschools.net/our-school/home",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "0904830",
+      "name": "Waterbury School District",
+      "state": "CT",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "0904830:2538511ed2",
+          "url": "https://statestreet.waterbury.k12.ct.us/school-information/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0904830:0de11b59a5",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:1183f8c77d",
+          "url": "http://international.waterbury.k12.ct.us/school-information/hours-direction",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0904830:0de11b59a5",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:b9028bf221",
+          "url": "https://www.waterbury.k12.ct.us/parents/school-hours",
+          "label": "district_hub_by_school",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0904830:0de11b59a5",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:62e4d7606a",
+          "url": "https://wallace.waterbury.k12.ct.us/school-information/hours-directions",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0904830:0de11b59a5",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:9d53385eb1",
+          "url": "https://www.waterbury.k12.ct.us/fs/resource-manager/view/9ab86e32-c6a0-4799-92b5-039a887fd7b8",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:8416de61e5",
+          "url": "https://maloney.waterbury.k12.ct.us/school-information/hours-direction",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0904830:0de11b59a5",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:88a5032fb7",
+          "url": "https://www.waterbury.k12.ct.us/fs/resource-manager/view/69df1ba4-fc80-494d-bed2-c115e3ad1c79",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:bb3e427c2e",
+          "url": "https://earlycollegehigh.waterbury.k12.ct.us/school-information/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0904830:0de11b59a5",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:d152d2a434",
+          "url": "https://www.waterbury.k12.ct.us/fs/resource-manager/view/26dab2db-c753-4682-9f16-72900ec4046f",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:05d6aab8ae",
+          "url": "https://www.waterbury.k12.ct.us/fs/resource-manager/view/10855c76-abf3-4390-9216-a949dc2f262e",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:b4479ef841",
+          "url": "https://wca.waterbury.k12.ct.us/school-information/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0904830:0de11b59a5",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:71acfa3404",
+          "url": "https://www.waterbury.k12.ct.us/fs/resource-manager/view/7cd2cef5-7854-4dbd-b453-be79746ff983",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:671fe808d3",
+          "url": "https://www.waterbury.k12.ct.us/fs/resource-manager/view/6e3f0a8f-ba1c-451d-b6cc-ae9702b226a1",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:0de11b59a5",
+          "url": "https://resources.finalsite.net/images/v1727381967/waterburyk12ctus/oqk26ilvdjjmskyzboxw/SchoolHours9-13-2024.pdf",
+          "label": "district_hub_by_school",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "camelot_stream.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 548,
+              "n_chars": 8314
+            }
+          ]
+        },
+        {
+          "rec_key": "0904830:1895c6bae2",
+          "url": "http://crosby.waterbury.k12.ct.us/school-information/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0904830:0de11b59a5",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:b366a89186",
+          "url": "https://www.waterbury.k12.ct.us/fs/resource-manager/view/767a3405-926b-4a79-9802-ceedb95f67ae",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:ce4e61f806",
+          "url": "https://wams.waterbury.k12.ct.us/school-information/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0904830:0de11b59a5",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:bf87604cb0",
+          "url": "https://wilby.waterbury.k12.ct.us/school-information/hours-directions",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0904830:0de11b59a5",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:281ccb360b",
+          "url": "https://tinker.waterbury.k12.ct.us/fs/resource-manager/view/291860d6-44da-4e9a-a43f-5137db273dde",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0904830:0de11b59a5",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:ca91399039",
+          "url": "http://kennedy.waterbury.k12.ct.us/school-information/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0904830:0de11b59a5",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:9ca90de04f",
+          "url": "https://generali.waterbury.k12.ct.us/school-information/hours-direction",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0904830:0de11b59a5",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:f3bb5faee6",
+          "url": "https://wilby.waterbury.k12.ct.us/school-information/school-schedules",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0904830:0de11b59a5",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:f09ae0cf96",
+          "url": "https://reed.waterbury.k12.ct.us/school-information/hours-direction",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0904830:0de11b59a5",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:ef1f982461",
+          "url": "https://www.waterbury.k12.ct.us/fs/resource-manager/view/caaafbfe-a5dd-4d13-bd9e-dbd899e07e9b",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:f940a545c7",
+          "url": "https://www.waterbury.k12.ct.us/fs/resource-manager/view/83ef5586-e592-4d6b-9f0c-4e7c66907b91",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:6aaad9634a",
+          "url": "https://westside.waterbury.k12.ct.us/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:1d0eb15ba1",
+          "url": "https://generali.waterbury.k12.ct.us/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:f91966617c",
+          "url": "https://washington.waterbury.k12.ct.us/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:cdfbb14d4b",
+          "url": "https://carrington.waterbury.k12.ct.us/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:2f634c14aa",
+          "url": "https://kennedy.waterbury.k12.ct.us/school-information/hours-directions",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0904830:0de11b59a5",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:5056021bfb",
+          "url": "https://buckshill.waterbury.k12.ct.us/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:f08155d1cc",
+          "url": "https://international.waterbury.k12.ct.us/application",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:11b1841fa3",
+          "url": "http://crosby.waterbury.k12.ct.us/school-information/hours-directions",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:0904830:0de11b59a5",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:e8fa96e059",
+          "url": "https://wilby.waterbury.k12.ct.us/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:c2ef02d5d4",
+          "url": "https://wca.waterbury.k12.ct.us/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:d90f5939bc",
+          "url": "https://international.waterbury.k12.ct.us/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:80887db732",
+          "url": "https://www.waterbury.k12.ct.us/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:8b1dfebcd8",
+          "url": "https://chase.waterbury.k12.ct.us/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:1a89471940",
+          "url": "https://www.waterbury.k12.ct.us/district-departments/district-operations-and-facilities/transportation",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:7029901ef0",
+          "url": "https://crosby.waterbury.k12.ct.us/resources/family",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:d2b5c9e015",
+          "url": "https://kennedy.waterbury.k12.ct.us/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:0fdedda8c5",
+          "url": "https://wallace.waterbury.k12.ct.us/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:dca0106da1",
+          "url": "https://earlycollegehigh.waterbury.k12.ct.us/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:4958529153",
+          "url": "https://nems.waterbury.k12.ct.us/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:87cbfbe17a",
+          "url": "https://wilson.waterbury.k12.ct.us/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:e2727f3ba9",
+          "url": "https://crosby.waterbury.k12.ct.us/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:755ad5cf50",
+          "url": "https://international.waterbury.k12.ct.us/principal-message",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:f1e25c84d5",
+          "url": "https://international.waterbury.k12.ct.us/principal-message/mission-and-vision",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:c7abc5ab05",
+          "url": "https://international.waterbury.k12.ct.us/school-information/school-newsletter",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:f1b77dd940",
+          "url": "https://international.waterbury.k12.ct.us/school-newsletter",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:766d34bcca",
+          "url": "https://international.waterbury.k12.ct.us/school-information/program-and-instruction",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:acbfcd1408",
+          "url": "https://international.waterbury.k12.ct.us/school-information",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:65440385e3",
+          "url": "https://www.waterbury.k12.ct.us/district-departments/district-operations-and-facilities/inclement-weather-information",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:b8a45e0434",
+          "url": "https://www.waterbury.k12.ct.us/new-calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:213d2ebdc3",
+          "url": "https://www.waterbury.k12.ct.us/schools/alternative-schools/waterbury-adult-continuing-education",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:eb361f5735",
+          "url": "https://www.waterbury.k12.ct.us/district-departments/communications/district-newspress-releases",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:269a71b999",
+          "url": "https://www.waterbury.k12.ct.us/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:8b949dfd99",
+          "url": "http://wilby.waterbury.k12.ct.us/school-information/bell-schedule",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:9402279380",
+          "url": "https://wca.waterbury.k12.ct.us/application",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:4d2f9912ec",
+          "url": "https://wilby.waterbury.k12.ct.us/school-information",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:cc6a2622a7",
+          "url": "https://kennedy.waterbury.k12.ct.us/school-information",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:14cd8b1ae6",
+          "url": "https://www.waterbury.k12.ct.us/fs/resource-manager/view/099e8aff-5227-43f8-bdbc-60e7d858d78f",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:7e7b58f76d",
+          "url": "https://generali.waterbury.k12.ct.us/school-information",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:984cdaa3ce",
+          "url": "https://crosby.waterbury.k12.ct.us/school-information",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:7495f9b478",
+          "url": "https://nems.waterbury.k12.ct.us/school-information/school-district-handbook",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:92e45c0735",
+          "url": "https://www.waterbury.k12.ct.us/powerschool",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:d20efbb388",
+          "url": "https://www.waterbury.k12.ct.us/district-departments/district-operations-and-facilities/food-service/menus",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:7c79bad0a7",
+          "url": "https://nems.waterbury.k12.ct.us/resources/family",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:7b2cbbb8be",
+          "url": "https://wallace.waterbury.k12.ct.us/school-information",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:0863cf02b0",
+          "url": "https://wallace.waterbury.k12.ct.us/athletics/schedule",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0904830:3b41e6e574",
+          "url": "https://www.waterbury.k12.ct.us/schools/middle-schools",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "5605302",
+      "name": "Sweetwater County School District #1",
+      "state": "WY",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "5605302:5a6d24c830",
+          "url": "https://fes.sweetwater1.org/fes-schools",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 44,
+              "n_chars": 1121
+            }
+          ]
+        },
+        {
+          "rec_key": "5605302:8f48c1d027",
+          "url": "gt://gt_curation_20260621T060008Z/5605302_Sweetwater_County_School_District_1/SchoolStartandEndTimes.pdf",
+          "label": "district_hub_by_band",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "5605302:59835401f6",
+          "url": "https://rshs.sweetwater1.org/fs/resource-manager/view/901d4c52-5c28-479e-a83b-a1419faa227f",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5605302:b86842b745",
+          "url": "https://np.sweetwater1.org/northpark-lions-corner",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 7,
+              "n_chars": 3370
+            }
+          ]
+        },
+        {
+          "rec_key": "5605302:68b92c9929",
+          "url": "https://dv.sweetwater1.org/dve-about-us",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1
+              ],
+              "n_times": 15,
+              "n_chars": 1216
+            }
+          ]
+        },
+        {
+          "rec_key": "5605302:2bf124170a",
+          "url": "https://rshs.sweetwater1.org/rshs-bell-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 28,
+              "n_chars": 920
+            }
+          ]
+        },
+        {
+          "rec_key": "5605302:7b006e17b2",
+          "url": "https://www.sweetwater1.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5605302:f987f7e037",
+          "url": "https://rsjh.sweetwater1.org/all-events",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 59,
+              "n_chars": 2739
+            }
+          ]
+        },
+        {
+          "rec_key": "5605302:ec8ede7669",
+          "url": "https://rsjh.sweetwater1.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5605302:5e9e139a57",
+          "url": "https://rshs.sweetwater1.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5605302:2d4fd84bdd",
+          "url": "https://sage.sweetwater1.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5605302:e28167fb25",
+          "url": "https://sce.sweetwater1.org/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5605302:ff43bd1fed",
+          "url": "https://rshs.sweetwater1.org/fs/resource-manager/view/122eca5b-2423-4cf2-8de2-005053ca2e90",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "5605302:cbe96159c9",
+          "url": "https://rshs.sweetwater1.org/fs/resource-manager/view/39dfa487-08ab-439c-bbde-f03882eb3032",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "5605302:62a1e65488",
+          "url": "https://www.sweetwater1.org/site-pages/departments/special-services",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "5605302:52e7a01ca6",
+          "url": "https://www.sweetwater1.org/site-pages/calendars-and-times",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "5605302:e8bdd0ccbf",
+          "url": "https://www.sweetwater1.org/site-pages/departments/human-resources",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "5605302:40c9ea5ec1",
+          "url": "https://ese.sweetwater1.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "5605302:8e36b173b3",
+          "url": "https://www.sweetwater1.org/district-calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 5,
+      "est_usd": 0.0051
+    },
+    {
+      "district_id": "1906540",
+      "name": "Cedar Rapids Comm School District",
+      "state": "IA",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "1906540:cc7b74c835",
+          "url": "https://cramagnet.crschools.us/student-life/daily-schedule",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 10,
+              "n_chars": 1623
+            }
+          ]
+        },
+        {
+          "rec_key": "1906540:5b2dc08a05",
+          "url": "https://www.crschools.us/our-district/calendars",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:e9dac4f507",
+          "url": "https://kennedy.crschools.us/student-life/daily-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 100,
+              "n_chars": 1787
+            }
+          ]
+        },
+        {
+          "rec_key": "1906540:8c9a7352a3",
+          "url": "https://harrison.crschools.us/student-life/daily-schedule",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 1515
+            }
+          ]
+        },
+        {
+          "rec_key": "1906540:98be08e574",
+          "url": "https://www.crschools.us/student-life/daily-schedule",
+          "label": "target_other_shape",
+          "decision": "send",
+          "reason": "target-label:target_other_shape",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 58,
+              "n_chars": 1398
+            }
+          ]
+        },
+        {
+          "rec_key": "1906540:0387e7f767",
+          "url": "gt://gt_curation_20260621T060008Z/1906540_Cedar_Rapids_Comm_School_District/2025-26FinalCalendar-3_24_25.pdf",
+          "label": "district_hub_by_band",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:ed31aa5029",
+          "url": "https://grant.crschools.us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:2c512533c8",
+          "url": "https://violagibson.crschools.us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:de5fbd8676",
+          "url": "https://www.crschools.us/schools/high-schools",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:c961358db4",
+          "url": "https://harding.crschools.us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:767bf4a369",
+          "url": "https://washington.crschools.us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:e1c9880e41",
+          "url": "https://harrison.crschools.us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:c1d4675ded",
+          "url": "https://hiawatha.crschools.us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:a36ba32a0a",
+          "url": "https://harrison.crschools.us/students-and-families/parent-teacher-association/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:00caf5df22",
+          "url": "https://crschools.us/app/uploads/sites/25/2022/08/Hiawatha-22_23-handbook.pdf",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:dc96973be4",
+          "url": "https://hiawatha.crschools.us/site-map",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:f8e98b28ab",
+          "url": "https://hiawatha.crschools.us/academics-programs",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:6bf3a7d752",
+          "url": "https://hiawatha.crschools.us/students-families/library/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:ad5528c290",
+          "url": "https://nixon.crschools.us/our-school",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:7ce5faf7ff",
+          "url": "https://nixon.crschools.us/contact/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:0fbab3e3b6",
+          "url": "https://nixon.crschools.us/student-life/before-after-school-progams",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:d68244f2a0",
+          "url": "https://nixon.crschools.us/academics-programs",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:141e0d91a7",
+          "url": "https://taft.crschools.us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:22611b8b56",
+          "url": "https://metro.crschools.us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:130bd10c58",
+          "url": "https://wilson.crschools.us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:e5026dd793",
+          "url": "https://jsamagnet.crschools.us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:409996aeea",
+          "url": "https://washington.crschools.us/student-life/fine-arts",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:622ef20889",
+          "url": "https://rooseveltmagnet.crschools.us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:c490181654",
+          "url": "https://wilson.crschools.us/fine-arts/band/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:c8f16495ba",
+          "url": "https://washington.crschools.us/academics-programs/graduation-requirements",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:a7726c2183",
+          "url": "https://washington.crschools.us/fine-arts/theatre-and-speech/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:a9b171c16d",
+          "url": "https://www.crschools.us/instagram",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:de6361b95f",
+          "url": "https://www.crschools.us/facebook",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:63e570e996",
+          "url": "https://kennedy.crschools.us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:b4aae4f0be",
+          "url": "https://kennedy.crschools.us/our-school-af/calendar",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:69d863d58b",
+          "url": "https://calendar.google.com/calendar/u/0/r?cid=Y3IuazEyLmlhLnVzX2w4dm04bnM0dnVna25pYjFraXFobjRicGI4QGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:eccf4c9738",
+          "url": "https://www.crschools.us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:624e77b924",
+          "url": "https://maplegrove.crschools.us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:d7bcb504f9",
+          "url": "https://erskine.crschools.us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:9b86054c48",
+          "url": "https://vanburen.crschools.us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:211097f601",
+          "url": "https://nixon.crschools.us/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1906540:62fb20b757",
+          "url": "https://maplegrove.crschools.us/families-resources/mobile-apps",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 4,
+      "est_usd": 0.00408
+    },
+    {
+      "district_id": "1000080",
+      "name": "Appoquinimink School District",
+      "state": "DE",
+      "topology": "district_hub",
+      "records": [
+        {
+          "rec_key": "1000080:32a6c83a29",
+          "url": "https://www.apposchooldistrict.com/ourpages/auto/2025/7/17/47935388/2025%20-2026%20Bell%20_%20Bus%20Times.pdf?rnd=1752777116396",
+          "label": "district_hub_by_school",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 115,
+              "n_chars": 2238
+            }
+          ]
+        },
+        {
+          "rec_key": "1000080:632f48ffad",
+          "url": "https://www.apposchooldistrict.com/apps/events/event.jsp?eREC_ID=4691266&d=2026-06-06&id=0",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1000080:67accdbfab",
+          "url": "https://www.apposchooldistrict.com/m/pages/index.jsp?uREC_ID=56096&type=d&pREC_ID=79225",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1000080:3f5f673639",
+          "url": "https://www.apposchooldistrict.com/m/news/show_news.jsp?REC_ID=581498&id=0",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1000080:8fd3661910",
+          "url": "https://www.apposchooldistrict.com/m/video/watch.jsp?v=10092207",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1000080:f8df6adf43",
+          "url": "https://www.apposchooldistrict.com/apps/video/watch.jsp?v=10113609",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1000080:130eaacb5b",
+          "url": "https://www.apposchooldistrict.com/m/events/index.jsp?id=1",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1000080:6816016f6b",
+          "url": "https://www.apposchooldistrict.com/apps/pages/index.jsp?uREC_ID=272895&type=d&pREC_ID=514060",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1000080:ee1d3278eb",
+          "url": "https://www.apposchooldistrict.com/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1000080:5fb5f087fe",
+          "url": "https://www.apposchooldistrict.com/apps/news/show_news.jsp?REC_ID=962201&id=0",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "1000080:6a1d67403f",
+          "url": "https://www.apposchooldistrict.com/apps/news/index.jsp?start=1860&id=&uREC_ID=&type=&pREC_ID=&hideMenu=",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "0102370",
+      "name": "Mobile County",
+      "state": "AL",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "0102370:a46dac7d6b",
+          "url": "https://www.mcpss.com/o/dhs/page/bell-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 23,
+              "n_chars": 1599
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:a6b3da66c4",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/About the School | Holloway Elementary School.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:35a6ed41bd",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/2025-2026-Mary G Montgomery High School-Bell-Schedule.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:059ddd4a31",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Causey Middle School 25-26-Bell-Schedule.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:74f1245f99",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/5395/Clsms/8c4c2ded-01d7-4f75-ad58-be493ea06af9/Bell_Schedule.pdf?disposition=inline",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 20,
+              "n_chars": 1764
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:7ba54986be",
+          "url": "https://aptg.co/9hX4Fv",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 24,
+              "n_chars": 1132
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:d6814c1db4",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Dodge Elementary School Parent Handbook 20212022.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:4b559ca901",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Class Schedule | Collier Elementary School.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:510e64749e",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/School Schedule | Tanner Williams Elementary School.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:785b5912fa",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Pillans Middle School _Bell_Schedule_2023-2024.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:f49a4a9376",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Hutchens_Student-Parent_Handbook_2024-2025.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:bd50a2bef1",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Allentown Elementary School Parent-Student-Handbook-2025-2026.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:26ac75d68c",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Blount High School.pdf",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:dc2701d508",
+          "url": "https://www.mcpss.com/o/blhs/page/24-25-bell-schedule",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 19,
+              "n_chars": 929
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:62bda974a3",
+          "url": "https://www.mcpss.com/o/mhs",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 4,
+              "n_chars": 4538
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:8b1844e939",
+          "url": "https://www.mcpss.com/o/bhs",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 8,
+              "n_chars": 6424
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:6277511362",
+          "url": "https://www.mcpss.com/o/bcrhs",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 26,
+              "n_chars": 6625
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:a7a4a30f2a",
+          "url": "https://www.mcpss.com/o/whmgpa",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 9,
+              "n_chars": 6122
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:6765e0bce2",
+          "url": "https://www.mcpss.com/o/wes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:016d9606c6",
+          "url": "https://www.mcpss.com/o/ngdes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:ef7ede444d",
+          "url": "https://mcpss.edurooms.com/engage/causey-middle/newsletters/the-tiger-times-cms-weekly-newsletter-february-9-2026",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:570ef76ad3",
+          "url": "https://mcpss.edurooms.com/engage/causey-middle/newsletters/the-tiger-times-cms-weekly-newsletter-march-16-2026",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:729921ddab",
+          "url": "https://mcpss.edurooms.com/engage/causey-middle/newsletters/the-tiger-times-cms-weekly-newsletter-may-18-2026",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:ab8400d1bd",
+          "url": "https://mcpss.edurooms.com/engage/causey-middle/newsletters/the-tiger-times-cms-weekly-newsletter-february-23-2026",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:baefe51080",
+          "url": "https://mcpss.edurooms.com/engage/causey-middle/newsletters/the-tiger-times-cms-weekly-newsletter-march-23-2026",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:d3b49316e8",
+          "url": "https://mcpss.edurooms.com/engage/causey-middle/newsletters/the-tiger-times-cms-weekly-newsletter-march-9-2026",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:ae32cb4264",
+          "url": "https://mcpss.edurooms.com/engage/causey-middle/newsletters/the-tiger-times-cms-weekly-newsletter-march-2-2026",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:58d2164c0e",
+          "url": "https://www.mcpss.com/o/ghes/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:24ff7adbdc",
+          "url": "https://www.mcpss.com/o/bcrhs/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:338b2454b9",
+          "url": "https://www.mcpss.com/o/csms/live-feed?page_no=1",
+          "label": "school_start_end_prose",
+          "decision": "send",
+          "reason": "target-label:school_start_end_prose",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 39,
+              "n_chars": 18589
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:ad9d0f08a3",
+          "url": "https://www.mcpss.com/o/mses/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:6bf32c3267",
+          "url": "https://www.mcpss.com/o/mses/live_feeds/12467160",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:e92bf5b836",
+          "url": "https://www.mcpss.com/o/baaws/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:70f3ed41bc",
+          "url": "https://www.mcpss.com/events?id=54155350",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:e4aaa28c91",
+          "url": "https://www.mcpss.com/o/bcrhs/events?id=40962574",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:f5f9bd3506",
+          "url": "https://www.mcpss.com/o/dmst",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:ed79273bf1",
+          "url": "https://www.mcpss.com/o/aes/events?id=49235703",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:e262f13930",
+          "url": "https://www.mcpss.com/o/btwms",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:665c9f4264",
+          "url": "https://www.mcpss.com/o/pk5s",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:7ba52d91db",
+          "url": "https://www.mcpss.com/o/twes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:33ff55a720",
+          "url": "https://www.mcpss.com/o/meaes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:eef6a8f96d",
+          "url": "https://www.mcpss.com/o/gres",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:b6d6844d79",
+          "url": "https://www.mcpss.com/o/jwes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:906822eae3",
+          "url": "https://www.mcpss.com/o/ams",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:bfa0a813c5",
+          "url": "https://www.mcpss.com/o/coes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:adb0cf7c28",
+          "url": "https://www.mcpss.com/o/hms",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:9104d55b21",
+          "url": "https://www.mcpss.com/o/caes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:750bfa8b52",
+          "url": "https://www.mcpss.com/o/whes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:53f00f21d6",
+          "url": "https://www.mcpss.com/o/ges",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:e27a465d06",
+          "url": "https://www.mcpss.com/o/erdes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:a08e4a882c",
+          "url": "https://www.mcpss.com/o/ngdes/live-feed?page_no=3",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:90c014ac65",
+          "url": "https://www.mcpss.com/o/mcts",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:83f4158cce",
+          "url": "https://www.mcpss.com/o/ses",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:c1a6fd419b",
+          "url": "https://www.mcpss.com/o/mbaes",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:e46942836c",
+          "url": "https://www.mcpss.com/o/res/live-feed?page_no=2",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:43a3303418",
+          "url": "https://www.mcpss.com/o/cms/live_feeds/12368849",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:bf5fd2947d",
+          "url": "https://www.mcpss.com/o/bcrhs/live_feeds/12315434",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:4565238f15",
+          "url": "https://www.mcpss.com/o/mgmhs/live-feed?page_no=5",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:84adfc463b",
+          "url": "https://www.mcpss.com/o/sms/live_feeds/12487874",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:00af80e904",
+          "url": "https://www.mcpss.com/o/hies",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:fa83adfc59",
+          "url": "https://www.mcpss.com/o/pk5s/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:9433f249a5",
+          "url": "https://www.mcpss.com/o/ches/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:98ec7d475a",
+          "url": "https://www.mcpss.com/o/dees/events?id=45474103",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:fe09633a1b",
+          "url": "https://www.mcpss.com/o/mses",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:0744653ae4",
+          "url": "https://www.mcpss.com/o/howes/live-feed?page_no=3",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:7afde2b59b",
+          "url": "https://www.mcpss.com/o/osscpa/live-feed?page_no=3",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:b44291e821",
+          "url": "https://www.mcpss.com/o/mses/live_feeds/12569983",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:925540c438",
+          "url": "https://www.mcpss.com/o/ores/live-feed",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:21a7e22962",
+          "url": "https://www.mcpss.com/o/btwms/live-feed?page_no=1",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:310096ff7b",
+          "url": "https://www.mcpss.com/",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:c6d95b2f5a",
+          "url": "https://www.mcpss.com/o/coes/live-feed?page_no=2",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:65d43671f1",
+          "url": "https://www.mcpss.com/o/lfhs",
+          "label": null,
+          "decision": "hold",
+          "reason": "unlabeled-tier-C",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:0a38e02476",
+          "url": "https://www.mcpss.com/magnetschools",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:c1f26d2310",
+          "url": "https://www.mcpss.com/o/dhs/live-feed?page_no=20",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:7e98752389",
+          "url": "https://www.mcpss.com/live-feed?page_no=15",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:3a72cfbff4",
+          "url": "https://www.mcpss.com/o/hms/live_feeds/11660330",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:be16356cd5",
+          "url": "https://www.mcpss.com/o/cms/live-feed?page_no=4",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:4d8bff5196",
+          "url": "https://www.mcpss.com/o/ges/live-feed?page_no=5",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:0f27e54bc3",
+          "url": "https://www.mcpss.com/o/lfhs/events",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:59e88d1a34",
+          "url": "https://www.mcpss.com/o/dees/live_feeds/9183615",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:3d9b990b11",
+          "url": "https://www.mcpss.com/o/dees/live_feeds/9081686",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:3097691666",
+          "url": "https://www.mcpss.com/o/dees/staff?page_no=4",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:10cfff393b",
+          "url": "https://www.mcpss.com/o/dees/page/title-1-forms",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:70a58eaa22",
+          "url": "https://www.mcpss.com/o/dees/article/2677595",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:009902bc63",
+          "url": "https://www.mcpss.com/o/mses/events?id=41917962&view=list-month",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:b608e11f98",
+          "url": "https://www.mcpss.com/o/mses/article/2653140",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:ba717e8f83",
+          "url": "https://www.mcpss.com/o/mses/article/2792590",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:9e03dcf867",
+          "url": "https://www.mcpss.com/documents/system/mcpss-calendars/806415",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:30cbd6c75f",
+          "url": "https://www.mcpss.com/o/mcps/page/registration",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:79c3f4247a",
+          "url": "https://www.mcpss.com/page/enrollment",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:8ecd3cf74a",
+          "url": "https://www.mcpss.com/o/mcps/page/pre-kindergarten",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:4cc0f4398f",
+          "url": "https://www.mcpss.com/o/mcps/page/job-opportunities",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:337c086176",
+          "url": "https://www.mcpss.com/o/whes/live_feeds/11039267",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:2e7ce3545a",
+          "url": "https://www.mcpss.com/o/whes/live_feeds/12620995",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:47032061f4",
+          "url": "https://www.mcpss.com/o/whes/live_feeds/8494259",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:854f8f64df",
+          "url": "https://www.mcpss.com/o/whes/article/2937307",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:122ba8e1b9",
+          "url": "https://www.mcpss.com/o/whes/article/2769556",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:04e6985bac",
+          "url": "https://www.mcpss.com/o/res/article/2165214",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:9f51490485",
+          "url": "https://www.mcpss.com/o/ores/events?id=57993380",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:1e36abc68b",
+          "url": "https://www.mcpss.com/o/ores/documents/parent-resources/parent-resources/16306204",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:92b11fe7ad",
+          "url": "https://www.mcpss.com/o/ores/staff?page_no=2",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:03b6a9f8f5",
+          "url": "https://www.mcpss.com/o/ses/article/2563707",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:422fda22cb",
+          "url": "https://www.mcpss.com/o/ores/article/2165537",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:b43c4c41bf",
+          "url": "https://www.mcpss.com/o/clsms/documents/about/bell-schedule/16303277",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:5842cd2c2d",
+          "url": "https://www.mcpss.com/o/sms/live-feed?page_no=4",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:2759664dbb",
+          "url": "https://www.mcpss.com/o/mcts/news",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:7a8972f8f2",
+          "url": "https://www.mcpss.com/o/mcps/page/tickets-and-game-schedules",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:dcfe4ddd0c",
+          "url": "https://www.mcpss.com/o/sms/documents/parent-resources/forms-and-documents/782204",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:14ff7a1c27",
+          "url": "https://www.mcpss.com/o/sms/events?id=45507959",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:77ca5ab835",
+          "url": "https://www.mcpss.com/o/sms/live_feeds/12250488",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:82641390fd",
+          "url": "https://www.mcpss.com/o/sms/page/contact-us",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:99dae300ea",
+          "url": "https://www.mcpss.com/o/hms/page/2025-2026-school-year",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:dc0380766c",
+          "url": "https://www.mcpss.com/o/hms/documents",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:eda57ff0fb",
+          "url": "https://www.mcpss.com/o/mcps/page/transportation",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:afae80b2f7",
+          "url": "https://www.mcpss.com/o/cms/page/student-resources",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:c233a090ed",
+          "url": "https://www.mcpss.com/o/cms/page/parent-resources",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:733aa06a2d",
+          "url": "https://www.mcpss.com/o/bcrhs/live_feeds/11916985",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:e445b0ba52",
+          "url": "https://www.mcpss.com/o/bcrhs/live_feeds/12147692",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:47af35b2ba",
+          "url": "https://www.mcpss.com/o/bcrhs/live_feeds/11191755",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:1268a5f29d",
+          "url": "https://www.mcpss.com/o/dhs/news",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:430b1ed41c",
+          "url": "https://www.mcpss.com/live_feeds/12229841",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:b4f28e0063",
+          "url": "https://www.mcpss.com/page/about-mcpss",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:a97676f8a4",
+          "url": "https://www.mcpss.com/o/mgmhs/events?id=40538929",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:0afec29fb3",
+          "url": "https://www.mcpss.com/o/mgmhs/documents/parent-resources/parent-information/mgm-information/daily-schedule-and-tardy-policy/782669",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:6921f42b29",
+          "url": "https://www.mcpss.com/o/mgmhs/live_feeds/12449047",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:c3fa20b8d4",
+          "url": "https://www.mcpss.com/o/mgmhs/live_feeds/12341984",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:f8ef7e8af1",
+          "url": "https://www.mcpss.com/o/lfhs/documents/parent-resources/library/online-learning/782766",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:df868ea726",
+          "url": "https://www.mcpss.com/o/mgmhs/documents/clubs-and-organizations/mgm-first-class-pre-k/782420",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:bca51a1576",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/5395/Sms/be129189-6373-4ca9-93a8-30070560707b/Bell-Schedule.docx?disposition=inline",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:0718c59b49",
+          "url": "https://www.mcpss.com/o/p68s/live-feed",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:f2f429123c",
+          "url": "https://www.mcpss.com/o/vhs/article/2164925",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:785f65ed42",
+          "url": "https://www.mcpss.com/o/pk5s/article/2732211",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:7e54ca38b3",
+          "url": "https://www.mcpss.com/o/sms/article/2732218",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:dc9570e186",
+          "url": "https://www.mcpss.com/o/sms/article/2164914",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:9b3f5090a2",
+          "url": "https://www.mcpss.com/o/mcts/article/2732202",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:78ec00c950",
+          "url": "https://www.mcpss.com/o/ores/article/2732207",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:7070246c98",
+          "url": "https://www.mcpss.com/o/mses/article/2164900",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "0102370:9cf661ce4d",
+          "url": "https://www.mcpss.com/article/2164835",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 9,
+      "est_usd": 0.00918
+    }
+  ]
+}

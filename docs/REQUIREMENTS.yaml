@@ -4469,3 +4469,42 @@ requirements:
       receipts) — each true, none binding on a stage that had not yet been written. REQ-164 comes closest
       and is marked tested, which is accurate for its stated scope and is exactly why the gap was invisible:
       its rule is scoped to the capture dir, and #645's violation is in data/acquisition/."
+
+  - id: REQ-172
+    github_issue: "#174 (the delta-seed mechanism); #116 (partial-retry refinement); documented as a requirement 2026-08-14"
+    description: "FOLLOW-UP REDO IS DELTA-ONLY — a redo-eligible batch re-entering Stages 3/4 never re-fetches
+      an already-captured URL. Stage 3 seeds each district's run from the prior captures.json (records carried
+      verbatim; url + final_url join the seen-set) so only never-attempted URLs and retryable failures hit the
+      network, and the written manifest is the district's complete prior+delta UNION. Stage 4's redo rebuilds
+      processed.json IN FULL from that union manifest using local tools only — reprocessing is unlimited-local,
+      recapture is delta-only, and no redo path may trigger a network fetch of an already-captured URL."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "Stage 3 redo seeds from the prior manifest (capture_discovery.mjs::seedFromPriorCaptures): every prior record is carried VERBATIM into the new manifest (keeping its original producing batch — REQ-170's benchmark set semantics lean on exactly this), its url AND final_url (fragment-stripped) join the seen-set, and the live candidate loop consults that seen-set before enqueueing — an already-captured URL is never re-fetched, in any round"
+      - "Failed prior records: a FAILED record whose URL is planned again this round is dropped and freshly retried (the retry's record replaces it) — EXCEPT the one-attempt classes (security_block per Critical Rule 3, needs_oauth_reauth), which carry as failures and are never re-pressured (#116 isRetryableErr; retryable = not_attempted/not_recovered crash-and-deadline remnants only)"
+      - "The emergent counter resumes from the prior round's count — a redo cannot double the per-district emergent budget"
+      - "The written manifest is the district's complete UNION (prior + delta), never a slice — Stage 5's ingest reads ONLY the current manifest (per-district delete + rebuild), so a slice-only manifest would erase existing records and orphan their gate@5 labels"
+      - "Stage 4 redo rebuilds processed.json IN FULL from the union manifest — local CPU only (pdftotext/camelot/pdfplumber/tesseract via subprocess), versioned aside per REQ-081, never overwritten in place; the stage4_process package contains NO network client and can never trigger a recapture"
+      - "An unreadable prior manifest degrades to a fresh full capture (writeVersioned still preserves the prior file) — never a crash, never a silent skip"
+      - "Known bounded leak, accepted: seen-set matching is fragment-strip exact-string (stripFragment), not full URL normalization — a scheme/www/trailing-slash VARIANT of a captured page surfaced by a fresh discovery round can slip past and recapture; final_url seeding absorbs the common redirect forms (http->https). Recorded as a watch-item in the REQ-078/REQ-081 posture (a deliberate non-decision), not silently"
+    tests:
+      - "infrastructure/scraper/capture_records.test.mjs — five seedFromPriorCaptures unit tests (#174/#116): carry + seen + emergent resume; failed-retried dropped; failed-not-retried kept; retryable-only mode; default mode"
+      - "infrastructure/scraper/capture_records.test.mjs — 'REQ-172 wiring pin' (the live main-loop guard: seeding precedes the candidate enqueue, which consults seen.has — the source pin that fails if a refactor drops the delta guard)"
+      - tests/test_followup_redo.py::TestStage34Redo
+      - tests/test_followup_redo.py::TestStage4ReprocessIsLocalOnly
+    depends_on: [REQ-073, REQ-080, REQ-081, REQ-118, REQ-170]
+    verification: test
+    created: "2026-08-14T00:00:00Z"
+    updated: "2026-08-14T00:00:00Z"
+    notes: "Recorded 2026-08-14 (Ian) ahead of Council Lab work whose branches/loops will multiply the redo
+      entry points into Stages 3/4. The behavior predates the requirement: built for #174 (batch_00010, the
+      first real 7->2 compose, silently discovered nothing because reconcile skipped on 'file exists'),
+      refined by #116, unit-tested — but the invariant lived only in docstrings/comments. REQ-073/REQ-080
+      state the FIRST-RUN district-level skip ('captures.json exists => never re-captured'), which is
+      precisely the check redo=True bypasses; REQ-170 governs WHICH batches are redo-eligible
+      (batch.redo_attempted), not what redo does at the URL grain. The quiet failure mode if the guard is
+      lost: duplicate spend, duplicate captures under new hashes, and orphaned gate@5 labels at the next
+      ingest. The wiring pin exists because the seen.has guard lives in un-exported main() — the unit tests
+      prove seedFromPriorCaptures works, the pin proves the live loop still calls it."

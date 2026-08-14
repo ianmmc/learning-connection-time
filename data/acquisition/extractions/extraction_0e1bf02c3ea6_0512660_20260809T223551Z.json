@@ -1,0 +1,1240 @@
+{
+  "handoff_hash": "0e1bf02c3ea6",
+  "district": {
+    "district_id": "0512660",
+    "name": "SPRINGDALE SCHOOL DISTRICT",
+    "reps": [
+      {
+        "rec_key": "0512660:9308dd14dc",
+        "file": "md.md",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 2646,
+            "completion_tokens": 1472,
+            "cost_usd": 0.0008534,
+            "latency_ms": 4106,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314901-5uJ7Cw3k6Obt0ftDmh4z",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "16:05",
+                "school_name": "LAKESIDE",
+                "confidence": "high",
+                "evidence_quote": "Period 1A/B 8:40-10:15  (95min) ... Period 4A/B 2:40 - 4:05  (85min)",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2612,
+            "completion_tokens": 170,
+            "cost_usd": 0.0001442,
+            "latency_ms": 2476,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314904-zUZNxItwFrtoBYL30Zhh",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "16:05",
+                "school_name": "Lakeside Block",
+                "confidence": "high",
+                "evidence_quote": "Period 1A/B\t 8:40-10:15  (95min)",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "14:35",
+                "school_name": "Lakeside Block",
+                "confidence": "medium",
+                "evidence_quote": "Period 3A/B 1:10 \u2013 2:20  (70min)",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "16:05",
+                "school_name": "Lakeside Block",
+                "confidence": "medium",
+                "evidence_quote": "Period 4B\t 3:20-4:05  (45 mins)",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2546,
+            "completion_tokens": 466,
+            "cost_usd": 0.0009261,
+            "latency_ms": 9049,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314907-LpJF6g7eRET90REQ0Tyi",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "lakeside",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:40"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "16:05"
+            },
+            "rec_key": "0512660:9308dd14dc",
+            "source_file": "md.md"
+          }
+        ]
+      },
+      {
+        "rec_key": "0512660:abe873329d",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:10",
+                "school_name": "Springdale Public Schools",
+                "confidence": "high",
+                "evidence_quote": "Schedule:               Elementary             Middle                 JH/HS\n\n  Teachers                7:45 - 3:15            8:00 - 3:30            8:35 - 4:05\n\n  Students (M, T,         7:45 - 3:10            8:05 - 3:30            8:40 - 4:05",
+                "source_locus": "page 4",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2022-23",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:30",
+                "school_name": "Springdale Public Schools",
+                "confidence": "high",
+                "evidence_quote": "Schedule:               Elementary             Middle                 JH/HS\n\n  Teachers                7:45 - 3:15            8:00 - 3:30            8:35 - 4:05\n\n  Students (M, T,         7:45 - 3:10            8:05 - 3:30            8:40 - 4:05",
+                "source_locus": "page 4",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2022-23",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Springdale Public Schools",
+                "confidence": "high",
+                "evidence_quote": "Schedule:               Elementary             Middle                 JH/HS\n\n  Teachers                7:45 - 3:15            8:00 - 3:30            8:35 - 4:05\n\n  Students (M, T,         7:45 - 3:10            8:05 - 3:30            8:40 - 4:05",
+                "source_locus": "page 4",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2022-23",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1447,
+            "completion_tokens": 717,
+            "cost_usd": 0.0004315,
+            "latency_ms": 2090,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314916-4YEIJETUHwpXySboq3Ld",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:10",
+                "school_name": "Springdale Public Schools",
+                "confidence": "high",
+                "evidence_quote": "Students (M, T, Th, F) 7:45 - 3:10",
+                "source_locus": "Schedule: Elementary",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2022-23",
+                "applies_to": "multiple"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:05",
+                "end_time": "15:30",
+                "school_name": "Springdale Public Schools",
+                "confidence": "high",
+                "evidence_quote": "Students (M, T, Th, F) 8:05 - 3:30",
+                "source_locus": "Schedule: Middle",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2022-23",
+                "applies_to": "multiple"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "16:05",
+                "school_name": "Springdale Public Schools",
+                "confidence": "high",
+                "evidence_quote": "Students (M, T, Th, F) 8:40 - 4:05",
+                "source_locus": "Schedule: JH/HS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2022-23",
+                "applies_to": "multiple"
+              }
+            ],
+            "prompt_tokens": 1478,
+            "completion_tokens": 449,
+            "cost_usd": 0.00010982,
+            "latency_ms": 6291,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314918-PZ9dTkE3nfF79HEEfbhw",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "springdale public",
+            "start": "07:45",
+            "end": "15:10",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Schedule:               Elementary             Middle                 JH/HS\n\n  Teachers                7:45 - 3:15            8:00 - 3:30            8:35 - 4:05\n\n  Students (M, T,         7:45 - 3:10            8:05 - 3:30            8:40 - 4:05",
+                "locus": "page 4",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2022-23"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Students (M, T, Th, F) 7:45 - 3:10",
+                "locus": "Schedule: Elementary",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2022-23",
+                "applies_to": "multiple"
+              }
+            },
+            "applies_to": "multiple",
+            "rec_key": "0512660:abe873329d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "springdale public",
+            "start": "08:02",
+            "end": "15:30",
+            "gross": 448,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Schedule:               Elementary             Middle                 JH/HS\n\n  Teachers                7:45 - 3:15            8:00 - 3:30            8:35 - 4:05\n\n  Students (M, T,         7:45 - 3:10            8:05 - 3:30            8:40 - 4:05",
+                "locus": "page 4",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2022-23"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Students (M, T, Th, F) 8:05 - 3:30",
+                "locus": "Schedule: Middle",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2022-23",
+                "applies_to": "multiple"
+              }
+            },
+            "applies_to": "multiple",
+            "rec_key": "0512660:abe873329d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "springdale public",
+            "start": "08:38",
+            "end": "16:05",
+            "gross": 447,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Schedule:               Elementary             Middle                 JH/HS\n\n  Teachers                7:45 - 3:15            8:00 - 3:30            8:35 - 4:05\n\n  Students (M, T,         7:45 - 3:10            8:05 - 3:30            8:40 - 4:05",
+                "locus": "page 4",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2022-23"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Students (M, T, Th, F) 8:40 - 4:05",
+                "locus": "Schedule: JH/HS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2022-23",
+                "applies_to": "multiple"
+              }
+            },
+            "applies_to": "multiple",
+            "rec_key": "0512660:abe873329d",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0512660:d8f961b410",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:05",
+                "end_time": "15:30",
+                "school_name": "J.O. Kelly Middle School",
+                "confidence": "high",
+                "evidence_quote": "Start Time - 8:05 a.m.\nDismissal - 3:30 p.m.",
+                "source_locus": "ATTENDANCE & BELL SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1623,
+            "completion_tokens": 125,
+            "cost_usd": 0.0002123,
+            "latency_ms": 705,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314924-FVx5eJ28silIykDvMpRF",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:05",
+                "end_time": "15:30",
+                "school_name": "J.O. Kelly Middle School",
+                "confidence": "high",
+                "evidence_quote": "Start Time - 8:05 a.m. Dismissal - 3:30 p.m.",
+                "source_locus": "Attendance, Bell Schedule and Academic Calendar",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1642,
+            "completion_tokens": 165,
+            "cost_usd": 9.53e-05,
+            "latency_ms": 2281,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314925-GM4XGCmisd9vX9tifA5x",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "jo kelly",
+            "start": "08:05",
+            "end": "15:30",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Start Time - 8:05 a.m.\nDismissal - 3:30 p.m.",
+                "locus": "ATTENDANCE & BELL SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Start Time - 8:05 a.m. Dismissal - 3:30 p.m.",
+                "locus": "Attendance, Bell Schedule and Academic Calendar",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0512660:d8f961b410",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0512660:7083dbcc4e",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:10",
+                "school_name": "Hunt Elementary",
+                "confidence": "high",
+                "evidence_quote": "Teachers have a FULL schedule of activities and learning planned from 7:45 to 3:10 daily.",
+                "source_locus": "Attendance & Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2039,
+            "completion_tokens": 171,
+            "cost_usd": 0.0002723,
+            "latency_ms": 1018,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314927-pKhsaU79vXiqshk1qrPJ",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:10",
+                "school_name": "Hunt Elementary",
+                "confidence": "high",
+                "evidence_quote": "7:45 am *Tardy bell rings and instruction begins. 3:10 pm *Instruction ends and school day is over.",
+                "source_locus": "Attendance & Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2097,
+            "completion_tokens": 160,
+            "cost_usd": 0.00011765,
+            "latency_ms": 2252,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314928-ctuxT7GuNoRdnBXgEVmB",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "hunt",
+            "start": "07:45",
+            "end": "15:10",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Teachers have a FULL schedule of activities and learning planned from 7:45 to 3:10 daily.",
+                "locus": "Attendance & Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:45 am *Tardy bell rings and instruction begins. 3:10 pm *Instruction ends and school day is over.",
+                "locus": "Attendance & Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0512660:7083dbcc4e",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0512660:2aa74f2b92",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "16:05",
+                "school_name": "Har-Ber High School",
+                "confidence": "high",
+                "evidence_quote": "Mo/Tu/Th/Fr Wed\nTime Period Time\n7:50-8:35 0 A/B Virtual\n8:40-10:08 1 A/B 8:40-9:48\n10:14-10:54 PT 9:54-10:34\n10:54-11:24 | ALunch] 10:34-11:04\n11:30-12:58 | 2A/B | 11:10-12:18\n11:11-11:41 2A/B | 10:40-11:11\n11:41-12:11 | BLunch | 11:11-11:41\n11:17-12:58 | 2A/B | 11:47-12:18\n11:00-12:28 | 2A/B | 10:40-11:48\n12:28-12:58 |C Lunch] 11:48-12:18\n1:04-2:32 3 A/B 12:24-1:32\n2:38-4:05 4 A/B 1:38-2:45",
+                "source_locus": "ATTENDANCE AND BELL SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2023-24",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2493,
+            "completion_tokens": 511,
+            "cost_usd": 0.0004537,
+            "latency_ms": 2512,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314931-n5D91S3Rpp6crumcoNXw",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "16:05",
+                "school_name": "Har-Ber High School",
+                "confidence": "high",
+                "evidence_quote": "8:40-10:08 1 A/B 8:40-9:48 10:14-10:54 PT 9:54-10:34 10:54-11:24 | ALunch] 10:34-11:04 11:30-12:58 | 2A/B | 11:10-12:18 11:11-11:41 2A/B | 10:40-11:11 11:41-12:11 | BLunch | 11:11-11:41 11:17-12:58 | 2A/B | 10:40-11:48 11:00-12:28 | 2A/B | 10:40-11:48 12:28-12:58 |C Lunch] 11:48-12:18 1:04-2:32 3 A/B 12:24-1:32 2:38-4:05 4 A/B 1:38-2:45",
+                "source_locus": "BELL SCHEDULES 2023-24",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2023-24",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2486,
+            "completion_tokens": 450,
+            "cost_usd": 0.0001603,
+            "latency_ms": 7097,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314933-wwghHSyyHgQMVKVEFFXc",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 2421,
+            "completion_tokens": 22,
+            "cost_usd": 0.00022999,
+            "latency_ms": 869,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314940-psWXt6djiAOlbiw8Crpn",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "har ber",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:50",
+              "mistralai/mistral-small-24b-instruct-2501": "08:40"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "16:05",
+              "mistralai/mistral-small-24b-instruct-2501": "16:05"
+            },
+            "rec_key": "0512660:2aa74f2b92",
+            "source_file": "tesseract_raster.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0512660:ff9a5eb65a",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:05",
+                "school_name": "George Junior High School",
+                "confidence": "high",
+                "evidence_quote": "School starts at 8:40 and ends at 4:05",
+                "source_locus": "ATTENDANCE & BELL SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "14:42",
+                "school_name": "George Junior High School",
+                "confidence": "high",
+                "evidence_quote": "The school day will end at 2:42 p.m. every Wednesday.",
+                "source_locus": "ATTENDANCE & BELL SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1938,
+            "completion_tokens": 325,
+            "cost_usd": 0.0003238,
+            "latency_ms": 1401,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314941-FTz2JkRqcrIuOqVaNxLE",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:05",
+                "school_name": "George Junior High School",
+                "confidence": "high",
+                "evidence_quote": "School starts at 8:40 and ends at 4:05",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1961,
+            "completion_tokens": 149,
+            "cost_usd": 0.00010997,
+            "latency_ms": 1943,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314942-W5GP7haugVRRbJa3qLhX",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "george",
+            "start": "08:40",
+            "end": "16:05",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School starts at 8:40 and ends at 4:05",
+                "locus": "ATTENDANCE & BELL SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School starts at 8:40 and ends at 4:05",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "0512660:ff9a5eb65a",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0512660:acb71ebad7",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "16:05",
+                "school_name": "Springdale High School",
+                "confidence": "high",
+                "evidence_quote": "Period Time _| Length Period Time _| Length Period Time _| Length\n0 7:50-8:35 | 45 0 7:50-8:35 | 45 0 Virtual\n1 8:40-10:11 | 91 5 8:40-10:11 | _ 91 tor5 | 8:40-9:51 | 71\n2 2:35-405 | 90 8 2:35-4:05 | 90 4or8 | 1:35-2:45 | 70",
+                "source_locus": "ATTENDANCE & BELL SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2675,
+            "completion_tokens": 306,
+            "cost_usd": 0.0003899,
+            "latency_ms": 1365,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314944-nEGec3BZQDrsxIquTo4U",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "16:05",
+                "school_name": "Springdale High School",
+                "confidence": "high",
+                "evidence_quote": "Period 1 8:40-10:11 | 91 Period 8 2:35-4:05 | 90",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2729,
+            "completion_tokens": 168,
+            "cost_usd": 0.00014989,
+            "latency_ms": 2888,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314946-8ydOTz9XCsPkBT61zBuZ",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "16:05",
+                "school_name": "Springdale High School",
+                "confidence": "high",
+                "evidence_quote": "0 7:50-8:35 | 45",
+                "source_locus": "ATTENDANCE & BELL SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2648,
+            "completion_tokens": 101,
+            "cost_usd": 0.00067144,
+            "latency_ms": 2238,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786314949-3ikLyEYGhh8xfqI5TqDN",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "springdale",
+            "start": "07:50",
+            "end": "16:05",
+            "gross": 495,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "0 7:50-8:35 | 45",
+                "locus": "ATTENDANCE & BELL SCHEDULE",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0512660:acb71ebad7",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "springdale public",
+        "start": "07:45",
+        "end": "15:10",
+        "gross": 445,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Schedule:               Elementary             Middle                 JH/HS\n\n  Teachers                7:45 - 3:15            8:00 - 3:30            8:35 - 4:05\n\n  Students (M, T,         7:45 - 3:10            8:05 - 3:30            8:40 - 4:05",
+            "locus": "page 4",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2022-23"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Students (M, T, Th, F) 7:45 - 3:10",
+            "locus": "Schedule: Elementary",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2022-23",
+            "applies_to": "multiple"
+          }
+        },
+        "applies_to": "multiple",
+        "rec_key": "0512660:abe873329d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "springdale public",
+        "start": "08:02",
+        "end": "15:30",
+        "gross": 448,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Schedule:               Elementary             Middle                 JH/HS\n\n  Teachers                7:45 - 3:15            8:00 - 3:30            8:35 - 4:05\n\n  Students (M, T,         7:45 - 3:10            8:05 - 3:30            8:40 - 4:05",
+            "locus": "page 4",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2022-23"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Students (M, T, Th, F) 8:05 - 3:30",
+            "locus": "Schedule: Middle",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2022-23",
+            "applies_to": "multiple"
+          }
+        },
+        "applies_to": "multiple",
+        "rec_key": "0512660:abe873329d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "springdale public",
+        "start": "08:38",
+        "end": "16:05",
+        "gross": 447,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Schedule:               Elementary             Middle                 JH/HS\n\n  Teachers                7:45 - 3:15            8:00 - 3:30            8:35 - 4:05\n\n  Students (M, T,         7:45 - 3:10            8:05 - 3:30            8:40 - 4:05",
+            "locus": "page 4",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2022-23"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Students (M, T, Th, F) 8:40 - 4:05",
+            "locus": "Schedule: JH/HS",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2022-23",
+            "applies_to": "multiple"
+          }
+        },
+        "applies_to": "multiple",
+        "rec_key": "0512660:abe873329d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "jo kelly",
+        "start": "08:05",
+        "end": "15:30",
+        "gross": 445,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Start Time - 8:05 a.m.\nDismissal - 3:30 p.m.",
+            "locus": "ATTENDANCE & BELL SCHEDULE",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Start Time - 8:05 a.m. Dismissal - 3:30 p.m.",
+            "locus": "Attendance, Bell Schedule and Academic Calendar",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0512660:d8f961b410",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hunt",
+        "start": "07:45",
+        "end": "15:10",
+        "gross": 445,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Teachers have a FULL schedule of activities and learning planned from 7:45 to 3:10 daily.",
+            "locus": "Attendance & Bell Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:45 am *Tardy bell rings and instruction begins. 3:10 pm *Instruction ends and school day is over.",
+            "locus": "Attendance & Bell Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0512660:7083dbcc4e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "george",
+        "start": "08:40",
+        "end": "16:05",
+        "gross": 445,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School starts at 8:40 and ends at 4:05",
+            "locus": "ATTENDANCE & BELL SCHEDULE",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School starts at 8:40 and ends at 4:05",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "0512660:ff9a5eb65a",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "springdale",
+        "start": "07:50",
+        "end": "16:05",
+        "gross": 495,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "0 7:50-8:35 | 45",
+            "locus": "ATTENDANCE & BELL SCHEDULE",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0512660:acb71ebad7",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "high",
+        "school": "lakeside",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:40"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "16:05"
+        },
+        "rec_key": "0512660:9308dd14dc",
+        "source_file": "md.md"
+      },
+      {
+        "band": "high",
+        "school": "har ber",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:50",
+          "mistralai/mistral-small-24b-instruct-2501": "08:40"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "16:05",
+          "mistralai/mistral-small-24b-instruct-2501": "16:05"
+        },
+        "rec_key": "0512660:2aa74f2b92",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "n_reps": 7,
+    "n_judged": 3,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 445,
+        "start_time": "07:45",
+        "end_time": "15:10",
+        "n_schools": 2,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "springdale public",
+            "start_time": "07:45",
+            "end_time": "15:10",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hunt",
+            "start_time": "07:45",
+            "end_time": "15:10",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 445,
+        "start_time": "08:05",
+        "end_time": "15:30",
+        "n_schools": 3,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "springdale public",
+            "start_time": "08:02",
+            "end_time": "15:30",
+            "gross": 448,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "jo kelly",
+            "start_time": "08:05",
+            "end_time": "15:30",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "george",
+            "start_time": "08:40",
+            "end_time": "16:05",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 471,
+        "start_time": null,
+        "end_time": null,
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "springdale public",
+            "start_time": "08:38",
+            "end_time": "16:05",
+            "gross": 447,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "springdale",
+            "start_time": "07:50",
+            "end_time": "16:05",
+            "gross": 495,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 17,
+      "judge_calls": 3,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 37481,
+      "completion_tokens": 5927,
+      "cost_usd": 0.00565156
+    },
+    "state": "AR"
+  }
+}

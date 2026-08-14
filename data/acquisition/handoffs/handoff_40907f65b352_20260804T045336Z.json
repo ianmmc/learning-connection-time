@@ -1,0 +1,74 @@
+{
+  "handoff_hash": "40907f65b352",
+  "created_at": "2026-08-04T04:53:36Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "dispatch_type": "production",
+  "fingerprints": {
+    "2307320": {
+      "config": "f77ddb950061",
+      "labels": "f9a838af3565",
+      "data": "1be71ea15b56"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v4"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.00102,
+    "n_reps": 1,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "2307320",
+      "name": "Lewiston Public Schools",
+      "state": "ME",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "2307320:76ff8b02ba",
+          "url": "https://www.lewistonpublicschools.org/en-US/calendar-a2df5e6c",
+          "label": null,
+          "decision": "send",
+          "reason": "7->6 alternate-rep re-dispatch (REQ-118)",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 1,
+              "n_chars": 2963
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    }
+  ]
+}

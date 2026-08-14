@@ -1,0 +1,260 @@
+{
+  "handoff_hash": "f7528edd785f",
+  "district": {
+    "district_id": "2307320",
+    "name": "Lewiston Public Schools",
+    "reps": [
+      {
+        "rec_key": "2307320:3b6acf2d32",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:24",
+                "end_time": "14:00",
+                "school_name": "Lewiston High School",
+                "confidence": "high",
+                "evidence_quote": "Periods 1/5\t8:24-9:37\t73 min\t\t\t\tPer 4/8\t12:47-2:00\t73 min",
+                "source_locus": "REGULAR SCHOOL DAY",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:56",
+                "end_time": "12:54",
+                "school_name": "Lewiston High School",
+                "confidence": "high",
+                "evidence_quote": "Periods 1/5\t8:56-9:58\t62 min\t\t\t\tPer 3/7\t11:08-12:54\t106 min",
+                "source_locus": "1-HOUR DELAY",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:56",
+                "end_time": "11:54",
+                "school_name": "Lewiston High School",
+                "confidence": "high",
+                "evidence_quote": "Periods 1/5\t7:56-8:58\t62 min\t\t\t\tPer 3/7\t10:08-11:54\t104 min",
+                "source_locus": "1-HOUR EARLY RELEASE",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "12:00",
+                "school_name": "Lewiston High School",
+                "confidence": "high",
+                "evidence_quote": "Periods 1/5\t7:45-8:40\t55 min\t\t\t\tPer 4/8\t11:05-12:00\t55 min",
+                "source_locus": "2-HOUR EARLY RELEASE",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1986,
+            "completion_tokens": 580,
+            "cost_usd": 0.0004306,
+            "latency_ms": 1633,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785818939-xPRANXZat2FP253i2UQc",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:24",
+                "end_time": "14:00",
+                "school_name": "Lewiston High School",
+                "confidence": "high",
+                "evidence_quote": "Periods 1/5 8:24-9:37 73 min Per 4/8 12:47-2:00 73 min",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2041,
+            "completion_tokens": 174,
+            "cost_usd": 0.00011597,
+            "latency_ms": 5503,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785818942-ClG7J0gGGfo5MjgjV6wb",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "lewiston",
+            "start": "08:24",
+            "end": "14:00",
+            "gross": 336,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Periods 1/5\t8:24-9:37\t73 min\t\t\t\tPer 4/8\t12:47-2:00\t73 min",
+                "locus": "REGULAR SCHOOL DAY",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Periods 1/5 8:24-9:37 73 min Per 4/8 12:47-2:00 73 min",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "2307320:3b6acf2d32",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2307320:76ff8b02ba",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1029,
+            "completion_tokens": 5,
+            "cost_usd": 0.0001049,
+            "latency_ms": 506,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785818946-o9H5yYMgacWo6kx3t99f",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1034,
+            "completion_tokens": 12,
+            "cost_usd": 5.266e-05,
+            "latency_ms": 556,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785818947-KcqnoI9Tcr4tfxSAr5kG",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "lewiston",
+        "start": "08:24",
+        "end": "14:00",
+        "gross": 336,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Periods 1/5\t8:24-9:37\t73 min\t\t\t\tPer 4/8\t12:47-2:00\t73 min",
+            "locus": "REGULAR SCHOOL DAY",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Periods 1/5 8:24-9:37 73 min Per 4/8 12:47-2:00 73 min",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "2307320:3b6acf2d32",
+        "source_file": "page.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 2,
+    "n_judged": 0,
+    "bands": {
+      "high": {
+        "gross_minutes": 336,
+        "start_time": "08:24",
+        "end_time": "14:00",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "lewiston",
+            "start_time": "08:24",
+            "end_time": "14:00",
+            "gross": 336,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 4,
+      "judge_calls": 0,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 6090,
+      "completion_tokens": 771,
+      "cost_usd": 0.0007041300000000001
+    },
+    "state": "ME"
+  }
+}

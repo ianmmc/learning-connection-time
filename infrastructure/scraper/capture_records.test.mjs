@@ -151,3 +151,21 @@ test('planSha256 is order/fragment/duplicate-invariant and matches the Python mi
   assert.match(src, /retryableOnly && planSha && planSha !== planSha256\(meta\.candidates\)[\s\S]{0,400}?process\.exit\(3\)/,
     'a plan fingerprint mismatch in retryable-only mode must abort the run');
 });
+
+// REQ-172 wiring pin: the seedFromPriorCaptures unit tests above prove the helper works, but the
+// load-bearing call sites live in un-exported main() — a refactor could drop the delta guard and
+// every unit test would stay green while follow-ups silently re-capture (duplicate spend, duplicate
+// records under new hashes, orphaned gate@5 labels at the next ingest). Same closure-pin posture as
+// tests/test_684_staff_day_confusable.py's STRONG_STRUCTURAL pin: iterate/inspect the real wiring,
+// not a copy.
+test('REQ-172 wiring pin: main() seeds from the prior manifest BEFORE the candidate loop, which consults seen', () => {
+  const src = readFileSync(new URL('./capture_discovery.mjs', import.meta.url), 'utf8');
+  const seedCall = src.indexOf('seedFromPriorCaptures(byDistrict[did]');
+  const enqueue = src.indexOf("source: 'discovered'");   // the one live candidate-task push
+  assert.ok(seedCall > -1, 'main() must seed bookkeeping from the prior captures.json (#174)');
+  assert.ok(enqueue > -1, 'the discovered-candidate enqueue must exist');
+  assert.ok(seedCall < enqueue, 'seeding must happen before candidates are enqueued');
+  const between = src.slice(seedCall, enqueue);
+  assert.ok(between.includes('.seen.has('),
+    'the candidate loop must skip already-captured URLs (the delta guard) before enqueueing');
+});

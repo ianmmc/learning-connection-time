@@ -135,52 +135,58 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-30): EPIC #695 IS CLOSED — the whole pre-#620 correctness queue landed.**
-The nine-item queue (#691 → #688 → #567 → #696 → #694 + re-measured #692 → #683 → #684) shipped as
-seven sequential PRs (#697/#698/#700–#705), one per issue, each merged on Ian's review. Base for
-anything new: `main` at `f094555` (+ this checkpoint). Highlights, full account in
-`PROJECT_HISTORY.md` 2026-07-29/30 + the dated reports under
-`docs/technical-notes/production-quality-control-research/`:
-- **#691**: hub-priority yield floor, rule picked from the 42-district corpus report; labeled targets
-  are never silently held. The 17 already-written narrowed districts are NOT re-reviewed (decided) —
-  the standing audit in `2026-07-29-narrowed-dispatch-audit.md` is the comeback mechanism.
-- **#688**: two-shape fingerprint accessors; 2,653 vendor hints recovered on re-ingest (#687 unblocked).
-- **#567**: CCD re-pointed to 2024-25 via `NCES_PRIMARY_YEAR`; the two #646 districts gained
-  `website_url` → campaign ceiling 25→27. Follow-up filed: #699 (retire districts NCES dropped).
-- **#696 settled** (design, not bug): three band relations each keep their consumer; pool-vs-denominator
-  gap surfaced at gate@8; #694 got the bounded K-8 mode-check class (`MODE_CHECK_MAX=2`).
-- **#694**: Stage-7 follow-up detection on the Stage-1 slot spine; ONE shared `band_done` predicate
-  across detect/withdraw/compose. **#692 verified fixed** (Cleveland/Essex now raise directives naming
-  unfilled schools).
-- **#683/#684**: `lf_explicit_minutes` acc 0.4545→1.0 (declaration-of-the-day predicate);
-  `lf_staff_day` (clause/relational rule, acc 1.000) after the issue's own presence-rule hypothesis
-  measured out a coin flip (0.512). Every STRONG_STRUCTURAL detector now consults `staff_day_owned()`
-  (closure test-pinned — the #705 max review found the one-member-guarded gap same-day).
+**Current status (2026-08-14): the #620 campaign is TRACED END-TO-END and is now BLOCKED on filed
+defects. 12 of 27 written.** All 27 batch_00000 districts were followed individually through
+production (dispatch → extraction → directives → gate@8 → Stage 9); the 9 approved-unwritten
+districts were incorporated today (Bridgeport `0900450`, Mat-Su `0200510`, Memphis `4700148`, Mesa
+`0404970`, Bentonville `0503060`, Springdale `0512660`, San Diego `0634320`, Waterbury `0904830`,
+Appoquinimink `1000080`) — each dry-run first, then verified in `district_grade_minutes`, not from
+the run report. Full account: `PROJECT_HISTORY.md` 2026-08-14. Positions: **12 written** ·
+**3 sent back** (Broward `1200180`, Cleveland `3904378`, Essex `5000395` — #689 routes nothing,
+Essex has never been re-dispatched despite #691 being built from its case) · **9 mid-loop** ·
+**3 unreachable** (Baldwin `0100270` + the #646 pair, #718).
 
-**Method notes that now carry forward:** measure-first twice *overturned the issue's own proposed
-fix* (#691's rule choice, #684's vocabulary widening) — the corpus measurement is where the design
-comes from, not overhead. New structural-defect class to watch: **a guard wired into one member of a
-set whose siblings share the property** (STRONG_STRUCTURAL, compose-vs-detect) — countermeasure is a
-closure pin iterating the set itself. Every scoring change shipped with re-ingest + harness A/B +
-tuning-ledger BEFORE the PR (the #662 counter-practice).
+**The blocker (why the campaign stops here): #719 `sev:critical`.** The #164 ladder escalates to a
+GEO-scoped follow-up on ROUND COUNT, not diagnosis; a geo batch blanks the scoping domain; Stage 2's
+#229 guard then refuses **every** result. Six batches (37-42), 70 schools, **zero resolved**, while
+providers returned exact on-domain hits. Live since 2026-07-27. Geo is for the Millard class (no
+usable domain); these districts' domains were never the problem. Until it lands, follow-up
+rediscovery cannot yield anything.
 
-**Next (RESUME HERE — 2026-07-30): resume the #620 campaign.**
-1. **Send back Cleveland `3904378` + Essex Westford `5000395`** at gate@8 (both now benefit from
-   #691's composition + #694's follow-ups). NB #689: the send-back verdict records but routes
-   nothing — Ian's written reason is the routing instruction, executed by hand.
-2. **San Diego `0634320`** is next in the district sequence → remaining ~21 → **#646** for 27/27.
-3. After #620: #623 → #622 → #640 → #645 → #624 → **#625 LAST**; then epic #92's #614/#615/#628 and
-   the gate@8 wiring gaps **#682** (approve→write) + **#689** (send-back→requeue), both still unwired.
-Campaign standing (unchanged since 2026-07-29): 4 of 25 written (Worcester `2513230`, Bangor
-`2302820`, Fairbanks `0200600`); Broward `1200180` sent back (#686 tracks its data-app source).
-Still-open from the campaign's finds: **#674 (epic #92 — most consequential open item: a human target
-label bypasses the #241 validity floor)**, #693 (name-normalizer minting false council disagreement —
-Council Lab), #685/#686/#687, #699, #669/#671 (epic #96).
+**New this session (all epic-attached):** #714 (per-model context accounting + no chunking path for
+a mega-roster rep — Orange zeroed both voters) · #715 (gate@7 compose counts district-wide, sweeps
+run-scoped — approved 7→2s invisible; **workaround: compose UNSCOPED**) · #716 (ambiguous 12h
+afternoon times parse as AM → Washoe lost 67 of ~106 schools; **re-aggregating the stored receipt
+recovers them with zero model spend**) · #717 (no already-extracted delta at gate@6) · #718 ·
+#719 · #720 (directives that can never execute never resolve → epic #96, the limbo class) ·
+#721 (band disagreement fragments consensus → #80) · #722 (no scheduled CI). Two new epics:
+**#723** (REQ-171 receipts→gov_db; #622/#623/#624/#645 re-homed from #617) and **#724** (LCT core;
+#599/#604/#628).
+
+**Method notes that carry forward:** measure-first has now overturned the issue's own proposed fix
+three times (#691, #684, and #719 — where *verifying* "are we as far as we can get?" rather than
+answering it found the campaign's worst defect). Structural class to watch: **a guard wired into one
+member of a set whose siblings share the property** — countermeasure is a closure pin iterating the
+set. Newer tell: **a total failure wearing a normal outcome's clothes** (100% gate refusal recorded
+as ordinary `manual_flag_all`; both-voters-failed recorded as a clean zero). Every scoring change
+ships with re-ingest + harness A/B + tuning-ledger BEFORE the PR (the #662 counter-practice).
+
+**Next (RESUME HERE — 2026-08-14):**
+1. **#719 first** — it gates all follow-up rediscovery. Then #716 (free recovery of Washoe's ~67
+   schools by re-aggregating the stored receipt; check before spending batch_00040) and #707
+   (decide before batch_00037's Little Rock spend — the target fact may already be in `school_fact`).
+2. **Runnable now without any fix:** three extractions pending on today's dispatches (Orange
+   `5d756fa57a52`, Mobile `96edcbf7141c`, Cedar Rapids `3c0d98cb9117`); the batch_00043 compose via
+   the UNSCOPED path (plans Lewiston + Cleveland + Little Rock — verified by live dry-run);
+   Essex/Broward send-back re-dispatches by hand.
+3. Then: epic #706's queue · #682 (approve→write, still manual CLI) · #689 · epic #723's
+   #623 → #622 → #645 → #624 · #640/#625 under #617.
+Still-open standouts: **#674** (a human target label bypasses the #241 validity floor — epic #92),
+#693, #685/#686/#687, #669/#671.
 Ian drives the console; prepare and verify, don't execute stage runs (Stage 9 CLI runs are the
-verification exception — read-only intent, idempotent, guarded). *Falsifier unchanged: if any district
-needs a hand-edit or a re-adjudicated gate@8 call, the mechanism is wrong — fix the pipeline, not the
-district.* It held through the entire #695 queue: every wrong outcome became a pipeline change with a
-failing-first pin.
+verification exception — read-only intent, idempotent, guarded). *Falsifier unchanged: if any
+district needs a hand-edit or a re-adjudicated gate@8 call, the mechanism is wrong — fix the
+pipeline, not the district.* It held again: every finding above became an issue, not a hand-fix.
 
 **The standing lesson (now tripled): three separate layers shipped green against measurements that
 could not fail (§10.11), then the fix round's own review findings repeated it (§10.19/§10.20), then a
@@ -207,12 +213,17 @@ Documented-in-code deferrals: `_satisfied_bands_now` batching; the #522 guardrai
 keyword/table attribution (needs a server payload change); JS behavioral tests (no JS harness);
 the remediation-receipt exception is not STAGE-scoped (30-day expiry since 2026-07-20); attribution
 v1 reads each district's LATEST candidate plan.
-Resume-essentials (verified on `main` at `f094555`, 2026-07-30): `pip install -e .` → Docker up
+Resume-essentials (ALL re-verified 2026-08-14 on this checkpoint): `pip install -e .` → Docker up
 (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) → `lint-imports`
-(expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **2131** pass, 1 skipped
-[pyarrow]) + `pytest -q -m govdb` (expect **384** pass, Postgres up) + `cd infrastructure/scraper &&
-npm test` (expect **90**) — all re-verified at the #705 merge. `pytest tests/test_*_integration.py`
-(expect **255** pass, 149 skipped, not re-verified this pass).
+(expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **2133** pass, 1 skipped
+[pyarrow]) + `pytest -q -m govdb` (expect **384** pass, Postgres up) + `pytest
+tests/test_*_integration.py` (expect **255** pass, 149 skipped) + `cd infrastructure/scraper &&
+npm test` (expect **91**).
+**pytest is now 9.1.1** (was 8.x): `pytest.ini` declares `pythonpath = .` — without it, pytest 9's
+bare `pytest` script fails COLLECTION on `tests/test_benchmark_*` (`from tests import
+benchmark_seed`), and CI installs unpinned so it would have broken on its next run.
+`requirements.txt` floor raised to `pytest>=9.0`. NB there is no scheduled CI (#722) — `main` can
+sit red between pushes, as it did 08-11→08-14.
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (Huntington
 `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters; Bentonville
 `0503060:a5f32ff869` staff-day tier B). Drive the Node Playwright from `infrastructure/scraper` (a

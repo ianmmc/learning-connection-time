@@ -1,0 +1,81 @@
+{
+  "handoff_hash": "c8cd7773bdf8",
+  "district": {
+    "district_id": "0509000",
+    "name": "LITTLE ROCK SCHOOL DISTRICT",
+    "reps": [
+      {
+        "rec_key": "0509000:9f652a5606",
+        "file": "camelot_stream.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "08:42",
+                "end_time": "16:00",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "Tardy Bell | 8:42\nA6/B6 | 2:56 \u2013 4:00",
+                "source_locus": "2024-2025 REVISED Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1230,
+            "completion_tokens": 184,
+            "cost_usd": 0.0001966,
+            "latency_ms": 1236,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785818933-96kZmuyUNH5lWUQVCgAH",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": false,
+            "error": "Error code: 429 - {'error': {'message': 'Provider returned error', 'code': 429, 'metadata': {'raw': 'mistralai/mistral-small-24b-instruct-2501 is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations', 'provider_name': 'DeepInfra', 'is_byok': False, 'provider_error_code': 'engine_overloaded', 'limit_source': 'upstream_provider_shared_pool', 'remedy_hint': 'Retry shortly, add your own provider key (https://openrouter.ai/settings/integrations), or route to another provider with provider routing: https://openrouter.ai/docs/features/provider-routing'}}, 'user_id': 'user_3F6G2u57EqCPewKcTHYL5cGYfne'}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 2321,
+            "finish_reason": null,
+            "generation_id": null,
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      }
+    ],
+    "accepted": [],
+    "unresolved": [],
+    "n_reps": 1,
+    "n_judged": 0,
+    "bands": {},
+    "telemetry": {
+      "calls": 2,
+      "judge_calls": 0,
+      "errors": 1,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 1230,
+      "completion_tokens": 184,
+      "cost_usd": 0.0001966
+    },
+    "state": "AR"
+  }
+}

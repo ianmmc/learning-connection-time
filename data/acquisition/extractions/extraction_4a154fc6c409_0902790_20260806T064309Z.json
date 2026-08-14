@@ -1,0 +1,1057 @@
+{
+  "handoff_hash": "4a154fc6c409",
+  "district": {
+    "district_id": "0902790",
+    "name": "New Haven School District",
+    "reps": [
+      {
+        "rec_key": "0902790:ef81b3f0e5",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Barack H. Obama Magnet University School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:35am \u2013 2:50pm",
+                "source_locus": "Contact Us",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1104,
+            "completion_tokens": 113,
+            "cost_usd": 0.0001556,
+            "latency_ms": 748,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998552-4gvz1ynRpngOWAOxVKEF",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Barack H. Obama Magnet University School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:35am \u2013 2:50pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1102,
+            "completion_tokens": 153,
+            "cost_usd": 6.734e-05,
+            "latency_ms": 3830,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998552-ul9i8o1a3JdosVrj8iJP",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Barack H. Obama Magnet University School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:35am \u2013 2:50pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1068,
+            "completion_tokens": 97,
+            "cost_usd": 0.00032032,
+            "latency_ms": 2186,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998556-rvDYLL8iyxpTmNjg6wUn",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "barack h obama magnet university",
+            "start": "08:35",
+            "end": "14:50",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "School Hours: 8:35am \u2013 2:50pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0902790:ef81b3f0e5",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0902790:7e42092333",
+        "file": "tesseract_screenshot.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 7,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:10",
+                "school_name": "High School in the Community",
+                "confidence": "high",
+                "evidence_quote": "First Bell at 7:45",
+                "source_locus": "DAILY SCHEDULES",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:04",
+                "end_time": "14:10",
+                "school_name": "High School in the Community",
+                "confidence": "high",
+                "evidence_quote": "8:04-8:49 | Period 3 9:34-10:27 | Period 4 10:31-11:16 | Lunch 11:16-11:46 | Period 5 11:46-12:53 | Period 6 12:49-2:10 | Period 7 1:42-2:10",
+                "source_locus": "DAILY SCHEDULES",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:04",
+                "end_time": "14:10",
+                "school_name": "High School in the Community",
+                "confidence": "high",
+                "evidence_quote": "8:04-9:25 | Period 1 8:04-9:25 | Period 2 9:29-10:50 | Period 3 10:50-11:20 | Lunch 11:24-12:45 | Period 4 11:48-12:53 | Period 6 12:49-2:10 | Period 7 1:42-2:10",
+                "source_locus": "DAILY SCHEDULES",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:08",
+                "end_time": "14:10",
+                "school_name": "High School in the Community",
+                "confidence": "high",
+                "evidence_quote": "8:08-9:25 | Period 1 8:08-9:25 | Period 2 9:29-10:50 | Period 3 10:50-11:20 | Lunch 11:24-12:45 | Period 4 11:48-12:53 | Period 6 12:49-2:10 | Period 7 1:42-2:10",
+                "source_locus": "DAILY SCHEDULES",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:45",
+                "end_time": "14:10",
+                "school_name": "High School in the Community",
+                "confidence": "high",
+                "evidence_quote": "+ 9:45 First Bell ... + 1:42 - 2:10 Period 7",
+                "source_locus": "A Day 2 Hour Delay",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:50",
+                "end_time": "14:10",
+                "school_name": "High School in the Community",
+                "confidence": "high",
+                "evidence_quote": "* 9:50 to 10:00 Flight Crew ... * 12:52 to 2:10 Period 6",
+                "source_locus": "B Day 2 Hour Delay",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:45",
+                "end_time": "14:10",
+                "school_name": "High School in the Community",
+                "confidence": "high",
+                "evidence_quote": "+ 9:45 First Bell ... * 1:42 - 2:10 Period 7",
+                "source_locus": "C Day 2 Hour Delay",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1810,
+            "completion_tokens": 1418,
+            "cost_usd": 0.0007482,
+            "latency_ms": 3943,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998558-ClO8bpOvddkLT96ENl1C",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:04",
+                "end_time": "14:10",
+                "school_name": "High School in the Community",
+                "confidence": "high",
+                "evidence_quote": "8:04-9:25 12:49-2:10",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1838,
+            "completion_tokens": 154,
+            "cost_usd": 0.00010422,
+            "latency_ms": 3172,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998562-a9X5kEcSvdvdzfUClt21",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:04",
+                "end_time": "14:10",
+                "school_name": "High School in the Community",
+                "confidence": "high",
+                "evidence_quote": "Period 1 8:04-8:49",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1785,
+            "completion_tokens": 91,
+            "cost_usd": 0.000336,
+            "latency_ms": 3601,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998565-N2v58iEZdxOrh49VbP0E",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "in community",
+            "start": "08:04",
+            "end": "14:10",
+            "gross": 366,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "Period 1 8:04-8:49",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0902790:7e42092333",
+            "source_file": "tesseract_screenshot.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0902790:72840979c9",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Barack H. Obama Magnet University School",
+                "confidence": "high",
+                "evidence_quote": "Our regular school day runs: 8:35 am \u2013 2:50 pm.",
+                "source_locus": "School Schedule Information",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1080,
+            "completion_tokens": 147,
+            "cost_usd": 0.0001668,
+            "latency_ms": 818,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998569-HJYWbbZwR0St1v58j6Lt",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Barack H. Obama Magnet University School",
+                "confidence": "high",
+                "evidence_quote": "Our regular school day runs: 8:35 am \u2013 2:50 pm.",
+                "source_locus": "2024-2025 School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1091,
+            "completion_tokens": 168,
+            "cost_usd": 6.799e-05,
+            "latency_ms": 3023,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998570-zjmYCsSUccsSe44skK1r",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Barack H. Obama Magnet University School",
+                "confidence": "high",
+                "evidence_quote": "Our regular school day runs: 8:35 am \u2013 2:50 pm.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1054,
+            "completion_tokens": 106,
+            "cost_usd": 0.00032516,
+            "latency_ms": 2619,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998573-JLzIgnwidnoqKSmwvYeo",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "barack h obama magnet university",
+            "start": "08:35",
+            "end": "14:50",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "Our regular school day runs: 8:35 am \u2013 2:50 pm.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25"
+              }
+            },
+            "school_year": "2024-25",
+            "rec_key": "0902790:72840979c9",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0902790:1325965e9c",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Wilbur Cross High School",
+                "confidence": "high",
+                "evidence_quote": "Classes begin promptly at 7:30a.m. and end at 2:00p.m.",
+                "source_locus": "Attendance",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2107,
+            "completion_tokens": 123,
+            "cost_usd": 0.0002599,
+            "latency_ms": 828,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998575-loQ56Jkp4eYCeRnwTEvl",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Wilbur Cross High School",
+                "confidence": "high",
+                "evidence_quote": "Classes begin promptly at 7:30a.m. and end at 2:00p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2082,
+            "completion_tokens": 156,
+            "cost_usd": 0.00011658,
+            "latency_ms": 2395,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998576-qHpTTHUtPm6k7mw1qWlu",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "wilbur cross",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Classes begin promptly at 7:30a.m. and end at 2:00p.m.",
+                "locus": "Attendance",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Classes begin promptly at 7:30a.m. and end at 2:00p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "0902790:1325965e9c",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0902790:92a180f83e",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:15",
+                "school_name": "LW Beecher Museum School of Arts & Sciences Interdistrict Magnet",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 9:15 AM 3:15 PM",
+                "source_locus": "",
+                "stated_minutes": 360,
+                "stated_minutes_quote": "360 min",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1115,
+            "completion_tokens": 120,
+            "cost_usd": 0.0001595,
+            "latency_ms": 842,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998579-JeKm3GiI7sSXmDm9ARjU",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:15",
+                "school_name": "LW Beecher Museum School of Arts & Sciences Interdistrict Magnet",
+                "confidence": "high",
+                "evidence_quote": "School         9:15 AM       3:15 PM",
+                "source_locus": "",
+                "stated_minutes": 360,
+                "stated_minutes_quote": "360 min",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1142,
+            "completion_tokens": 166,
+            "cost_usd": 7.038e-05,
+            "latency_ms": 2425,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998580-EI5SwTwHJJDbfeCDfD20",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "lw beecher museum arts sciences interdistrict magnet",
+            "start": "09:15",
+            "end": "15:15",
+            "gross": 360,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: 9:15 AM 3:15 PM",
+                "locus": "",
+                "stated_minutes": 360,
+                "stated_minutes_quote": "360 min",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School         9:15 AM       3:15 PM",
+                "locus": "",
+                "stated_minutes": 360,
+                "stated_minutes_quote": "360 min",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "0902790:92a180f83e",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0902790:05f50dbfc0",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "08:25",
+                "end_time": "14:50",
+                "school_name": "Bishop Woods",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25-2:50",
+                "source_locus": "11 MONTHS AGO, FLO CRISCI",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": null,
+                "start_time": "08:25",
+                "end_time": "12:50",
+                "school_name": "Bishop Woods",
+                "confidence": "low",
+                "evidence_quote": "8:25 AM-12:S0 PM\n(Early Dismissal Day!)",
+                "source_locus": "8 MONTHS AGO, JAMIE SIRICO",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 4147,
+            "completion_tokens": 334,
+            "cost_usd": 0.0005483,
+            "latency_ms": 1507,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998582-bWe13TPrudvjItMije7w",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:25",
+                "end_time": "14:50",
+                "school_name": "Bishop Woods Architecture & Design Magnet",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25-2:50",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 4375,
+            "completion_tokens": 111,
+            "cost_usd": 0.00022763,
+            "latency_ms": 2489,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998583-n2x1J6dOoT4K7f2ksmhW",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:50",
+                "school_name": "Bishop Woods Architecture & Design Magnet",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25-2:50",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:25",
+                "end_time": "14:50",
+                "school_name": "Bishop Woods Architecture & Design Magnet",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:25-2:50",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 4150,
+            "completion_tokens": 194,
+            "cost_usd": 0.00108372,
+            "latency_ms": 3675,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998586-9BpqqF7rWE3ikQUXbRX6",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "bishop woods architecture design magnet",
+            "start": "08:25",
+            "end": "14:50",
+            "gross": 385,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "School Hours: 8:25-2:50",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "0902790:05f50dbfc0",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "barack h obama magnet university",
+        "start": "08:35",
+        "end": "14:50",
+        "gross": 375,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "School Hours: 8:35am \u2013 2:50pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0902790:ef81b3f0e5",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "in community",
+        "start": "08:04",
+        "end": "14:10",
+        "gross": 366,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "Period 1 8:04-8:49",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0902790:7e42092333",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "high",
+        "school": "barack h obama magnet university",
+        "start": "08:35",
+        "end": "14:50",
+        "gross": 375,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "Our regular school day runs: 8:35 am \u2013 2:50 pm.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2024-25"
+          }
+        },
+        "school_year": "2024-25",
+        "rec_key": "0902790:72840979c9",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "wilbur cross",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Classes begin promptly at 7:30a.m. and end at 2:00p.m.",
+            "locus": "Attendance",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Classes begin promptly at 7:30a.m. and end at 2:00p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "0902790:1325965e9c",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lw beecher museum arts sciences interdistrict magnet",
+        "start": "09:15",
+        "end": "15:15",
+        "gross": 360,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: 9:15 AM 3:15 PM",
+            "locus": "",
+            "stated_minutes": 360,
+            "stated_minutes_quote": "360 min",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School         9:15 AM       3:15 PM",
+            "locus": "",
+            "stated_minutes": 360,
+            "stated_minutes_quote": "360 min",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "0902790:92a180f83e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "bishop woods architecture design magnet",
+        "start": "08:25",
+        "end": "14:50",
+        "gross": 385,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "School Hours: 8:25-2:50",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "0902790:05f50dbfc0",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 6,
+    "n_judged": 4,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 360,
+        "start_time": "09:15",
+        "end_time": "15:15",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "lw beecher museum arts sciences interdistrict magnet",
+            "start_time": "09:15",
+            "end_time": "15:15",
+            "gross": 360,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 385,
+        "start_time": "08:25",
+        "end_time": "14:50",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "bishop woods architecture design magnet",
+            "start_time": "08:25",
+            "end_time": "14:50",
+            "gross": 385,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 375,
+        "start_time": "08:35",
+        "end_time": "14:50",
+        "n_schools": 4,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "barack h obama magnet university",
+            "start_time": "08:35",
+            "end_time": "14:50",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "in community",
+            "start_time": "08:04",
+            "end_time": "14:10",
+            "gross": 366,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "barack h obama magnet university",
+            "start_time": "08:35",
+            "end_time": "14:50",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "wilbur cross",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 16,
+      "judge_calls": 4,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 31050,
+      "completion_tokens": 3651,
+      "cost_usd": 0.00475764
+    },
+    "state": "CT"
+  }
+}

@@ -1,0 +1,4181 @@
+{
+  "handoff_hash": "4a154fc6c409",
+  "district": {
+    "district_id": "0404970",
+    "name": "Mesa Unified District (4235)",
+    "reps": [
+      {
+        "rec_key": "0404970:fe9d0bcc53",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "16:00",
+                "school_name": "Fremont Junior High",
+                "confidence": "high",
+                "evidence_quote": "Regular Schedule\n                 \u201cA\u201d Hour                 8:00-8:55 (55)\n\n                  1st Hour               9:15-10:18 (63)",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1221,
+            "completion_tokens": 136,
+            "cost_usd": 0.0001765,
+            "latency_ms": 1390,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998439-kWG6wUPuZNZsNBsJgcsY",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "16:00",
+                "school_name": "Fremont Junior High",
+                "confidence": "high",
+                "evidence_quote": "\u201cA\u201d Hour 8:00-8:55 (55) 7th Hour 3:01-4:00 (59)",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1235,
+            "completion_tokens": 169,
+            "cost_usd": 7.527e-05,
+            "latency_ms": 2674,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998440-Vdus9uUbQEIbW7nlg8aX",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "fremont",
+            "start": "08:00",
+            "end": "16:00",
+            "gross": 480,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Regular Schedule\n                 \u201cA\u201d Hour                 8:00-8:55 (55)\n\n                  1st Hour               9:15-10:18 (63)",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "\u201cA\u201d Hour 8:00-8:55 (55) 7th Hour 3:01-4:00 (59)",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "0404970:fe9d0bcc53",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:0c5ac62c56",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Lindbergh Elementary",
+                "confidence": "high",
+                "evidence_quote": "School Day: 7:30 a.m. - 2:00 p.m. (12:00 p.m. on Wednesdays)",
+                "source_locus": "About Our School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2132,
+            "completion_tokens": 191,
+            "cost_usd": 0.0002896,
+            "latency_ms": 1215,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998443-khwjBQCeiDuMmGTt4t5V",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Lindbergh Elementary",
+                "confidence": "high",
+                "evidence_quote": "School Day: 7:30 a.m. - 2:00 p.m. (12:00 p.m. on Wednesdays)",
+                "source_locus": "About Our School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2145,
+            "completion_tokens": 165,
+            "cost_usd": 0.00012045,
+            "latency_ms": 2291,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998444-OpM14G2GvxhQhQhLZMM0",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "lindbergh",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Day: 7:30 a.m. - 2:00 p.m. (12:00 p.m. on Wednesdays)",
+                "locus": "About Our School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School Day: 7:30 a.m. - 2:00 p.m. (12:00 p.m. on Wednesdays)",
+                "locus": "About Our School",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "0404970:0c5ac62c56",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:efa7cb519e",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:00",
+                "school_name": "Poston Junior High",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri\n9:15 a.m. - 4:00 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1275,
+            "completion_tokens": 120,
+            "cost_usd": 0.0001755,
+            "latency_ms": 933,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998446-IytxTqer2E1ZcIIT4Usv",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:00",
+                "school_name": "Charles D. Poston Junior High School",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri 9:15 a.m. - 4:00 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1277,
+            "completion_tokens": 164,
+            "cost_usd": 7.697e-05,
+            "latency_ms": 2592,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998447-F8DC8S4Ft1vJOZBXJY9a",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "16:00",
+                "school_name": "Poston Junior High",
+                "confidence": "high",
+                "evidence_quote": "Office Hours Mon, Tue, Thu, Fri 8:30 a.m. - 4:00 p.m.",
+                "source_locus": "Information",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1239,
+            "completion_tokens": 104,
+            "cost_usd": 0.00016871,
+            "latency_ms": 2944,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998450-CILmbsA4IguOVT0ulINn",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "poston",
+            "start": "08:30",
+            "end": "16:00",
+            "gross": 450,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "Office Hours Mon, Tue, Thu, Fri 8:30 a.m. - 4:00 p.m.",
+                "locus": "Information",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0404970:efa7cb519e",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "charles d poston",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "09:15"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "16:00"
+            },
+            "rec_key": "0404970:efa7cb519e",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0404970:12bfb03d6d",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Skyline High School",
+                "confidence": "high",
+                "evidence_quote": "8:15 a.m. - 3:15 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1354,
+            "completion_tokens": 160,
+            "cost_usd": 0.0001994,
+            "latency_ms": 1289,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998453-Fs7xgnlBTGiMAPL1Ods8",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Skyline High School",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thur, Fri 8:15 a.m. - 3:15 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1377,
+            "completion_tokens": 116,
+            "cost_usd": 7.813e-05,
+            "latency_ms": 3769,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998454-kS1AoYMXMXDmdYGQxY5H",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "skyline",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "8:15 a.m. - 3:15 p.m.",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Mon, Tue, Thur, Fri 8:15 a.m. - 3:15 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "0404970:12bfb03d6d",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:2fcee65b72",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Westwood High",
+                "confidence": "high",
+                "evidence_quote": "8:15 a.m. - 3:15 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1312,
+            "completion_tokens": 160,
+            "cost_usd": 0.0001952,
+            "latency_ms": 1004,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998458-8DyURCFFDDTq94UodghZ",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Westwood High",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri 8:15 a.m. - 3:15 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1316,
+            "completion_tokens": 117,
+            "cost_usd": 7.516e-05,
+            "latency_ms": 2683,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998459-bQ4SK1Nk75pUD3IQr0zK",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "westwood",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "8:15 a.m. - 3:15 p.m.",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Mon, Tue, Thu, Fri 8:15 a.m. - 3:15 p.m.",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "0404970:2fcee65b72",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:e1a4eaf9cb",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "15:30",
+                "school_name": "Shepherd Junior High",
+                "confidence": "high",
+                "evidence_quote": "8:35 a.m. - 3:30 p.m.",
+                "source_locus": "Shepherd Junior High",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1252,
+            "completion_tokens": 170,
+            "cost_usd": 0.0001932,
+            "latency_ms": 927,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998461-BHIk43UIRXocciJye7bE",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "15:30",
+                "school_name": "Shepherd Junior High",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri 8:35 a.m. - 3:30 p.m.",
+                "source_locus": "Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1257,
+            "completion_tokens": 159,
+            "cost_usd": 7.557e-05,
+            "latency_ms": 2212,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998462-DAlhQp4WFb4tW5DKD3Dn",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "shepherd",
+            "start": "08:35",
+            "end": "15:30",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "8:35 a.m. - 3:30 p.m.",
+                "locus": "Shepherd Junior High",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Mon, Tue, Thu, Fri 8:35 a.m. - 3:30 p.m.",
+                "locus": "Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "0404970:e1a4eaf9cb",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:b038abfbf7",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:45",
+                "school_name": "Field Elementary",
+                "confidence": "high",
+                "evidence_quote": "School Hours: Mon, Tue, Thu, Fri: 8:15 a.m. - 2:45 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1281,
+            "completion_tokens": 178,
+            "cost_usd": 0.0001993,
+            "latency_ms": 1220,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998465-tdqMUe4mqwbhDDg1Klmx",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:45",
+                "school_name": "Field Elementary",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri: 8:15 a.m. - 2:45 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1291,
+            "completion_tokens": 120,
+            "cost_usd": 7.415e-05,
+            "latency_ms": 2202,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998466-MdFVWo08jUZRON2U0Cji",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "field",
+            "start": "08:15",
+            "end": "14:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: Mon, Tue, Thu, Fri: 8:15 a.m. - 2:45 p.m.",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Mon, Tue, Thu, Fri: 8:15 a.m. - 2:45 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "0404970:b038abfbf7",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:07294d0ab8",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:00",
+                "school_name": "George N. Smith Junior High School",
+                "confidence": "high",
+                "evidence_quote": "School\nMon, Tue, Thu, Fri\n9:15 a.m. - 4:00 p.m.",
+                "source_locus": "Schools Information Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "14:00",
+                "school_name": "George N. Smith Junior High School",
+                "confidence": "high",
+                "evidence_quote": "Wed\n9:15 a.m. - 2:00 p.m.",
+                "source_locus": "Schools Information Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1258,
+            "completion_tokens": 342,
+            "cost_usd": 0.0002626,
+            "latency_ms": 1373,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998468-6aYnzMWWlfc0mvTiKbcE",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:00",
+                "school_name": "George N. Smith Junior High School",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri 9:15 a.m. - 4:00 p.m.",
+                "source_locus": "Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1265,
+            "completion_tokens": 162,
+            "cost_usd": 7.621e-05,
+            "latency_ms": 2308,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998469-odY3vqxXra4d9YdIdR10",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "george n smith",
+            "start": "09:15",
+            "end": "16:00",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School\nMon, Tue, Thu, Fri\n9:15 a.m. - 4:00 p.m.",
+                "locus": "Schools Information Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Mon, Tue, Thu, Fri 9:15 a.m. - 4:00 p.m.",
+                "locus": "Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "rec_key": "0404970:07294d0ab8",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:5b9b0d81ec",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:00",
+                "school_name": "Rhodes Junior High",
+                "confidence": "high",
+                "evidence_quote": "School Hours:\n              Mon, Tue, Thu, Fri\n              9:15 a.m. - 4:00 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1211,
+            "completion_tokens": 178,
+            "cost_usd": 0.0001923,
+            "latency_ms": 1159,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998472-Uu97GmIGnknMlAI4YvTU",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1219,
+            "completion_tokens": 12,
+            "cost_usd": 6.191e-05,
+            "latency_ms": 1548,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998474-TF0r6DBIKjquNo0mlxdV",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:00",
+                "school_name": "Rhodes Junior High",
+                "confidence": "high",
+                "evidence_quote": "School Mon, Tue, Thu, Fri 9:15 a.m. - 4:00 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1180,
+            "completion_tokens": 101,
+            "cost_usd": 0.00016175,
+            "latency_ms": 5408,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998475-Laj6yoIxyXIuhhrI6LdK",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "rhodes",
+            "start": "09:15",
+            "end": "16:00",
+            "gross": 405,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "School Mon, Tue, Thu, Fri 9:15 a.m. - 4:00 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0404970:5b9b0d81ec",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:79c73d619a",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:05",
+                "end_time": "15:00",
+                "school_name": "Fremont Junior High",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri\n9:15 a.m. - 4:00 p.m.\n\nA hour (M-F)\n8:05 a.m. - 8:55 a.m.\n\nWed\n9:15 a.m. - 2:00 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1266,
+            "completion_tokens": 230,
+            "cost_usd": 0.0002186,
+            "latency_ms": 1325,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998480-BA5hifBsfwu0hUwd6mAK",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:05",
+                "end_time": "14:00",
+                "school_name": "John C. Fremont Junior High School",
+                "confidence": "high",
+                "evidence_quote": "A hour (M-F) 8:05 a.m. - 8:55 a.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1266,
+            "completion_tokens": 118,
+            "cost_usd": 7.274e-05,
+            "latency_ms": 2078,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998481-9G715Bcfdny8av1DCveb",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:05",
+                "end_time": "14:55",
+                "school_name": "John C. Fremont Junior High School",
+                "confidence": "high",
+                "evidence_quote": "A hour (M-F) 8:05 a.m. - 8:55 a.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1253,
+            "completion_tokens": 85,
+            "cost_usd": 0.00039825,
+            "latency_ms": 1672,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998483-Yc147X9A4A5xzjjyYKcr",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "john c fremont",
+            "start": "08:05",
+            "end": "14:55",
+            "gross": 410,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "A hour (M-F) 8:05 a.m. - 8:55 a.m.",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0404970:79c73d619a",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "fremont",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:05"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "0404970:79c73d619a",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0404970:8603676b06",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:15",
+                "school_name": "Franklin Junior High School",
+                "confidence": "high",
+                "evidence_quote": "School Hours\n\nMon, Tue, Thu, Fri\n7:30 a.m. - 2:15 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1881,
+            "completion_tokens": 126,
+            "cost_usd": 0.0002385,
+            "latency_ms": 981,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998485-kvb5ApsMbMTWOlp7aNSp",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:15",
+                "school_name": "Franklin Junior High School",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri 7:30 a.m. - 2:15 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1901,
+            "completion_tokens": 158,
+            "cost_usd": 0.00010769,
+            "latency_ms": 2659,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998486-9Mt4Z39iBSnMlnfi0RCP",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "franklin",
+            "start": "07:30",
+            "end": "14:15",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours\n\nMon, Tue, Thu, Fri\n7:30 a.m. - 2:15 p.m.",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Mon, Tue, Thu, Fri 7:30 a.m. - 2:15 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "0404970:8603676b06",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:3ec2902755",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:00",
+                "school_name": "Stapley Junior High",
+                "confidence": "high",
+                "evidence_quote": "9:15 a.m. - 4 p.m.",
+                "source_locus": "Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2023-24",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1175,
+            "completion_tokens": 165,
+            "cost_usd": 0.0001835,
+            "latency_ms": 1377,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998488-emPVGd9RnlWSpxG7idPZ",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1177,
+            "completion_tokens": 8,
+            "cost_usd": 5.949e-05,
+            "latency_ms": 471,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998490-xiC9TPlsHdC1x16ogWkO",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:00",
+                "school_name": "O. S. Stapley Junior High School",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri 9:15 a.m. - 4 p.m.",
+                "source_locus": "Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2023-24",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "14:00",
+                "school_name": "O. S. Stapley Junior High School",
+                "confidence": "medium",
+                "evidence_quote": "Wed 9:15 a.m. - 2 p.m.",
+                "source_locus": "Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2023-24",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1138,
+            "completion_tokens": 208,
+            "cost_usd": 0.00022306,
+            "latency_ms": 3663,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998490-M7YzEIbmGgb8ZArKeTVI",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "stapley",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "16:00"
+            },
+            "rec_key": "0404970:3ec2902755",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0404970:5cf32da401",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:00",
+                "school_name": "Fremont Junior High",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri\n9:15 a.m. - 4:00 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "14:00",
+                "school_name": "Fremont Junior High",
+                "confidence": "high",
+                "evidence_quote": "Wed\n9:15 a.m. - 2:00 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 3088,
+            "completion_tokens": 338,
+            "cost_usd": 0.000444,
+            "latency_ms": 1910,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998494-mEDgg6O6kfogK1LqDyDl",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:00",
+                "school_name": "Fremont Junior High",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri 9:15 a.m. - 4:00 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 3103,
+            "completion_tokens": 161,
+            "cost_usd": 0.00016803,
+            "latency_ms": 2442,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998496-e3mfJMxXB2yLlxLuXU2e",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "fremont",
+            "start": "09:15",
+            "end": "16:00",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Mon, Tue, Thu, Fri\n9:15 a.m. - 4:00 p.m.",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Mon, Tue, Thu, Fri 9:15 a.m. - 4:00 p.m.",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "0404970:5cf32da401",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:8d0cab8a04",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Pomeroy Elementary",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "12:00",
+                "school_name": "Pomeroy Elementary",
+                "confidence": "high",
+                "evidence_quote": "Wed: 7:30 a.m. - 12:00 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1169,
+            "completion_tokens": 337,
+            "cost_usd": 0.0002517,
+            "latency_ms": 1846,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998499-w2oel33WMlU39FQasKy3",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Pomeroy Elementary",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1170,
+            "completion_tokens": 118,
+            "cost_usd": 6.794e-05,
+            "latency_ms": 2039,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998500-bBOdo2Iu0BFjZRIwxdVq",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "pomeroy",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "0404970:8d0cab8a04",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:a60caf7097",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Pomeroy Elementary",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1185,
+            "completion_tokens": 177,
+            "cost_usd": 0.0001893,
+            "latency_ms": 1523,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998502-eoaJelBhvZn67VjWwdIz",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1188,
+            "completion_tokens": 12,
+            "cost_usd": 6.036e-05,
+            "latency_ms": 395,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998504-IEAUwJeW21J2wjg8OIEb",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Francis M. Pomeroy Elementary",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1153,
+            "completion_tokens": 112,
+            "cost_usd": 0.00035222,
+            "latency_ms": 2952,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998505-yVQyhKse6tdXSjHjQTSK",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "pomeroy",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:00"
+            },
+            "rec_key": "0404970:a60caf7097",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0404970:d2a70a8d99",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Lindbergh Elementary",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri:\n              7:30 a.m. - 2:00 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "12:00",
+                "school_name": "Lindbergh Elementary",
+                "confidence": "high",
+                "evidence_quote": "Wed:\n              7:30 a.m. - 12:00\n                                     p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1188,
+            "completion_tokens": 336,
+            "cost_usd": 0.0002532,
+            "latency_ms": 1530,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998507-WbVhRRFL0kaLpepF12Yb",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Lindbergh Elementary",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1188,
+            "completion_tokens": 119,
+            "cost_usd": 6.892e-05,
+            "latency_ms": 3113,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998510-mbzRyPX6hQnjDwSUS1uB",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "lindbergh",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Mon, Tue, Thu, Fri:\n              7:30 a.m. - 2:00 p.m.",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "0404970:d2a70a8d99",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:8440bea61a",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:00",
+                "school_name": "Carson Junior High",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri\n9:15 a.m. - 4:00 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "14:00",
+                "school_name": "Carson Junior High",
+                "confidence": "high",
+                "evidence_quote": "Wed\n9:15 a.m. - 2:00 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1177,
+            "completion_tokens": 336,
+            "cost_usd": 0.0002521,
+            "latency_ms": 4026,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998512-843lC8j8v5oHGmQjj15U",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1177,
+            "completion_tokens": 8,
+            "cost_usd": 5.949e-05,
+            "latency_ms": 615,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998516-7s6fmv36VTpmEFajtz0Z",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1139,
+            "completion_tokens": 6,
+            "cost_usd": 0.00010581,
+            "latency_ms": 527,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998517-trpUB1Q3ZRzsdQnNoMYA",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "carson",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "16:00"
+            },
+            "rec_key": "0404970:8440bea61a",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0404970:04ce9ec12e",
+        "file": "tesseract_screenshot.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Red Mountain High School",
+                "confidence": "high",
+                "evidence_quote": "School Hours: Mon, Tue, Thu, Fri\n8:15 a.m. - 3:15 p.m.",
+                "source_locus": "Red Mountain High School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1716,
+            "completion_tokens": 177,
+            "cost_usd": 0.0002424,
+            "latency_ms": 933,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998517-cl84qrCgSujVzz3JcTzG",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Red Mountain High School",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri 8:15 a.m. - 3:15 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1727,
+            "completion_tokens": 120,
+            "cost_usd": 9.595e-05,
+            "latency_ms": 3081,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998518-E3Jb7v7JEEJ3McHhqZ5g",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "red mountain",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "School Hours: Mon, Tue, Thu, Fri\n8:15 a.m. - 3:15 p.m.",
+                "locus": "Red Mountain High School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Mon, Tue, Thu, Fri 8:15 a.m. - 3:15 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "0404970:04ce9ec12e",
+            "source_file": "tesseract_screenshot.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:7b1778fbf8",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Lindbergh Elementary",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "12:00",
+                "school_name": "Lindbergh Elementary",
+                "confidence": "high",
+                "evidence_quote": "Wed: 7:30 a.m. - 12:00 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1162,
+            "completion_tokens": 335,
+            "cost_usd": 0.0002502,
+            "latency_ms": 1552,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998521-PLg3H1QT8sMelcN8FGD4",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Lindbergh Elementary",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1165,
+            "completion_tokens": 119,
+            "cost_usd": 6.777e-05,
+            "latency_ms": 2864,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998523-2MqL9M8ICDWzWZh324YH",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "lindbergh",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "0404970:7b1778fbf8",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:6cb970a472",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "08:30",
+                "end_time": "14:30",
+                "school_name": "Eagleridge Enrichment Program",
+                "confidence": "high",
+                "evidence_quote": "Mon\n              8:30 a.m. - 2:30 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1138,
+            "completion_tokens": 117,
+            "cost_usd": 0.0001606,
+            "latency_ms": 790,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998525-aJLp7pnfRk6tHFydFMvu",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1147,
+            "completion_tokens": 8,
+            "cost_usd": 5.799e-05,
+            "latency_ms": 349,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998526-vTXcRFlQLpS0QsYmfxvv",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:f1b926f55d",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:00",
+                "school_name": "Poston Junior High School",
+                "confidence": "high",
+                "evidence_quote": "9:15 a.m. - 4:00 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 3961,
+            "completion_tokens": 175,
+            "cost_usd": 0.0004661,
+            "latency_ms": 1172,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998527-rhFQsIL6CVf37KbA6pqN",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:00",
+                "school_name": "Poston Junior High",
+                "confidence": "high",
+                "evidence_quote": "School 9:15 a.m. - 4:00 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 4076,
+            "completion_tokens": 113,
+            "cost_usd": 0.00021284,
+            "latency_ms": 2117,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998528-JBhkDe3eAlJ7sJU2lC78",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "poston",
+            "start": "09:15",
+            "end": "16:00",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "9:15 a.m. - 4:00 p.m.",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "School 9:15 a.m. - 4:00 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "0404970:f1b926f55d",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:f908f08412",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Mountain View High",
+                "confidence": "high",
+                "evidence_quote": "School Hours: Mon, Tue, Thu, Fri 8:15 a.m. - 3:15 p.m.",
+                "source_locus": "Mountain View High School Information",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2124,
+            "completion_tokens": 180,
+            "cost_usd": 0.0002844,
+            "latency_ms": 1021,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998530-BB3nsC6nXd12Q01jVVwB",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 2139,
+            "completion_tokens": 12,
+            "cost_usd": 0.00010791,
+            "latency_ms": 620,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998531-D77WITmlGk7eSqWIhrI0",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Mountain View High",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri 8:15 a.m. - 3:15 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "13:15",
+                "school_name": "Mountain View High",
+                "confidence": "high",
+                "evidence_quote": "Wed 8:15 a.m. - 1:15 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2070,
+            "completion_tokens": 193,
+            "cost_usd": 0.0004442,
+            "latency_ms": 7840,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998531-PTtYUNyvZaQKHJiKS84O",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "mountain view",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "Mon, Tue, Thu, Fri 8:15 a.m. - 3:15 p.m.",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0404970:f908f08412",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:c80b28c3d2",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Lindbergh Elementary",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri:\n7:30 a.m. - 2:00 p.m.",
+                "source_locus": "Lindbergh Elementary",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2029,
+            "completion_tokens": 172,
+            "cost_usd": 0.0002717,
+            "latency_ms": 970,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998539-stV6FRZY0zOrshPADMfh",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Lindbergh Elementary",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2029,
+            "completion_tokens": 160,
+            "cost_usd": 0.00011425,
+            "latency_ms": 4260,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998540-ZWxHeejsxQMQCCVapoob",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "lindbergh",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Mon, Tue, Thu, Fri:\n7:30 a.m. - 2:00 p.m.",
+                "locus": "Lindbergh Elementary",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "0404970:c80b28c3d2",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:c457469685",
+        "file": "tesseract_screenshot.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Red Mountain High School",
+                "confidence": "high",
+                "evidence_quote": "Mon, Tue, Thu, Fri 8:15 a.m. - 3:15 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1861,
+            "completion_tokens": 176,
+            "cost_usd": 0.0002565,
+            "latency_ms": 977,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998545-8DGZCA4ffm1a5JKmCoA1",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Red Mountain High School",
+                "confidence": "high",
+                "evidence_quote": "Office Mon, Tue, Thu, Fri 8:15 a.m. - 3:15 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1865,
+            "completion_tokens": 158,
+            "cost_usd": 0.00010589,
+            "latency_ms": 5516,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785998546-eO132y6AsO8bvDmazLUI",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "red mountain",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Mon, Tue, Thu, Fri 8:15 a.m. - 3:15 p.m.",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Office Mon, Tue, Thu, Fri 8:15 a.m. - 3:15 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "0404970:c457469685",
+            "source_file": "tesseract_screenshot.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "middle",
+        "school": "fremont",
+        "start": "08:00",
+        "end": "16:00",
+        "gross": 480,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Regular Schedule\n                 \u201cA\u201d Hour                 8:00-8:55 (55)\n\n                  1st Hour               9:15-10:18 (63)",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "\u201cA\u201d Hour 8:00-8:55 (55) 7th Hour 3:01-4:00 (59)",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "0404970:fe9d0bcc53",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lindbergh",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Day: 7:30 a.m. - 2:00 p.m. (12:00 p.m. on Wednesdays)",
+            "locus": "About Our School",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School Day: 7:30 a.m. - 2:00 p.m. (12:00 p.m. on Wednesdays)",
+            "locus": "About Our School",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "0404970:0c5ac62c56",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "poston",
+        "start": "08:30",
+        "end": "16:00",
+        "gross": 450,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "Office Hours Mon, Tue, Thu, Fri 8:30 a.m. - 4:00 p.m.",
+            "locus": "Information",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0404970:efa7cb519e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "skyline",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "8:15 a.m. - 3:15 p.m.",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Mon, Tue, Thur, Fri 8:15 a.m. - 3:15 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "0404970:12bfb03d6d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "westwood",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "8:15 a.m. - 3:15 p.m.",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Mon, Tue, Thu, Fri 8:15 a.m. - 3:15 p.m.",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "0404970:2fcee65b72",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "shepherd",
+        "start": "08:35",
+        "end": "15:30",
+        "gross": 415,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "8:35 a.m. - 3:30 p.m.",
+            "locus": "Shepherd Junior High",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Mon, Tue, Thu, Fri 8:35 a.m. - 3:30 p.m.",
+            "locus": "Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "0404970:e1a4eaf9cb",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "field",
+        "start": "08:15",
+        "end": "14:45",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: Mon, Tue, Thu, Fri: 8:15 a.m. - 2:45 p.m.",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Mon, Tue, Thu, Fri: 8:15 a.m. - 2:45 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "0404970:b038abfbf7",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "george n smith",
+        "start": "09:15",
+        "end": "16:00",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School\nMon, Tue, Thu, Fri\n9:15 a.m. - 4:00 p.m.",
+            "locus": "Schools Information Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Mon, Tue, Thu, Fri 9:15 a.m. - 4:00 p.m.",
+            "locus": "Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "rec_key": "0404970:07294d0ab8",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "rhodes",
+        "start": "09:15",
+        "end": "16:00",
+        "gross": 405,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "School Mon, Tue, Thu, Fri 9:15 a.m. - 4:00 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0404970:5b9b0d81ec",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "john c fremont",
+        "start": "08:05",
+        "end": "14:55",
+        "gross": 410,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "A hour (M-F) 8:05 a.m. - 8:55 a.m.",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0404970:79c73d619a",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "franklin",
+        "start": "07:30",
+        "end": "14:15",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours\n\nMon, Tue, Thu, Fri\n7:30 a.m. - 2:15 p.m.",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Mon, Tue, Thu, Fri 7:30 a.m. - 2:15 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "0404970:8603676b06",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "fremont",
+        "start": "09:15",
+        "end": "16:00",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Mon, Tue, Thu, Fri\n9:15 a.m. - 4:00 p.m.",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Mon, Tue, Thu, Fri 9:15 a.m. - 4:00 p.m.",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "0404970:5cf32da401",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "pomeroy",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "0404970:8d0cab8a04",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lindbergh",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Mon, Tue, Thu, Fri:\n              7:30 a.m. - 2:00 p.m.",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "0404970:d2a70a8d99",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "red mountain",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "School Hours: Mon, Tue, Thu, Fri\n8:15 a.m. - 3:15 p.m.",
+            "locus": "Red Mountain High School",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Mon, Tue, Thu, Fri 8:15 a.m. - 3:15 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "0404970:04ce9ec12e",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lindbergh",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "0404970:7b1778fbf8",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "poston",
+        "start": "09:15",
+        "end": "16:00",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "9:15 a.m. - 4:00 p.m.",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "School 9:15 a.m. - 4:00 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "0404970:f1b926f55d",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "mountain view",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "Mon, Tue, Thu, Fri 8:15 a.m. - 3:15 p.m.",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0404970:f908f08412",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lindbergh",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Mon, Tue, Thu, Fri:\n7:30 a.m. - 2:00 p.m.",
+            "locus": "Lindbergh Elementary",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Mon, Tue, Thu, Fri: 7:30 a.m. - 2:00 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "0404970:c80b28c3d2",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "red mountain",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Mon, Tue, Thu, Fri 8:15 a.m. - 3:15 p.m.",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Office Mon, Tue, Thu, Fri 8:15 a.m. - 3:15 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "0404970:c457469685",
+        "source_file": "tesseract_screenshot.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "charles d poston",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "09:15"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "16:00"
+        },
+        "rec_key": "0404970:efa7cb519e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "fremont",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:05"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "0404970:79c73d619a",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "stapley",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "16:00"
+        },
+        "rec_key": "0404970:3ec2902755",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "pomeroy",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:00"
+        },
+        "rec_key": "0404970:a60caf7097",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "carson",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "16:00"
+        },
+        "rec_key": "0404970:8440bea61a",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "n_reps": 24,
+    "n_judged": 7,
+    "skipped_reps": [
+      {
+        "rec_key": "0404970:fad13c23e0",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:ba2bb0096f",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:5d3c35c117",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:21d26e939c",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:cf114f61ce",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:0e640a74c9",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:5a4c9675b2",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:29081d0a10",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:4816e93483",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:7ef1a064bd",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:d83434dc44",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:e3b6417b74",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:28712bf578",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:7db7249a84",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:b1a0b20095",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:11b92705b1",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:f2df7c5bf2",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:ace6a41ea3",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:231a58af32",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:e1f47f7ece",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:d8ea955916",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:0f7662b82d",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:031dbee160",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:0c9e93c5d1",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:0d132275a6",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:5eefe0145b",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:da4d5c6688",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:0b53c4fe56",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:7715e5373c",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:32247c5e2e",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:0e8d8dbd1a",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:7bffb2d1d3",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:ec0ae901b7",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:c650b763b1",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:010ca9ab1b",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:8ab21b559b",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:aec09e6444",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:1a3ae39d04",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:88f88fe51e",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:a0c68cf26f",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:bd2d579fb7",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:b4e29096b4",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:c2d1625b2f",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:3d03364cf2",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:01b2bf8489",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:ad99bc51fa",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:e7d23ed0f0",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:1c050793f2",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:49860942b6",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:aa24518636",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:5bb205380f",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:23a7d83124",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:70ffbfbd41",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:0b8e954dcf",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:f3bc2b8b32",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:27ce38c8d4",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:7f1abe4f26",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:28152fb10b",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:2bcbe592f4",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:6dc6e80995",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:0e79fec7f1",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:896177c1f5",
+        "file": "tesseract_screenshot.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:a1694c8b7c",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:dcf0ef0992",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:d518bf4ab7",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:2a3eff5c8b",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:bf78216b73",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:c86258b2f0",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:9e8e243fdf",
+        "file": "tesseract_screenshot.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:4b613244c7",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:686d1e9494",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:1efab61d81",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:d44039e6dd",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:fa43e3c2f5",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:b741396605",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:600bb47dbd",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:797cc59955",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:aaf2a30bbc",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:7d773eb499",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:a4d79ffcb6",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:ce006da084",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:de5d299b00",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:819c6b39d9",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:03e8b88ba5",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:7265daafd6",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:23a39b368e",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:d789e4b481",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:fd9bf3d2f9",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:6960be7281",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:1d279cd69c",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:e9b8b71b2c",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:1e9f475e26",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:ec128bf2be",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:6976e8ebfc",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:a586304c96",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:db61f04ae3",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:af568ffee7",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:69f59d544b",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:33dd6794f0",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:07b6601b5d",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:b0f98d4e9e",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:497b1206e4",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:6431913acf",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      },
+      {
+        "rec_key": "0404970:a0c919b819",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "reason": "mode_stable"
+      }
+    ],
+    "early_exit": {
+      "reason": "mode_stable",
+      "after_rep": 24,
+      "n_reps_skipped": 104,
+      "stable_bands": [
+        "elementary",
+        "high",
+        "middle"
+      ],
+      "params": {
+        "window": 5,
+        "min_n": 3,
+        "min_share": 0.6
+      }
+    },
+    "bands": {
+      "elementary": {
+        "gross_minutes": 390,
+        "start_time": "07:30",
+        "end_time": "14:00",
+        "n_schools": 6,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "lindbergh",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "field",
+            "start_time": "08:15",
+            "end_time": "14:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "pomeroy",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lindbergh",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lindbergh",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lindbergh",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 405,
+        "start_time": "09:15",
+        "end_time": "16:00",
+        "n_schools": 9,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "fremont",
+            "start_time": "08:00",
+            "end_time": "16:00",
+            "gross": 480,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "poston",
+            "start_time": "08:30",
+            "end_time": "16:00",
+            "gross": 450,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "shepherd",
+            "start_time": "08:35",
+            "end_time": "15:30",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "george n smith",
+            "start_time": "09:15",
+            "end_time": "16:00",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rhodes",
+            "start_time": "09:15",
+            "end_time": "16:00",
+            "gross": 405,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "john c fremont",
+            "start_time": "08:05",
+            "end_time": "14:55",
+            "gross": 410,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "franklin",
+            "start_time": "07:30",
+            "end_time": "14:15",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "fremont",
+            "start_time": "09:15",
+            "end_time": "16:00",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "poston",
+            "start_time": "09:15",
+            "end_time": "16:00",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 420,
+        "start_time": "08:15",
+        "end_time": "15:15",
+        "n_schools": 5,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "skyline",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "westwood",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "red mountain",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mountain view",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "red mountain",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 55,
+      "judge_calls": 7,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 86288,
+      "completion_tokens": 8397,
+      "cost_usd": 0.00984148
+    },
+    "state": "AZ"
+  }
+}

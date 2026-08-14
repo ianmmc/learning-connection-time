@@ -1679,3 +1679,70 @@ Authority: epic #695 (closed, with per-issue closing evidence); PRs #697-#705; t
 measurement reports + rerunnable scripts under
 `docs/technical-notes/production-quality-control-research/` (issues 683/684/691/694); `main` @
 `f094555`.
+
+### 2026-08-14 — The #620 campaign is traced end to end: 12 of 27 written, and checking an assertion instead of accepting it found the biggest defect of the campaign
+
+The campaign's 27 former-benchmark districts were traced individually through production —
+dispatch, extraction, directives, gate@8, Stage 9 — and the 9 districts sitting approved-unwritten
+were incorporated (12 of 27 now in `district_grade_minutes`; Bridgeport had been approved and
+unwritten for 16 days, waiting on #682's unbuilt wiring). The per-district detail and the evidence
+for every finding live in issues #714-#722, each carrying its own reproducible "how determined"
+footer. What belongs here is what the day proved about method and about the shape of the
+remaining defects.
+
+**The most consequential finding came from verifying a question rather than answering it.** Asked
+whether #620 was as far as it could get before the logged issues were addressed, the honest move
+was to check what was actually runnable — which surfaced #719 (`sev:critical`): the #164
+escalation ladder sends a district to a GEO-scoped follow-up after *any* prior round, a geo batch
+deliberately blanks the scoping domain, and Stage 2's #229 guard then refuses **every** result it
+finds. Six batches, 70 targeted schools, **zero resolved** — while the providers were returning
+exact hits on each district's own domain (`katesmith.washoeschools.net/our-school/bell-schedule`,
+refused for "no-scoping-domain"). Geo scoping exists for the Millard class, where the district has
+*no* usable domain and the job is to discover one; the ladder escalates on **round count, not
+diagnosis**, so districts whose domain was never the problem got a mode whose premise is false for
+them — and are then declared escalation-exhausted having learned nothing. Live since 2026-07-27.
+An "is this as far as we can go?" answered from the trace summary would have said yes and been
+right for the wrong reason.
+
+**A second measurement-versus-appearance case, same day:** Washoe's run looked like a recall
+failure (39 accepted / 67 unresolved) and was a *formatting* failure — both voters agreed on ~106
+schools, but one echoed the document's 12-hour clock (`03:30`) where the other normalized
+(`15:30`), and the canonical 24h parser put the clusters 720 minutes apart, minting agreement into
+disagreement (#716). The fix is deterministic (no school day ends at 3 AM) and the recovery is
+free: re-aggregating the stored receipt should return ~100 schools with no model spend. The
+inverse also held — Mesa's 104 "missing" reps were the #120 mode-stability early-exit working
+correctly, and Memphis's 112 unresolved were checked against this signature and cleared. Reading a
+count as a verdict was wrong in both directions.
+
+**"Limbo" became a named class rather than a list of separate bugs.** #682 (approve→write
+unwired), #689 (send-back routes nothing), #718 (a gt://-only district reads ready and cannot be
+reached by the follow-up loop at all), and #720 (directives that can never execute never resolve —
+depth-blocked 7→2s approved for 34 days, re-blocked on every compose; an unfired 7→6 deferring its
+district's new work for 41 days) are one shape: **a state a district or directive can enter that
+no mechanism is responsible for exiting.** Ian routed that class to epic #96. The recurring tell is
+a total failure wearing a normal outcome's clothes — 100% gate refusal recorded as an ordinary
+`manual_flag_all`, a both-voters-failed extraction recorded as a clean zero.
+
+**Infrastructure was held fixed rather than worked around.** REQ-172 was written for an invariant
+that had been real, load-bearing, and undocumented since #174 — a follow-up redo captures only the
+delta (Stage 3 seeds from the prior manifest; already-captured URLs are never re-fetched) while
+Stage 4 rebuilds in full but local-CPU-only — with two pins for the parts unit tests could not
+hold: a source-level wiring pin proving the live capture loop still consults the seen-set, and a
+fitness test proving the Stage-4 package can never reach the network. Recorded ahead of Council Lab
+work whose branches multiply the redo entry points. Separately, pytest was moved to 9.1.1 with
+`pythonpath = .` declared in `pytest.ini` — CI installs unpinned and would have failed collection
+on its next run. That work also exposed three tests red on `main` since 2026-08-11 (a fixture's
+hardcoded receipt stamp aging past the 30-day trust window) which nothing surfaced because CI has
+no scheduled trigger and had not run since 07-30 — fixed, and the detection gap filed as #722.
+
+**The tracker was restructured around what the trace revealed.** Two epics were created for
+workstreams that had none: **#723** (REQ-171 — receipts are evidence, gov_db is the transport;
+#622/#623/#624/#645, re-homed from #617 because the receipts seam is provenance-agnostic and
+leaving them there would make #617 uncloseable exactly as its charter completes) and **#724** (LCT
+core — the calculation engine and its inputs, distinct from #128's deferred queue). An
+epic-attachment audit over all 100 open issues left five deliberate orphans.
+
+Authority: issues #714-#722 (epics #706/#96/#80/#482) and epics #723/#724; REQ-172 in
+`docs/REQUIREMENTS.yaml`; the gov_db/lct_db reads and frozen extraction receipts each issue cites.
+(The 27-district working trace was written to the gitignored `docs/scratch-paper/` whiteboard and
+is deliberately NOT cited as authority — promote it to `docs/technical-notes/` if it should last.)

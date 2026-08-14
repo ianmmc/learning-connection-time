@@ -1,0 +1,94 @@
+{
+  "handoff_hash": "ca7d5b62e214",
+  "district": {
+    "district_id": "0509000",
+    "name": "LITTLE ROCK SCHOOL DISTRICT",
+    "reps": [
+      {
+        "rec_key": "0509000:9f652a5606",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "08:42",
+                "end_time": "16:00",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "A1/B1 8:42 \u2013 9:48\nA6/B6 2:56 \u2013 4:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              },
+              {
+                "grade_level": null,
+                "start_time": "08:42",
+                "end_time": "16:00",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "A1/B1 8:42 \u2013 9:48\nA6/B6 2:56 \u2013 4:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2024-25",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1175,
+            "completion_tokens": 340,
+            "cost_usd": 0.0002535,
+            "latency_ms": 1785,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785819156-L46SOS8Qv9gxcqkrX8vf",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1166,
+            "completion_tokens": 115,
+            "cost_usd": 6.75e-05,
+            "latency_ms": 2832,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785819158-tC9CE0vcAFVgrnquDAZz",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      }
+    ],
+    "accepted": [],
+    "unresolved": [],
+    "n_reps": 1,
+    "n_judged": 0,
+    "bands": {},
+    "telemetry": {
+      "calls": 2,
+      "judge_calls": 0,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 2341,
+      "completion_tokens": 455,
+      "cost_usd": 0.000321
+    },
+    "state": "AR"
+  }
+}

@@ -196,7 +196,13 @@ class TestReconcileRemediationReceipt:
         return D2, d, registry
 
     def _receipt(self, tmp_path, did="9999999"):
-        (tmp_path / "acq" / "remediation" / f"{did}_20260712T000000Z").mkdir(parents=True)
+        # Time-relative, NOT hardcoded: the receipt trust window is REMEDIATION_RECEIPT_MAX_AGE_DAYS
+        # (#575), so a fixed date here is a calendar time bomb — the original 20260712T000000Z stamp
+        # expired 2026-08-11 and failed these tests on every machine. Same pattern as
+        # test_remediate_contamination's expiry test, which mints its timestamp from now().
+        from datetime import datetime, timedelta, timezone
+        ts = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y%m%dT%H%M%SZ")
+        (tmp_path / "acq" / "remediation" / f"{did}_{ts}").mkdir(parents=True)
 
     def test_stage2_without_receipt_still_halts(self, tmp_path, monkeypatch):
         D2, d, registry = self._setup(tmp_path, monkeypatch, stage=2)

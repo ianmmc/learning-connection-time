@@ -1,0 +1,1021 @@
+{
+  "handoff_hash": "88c1cf5b5e37",
+  "district": {
+    "district_id": "5605302",
+    "name": "Sweetwater County School District #1",
+    "reps": [
+      {
+        "rec_key": "5605302:5a6d24c830",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:00",
+                "school_name": "Farson Eden Elementary",
+                "confidence": "high",
+                "evidence_quote": "7:45 School Begins\n3:00 School Ends",
+                "source_locus": "Farson Eden Elementary",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "16:05",
+                "school_name": "Farson Eden Middle",
+                "confidence": "high",
+                "evidence_quote": "7:45 -8:34    1st period\n3:16-4:05     9th period",
+                "source_locus": "Farson Eden Middle",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "16:05",
+                "school_name": "Farson Eden High School",
+                "confidence": "high",
+                "evidence_quote": "7:45-8:34 1st period\n3:16-4:05 9th period",
+                "source_locus": "Farson Eden High School",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1358,
+            "completion_tokens": 486,
+            "cost_usd": 0.0003302,
+            "latency_ms": 1360,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690848-5Y7u7fZeJGSIXhJQ2uLO",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:00",
+                "school_name": "Farson Eden Elementary",
+                "confidence": "high",
+                "evidence_quote": "7:45 School Begins 3:00 School Ends",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "16:05",
+                "school_name": "Farson Eden Middle",
+                "confidence": "high",
+                "evidence_quote": "7:45 -8:34 1st period 3:16-4:05 9th period",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "16:05",
+                "school_name": "Farson Eden High School",
+                "confidence": "high",
+                "evidence_quote": "7:45-8:34 1st period 3:16-4:05 9th period",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1406,
+            "completion_tokens": 441,
+            "cost_usd": 0.00010558,
+            "latency_ms": 7546,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690850-Zbzyci03fRYvwam9VBGQ",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "farson eden",
+            "start": "07:45",
+            "end": "15:00",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "7:45 School Begins\n3:00 School Ends",
+                "locus": "Farson Eden Elementary",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:45 School Begins 3:00 School Ends",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "5605302:5a6d24c830",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "farson eden",
+            "start": "07:45",
+            "end": "16:05",
+            "gross": 500,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "7:45 -8:34    1st period\n3:16-4:05     9th period",
+                "locus": "Farson Eden Middle",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:45 -8:34 1st period 3:16-4:05 9th period",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "5605302:5a6d24c830",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "farson eden",
+            "start": "07:45",
+            "end": "16:05",
+            "gross": 500,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "7:45-8:34 1st period\n3:16-4:05 9th period",
+                "locus": "Farson Eden High School",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:45-8:34 1st period 3:16-4:05 9th period",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "5605302:5a6d24c830",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5605302:b86842b745",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Northpark Elementary",
+                "confidence": "high",
+                "evidence_quote": "Start Time: 7:50 a.m\n\nEnd Time: 3:05 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2128,
+            "completion_tokens": 137,
+            "cost_usd": 0.0002676,
+            "latency_ms": 806,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690857-Wp1LdWY0sSwdS9tJYh08",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Northpark Elementary",
+                "confidence": "high",
+                "evidence_quote": "Start Time: 7:50 a.m. End Time: 3:05 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2232,
+            "completion_tokens": 147,
+            "cost_usd": 0.00012336,
+            "latency_ms": 3656,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690858-fDRoMYU2x41LXGg1s2Ub",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "northpark",
+            "start": "07:50",
+            "end": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Start Time: 7:50 a.m\n\nEnd Time: 3:05 p.m.",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Start Time: 7:50 a.m. End Time: 3:05 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "5605302:b86842b745",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5605302:68b92c9929",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Desert View Elementary School",
+                "confidence": "high",
+                "evidence_quote": "End Time: 3:05 p.m.",
+                "source_locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1118,
+            "completion_tokens": 123,
+            "cost_usd": 0.000161,
+            "latency_ms": 771,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690862-QmlKHYRXEtA2ldIVwdCi",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Desert View Elementary School",
+                "confidence": "high",
+                "evidence_quote": "Start Time: 7:50 a.m. End Time: 3:05 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1091,
+            "completion_tokens": 109,
+            "cost_usd": 6.327e-05,
+            "latency_ms": 2842,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690862-rxdeFOF0LnQNnz3CkgiY",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "desert view",
+            "start": "07:50",
+            "end": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "End Time: 3:05 p.m.",
+                "locus": "School Hours",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Start Time: 7:50 a.m. End Time: 3:05 p.m.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "5605302:68b92c9929",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5605302:2bf124170a",
+        "file": "tesseract_screenshot.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:55",
+                "school_name": "Rock Springs High School",
+                "confidence": "high",
+                "evidence_quote": "1sT 8:00 - 9:30 in 1sT 8:00 - 9:35",
+                "source_locus": "MONDAY & TUESDAY Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:55",
+                "school_name": "Rock Springs High School",
+                "confidence": "high",
+                "evidence_quote": "2ND \u00b0 9:40 - 11:10 .",
+                "source_locus": "WEDNESDAY & THURSDAY Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1303,
+            "completion_tokens": 268,
+            "cost_usd": 0.0002375,
+            "latency_ms": 1723,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690865-HCuNwhqwMdYuMua4FwXZ",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:55",
+                "school_name": "Rock Springs High School",
+                "confidence": "high",
+                "evidence_quote": "1sT 8:00 - 9:30 ... 4TH 2:25 - 3:55",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1309,
+            "completion_tokens": 118,
+            "cost_usd": 7.489e-05,
+            "latency_ms": 2622,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690867-Pso9EcYlDfaauBuUtblU",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "rock springs",
+            "start": "08:00",
+            "end": "15:55",
+            "gross": 475,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "1sT 8:00 - 9:30 in 1sT 8:00 - 9:35",
+                "locus": "MONDAY & TUESDAY Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "1sT 8:00 - 9:30 ... 4TH 2:25 - 3:55",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "5605302:2bf124170a",
+            "source_file": "tesseract_screenshot.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5605302:f987f7e037",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:50",
+                "school_name": "RSJH",
+                "confidence": "high",
+                "evidence_quote": "7th Grade RSJH Bell Schedule 2025-26 8th Grade RSJH Bell Schedule 2025-26\nPeriod Period Start_| Period End__| Class Length | Passing Time Period Period Start | Period End | Glass Length | Passing Time\n4 8:30 AM 9:17 AM 0:47 0:03 4 8:30 AM 9:17 AM 0:47 0:03",
+                "source_locus": "Page 1",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:50",
+                "school_name": "RSJH",
+                "confidence": "high",
+                "evidence_quote": "7th Grade RSJH Bell Schedule 2025-26 8th Grade RSJH Bell Schedule 2025-26\nPeriod Period Start_| Period End__| Class Length | Passing Time Period Period Start | Period End | Glass Length | Passing Time\n4 8:30 AM 9:17 AM 0:47 0:03 4 8:30 AM 9:17 AM 0:47 0:03",
+                "source_locus": "Page 1",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2419,
+            "completion_tokens": 500,
+            "cost_usd": 0.0004419,
+            "latency_ms": 1563,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690870-Nnr2JCcMcsaANpdGX24w",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:50",
+                "school_name": "Rock Springs Junior High",
+                "confidence": "high",
+                "evidence_quote": "Period 1 Start: 8:30 AM, Period 8 End: 3:50 PM",
+                "source_locus": "7th Grade RSJH Bell Schedule 2025-26 8th Grade RSJH Bell Schedule 2025-26",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2431,
+            "completion_tokens": 190,
+            "cost_usd": 0.00013675,
+            "latency_ms": 3265,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690871-UfC6eQVOUS7V7wfKhnqw",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:50",
+                "school_name": "RSJH",
+                "confidence": "high",
+                "evidence_quote": "4 8:30 AM 9:17 AM 0:47 0:03",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:50",
+                "school_name": "RSJH",
+                "confidence": "high",
+                "evidence_quote": "8 3:03 PM 3:50 PM 0:47 8:10",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2380,
+            "completion_tokens": 205,
+            "cost_usd": 0.0003331,
+            "latency_ms": 14407,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690874-grSE0SKavAjABZjHSPOF",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "rsjh",
+            "start": "08:30",
+            "end": "15:50",
+            "gross": 440,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "4 8:30 AM 9:17 AM 0:47 0:03",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "5605302:f987f7e037",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "rock springs",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:30"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:50"
+            },
+            "rec_key": "5605302:f987f7e037",
+            "source_file": "tesseract_raster.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "farson eden",
+        "start": "07:45",
+        "end": "15:00",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "7:45 School Begins\n3:00 School Ends",
+            "locus": "Farson Eden Elementary",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:45 School Begins 3:00 School Ends",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "5605302:5a6d24c830",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "farson eden",
+        "start": "07:45",
+        "end": "16:05",
+        "gross": 500,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "7:45 -8:34    1st period\n3:16-4:05     9th period",
+            "locus": "Farson Eden Middle",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:45 -8:34 1st period 3:16-4:05 9th period",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "5605302:5a6d24c830",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "farson eden",
+        "start": "07:45",
+        "end": "16:05",
+        "gross": 500,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "7:45-8:34 1st period\n3:16-4:05 9th period",
+            "locus": "Farson Eden High School",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:45-8:34 1st period 3:16-4:05 9th period",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "5605302:5a6d24c830",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "northpark",
+        "start": "07:50",
+        "end": "15:05",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Start Time: 7:50 a.m\n\nEnd Time: 3:05 p.m.",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Start Time: 7:50 a.m. End Time: 3:05 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "5605302:b86842b745",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "desert view",
+        "start": "07:50",
+        "end": "15:05",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "End Time: 3:05 p.m.",
+            "locus": "School Hours",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Start Time: 7:50 a.m. End Time: 3:05 p.m.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "5605302:68b92c9929",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "rock springs",
+        "start": "08:00",
+        "end": "15:55",
+        "gross": 475,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "1sT 8:00 - 9:30 in 1sT 8:00 - 9:35",
+            "locus": "MONDAY & TUESDAY Bell Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "1sT 8:00 - 9:30 ... 4TH 2:25 - 3:55",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "5605302:2bf124170a",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "middle",
+        "school": "rsjh",
+        "start": "08:30",
+        "end": "15:50",
+        "gross": 440,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "4 8:30 AM 9:17 AM 0:47 0:03",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "5605302:f987f7e037",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "rock springs",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:30"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:50"
+        },
+        "rec_key": "5605302:f987f7e037",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "n_reps": 5,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 435,
+        "start_time": "07:45",
+        "end_time": "15:00",
+        "n_schools": 3,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "farson eden",
+            "start_time": "07:45",
+            "end_time": "15:00",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "northpark",
+            "start_time": "07:50",
+            "end_time": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "desert view",
+            "start_time": "07:50",
+            "end_time": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 470,
+        "start_time": null,
+        "end_time": null,
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "farson eden",
+            "start_time": "07:45",
+            "end_time": "16:05",
+            "gross": 500,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rsjh",
+            "start_time": "08:30",
+            "end_time": "15:50",
+            "gross": 440,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 488,
+        "start_time": null,
+        "end_time": null,
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "farson eden",
+            "start_time": "07:45",
+            "end_time": "16:05",
+            "gross": 500,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rock springs",
+            "start_time": "08:00",
+            "end_time": "15:55",
+            "gross": 475,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 11,
+      "judge_calls": 1,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 19175,
+      "completion_tokens": 2724,
+      "cost_usd": 0.00227515
+    },
+    "state": "WY"
+  }
+}

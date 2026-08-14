@@ -1,0 +1,649 @@
+{
+  "handoff_hash": "3004896917ca",
+  "district": {
+    "district_id": "2307320",
+    "name": "Lewiston Public Schools",
+    "reps": [
+      {
+        "rec_key": "2307320:3b6acf2d32",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "08:24",
+                "end_time": "14:30",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "8:24-9:37 | 73 min Periods 1/5 ... 2:00 - 2:30 | 30 min",
+                "source_locus": "page 1, column 2",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": null,
+                "start_time": "07:40",
+                "end_time": "12:00",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "7:40 ... 11:05- 12:00",
+                "source_locus": "page 2, column 4",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": null,
+                "start_time": "08:15",
+                "end_time": "12:54",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "First Bell (School Opens) 8:15 ... 11:08-12:54 Per 3/7 min 11:54",
+                "source_locus": "page 3, column 1",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": null,
+                "start_time": "08:24",
+                "end_time": "14:30",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "8:24-9:37 | 73 min Periods 1/5 ... 2:00 - 2:30 | 30 min",
+                "source_locus": "page 3, column 2",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 3647,
+            "completion_tokens": 666,
+            "cost_usd": 0.0006311,
+            "latency_ms": 3018,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785814804-yO4DdFBoSUTZCRdHAIGg",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:24",
+                "end_time": "14:00",
+                "school_name": "Lewiston High School",
+                "confidence": "high",
+                "evidence_quote": "8:24-9:37 73 min Periods 1/5 12:47-2:00 73 min",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 3578,
+            "completion_tokens": 161,
+            "cost_usd": 0.00019178,
+            "latency_ms": 3399,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785814807-Prb8DRuiKeBGdZfYmTZr",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 3499,
+            "completion_tokens": 6,
+            "cost_usd": 0.00031821,
+            "latency_ms": 951,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785814810-QJ3RyDxpJUQE9dx0Z3SY",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "lewiston",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:24"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:00"
+            },
+            "rec_key": "2307320:3b6acf2d32",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "2307320:76ff8b02ba",
+        "file": "tesseract_screenshot.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 9,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "08:40",
+                "end_time": "15:10",
+                "school_name": "Farwell",
+                "confidence": "high",
+                "evidence_quote": "8:25:00 AM 8:40:00 AM 3:10:00 PM",
+                "source_locus": "Calendars and Schedules",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": null,
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Sonnors",
+                "confidence": "high",
+                "evidence_quote": "7:45:00 AM 8:00:00 AM 2:30:00 PM",
+                "source_locus": "Calendars and Schedules",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": null,
+                "start_time": "08:40",
+                "end_time": "15:10",
+                "school_name": "Vic Mahon",
+                "confidence": "high",
+                "evidence_quote": "8:25:00 AM 8:40:00 AM 3:10:00 PM",
+                "source_locus": "Calendars and Schedules",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": null,
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Vlontello",
+                "confidence": "high",
+                "evidence_quote": "7:45:00 AM 8:00:00 AM 2:30:00 PM",
+                "source_locus": "Calendars and Schedules",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": null,
+                "start_time": "08:40",
+                "end_time": "15:10",
+                "school_name": "Seiger",
+                "confidence": "high",
+                "evidence_quote": "8:25:00 AM 8:40:00 AM 3:10:00 PM",
+                "source_locus": "Calendars and Schedules",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:35",
+                "end_time": "14:00",
+                "school_name": "-MS",
+                "confidence": "high",
+                "evidence_quote": "7:15:00 AM 7:35:00 AM 2:00:00 PM",
+                "source_locus": "Calendars and Schedules",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:00",
+                "school_name": "-HS",
+                "confidence": "high",
+                "evidence_quote": "7:15:00 AM 7:45:00 AM 2:00:00 PM",
+                "source_locus": "Calendars and Schedules",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": null,
+                "start_time": "07:45",
+                "end_time": "14:00",
+                "school_name": "-RTC",
+                "confidence": "high",
+                "evidence_quote": "7:15:00 AM 7:45:00 AM 2:00:00 PM",
+                "source_locus": "Calendars and Schedules",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": null,
+                "start_time": "07:45",
+                "end_time": "14:00",
+                "school_name": "Next STEP",
+                "confidence": "high",
+                "evidence_quote": "7:15:00 AM 7:45:00 AM 2:00:00 PM",
+                "source_locus": "Calendars and Schedules",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1503,
+            "completion_tokens": 1185,
+            "cost_usd": 0.0006243,
+            "latency_ms": 3238,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785814811-WYQus98DzTR41EEWedmR",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 7,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "15:10",
+                "school_name": "Arwell",
+                "confidence": "high",
+                "evidence_quote": "School Start | Bus Pick Up | Pre-K PM Mid | AM Pre-K Pick Program 8:25:00 AM 8:40:00 AM 3:10:00 PM 12:10:00 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Sonnors",
+                "confidence": "high",
+                "evidence_quote": "School Start | Bus Pick Up | Pre-K PM Mid | AM Pre-K Pick Program 7:45:00 AM 8:00:00 AM 2:30:00 PM 1:00:00 PM 1:00:00 PM 2:45-4:45",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "15:10",
+                "school_name": "VicMahon",
+                "confidence": "high",
+                "evidence_quote": "School Start | Bus Pick Up | Pre-K PM Mid | AM Pre-K Pick Program 8:25:00 AM 8:40:00 AM 3:10:00 PM 12:10:00 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Vlontello",
+                "confidence": "high",
+                "evidence_quote": "School Start | Bus Pick Up | Pre-K PM Mid | AM Pre-K Pick Program 7:45:00 AM 8:00:00 AM 2:30:00 PM 11:30:00 AM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "15:10",
+                "school_name": "Seiger",
+                "confidence": "high",
+                "evidence_quote": "School Start | Bus Pick Up | Pre-K PM Mid | AM Pre-K Pick Program 8:25:00 AM 8:40:00 AM 3:10:00 PM 12:10:00 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:35",
+                "end_time": "14:00",
+                "school_name": "MS",
+                "confidence": "high",
+                "evidence_quote": "School Start | Bus Pick Up | Pre-K PM Mid | AM Pre-K Pick Program 7:15:00 AM 7:35:00 AM 2:00:00 PM n/a n/a 2:15-5:15",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:00",
+                "school_name": "HS",
+                "confidence": "high",
+                "evidence_quote": "School Start | Bus Pick Up | Pre-K PM Mid | AM Pre-K Pick Program 7:15:00 AM 7:45:00 AM 2:00:00 PM n/a n/a 2:30-4:30",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1494,
+            "completion_tokens": 1182,
+            "cost_usd": 0.00016926,
+            "latency_ms": 18145,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785814814-4nIs2uQ5bZB1kumCeIW0",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:35",
+                "end_time": "14:00",
+                "school_name": "-MS",
+                "confidence": "high",
+                "evidence_quote": "-MS 7:15:00 AM 7:35:00 AM 2:00:00 PM n/a n/a 2:15-5:15",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:00",
+                "school_name": "-HS",
+                "confidence": "high",
+                "evidence_quote": "-HS 7:15:00 AM 7:45:00 AM 2:00:00 PM n/a n/a 2:30-4:30",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1464,
+            "completion_tokens": 231,
+            "cost_usd": 0.00050148,
+            "latency_ms": 7033,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785814832-7GIhLN1qPQdGeB9MoAjC",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "ms",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:35",
+              "mistralai/mistral-small-24b-instruct-2501": "07:35"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:00",
+              "mistralai/mistral-small-24b-instruct-2501": "14:00"
+            },
+            "rec_key": "2307320:76ff8b02ba",
+            "source_file": "tesseract_screenshot.txt"
+          },
+          {
+            "band": "high",
+            "school": "hs",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:45",
+              "mistralai/mistral-small-24b-instruct-2501": "07:45"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:00",
+              "mistralai/mistral-small-24b-instruct-2501": "14:00"
+            },
+            "rec_key": "2307320:76ff8b02ba",
+            "source_file": "tesseract_screenshot.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "arwell",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:25"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:10"
+            },
+            "rec_key": "2307320:76ff8b02ba",
+            "source_file": "tesseract_screenshot.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "sonnors",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:00"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:30"
+            },
+            "rec_key": "2307320:76ff8b02ba",
+            "source_file": "tesseract_screenshot.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "vicmahon",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:25"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:10"
+            },
+            "rec_key": "2307320:76ff8b02ba",
+            "source_file": "tesseract_screenshot.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "vlontello",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:00"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:30"
+            },
+            "rec_key": "2307320:76ff8b02ba",
+            "source_file": "tesseract_screenshot.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "seiger",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:25"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:10"
+            },
+            "rec_key": "2307320:76ff8b02ba",
+            "source_file": "tesseract_screenshot.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [],
+    "unresolved": [
+      {
+        "band": "high",
+        "school": "lewiston",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:24"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:00"
+        },
+        "rec_key": "2307320:3b6acf2d32",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "middle",
+        "school": "ms",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:35",
+          "mistralai/mistral-small-24b-instruct-2501": "07:35"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:00",
+          "mistralai/mistral-small-24b-instruct-2501": "14:00"
+        },
+        "rec_key": "2307320:76ff8b02ba",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "high",
+        "school": "hs",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:45",
+          "mistralai/mistral-small-24b-instruct-2501": "07:45"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:00",
+          "mistralai/mistral-small-24b-instruct-2501": "14:00"
+        },
+        "rec_key": "2307320:76ff8b02ba",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "arwell",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:25"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:10"
+        },
+        "rec_key": "2307320:76ff8b02ba",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "sonnors",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:00"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:30"
+        },
+        "rec_key": "2307320:76ff8b02ba",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "vicmahon",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:25"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:10"
+        },
+        "rec_key": "2307320:76ff8b02ba",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "vlontello",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:00"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:30"
+        },
+        "rec_key": "2307320:76ff8b02ba",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "seiger",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:25"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:10"
+        },
+        "rec_key": "2307320:76ff8b02ba",
+        "source_file": "tesseract_screenshot.txt"
+      }
+    ],
+    "n_reps": 2,
+    "n_judged": 2,
+    "bands": {},
+    "telemetry": {
+      "calls": 6,
+      "judge_calls": 2,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 15185,
+      "completion_tokens": 3431,
+      "cost_usd": 0.00243613
+    },
+    "state": "ME"
+  }
+}
