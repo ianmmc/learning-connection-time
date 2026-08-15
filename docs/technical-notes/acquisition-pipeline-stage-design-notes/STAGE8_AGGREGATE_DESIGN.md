@@ -4,8 +4,8 @@
 > ALGORITHM** (`stage8_aggregate/aggregate.py`) — live in `gate@7`'s read path since early July; and (2)
 > the **standalone gate@8 console + approval write** (`#89`, shipped 2026-07-14), plus the `#499` slot
 > program (PRs A–F, REQ-144…150) and epic `#478`'s human-judgment overrides. What is **still genuinely
-> unbuilt: the `8→1`/`8→6` back-edges** (`sent_back` is recorded but no downstream executor consumes it
-> yet) and gate@8 **auto** mode. The **Stage-9 write (#93) shipped 2026-07-21** (epic #92) — an approved
+> unbuilt: gate@8 **auto** mode**. The `8→1`/`8→6` back-edges shipped 2026-08-15 (#689 — §3c);
+> approve→write shipped the same day (#682). The **Stage-9 write (#93) shipped 2026-07-21** (epic #92) — an approved
 > district is now mechanically incorporated into the LCT DB (`STAGE9_INCORPORATE_DESIGN.md`).
 >
 > The algorithm is not a prototype awaiting a consumer. `stage7_run.py` calls `AGG.consensus_school_facts`
@@ -120,8 +120,9 @@ decision (REQUIREMENTS.yaml REQ-120/REQ-121 notes): approving extracted times is
 not the times themselves. `district_bands_from_facts` seeds the field this gate acts on:
 each school entry carries a `human_determination` stub the reviewer fills in via `POST
 /api/aggregate/override` (§1a). Completion grain = district × **band** (schools are instrumental;
-governance §11d). What remains unbuilt downstream: the `8→1`/`8→6` back-edges — `sent_back` is recorded
-but nothing consumes it yet. (The mechanical Stage-9 write, #93, shipped 2026-07-21 — §0/§3 note.)
+governance §11d). The `8→1`/`8→6` back-edges are BUILT (#689, §3c): a `sent_back` district is routed by
+the human at the gate, and the routing is recorded against the approval that caused it. (The mechanical
+Stage-9 write, #93, shipped 2026-07-21, and fires on approval since #682 — §0/§3 note.)
 
 ## 1a. The live functions (aggregate.py)
 
@@ -361,10 +362,10 @@ benchmark-provenance facts are already the yardstick and don't re-flow through t
    and the #237 contamination flag (`detect_single_school_over_extraction`, already surfaced in gate@7's
    read path). The human's disposition ("keep school X, drop the CMO siblings") is **recorded**; never
    auto-reject (the detect-and-flag posture, §1a).
-5. **The verdict + back-edges.** Approve → Stage 9 writes mechanically. Or route **8→1** (re-queue an
-   unsatisfied band via a follow-up batch reviewable at gate@1) or **8→6** (add a URL to a new dispatch,
-   bypassing Stage 1). Both back-edges are **NOT built** (governance §11e) and are designed as stubs first;
-   they parallel the existing 7→1 / 7→6 edges, which are the template.
+5. **The verdict + back-edges — BUILT 2026-08-15 (#682 approve→write, #689 send-back→route; §3c).**
+   Approve → Stage 9 writes mechanically, fired by the approval itself. Send back → the human routes
+   **8→1** (a targeted DRAFT follow-up batch, gate@1-reviewable) or **8→6** (a new gate@6 draft
+   dispatch). They parallel the existing 7→1 / 7→6 edges, which were the template.
 6. **Strengthen what the council OUTPUTS, going forward — SHIPPED 2026-07-13 (`stage6.extract.v2`).** The
    inputs to Stage 7 (the handoff chain in item 1) are sufficient evidence of *what we asked*; what's thin is
    the council's evidence of *what it read*. Bounded by the REQ-054 invariant (models READ times, never
@@ -506,17 +507,50 @@ A max-effort multi-angle review of the manual-gate build confirmed and fixed, be
   `Number.isInteger` before posting. (Plus small adjacents: `_has_evidence` zero-safe, the exporter
   guard-wiring test extended to `_backup_stage8_approvals`, a dead ternary removed.)
 
+## 3c. The verdict's two arrows, wired (#682 approve→write, #689 send-back→route; 2026-08-15)
+
+Both arrows were documented for months while nothing consumed either. They failed the same way — **a
+state with no owner responsible for exiting it** — so they are fixed the same way: execute the edge, and
+give the miss a record.
+
+**Approve → the Stage-9 write (#682).** `POST /api/aggregate/decision/{did}` with
+`disposition='approved'` calls the SAME `incorporate_district` the CLI calls, post-commit (Stage 9
+re-validates the decision from the DB in its own session — the TOCTOU re-check — so it must read a
+committed world). The approval is precious and stands regardless: a blocked or faulted write is
+reported and stamped as an `incorporation_blocked` `state_event`, never rolled back. See
+`STAGE9_INCORPORATE_DESIGN.md` §2c.
+
+**Send back → 8→1 / 8→6 (#689, `process_governance/stage8_sendback.py`).** Nothing fires on send-back:
+the human picks the route at the gate (or neither) — the ramp-up posture — and the console *executes*
+the choice instead of leaving the operator to translate their own reason into another stage's UI.
+
+| route | what it composes | when |
+|---|---|---|
+| **8→1** rediscover | ONE targeted DRAFT Stage-1 follow-up batch via `Q1.build_followup_batch`, shaped by the same #162 untried-schools / #499 unfilled-slot inputs the 7→2 composer uses. gate@1-reviewable, **never auto-flowed** (like the 5→1 escalation). | "go find better/newer evidence" — Broward `1200180`: 231 schools on one dispatched rep, *"the sample is thin"*. |
+| **8→6** redispatch | a new gate@6 DRAFT dispatch seeded with the district, via the existing draft store. No new discovery. | "the evidence is there; the wrong reps were sent" — mirrors 7→6. |
+
+Target bands for an 8→1: the closing argument's UNSATISFIED bands when it names any (the send-back's own
+diagnosis), else every band the district really serves — a send-back with nothing unsatisfied *is* the
+thin-evidence shape, where "which band is wrong" is exactly what the human could not say. `real` bands
+are the authority (the same definition the 7→2 compose gate uses), so a phantom band can never be
+re-discovered.
+
+**The linkage is the point.** Each routing appends a `send_back_routed` `state_event` carrying the
+approval_id and the artifact — so "what did approval 1568 produce?" has an answer, a second click on the
+same send-back names the existing artifact instead of minting a second batch, and
+`unrouted_send_backs` turns "sent back and never re-routed" into a list (`GET
+/api/aggregate/send-backs`, and the gate@8 badge) instead of a silence. Keyed on the approval_id, not
+the district: a district sent back AGAIN after an earlier routing correctly reappears, because the
+routing belongs to the instruction.
+
 ## 3. Still open (post-2026-07-13 design)
 
 **Genuinely still open:**
-- **The 8→1 / 8→6 back-edges** (§2a.5, governance §11e) — `sent_back` is recorded (disposition + reason +
-  `state_event`), but no downstream re-queue/dispatch executor consumes it yet. (The `/api/aggregate/
-  recover-band` #473 path mints a 7→6 request, but that is the gate@7-lineage recover, not the designed
-  8→1/8→6 back-edges.)
 - **`gate@8` manual/auto** — auto = confidence-escalating, never writes minutes without confidence
   (governance §11b); blocked on #104 part b. Manual shipped; the calibration hook logs from day one (§2c.6).
 
 **Since CLOSED (were open in the 2026-07-13 list):**
+- ~~The 8→1 / 8→6 back-edges~~ → **BUILT 2026-08-15 (#689 — §3c below).**
 - ~~#90 — the per-band "satisfied" signal~~ → **BUILT as REQ-149** (per-band SATISFIED over the #499 slot
   spine; REQ-149 supersedes #90). See §2d/§0c.
 - ~~The approval-receipt schema + migration~~ → **BUILT** (`stage8_approval` + the frozen `receipt_json` /

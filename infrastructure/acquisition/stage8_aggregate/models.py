@@ -19,9 +19,12 @@ from infrastructure.acquisition.common.timeutil import utcnow
 
 
 class Stage8Approval(gdb.Base):
-    """One gate@8 decision on a district. `disposition`: 'approved' (Stage 9 may write all bands) or
-    'sent_back' (a band is unsatisfied / the picture was rejected → an 8→1/8→6 back-edge; a reason is
-    required). Append-only: the LATEST row per district is the live decision."""
+    """One gate@8 decision on a district. `disposition`: 'approved' (Stage 9 then writes all bands —
+    `server._incorporate_after_approval`, #682) or 'sent_back' (a band is unsatisfied / the picture was
+    rejected; a reason is required, and the human routes it 8→1/8→6 via
+    `process_governance.stage8_sendback`, #689). Both arrows are WIRED as of 2026-08-15 — this
+    docstring described them for months while nothing consumed either.
+    Append-only: the LATEST row per district is the live decision."""
     __tablename__ = "stage8_approval"
 
     approval_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)

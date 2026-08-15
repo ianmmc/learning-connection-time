@@ -48,7 +48,8 @@ district's production run. Dead code + test drift (#125/#87/#126/#166) also reti
 measurement detail: `STAGE7_EXTRACT_DESIGN.md` §6 (decision log).
 **Stage 8 gate@8 BUILT (#89, 2026-07-14; console + approve/send-back + the 4 human-judgment tables + frozen
 receipt — `STAGE8_AGGREGATE_DESIGN.md` §0a/§0b). **Stage-9 write BUILT (#93/#94/#95, 2026-07-21 —
-`STAGE9_INCORPORATE_DESIGN.md`).** Still unbuilt: the 8→1/8→6 back-edges and gate@8 auto mode.**
+`STAGE9_INCORPORATE_DESIGN.md`), and FIRES ON APPROVAL since #682 (2026-08-15).** The 8→1/8→6
+back-edges are BUILT too (#689, same day). Still unbuilt: gate@8 auto mode.**
 **Gates are stage-numbered (§11):**
 `gate@1` (queue) · `gate@5` (per-URL review) · `gate@6` (dispatch) · `gate@7` (council requests) · `gate@8`
 (results) — **1/5/8 structural (permanent), 6/7 supervision (first to relax) — §11i.** §8, §9, and §9a
@@ -188,8 +189,9 @@ expectation** — profile and fingerprint every CMS encountered; Edlio is the fi
 sibling-variant dedup to Stage-6 dispatch and two `cms_hosts.json` entries; REQ-153 `approved`, tests
 pending). **Stage-6 `district_release_input` now runs FOUR sequential hold-passes** (base `decide()` +
 `verified_only` downgrade → #107 prefer-recent → #540 sibling-variant → REQ-116 hub-priority; detail:
-`STAGE6_DISPATCH_DESIGN.md`). The **Stage-9 write** is now **BUILT** (#93/#94/#95, 2026-07-21). Still
-genuinely unbuilt downstream: the **8→1/8→6 back-edges** and gate@8 **auto** mode. **#518 (the Stage 3/4 capture-fidelity recall leak — login walls,
+`STAGE6_DISPATCH_DESIGN.md`). The **Stage-9 write** is now **BUILT** (#93/#94/#95, 2026-07-21) and fires on
+approval (#682, 2026-08-15); the **8→1/8→6 back-edges** are BUILT (#689, same day). Still genuinely
+unbuilt downstream: gate@8 **auto** mode. **#518 (the Stage 3/4 capture-fidelity recall leak — login walls,
 0-byte PDFs, security blocks, truncation) is now BUILT (2026-07-20):** `GET /api/fidelity-triage` is the
 consumer REQ-154's fidelity columns were missing — see §11f. Other open tracks: **#110** (Stage 7 cross-config cascade escalation on
 no-consensus, re-homed to epic #80 Council Lab — genuinely blocked on that lab producing a measured
@@ -1273,8 +1275,12 @@ follow-up choice described here.)*
 are **7→6** (direct alternate-rep re-dispatch, bundled per district), **7→3** (recapture the URL), **7→2**
 (targeted rediscover for a band), and **7→1** (a follow-up batch adding schools) — all built, all routing
 through a Stage-1 follow-up batch except 7→6 (§3F/§11d). The Stage-8 back-edges this subsection originally
-anticipated (8→1, 8→6) are **not yet real** — Stage 8 itself is now built (#89), but its back-edges aren't
-designed yet — and will be documented here once designed; don't treat them as built today. See the flow diagram in `ACQUISITION_PIPELINE.md`.
+anticipated are **now real** (#689, 2026-08-15, `process_governance/stage8_sendback.py`): **8→1** composes
+a targeted DRAFT Stage-1 follow-up batch for the sent-back district (gate@1-reviewable, never auto-flowed,
+the send-back reason riding onto its record) and **8→6** seeds a new gate@6 draft dispatch. Neither fires
+automatically — the human picks the route at the gate (or neither), and the choice is recorded as a
+`send_back_routed` state_event keyed on the approval_id, so "sent back and never re-routed" is a query
+(`unrouted_send_backs`) rather than a silence. See the flow diagram in `ACQUISITION_PIPELINE.md`.
 The immutable Stage-6 dispatch freeze is what keeps "what we sent" recoverable across these loops.
 
 **5→1 (BUILT 2026-07-19, #164 PR 3b):** the ZERO-YIELD back-edge — a district that lands at gate@5
