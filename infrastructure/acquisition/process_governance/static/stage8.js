@@ -2,7 +2,7 @@
 // Stage 8 (Aggregate) console view — gate@8, the "closing argument" (STAGE8_AGGREGATE_DESIGN §2).
 // Review one district's WHOLE per-band determination and render, for each band: the claim, the sampling
 // sufficiency, the dereferenced evidence (URL / reader / capture / models / verbatim council quote), and
-// the negative space — then approve (Stage 9 may write every band) or send it back (all-or-nothing, §2e).
+// the negative space — then approve (which FIRES the Stage-9 write, #682) or send it back (§2e).
 //
 // MUST-BE-VISIBLE features (regression-guarded in the Playwright/DOM check — do not silently drop):
 //   F1 per-band determination: gross minutes + start–end + method            [data-feat="claim"]
@@ -12,6 +12,7 @@
 //   F5 negative space: unresolved / contamination / unsatisfied / gaps       [data-feat="negative-space"]
 //   F6 decision status + Approve / Send-back verdict controls                [data-feat="verdict"]
 //   F7 per-school override control (required reason)                         [data-feat="override"]
+//   F8 what the Stage-9 write DID after the approval (#682)                   [data-feat="incorporation"]
 // Vanilla JS on the shared window.LCT helpers; reuses q-*/badge/btn classes for visual consistency.
 (function () {
   const $g = (s, r = document) => r.querySelector(s);
@@ -103,18 +104,22 @@
     const bands = ca.bands || {};
     const order = ["elementary", "middle", "high"].filter((b) => bands[b]);
     return `
-      ${renderHeader(ca, dec)}
+      ${renderHeader(ca, dec, x.incorporation)}
       ${renderVerdict(dec)}
       <div class="s8-bands">${order.map((b) => renderBand(b, bands[b])).join("") || `<div class="empty">No accepted band facts.</div>`}</div>
       ${renderDenominatorCriteria((ca.provenance || {}).denominator)}
       ${renderNegativeSpace(ca.negative_space || {}, ca.capture_events || [])}`;
   }
 
-  function renderHeader(ca, dec) {
+  function renderHeader(ca, dec, inc) {
     let status = `<span class="badge badge-neutral">not yet decided</span>`;
     if (dec.decided) {
       status = dispositionBadge(dec.disposition);
       if (dec.is_stale) status += ` <span class="badge badge-warn" title="A re-extraction changed the facts since this decision — re-review before it can authorize a write.">stale — re-review</span>`;
+      // #682: the write is a SECOND record beside the decision — an approved district that production
+      // never received must not read as done. Only shown once a decision exists (before that there is
+      // nothing a write could have acted on).
+      if (dec.disposition === "approved") status += incorporationBadge(inc);
     }
     return `<div class="s8-head"><h2 style="margin:0">${esc(ca.district_id)}</h2> ${status}</div>`;
   }
@@ -122,7 +127,7 @@
   // F6 — the verdict controls
   function renderVerdict(dec) {
     const approvedNote = dec.is_approved
-      ? `<span class="s8-note">Approved — Stage 9 may write all bands.</span>` : "";
+      ? `<span class="s8-note">Approved — Stage 9 writes all bands (the badge above says whether it did).</span>` : "";
     return `<div class="s8-verdict" data-feat="verdict">
       <button class="btn btn-primary" data-decide="approved">Approve district → Stage 9</button>
       <button class="btn" data-decide="sent_back">Send back (needs a reason)</button>
@@ -549,19 +554,45 @@
     await openDistrict(did);
   }
 
+  // #682: what the Stage-9 write did, told to the operator at the moment of the click. Silent on the
+  // happy path (the badge already says "written"); loud on anything else, because "approved but never
+  // written" is precisely the state that used to go unnoticed for 25 minutes.
+  function reportIncorporation(did, inc) {
+    if (!inc || inc.status === "incorporated" || inc.status === "already_incorporated") return;
+    alert(`Approved — but Stage 9 did NOT write this district.\n\n` +
+          `${inc.status}: ${inc.reason || "(no reason given)"}\n\n` +
+          `The approval stands and is recorded. The write is idempotent and retryable:\n` +
+          `python3 -m infrastructure.acquisition.stage9_incorporate ${did} --dry-run`);
+  }
+
+  // #682: the write half of the district's status line — approval and incorporation are two records.
+  function incorporationBadge(inc) {
+    if (!inc) return ` <span class="badge badge-neutral" data-feat="incorporation" title="Stage 9 has never attempted a write for this district.">not written</span>`;
+    if (inc.kind === "incorporated") {
+      return inc.current
+        ? ` <span class="badge badge-success" data-feat="incorporation" title="Stage 9 wrote this district's bands to the LCT DB from exactly these facts.">written</span>`
+        : ` <span class="badge badge-warn" data-feat="incorporation" title="Stage 9 wrote this district, but from an EARLIER set of facts — production is behind the picture below.">written — from earlier facts</span>`;
+    }
+    return ` <span class="badge badge-red" data-feat="incorporation" title="${esc(inc.note || "")}">approved, not written</span>`;
+  }
+
   async function decide(did, disposition) {
     let reason = null;
     if (disposition === "sent_back") {
       reason = window.prompt("Why is this district not publishable? (which band is unsatisfied / what's wrong)");
       if (reason == null || !reason.trim()) return;   // cancelled or empty — no-op (server also enforces)
-    } else if (!window.confirm("Approve this district's whole picture? Stage 9 may then write every band's minutes to the LCT DB.")) {
+    } else if (!window.confirm("Approve this district's whole picture? Stage 9 then writes every band's minutes to the LCT DB.")) {
       return;
     }
     // expected_fingerprint = the picture the reviewer actually read (PR #252 review round). The server
     // 409s if the live facts moved after page-load — reload, re-review, decide again.
     try {
-      await api(`/api/aggregate/decision/${did}`,
-                postJSON({ disposition, reason, actor: "ian", expected_fingerprint: REVIEWED_FP }));
+      const out = await api(`/api/aggregate/decision/${did}`,
+                            postJSON({ disposition, reason, actor: "ian", expected_fingerprint: REVIEWED_FP }));
+      // #682: the approval now FIRES the Stage-9 write, so the click has a second outcome to report.
+      // A blocked/failed write never invalidates the (committed, precious) approval — it is stated
+      // plainly and the district is left showing "approved, not written" rather than looking done.
+      reportIncorporation(did, out.incorporation);
     } catch (e) {
       alert("Decision failed: " + e.message);
       // await (#337): fire-and-forget left an unhandled rejection if the reload itself failed

@@ -61,9 +61,28 @@ PURE/IO split mirroring `closing_argument.py`, so the cross-DB hole is one file 
   + one statutory-fallback `BandWrite` per claimed-but-unsatisfied band. No DB import; unit-tested against
   real receipts minted by `build_closing_argument`.
 - `ledger.py` — governance-side: `record_incorporation` (the `incorporated` `state_event`, stage=9, via
-  the free-string `checkpoint` column — no migration) + `latest_incorporation` (the idempotency read).
+  the free-string `checkpoint` column — no migration) + `latest_incorporation` (the idempotency read),
+  plus `record_incorporation_blocked` / `latest_attempt` (#682 — see §2c).
 - `incorporate.py` — the I/O orchestrator; the **only** file importing `infrastructure.database`.
 - `__main__.py` — CLI: `python -m infrastructure.acquisition.stage9_incorporate <did…> [--dry-run|--force|--strict|--batch FILE]`.
+
+## 2c. What TRIGGERS the write (#682)
+Two callers, **one entry point** (`incorporate_district`) — they can never drift into two behaviours:
+- **gate@8 approval** (the documented "Stage 9 then auto-writes" arrow, wired 2026-08-15). `POST
+  /api/aggregate/decision/{did}` with `disposition='approved'` calls `_incorporate_after_approval`
+  **after** the approval's session commits — Stage 9 opens its own governance session and re-validates
+  the decision from the DB (the TOCTOU re-check), so it must be reading a committed world.
+- **the CLI**, which stays the recovery/backfill/re-run path (the write is idempotent).
+
+The approval is **precious and stands regardless**: a blocked or faulted write is reported in the
+response and stamped as an `incorporation_blocked` `state_event` (status in `outcome`, the guard's own
+words in the note) — never rolled back, never allowed to fail the human's decision. That stamp is the
+point of the issue: without it, "approved but never written" is a *silence* (Worcester `2513230` sat
+unwritten for 25 minutes in July with nothing in any surface saying so). `latest_attempt` reads the
+newest outcome of either kind and drives the gate@8 header badge — *written* / *written — from earlier
+facts* (fingerprint moved) / *approved, not written*. Wiring this does not weaken a gate: gate@8 IS the
+human gate and the write behind it is ungated + deterministic, so the approval is exactly the
+authorization the write acts on, and the write's own guards remain the only other gates.
 
 ## 2b. Control flow (`incorporate_district`, fail-loud)
 1. **Governance read** (`gdb.session_scope`): `load_closing_argument` → live fingerprint;
