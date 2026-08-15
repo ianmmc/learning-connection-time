@@ -1,5 +1,6 @@
-// #682/#689 console verification — gate@8's two arrows against REAL districts: the Stage-9 write badge
-// on an approved one, and the send-back routing controls on a sent-back one.
+// #682/#689/#713 console verification — gate@8's THREE arrows against REAL districts: the Stage-9
+// write badge on an approved one, the send-back routing controls on a sent-back one, and the
+// re-review signal across the whole queue.
 //
 // Deliberately NOT a `*.test.mjs`: `npm test` globs `*.test.mjs`, and this needs a LIVE console server
 // plus the governance DB, so it must never run unattended in CI. The wiring is pinned DB-free by
@@ -10,13 +11,15 @@
 //         uvicorn.run(app, host='127.0.0.1', port=8015)" &
 //       cd infrastructure/scraper && node verify_682_console.mjs        # BASE=… / DID=… to point elsewhere
 // (Scratch PORT :8015, never the human's :8005. Reload the browser for static/*.js; restart the server
-// for Python changes — the detail endpoint is what carries `incorporation`.)
+// for Python changes — the endpoints are what carry `incorporation` / `send_back_routing` /
+// `needs_rereview`.)
 //
-// Asserts the F8 surface: an approved+written district reads "written" (not merely "approved"), the
-// badge carries data-feat="incorporation", and the detail API answers the two questions the badge is
-// derived from (what the write did, and whether it matches TODAY's facts).
-// Last run 2026-08-15 on 0503060 (Bentonville, approved + incorporated) and 1200180 (Broward, the
-// live send-back pin): 11/11 PASS.
+// Asserts F8 (an approved+written district reads "written", not merely "approved", and the detail
+// API answers what the write did + whether it matches TODAY's facts), F9 (a sent-back district shows
+// both back-edges, and the unrouted ones are a list) and F10 (every queue row carries the re-review
+// signal, flagged rows fronted).
+// Last run 2026-08-15 on 0503060 (Bentonville, approved + incorporated), 1200180 (Broward, the live
+// send-back pin) and the full 66-row queue: 13/13 PASS.
 import { chromium } from "playwright";
 
 const BASE = process.env.BASE || "http://127.0.0.1:8015";
@@ -93,6 +96,18 @@ ok("the routing controls render at gate@8", sbOpened.ok, JSON.stringify(sbOpened
 ok("both back-edges are offered (or the routing is already recorded)",
   (sbOpened.routes && sbOpened.routes.length === 2) || /re-routed/.test(sbOpened.text || ""),
   JSON.stringify(sbOpened.routes));
+
+// 4. #713 — every queue row must carry the re-review signal, and the flagged set must agree with
+//    the authoritative staleness rule (not with "gained facts": Fairbanks gained 26 and moved none).
+const queue = await (await fetch(`${BASE}/api/aggregate/districts`)).json();
+ok("every queue row carries the re-review signal",
+  Array.isArray(queue) && queue.length > 0 && queue.every((r) => "needs_rereview" in r),
+  `${queue.length} rows`);
+const flagged = queue.filter((r) => r.needs_rereview);
+ok("flagged rows are fronted in the queue",
+  flagged.every((r) => queue.indexOf(r) < queue.length) &&
+  queue.findIndex((r) => !r.needs_rereview) >= flagged.length,
+  `${flagged.length} flagged: ${flagged.map((r) => r.district_id).join(", ") || "(none — no decision is stale today)"}`);
 
 ok("no page errors", errors.length === 0, errors.join(" | "));
 

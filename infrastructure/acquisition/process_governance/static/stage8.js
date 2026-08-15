@@ -14,6 +14,7 @@
 //   F7 per-school override control (required reason)                         [data-feat="override"]
 //   F8 what the Stage-9 write DID after the approval (#682)                   [data-feat="incorporation"]
 //   F9 where a send-back GOES — the 8→1 / 8→6 routing controls (#689)         [data-feat="send-back-route"]
+//   F10 the RE-REVIEW delta + queue flag when a decision went stale (#713)     [data-feat="rereview-delta"]
 // Vanilla JS on the shared window.LCT helpers; reuses q-*/badge/btn classes for visual consistency.
 (function () {
   const $g = (s, r = document) => r.querySelector(s);
@@ -79,8 +80,13 @@
     const el = document.createElement("div");
     el.className = "q-batch" + (d.district_id === CURRENT ? " active" : "");
     el.dataset.id = d.district_id;
-    el.innerHTML = `<div class="q-batch-top"><span class="q-batch-id">${esc(d.name || d.district_id)}</span>${dispositionBadge(d.disposition)}</div>
-      <div class="q-batch-meta">${esc(d.district_id)}${d.state ? " · " + esc(d.state) : ""} · ${d.n_accepted} school${d.n_accepted === 1 ? "" : "s"} · ${d.n_unresolved} unresolved</div>`;
+    // #713: a decided district whose picture has MOVED is the most actionable row in this list —
+    // production may already hold minutes nobody has signed off on. It sorts to the top server-side;
+    // this is what says why.
+    const rr = d.needs_rereview
+      ? ` <span class="badge badge-warn" data-feat="needs-rereview" title="New evidence has moved this district's picture since the decision — re-review the delta.">re-review</span>` : "";
+    el.innerHTML = `<div class="q-batch-top"><span class="q-batch-id">${esc(d.name || d.district_id)}</span>${dispositionBadge(d.disposition)}${rr}</div>
+      <div class="q-batch-meta">${esc(d.district_id)}${d.state ? " · " + esc(d.state) : ""} · ${d.n_accepted} school${d.n_accepted === 1 ? "" : "s"} · ${d.n_unresolved} unresolved${d.rereview ? ` · +${d.rereview.n_new_facts} new fact${d.rereview.n_new_facts === 1 ? "" : "s"}` : ""}</div>`;
     el.onclick = () => openDistrict(d.district_id);
     return el;
   }
@@ -106,6 +112,7 @@
     const order = ["elementary", "middle", "high"].filter((b) => bands[b]);
     return `
       ${renderHeader(ca, dec, x.incorporation)}
+      ${renderRereviewDelta(dec, x.rereview_delta)}
       ${renderVerdict(dec)}
       ${renderSendBackRoute(dec, x.send_back_routing)}
       <div class="s8-bands">${order.map((b) => renderBand(b, bands[b])).join("") || `<div class="empty">No accepted band facts.</div>`}</div>
@@ -124,6 +131,32 @@
       if (dec.disposition === "approved") status += incorporationBadge(inc);
     }
     return `<div class="s8-head"><h2 style="margin:0">${esc(ca.district_id)}</h2> ${status}</div>`;
+  }
+
+  // F10 (#713) — the RE-REVIEW delta. A district that was decided (and possibly written) and has
+  // since gained evidence must be reviewed on WHAT CHANGED, not re-adjudicated from scratch — that
+  // is the difference between a 30-second confirmation and repeating the whole review, and the
+  // standing falsifier forbids the latter. Shown only when the decision is actually stale.
+  function renderRereviewDelta(dec, delta) {
+    // #760: APPROVED decisions only — this panel's copy ("since you approved this", "Stage 9
+    // re-writes") is false for a stale sent-back district, and would render beside the send-back
+    // routing panel, the two contradicting each other. The server already gates the delta the same
+    // way; this is the client's own belt.
+    if (!dec.decided || dec.disposition !== "approved" || !dec.is_stale || !delta) return "";
+    const rows = Object.entries(delta.bands || {}).filter(([, x]) => x.moved).map(([b, x]) => {
+      const val = x.approved_gross === x.live_gross
+        ? `${x.live_gross} min (unchanged)`
+        : `<strong>${x.approved_gross == null ? "—" : x.approved_gross} → ${x.live_gross == null ? "—" : x.live_gross} min</strong>`;
+      const schools = `${x.n_approved_schools} → ${x.n_live_schools} school${x.n_live_schools === 1 ? "" : "s"}`;
+      const added = x.schools_added.length ? ` · <span class="s8-muted">joined: ${x.schools_added.map(esc).join(", ")}</span>` : "";
+      const gone = x.schools_removed.length ? ` · <span class="s8-muted">left: ${x.schools_removed.map(esc).join(", ")}</span>` : "";
+      return `<li><strong>${esc(b)}:</strong> ${val} · ${schools}${added}${gone}</li>`;
+    });
+    return `<div class="s8-verdict" data-feat="rereview-delta">
+      <span class="badge badge-warn">re-review — what changed since you approved this</span>
+      <ul>${rows.join("") || `<li>The determination is unchanged; the picture's basis moved (an override, exclusion or disposition).</li>`}</ul>
+      <p class="s8-note">Approving again records a NEW decision (the log is append-only) and Stage 9 re-writes from it. Review the delta — not the whole district.</p>
+    </div>`;
   }
 
   // F6 — the verdict controls

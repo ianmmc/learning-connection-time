@@ -66,6 +66,7 @@ from infrastructure.acquisition.stage7_extract.models import Extraction, SchoolF
 from infrastructure.acquisition.stage8_aggregate import aggregate as AGG        # noqa: E402  (gate@7 band rollup from school_fact)
 from infrastructure.acquisition.stage8_aggregate import closing_argument as CA8  # noqa: E402  (gate@8 closing-argument assembler)
 from infrastructure.acquisition.stage8_aggregate import approval as APV8         # noqa: E402  (gate@8 approval record)
+from infrastructure.acquisition.stage8_aggregate import rereview as RRV8         # noqa: E402  (gate@8 re-review of a decided district that gained evidence — #713)
 from infrastructure.acquisition.stage8_aggregate.models import Stage8Approval    # noqa: E402,F401  (precious gate@8 decision — register for init_precious_schema)
 from infrastructure.acquisition.stage8_aggregate.models import BandExclusion     # noqa: E402,F401  (precious gate@8 exclude-from-band #257 — register for init_precious_schema)
 from infrastructure.acquisition.stage8_aggregate.models import HumanAddedFact    # noqa: E402,F401  (precious gate@8 human-add #474 — register for init_precious_schema)
@@ -2767,7 +2768,18 @@ def aggregate_districts():
                                    AND r.status IN {EX.RQ.OPEN_STATUSES_SQL})
                  AND NOT {IS_BENCHMARK_PROVENANCE_SQL.format(alias='p')}
                ORDER BY (s8.disposition IS NOT NULL), n_unresolved DESC, p.district_id""")).mappings().all()
-        return [dict(r) for r in rows]
+        # #713: a DECIDED district whose picture has since MOVED needs a re-review, and until now no
+        # surface said so — Fairbanks 0200600 was written in July, gained 26 accepted facts in
+        # August, and stayed invisible. Decided rows sort last here, so without a flag an operator
+        # would have to open each one. Cheap by construction (a superset pre-filter in one round
+        # trip; the authoritative REQ-147 staleness check runs only on its survivors).
+        flagged = RRV8.needs_rereview(con)
+        out = [dict(r, needs_rereview=r["district_id"] in flagged,
+                    rereview=flagged.get(r["district_id"])) for r in rows]
+        # Stable: re-review to the top (it is the most actionable state in this list — a district
+        # production already holds, on facts nobody has signed off), everything else unmoved.
+        out.sort(key=lambda r: not r["needs_rereview"])
+        return out
 
 
 @app.get("/api/aggregate/withheld")
@@ -2804,6 +2816,38 @@ def aggregate_withheld():
         return [dict(r, reason="benchmark provenance") for r in rows]
 
 
+def _gate8_decision_extras(con, district_id: str, status: dict, fp: str, ca: dict) -> tuple:
+    """The ONE assembler for what a gate@8 decision produced downstream (#767 — this was three
+    independently-shaped inline blocks accreting in the detail endpoint): (incorporation,
+    send_back_routing, rereview_delta). Each keys off the SAME `status` the caller already computed,
+    so the three surfaces can never disagree about which decision they describe.
+
+    - `incorporation` (#682): the Stage-9 write's latest outcome + `current` vs today's facts.
+    - `send_back_routing` (#689): what THIS send-back produced — keyed on the approval_id, so an
+      earlier routing can never make a fresh send-back look handled.
+    - `rereview_delta` (#713): what changed since the human APPROVED — a re-review reviews the delta,
+      never re-adjudicates. APPROVED-only (#760): a stale sent-back district is the normal
+      pending-re-decision flow (its facts moving is the #689 8->1 route's designed outcome), and the
+      delta's copy ("since you approved this", "Stage 9 re-writes") would be false for it — worse,
+      it would render BESIDE the send-back routing panel, the two contradicting each other."""
+    latest = status.get("latest") or {}
+    att = LEDGER9.latest_attempt(con, district_id)
+    inc = None
+    if att:
+        inc = dict(att, current=(att["kind"] == "incorporated" and att["fingerprint"] == fp))
+    routing = None
+    if latest.get("disposition") == "sent_back":
+        routing = SB8.routing_for(con, district_id, latest["approval_id"])
+    delta = None
+    if status.get("is_stale") and latest.get("disposition") == "approved":
+        frozen = APV8.latest_decision(con, district_id, with_receipt=True) or {}
+        try:
+            delta = RRV8.delta_against_decision(json.loads(frozen.get("receipt_json") or "{}"), ca)
+        except (TypeError, ValueError):
+            delta = None      # an unparseable receipt: the badge still says stale, honestly
+    return inc, routing, delta
+
+
 @app.get("/api/aggregate/district/{district_id}")
 def aggregate_district_detail(district_id: str):
     """The closing argument for one district (band claim + dereferenced evidence + sampling + negative
@@ -2819,17 +2863,9 @@ def aggregate_district_detail(district_id: str):
         ca = CA8.load_closing_argument(con, district_id)
         fp = CA8.fingerprint(ca)
         status = APV8.decision_status(con, district_id, current_fingerprint=fp)
-        att = LEDGER9.latest_attempt(con, district_id)
-        inc = None
-        if att:
-            inc = dict(att, current=(att["kind"] == "incorporated" and att["fingerprint"] == fp))
-        # #689: the send-back half of the same story — what THIS send-back produced (keyed on the
-        # approval_id, so an earlier routing can never make a fresh send-back look handled).
-        routing = None
-        if (status.get("latest") or {}).get("disposition") == "sent_back":
-            routing = SB8.routing_for(con, district_id, status["latest"]["approval_id"])
+        inc, routing, delta = _gate8_decision_extras(con, district_id, status, fp, ca)
         return {"closing_argument": ca, "decision": status, "fingerprint": fp,
-                "incorporation": inc, "send_back_routing": routing}
+                "incorporation": inc, "send_back_routing": routing, "rereview_delta": delta}
 
 
 @app.post("/api/aggregate/override")
