@@ -69,6 +69,93 @@ class TestGross:
         assert len(accepted) == 1 and accepted[0]["method"] == "judge"
         assert accepted[0]["end"] == "15:15" and accepted[0]["gross"] == 405
 
+    def test_degenerate_band_referent_resolves_on_hub_label(self):
+        """#707 must-fail-today (Little Rock's shape): a band referent ('elementary schools') with
+        cross-family voter agreement on a district_hub_by_band record converts to an accepted
+        band-grain fact (method=band_referent) instead of a silent degenerate_school_name drop."""
+        rows = {"google/gemini-2.5-flash-lite": [{"grade_level": "elementary", "start_time": "07:40",
+                                                  "end_time": "14:55", "school_name": "Elementary Schools"}],
+                "mistralai/mistral-small-24b-instruct-2501": [
+                    {"grade_level": "elementary", "start_time": "07:40",
+                     "end_time": "14:55", "school_name": "Elementary Schools"}]}
+        # without context: refused (the pre-#707 behavior, preserved)
+        acc, unres = A.consensus_school_facts(rows)
+        assert acc == [] and unres[0]["reason"] == "degenerate_school_name"
+        # with the hub-label context: accepted, visibly marked
+        acc, unres = A.consensus_school_facts(rows, context={"band_grain": True})
+        assert unres == [] and len(acc) == 1
+        f = acc[0]
+        assert f["method"] == "band_referent" and f["school"] == "elementary schools"
+        assert f["start"] == "07:40" and f["end"] == "14:55" and f["resolved_from"] == "elementary schools"
+
+    def test_degenerate_resolves_uniquely_on_n1_roster(self):
+        """#707 (Lewiston's shape): a bare 'hs' in a band whose roster has exactly ONE school
+        resolves to that school (method=roster_unique) — and stays refused when the roster has >1."""
+        rows = {"google/gemini-2.5-flash-lite": [{"grade_level": "high", "start_time": "07:45",
+                                                  "end_time": "14:00", "school_name": "HS"}],
+                "mistralai/mistral-small-24b-instruct-2501": [
+                    {"grade_level": "high", "start_time": "07:45",
+                     "end_time": "14:00", "school_name": "HS"}]}
+        ctx1 = {"band_grain": False, "roster_by_band": {"high": ["Lewiston High School"]}}
+        acc, unres = A.consensus_school_facts(rows, context=ctx1)
+        assert unres == [] and acc[0]["method"] == "roster_unique"
+        assert acc[0]["school"] == "lewiston" and acc[0]["resolved_from"] == "hs"
+        # the >1-roster pin: 'hs' in a 6-high-school district stays unresolved — correctly
+        ctx6 = {"band_grain": False, "roster_by_band": {"high": [f"School {i} High" for i in range(6)]}}
+        acc, unres = A.consensus_school_facts(rows, context=ctx6)
+        assert acc == [] and unres[0]["reason"] == "degenerate_school_name"
+
+    def test_band_referent_fact_survives_the_band_rollup(self):
+        """#730 (the review's critical): the #245 strict-name filter in district_bands_from_facts
+        must NOT re-drop a band_referent fact consensus deliberately accepted — acceptance is
+        end-to-end: consensus_school_facts -> district_bands_from_facts must yield the band."""
+        rows = {"google/gemini-2.5-flash-lite": [{"grade_level": "elementary", "start_time": "07:40",
+                                                  "end_time": "14:55", "school_name": "Elementary Schools"}],
+                "mistralai/mistral-small-24b-instruct-2501": [
+                    {"grade_level": "elementary", "start_time": "07:40",
+                     "end_time": "14:55", "school_name": "Elementary Schools"}]}
+        acc, _ = A.consensus_school_facts(rows, context={"band_grain": True})
+        bands = A.district_bands_from_facts(acc)
+        assert "elementary" in bands and bands["elementary"]["gross_minutes"] == 435
+        # ...and the complement stays exact: the resolved fact is NOT listed as degenerate noise
+        assert A.degenerate_school_facts(acc) == []
+        # a genuinely-degenerate legacy fact (no method marker) still filters + surfaces (#245)
+        legacy = [{"band": "middle", "school": "schools", "start": "08:00", "end": "14:00",
+                   "gross": 360, "models": ["x", "y"], "method": "council_agree"}]
+        assert A.district_bands_from_facts(legacy) == {}
+        assert A.degenerate_school_facts(legacy) == legacy
+
+    def test_roster_unique_alias_never_double_counts_its_school(self):
+        """#733: a directly-named fact + a roster_unique alias of the same (band, school) — two
+        reps, one physical school — must count once (the direct reading wins); two aliases of the
+        same school also collapse to one."""
+        direct = {"band": "high", "school": "lewiston", "start": "07:45", "end": "14:00",
+                  "gross": 375, "models": ["a", "b"], "method": "council_agree"}
+        alias = {"band": "high", "school": "lewiston", "start": "07:45", "end": "14:00",
+                 "gross": 375, "models": ["a", "b"], "method": "roster_unique",
+                 "resolved_from": "hs"}
+        b = A.district_bands_from_facts([direct, alias])
+        assert b["high"]["n_schools"] == 1 and len(b["high"]["schools"]) == 1
+        b2 = A.district_bands_from_facts([alias, dict(alias)])   # two aliases -> one
+        assert b2["high"]["n_schools"] == 1
+        # an alias ALONE (no direct fact) still counts — that's the Lewiston recovery itself
+        b3 = A.district_bands_from_facts([alias])
+        assert b3["high"]["n_schools"] == 1 and b3["high"]["gross_minutes"] == 375
+
+    def test_degenerate_never_converts_without_cross_family_agreement(self):
+        """#707: only cross-family VOTER agreement converts — same-family agreement or a judge
+        re-emission must not mint a fact the guard would otherwise refuse."""
+        # two GOOGLE models agree -> same family -> still refused, even with full context
+        rows = {"google/gemini-2.5-flash": [{"grade_level": "high", "start_time": "07:45",
+                                             "end_time": "14:00", "school_name": "HS"}],
+                "google/gemini-2.5-flash-lite": [{"grade_level": "high", "start_time": "07:45",
+                                                  "end_time": "14:00", "school_name": "HS"}]}
+        ctx = {"band_grain": True, "roster_by_band": {"high": ["Only High"]}}
+        judge = {"qwen/qwen3-235b-a22b-2507": [{"grade_level": "high", "start_time": "07:45",
+                                                "end_time": "14:00", "school_name": "HS"}]}
+        acc, unres = A.consensus_school_facts(rows, judge_rows=judge, context=ctx)
+        assert acc == [] and unres[0]["reason"] == "degenerate_school_name"
+
     def test_reaggregate_receipt_replays_stored_calls_zero_spend(self, tmp_path, monkeypatch):
         """#716 recovery path: reaggregate_receipt rebuilds consensus from the receipt's stored
         per-call facts (no model calls), and the new row carries cost_usd=0 so the REQ-051 spend

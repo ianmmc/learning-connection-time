@@ -28,10 +28,11 @@ from infrastructure.acquisition.process_governance import stage7_run as S7R
 CREATED_BY = "auto:reaggregate-716"
 
 
-def _rebuild_rep(rep: dict) -> dict:
+def _rebuild_rep(rep: dict, ctx: dict = None) -> dict:
     """Re-run the deterministic consensus over one rep's stored per-call facts. The call records
     ride along verbatim (they are the audit trail: who said what, and what the original run cost)
-    — only accepted/unresolved are recomputed."""
+    — only accepted/unresolved are recomputed. `ctx` is the #707 district context (labels +
+    roster), sliced per-rep exactly as the production run does."""
     voters = {c["model"]: (c.get("facts") or []) for c in rep.get("calls", [])
               if c.get("role") == "voter"}
     # #742 review: NO facts-filter here — a judge call that ran but returned zero parseable facts
@@ -40,7 +41,9 @@ def _rebuild_rep(rep: dict) -> dict:
     # is harmless to consensus (no rows).
     judges = {c["model"]: (c.get("facts") or []) for c in rep.get("calls", [])
               if c.get("role") == "judge"}
-    accepted, unresolved = AGG.consensus_school_facts(voters, judges or None)
+    accepted, unresolved = AGG.consensus_school_facts(
+        voters, judges or None,
+        context=S7R._rep_consensus_context(ctx, rep.get("rec_key")))
     for f in accepted:
         f["rec_key"], f["source_file"] = rep.get("rec_key"), rep.get("file")
     for u in unresolved:
@@ -55,6 +58,27 @@ def _rebuild_rep(rep: dict) -> dict:
     return rebuilt
 
 
+def _labels_for_recs(rec_keys: list) -> dict:
+    """{rec_key: primary_label} from the LIVE gov_db label table (the frozen receipt doesn't carry
+    the record's human label — the working store does). Deliberately the CURRENT label, not the
+    dispatch-time one production saw (#738): a human who re-labels a record is correcting the
+    pipeline's input, and the replay should honor the correction — replaying a stale label would
+    reproduce the mistake. Best-effort: no DB ⇒ no label context."""
+    if not rec_keys:
+        return {}
+    try:
+        from sqlalchemy import text
+        from infrastructure.acquisition.common import db as gdb
+        with gdb.session_scope() as s:
+            return dict(s.execute(
+                text("SELECT rec_key, primary_label FROM label WHERE rec_key = ANY(:k)"),
+                {"k": list(rec_keys)}).all())
+    except Exception as e:  # noqa: BLE001 — advisory context
+        print(f"[reaggregate] label lookup failed ({type(e).__name__}: {str(e)[:80]}) — "
+              "band-grain resolution disabled", flush=True)
+        return {}
+
+
 def reaggregate_receipt(receipt_path: str, *, dry_run: bool = False) -> dict:
     """Replay `receipt_path` (an extraction_<hash>_<did>_<ts>.json central receipt) through the
     current consensus. Returns {district_id, was: {accepted, unresolved}, now: {...}, persisted}."""
@@ -63,7 +87,9 @@ def reaggregate_receipt(receipt_path: str, *, dry_run: bool = False) -> dict:
     hh, old = doc.get("handoff_hash"), doc["district"]
     did = old["district_id"]
 
-    reps = [_rebuild_rep(r) for r in old.get("reps", [])]
+    ctx = S7R.consensus_context_for_district(
+        did, _labels_for_recs([r.get("rec_key") for r in old.get("reps", [])]))
+    reps = [_rebuild_rep(r, ctx) for r in old.get("reps", [])]
     accepted = [f for r in reps for f in r["accepted"]]
     unresolved = [u for r in reps for u in r["unresolved"]]
     pd = {**old, "reps": reps, "accepted": accepted, "unresolved": unresolved,

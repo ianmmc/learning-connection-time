@@ -35,7 +35,7 @@ def _wire(monkeypatch, per_rep_facts):
     monkeypatch.setattr(R7.PARSE, "parse_schedules", lambda c: [])
     seq = iter(per_rep_facts)
     monkeypatch.setattr(R7.AGG, "consensus_school_facts",
-                        lambda rows, judge=None: (next(seq), []))
+                        lambda rows, judge=None, **kw: (next(seq), []))
     monkeypatch.setattr(R7.AGG, "district_bands_from_facts", lambda facts: {})
 
 
@@ -120,7 +120,7 @@ def _mock_streaming(monkeypatch, targets):
     seen = {}
 
     def _fake_run_district(did, name, groups, councils, ddir, use_judge,
-                           early_exit_bands=None, ms_params=None):
+                           early_exit_bands=None, ms_params=None, ctx=None):
         seen[did] = early_exit_bands
         return {"district_id": did, "name": name, "n_reps": 1, "n_judged": 0, "reps": [],
                 "accepted": [], "unresolved": [], "bands": {},
@@ -347,7 +347,7 @@ def test_persisted_run_kind_for_a_benchmark_dispatch(monkeypatch):
     captured = {}
 
     def _fake_run_district(did, name, groups, councils, ddir, use_judge,
-                           early_exit_bands=None, ms_params=None):
+                           early_exit_bands=None, ms_params=None, ctx=None):
         return {"district_id": did, "name": name, "n_reps": 1, "n_judged": 0, "reps": [],
                 "accepted": [], "unresolved": [], "bands": {},
                 "telemetry": {"calls": 0, "judge_calls": 0, "errors": 0,

@@ -273,8 +273,39 @@ def _early_exit_targets(district_ids) -> dict:
     return out
 
 
+def consensus_context_for_district(did: str, labels_by_rec: dict) -> dict:
+    """#707: the deterministic per-district context that can RESOLVE a degenerate school name at
+    the consensus boundary — {labels_by_rec: {rec_key: human label}, roster_by_band: {band:
+    [school names]}} (the Stage-1 slot spine, live from ccd_sch; None-safe when the CCD files
+    aren't on disk). Shared MECHANISM between the production run and the #716 re-aggregation
+    replay (same slicing, same resolution rules). The LABEL INPUT deliberately differs (#738):
+    production reads the handoff doc's label (current at dispatch time); the replay reads the
+    LIVE label table — the working store — so a human's label correction corrects the replay,
+    which is the point of replaying. A replay can therefore legitimately partition
+    accepted/unresolved differently than the original run when the label has since changed."""
+    roster_by_band = {}
+    try:
+        br = SS.band_rosters_for_district(did)
+        if br:
+            roster_by_band = {b: list(m.get("schools") or []) for b, m in br.items()
+                              if isinstance(m, dict) and not b.startswith("_")}
+    except Exception as e:  # noqa: BLE001 — advisory context: no roster ⇒ no N=1 resolution
+        print(f"[consensus-context] roster lookup failed for {did} "
+              f"({type(e).__name__}: {str(e)[:80]}) — N=1 resolution disabled", flush=True)
+    return {"labels_by_rec": labels_by_rec or {}, "roster_by_band": roster_by_band}
+
+
+def _rep_consensus_context(ctx: dict, rec_key: str) -> dict:
+    """The per-rep slice consensus_school_facts takes: band_grain iff THIS record's human label is
+    district_hub_by_band (band referents are that label's expected grain, #707)."""
+    if not ctx:
+        return None
+    return {"band_grain": (ctx.get("labels_by_rec") or {}).get(rec_key) == "district_hub_by_band",
+            "roster_by_band": ctx.get("roster_by_band") or {}}
+
+
 def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, use_judge: bool,
-                  early_exit_bands=None, ms_params: dict = None) -> dict:
+                  early_exit_bands=None, ms_params: dict = None, ctx: dict = None) -> dict:
     """Run the full council over ONE district's reps and return its result dict (reps + per-model
     call detail, pooled accepted/unresolved facts, modal bands, telemetry). All the paid calls for a
     district happen here so the caller can persist it as a unit."""
@@ -301,14 +332,16 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
                 model_rows[model] = facts
                 calls.append(_call_record(model, "voter", res, facts))
 
-            accepted, unresolved = AGG.consensus_school_facts(model_rows)
+            rep_ctx = _rep_consensus_context(ctx, rec_key)   # #707: label + roster resolution
+            accepted, unresolved = AGG.consensus_school_facts(model_rows, context=rep_ctx)
             judged = False
             if use_judge and unresolved and cfg.get("judge"):
                 jmodel = cfg["judge"]
                 jres = _call(jmodel, P6.select_prompt_id(cfg, jmodel), kind, content)
                 jfacts = PARSE.parse_schedules(jres.content) if jres.ok else []
                 calls.append(_call_record(jmodel, "judge", jres, jfacts))
-                accepted, unresolved = AGG.consensus_school_facts(model_rows, {jmodel: jfacts})
+                accepted, unresolved = AGG.consensus_school_facts(model_rows, {jmodel: jfacts},
+                                                                  context=rep_ctx)
                 judged = True
         except HALTING_EXCEPTIONS:
             raise                       # halt — every later paid call fails identically (#173/#189)
@@ -536,9 +569,13 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
         # aborting every remaining district (the original #122 symptom: 1 bad rep stranded 16→18).
         # BillingAuthError / SystemExit / KeyboardInterrupt still halt — they're not per-district.
         try:
+            labels_by_rec = {r.get("rec_key"): r.get("label")
+                             for d in (doc.get("districts") or []) if d.get("district_id") == did
+                             for r in (d.get("records") or [])}
             pd = _run_district(did, _district_name(doc, did), by_district[did], councils,
                                ddirs.get(did), use_judge,
-                               early_exit_bands=ms_targets.get(did), ms_params=ms_params)
+                               early_exit_bands=ms_targets.get(did), ms_params=ms_params,
+                               ctx=consensus_context_for_district(did, labels_by_rec))
         except HALTING_EXCEPTIONS:
             raise                       # halt — never degrade a billing/auth failure to a skip (#189)
         except Exception as e:  # noqa: BLE001

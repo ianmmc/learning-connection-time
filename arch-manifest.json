@@ -162,6 +162,12 @@
         "loader": "load_batch_any",
         "why": "#526: the DB is the working store; the console must never consume the on-disk batch receipt as transport.",
         "forbidden_scope": "infrastructure/acquisition/process_governance"
+      },
+      {
+        "_comment": "#716/#707: the recovery replay of a FROZEN central extraction receipt through the current deterministic consensus (zero model spend). A recovery/audit entry point (the REQ-171 carve-out class) — CLI-only by design. gov_db extraction/school_fact stays authoritative; the replay is APPEND-ONLY (a new extraction row, cost_usd=0). Forbidden in stage9: the incorporate path must read gov_db, never a disk receipt (the REQ-169 fail-open lesson).",
+        "loader": "reaggregate_receipt",
+        "why": "#716: receipts are evidence, not transport — only the CLI recovery tool may replay one; an active-pipeline read of an extraction receipt would fail open on a pruned file.",
+        "forbidden_scope": "infrastructure/acquisition/stage9_incorporate"
       }
     ],
     "audit_receipts": [
