@@ -36,6 +36,8 @@ class _RecCon(_Con):
         self.events = []
 
     def execute(self, stmt, params=None, *a, **k):
+        if "pg_advisory_xact_lock" in str(stmt):    # #754: the per-district serializer — a no-op here
+            return _Result()
         if params and params.get("checkpoint") == SB.ROUTED_CHECKPOINT:
             self.events.append(dict(params))
             return _Result()
@@ -52,6 +54,11 @@ def _stub_compose(monkeypatch, *, districts=1, bands=("elementary", "middle", "h
     monkeypatch.setattr(SB.CA8, "load_closing_argument",
                         lambda s, did, record_drift_event=False: {"district_id": did, "bands": {}})
     monkeypatch.setattr(SB.DDOM, "all_confirmed", lambda s: {})
+    # #752: default the diagnosis to domain-having; scope tests override this
+    monkeypatch.setattr(SB.Q1, "usable_scoping_domains",
+                        lambda year, dids, dd: {d: ("example.org", "nces") for d in dids})
+    monkeypatch.setattr(SB.EX7, "_defer_76_districts", lambda s, dids, maxr: set())   # #769
+    monkeypatch.setattr(SB.BUD, "load_budget", lambda: type("B", (), {"max_request_rounds": 2})())
     monkeypatch.setattr(SB.BSTORE, "next_batch_number", lambda s: 43)
     monkeypatch.setattr(SB.BSTORE, "create_batch", lambda s, doc, **kw: None)
     monkeypatch.setattr(SB.Q1, "build_followup_batch",
@@ -59,7 +66,12 @@ def _stub_compose(monkeypatch, *, districts=1, bands=("elementary", "middle", "h
                                           if districts else []}, []))
 
 
-def _con_for(decision=SENT_BACK, name="Broward"):
+_NO_DECISION = object()   # #768: a sentinel, so SENT_BACK (a module dict) is never a default arg
+
+
+def _con_for(decision=_NO_DECISION, name="Broward"):
+    if decision is _NO_DECISION:
+        decision = dict(SENT_BACK)   # a copy per call — a test mutating it can't leak to the next
     return _RecCon([_Result(rows=[decision] if decision else []),      # latest_decision
                     _Result(rows=[]),                                  # routing_for
                     _Result(rows=[{"name": name, "state": "FL"}])])    # district meta
@@ -108,16 +120,36 @@ def test_a_dry_run_persists_nothing(monkeypatch):
     assert created == [] and con.events == []
 
 
-def test_unsatisfied_bands_narrow_the_target_when_the_argument_names_any(monkeypatch):
-    """The send-back's own diagnosis wins when it exists; a thin-evidence send-back with nothing
-    unsatisfied (Broward's actual shape) re-targets the whole district instead."""
+def test_req149_satisfied_bands_are_spared_and_thin_bands_are_not(monkeypatch):
+    """#771: the signal is REQ-149's per-band `satisfied`, never the cruder zero-facts-only
+    `unsatisfied_bands`. The scenario the issue names: high is satisfied (spared), middle has ZERO
+    facts (targeted), elementary holds ONE thin fact — present, so absent from unsatisfied_bands,
+    but NOT REQ-149 satisfied. The send-back is about elementary; it must be targeted too, never
+    eclipsed by the zero-fact sibling."""
     _stub_compose(monkeypatch)
-    ca_unsat = {"district_id": "D", "negative_space": {"unsatisfied_bands": ["middle"]}}
-    monkeypatch.setattr(SB.CA8, "load_closing_argument",
-                        lambda s, did, record_drift_event=False: ca_unsat)
-    assert SB._target_bands(_Con([]), "1200180", ca_unsat) == ["middle"]
-    assert SB._target_bands(_Con([]), "1200180", {"negative_space": {}}) == \
+    ca = {"district_id": "D", "bands": {
+        "high": {"satisfied": {"satisfied": True}},
+        "elementary": {"satisfied": {"satisfied": False}}},     # middle: zero facts, no entry
+        "negative_space": {"unsatisfied_bands": ["middle"]}}
+    assert SB._target_bands(_Con([]), "1200180", ca) == ["elementary", "middle"]
+    # nothing satisfied (Broward's thin-evidence shape) -> the whole pool
+    assert SB._target_bands(_Con([]), "1200180", {"bands": {}}) == \
         ["elementary", "middle", "high"]
+    # EVERYTHING satisfied but the human still sent it back -> honor the instruction: whole pool
+    ca_all = {"bands": {b: {"satisfied": {"satisfied": True}}
+                        for b in ("elementary", "middle", "high")}}
+    assert SB._target_bands(_Con([]), "1200180", ca_all) == ["elementary", "middle", "high"]
+
+
+def test_a_present_but_empty_real_set_is_authoritative_not_a_fallback(monkeypatch):
+    """#757: `real_bands_for_district` can legitimately return an EMPTY set for a PRESENT district
+    (zero-school roster, crosswalk-degenerate record) — an authoritative "no real bands". The falsy
+    `real.get(did) or claimed...` idiom treated it as absence and fell through to phantom claimed
+    bands, contradicting the sibling compose gate's membership test."""
+    monkeypatch.setattr(SB, "_district_target_bands",
+                        lambda s, dids: ({d: ["elementary", "high"] for d in dids},
+                                         {d: set() for d in dids}, {}))
+    assert SB._target_bands(_Con([]), "D", {"bands": {}}) == []
 
 
 def test_a_phantom_unsatisfied_band_never_becomes_a_target(monkeypatch):
@@ -125,7 +157,7 @@ def test_a_phantom_unsatisfied_band_never_becomes_a_target(monkeypatch):
     unsatisfied band the district does not really serve must not be re-discovered."""
     monkeypatch.setattr(SB, "_district_target_bands",
                         lambda s, dids: ({}, {d: ["elementary"] for d in dids}, {}))
-    got = SB._target_bands(_Con([]), "D", {"negative_space": {"unsatisfied_bands": ["high"]}})
+    got = SB._target_bands(_Con([]), "D", {"bands": {}})
     assert got == ["elementary"]
 
 
@@ -141,6 +173,68 @@ def test_the_cheap_route_seeds_a_gate6_draft(monkeypatch):
     assert added == [("draft_00007", "1200180")]
     assert json.loads(con.events[0]["fingerprints_json"])["route"] == "8->6"
     assert con.events[0]["batch_id"] is None        # a draft is not a batch
+
+
+def test_a_domainless_district_routes_geo_not_into_the_229_wall(monkeypatch):
+    """#752: the scope is a DIAGNOSIS (#719/#726), not a hardcoded "domain". A domain-less district's
+    8->1 used to hit build_followup_batch's #229 refusal and dead-end — for exactly the class geo
+    exists for, with the human explicitly asking for rediscovery."""
+    _stub_compose(monkeypatch)
+    monkeypatch.setattr(SB.Q1, "usable_scoping_domains",
+                        lambda year, dids, dd: {d: ("", "") for d in dids})
+    seen = {}
+    monkeypatch.setattr(SB.Q1, "build_followup_batch",
+                        lambda year, bid, targets, **kw: (seen.update(kw) or
+                                                          ({"districts": [{"district_id": "1602100",
+                                                                           "schools": [1]}]}, [])))
+    out = SB.route_send_back("1602100", route=SB.ROUTE_REDISCOVER,
+                             session=_con_for({**SENT_BACK, "district_id": "1602100"}))
+    assert out["ok"] and out["scope"] == "geo" and seen["scope"] == "geo"
+
+    monkeypatch.setattr(SB.Q1, "usable_scoping_domains",
+                        lambda year, dids, dd: {d: ("westada.org", "discovered") for d in dids})
+    out2 = SB.route_send_back("1602100", route=SB.ROUTE_REDISCOVER,
+                              session=_con_for({**SENT_BACK, "district_id": "1602100"}))
+    assert out2["ok"] and out2["scope"] == "domain" and seen["scope"] == "domain"
+
+
+def test_the_composer_signs_the_batch_it_mints(monkeypatch):
+    """#764: followup_rounds counts every approved follow-up batch toward the shared escalation
+    ladder regardless of composer (deliberate — spend is spend), so the batch must DECLARE who
+    composed it, or an exhausted ladder is unexplainable."""
+    _stub_compose(monkeypatch)
+    docs = []
+    monkeypatch.setattr(SB.BSTORE, "create_batch", lambda s, doc, **kw: docs.append(doc))
+    monkeypatch.setattr(SB.Q1, "build_followup_batch",
+                        lambda year, bid, targets, **kw: (
+                            {"districts": [{"district_id": "1200180", "schools": [1]}]}, []))
+    SB.route_send_back("1200180", route=SB.ROUTE_REDISCOVER, session=_con_for())
+    assert docs and "8->1 send-back routing (approval 1568)" in docs[0]["composed_by"]
+    assert "the sample is thin" in docs[0]["composed_by"]
+
+
+def test_the_free_alternate_rep_is_surfaced_before_spending_on_discovery(monkeypatch):
+    """#769: the #159 hold is SURFACED, never enforced — an 8->1 is the human's explicit choice, but
+    the human deserves to see that a free, already-captured alternate rep (an open 7->6) is sitting
+    unexecuted before spending on new discovery."""
+    _stub_compose(monkeypatch)
+    monkeypatch.setattr(SB.EX7, "_defer_76_districts", lambda s, dids, maxr: set(dids))
+    out = SB.route_send_back("1200180", route=SB.ROUTE_REDISCOVER, dry_run=True,
+                             session=_con_for())
+    assert out["ok"] and out["open_76"] is True         # surfaced, not refused
+
+
+def test_the_route_takes_the_per_district_lock_before_the_already_routed_read(monkeypatch):
+    """#754: the idempotency check is read-then-act over an append-only table with no unique key —
+    two concurrent routes could both read prior=None and mint two artifacts. The advisory
+    transaction lock serializes them; the second waits, reads the first's committed record, refuses.
+    Source-ordering pin: the lock must be taken BEFORE routing_for's read, and only on real runs."""
+    import inspect
+    src = inspect.getsource(SB.route_send_back)
+    assert "pg_advisory_xact_lock" in src
+    assert src.index("pg_advisory_xact_lock") < src.index("routing_for(s, district_id")
+    lock_block = src[src.index("if not dry_run:"):src.index("latest = ")]
+    assert "pg_advisory_xact_lock" in lock_block        # dry-run (read-only) skips the lock
 
 
 # ------------------------------- refusals -------------------------------
@@ -173,6 +267,15 @@ def test_the_same_send_back_never_composes_twice(monkeypatch):
     out = SB.route_send_back("1200180", route=SB.ROUTE_REDISCOVER, session=con)
     assert not out["ok"] and "already routed" in out["reason"] and "batch_00043" in out["reason"]
     assert con.events == []
+    # #761: the refusal is UNIFORM — a dry-run of an already-routed send-back used to fall through
+    # and return a fake fresh preview with no hint the routing already happened.
+    con2 = _RecCon([_Result(rows=[SENT_BACK]),
+                    _Result(rows=[{"outcome": "8->1", "note": "8->1 → batch_00043",
+                                   "fingerprints_json": json.dumps({"approval_id": 1568,
+                                                                    "artifact": "batch_00043"}),
+                                   "created_at": "t"}])])
+    dry = SB.route_send_back("1200180", route=SB.ROUTE_REDISCOVER, dry_run=True, session=con2)
+    assert not dry["ok"] and dry["already_routed"]["artifact"] == "batch_00043"
 
 
 def test_an_uncomposable_district_is_refused_honestly(monkeypatch):
