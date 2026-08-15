@@ -110,6 +110,28 @@ from infrastructure.acquisition.common.school_match import norm_school_strict as
 # #638: ONE canonical HH:MM parser (was a private copy here + another in stage9 provenance).
 from infrastructure.acquisition.common.timeutil import hhmm_to_min as _to_min
 
+def _normalize_ambiguous_end(s, e):
+    """#716: deterministic 12h→24h END normalization at the consensus boundary. A voter that
+    echoes the document's 12-hour clock verbatim ('3:30') parses 720 minutes from a voter that
+    normalized to 24h ('15:30') — near-perfect substantive agreement minted into disagreement at
+    scale (Washoe: 67 of ~106 schools unresolved on exactly this shape). The ambiguity is fully
+    resolvable deterministically in this domain: no school day ENDS between 01:00 and 06:59, so an
+    end inside that window is afternoon: +720. The window is the ONLY trigger (#732 review): every
+    genuine PM-dismissal echo lands in it (12h dismissals 1:00–6:59pm; no real school dismisses
+    after 18:59), so a broader `end < start` rule adds no recall — while it WOULD launder a
+    genuinely garbled/transposed pair (start 13:00 / end 07:45 → a fabricated 19:45 accepted fact)
+    that the plausibility gate correctly routes to unresolved for human review, and could mint an
+    invalid >23:59 clock string. Window max (06:59) + 720 = 18:59, so the result is always a valid
+    time. Applied uniformly to voter AND judge rows, BEFORE clustering, per REQ-054 (time
+    interpretation lives in deterministic code, never in model formatting). Starts are never
+    touched (the symmetric ambiguity doesn't exist: schools start in the morning), and the
+    human-override path (gross_from_times) is deliberately excluded — auto-correcting a human's
+    typo would mask it instead of failing loud."""
+    if s is not None and e is not None and 60 <= e <= 419:
+        e += 720
+    return e
+
+
 def is_plausible(gross):
     """THE plausibility gate (REQ-055): is a gross bell-to-bell minutes/day value inside PLAUSIBLE?
     One predicate, shared by the council path (consensus_school_facts) and the human-override path
@@ -225,6 +247,7 @@ def consensus_school_facts(model_rows, judge_rows=None):
             b = r.get("grade_level");
             if b not in BANDS: continue
             s, e = _to_min(r.get("start_time")), _to_min(r.get("end_time"))
+            e = _normalize_ambiguous_end(s, e)   # #716: 12h echo -> 24h, before clustering
             if s is None or e is None: continue
             key = (b, _norm_school(r.get("school_name")))
             groups.setdefault(key, {}).setdefault(model, []).append((s, e, r.get("start_time"), r.get("end_time"), r))
@@ -235,6 +258,7 @@ def consensus_school_facts(model_rows, judge_rows=None):
                 b = r.get("grade_level")
                 if b not in BANDS: continue
                 s, e = _to_min(r.get("start_time")), _to_min(r.get("end_time"))
+                e = _normalize_ambiguous_end(s, e)   # #716: uniform — judge rows too
                 if s is None or e is None: continue
                 jgroups.setdefault((b, _norm_school(r.get("school_name"))), []).append((s, e, r.get("start_time"), r.get("end_time"), r))
 
