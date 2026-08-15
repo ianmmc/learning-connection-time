@@ -1,10 +1,7 @@
 """Stage 5 ZERO-YIELD escalation — the 5->1 back-edge (#164 PR 3b, governance §11d).
 
 A district can come through discovery+capture+process and land at gate@5 with NOTHING dispatchable —
-zero records worth sending to the paid council, no errors to retry, nothing to triage. The #164
-hypothesis for that shape is that the DOMAIN was the bottleneck (a wrong/stale/absent website), so
-the escalation is a GEO-scoped rediscovery around the district's geography, not another pass over
-the same domain.
+zero records worth sending to the paid council, no errors to retry, nothing to triage.
 
 This is the APP layer (may import across stages). The composer:
 
@@ -13,11 +10,19 @@ This is the APP layer (may import across stages). The composer:
     label blocks the zero-yield conclusion, spend-conservatively) AND no retryable capture failures
     (`not_attempted*`/`not_recovered*` route to the #116 retry instead) AND no fidelity-flagged
     captures (login_wall/soft_404 route to #518 triage instead).
+  * SCOPE = DIAGNOSIS (#719): a district WITH a usable scoping domain (NCES or confirmed
+    discovered) rediscovers DOMAIN-scoped with WIDENED vocabulary — its standard-vocabulary pass
+    already yielded nothing, so the vocabulary, not the domain, is the live hypothesis. Geo is
+    reserved for the Millard class (no usable domain — the job is to DISCOVER one); a geo batch
+    blanks the scoping domain, so for a domain-having district it is a guaranteed #229 no-op.
   * LADDER (position DERIVED from ever-approved follow-up batch history, `batch_store.
-    followup_rounds` — never a stored counter): 0 geo rounds -> geo + standard vocabulary;
-    1 geo round -> geo + WIDENED vocabulary; >=2 -> ladder exhausted: manual flag, no compose.
-  * OUTPUT: ONE geo-scoped DRAFT follow-up batch at gate@1 — the escalation loops are individually
-    gate@1'd (agreed design), so this NEVER auto-flows; Ian reviews the draft like any batch.
+    followup_rounds` — never a stored counter): domain-having — domain rounds < 3 -> domain +
+    widened, >=3 -> exhausted; domain-less — 0 geo rounds -> geo + standard, 1 -> geo + WIDENED,
+    >=2 -> exhausted. Exhausted -> manual flag, no compose (BSTORE.ladder_exhausted, the ONE
+    predicate shared with the 7->1 composer).
+  * OUTPUT: up to TWO scope-pure DRAFT follow-up batches at gate@1 (domain + geo, mirroring the
+    7->1 scope split) — the escalation loops are individually gate@1'd (agreed design), so this
+    NEVER auto-flows; Ian reviews each draft like any batch.
 
 CLI-first per the ramp-up model; the console endpoint wraps the same function.
 """
@@ -27,6 +32,7 @@ from sqlalchemy import select, text
 
 from infrastructure.acquisition.common import batch_types as BT
 from infrastructure.acquisition.common import db as gdb
+from infrastructure.acquisition.common import discovered_domain as DDOM
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.process_governance.stage7_execute import _flag_escalation_exhausted
 from infrastructure.acquisition.stage1_queue import batch_store as BSTORE
@@ -101,61 +107,96 @@ def compose_zero_yield(batch_id: str, *, actor: str = "ian", session=None, dry_r
                                            "discovery, so zero-yield is undefined for it"}
         eligible, ineligible = _survey(s, b)
         if not eligible:
-            return {"ok": True, "batch_id": None, "n_districts": 0, "ineligible": ineligible,
-                    "flagged": [], "skipped": [], "ladder": {}}
+            return {"ok": True, "batch_id": None, "batches": [], "n_districts": 0,
+                    "ineligible": ineligible, "flagged": [], "skipped": [], "ladder": {}}
 
-        rounds = BSTORE.followup_rounds(s, [d.district_id for d in eligible])
-        compose_rows, widen_dids, flagged = [], set(), []
-        ladder = {}
+        year = b.nces_year or "2024_25"
+        eligible_dids = [d.district_id for d in eligible]
+        rounds = BSTORE.followup_rounds(s, eligible_dids)
+        # #719: the scope DIAGNOSIS — dual-source, via the ONE shared resolution rule.
+        dd = DDOM.all_confirmed(s)
+        domains = Q1.usable_scoping_domains(year, eligible_dids, dd)
+        compose_rows = {"domain": [], "geo": []}
+        widen_dids, flagged, ladder = set(), [], {}
         names = {d.district_id: d.name for d in eligible}   # #572: human-readable modal labels
         for d in eligible:
             rr = rounds[d.district_id]
-            # #575 review: exhaustion is the ONE shared predicate (BSTORE.geo_ladder_exhausted) —
+            hd = bool(domains[d.district_id][0])
+            # #575 review: exhaustion is the ONE shared predicate (BSTORE.ladder_exhausted) —
             # this composer must never disagree with the 7->1 scope-split composer about the same
             # district's ladder position.
-            if BSTORE.geo_ladder_exhausted(rr):
+            if BSTORE.ladder_exhausted(rr, has_domain=hd):
                 flagged.append({"district_id": d.district_id, "name": d.name,
-                                "reason": (f"5->1 ladder exhausted: {rr['geo']} geo follow-up "
-                                           "round(s) already approved — manually flagged")})
+                                "reason": (f"5->1 ladder exhausted ({'domain' if hd else 'geo'} "
+                                           f"ladder): {rr['domain']} domain + {rr['geo']} geo "
+                                           "follow-up round(s) already approved — manually flagged")})
                 ladder[d.district_id] = "manual_flag"
+            elif hd:
+                # #719: zero-yield WITH a usable domain = the standard vocabulary already failed
+                # on-domain; re-search the SAME domain with widened vocabulary. Geo would blank
+                # the scoping domain and #229-refuse everything.
+                compose_rows["domain"].append(d)
+                widen_dids.add(d.district_id)
+                ladder[d.district_id] = "domain+widened"
             elif rr["geo"] == 0:
-                compose_rows.append(d)
+                compose_rows["geo"].append(d)
                 ladder[d.district_id] = "geo+standard"
             else:
-                compose_rows.append(d)
+                compose_rows["geo"].append(d)
                 widen_dids.add(d.district_id)
                 ladder[d.district_id] = "geo+widened"
         if flagged and not dry_run:
             _flag_escalation_exhausted(s, [f["district_id"] for f in flagged], rounds)
-        if not compose_rows:
-            return {"ok": True, "batch_id": None, "n_districts": 0, "ineligible": ineligible,
-                    "flagged": flagged, "skipped": [], "ladder": ladder, "names": names}
+        if not (compose_rows["domain"] or compose_rows["geo"]):
+            return {"ok": True, "batch_id": None, "batches": [], "n_districts": 0,
+                    "ineligible": ineligible, "flagged": flagged, "skipped": [],
+                    "ladder": ladder, "names": names}
 
-        pre_targets = {d.district_id: list(d.lea_claimed_bands or []) for d in compose_rows}
-        new_bid = f"batch_{BSTORE.next_batch_number(s):05d}"
-        doc, skipped = Q1.build_followup_batch(b.nces_year or "2024_25", new_bid, pre_targets,
-                                               scope="geo", force_widen_dids=widen_dids)
-        if not doc["districts"]:
-            return {"ok": True, "batch_id": None, "n_districts": 0, "ineligible": ineligible,
-                    "flagged": flagged, "skipped": skipped, "ladder": ladder, "names": names}
-        # #575 review: `targets` must reflect who actually SURVIVED build_followup_batch, not the
-        # pre-build candidate set — a claimed band with no NCES school-level coverage gets silently
-        # dropped into `skipped`, and the gate@1 dry-run preview must never show it as composable.
-        survived = {d["district_id"] for d in doc["districts"]}
-        targets = {did: bands for did, bands in pre_targets.items() if did in survived}
-        if dry_run:
-            return {"ok": True, "batch_id": new_bid, "dry_run": True, "scope": "geo",
-                    "n_districts": len(doc["districts"]), "ladder": ladder, "names": names,
+        # Up to TWO scope-pure batches (mirroring the 7->1 scope split): numbers reserved
+        # consecutively, domain first.
+        base_n = BSTORE.next_batch_number(s)
+        composed, skipped, targets, batch_districts = [], [], {}, []
+        for scope in ("domain", "geo"):
+            rows_g = compose_rows[scope]
+            if not rows_g:
+                continue
+            pre_targets = {d.district_id: list(d.lea_claimed_bands or []) for d in rows_g}
+            bid = f"batch_{base_n + len(composed):05d}"
+            doc, skipped_g = Q1.build_followup_batch(year, bid, pre_targets, scope=scope,
+                                                     discovered_domains=dd,
+                                                     force_widen_dids=(widen_dids & set(pre_targets)))
+            skipped.extend(skipped_g)
+            if not doc["districts"]:            # every district of this scope was un-buildable
+                continue
+            # #575 review: `targets` must reflect who actually SURVIVED build_followup_batch, not
+            # the pre-build candidate set — a claimed band with no NCES school-level coverage gets
+            # silently dropped into `skipped`, and the gate@1 dry-run preview must never show it
+            # as composable.
+            survived = {d["district_id"] for d in doc["districts"]}
+            targets.update({did: bands for did, bands in pre_targets.items() if did in survived})
+            composed.append({"batch_id": bid, "scope": scope, "doc": doc,
+                             "n_districts": len(doc["districts"])})
+            batch_districts.extend({"district_id": d["district_id"], "name": d.get("name", ""),
+                                    "state": d.get("state", ""), "batch_id": bid}
+                                   for d in doc["districts"])
+        if not composed:
+            return {"ok": True, "batch_id": None, "batches": [], "n_districts": 0,
                     "ineligible": ineligible, "flagged": flagged, "skipped": skipped,
-                    "targets": targets}
-        BSTORE.create_batch(s, doc, batch_type=BT.FOLLOW_UP, actor=actor,
-                            redo_attempted=BT.default_redo_attempted(BT.FOLLOW_UP))
-        return {"ok": True, "batch_id": new_bid, "scope": "geo",
-                "n_districts": len(doc["districts"]), "ladder": ladder, "names": names,
-                "ineligible": ineligible, "flagged": flagged, "skipped": skipped,
-                "targets": targets,
-                "_batch_districts": [{"district_id": d["district_id"], "name": d.get("name", ""),
-                                      "state": d.get("state", "")} for d in doc["districts"]]}
+                    "ladder": ladder, "names": names}
+        n_districts = sum(c["n_districts"] for c in composed)
+        batches_out = [{"batch_id": c["batch_id"], "scope": c["scope"],
+                        "n_districts": c["n_districts"]} for c in composed]
+        # `batch_id` stays the first composed batch — the console's post-compose focus target.
+        common = {"ok": True, "batch_id": composed[0]["batch_id"], "batches": batches_out,
+                  "n_districts": n_districts, "ladder": ladder, "names": names,
+                  "ineligible": ineligible, "flagged": flagged, "skipped": skipped,
+                  "targets": targets}
+        if dry_run:
+            return {**common, "dry_run": True}
+        for c in composed:
+            BSTORE.create_batch(s, c["doc"], batch_type=BT.FOLLOW_UP, actor=actor,
+                                redo_attempted=BT.default_redo_attempted(BT.FOLLOW_UP))
+        return {**common, "_batch_districts": batch_districts}
 
     if session is not None:
         out = _work(session)
@@ -170,12 +211,13 @@ def compose_zero_yield(batch_id: str, *, actor: str = "ian", session=None, dry_r
         # Post-commit, best-effort (file-last): receipt + registry regenerable from the DB.
         try:
             with gdb.session_scope() as s:
-                BSTORE.write_receipt(s, out["batch_id"])
+                for c in out.get("batches", []):
+                    BSTORE.write_receipt(s, c["batch_id"])
             registry = DS.load()
             for d in batch_districts:
                 DS.record_stage(registry, d["district_id"], d["name"], d["state"],
                                 stage=1, stage_name="queue", outcome="queued",
-                                batch_id=out["batch_id"])
+                                batch_id=d["batch_id"])   # #719: ITS batch of the scope split
             DS.save(registry)
         except Exception as e:  # noqa: BLE001 — receipts/registry are regenerable; the DB committed
             print(f"[warn] zero-yield receipt/registry refresh failed ({type(e).__name__}: {e}); "
@@ -196,8 +238,9 @@ def main():
         return
     if out.get("batch_id"):
         tag = " (DRY RUN — nothing persisted)" if out.get("dry_run") else ""
-        print(f"Geo escalation draft {out['batch_id']}: {out['n_districts']} district(s){tag}. "
-              f"Review at gate@1 (never auto-flowed).")
+        for c in out.get("batches", []):
+            print(f"Escalation draft {c['batch_id']} ({c['scope']}-scoped): "
+                  f"{c['n_districts']} district(s){tag}. Review at gate@1 (never auto-flowed).")
         for did, rung in out.get("ladder", {}).items():
             print(f"  {did}: {rung}")
     else:

@@ -574,19 +574,23 @@ def _preview_districts(batch_doc: dict) -> list:
 
 
 def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff_hash: str = None,
-                           cap: int = 12, session=None, dry_run: bool = False) -> dict:
+                           cap: int = 12, session=None, dry_run: bool = False,
+                           priority_district: str = None) -> dict:
     """Sweep APPROVED 7->2/7->3/7->1 directives into targeted, DRAFT Stage-1 follow-up batch(es)
     (reviewable at gate@1), flipping the swept directives to 'executed' with THEIR district's
     batch_id as `executed_ref`. Directives of BENCHMARK PROVENANCE are EXCLUDED — the wall (#134),
     re-keyed from district membership to the directive's own provenance (#619).
     Scope to one run with `handoff_hash`, else all approved NEW-work directives.
 
-    #164 PR 3b — the 7->1 second-loop scope split: a target district's ladder position is derived
-    from its ever-approved follow-up history (`batch_store.followup_rounds`): 0 rounds -> the
-    domain-scoped batch (loop 1, unchanged); >=1 round, geo not yet exhausted
-    (`batch_store.geo_ladder_exhausted`, shared with the 5->1 zero-yield composer, #575) ->
-    a GEO-scoped batch with forced-widened vocabulary (loop 2); geo ladder exhausted -> the
-    directive is auto-rejected + the district gets an unresolved followup_flag (manual review).
+    #164 PR 3b / #719 — the 7->1 scope split, DIAGNOSIS-keyed: a district WITH a usable scoping
+    domain (NCES or confirmed discovered) always composes into the DOMAIN-scoped batch — its
+    escalation is widened vocabulary within that domain (>=1 ever-approved follow-up round,
+    `batch_store.followup_rounds`); a district WITHOUT one composes into the GEO-scoped batch
+    (standard vocabulary first, widened on its second round). Ladder exhausted
+    (`batch_store.ladder_exhausted`, shared with the 5->1 zero-yield composer, #575: domain
+    ladder >=3 domain rounds, geo ladder >=2 geo rounds) -> the directive is auto-rejected + the
+    district gets an unresolved followup_flag (manual review). The pre-#719 rule escalated to geo
+    on ROUND COUNT, which blanked a good domain and guaranteed a 100% #229 refusal.
     Scope-purity means one compose can emit up to TWO batches (`batches` in the result); the
     legacy top-level batch_id/n_* fields carry the first batch id + the totals.
 
@@ -605,6 +609,13 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
     def _work(s) -> dict:
         ca_cache: dict = {}    # one closing-argument load per district per compose (shared below)
         g = _gather(s, handoff_hash, b.max_request_rounds, ca_cache=ca_cache)
+        if priority_district:
+            # #736 review: the unscoped sweep (#715) draws its cap-limited batch from EVERY
+            # approved directive system-wide, oldest-first — so a human who just approved a
+            # directive and clicked Compose from THAT district's screen could watch 12 older
+            # unrelated directives compose while their own spilled. A stable sort floats the
+            # viewed district's rows to the front of the cap; all other ordering is preserved.
+            g.rows.sort(key=lambda r: r["district_id"] != priority_district)
         if not g.rows:
             return {**_empty_result(), "benchmark_excluded": g.benchmark_excluded}
 
@@ -628,25 +639,42 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
 
         # ------- #164 PR 3b: the 7->1 second-loop SCOPE SPLIT (the escalation ladder's compose leg).
         # Ladder position is DERIVED from ever-approved follow-up batch history (never a stored
-        # counter): 0 prior rounds -> domain-scoped follow-up (loop 1, current behavior); >=1 prior
-        # round with no geo round yet -> escalate to GEO + widened vocabulary (loop 2 — hypothesis:
-        # page-finding, not the domain, was fine; now try the open web around the district's
-        # geography); a geo round already ran -> the ladder is exhausted: manual flag, no compose.
+        # counter). #719: the scope is a DIAGNOSIS, not a rung — a district WITH a usable scoping
+        # domain (NCES or confirmed discovered) ALWAYS composes domain-scoped, escalating by
+        # WIDENED VOCABULARY within its domain (>=1 prior round -> widen); geo is reserved for the
+        # Millard class (no usable domain — the job is to DISCOVER one). The pre-#719 rule
+        # ((domain+geo)>=1 -> geo) escalated on round count alone, so making normal progress sent
+        # a domain-having district to a geo round that blanks its scoping domain — Stage 2's #229
+        # gate then refuses 100% of results (measured: 6 batches / 70 schools / 0 resolved).
         # Scope-purity (a batch is domain XOR geo by construction) means one compose can emit up to
         # TWO batches; each directive's executed_ref is ITS district's batch — two reservations,
         # ONE transaction.
         target_dids = list(plan["targets"])
         rounds = BSTORE.followup_rounds(s, target_dids)
-        # #575 review: exhaustion is the ONE shared predicate (BSTORE.geo_ladder_exhausted) — this
+        # #164 review: the dual-source guard is only as good as its inputs — without this, a
+        # human-confirmed discovered domain was invisible to every automatic back-edge sweep and
+        # the district hit the #229 skip forever. (#719: now also the scope diagnosis input.)
+        dd = DDOM.all_confirmed(s)
+        domains = Q1.usable_scoping_domains(year, target_dids, dd)
+        has_domain = {d: bool(domains[d][0]) for d in target_dids}
+        # #575 review: exhaustion is the ONE shared predicate (BSTORE.ladder_exhausted) — this
         # composer must never disagree with the 5->1 zero-yield composer about the same district.
-        exhausted_dids = [d for d in target_dids if BSTORE.geo_ladder_exhausted(rounds[d])]
-        geo_dids = [d for d in target_dids
-                    if d not in exhausted_dids and (rounds[d]["domain"] + rounds[d]["geo"]) >= 1]
-        domain_dids = [d for d in target_dids if d not in exhausted_dids and d not in geo_dids]
+        exhausted_dids = [d for d in target_dids
+                          if BSTORE.ladder_exhausted(rounds[d], has_domain=has_domain[d])]
+        geo_dids = [d for d in target_dids if d not in exhausted_dids and not has_domain[d]]
+        domain_dids = [d for d in target_dids if d not in exhausted_dids and has_domain[d]]
+        # #737 review: widening counts the SAME scope-pure rounds the exhaustion predicate does —
+        # a domain-having district widens on its DOMAIN rounds only (a pre-#719 misrouted geo
+        # round never touched its domain, so it must not burn the district's one standard-
+        # vocabulary pass), and a domain-less district on its GEO rounds only.
+        widen_dids = ({d for d in domain_dids if rounds[d]["domain"] >= 1} |
+                      {d for d in geo_dids if rounds[d]["geo"] >= 1})
         did_by_id = {r["request_id"]: r["district_id"] for r in g.rows}
         escalation_exhausted = [
             {"request_id": rid, "district_id": did_by_id[rid], "band": None, "route": None,
-             "reason": (f"7->1 escalation exhausted: {rounds[did_by_id[rid]]['domain']} domain + "
+             "reason": (f"7->1 escalation exhausted "
+                        f"({'domain' if has_domain[did_by_id[rid]] else 'geo'} ladder): "
+                        f"{rounds[did_by_id[rid]]['domain']} domain + "
                         f"{rounds[did_by_id[rid]]['geo']} geo follow-up round(s) already approved — "
                         "manually flagged for review")}
             for rid in plan["swept_ids"] if did_by_id[rid] in exhausted_dids]
@@ -669,10 +697,8 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
                         for did, bands in plan["targets"].items() if unfilled.get(did)}
         slot_targets = {did: m for did, m in slot_targets.items() if m}
         plan["slot_targets"] = slot_targets
-        # #164 review: the dual-source guard is only as good as its inputs — without this, a
-        # human-confirmed discovered domain was invisible to every automatic back-edge sweep and
-        # the district hit the #229 skip forever.
-        dd = DDOM.all_confirmed(s)
+        # (dd — the confirmed discovered-domain map — was loaded above for the #719 scope
+        # diagnosis; the same load feeds the builder's dual-source #229 guard here.)
 
         base_n = int(g.batch_id[6:])              # _gather reserved the first free number
         composed, skipped = [], []
@@ -684,7 +710,10 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
                 year, bid, {d: plan["targets"][d] for d in dids},
                 attempted_by_did=attempted, seed_urls_by_did=seed_urls,
                 preferred_by_did=slot_targets, scope=scope, discovered_domains=dd,
-                force_widen_dids=(set(dids) if scope == "geo" else None))
+                # #719: widening is the ESCALATION (>=1 prior round), orthogonal to scope — a
+                # domain district's round 2+ re-searches its own domain with widened vocabulary;
+                # a geo district's first round runs standard (the 5->1 composer's own rung 1).
+                force_widen_dids=(widen_dids & set(dids)) or None)
             skipped.extend(skipped_g)
             if not doc["districts"]:              # every district of this scope was un-buildable
                 continue

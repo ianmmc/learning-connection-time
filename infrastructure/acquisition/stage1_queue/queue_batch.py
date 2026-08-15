@@ -186,6 +186,16 @@ def resolve_scoping_domain(website: str, did: str, discovered_domains: dict) -> 
     return "", ""
 
 
+def usable_scoping_domains(year: str, dids: list, discovered_domains: dict) -> dict:
+    """{district_id: (domain, source)} via the ONE dual-source rule (resolve_scoping_domain) —
+    the escalation composers' DIAGNOSIS input (#719): a follow-up's scope is chosen by whether a
+    usable scoping domain EXISTS, never by round count. A district absent from the year's LEA
+    file resolves like a blank website (('', '')) — the geo pool."""
+    lea = S.lea_info(year)
+    return {d: resolve_scoping_domain(lea.get(d, {}).get("website", ""), d, discovered_domains)
+            for d in dids}
+
+
 def scope_pool_counts(year: str, registry: dict, discovered_domains: dict) -> dict:
     """The geo_interleaved draw weights (#164 PR 3b): how many eligible first-run districts have a
     usable scoping domain (either source) vs none. {'domain': n, 'geo': n_blank} — the 'geo' count
@@ -419,6 +429,18 @@ def build_followup_batch(year: str, batch_id: str, targets: dict, *,
         domain, domain_source = resolve_scoping_domain(info["website"], did, discovered_domains)
         if scope == "domain" and not domain:
             skipped.append({"district_id": did, "reason": "no usable scoping domain -- would run UNSCOPED discovery (#229)"})
+            continue
+        # #719: the inverse guard — a geo batch for a district that HAS a usable domain is
+        # unrepresentable. Geo blanks the scoping domain, so Stage 2's #229 gate refuses every
+        # result: a guaranteed no-op that still spends SERP budget (measured: 6 batches, 70
+        # schools, 0 resolved, while providers returned exact on-domain hits). Geo exists for
+        # the Millard class (no usable domain, job = DISCOVER one); a domain-having district
+        # that needs another round gets a DOMAIN-scoped round with widened vocabulary.
+        if scope == "geo" and domain:
+            skipped.append({"district_id": did,
+                            "reason": (f"geo compose refused: usable scoping domain {domain} "
+                                       f"({domain_source}) exists — geo is for domain-less "
+                                       "districts; compose domain-scoped instead (#719)")})
             continue
         dsi = sch_idx.get(did, {})
         want = [b for b in BANDS if b in set(targets[did]) and dsi.get(b)]   # normalize + drop empties
