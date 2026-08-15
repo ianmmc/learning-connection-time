@@ -6,6 +6,9 @@ on:
   # No base-branch filter: a stacked PR (base = a feature branch) must still get CI —
   # the #251 incident PR ran zero checks because this used to be `branches: [main]`.
   pull_request:
+  # #722: nightly run so a red main is detected within 24h even with no pushes (see test.yml).
+  schedule:
+    - cron: '17 9 * * *'
 
 jobs:
   lint:

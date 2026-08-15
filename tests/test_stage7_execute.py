@@ -1,7 +1,19 @@
 """Stage 7 request-more-evidence EXECUTION planning (REQ-118) — the PURE collect/guard/cap logic that
 turns approved NEW-work directives into a targeted follow-up-batch plan. No DB/network; the DB glue
 (compose_followup_batch) is orchestration over this. Mirrors test_stage7_requests.py's pure style."""
+import pytest
+
 from infrastructure.acquisition.process_governance import stage7_execute as EX
+
+
+@pytest.fixture(autouse=True)
+def _domain_diagnosis_default(monkeypatch):
+    """#719: compose's scope diagnosis (Q1.usable_scoping_domains) reads the on-disk NCES LEA CSV,
+    absent on CI — stub it so every test district resolves as DOMAIN-HAVING (the pre-#719 round-0
+    behavior these tests were written against: 0 prior rounds -> the domain-scoped batch).
+    Escalation-path tests that need domain-less districts override in test_escalation_ladders."""
+    monkeypatch.setattr(EX.Q1, "usable_scoping_domains",
+                        lambda year, dids, dd: {d: ("zz-test.org", "nces") for d in dids})
 
 
 def _req(request_id, district_id, route="7->2", band="high"):
@@ -92,7 +104,6 @@ def test_district_order_is_first_seen_preserving_attention_sort():
 # NCES/LCT-heavy build (build_followup_batch) + persist (persist_batch) are stubbed; this asserts the
 # orchestration + that swept directives flip to 'executed' with the batch_id as executed_ref. ---
 import json  # noqa: E402
-import pytest  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 from infrastructure.acquisition.common import benchmark as BM  # noqa: E402
 from infrastructure.acquisition.common import db as gdb  # noqa: E402
@@ -170,6 +181,71 @@ def _seed_req(s, hh, did, route, band, status="approved"):
         "INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, target, band, "
         "reason, status, created_at) VALUES (:d, :h, 'district', :r, :d, :b, 'test', :st, :ts)"),
         {"d": did, "h": hh, "r": route, "b": band, "st": status, "ts": _M7.utcnow()})
+
+
+@govdb
+def test_compose_unscoped_sweeps_directives_across_handoffs(gov_session, monkeypatch):
+    """#715 must-fail-today shape: the #159 design order (7->6s execute first, each minting a NEW
+    handoff) means an approved 7->2's raising hash ≠ the currently-viewed run's. The console now
+    always composes UNSCOPED (handoff_hash=None), which must sweep approved NEW-work from BOTH
+    runs — the hash-scoped sweep found zero rows for Lewiston's 2 approved directives."""
+    gdb.init_precious_schema()
+    s = gov_session
+    _seed_req(s, "zz715_runA", "ZZ715A", "7->2", "elementary")   # raised on run A
+    _seed_req(s, "zz715_runB", "ZZ715B", "7->2", "high")         # raised on run B
+    s.flush()
+    # the seam that caused #715 is _approved_newwork's hash scoping — pin its population semantics
+    # (subset assertions: the shared gov DB may hold other live approved rows; rollback fixture)
+    unscoped = {r["district_id"] for r in EX._approved_newwork(s, None)}
+    assert {"ZZ715A", "ZZ715B"} <= unscoped                      # both runs' directives swept
+    scoped_a = {r["district_id"] for r in EX._approved_newwork(s, "zz715_runA")}
+    assert scoped_a == {"ZZ715A"}                                # the old scoped sweep misses run B
+    assert "ZZ715B" not in scoped_a
+
+
+@govdb
+def test_compose_priority_district_fronts_the_cap(gov_session, monkeypatch):
+    """#736: the unscoped sweep is capped at 12 districts oldest-first — without priority, a
+    just-approved directive from the viewed district (newest request_id) spills while 12 older
+    unrelated ones compose. priority_district floats the viewed district ahead of the cap."""
+    gdb.init_precious_schema()
+    s = gov_session
+    for i in range(12):                                   # 12 older districts, all approved
+        _seed_req(s, "zz736old", f"ZZ736O{i:02d}", "7->2", "high")
+    _seed_req(s, "zz736new", "ZZ736ME", "7->2", "high")   # the human's own, newest request_id
+    s.flush()
+    monkeypatch.setattr(EX.Q1, "build_followup_batch",
+                        lambda year, bid, targets, **kw: ({"batch_id": bid, "districts":
+                            [{"district_id": d} for d in targets]}, []))
+    monkeypatch.setattr(EX.BSTORE, "create_batch", lambda sess, doc, **k: None)
+    # scope the sweep to this test's rows only (the live/CI DB may hold other approved work):
+    real_gather = EX._gather
+    def scoped_gather(sess, hh, mr, **kw):
+        g = real_gather(sess, hh, mr, **kw)
+        g.rows[:] = [r for r in g.rows if r["district_id"].startswith("ZZ736")]
+        return g
+    monkeypatch.setattr(EX, "_gather", scoped_gather)
+
+    out = EX.compose_followup_batch(actor="zz", session=s, dry_run=True)   # no priority
+    assert "ZZ736ME" not in out["targets"]                # the must-fail-today shape: spilled
+    assert any(sp["district_id"] == "ZZ736ME" for sp in out["spilled"])
+    out = EX.compose_followup_batch(actor="zz", session=s, dry_run=True,
+                                    priority_district="ZZ736ME")
+    assert "ZZ736ME" in out["targets"]                    # fronts the cap; one old one spills
+    assert len(out["targets"]) == 12
+
+
+def test_stage7_js_compose_button_is_unscoped_715():
+    """#715 source pin (no JS harness): the compose button must carry NO handoff hash — the
+    count-one-population/sweep-another mismatch was `data-compose="${e.handoff_hash}"` + a scoped
+    server sweep. A hash reappearing on the button silently reintroduces the disjoint sweep."""
+    from pathlib import Path
+    js = (Path(__file__).parent.parent /
+          "infrastructure/acquisition/process_governance/static/stage7.js").read_text()
+    assert "data-compose>" in js, "compose button lost its (hash-less) data-compose attribute"
+    assert 'data-compose="${' not in js, "#715 regression: the compose button carries a handoff hash again"
+    assert "composeFollowup(null, did)" in js, "#715: the click path must request the UNSCOPED sweep"
+    assert "sweeps all districts" in js, "#715: the button copy must say the sweep is cross-district"
 
 
 @govdb

@@ -559,9 +559,19 @@ def finish_district(district: dict, roster: list, batch_id: str, registry: dict,
     docs: dict = {}
     write_discovery(district, roster, batch_id, merge=merge, geo_receipt=geo_receipt, docs_out=docs)
     outcome = district_outcome(roster)
+    # #734 (#719 review): a geo run whose derivation failed with provider hits in hand must leave a
+    # DURABLE trace — the runner's loud job-log block and event feed die with the process, and the
+    # outcome string alone reads as an ordinary manual_flag_all ("total failure wearing a normal
+    # outcome's clothes"). The state_event note + the discovery.json geo_discovery receipt (outcome
+    # + full tally, written above) together let any later reader distinguish "providers found N
+    # hits, all #229-refused" from a genuine zero-hit flag.
+    notes = ""
+    if district.get("_geo_refused"):
+        notes = (f"geo_derivation_failed: {district['_geo_refused']} provider result(s) refused "
+                 "no-scoping-domain (#229/#719) — see discovery.json geo_discovery")
     DS.record_stage(
         registry, district["district_id"], district["name"], district["state"],
-        stage=2, stage_name="discover", outcome=outcome, batch_id=batch_id,
+        stage=2, stage_name="discover", outcome=outcome, batch_id=batch_id, notes=notes,
     )
     # Project this district's funnel into the live DB cache so the console reads fresh rows without
     # waiting for a Stage-5 ingest, from the just-built docs — no write-then-reread round-trip off disk
