@@ -38,11 +38,13 @@ import json
 from sqlalchemy import text
 
 from infrastructure.acquisition.common import batch_types as BT
+from infrastructure.acquisition.common import budget as BUD
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import discovered_domain as DDOM
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common.timeutil import utcnow
 from infrastructure.acquisition.process_governance import stage6_draft_store as DSTORE6
+from infrastructure.acquisition.process_governance import stage7_execute as EX7
 from infrastructure.acquisition.process_governance.stage7_execute import (
     _attempted_schools,
     _district_target_bands,
@@ -61,27 +63,33 @@ ROUTED_CHECKPOINT = "send_back_routed"
 
 
 def _target_bands(session, district_id: str, ca: dict) -> list:
-    """The bands an 8->1 re-targets, most-specific first:
+    """The bands an 8->1 re-targets: every band in the pool that is not REQ-149 SATISFIED.
 
-    UNSATISFIED claimed bands when the closing argument names any — the send-back's own diagnosis.
-    Otherwise EVERY band the district really serves: a send-back with all bands nominally satisfied
-    is the thin-evidence shape (Broward: 231 schools, 1 dispatched rep), where "which band is wrong"
-    is exactly what the human could not say, so re-targeting the whole district is the honest read of
-    the instruction.
+    The signal is REQ-149's per-band `satisfied` flag on the live closing argument — the SAME
+    coverage/plurality test the 7->2 compose gate suppresses spend on (#771). The earlier draft keyed
+    on `negative_space.unsatisfied_bands`, a cruder zero-facts-only signal: one thin fact removed a
+    band from it, so a genuinely thin band was silently EXCLUDED from the re-target whenever a
+    zero-fact sibling eclipsed it — precisely the band a thin-sample send-back is about. Under the
+    REQ-149 rule zero-fact and thin-but-unsatisfied bands are both targets, and only a confidently
+    resolved band is spared re-discovery.
 
-    `real` (the bands ≥1 real school actually serves) over `claimed` wherever known — the same
-    definition the 7->2 compose gate uses, so this can never target a phantom band it disagrees with
-    the detector about."""
-    unsat = list((ca.get("negative_space") or {}).get("unsatisfied_bands") or [])
+    If EVERYTHING is satisfied (odd for a send-back, but the human explicitly asked), fall back to the
+    whole pool — the Broward thin-evidence read: re-target the district rather than refuse.
+
+    The pool: `real` (the bands ≥1 real school actually serves) by MEMBERSHIP, never truthiness
+    (#757) — `real_bands_for_district` can legitimately return an EMPTY set for a present district
+    (zero-school rosters, a crosswalk-degenerate record), and that is an authoritative "no real
+    bands", not an invitation to fall back to phantom claimed bands. Same membership idiom as the
+    sibling compose gate (`did not in real_bands or b in real_bands[did]`)."""
     claimed, real, _ = _district_target_bands(session, [district_id])
-    pool = list(real.get(district_id) or claimed.get(district_id) or [])
-    if unsat:
-        # keep the pool's order/authority; an unsatisfied band the district doesn't really serve is
-        # a phantom the compose gate would drop anyway
-        in_pool = [b for b in pool if b in unsat]
-        if in_pool:
-            return in_pool
-    return pool
+    if district_id in real:
+        pool = list(real[district_id])
+    else:
+        pool = list(claimed.get(district_id) or [])
+    satisfied = {b for b, ob in (ca.get("bands") or {}).items()
+                 if ((ob or {}).get("satisfied") or {}).get("satisfied")}
+    targets = [b for b in pool if b not in satisfied]
+    return targets or pool
 
 
 def _record_routing(session, district_id, *, route, approval_id, artifact, actor, reason,
@@ -126,6 +134,15 @@ def route_send_back(district_id: str, *, route: str, actor: str = "ian", year: s
         return {"ok": False, "reason": f"route must be one of {ROUTES} (got {route!r})"}
 
     def _work(s) -> dict:
+        if not dry_run:
+            # #754: the already-routed check below is a read-then-act; two concurrent routes for the
+            # same send-back (two tabs, a double-POST) could both read `prior=None` and mint two
+            # artifacts, with routing_for's newest-first read silently masking the first. state_event
+            # is append-only by design (no unique key to lean on), so serialize the check+compose in
+            # a per-district transaction-scoped advisory lock: the second route waits, then reads the
+            # first's committed record and refuses honestly. Dry-run skips the lock (read-only).
+            s.execute(text("SELECT pg_advisory_xact_lock(hashtext('sendback:' || CAST(:d AS text)))"),
+                      {"d": district_id})
         latest = APV8.latest_decision(s, district_id)
         if not latest:
             return {"ok": False, "reason": f"{district_id} has no gate@8 decision to route"}
@@ -135,7 +152,10 @@ def route_send_back(district_id: str, *, route: str, actor: str = "ian", year: s
                                             "send-back has a back-edge to route")}
         approval_id = latest["approval_id"]
         prior = routing_for(s, district_id, approval_id)
-        if prior and not dry_run:
+        if prior:
+            # #761: refuse UNIFORMLY — a dry-run of an already-routed send-back used to fall through
+            # and return a fake fresh preview (a batch id that a real call would then refuse to
+            # mint), with nothing in the payload saying the routing already happened.
             return {"ok": False, "reason": (f"this send-back (approval {approval_id}) was already "
                                             f"routed {prior['route']} → {prior['artifact']} — act on "
                                             "that artifact rather than composing a second one"),
@@ -172,23 +192,43 @@ def route_send_back(district_id: str, *, route: str, actor: str = "ian", year: s
         unfilled = _unfilled_slots_now(s, [district_id])
         slot_targets = {did: {b: m[b] for b in bands if b in m} for did, m in unfilled.items()}
         slot_targets = {did: m for did, m in slot_targets.items() if m}
+        # #769: the #159 hold, SURFACED not enforced — the ordinary compose path defers a district's
+        # new work while a fresh, un-executed 7->6 (an already-captured alternate rep, free to try)
+        # is pending. An 8->1 is the human's explicit choice, so it must not be blocked by a
+        # heuristic — but the human deserves to see the free option before spending on discovery.
+        held = bool(EX7._defer_76_districts(s, [district_id], BUD.load_budget().max_request_rounds))
+        # #752: the scope is a DIAGNOSIS, not a default — the same rule the 7->1 and 5->1 composers
+        # follow (#719/#726). scope="domain" hardcoded here reproduced the exact dead end #646 exists
+        # to close, one edge over: a domain-less district's 8->1 hit the #229 refusal and the
+        # back-edge was a permanent dead end for precisely the class geo exists for.
+        dd = DDOM.all_confirmed(s)
+        domain, _src = Q1.usable_scoping_domains(year, [district_id], dd).get(district_id, ("", ""))
+        scope = "domain" if domain else "geo"
         new_bid = f"batch_{BSTORE.next_batch_number(s):05d}"
         doc, skipped = Q1.build_followup_batch(
             year, new_bid, targets, attempted_by_did=attempted, preferred_by_did=slot_targets,
-            scope="domain", discovered_domains=DDOM.all_confirmed(s))
+            scope=scope, discovered_domains=dd)
         if not doc["districts"]:
             return {"ok": False, "reason": (f"{district_id} is not composable into a follow-up batch: "
                                             + "; ".join(x.get("reason", "") for x in skipped)),
                     "skipped": skipped}
+        # #764: the batch declares WHO composed it and why. followup_rounds counts every approved
+        # follow-up batch toward the shared escalation ladder regardless of composer — deliberate
+        # (spend is spend; the ladder is the spend-conservative bound) — so the audit trail must let
+        # a human see, when a ladder reads exhausted, that one of its rounds was an 8->1 remediation.
+        doc["composed_by"] = (f"8->1 send-back routing (approval {approval_id})"
+                              + (f": {latest.get('reason')}" if latest.get("reason") else ""))
         if dry_run:
-            return {**common, "dry_run": True, "artifact": new_bid, "targets": bands,
-                    "skipped": skipped, "n_schools": len(doc["districts"][0].get("schools") or [])}
+            return {**common, "dry_run": True, "artifact": new_bid, "targets": bands, "scope": scope,
+                    "open_76": held, "skipped": skipped,
+                    "n_schools": len(doc["districts"][0].get("schools") or [])}
         BSTORE.create_batch(s, doc, batch_type=BT.FOLLOW_UP, actor=actor,
                             redo_attempted=BT.default_redo_attempted(BT.FOLLOW_UP))
         _record_routing(s, district_id, route=route, approval_id=approval_id, artifact=new_bid,
                         actor=actor, reason=latest.get("reason"),
                         name=meta.get("name", ""), state=meta.get("state"))
-        return {**common, "artifact": new_bid, "targets": bands, "skipped": skipped,
+        return {**common, "artifact": new_bid, "targets": bands, "scope": scope, "open_76": held,
+                "skipped": skipped,
                 "_registry": {"district_id": district_id, "name": meta.get("name", ""),
                               "state": meta.get("state"), "batch_id": new_bid}}
 
@@ -202,17 +242,9 @@ def route_send_back(district_id: str, *, route: str, actor: str = "ian", year: s
         out = _work(s)
     reg = out.pop("_registry", None)
     if reg and not out.get("dry_run"):
-        # Post-commit, file-last, best-effort — receipt + registry are regenerable from the DB.
-        try:
-            with gdb.session_scope() as s:
-                BSTORE.write_receipt(s, reg["batch_id"])
-            registry = DS.load()
-            DS.record_stage(registry, reg["district_id"], reg["name"], reg["state"],
-                            stage=1, stage_name="queue", outcome="queued", batch_id=reg["batch_id"])
-            DS.save(registry)
-        except Exception as e:  # noqa: BLE001 — regenerable; the DB committed
-            print(f"[warn] send-back receipt/registry refresh failed ({type(e).__name__}: {e}); "
-                  f"the DB is authoritative — regenerate later")
+        # #765: the ONE shared post-commit receipt+registry refresh (batch_store) — this block used
+        # to be the third hand-copy beside the 5->1 and 7->1 composers'.
+        BSTORE.finalize_composed_batches([reg["batch_id"]], [reg])
     return out
 
 

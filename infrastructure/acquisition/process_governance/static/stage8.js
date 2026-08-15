@@ -460,9 +460,15 @@
                        postJSON({ route, actor: "ian", dry_run: true }));
     } catch (e) { alert("Preview failed: " + e.message); return; }
     const what = route === "8->1"
-      ? `Stage-1 follow-up batch ${prev.artifact} targeting: ${(prev.targets || []).join(", ")}`
+      ? `Stage-1 follow-up batch ${prev.artifact} (${prev.scope}-scoped) targeting: ${(prev.targets || []).join(", ")}`
       : prev.plan;
-    if (!window.confirm(`Route this send-back ${route}?\n\n${what}\n\n` +
+    // #769: the #159 heads-up — a free, already-captured alternate rep (an open 7→6) is sitting
+    // unexecuted. Surfaced, never enforced: the 8→1 is the human's explicit choice.
+    const hold76 = route === "8->1" && prev.open_76
+      ? `\n\n⚠ This district has an OPEN 7→6 — an already-captured alternate rep, free to try.\n` +
+        `Consider executing it at gate@7 (or routing 8→6) before spending on new discovery.`
+      : "";
+    if (!window.confirm(`Route this send-back ${route}?\n\n${what}${hold76}\n\n` +
                         `Reason on record: ${prev.reason_given || "(none)"}\n\n` +
                         `It lands as a DRAFT for you to review — nothing runs or spends yet.`)) return;
     try {

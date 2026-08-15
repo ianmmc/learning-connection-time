@@ -769,22 +769,11 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
         out = _work(s)
     batch_districts = out.pop("_batch_districts", None)
     if out["batch_id"] and batch_districts:
-        # Post-commit, best-effort (file-last, like dispatch_handoff): the receipts are regenerable
-        # FROM the committed rows; the registry backup is regenerable from the DB. One receipt per
-        # composed batch (#164 PR 3b: the scope split can emit two).
-        try:
-            with gdb.session_scope() as s:
-                for c in out.get("batches") or [{"batch_id": out["batch_id"]}]:
-                    BSTORE.write_receipt(s, c["batch_id"])
-            registry = DS.load()
-            for d in batch_districts:
-                DS.record_stage(registry, d["district_id"], d["name"], d["state"],
-                                stage=1, stage_name="queue", outcome="queued",
-                                batch_id=d.get("batch_id") or out["batch_id"])
-            DS.save(registry)
-        except Exception as e:  # noqa: BLE001 — receipts/registry are regenerable; the DB committed
-            print(f"[warn] follow-up receipt/registry refresh failed ({type(e).__name__}: {e}); "
-                  f"the DB is authoritative — regenerate later")
+        # #765: the ONE shared post-commit receipt+registry refresh (batch_store). One receipt per
+        # composed batch (#164 PR 3b: the scope split can emit two); per-row batch_id respected.
+        BSTORE.finalize_composed_batches(
+            [c["batch_id"] for c in (out.get("batches") or [{"batch_id": out["batch_id"]}])],
+            batch_districts)
     return out
 
 

@@ -18,7 +18,12 @@ BANDS = ("elementary", "middle", "high")
 _META_KEYS = ("nces_school_counts_criteria", "stratification", "school_cap_per_band",
               "school_selection_when_over_cap", "benchmark", "domain_excluded",   # #229 refusals persist
               "scope_draw",   # #164 PR 3b: the geo_interleaved draw + weights (audit trail)
-              "targeted")     # #572 path-4: the dev/manual district-targeted draw record
+              "targeted",     # #572 path-4: the dev/manual district-targeted draw record
+              "composed_by")  # #764: WHICH back-edge composed this batch (e.g. the 8->1 send-back
+                              # route, with its approval id + reason) — audit trail for the shared
+                              # follow-up ladder: followup_rounds counts every approved follow-up
+                              # batch regardless of composer (deliberate, spend-conservative), so
+                              # when a ladder reads exhausted, this says which composer spent what.
 _SCHOOL_FIELDS = ("school_id", "name", "is_charter", "level", "gslo", "gshi")
 
 
@@ -368,6 +373,34 @@ def write_receipt(sess, batch_id: str):
     paths.atomic_write_json(out_path, doc)   # atomic (issue #50): a crash mid-write must never
                                              # leave a truncated receipt behind
     return out_path
+
+
+def finalize_composed_batches(batch_ids: list, district_rows: list) -> None:
+    """The ONE post-commit, file-last, best-effort receipt + registry refresh every back-edge
+    composer runs after its DB commit (#765 — this block existed as three hand-copies in the 5->1,
+    7->1 and 8->1 composers, already drifting on multi-batch handling).
+
+    Opens its own session (the caller's has committed and closed — file-last is the point: the DB is
+    authoritative and both artifacts are regenerable from it, so a hiccup here is logged, never a
+    failed compose). `district_rows`: [{district_id, name, state, batch_id?}] — a row without its own
+    batch_id records against the first id (the single-batch composers' shape); the 7->1 scope split
+    passes per-row ids."""
+    if not batch_ids:
+        return
+    try:
+        from infrastructure.acquisition.common import district_status as DS
+        with gdb.session_scope() as s:
+            for bid in batch_ids:
+                write_receipt(s, bid)
+        registry = DS.load()
+        for d in district_rows:
+            DS.record_stage(registry, d["district_id"], d.get("name", ""), d.get("state"),
+                            stage=1, stage_name="queue", outcome="queued",
+                            batch_id=d.get("batch_id") or batch_ids[0])
+        DS.save(registry)
+    except Exception as e:  # noqa: BLE001 — receipts/registry are regenerable; the DB committed
+        print(f"[warn] batch receipt/registry refresh failed ({type(e).__name__}: {e}); "
+              f"the DB is authoritative — regenerate later")
 
 
 # ---------------------------------------------------------------- gate@1 edits (soft) + lifecycle
