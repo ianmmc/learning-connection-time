@@ -26,6 +26,7 @@ import json
 
 from sqlalchemy import text
 
+from infrastructure.acquisition.common import benchmark as BM  # noqa: E402  (#718: the ONE benchmark/gt:// predicate home)
 from infrastructure.acquisition.common import paths  # noqa: E402
 from infrastructure.acquisition.common import db as gdb  # noqa: E402  (governance Postgres — REQ-103)
 from infrastructure.acquisition.common import receipts as RCPT  # noqa: E402  (REQ-164 audit receipts)
@@ -199,6 +200,35 @@ def decide(rec: dict) -> dict:
     if tier in ("B", "C"):
         return {"decision": "hold", "reason": f"unlabeled-tier-{tier}", "send": [], "alternates": []}
     return {"decision": "reject", "reason": f"auto:tier-{tier or '?'}", "send": [], "alternates": []}
+
+
+def production_sendability(records: list) -> dict:
+    """#718 — split a district's records by what production can ACTUALLY receive:
+
+        {n_send, n_hold, n_benchmark_only, n_production_sendable, benchmark_only: [rec_key, ...]}
+
+    `decide()` is deliberately untouched: a `gt://` curation artifact legitimately decides `send` —
+    for a BENCHMARK dispatch. What was missing is the production question, and everywhere readiness
+    was measured it went unasked, so an unsendable target counted as a dispatchable one. A district
+    whose only targets are `gt://` therefore read as DONE-ENOUGH instead of BLOCKED — the inverse of
+    the truth. Live: Baldwin `0100270` showed 12 A/B-tier targets, all `gt://`, and had produced zero
+    production facts for 19 days; a dispatch-gap sweep reported it "clean".
+
+    The dispatch-time walls (#618/#644 freeze guard) held throughout, so nothing wrong ever shipped —
+    this is an ACCOUNTING defect, and the number an operator needs is `n_production_sendable`."""
+    out = {"n_send": 0, "n_hold": 0, "n_benchmark_only": 0, "n_production_sendable": 0,
+           "benchmark_only": []}
+    for rec in records or []:
+        d = decide(rec)["decision"]
+        if d not in ("send", "hold"):
+            continue
+        out["n_send" if d == "send" else "n_hold"] += 1
+        if BM.is_benchmark_url(rec.get("url")):
+            out["n_benchmark_only"] += 1
+            out["benchmark_only"].append(rec.get("rec_key"))
+        else:
+            out["n_production_sendable"] += 1
+    return out
 
 
 def build_doc(district: dict, records: list, fingerprints: dict) -> dict:

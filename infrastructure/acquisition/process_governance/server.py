@@ -2059,6 +2059,12 @@ def handoff_candidates():
             f"""SELECT d.district_id, d.name, d.state, d.labeled_topology, d.batch_id,
                        COALESCE(t.n_send, 0) AS n_send, COALESCE(t.n_verified, 0) AS n_verified,
                        COALESCE(t.n_hold, 0) AS n_hold,
+                       COALESCE(t.n_benchmark_only, 0) AS n_benchmark_only,
+                       COALESCE(t.n_send, 0) - COALESCE(t.n_benchmark_only, 0)
+                           AS n_send_production,
+                       COALESCE(t.n_send, 0) + COALESCE(t.n_hold, 0)
+                           - COALESCE(t.n_benchmark_only, 0) - COALESCE(t.n_hold_gt, 0)
+                           AS n_production_sendable,
                        COALESCE(disp.n_dispatched, 0) AS n_dispatched, disp.last_dispatched_at,
                        COALESCE(ext.n_extracted, 0) AS n_extracted,
                        {IS_BENCHMARK_SQL.format(alias='d')} AS is_benchmark
@@ -2074,7 +2080,30 @@ def handoff_candidates():
                                           AND (r.tier IN ('B', 'C')
                                                OR (r.tier = 'A'
                                                    AND COALESCE(r.signals_json::jsonb->>'content_school_year',
-                                                                '9999-99') < :floor))) AS n_hold
+                                                                '9999-99') < :floor))) AS n_hold,
+                      -- #718: how many of n_send are `gt://` curation artifacts, which the Stage-9
+                      -- wall guarantees production can NEVER receive. Without this split an
+                      -- unsendable target counts as a dispatchable one, so a district whose ONLY
+                      -- targets are gt:// reads DONE-ENOUGH instead of BLOCKED — the inverse of the
+                      -- truth (Baldwin 0100270: 12 A/B targets, all gt://, zero production facts,
+                      -- 19 days, reported "clean" by a dispatch-gap sweep).
+                      -- Two derived numbers, two meanings (#755 — one name for two formulas was a
+                      -- live disagreement on Baldwin): `n_send_production` = what a production
+                      -- dispatch can send TODAY (send-bucket minus its gt://); `n_production_
+                      -- sendable` = what production could EVER receive from the current records
+                      -- ((send + hold) minus their gt://), the SAME formula release.py's
+                      -- production_sendability computes — pinned equal by a govdb test.
+                      COUNT(*) FILTER (WHERE (l.primary_label = ANY(:targets)
+                                              OR (l.primary_label IS NULL AND r.tier = 'A'
+                                                  AND NOT (COALESCE(r.signals_json::jsonb->>'content_school_year',
+                                                                    '9999-99') < :floor)))
+                                         AND r.url LIKE :gt) AS n_benchmark_only,
+                      COUNT(*) FILTER (WHERE l.primary_label IS NULL
+                                          AND (r.tier IN ('B', 'C')
+                                               OR (r.tier = 'A'
+                                                   AND COALESCE(r.signals_json::jsonb->>'content_school_year',
+                                                                '9999-99') < :floor))
+                                         AND r.url LIKE :gt) AS n_hold_gt
                     FROM record r LEFT JOIN label l ON l.rec_key = r.rec_key
                     WHERE {REL.CANONICAL_RECORD_WHERE}
                     GROUP BY r.district_id
@@ -2092,7 +2121,8 @@ def handoff_candidates():
                     GROUP BY district_id
                 ) ext ON ext.district_id = d.district_id
                 ORDER BY n_send DESC, n_hold DESC, d.district_id"""),
-            {"targets": targets, "floor": SY.SPED_BASELINE_YEAR}).mappings().all()
+            {"targets": targets, "floor": SY.SPED_BASELINE_YEAR,
+             "gt": f"{BM.BENCHMARK_URL_SCHEME}%"}).mappings().all()
         return [dict(r) for r in rows]
 
 

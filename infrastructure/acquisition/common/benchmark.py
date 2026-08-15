@@ -205,6 +205,25 @@ def all_benchmark_district_ids(session) -> set:
 # identical answers; they diverge only once #620's re-run creates the mixed case.
 BENCHMARK_CAPTURE_SOURCE = "benchmark_gt"
 
+# The RECORD-grain projection of the same fact (#718). `benchmark_batch.capture_record` stamps an
+# injected record with BOTH `capture.source='benchmark_gt'` and a `gt://…` URL, so the scheme is a
+# faithful read of the durable signal wherever the capture row isn't in hand — which is the case for
+# every Stage-5 record projection (`release.load_district_records` returns url/tier/label/reps, not
+# capture.source). Same answer, cheaper reach; the DB-grain twin above stays authoritative.
+BENCHMARK_URL_SCHEME = "gt://"
+
+
+def is_benchmark_url(url) -> bool:
+    """True for an injected `gt://` curation artifact — a representation the Stage-9 wall guarantees
+    can NEVER be dispatched to production. The ONE home for the scheme check (#718: three call sites
+    were about to grow their own `startswith`).
+
+    Why this needed a name: a `gt://` target counted as a dispatchable target everywhere readiness is
+    measured, so a district whose ONLY targets are unsendable read as DONE-ENOUGH instead of BLOCKED —
+    the inverse of the truth (Baldwin `0100270`: 12 A/B-tier targets, all `gt://`, zero production
+    facts, 19 days, reported "clean" by a dispatch-gap sweep)."""
+    return str(url or "").startswith(BENCHMARK_URL_SCHEME)
+
 # --- WHERE `run_kind='production'` BELONGS, AND WHERE IT WOULD FAIL OPEN (#651) ------------------
 # Three queries below answer "is this benchmark?" and only some carry a run_kind filter. That is not
 # an oversight; the rule is what the query ENUMERATES:
