@@ -9,6 +9,7 @@ from sqlalchemy import text
 from tests import benchmark_seed as BSEED
 
 from infrastructure.acquisition.common import db as gdb
+from infrastructure.acquisition.common.timeutil import utcnow
 from infrastructure.acquisition.stage1_queue import batch_store as BSTORE
 from infrastructure.acquisition.stage1_queue import models  # noqa: F401
 
@@ -17,13 +18,17 @@ pytestmark = [pytest.mark.integration, pytest.mark.govdb]
 DID = "ZZLIN"
 
 
-def _req(con, route, status, *, ref=None, params=None):
+def _req(con, route, status, *, ref=None, params=None, created_at=None):
+    # created_at defaults to NOW, not a frozen literal: since #720 the #159 defer AGES OUT at 14 days
+    # (an un-fired 7->6 must not hold its district's new work forever), so a hardcoded 2026-07-05
+    # would silently stop exercising the hold these tests are about — the fixture's date would be
+    # deciding the outcome. Pass one explicitly to test the aged-out side.
     rid = con.execute(text(
         "INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, target, band, "
         "params_json, reason, status, executed_ref, created_at) VALUES "
-        "(:d, 'h', 'representation', :r, 't', NULL, :p, 'x', :s, :ref, '2026-07-05T00:00:00Z') "
+        "(:d, 'h', 'representation', :r, 't', NULL, :p, 'x', :s, :ref, :made) "
         "RETURNING request_id"),
-        {"d": DID, "r": route, "s": status, "ref": ref,
+        {"d": DID, "r": route, "s": status, "ref": ref, "made": created_at or utcnow(),
          "p": json.dumps(params) if params else None}).scalar()
     return con.execute(text("SELECT request_id, route, status, executed_ref, params_json, district_id "
                             "FROM extraction_request WHERE request_id = :i"), {"i": rid}).mappings().first()

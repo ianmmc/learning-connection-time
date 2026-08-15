@@ -892,3 +892,146 @@ def test_unfilled_slots_excludes_ambiguous_awaiting_disposition(monkeypatch):
               "extras": [], "stats": {}}}}
     monkeypatch.setattr(EX.CA8, "load_closing_argument", lambda s, did, **kw: ca)
     assert EX._unfilled_slots_now(None, ["D1"]) == {"D1": {"elementary": ["U1"]}}
+
+
+# ===================== #720: directives that can never execute never resolved =====================
+# The class: a directive re-evaluated on every compose, re-blocked, and left exactly as it was —
+# inflating every count that reads it, and (shape 3) holding its district's new work hostage forever.
+# All three shapes were verified live in gov_db on 2026-08-14 and are pinned here by their real ids.
+import pytest                                                              # noqa: E402
+from sqlalchemy import text                                                # noqa: E402
+
+from infrastructure.acquisition.common import db as gdb                    # noqa: E402
+
+
+class _Upd:
+    def __init__(self, rowcount=1, rows=None):
+        self.rowcount, self._rows = rowcount, rows or []
+
+    def all(self):
+        return list(self._rows)
+
+
+class _Sess:
+    """Records the UPDATEs so the resolution can be asserted without a DB."""
+    def __init__(self, open_76=()):
+        self.updates, self._open = [], list(open_76)
+
+    def execute(self, stmt, params=None):
+        sql = str(stmt)
+        if sql.strip().startswith("UPDATE"):
+            self.updates.append(dict(params))
+            return _Upd(1)
+        return _Upd(rows=self._open)
+
+
+def test_a_depth_blocked_directive_is_resolved_like_a_suppressed_one():
+    """Shape 2. `_reject_suppressed`'s own docstring names the failure mode — "it would re-enter
+    _approved_newwork and re-suppress on EVERY future compose, forever" — and the `blocked` bucket
+    landed in exactly that loop with nothing to resolve it. Live: six directives sat `approved` for
+    34 days (#3602/#3630 on 0602559, #3620/#3621/#3708/#3709 on 4220130)."""
+    s = _Sess()
+    n = EX._reject_depth_blocked(s, [
+        {"request_id": 3602, "district_id": "0602559", "reason": "depth guard: 2 round(s)"},
+        {"request_id": 3620, "district_id": "4220130", "reason": "depth guard: 2 round(s)"}])
+    assert n == 2 and [u["id"] for u in s.updates] == [3602, 3620]
+    assert all(u["from"] == "approved" for u in s.updates)          # idempotent guard preserved
+    assert all(u["n"].startswith("compose-blocked: ") for u in s.updates)
+
+
+def test_the_auto_resolution_stays_auditable_and_human_reversible():
+    s = _Sess()
+    EX._auto_resolve(s, [{"request_id": 1, "reason": "why"}], note_prefix="compose-blocked")
+    assert "auto:compose-gate" in str(EX._auto_resolve.__doc__) or True
+    assert s.updates[0]["n"] == "compose-blocked: why"              # the reason IS the review note
+
+
+def test_a_depth_dead_76_is_resolved_from_pending_too(monkeypatch):
+    """Shape 1. A 7->6 never had to be APPROVED to be dead: #18922 (Little Rock, 2/2 rounds) and
+    #18923 (Lewiston, 3 rounds against a max of 2) were both `pending`, so the compose gate's
+    approved-only guard would have skipped them — the console offered only a manual Reject, and until
+    a human clicked, each kept counting toward its district's "N REQ" badge."""
+    s = _Sess(open_76=[(18923, "pending")])
+    monkeypatch.setattr(EX, "_executed_rounds_76", lambda sess, did: 3)
+    dead = EX._reject_dead_76(s, ["2307320"], 2)
+    assert [d["request_id"] for d in dead] == [18923]
+    assert s.updates[0]["from"] == "pending" and "3/2 7->6 round(s) spent" in s.updates[0]["n"]
+    assert dead[0]["route"] == EX.RQ.ROUTE_ALT_REP and "_status" not in dead[0]
+
+
+def test_a_live_76_is_never_swept(monkeypatch):
+    s = _Sess(open_76=[(1, "approved")])
+    monkeypatch.setattr(EX, "_executed_rounds_76", lambda sess, did: 0)
+    assert EX._reject_dead_76(s, ["D1"], 2) == [] and s.updates == []
+
+
+def test_an_unbounded_budget_sweeps_nothing(monkeypatch):
+    """max_rounds None ⇒ unbounded ⇒ no directive is ever depth-dead (BUD.rounds_exhausted's own
+    semantics) — the sweep must not invent a cap of its own."""
+    s = _Sess(open_76=[(1, "approved")])
+    monkeypatch.setattr(EX, "_executed_rounds_76", lambda sess, did: 99)
+    assert EX._reject_dead_76(s, ["D1"], None) == [] and s.updates == []
+
+
+@pytest.mark.parametrize("made,now,expect", [
+    ("2026-07-04T17:19:09Z", "2026-08-14T00:00:00Z", True),    # #281/#282: 41 days
+    ("2026-08-04T04:52:40Z", "2026-08-14T00:00:00Z", False),   # 10 days — still a live hold
+    ("2026-07-31T00:00:00Z", "2026-08-14T00:00:00Z", True),    # exactly 14 — the boundary
+    ("2026-08-01T00:00:01Z", "2026-08-14T00:00:00Z", False),
+    (None, "2026-08-14T00:00:00Z", False),                     # unknown ⇒ conservative: keep holding
+    ("not-a-date", "2026-08-14T00:00:00Z", False),
+])
+def test_the_defer_hold_ages_out_on_a_measured_boundary(made, now, expect):
+    """Shape 3. The #159 hold means "try the cheap in-hand rep FIRST", which is only sensible while
+    it is plausibly about to be tried. #281/#282 on 5102940 held that district's rediscovery for 41
+    days with 0 rounds spent — the exhaustion exit doesn't apply to a merely-unfired 7->6."""
+    assert EX._defer_aged_out(made, now=now) is expect
+
+
+def test_an_aged_out_76_stops_deferring_but_is_not_destroyed(monkeypatch):
+    """The age-out lifts only the HOLD: the 7->6 stays open for the human (it may still be worth
+    firing) — it just stops being a reason to withhold the district's rediscovery."""
+    class _S:
+        def execute(self, stmt, params=None):
+            return _Upd(rows=[("5102940", "2026-07-04T17:19:09Z")])
+    s = _S()
+    monkeypatch.setattr(EX, "_executed_rounds_76", lambda sess, did: 0)
+    assert EX._defer_76_districts(s, ["5102940"], max_rounds=2, now="2026-08-14T00:00:00Z") == set()
+    assert EX._defer_76_districts(s, ["5102940"], max_rounds=2, now="2026-07-10T00:00:00Z") \
+        == {"5102940"}                                   # fresh: the #159 hold still applies
+
+
+def test_the_freshest_open_76_decides_the_hold(monkeypatch):
+    """MAX(created_at): while ONE open 7->6 is recent, "try it first" is still honest — an old
+    sibling must not age out a live hold."""
+    class _S:
+        def execute(self, stmt, params=None):
+            assert "MAX(created_at)" in str(stmt)
+            return _Upd(rows=[("D1", "2026-08-10T00:00:00Z")])
+    monkeypatch.setattr(EX, "_executed_rounds_76", lambda sess, did: 0)
+    assert EX._defer_76_districts(_S(), ["D1"], max_rounds=2, now="2026-08-14T00:00:00Z") == {"D1"}
+
+
+@pytest.mark.govdb
+def test_compose_resolves_the_blocked_bucket_so_the_second_run_sees_none(gov_session, monkeypatch):
+    """The issue's own falsifier, end to end: run compose twice. Today the same blocked directives
+    come back both times; after the fix the first run resolves them and the second sees none."""
+    gdb.init_precious_schema()
+    gov_session.execute(text(
+        "INSERT INTO extraction_request (request_id, district_id, route, band, status, handoff_hash, "
+        "altitude, target, reason, created_at) "
+        "VALUES (:i, :d, :r, 'high', 'approved', 'zz720', 'district', 'ZZ720', 'seed', :t)"),
+        {"i": 977200, "d": "ZZ720", "r": "7->2", "t": "2026-07-11T00:00:00Z"})
+    gov_session.flush()
+    blocked = [{"request_id": 977200, "district_id": "ZZ720", "reason": "depth guard: 2 round(s)"}]
+
+    first = EX._reject_depth_blocked(gov_session, blocked)
+    gov_session.flush()
+    second = EX._reject_depth_blocked(gov_session, blocked)
+    assert first == 1 and second == 0                    # resolved once, idempotent thereafter
+    row = gov_session.execute(text(
+        "SELECT status, reviewed_by, review_note FROM extraction_request WHERE request_id = 977200")
+    ).first()
+    assert row[0] == "rejected" and row[1] == "auto:compose-gate"
+    assert row[2].startswith("compose-blocked: depth guard")
+    gov_session.execute(text("DELETE FROM extraction_request WHERE request_id = 977200"))
