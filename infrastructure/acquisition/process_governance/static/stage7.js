@@ -235,8 +235,12 @@
     if (prev.spilled && prev.spilled.length) notes.push(`${prev.spilled.length} district(s) spill past the 12-cap (compose again for the next batch)`);
     if (prev.deferred && prev.deferred.length) notes.push(`${prev.deferred.length} deferred — execute the district's 7->6 first (#159)`);
     if (prev.suppressed && prev.suppressed.length) notes.push(`${prev.suppressed.length} suppressed — band covered/phantom or no fillable gap left (auto-rejected on compose; reversible per request below)`);
-    if (prev.blocked && prev.blocked.length) notes.push(`${prev.blocked.length} blocked by the depth guard`);
+    if (prev.blocked && prev.blocked.length) notes.push(`${prev.blocked.length} blocked by the depth guard (auto-rejected on compose — #720; reversible per request below)`);
     if (prev.escalation_exhausted && prev.escalation_exhausted.length) notes.push(`${prev.escalation_exhausted.length} directive(s) ladder-exhausted (#164: domain + geo rounds already run — auto-rejected + district manually flagged)`);
+    // #720/#763: the never-swept-silently promise, kept on the console too — the preview computes
+    // both lists (#770), so the operator sees them BEFORE confirming, not after the fact.
+    if (prev.dead_76 && prev.dead_76.length) notes.push(`${prev.dead_76.length} depth-dead 7→6(s) will be auto-rejected — ${prev.dead_76.map((d) => `#${d.request_id} (${d.district_id})`).join(", ")} (#720; reversible per request below)`);
+    if (prev.aged_out_76 && prev.aged_out_76.length) notes.push(`${prev.aged_out_76.length} district(s) proceed because their #159 hold AGED OUT (an open 7→6 older than 14 days — it stays open for you): ${prev.aged_out_76.map((d) => d.district_id).join(", ")}`);
     if (prev.benchmark_excluded && prev.benchmark_excluded.length) notes.push(`${prev.benchmark_excluded.length} benchmark-walled (batch_00000)`);
     const batches = prev.batches || [];
     const nothing = !batches.length || !prev.n_districts;

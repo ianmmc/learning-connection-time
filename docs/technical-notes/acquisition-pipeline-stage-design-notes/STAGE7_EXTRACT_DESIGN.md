@@ -329,10 +329,15 @@ APPROVED directives into real back-edge work. Two mechanisms (§3F):
     described the forever-loop for while nothing resolved it. Depth exhaustion is monotonic, so a
     depth-blocked directive can never become runnable on its own. *Live: six directives sat `approved`
     34 days — #3602/#3630 on `0602559`, #3620/#3621/#3708/#3709 on `4220130`.*
-  * open **7→6s whose district's rounds are spent** (**shape 1**, `_reject_dead_76`) — covering
-    `pending` as well as `approved`, because a 7→6 never had to be approved to be dead (#18922 Little
-    Rock 2/2, #18923 Lewiston 3-against-2, both `pending`, both counting toward their district's
-    "N REQ" badge). Reported in the compose result as `dead_76`, never swept silently.
+  * open **7→6s whose district's rounds are spent** (**shape 1**, `_dead_76` compute →
+    `_reject_dead_76` resolve) — covering `pending` as well as `approved`, because a 7→6 never had to
+    be approved to be dead (#18922 Little Rock 2/2, #18923 Lewiston 3-against-2, both `pending`, both
+    counting toward their district's "N REQ" badge). Reported in the compose result as `dead_76`,
+    never swept silently — including on the console modal (#763) and on the PREVIEW (#770: the dead
+    set is computed for dry-run and real alike; only the mutation sits behind the gate, matching how
+    `blocked`/`suppressed` are planned pure). **Self-scoping (#758):** candidates come from ALL
+    districts holding an open 7→6, never from `g.rows` (approved NEW-work), whose scoping silently
+    exempted a lone dead 7→6 whose companion 7→2 had already left `approved`.
   **Shape 3** is the same availability bug one rung out and is fixed differently: an approved 7→6 that
   is merely NEVER FIRED (0 rounds, so the exhaustion exit doesn't apply) held `5102940`'s rediscovery
   for 41 days via the #159 defer. The hold now **ages out** at `DEFER_76_MAX_AGE_DAYS` (14) — "try the
@@ -340,7 +345,10 @@ APPROVED directives into real back-edge work. Two mechanisms (§3F):
   only the DEFER; the 7→6 itself stays open for the human. `_defer_76_districts` reads the FRESHEST
   open 7→6 per district (`MAX(created_at)`), so an old sibling can't age out a live hold, and an
   unparseable/absent timestamp never ages out (conservative: the #159 hold is the spend-conservative
-  posture). The gate@7 lineage card calls the same function, so it can never disagree with compose.
+  posture). The gate@7 lineage card calls the same function, so it can never disagree with compose. The age-out
+  leaves a RECORD (#759): `aged_out_76` in the compose result (and the console modal) names each
+  district proceeding because its hold timed out — deliberately a result key rather than a DB
+  mutation, since the 7→6 itself stays open for the human.
 - **Depth guard is rounds, not rows, everywhere**: `_executed_rounds`/`_executed_rounds_76` count
   `COUNT(DISTINCT executed_ref)` — a bundle flips N directives to one `executed_ref`, so counting rows
   would trip the guard after a single bundled round.

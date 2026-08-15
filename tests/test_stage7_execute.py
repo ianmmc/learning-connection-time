@@ -1011,7 +1011,7 @@ def test_a_depth_blocked_directive_is_resolved_like_a_suppressed_one():
         {"request_id": 3602, "district_id": "0602559", "reason": "depth guard: 2 round(s)"},
         {"request_id": 3620, "district_id": "4220130", "reason": "depth guard: 2 round(s)"}])
     assert n == 2 and [u["id"] for u in s.updates] == [3602, 3620]
-    assert all(u["from"] == "approved" for u in s.updates)          # idempotent guard preserved
+    assert all(u["from"] == ["approved"] for u in s.updates)        # idempotent guard preserved
     assert all(u["n"].startswith("compose-blocked: ") for u in s.updates)
 
 
@@ -1024,29 +1024,55 @@ def test_the_auto_resolution_stays_auditable_and_human_reversible():
 
 def test_a_depth_dead_76_is_resolved_from_pending_too(monkeypatch):
     """Shape 1. A 7->6 never had to be APPROVED to be dead: #18922 (Little Rock, 2/2 rounds) and
-    #18923 (Lewiston, 3 rounds against a max of 2) were both `pending`, so the compose gate's
-    approved-only guard would have skipped them — the console offered only a manual Reject, and until
-    a human clicked, each kept counting toward its district's "N REQ" badge."""
-    s = _Sess(open_76=[(18923, "pending")])
+    #18923 (Lewiston, 3 rounds against a max of 2) were both `pending`. Compute (#770) and resolve
+    are separate steps; the resolve covers both open statuses in one call (#766)."""
+    s = _Sess(open_76=[("2307320", 18923, "pending")])
     monkeypatch.setattr(EX, "_executed_rounds_76", lambda sess, did: 3)
-    dead = EX._reject_dead_76(s, ["2307320"], 2)
+    dead = EX._dead_76(s, 2)
     assert [d["request_id"] for d in dead] == [18923]
-    assert s.updates[0]["from"] == "pending" and "3/2 7->6 round(s) spent" in s.updates[0]["n"]
+    assert "3/2 7->6 round(s) spent" in dead[0]["reason"]
     assert dead[0]["route"] == EX.RQ.ROUTE_ALT_REP and "_status" not in dead[0]
+    assert s.updates == []                                # #770: computing mutates NOTHING
+    EX._reject_dead_76(s, dead)
+    assert s.updates and sorted(s.updates[0]["from"]) == ["approved", "pending"]   # #766
+
+
+def test_the_dead_sweep_self_scopes_to_open_76_holders(monkeypatch):
+    """#758: the candidates come from the open-7->6 population itself, never from the compose's
+    g.rows (approved NEW-work) — a district whose ONLY open state is a depth-dead 7->6 (its
+    companion 7->2 was rejected on a prior compose) was silently exempt forever."""
+    s = _Sess(open_76=[("LONE", 42, "pending")])
+    monkeypatch.setattr(EX, "_executed_rounds_76", lambda sess, did: 2)
+    dead = EX._dead_76(s, 2)                              # no district list to forget LONE from
+    assert [d["district_id"] for d in dead] == ["LONE"]
 
 
 def test_a_live_76_is_never_swept(monkeypatch):
-    s = _Sess(open_76=[(1, "approved")])
+    s = _Sess(open_76=[("D1", 1, "approved")])
     monkeypatch.setattr(EX, "_executed_rounds_76", lambda sess, did: 0)
-    assert EX._reject_dead_76(s, ["D1"], 2) == [] and s.updates == []
+    assert EX._dead_76(s, 2) == [] and s.updates == []
 
 
 def test_an_unbounded_budget_sweeps_nothing(monkeypatch):
     """max_rounds None ⇒ unbounded ⇒ no directive is ever depth-dead (BUD.rounds_exhausted's own
     semantics) — the sweep must not invent a cap of its own."""
-    s = _Sess(open_76=[(1, "approved")])
+    s = _Sess(open_76=[("D1", 1, "approved")])
     monkeypatch.setattr(EX, "_executed_rounds_76", lambda sess, did: 99)
-    assert EX._reject_dead_76(s, ["D1"], None) == [] and s.updates == []
+    assert EX._dead_76(s, None) == [] and s.updates == []
+
+
+def test_the_aged_out_hold_leaves_a_record(monkeypatch):
+    """#759: shapes 1 and 2 leave a durable trace; the age-out is deliberately non-mutating (the
+    7->6 stays open for the human), so its trace is the compose result's `aged_out_76` key —
+    "which districts got new discovery because the hold timed out" stops being unanswerable."""
+    class _S:
+        def execute(self, stmt, params=None):
+            assert "MAX(created_at)" in str(stmt)
+            return _Upd(rows=[("5102940", "2026-07-04T17:19:09Z"),
+                              ("FRESH", "2026-08-10T00:00:00Z")])
+    got = EX._aged_out_76(_S(), now="2026-08-14T00:00:00Z")
+    assert [g["district_id"] for g in got] == ["5102940"]
+    assert "aged out" in got[0]["reason"] and got[0]["newest_76"] == "2026-07-04T17:19:09Z"
 
 
 @pytest.mark.parametrize("made,now,expect", [
@@ -1111,3 +1137,26 @@ def test_compose_resolves_the_blocked_bucket_so_the_second_run_sees_none(gov_ses
     assert row[0] == "rejected" and row[1] == "auto:compose-gate"
     assert row[2].startswith("compose-blocked: depth guard")
     gov_session.execute(text("DELETE FROM extraction_request WHERE request_id = 977200"))
+
+
+def test_the_console_surfaces_both_720_sweeps_763():
+    """#763: the design note promises `dead_76` is "never swept silently" — that must include the
+    console. Source-pin (no JS harness): the compose modal's notes read both result keys, which the
+    preview now actually populates (#770 — compute always, mutate only on real runs)."""
+    from pathlib import Path
+    js = (Path(__file__).resolve().parents[1] / "infrastructure/acquisition/process_governance"
+          / "static/stage7.js").read_text()
+    assert "prev.dead_76" in js and "prev.aged_out_76" in js
+    assert "AGED OUT" in js and "auto-rejected" in js
+
+
+def test_the_preview_carries_the_same_dead_set_the_real_run_resolves():
+    """#770 source-pin: dead_76/aged_out_76 are computed OUTSIDE the dry_run gate (the preview shows
+    what the real run is about to do), and only the resolution sits inside it."""
+    import inspect
+    src = inspect.getsource(EX.compose_followup_batch)
+    compute = src.index("dead_76 = _dead_76(")
+    aged = src.index("aged_out_76 = _aged_out_76(")
+    gate = src.index("if not dry_run:", src.index("# #720:"))
+    resolve = src.index("_reject_dead_76(s, dead_76)")
+    assert compute < gate and aged < gate < resolve
