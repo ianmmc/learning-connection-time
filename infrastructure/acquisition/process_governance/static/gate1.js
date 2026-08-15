@@ -267,7 +267,9 @@
   }
 
   // #572: the 5->1 zero-yield escalation (#164 PR 3b) — dry-run survey first, compose on confirm.
-  // The composed batch is a geo-scoped DRAFT reviewed right here at gate@1 (never auto-flowed).
+  // #719: scope is a DIAGNOSIS — domain-having districts compose a DOMAIN-scoped widened draft,
+  // domain-less ones a GEO-scoped draft (up to two scope-pure batches), reviewed here at gate@1
+  // (never auto-flowed).
   async function zeroYieldCheck() {
     showOverlay("Surveying this batch's districts for zero yield (live Stage-5 read)…");
     let prev;
@@ -278,7 +280,8 @@
     const composable = Object.keys(prev.targets || {});
     const parts = [];
     const dname = (did) => esc((prev.names || {})[did] || "");   // #572: human-readable labels
-    if (composable.length) parts.push(`<p>Would compose <b>${esc(prev.batch_id)}</b> (GEO-scoped draft, reviewed here at gate@1 — never auto-flowed):</p>
+    const scopeLabel = (prev.batches || []).map((c) => `<b>${esc(c.batch_id)}</b> (${esc(c.scope).toUpperCase()}-scoped, ${c.n_districts})`).join(" + ") || `<b>${esc(prev.batch_id)}</b>`;
+    if (composable.length) parts.push(`<p>Would compose ${scopeLabel} — draft(s) reviewed here at gate@1, never auto-flowed (#719: scope is a diagnosis — GEO only for domain-less districts):</p>
       <ul class="s7-compose-list">${composable.map((d) => `<li><b>${dname(d) || esc(d)}</b> <span class="muted">(${esc(d)})</span> — ${rung(d)}</li>`).join("")}</ul>`);
     if ((prev.flagged || []).length) parts.push(`<p class="muted">Ladder-exhausted → manual flag: ${prev.flagged.map((f) => `${esc(f.district_id)} ${esc(f.name)}`).join(", ")}</p>`);
     if ((prev.ineligible || []).length) parts.push(`<details class="q-domain-excluded"><summary class="muted">${prev.ineligible.length} district(s) not zero-yield (expand)</summary>

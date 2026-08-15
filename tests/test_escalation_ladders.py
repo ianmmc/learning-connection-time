@@ -1,8 +1,13 @@
-"""#164 PR 3b — the escalation ladders: the 7->1 second-loop scope split (compose emits up to TWO
-scope-pure batches, each directive's executed_ref = ITS district's batch), the 5->1 zero-yield geo
-composer (predicate + derived ladder + manual flag), the geo_interleaved scope draw, and the
-pool-drained policy auto-advance wiring. Ladder position is always DERIVED from ever-approved
-follow-up batch history (batch_store.followup_rounds), never a stored counter."""
+"""#164 PR 3b — the escalation ladders: the 7->1 scope split (compose emits up to TWO scope-pure
+batches, each directive's executed_ref = ITS district's batch), the 5->1 zero-yield composer
+(predicate + derived ladder + manual flag), the geo_interleaved scope draw, and the pool-drained
+policy auto-advance wiring. Ladder position is always DERIVED from ever-approved follow-up batch
+history (batch_store.followup_rounds), never a stored counter.
+
+#719: scope is a DIAGNOSIS, not a rung — a district WITH a usable scoping domain always composes
+domain-scoped (escalation = widened vocabulary; geo would blank its domain and #229-refuse every
+result); geo is only for domain-less districts. Tests stub Q1.usable_scoping_domains (the NCES
+LEA CSV is absent on CI) via _stub_domains."""
 import pytest
 from sqlalchemy import text
 
@@ -106,20 +111,32 @@ def _stub_builder(monkeypatch, calls):
     monkeypatch.setattr(EX.BSTORE, "create_batch", lambda sess, doc, **k: None)
 
 
-# ---------------------------------------------------------------- 7->1 second-loop scope split
+def _stub_domains(monkeypatch, domains):
+    """#719 diagnosis stub: {district_id: domain} — '' / absent = domain-less (the geo pool).
+    Patches queue_batch.usable_scoping_domains (shared by EX.Q1 and S5F.Q1), which otherwise
+    reads the on-disk NCES LEA CSV (absent on CI)."""
+    monkeypatch.setattr(EX.Q1, "usable_scoping_domains",
+                        lambda year, dids, dd: {d: ((domains.get(d, ""), "nces")
+                                                    if domains.get(d) else ("", ""))
+                                                for d in dids})
+
+
+# ---------------------------------------------------------------- 7->1 scope split (#719: by diagnosis)
 @govdb
 def test_compose_scope_split_emits_two_batches_with_per_district_refs(gov_session, monkeypatch):
-    """A fresh district composes into the domain batch (loop 1); a district with an ever-approved
-    follow-up round escalates to the GEO batch with forced-widened vocabulary (loop 2). Each
-    directive's executed_ref is ITS district's batch — two reservations, one transaction."""
+    """#719: scope is the DIAGNOSIS — a domain-having district composes into the domain batch
+    (round 0 -> standard vocabulary); a DOMAIN-LESS district with an ever-approved round composes
+    into the GEO batch with forced-widened vocabulary. Each directive's executed_ref is ITS
+    district's batch — two reservations, one transaction."""
     s = gov_session
     _ensure_compose_tables(s)
     hh = "zz3bsplit"
-    _seed_req(s, hh, "ZZ3B0")                       # 0 prior rounds -> domain batch
-    _seed_req(s, hh, "ZZ3B1")                       # 1 prior domain round -> geo batch
+    _seed_req(s, hh, "ZZ3B0")                       # domain-having, 0 rounds -> domain batch
+    _seed_req(s, hh, "ZZ3B1")                       # domain-less, 1 prior round -> geo+widened
     _seed_round(s, "batch_zz3b_r1", "ZZ3B1", "domain")
     calls = []
     _stub_builder(monkeypatch, calls)
+    _stub_domains(monkeypatch, {"ZZ3B0": "zz3b0.org"})
 
     out = EX.compose_followup_batch(handoff_hash=hh, actor="zz", session=s)
     s.flush()
@@ -129,8 +146,8 @@ def test_compose_scope_split_emits_two_batches_with_per_district_refs(gov_sessio
     by_scope = {c["scope"]: c for c in calls}
     assert set(by_scope["domain"]["targets"]) == {"ZZ3B0"}
     assert set(by_scope["geo"]["targets"]) == {"ZZ3B1"}
-    assert by_scope["geo"]["force_widen_dids"] == {"ZZ3B1"}      # geo+widened, the second rung
-    assert by_scope["domain"].get("force_widen_dids") is None
+    assert by_scope["geo"]["force_widen_dids"] == {"ZZ3B1"}      # >=1 prior round -> widened
+    assert by_scope["domain"].get("force_widen_dids") is None    # round 0 -> standard
     refs = dict(s.execute(text(
         "SELECT district_id, executed_ref FROM extraction_request WHERE handoff_hash = :h "
         "AND status = 'executed'"), {"h": hh}).all())
@@ -151,16 +168,18 @@ def test_compose_draft_round_does_not_advance_the_ladder(gov_session, monkeypatc
     _seed_round(s, "batch_zz3b_dr", "ZZ3BD", "domain", approved=False)
     calls = []
     _stub_builder(monkeypatch, calls)
+    _stub_domains(monkeypatch, {"ZZ3BD": "zz3bd.org"})
     out = EX.compose_followup_batch(handoff_hash=hh, actor="zz", session=s)
     assert [c["scope"] for c in out["batches"]] == ["domain"]
+    assert calls[0].get("force_widen_dids") is None   # draft round never advanced the ladder
 
 
 @govdb
 def test_compose_exhausted_ladder_flags_and_rejects(gov_session, monkeypatch):
-    """A district past the ladder's end (>=GEO_LADDER_EXHAUSTED_AT ever-approved geo rounds —
-    #575 review: shared with the 5->1 composer, so ONE geo round alone is NOT exhausted, it's
-    "geo+widened") gets its directive auto-rejected (human-reversible, note carries the story) and
-    ONE unresolved followup_flag — deduped across re-composes."""
+    """A DOMAIN-LESS district past the geo ladder's end (>=GEO_LADDER_EXHAUSTED_AT ever-approved
+    geo rounds — #575 review: shared with the 5->1 composer, so ONE geo round alone is NOT
+    exhausted, it's "geo+widened") gets its directive auto-rejected (human-reversible, note
+    carries the story) and ONE unresolved followup_flag — deduped across re-composes."""
     s = gov_session
     _ensure_compose_tables(s)
     hh = "zz3bexh"
@@ -170,6 +189,7 @@ def test_compose_exhausted_ladder_flags_and_rejects(gov_session, monkeypatch):
     _seed_round(s, "batch_zz3b_x3", "ZZ3BX", "geo")   # 2nd geo round -> genuinely exhausted
     calls = []
     _stub_builder(monkeypatch, calls)
+    _stub_domains(monkeypatch, {})                    # domain-less -> the geo ladder governs
 
     out = EX.compose_followup_batch(handoff_hash=hh, actor="zz", session=s)
     s.flush()
@@ -203,6 +223,7 @@ def test_compose_dry_run_split_neither_flags_nor_rejects(gov_session, monkeypatc
     _seed_round(s, "batch_zz3b_y3", "ZZ3BY", "geo")   # 2nd geo round -> genuinely exhausted
     calls = []
     _stub_builder(monkeypatch, calls)
+    _stub_domains(monkeypatch, {})                    # domain-less -> the geo ladder governs
     out = EX.compose_followup_batch(handoff_hash=hh, actor="zz", session=s, dry_run=True)
     assert [e["district_id"] for e in out["escalation_exhausted"]] == ["ZZ3BY"]
     status = s.execute(text("SELECT status FROM extraction_request WHERE handoff_hash = :h"),
@@ -215,11 +236,11 @@ def test_compose_dry_run_split_neither_flags_nor_rejects(gov_session, monkeypatc
 
 @govdb
 def test_compose_one_geo_round_is_not_exhausted_the_shared_threshold(gov_session, monkeypatch):
-    """#575 review regression: a district with exactly ONE ever-approved geo round must NOT be
-    ladder-exhausted under 7->1 — it escalates to a geo+widened batch instead (the 5->1 composer's
-    own rung 2, BSTORE.geo_ladder_exhausted is the ONE shared predicate). The bug this guards:
-    7->1 used to exhaust at geo>=1 while 5->1 offered a widened rung at geo==1, disagreeing for
-    any district sitting at exactly one approved geo round."""
+    """#575 review regression: a DOMAIN-LESS district with exactly ONE ever-approved geo round
+    must NOT be ladder-exhausted under 7->1 — it escalates to a geo+widened batch instead (the
+    5->1 composer's own rung 2, BSTORE.ladder_exhausted is the ONE shared predicate). The bug
+    this guards: 7->1 used to exhaust at geo>=1 while 5->1 offered a widened rung at geo==1,
+    disagreeing for any district sitting at exactly one approved geo round."""
     s = gov_session
     _ensure_compose_tables(s)
     hh = "zz3bwid"
@@ -228,12 +249,79 @@ def test_compose_one_geo_round_is_not_exhausted_the_shared_threshold(gov_session
     _seed_round(s, "batch_zz3b_w2", "ZZ3BW", "geo")     # exactly ONE geo round
     calls = []
     _stub_builder(monkeypatch, calls)
+    _stub_domains(monkeypatch, {})                      # domain-less -> geo is legitimate
 
     out = EX.compose_followup_batch(handoff_hash=hh, actor="zz", session=s)
     s.flush()
     assert out["escalation_exhausted"] == []
     assert [c["scope"] for c in out["batches"]] == ["geo"]
     assert calls[0]["force_widen_dids"] == {"ZZ3BW"}   # loop 2's forced-widened vocabulary
+
+
+# ---------------------------------------------------------------- #719: diagnosis-based scope
+def test_ladder_exhausted_is_diagnosis_keyed():
+    """#719: domain-having districts ladder on DOMAIN rounds (exhausted at 3; misdiagnosed geo
+    rounds never charge them); domain-less districts ladder on GEO rounds (exhausted at 2)."""
+    # the six #719 districts' live shape: {domain:1, geo:1} with a good domain — NOT exhausted
+    assert not BSTORE.ladder_exhausted({"domain": 1, "geo": 1}, has_domain=True)
+    assert not BSTORE.ladder_exhausted({"domain": 2, "geo": 2}, has_domain=True)
+    assert BSTORE.ladder_exhausted({"domain": 3, "geo": 0}, has_domain=True)
+    # domain-less: the geo ladder, unchanged from #575
+    assert not BSTORE.ladder_exhausted({"domain": 1, "geo": 1}, has_domain=False)
+    assert BSTORE.ladder_exhausted({"domain": 0, "geo": 2}, has_domain=False)
+
+
+@govdb
+def test_compose_domain_district_never_escalates_to_geo(gov_session, monkeypatch):
+    """#719's must-fail-today acceptance case (the Washoe shape): a district WITH a usable scoping
+    domain sitting at {domain:1, geo:1} — the pre-#719 rule ((domain+geo)>=1 -> geo) composed it
+    GEO with a blanked domain, a guaranteed 100% #229 refusal. Now: another DOMAIN-scoped round
+    with widened vocabulary, and it is NOT ladder-exhausted."""
+    s = gov_session
+    _ensure_compose_tables(s)
+    hh = "zz719w"
+    _seed_req(s, hh, "ZZ719W")
+    _seed_round(s, "batch_zz719_w1", "ZZ719W", "domain")
+    _seed_round(s, "batch_zz719_w2", "ZZ719W", "geo")   # the misdiagnosed no-op round
+    calls = []
+    _stub_builder(monkeypatch, calls)
+    _stub_domains(monkeypatch, {"ZZ719W": "washoeschools-shape.net"})
+
+    out = EX.compose_followup_batch(handoff_hash=hh, actor="zz", session=s)
+    s.flush()
+    assert out["escalation_exhausted"] == []
+    assert [c["scope"] for c in out["batches"]] == ["domain"]
+    assert calls[0]["force_widen_dids"] == {"ZZ719W"}   # escalation = widened vocabulary, same domain
+
+
+def test_build_followup_geo_scope_refuses_a_domain_having_district(monkeypatch):
+    """#719 acceptance: a geo batch for a district that HAS a usable scoping domain is
+    unrepresentable — build_followup_batch refuses it loudly instead of blanking the domain and
+    letting Stage 2's #229 gate silently no-op the whole round."""
+    monkeypatch.setattr(QB.S, "lea_info", lambda year: {
+        "ZZ719G": {"name": "DOMAINED", "state": "NV", "website": "https://www.zz719.net/",
+                   "status": "Open", "lea_type": "x", "claimed_bands": {"high"},
+                   "city": "RENO", "zip": "89501"}})
+    monkeypatch.setattr(QB.S, "school_index", lambda year: {
+        "ZZ719G": {"high": [{"school_id": "s1", "name": "ZZ High"}]}})
+    monkeypatch.setattr(QB.S, "school_level_counts", lambda year: {})
+    monkeypatch.setattr(QB, "load_enrollment", lambda: {})
+    doc, skipped = QB.build_followup_batch("2024_25", "batch_x", {"ZZ719G": ["high"]}, scope="geo")
+    assert doc["districts"] == []
+    assert len(skipped) == 1 and "#719" in skipped[0]["reason"] and "zz719.net" in skipped[0]["reason"]
+    # ...and the SAME district composes fine domain-scoped
+    doc, skipped = QB.build_followup_batch("2024_25", "batch_x", {"ZZ719G": ["high"]}, scope="domain")
+    assert [d["district_id"] for d in doc["districts"]] == ["ZZ719G"] and skipped == []
+
+
+def test_usable_scoping_domains_resolves_dual_source(monkeypatch):
+    """#719 diagnosis input: NCES website first, confirmed discovered domain second, else ('','');
+    a district absent from the LEA file resolves like a blank website."""
+    monkeypatch.setattr(QB.S, "lea_info", lambda year: {
+        "D1": {"website": "https://a.org"}, "D2": {"website": ""}, "D3": {"website": ""}})
+    out = QB.usable_scoping_domains("2024_25", ["D1", "D2", "D3", "D4"], {"D3": "c-schools.org"})
+    assert out == {"D1": ("a.org", "nces"), "D2": ("", ""),
+                   "D3": ("c-schools.org", "discovered"), "D4": ("", "")}
 
 
 # ---------------------------------------------------------------- 5->1 zero-yield predicate
@@ -307,8 +395,8 @@ def _seed_source_batch(s, bid, dids, *, batch_type="first-run", approved=True):
 
 @govdb
 def test_compose_zero_yield_ladder_rungs(gov_session, monkeypatch):
-    """0 geo rounds -> geo+standard; 1 -> geo+widened; >=2 -> manual flag, no compose. One
-    geo-scoped draft; ladder positions derived from history."""
+    """Domain-less districts: 0 geo rounds -> geo+standard; 1 -> geo+widened; >=2 -> manual flag,
+    no compose. One geo-scoped draft; ladder positions derived from history."""
     s = gov_session
     _ensure_compose_tables(s)
     _seed_source_batch(s, "batch_zz5y_src", ["ZZ5L0", "ZZ5L1", "ZZ5L2"])
@@ -316,6 +404,7 @@ def test_compose_zero_yield_ladder_rungs(gov_session, monkeypatch):
     _seed_round(s, "batch_zz5y_g2a", "ZZ5L2", "geo")
     _seed_round(s, "batch_zz5y_g2b", "ZZ5L2", "geo")
     monkeypatch.setattr(S5F, "zero_yield_reason", lambda sess, did: None)
+    _stub_domains(monkeypatch, {})                  # all domain-less -> the geo composer
     calls = []
 
     def fake_build(year, bid, targets, **kw):
@@ -328,7 +417,8 @@ def test_compose_zero_yield_ladder_rungs(gov_session, monkeypatch):
                         lambda sess, doc, **k: created.append((doc["batch_id"], k)))
 
     out = S5F.compose_zero_yield("batch_zz5y_src", actor="zz", session=s)
-    assert out["ok"] and out["batch_id"] and out["scope"] == "geo"
+    assert out["ok"] and out["batch_id"]
+    assert [c["scope"] for c in out["batches"]] == ["geo"]
     assert out["ladder"] == {"ZZ5L0": "geo+standard", "ZZ5L1": "geo+widened",
                              "ZZ5L2": "manual_flag"}
     assert out["names"]["ZZ5L0"] == "D ZZ5L0"       # #572: human-readable modal labels
@@ -339,6 +429,37 @@ def test_compose_zero_yield_ladder_rungs(gov_session, monkeypatch):
         "SELECT COUNT(*) FROM followup_flag WHERE district_id = 'ZZ5L2' "
         "AND actor = 'auto:escalation-ladder' AND resolved_at IS NULL")).scalar()
     assert n_flags == 1
+
+
+@govdb
+def test_compose_zero_yield_domain_district_composes_domain_widened(gov_session, monkeypatch):
+    """#719: a zero-yield district WITH a usable scoping domain composes DOMAIN-scoped with
+    widened vocabulary (its standard pass already yielded nothing) — never geo (which would blank
+    the domain and #229-refuse everything). Mixed eligibility emits TWO scope-pure drafts."""
+    s = gov_session
+    _ensure_compose_tables(s)
+    _seed_source_batch(s, "batch_zz5y_719", ["ZZ5D0", "ZZ5D1"])
+    monkeypatch.setattr(S5F, "zero_yield_reason", lambda sess, did: None)
+    _stub_domains(monkeypatch, {"ZZ5D0": "zz5d0.org"})   # ZZ5D1 stays domain-less
+    calls = []
+
+    def fake_build(year, bid, targets, **kw):
+        calls.append({"bid": bid, "targets": dict(targets), **kw})
+        return {"batch_id": bid, "districts": [{"district_id": d} for d in targets]}, []
+    monkeypatch.setattr(S5F.Q1, "build_followup_batch", fake_build)
+    created = []
+    monkeypatch.setattr(S5F.BSTORE, "create_batch",
+                        lambda sess, doc, **k: created.append(doc["batch_id"]))
+
+    out = S5F.compose_zero_yield("batch_zz5y_719", actor="zz", session=s)
+    assert out["ok"]
+    assert [c["scope"] for c in out["batches"]] == ["domain", "geo"]
+    assert out["ladder"] == {"ZZ5D0": "domain+widened", "ZZ5D1": "geo+standard"}
+    by_scope = {c["scope"]: c for c in calls}
+    assert set(by_scope["domain"]["targets"]) == {"ZZ5D0"}
+    assert by_scope["domain"]["force_widen_dids"] == {"ZZ5D0"}   # widened: standard already failed
+    assert set(by_scope["geo"]["targets"]) == {"ZZ5D1"}
+    assert len(created) == 2 and out["n_districts"] == 2
 
 
 @govdb
