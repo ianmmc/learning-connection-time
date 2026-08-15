@@ -138,7 +138,11 @@
   // is the difference between a 30-second confirmation and repeating the whole review, and the
   // standing falsifier forbids the latter. Shown only when the decision is actually stale.
   function renderRereviewDelta(dec, delta) {
-    if (!dec.decided || !dec.is_stale || !delta) return "";
+    // #760: APPROVED decisions only — this panel's copy ("since you approved this", "Stage 9
+    // re-writes") is false for a stale sent-back district, and would render beside the send-back
+    // routing panel, the two contradicting each other. The server already gates the delta the same
+    // way; this is the client's own belt.
+    if (!dec.decided || dec.disposition !== "approved" || !dec.is_stale || !delta) return "";
     const rows = Object.entries(delta.bands || {}).filter(([, x]) => x.moved).map(([b, x]) => {
       const val = x.approved_gross === x.live_gross
         ? `${x.live_gross} min (unchanged)`

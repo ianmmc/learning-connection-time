@@ -35,6 +35,7 @@ answer when one came back richer. That is #662's shape one layer up: *written is
 """
 from __future__ import annotations
 
+from infrastructure.acquisition.common import school_match as SM
 from infrastructure.acquisition.stage8_aggregate import approval as APV
 from infrastructure.acquisition.stage8_aggregate import closing_argument as CA
 
@@ -45,8 +46,12 @@ BANDS = ("elementary", "middle", "high")
 # production facts (a vision-lab probe is a measurement, never part of the picture); the four
 # human-judgment tables are append-only, EXCEPT the per-school override, which is an UPDATE onto
 # school_fact.human_determination — so that one is dated by its own embedded `at` stamp rather than
-# by the row's created_at, which would never move. `human_determination` may be '' rather than NULL,
-# hence the NULLIF/btrim guard before the JSON cast (an unguarded cast raises on the empty string).
+# by the row's created_at, which would never move. The column can hold '' AND legacy non-JSON plain
+# strings (closing_argument's _override tolerates them by design, #751), and Postgres does NOT
+# short-circuit AND operands — so the cast is reachable only through a CASE (which DOES guarantee
+# order) gated on the value looking like a JSON object. The override writer always json.dumps a
+# dict, so every value this subquery should count starts with '{'; anything else is legacy prose
+# that can never carry an `at` stamp, and one such row must not 500 the whole gate@8 queue.
 CHANGED_SINCE_DECISION_SQL = """
 WITH latest AS (
   SELECT DISTINCT ON (district_id) district_id, approval_id, disposition, created_at
@@ -62,7 +67,8 @@ SELECT l.district_id, l.approval_id, l.disposition, l.created_at,
      + (SELECT COUNT(*) FROM slot_assignment a
           WHERE a.district_id = l.district_id AND a.created_at > l.created_at)
      + (SELECT COUNT(*) FROM school_fact o WHERE o.district_id = l.district_id
-          AND (NULLIF(btrim(COALESCE(o.human_determination, '')), '')::json ->> 'at') > l.created_at)
+          AND (CASE WHEN o.human_determination ~ '^[[:space:]]*\\{'
+                    THEN o.human_determination::json ->> 'at' END) > l.created_at)
        AS n_new_judgments
 FROM latest l
 """
@@ -86,10 +92,18 @@ def needs_rereview(session, *, ca_loader=None) -> dict:
     movement. A queue badge derived from "new facts" alone would have cried wolf on the only district
     the mechanism has ever seen.
 
+    APPROVED decisions only (#760): "re-review" means "production may hold minutes resting on facts
+    nobody signed off" — an approved+written district whose picture moved. A stale SENT-BACK district
+    is just the normal pending-re-decision flow (its facts moving is the DESIGNED outcome of the #689
+    8->1 route), and flagging it here would put approval-specific copy ("what changed since you
+    approved this", "Stage 9 re-writes") on a district that was never approved.
+
     `ca_loader` is the closing-argument seam (tests inject; production uses the real assembler)."""
     load = ca_loader or (lambda s, d: CA.load_closing_argument(s, d, record_drift_event=False))
     out = {}
     for c in candidates(session):
+        if c["disposition"] != "approved":
+            continue
         status = APV.decision_status(session, c["district_id"],
                                      current_fingerprint=CA.fingerprint(load(session,
                                                                              c["district_id"])))
@@ -102,12 +116,22 @@ def needs_rereview(session, *, ca_loader=None) -> dict:
 
 
 def _schools(band_obj) -> dict:
-    """{normalized school name: gross} for a band of a closing argument (either vintage)."""
+    """{canonical school key: {"gross", "display"}} for a band of a closing argument (either vintage).
+
+    Identity is `norm_school` — the ONE school-identity function (#753; its own docstring: "They MUST
+    use the SAME function or matching silently drifts"). A hand-rolled `.strip().lower()` here was
+    vulnerable through the #474 human-add path, which stores the human's RAW typed string verbatim:
+    a council fact persisted as 'lincoln' and a human-add typed as 'Lincoln Elementary School' are
+    the same school, and a weaker normalization would report it as one removed + one added — a
+    phantom swap in the delta the reviewer is asked to sign off on. `display` keeps the original
+    casing for the UI (#772) — the delta panel renders names the way every other gate@8 surface
+    does, not lowercased identity keys."""
     out = {}
     for s in (band_obj or {}).get("schools") or []:
-        name = (s.get("school") or "").strip().lower()
-        if name:
-            out[name] = s.get("gross")
+        raw = (s.get("school") or "").strip()
+        key = SM.norm_school(raw)
+        if key:
+            out[key] = {"gross": s.get("gross"), "display": raw}
     return out
 
 
@@ -128,14 +152,18 @@ def delta_against_decision(frozen: dict, live: dict) -> dict:
     the canonical three still shows, sorted after them, rather than being silently dropped."""
     fz_bands, lv_bands = (frozen or {}).get("bands") or {}, (live or {}).get("bands") or {}
     names = [b for b in BANDS if b in fz_bands or b in lv_bands]
-    names += sorted(set(fz_bands) | set(lv_bands) - set(names) - set(BANDS))
+    # parenthesized (#756): set `-` binds tighter than `|`, so the bare expression unioned fz_bands
+    # in UNFILTERED — masked today (dict reassignment is a no-op) but a landmine for any refactor
+    # that reads `names` directly.
+    names += sorted((set(fz_bands) | set(lv_bands)) - set(names) - set(BANDS))
     bands, moved_any = {}, False
     for b in names:
         fz, lv = fz_bands.get(b) or {}, lv_bands.get(b) or {}
         fz_s, lv_s = _schools(fz), _schools(lv)
         approved_gross, live_gross = fz.get("gross_minutes"), lv.get("gross_minutes")
-        added = sorted(set(lv_s) - set(fz_s))
-        removed = sorted(set(fz_s) - set(lv_s))
+        # identity by canonical key; the UI gets the display casing (#772)
+        added = sorted(lv_s[k]["display"] for k in set(lv_s) - set(fz_s))
+        removed = sorted(fz_s[k]["display"] for k in set(fz_s) - set(lv_s))
         # "moved" is about the DETERMINATION and its basis: a changed value, or a changed set of
         # schools under an unchanged value (the same number resting on different evidence is still a
         # thing the human signed off on and should see).

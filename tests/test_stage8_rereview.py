@@ -214,3 +214,75 @@ def test_the_prefilter_runs_against_real_postgres(gov_session):
     rows = gov_session.execute(text(RRV.CHANGED_SINCE_DECISION_SQL)).mappings().all()
     for r in rows:
         assert r["n_new_facts"] is not None and r["n_new_judgments"] is not None
+
+
+# ===================== 2026-08-15 review round (#751/#753/#756/#760/#772) =====================
+def test_a_stale_sent_back_district_is_not_flagged_for_rereview(monkeypatch):
+    """#760: "re-review" is approval-specific — production may hold minutes resting on facts nobody
+    signed off. A stale SENT-BACK district is the normal pending-re-decision flow (its facts moving
+    is the #689 8->1 route's DESIGNED outcome), and the panel's copy ("since you approved this",
+    "Stage 9 re-writes") would be false for it — rendering beside the send-back routing panel with
+    the two contradicting each other."""
+    con = _cand_con([{"district_id": "D1", "approval_id": 7, "disposition": "sent_back",
+                      "created_at": "t", "n_new_facts": 3, "n_new_judgments": 0}])
+    monkeypatch.setattr(RRV.APV, "decision_status",
+                        lambda s, d, current_fingerprint=None: {"is_stale": True})
+    assert RRV.needs_rereview(con, ca_loader=lambda s, d: {}) == {}
+
+
+def test_detail_withholds_the_delta_from_a_stale_sent_back(monkeypatch):
+    ca = _ca({"elementary": (390, ["a"])})
+    monkeypatch.setattr(SRV.CA8, "load_closing_argument", lambda con, did: ca)
+    monkeypatch.setattr(SRV.LEDGER9, "latest_attempt", lambda con, did: None)
+    monkeypatch.setattr(SRV.SB8, "routing_for", lambda con, did, aid: None)
+    monkeypatch.setattr(SRV.APV8, "decision_status", lambda con, did, current_fingerprint=None:
+                        {"decided": True, "is_stale": True, "disposition": "sent_back",
+                         "latest": {"approval_id": 1, "disposition": "sent_back"}})
+    _use(monkeypatch, _Con([]))
+    assert client.get("/api/aggregate/district/D1").json()["rereview_delta"] is None
+
+
+def test_delta_identity_is_norm_school_so_a_human_add_never_phantom_swaps():
+    """#753: the #474 human-add path stores the RAW typed string; the council fact for the same
+    school persisted as its normalized key. Identity must be norm_school — the ONE school-identity
+    function — or the delta reports one removed + one added for the SAME school."""
+    frozen = _ca({"elementary": (390, ["lincoln"])})
+    live = _ca({"elementary": (390, ["Lincoln Elementary School"])})
+    d = RRV.delta_against_decision(frozen, live)
+    b = d["bands"]["elementary"]
+    assert b["schools_added"] == [] and b["schools_removed"] == [] and not b["moved"]
+
+
+def test_delta_school_names_keep_their_display_casing():
+    """#772: the panel renders names the way every other gate@8 surface does, never lowercased
+    identity keys."""
+    d = RRV.delta_against_decision(_ca({"middle": (390, ["Adams MS"])}),
+                                   _ca({"middle": (390, ["Jefferson Middle School"])}))
+    b = d["bands"]["middle"]
+    assert b["schools_added"] == ["Jefferson Middle School"]
+    assert b["schools_removed"] == ["Adams MS"]
+
+
+def test_band_union_never_duplicates_a_canonical_band():
+    """#756: set `-` binds tighter than `|` — the unparenthesized union re-injected fz_bands
+    unfiltered. Masked today (dict reassignment), pinned so no refactor trips the landmine."""
+    fz = _ca({"elementary": (390, ["a"]), "ungraded": (300, ["u"])})
+    d = RRV.delta_against_decision(fz, _ca({}))
+    assert list(d["bands"]) == ["elementary", "ungraded"]      # each once, canonical first
+
+
+@pytest.mark.govdb
+def test_a_legacy_non_json_override_value_cannot_500_the_queue(gov_session):
+    """#751: school_fact.human_determination legitimately holds legacy plain-text values
+    (closing_argument's _override tolerates them by design). One such row anywhere used to raise
+    InvalidTextRepresentation through the whole gate@8 queue endpoint. The CASE guard (CASE
+    guarantees evaluation order; a WHERE's AND does not in Postgres) makes the cast unreachable for
+    a value that isn't a JSON object."""
+    gdb.init_precious_schema()
+    fid = gov_session.execute(text("SELECT fact_id FROM school_fact LIMIT 1")).scalar()
+    if fid is None:
+        pytest.skip("no school_fact rows to seed against")
+    gov_session.execute(text("UPDATE school_fact SET human_determination = 'legacy plain-text note' "
+                             "WHERE fact_id = :f"), {"f": fid})
+    rows = gov_session.execute(text(RRV.CHANGED_SINCE_DECISION_SQL)).mappings().all()
+    assert all(r["n_new_judgments"] is not None for r in rows)   # ran clean, no raise
