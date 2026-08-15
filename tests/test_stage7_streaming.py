@@ -221,7 +221,7 @@ def test_run_district_isolates_one_unreadable_rep(monkeypatch):
     monkeypatch.setattr(R7, "resolve_content", _resolve)
     monkeypatch.setattr(R7, "_call", lambda m, p, k, c: R7.OR.CallResult(model=m, ok=True, content="[]"))
     monkeypatch.setattr(R7.PARSE, "parse_schedules", lambda content: [{"school": "x"}])
-    monkeypatch.setattr(R7.AGG, "consensus_school_facts", lambda rows, judge=None: (
+    monkeypatch.setattr(R7.AGG, "consensus_school_facts", lambda rows, judge=None, **kw: (
         [{"band": "high", "school": "x", "start": "08:00", "end": "14:00",
           "gross": 360, "method": "council_agree", "models": ["m1", "m2"]}], []))
     monkeypatch.setattr(R7.AGG, "district_bands_from_facts", lambda facts: {})
@@ -269,7 +269,7 @@ def test_run_district_failed_rep_keeps_already_billed_calls(monkeypatch):
         model=m, ok=True, content="[]", cost_usd=0.002, prompt_tokens=10, completion_tokens=5))
     monkeypatch.setattr(R7.PARSE, "parse_schedules", lambda content: [])
 
-    def _consensus_boom(rows, judge=None):
+    def _consensus_boom(rows, judge=None, **kw):
         raise ValueError("consensus blew up AFTER both voters were billed")
     monkeypatch.setattr(R7.AGG, "consensus_school_facts", _consensus_boom)
     monkeypatch.setattr(R7.AGG, "district_bands_from_facts", lambda facts: {})
@@ -291,7 +291,7 @@ def test_run_district_isolates_a_malformed_rep_group(monkeypatch):
     monkeypatch.setattr(R7, "resolve_content", lambda *a: "CONTENT")
     monkeypatch.setattr(R7, "_call", lambda m, p, k, c: R7.OR.CallResult(model=m, ok=True, content="[]"))
     monkeypatch.setattr(R7.PARSE, "parse_schedules", lambda c: [])
-    monkeypatch.setattr(R7.AGG, "consensus_school_facts", lambda rows, judge=None: ([], []))
+    monkeypatch.setattr(R7.AGG, "consensus_school_facts", lambda rows, judge=None, **kw: ([], []))
     monkeypatch.setattr(R7.AGG, "district_bands_from_facts", lambda facts: {})
 
     groups = [
@@ -312,7 +312,7 @@ def test_run_district_bands_failure_preserves_billed_reps(monkeypatch):
     monkeypatch.setattr(R7, "_call", lambda m, p, k, c: R7.OR.CallResult(
         model=m, ok=True, content="[]", cost_usd=0.003))
     monkeypatch.setattr(R7.PARSE, "parse_schedules", lambda c: [{"school": "x"}])
-    monkeypatch.setattr(R7.AGG, "consensus_school_facts", lambda rows, judge=None: (
+    monkeypatch.setattr(R7.AGG, "consensus_school_facts", lambda rows, judge=None, **kw: (
         [{"band": "high", "school": "x", "start": "08:00", "end": "14:00", "gross": 360,
           "method": "council_agree", "models": ["m1"]}], []))
 

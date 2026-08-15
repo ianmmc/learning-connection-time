@@ -229,13 +229,26 @@ def _has_evidence(ev):
                or e.get("school_year") or e.get("applies_to")
                for e in ev.values())
 
-def consensus_school_facts(model_rows, judge_rows=None):
+def consensus_school_facts(model_rows, judge_rows=None, context=None):
     """model_rows: {model_name: [ {grade_level, start_time, end_time, school_name}, ... ]}.
     Group every model's rows by (band, normalized-school-name); within each group the council
     agrees on START and END separately (cross-family, within TOL). Returns accepted per-school
     facts: [{band, school, start, end, gross, models, method}], plus the rejected/no-consensus.
     judge_rows: optional {model->rows} from the judge model, consulted on a (band,school) with
-    no cross-family agreement."""
+    no cross-family agreement.
+
+    context (#707): optional deterministic per-rep context that can RESOLVE a degenerate school
+    name instead of silently dropping paid cross-family consensus —
+      {"band_grain": bool,                  # the record's human label is district_hub_by_band:
+                                            #   band referents ARE the expected grain there
+       "roster_by_band": {band: [names]}}   # the Stage-1 slot spine; an N=1 band resolves a bare
+                                            #   'hs'/'ms' uniquely to its only school
+    A resolved degenerate converts ONLY on cross-family VOTER agreement (never the judge — a
+    single re-emission must not mint a fact the guard would otherwise refuse), lands with a
+    distinguishing method ('band_referent' | 'roster_unique') so gate@8 sees exactly what it is
+    (#241's visible-and-confirmable posture), and a band_referent keeps its referent name so the
+    #253 combined-scope detector + REQ-146 band-grain projection classify it downstream. A
+    degenerate name in a >1-school band with no band-grain label is still refused."""
     groups = {}   # (band, nschool) -> {model: [(start_min, end_min, start_raw, end_raw)]}
     for model, rows in model_rows.items():
         for r in rows:
@@ -265,7 +278,19 @@ def consensus_school_facts(model_rows, judge_rows=None):
         # collide), which would otherwise let this junk reach `accepted` and inflate a band's school
         # list/count. Route it to unresolved instead — auditable, not a silent drop — matching the
         # manual-gate posture. norm_school_strict is the falsy-on-junk form (no empty-key fallback).
-        if not _norm_school_strict(nschool):
+        degenerate = not _norm_school_strict(nschool)
+        resolution = None                      # #707: (method, resolved_school_name) or None
+        if degenerate and context:
+            roster = (context.get("roster_by_band") or {}).get(band) or []
+            if context.get("band_grain") and nschool:
+                # a district_hub_by_band record's band referent IS the expected grain — keep the
+                # referent name; the #253/REQ-146 machinery classifies + projects it downstream.
+                # (nschool truthy: a fully-EMPTY extracted name stays junk even on a hub — #245.)
+                resolution = ("band_referent", nschool)
+            elif len(roster) == 1:
+                # the slot spine holds the unique resolution: 'hs' in a one-high-school district
+                resolution = ("roster_unique", _norm_school(roster[0]))
+        if degenerate and resolution is None:
             unresolved.append({"band": band, "school": nschool, "reason": "degenerate_school_name",
                                "starts": {m: v[0][2] for m, v in per_model.items()},
                                "ends": {m: v[0][3] for m, v in per_model.items()}})
@@ -277,6 +302,13 @@ def consensus_school_facts(model_rows, judge_rows=None):
         s_ok = len(sc[0]["members"]) >= 2 and _cross_family(sc[0]["members"]) >= 2
         e_ok = len(ec[0]["members"]) >= 2 and _cross_family(ec[0]["members"]) >= 2
         method = "council_agree"
+        if degenerate and not (s_ok and e_ok):
+            # #707: a resolved degenerate converts ONLY on cross-family voter agreement — never
+            # the judge (a single re-emission must not mint what the guard would refuse)
+            unresolved.append({"band": band, "school": nschool, "reason": "degenerate_school_name",
+                               "starts": {m: v[0][2] for m, v in per_model.items()},
+                               "ends": {m: v[0][3] for m, v in per_model.items()}})
+            continue
         if not (s_ok and e_ok) and (band, nschool) in jgroups:   # judge tiebreak on the pair
             js, je = jgroups[(band, nschool)][0][0], jgroups[(band, nschool)][0][1]
             start_m, end_m, method = js, je, "judge"
@@ -297,10 +329,18 @@ def consensus_school_facts(model_rows, judge_rows=None):
         gross = end_m - start_m
         if not is_plausible(gross):
             unresolved.append({"band": band, "school": nschool, "gross": gross, "reason": "implausible"}); continue
-        fact = {"band": band, "school": nschool,
+        school_out = nschool
+        if degenerate:
+            # #707: the resolution's method REPLACES council_agree so gate@8 sees exactly what
+            # this is; roster_unique also rewrites the name to the band's only roster school
+            # (filling its slot); band_referent keeps the referent for the #253/REQ-146 detectors.
+            method, school_out = resolution[0], resolution[1]
+        fact = {"band": band, "school": school_out,
                 "start": f"{start_m//60:02d}:{start_m%60:02d}",
                 "end": f"{end_m//60:02d}:{end_m%60:02d}",
                 "gross": gross, "models": models, "method": method}
+        if degenerate:
+            fact["resolved_from"] = nschool    # the raw referent, auditable on the fact itself
         if _has_evidence(ev):   # only v2+ rows carry it; v1 accepted facts stay byte-identical
             fact["evidence"] = ev
         # #254 (v3): categorical corroboration — NEVER part of the (band, norm_school) grouping key
