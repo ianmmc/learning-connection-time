@@ -166,8 +166,15 @@
   function jobFeed(job) {
     const stateTone = { running: "badge-lavender", done: "badge-success", error: "badge-red", halted: "badge-red" }[job.state] || "badge-neutral";
     const evs = (job.events || []).slice(-12).reverse().map((e) => {   // newest first
+      // #734: a geo run whose derivation failed had 100% of its provider hits #229-refused — a
+      // defect signature (#719), never an ordinary outcome; render it loud on the feed.
+      if (e.kind === "geo_derivation_failed") {
+        const ds = (e.districts || []).map((d) => `${esc(d.district_id)} (${d.geo_refused} refused)`).join(", ");
+        return `<li><span class="s2-ev-kind badge-red">geo_derivation_failed</span> ⚠ ${ds} — providers found hits, ALL refused no-scoping-domain (#719)</li>`;
+      }
       const who = e.name || e.district_id || "";
-      const extra = e.outcome ? ` → ${esc(e.outcome)}` : e.error ? ` → ${esc(e.error)}` : "";
+      const refused = e.geo_refused ? ` ⚠ ${e.geo_refused} refused (no-scoping-domain #719)` : "";
+      const extra = e.outcome ? ` → ${esc(e.outcome)}${refused}` : e.error ? ` → ${esc(e.error)}` : "";
       return `<li><span class="s2-ev-kind">${esc(e.kind)}</span> ${esc(who)}${extra}</li>`;
     }).join("");
     const summary = job.summary

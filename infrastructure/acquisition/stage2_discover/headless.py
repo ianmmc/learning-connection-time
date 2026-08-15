@@ -305,6 +305,15 @@ def discover_district(batch: dict, district: dict, registry: dict, *,
         # geo without a derived host NEVER runs wave 2 (it would be an unscoped national
         # search — the #227 class); with one, wave 2 runs domain-scoped as normal.
         wave2_runner(district, residual, domain)
+    # #719: a geo run whose derivation failed leaves EVERY raw hit refused by the #229 gate
+    # (reason 'no-scoping-domain') — a TOTAL refusal that used to wear manual_flag_all's clothes
+    # (6 batches / 70 schools / 0 resolved read as a normal outcome for 18 days). Stash the count
+    # on the district dict so run_batch can surface it as a LOUD batch-level outcome; the outcome
+    # string itself keeps the found_all/found_partial/manual_flag_all vocabulary.
+    if geo and not district.get("domain"):
+        n_raw = sum(len(r.get("wave1_raw_urls", [])) for r in roster)
+        if n_raw:
+            district["_geo_refused"] = n_raw
     return D2.finish_district(district, roster, batch["batch_id"], registry,
                               merge=BT.redoes_attempted(batch),
                               geo_receipt=geo_receipt)
@@ -477,8 +486,12 @@ def run_batch(batch: dict, *, actor: str = "auto:stage2", on_event=None,
                 outcome = discover_district(batch, d, registry,
                                             wave1_search=wave1_search, wave2_runner=wave2_runner)
                 DS.save(registry, export=False)
-                results.append({"district_id": did, "name": d["name"], "outcome": outcome})
-                emit("completed", district_id=did, name=d["name"], outcome=outcome)
+                row = {"district_id": did, "name": d["name"], "outcome": outcome}
+                if d.get("_geo_refused"):     # #719: total #229 refusal, never a quiet flag
+                    row["geo_refused"] = d["_geo_refused"]
+                results.append(row)
+                emit("completed", district_id=did, name=d["name"], outcome=outcome,
+                     **({"geo_refused": d["_geo_refused"]} if d.get("_geo_refused") else {}))
             except SystemExit:
                 raise   # CONTROL FAILURE / billing-auth halt -- never swallow
             except Exception as e:
@@ -493,7 +506,26 @@ def run_batch(batch: dict, *, actor: str = "auto:stage2", on_event=None,
                 results.append({"district_id": did, "name": d["name"], "outcome": "error",
                                 "error": f"{type(e).__name__}: {str(e)[:200]}"})
                 emit("failed", district_id=did, name=d["name"], error=str(e)[:200])
-        return {"batch_id": batch_id, "todo": len(todo), "skipped": len(skipped), "results": results}
+        # #719: the batch-level loud outcome — a geo district whose derivation failed had 100% of
+        # its provider results refused by the #229 gate. That is a defect signature (the providers
+        # FOUND pages; the pipeline discarded every one), not a normal manual_flag_all, and it must
+        # never scroll away as one. Printed to the job log AND returned in the summary.
+        geo_failed = [r for r in results if r.get("geo_refused")]
+        if geo_failed:
+            print("\n" + "!" * 78)
+            print(f"!! #719 GEO DERIVATION FAILED for {len(geo_failed)} district(s) — every "
+                  "provider result was refused (no-scoping-domain, #229). ZERO yield despite hits:")
+            for r in geo_failed:
+                print(f"!!   {r['district_id']} {r['name']}: {r['geo_refused']} results refused")
+            print("!! If a district HAS a usable domain, its follow-up should have composed "
+                  "domain-scoped (#719) — investigate before re-spending.")
+            print("!" * 78 + "\n")
+            emit("geo_derivation_failed", districts=[
+                {"district_id": r["district_id"], "geo_refused": r["geo_refused"]}
+                for r in geo_failed])
+        return {"batch_id": batch_id, "todo": len(todo), "skipped": len(skipped), "results": results,
+                **({"geo_derivation_failed": [r["district_id"] for r in geo_failed]}
+                   if geo_failed else {})}
     finally:
         DS.export()   # one full district_status.json regeneration per run (issue #49)
 
