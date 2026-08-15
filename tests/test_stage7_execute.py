@@ -173,6 +173,39 @@ def _seed_req(s, hh, did, route, band, status="approved"):
 
 
 @govdb
+def test_compose_unscoped_sweeps_directives_across_handoffs(gov_session, monkeypatch):
+    """#715 must-fail-today shape: the #159 design order (7->6s execute first, each minting a NEW
+    handoff) means an approved 7->2's raising hash ≠ the currently-viewed run's. The console now
+    always composes UNSCOPED (handoff_hash=None), which must sweep approved NEW-work from BOTH
+    runs — the hash-scoped sweep found zero rows for Lewiston's 2 approved directives."""
+    gdb.init_precious_schema()
+    s = gov_session
+    _seed_req(s, "zz715_runA", "ZZ715A", "7->2", "elementary")   # raised on run A
+    _seed_req(s, "zz715_runB", "ZZ715B", "7->2", "high")         # raised on run B
+    s.flush()
+    # the seam that caused #715 is _approved_newwork's hash scoping — pin its population semantics
+    # (subset assertions: the shared gov DB may hold other live approved rows; rollback fixture)
+    unscoped = {r["district_id"] for r in EX._approved_newwork(s, None)}
+    assert {"ZZ715A", "ZZ715B"} <= unscoped                      # both runs' directives swept
+    scoped_a = {r["district_id"] for r in EX._approved_newwork(s, "zz715_runA")}
+    assert scoped_a == {"ZZ715A"}                                # the old scoped sweep misses run B
+    assert "ZZ715B" not in scoped_a
+
+
+def test_stage7_js_compose_button_is_unscoped_715():
+    """#715 source pin (no JS harness): the compose button must carry NO handoff hash — the
+    count-one-population/sweep-another mismatch was `data-compose="${e.handoff_hash}"` + a scoped
+    server sweep. A hash reappearing on the button silently reintroduces the disjoint sweep."""
+    from pathlib import Path
+    js = (Path(__file__).parent.parent /
+          "infrastructure/acquisition/process_governance/static/stage7.js").read_text()
+    assert "data-compose>" in js, "compose button lost its (hash-less) data-compose attribute"
+    assert 'data-compose="${' not in js, "#715 regression: the compose button carries a handoff hash again"
+    assert "composeFollowup(null, did)" in js, "#715: the click path must request the UNSCOPED sweep"
+    assert "sweeps all districts" in js, "#715: the button copy must say the sweep is cross-district"
+
+
+@govdb
 def test_compose_flips_approved_to_executed(gov_session, monkeypatch):
     gdb.init_precious_schema()
     s = gov_session

@@ -63,7 +63,7 @@
       btn.onclick = () => executeRequest(Number(btn.dataset.execute), did);
     });
     det.querySelectorAll("[data-compose]").forEach((btn) => {
-      btn.onclick = () => composeFollowup(btn.dataset.compose, did);
+      btn.onclick = () => composeFollowup(null, did);   // #715: always the unscoped sweep
     });
   }
 
@@ -157,10 +157,16 @@
   function renderDetail(x) {
     const e = x.extraction, reqs = x.requests || [];
     const pending = reqs.filter((r) => r.status === "pending").length;
-    // a "Compose follow-up batch" sweep is offered when ≥1 approved NEW-work (7->2/3/1) directive awaits
+    // a "Compose follow-up batch" sweep is offered when ≥1 approved NEW-work (7->2/3/1) directive awaits.
+    // #715: the sweep is UNSCOPED (data-compose carries no hash). The old button passed the VIEWED
+    // run's handoff_hash, but the #159 design order (7->6s execute first, each minting a NEW handoff)
+    // guarantees an approved 7->2's raising hash ≠ the displayed run's — so the button counted this
+    // district's approved directives and then swept a disjoint population ("2 approved" → "Nothing
+    // to compose"). Unscoped, every counted directive is IN the swept population; the modal preview
+    // lists the full cross-district sweep before anything is persisted.
     const approvedNewWork = reqs.filter((r) => r.status === "approved" && r.is_newwork).length;
     const composeBtn = approvedNewWork
-      ? `<button class="btn btn-primary btn-mini" data-compose="${esc(e.handoff_hash || "")}">Compose follow-up batch (${approvedNewWork} approved)</button>`
+      ? `<button class="btn btn-primary btn-mini" data-compose>Compose follow-up batch (${approvedNewWork} approved here — sweeps all districts)</button>`
       : "";
     const reqSection = reqs.length
       ? `<h4>Request more evidence <span class="muted">(${pending} pending / ${reqs.length})</span> ${composeBtn}</h4>${reqs.map(requestCard).join("")}`
@@ -238,7 +244,7 @@
       `<p><b>${esc(b.batch_id)}</b> <span class="s7-strat">${b.scope === "geo" ? "GEO-scoped (escalation — reviewed at gate@1, no auto-flow)" : "domain-scoped (auto-flows to gate@5)"}</span>: <b>${b.n_districts}</b> district(s), <b>${b.n_requests}</b> directive(s).</p>
        <ul class="s7-compose-list">${districtList(b.preview)}</ul>`).join("");
     const body = nothing
-      ? `<div class="empty">Nothing to compose — no approved NEW-work directives make it into a batch.${notes.length ? "<br/>" + esc(notes.join("; ")) + "." : ""}</div>`
+      ? `<div class="empty">Nothing to compose — no approved NEW-work directive (any run, any district) makes it into a batch (#715: this sweep is unscoped).${notes.length ? "<br/>" + esc(notes.join("; ")) + "." : ""}</div>`
       : `${sections}
          ${notes.length ? `<div class="s7-compose-notes muted">Also: ${esc(notes.join("; "))}.</div>` : ""}`;
     const overlay = document.createElement("div");
