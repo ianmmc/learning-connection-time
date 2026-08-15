@@ -1747,3 +1747,48 @@ Authority: issues #714-#722 (epics #706/#96/#80/#482) and epics #723/#724; REQ-1
 the per-district trace in
 `docs/technical-notes/production-quality-control-research/2026-08-14-batch00000-27-district-production-trace.md`
 (promoted from the scratch-paper whiteboard by Ian, 2026-08-14).
+
+### 2026-08-15 — The "limbo" class closes: gate@8 gets its three arrows, the campaign's three unreachable districts become reachable, and a same-day review round catches a cross-file naming collision before Ian ever saw it
+
+Six PRs landed against the 08-14 trace's findings, in the priority order Ian approved (Tranche 0 —
+scheduled CI, #722; Tranche A — #719/#716/#707/#715; Tranche B — the limbo class): **#682**
+(gate@8 approval now fires the Stage-9 write directly — no more remembering the CLI; a blocked or
+faulted write is stamped `incorporation_blocked` instead of leaving the timeline silent at
+`approved`), **#689** (send-back finally routes — 8→1 composes a follow-up batch, 8→6 seeds a
+gate@6 draft, both keyed on the approval id so a second click names the existing artifact instead
+of minting a duplicate), **#713** (a written district that gains evidence is flagged for
+re-review and shown a delta, not re-adjudicated from scratch — gated on REQ-147 staleness rather
+than "any new fact," since Fairbanks' 26 new facts moved nothing), **#720** (directives that can
+never execute — depth-blocked, depth-dead, or merely stale — auto-resolve instead of re-deriving
+the same block on every compose forever), and the campaign's own dead end: **#646** (a district
+that is both domain-less and already-attempted had no composer that would take it — West Ada and
+Lincoln) and **#718** (a `gt://`-only district read DONE-ENOUGH instead of BLOCKED, so the 5→1
+zero-yield composer refused the very districts it exists for — Baldwin, and the same #646 pair).
+All three of #620's "unreachable" districts are reachable again; Broward/Cleveland/Essex's
+send-backs are now routable instead of requiring a hand-composed batch.
+
+**The review-before-merge practice earned its keep at a new scale.** A max-effort multi-agent
+`/code-review` of the six PRs together (Ian's request, run before he looked at any of them) found
+**23 real defects** — issues #751-773 — all fixed same day, before the branches were merged. Two
+are worth naming as a class: **#755**, where `n_production_sendable` was computed by two
+independently-written formulas sharing one name across `server.py` and `release.py`, and they
+*disagreed* live on the fix's own flagship example (Baldwin: 0 vs 2) — the same commit telling two
+stories about the same district depending which file you read. And **#752/#757/#771**, where the
+689 PR's send-back router had quietly reproduced three defect shapes this same review batch had
+just fixed elsewhere in the pipeline (a hardcoded `scope="domain"` reproducing #646's dead end, a
+falsy-OR fallback reproducing #757's phantom-band risk, a cruder unsatisfied-bands signal instead
+of REQ-149's `satisfied` flag) — sibling code paths drifting out of sync with a fix landing one
+file over, inside the *same* review batch. Every finding was verified against the live DB (a
+rolled-back transaction re-ran the #720 sweeps and named the exact eight pinned zombies; the SQL/
+Python sendability formulas were compared across all 116 live districts, zero mismatches after the
+fix) before being called fixed.
+
+**Process gap, corrected:** the review-round PRs were opened with `gh pr comment` carrying
+"Closes #N" instead of the PR body — GitHub only auto-closes on a body-level closing keyword, so
+none of the 23 issues closed on merge. Caught and closed by hand afterward. The lesson: closing
+keywords belong in `gh pr create --body`, never a follow-up comment.
+
+Authority: PRs #745-750 (merged) and their six review-round commits; issues #682/#689/#713/#720/
+#646/#718 and #751-773 (all closed 2026-08-15); live gov_db/lct_db reads verifying each fix
+(rolled-back transactions for the #720 sweeps, a 116-district sendability comparison for #755, a
+Playwright pass against real send-back/re-review records for the gate@8 console surfaces).

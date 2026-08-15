@@ -135,58 +135,108 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-08-14): the #620 campaign is TRACED END-TO-END and is now BLOCKED on filed
-defects. 12 of 27 written.** All 27 batch_00000 districts were followed individually through
-production (dispatch → extraction → directives → gate@8 → Stage 9); the 9 approved-unwritten
-districts were incorporated today (Bridgeport `0900450`, Mat-Su `0200510`, Memphis `4700148`, Mesa
-`0404970`, Bentonville `0503060`, Springdale `0512660`, San Diego `0634320`, Waterbury `0904830`,
-Appoquinimink `1000080`) — each dry-run first, then verified in `district_grade_minutes`, not from
-the run report. Full account: `PROJECT_HISTORY.md` 2026-08-14. Positions: **12 written** ·
-**3 sent back** (Broward `1200180`, Cleveland `3904378`, Essex `5000395` — #689 routes nothing,
-Essex has never been re-dispatched despite #691 being built from its case) · **9 mid-loop** ·
-**3 unreachable** (Baldwin `0100270` + the #646 pair, #718).
+**Current status (2026-08-15): Tranches 0/A/B are ALL MERGED — the "limbo" class is closed and
+#620's three unreachable districts are reachable again.** Six PRs (#745-750) landed gate@8's three
+missing arrows — **#682** (approval fires the Stage-9 write directly, no more manual CLI; a
+blocked/faulted write stamps `incorporation_blocked` instead of going silent), **#689** (send-back
+finally routes: 8→1 composes a follow-up batch, 8→6 seeds a gate@6 draft, both keyed on the
+approval id), **#713** (a written district that gains evidence is flagged + shown a delta, gated on
+REQ-147 staleness, never on raw fact-count) — plus the campaign's dead ends: **#720** (directives
+that can never execute now auto-resolve instead of re-deriving the same block forever), **#646**
+(a domain-less + already-attempted district — West Ada, Lincoln — had NO composer that would take
+it; geo now composes follow-ups too, not just first-runs), and **#718** (a `gt://`-only district —
+Baldwin, the #646 pair — read DONE-ENOUGH instead of BLOCKED, so the 5→1 zero-yield composer
+refused the very districts it exists for). A same-day max-effort review of all six PRs found 23
+real defects (#751-773, all fixed before merge — see `PROJECT_HISTORY.md` 2026-08-15 for the two
+worth remembering: a cross-file naming collision on `n_production_sendable`, #755, and #689
+quietly reproducing three defect shapes this same batch had just fixed elsewhere, #752/#757/#771).
 
-**The blocker (why the campaign stops here): #719 `sev:critical`.** The #164 ladder escalates to a
-GEO-scoped follow-up on ROUND COUNT, not diagnosis; a geo batch blanks the scoping domain; Stage 2's
-#229 guard then refuses **every** result. Six batches (37-42), 70 schools, **zero resolved**, while
-providers returned exact on-domain hits. Live since 2026-07-27. Geo is for the Millard class (no
-usable domain); these districts' domains were never the problem. Until it lands, follow-up
-rediscovery cannot yield anything.
+**#620 campaign, unblocked:** Broward/Cleveland/Essex's send-backs are routable now (gate@8 → 8→1
+or 8→6) instead of requiring a hand-composed batch; West Ada/Lincoln/Baldwin are reachable via the
+5→1 composer. None of this has been RUN yet this session — the campaign's next move (route the three
+send-backs, resume the zero-yield composer on the reachable trio) is Ian's call to make from the
+console, per the standing rule below.
 
-**New this session (all epic-attached):** #714 (per-model context accounting + no chunking path for
-a mega-roster rep — Orange zeroed both voters) · #715 (gate@7 compose counts district-wide, sweeps
-run-scoped — approved 7→2s invisible; **workaround: compose UNSCOPED**) · #716 (ambiguous 12h
-afternoon times parse as AM → Washoe lost 67 of ~106 schools; **re-aggregating the stored receipt
-recovers them with zero model spend**) · #717 (no already-extracted delta at gate@6) · #718 ·
-#719 · #720 (directives that can never execute never resolve → epic #96, the limbo class) ·
-#721 (band disagreement fragments consensus → #80) · #722 (no scheduled CI). Two new epics:
-**#723** (REQ-171 receipts→gov_db; #622/#623/#624/#645 re-homed from #617) and **#724** (LCT core;
-#599/#604/#628).
+**Tranches 0/A/B are DONE. Two remain — Tranche C (extraction-yield correctness) and Tranche D (UI
+weave-ins) — both approved in shape, not yet started:**
 
-**Method notes that carry forward:** measure-first has now overturned the issue's own proposed fix
-three times (#691, #684, and #719 — where *verifying* "are we as far as we can get?" rather than
-answering it found the campaign's worst defect). Structural class to watch: **a guard wired into one
-member of a set whose siblings share the property** — countermeasure is a closure pin iterating the
-set. Newer tell: **a total failure wearing a normal outcome's clothes** (100% gate refusal recorded
-as ordinary `manual_flag_all`; both-voters-failed recorded as a clean zero). Every scoring change
-ships with re-ingest + harness A/B + tuning-ledger BEFORE the PR (the #662 counter-practice).
+**Tranche C — extraction-yield correctness (epic #706 + adjacent council-lab correctness issues).**
+Grouped by shared subsystem, in the order to tackle them (measure each before assuming the proposed
+fix, per the standing method note below):
+1. **Consensus/grouping correctness** — #693 (school-name normalization mints false disagreement:
+   `'lincoln west science health'` vs `'…science AND health'` splits one true agreement into an
+   accepted fact + an unresolved twin) + #721 (band disagreement on a multi-band campus fragments
+   consensus because `grade_level` is part of the grouping key — two readings of the same school
+   never meet). Same family: both are "correct data, wrong grouping" bugs in the consensus code.
+2. **Context-limit handling** — #714 (`size_max_tokens` has no per-model accounting; a mega-roster
+   hub rep zeroed BOTH council voters on Orange) + #709 (a voter's context-limit 400 silently
+   degrades the council to single-family, with no chunking path and no "degraded" marker). Same
+   subsystem (`openrouter`/request-sizing); likely one shared fix.
+3. **Capture-completeness** — #708 (systematic OCR name-mangling ships as fidelity-clean — every
+   school name lost its first letter) + #685 (Stage 3 captures only the ACTIVE tab panel; Cedar
+   Rapids lost elementary + middle, 54 of 110 times) + #672 (the 5→1 widened rung dilutes geo
+   derivation below threshold and discards up to 109 URLs including on-domain hits — independent of
+   #719's fix, a distinct mechanism in `apply_geo_derivation`).
+4. **Ladder-guard robustness** (lower severity — wasted spend, not wrong data) — #710 (a document
+   that never names its school burns 3 alternate-rep rounds no representation can fix) + #711 (a
+   transient 429 records as a clean zero-yield and consumes a ladder rung).
+Epic #706's F6 (#712, long-table recall asymmetry) is routed to epic #80 (Council Lab) — composition/
+measurement, not a pipeline defect; leave it there.
 
-**Next (RESUME HERE — 2026-08-14):**
-1. **#719 first** — it gates all follow-up rediscovery. Then #716 (free recovery of Washoe's ~67
-   schools by re-aggregating the stored receipt; check before spending batch_00040) and #707
-   (decide before batch_00037's Little Rock spend — the target fact may already be in `school_fact`).
-2. **Runnable now without any fix:** three extractions pending on today's dispatches (Orange
-   `5d756fa57a52`, Mobile `96edcbf7141c`, Cedar Rapids `3c0d98cb9117`); the batch_00043 compose via
-   the UNSCOPED path (plans Lewiston + Cleveland + Little Rock — verified by live dry-run);
-   Essex/Broward send-back re-dispatches by hand.
-3. Then: epic #706's queue · #682 (approve→write, still manual CLI) · #689 · epic #723's
-   #623 → #622 → #645 → #624 · #640/#625 under #617.
-Still-open standouts: **#674** (a human target label bypasses the #241 validity floor — epic #92),
-#693, #685/#686/#687, #669/#671.
+**Tranche D — UI weave-ins, paired by surface (per the original plan: weave console work in
+alongside the pipeline-correctness passes above, don't block on it separately):**
+- **gate@5 pair** — #673 (no vintage surface: the derived school year and the #241 floor's HOLD are
+  invisible, no way for a human to flag an out-of-window schedule) + #674 (a human target label
+  UNCONDITIONALLY overrides the #241 validity floor — following the labeling doctrine guarantees an
+  out-of-window release; epic #92). Same surface, same floor — fix together.
+- **Stage 2-4 console triple** — #669 (the console shows CUMULATIVE district state as if it were
+  this run's work, and the redo confirm dialog states the opposite of what redo does) + #670 (a late
+  capture timeout is silently masked — a timed-out district with a populated `captures.json` renders
+  as cleanly done) + #671 (design question: what should a stage's status badge mean during a re-run?
+  an in-flight redo district renders as done, with the PRIOR run's results, for up to 38 min). These
+  three share one root design gap (the badge doesn't distinguish "done" from "done as of the last
+  run, currently redoing") — settle #671's design question first, then #669/#670 likely fall out of it.
+
+**Deliberately still deferred behind the above (unchanged from the last checkpoint):** epic #723's
+REQ-171 receipts→gov_db work (#622 → #623 → #645 → #624) and epic #617's remainder (#640/#625) —
+both flow-unblocking work outranks them, and #723 was carved out FROM #617 specifically so #617
+could close without carrying them.
+
+**Method notes that carry forward (now proven twice more this session):** measure-first has
+overturned the issue's own proposed fix five times total (#691, #684, #719, and — in this session —
+#755's own two-formula reconciliation and #706's F1-F5 severity ranking); the newest instance is the
+review-round pattern: **a fix landing in one file can silently reproduce a defect shape a sibling
+fix just closed in another file, inside the SAME review batch** (#689's send-back router shipped a
+hardcoded `scope="domain"` — #646's exact dead end — and a falsy-OR band fallback and a
+zero-facts-only signal, both patterns #713's REQ-149 rework had just replaced elsewhere; found and
+fixed as #752/#757/#771). Countermeasure:
+when a review batch spans multiple PRs touching the same subsystem, diff each new code path against
+every defect class the OTHER PRs in the batch just fixed, don't just review each PR in isolation.
+Also carried forward: **a guard wired into one member of a set whose siblings share the property**
+(closure-pin countermeasure) and **a total failure wearing a normal outcome's clothes** (100% gate
+refusal as ordinary `manual_flag_all`; both-voters-failed as a clean zero) — both classes to keep
+watching for in Tranche C's consensus/grouping work.
+
+**Process lesson (new, 2026-08-15):** a PR's "Closes #N" must be in the PR BODY (`gh pr create
+--body`), never a follow-up `gh pr comment` — GitHub only auto-closes on a body-level keyword, so
+23 issues merged fixed-but-open and had to be closed by hand. Always author the body with the
+closing keywords from the start.
+
+**Next (RESUME HERE — 2026-08-15):**
+1. **Tranche C, step 1** — #693 + #721 (consensus/grouping correctness), following the grouped
+   order above. Measure each live against real districts before proposing a fix (Bangor/Wyandanch-
+   style traces, not a guess from the code).
+2. **In parallel, weave in Tranche D's gate@5 pair** (#673/#674) when touching gate@5 surfaces for
+   any Tranche C work that lands there (#693's evidence review is a gate@5-adjacent surface).
+3. **Ian's call, not a session task:** whether to route Broward/Cleveland/Essex's send-backs and
+   resume the 5→1 composer on West Ada/Lincoln/Baldwin now that #689/#646/#718 are merged — that is
+   live pipeline spend and stays console-driven.
+4. Then: Tranche C steps 2-4 (context-limit, capture-completeness, ladder-guard) → Tranche D's
+   Stage 2-4 console triple → epic #723's receipts queue.
 Ian drives the console; prepare and verify, don't execute stage runs (Stage 9 CLI runs are the
 verification exception — read-only intent, idempotent, guarded). *Falsifier unchanged: if any
 district needs a hand-edit or a re-adjudicated gate@8 call, the mechanism is wrong — fix the
-pipeline, not the district.* It held again: every finding above became an issue, not a hand-fix.
+pipeline, not the district.*
 
 **The standing lesson (now tripled): three separate layers shipped green against measurements that
 could not fail (§10.11), then the fix round's own review findings repeated it (§10.19/§10.20), then a
@@ -201,9 +251,11 @@ Enforced DB-free by `tests/test_precious_alters_parity.py`. **Verify a new preci
 THROWAWAY governance DB — the local migrated one tests the path that isn't broken.**
 
 **Outstanding:** Playwright-verify the gate@6 + gate@1 console changes AND #647's Stage 2/3/4
-status/Run control (static-source-pinned only; #667's gate@8/#662's gate@5 badges AND #684's gate@5
-staff-day surfacing ARE verified — the latter has a committed rerunnable verifier,
-`infrastructure/scraper/verify_684_console.mjs`, the pattern to reuse).
+status/Run control (static-source-pinned only; #667's gate@8/#662's gate@5 badges, #684's gate@5
+staff-day surfacing, AND the three new gate@8 arrows ARE verified — rerunnable verifiers:
+`infrastructure/scraper/verify_684_console.mjs` (gate@5 staff-day) and
+`infrastructure/scraper/verify_682_console.mjs` (gate@8's write badge / send-back routing /
+re-review flag — covers #682/#689/#713 together, the pattern to extend for Tranche D's console work).
 **Deferred by design (epic #128):** **#642** (content-derived document vintage — #662 makes this MORE
 valuable) and **#643** (the Stage-3 render-facts probe; rides #623's Node seam).
 **Retired, do not do:** Phase 2e's retroactive `dispatch_type='benchmark'` tagging — arm 2 derives it.
@@ -213,24 +265,28 @@ Documented-in-code deferrals: `_satisfied_bands_now` batching; the #522 guardrai
 keyword/table attribution (needs a server payload change); JS behavioral tests (no JS harness);
 the remediation-receipt exception is not STAGE-scoped (30-day expiry since 2026-07-20); attribution
 v1 reads each district's LATEST candidate plan.
-Resume-essentials (ALL re-verified 2026-08-14 on this checkpoint): `pip install -e .` → Docker up
-(`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) → `lint-imports`
-(expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **2133** pass, 1 skipped
-[pyarrow]) + `pytest -q -m govdb` (expect **384** pass, Postgres up) + `pytest
-tests/test_*_integration.py` (expect **255** pass, 149 skipped) + `cd infrastructure/scraper &&
+Resume-essentials (ALL re-verified 2026-08-15 on this checkpoint, post-merge): `pip install -e .` →
+Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) →
+`lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **2226**
+pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **396** pass, Postgres up) + `pytest
+tests/test_*_integration.py` (expect **256** pass, 149 skipped) + `cd infrastructure/scraper &&
 npm test` (expect **91**).
-**pytest is now 9.1.1** (was 8.x): `pytest.ini` declares `pythonpath = .` — without it, pytest 9's
-bare `pytest` script fails COLLECTION on `tests/test_benchmark_*` (`from tests import
-benchmark_seed`), and CI installs unpinned so it would have broken on its next run.
-`requirements.txt` floor raised to `pytest>=9.0`. NB there is no scheduled CI (#722) — `main` can
-sit red between pushes, as it did 08-11→08-14.
+**pytest is 9.1.1**: `pytest.ini` declares `pythonpath = .` — without it, pytest 9's bare `pytest`
+script fails COLLECTION on `tests/test_benchmark_*` (`from tests import benchmark_seed`).
+`requirements.txt` floor raised to `pytest>=9.0`. **Scheduled CI now runs nightly (#722, merged)** —
+`main` no longer sits silently red between pushes the way it did 08-11→08-14.
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (Huntington
 `4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters; Bentonville
-`0503060:a5f32ff869` staff-day tier B). Drive the Node Playwright from `infrastructure/scraper` (a
-script in /tmp cannot resolve the package); run scratch console servers on a spare port (`:8015`),
-never Ian's `:8005`.
-Stage 9 incorporate CLI: `python3 -m infrastructure.acquisition.stage9_incorporate <did> [--dry-run]`;
-sign-off preview: `python3 -m infrastructure.scripts.analyze.per_grade_lct_sample`.
+`0503060:a5f32ff869` staff-day tier B, `0503060` again for gate@8's write badge; Broward `1200180`
+for gate@8 send-back routing). Drive the Node Playwright from `infrastructure/scraper` (a script in
+/tmp cannot resolve the package); run scratch console servers on a spare port (`:8015`), never
+Ian's `:8005`.
+Stage 9 incorporate CLI: `python3 -m infrastructure.acquisition.stage9_incorporate <did> [--dry-run]`
+(now also fires automatically on gate@8 approval, #682 — the CLI stays the recovery/backfill path);
+gate@8 send-back routing CLI: `python3 -m infrastructure.acquisition.process_governance.stage8_sendback
+{route <did> --route 8->1|8->6|unrouted} [--dry-run]` (#689); re-review audit CLI: `python3 -m
+infrastructure.acquisition.stage8_aggregate.rereview [<did> …]` (#713); sign-off preview: `python3
+-m infrastructure.scripts.analyze.per_grade_lct_sample`.
 Full detail: `docs/PROJECT_HISTORY.md`, `STAGE1-9_*_DESIGN.md`, `PIPELINE_GOVERNANCE_AND_STATE.md`,
 `docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md` §14,
 `docs/REQUIREMENTS.yaml`.
