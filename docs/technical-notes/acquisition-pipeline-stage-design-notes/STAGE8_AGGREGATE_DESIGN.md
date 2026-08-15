@@ -543,6 +543,44 @@ same send-back names the existing artifact instead of minting a second batch, an
 the district: a district sent back AGAIN after an earlier routing correctly reappears, because the
 routing belongs to the instruction.
 
+## 3d. The third arrow: RE-REVIEW of a decided district that gained evidence (#713, 2026-08-15)
+
+`stage8_aggregate/rereview.py`. Fairbanks `0200600` was incorporated 2026-07-29 off a **one-rep**
+dispatch, re-dispatched on 08-03 once #691 landed, gained **26 accepted facts for $0.004** — and
+nothing happened. Its approval row was still July's, its `district_grade_minutes` still July's write,
+and no surface said so. The narrowed-dispatch audit says which districts to re-dispatch; the pipeline
+had nowhere to put the answer when one came back richer. #662's shape one layer up: **written is not
+current.**
+
+**Settled design questions** (the issue asked them; these are the answers, with the measurement that
+decided the important one):
+
+| question | answer |
+|---|---|
+| new row, or a new disposition? | a **new `stage8_approval` row** — the table is precious and append-only, `latest_decision` already means "the live decision", no schema change, every prior decision stays readable. |
+| what TRIGGERS a re-review? | **REQ-147 staleness**, never "new facts". **Measured:** Fairbanks' 26 new facts moved *nothing* — identical modes, identical school sets — because `merge_fact_runs` is earliest-run-wins, so re-extracting the SAME schools cannot change the picture. A badge keyed on new facts would have cried wolf on the only district the mechanism has ever seen. |
+| what does Stage 9 do on the second pass? | nothing new was needed: its idempotency key is (facts fingerprint, mapping version), so a re-approval on a moved picture re-writes, the orphan reconcile converges the band set, and #682 fires it from the approval. |
+| how is the delta presented? | `delta_against_decision` — PURE, band-grain: approved vs live gross, and which schools joined or left, bands unioned across both vintages so an APPEARED band (Fairbanks' shape) is visible. A re-review reviews **what changed**; re-adjudicating the whole district is what the standing falsifier forbids. |
+
+**Why a two-stage trigger.** The authoritative check costs a closing-argument assembly per district
+(~28 ms × 53 decided = 1.5 s) against a queue that answers in ~27 ms. `CHANGED_SINCE_DECISION_SQL` is
+a **sound superset in one round trip** (~3 ms warm): the fingerprint is derived from accepted
+production facts plus the four human-judgment tables, so nothing can move the picture without a row
+newer than the decision in one of them — including the per-school override, which is an UPDATE onto
+`school_fact` and is therefore dated by its own embedded `at` stamp, not by `created_at`. The real
+staleness check then runs only on the survivors. Measured live 2026-08-14: **53 decided districts → 1
+candidate (Fairbanks) → 0 actually stale**; the queue endpoint went 27 ms → 33 ms warm.
+
+**Where it shows:** a `re-review` badge on the queue row (sorted to the TOP — a district production
+already holds, resting on facts nobody signed off, is the most actionable row in the list) and the
+delta panel above the verdict controls. CLI:
+`python3 -m infrastructure.acquisition.stage8_aggregate.rereview [district_id …]`.
+
+**The audit answer this produced (issue acceptance 1):** Fairbanks' 26 facts change no band mode —
+elementary/middle/high all 390 min, 18/4/4 schools before and after — so the risk across the other 16
+narrowed-and-written districts is, on this evidence, mostly theoretical. The mechanism exists now to
+catch the case that isn't.
+
 ## 3. Still open (post-2026-07-13 design)
 
 **Genuinely still open:**

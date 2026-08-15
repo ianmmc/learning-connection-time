@@ -66,6 +66,7 @@ from infrastructure.acquisition.stage7_extract.models import Extraction, SchoolF
 from infrastructure.acquisition.stage8_aggregate import aggregate as AGG        # noqa: E402  (gate@7 band rollup from school_fact)
 from infrastructure.acquisition.stage8_aggregate import closing_argument as CA8  # noqa: E402  (gate@8 closing-argument assembler)
 from infrastructure.acquisition.stage8_aggregate import approval as APV8         # noqa: E402  (gate@8 approval record)
+from infrastructure.acquisition.stage8_aggregate import rereview as RRV8         # noqa: E402  (gate@8 re-review of a decided district that gained evidence — #713)
 from infrastructure.acquisition.stage8_aggregate.models import Stage8Approval    # noqa: E402,F401  (precious gate@8 decision — register for init_precious_schema)
 from infrastructure.acquisition.stage8_aggregate.models import BandExclusion     # noqa: E402,F401  (precious gate@8 exclude-from-band #257 — register for init_precious_schema)
 from infrastructure.acquisition.stage8_aggregate.models import HumanAddedFact    # noqa: E402,F401  (precious gate@8 human-add #474 — register for init_precious_schema)
@@ -2767,7 +2768,18 @@ def aggregate_districts():
                                    AND r.status IN {EX.RQ.OPEN_STATUSES_SQL})
                  AND NOT {IS_BENCHMARK_PROVENANCE_SQL.format(alias='p')}
                ORDER BY (s8.disposition IS NOT NULL), n_unresolved DESC, p.district_id""")).mappings().all()
-        return [dict(r) for r in rows]
+        # #713: a DECIDED district whose picture has since MOVED needs a re-review, and until now no
+        # surface said so — Fairbanks 0200600 was written in July, gained 26 accepted facts in
+        # August, and stayed invisible. Decided rows sort last here, so without a flag an operator
+        # would have to open each one. Cheap by construction (a superset pre-filter in one round
+        # trip; the authoritative REQ-147 staleness check runs only on its survivors).
+        flagged = RRV8.needs_rereview(con)
+        out = [dict(r, needs_rereview=r["district_id"] in flagged,
+                    rereview=flagged.get(r["district_id"])) for r in rows]
+        # Stable: re-review to the top (it is the most actionable state in this list — a district
+        # production already holds, on facts nobody has signed off), everything else unmoved.
+        out.sort(key=lambda r: not r["needs_rereview"])
+        return out
 
 
 @app.get("/api/aggregate/withheld")
@@ -2828,8 +2840,17 @@ def aggregate_district_detail(district_id: str):
         routing = None
         if (status.get("latest") or {}).get("disposition") == "sent_back":
             routing = SB8.routing_for(con, district_id, status["latest"]["approval_id"])
+        # #713: when a decision has gone STALE, the reviewer needs WHAT CHANGED — a re-review is a
+        # review of the delta, never a from-scratch re-adjudication (the standing falsifier).
+        delta = None
+        if status.get("is_stale"):
+            frozen = APV8.latest_decision(con, district_id, with_receipt=True) or {}
+            try:
+                delta = RRV8.delta_against_decision(json.loads(frozen.get("receipt_json") or "{}"), ca)
+            except (TypeError, ValueError):
+                delta = None      # an unparseable receipt: the badge still says stale, honestly
         return {"closing_argument": ca, "decision": status, "fingerprint": fp,
-                "incorporation": inc, "send_back_routing": routing}
+                "incorporation": inc, "send_back_routing": routing, "rereview_delta": delta}
 
 
 @app.post("/api/aggregate/override")
