@@ -3353,8 +3353,10 @@ async def extract_compose_followup(payload: dict):
 async def filter_compose_zero_yield(batch_id: str, payload: dict):
     """#164 PR 3b — the 5->1 back-edge (governance §11d): evaluate the batch's included districts
     for ZERO YIELD (no dispatchable/held Stage-5 records, no retryable capture errs, no fidelity
-    flags) and compose the eligible ones into ONE geo-scoped DRAFT follow-up batch at gate@1
-    (ladder-rung'd: 0 geo rounds -> standard vocabulary, 1 -> widened, >=2 -> manual flag).
+    flags) and compose the eligible ones into up to TWO scope-pure DRAFT follow-up batches at
+    gate@1. #719: scope is a DIAGNOSIS — domain-having districts compose DOMAIN-scoped + widened
+    (geo would blank the scoping domain and #229-refuse everything); geo is only for domain-less
+    districts (rung'd: 0 geo rounds -> standard, 1 -> widened, exhausted -> manual flag).
     NEVER auto-flows — escalation batches are individually gate@1'd. `dry_run` previews.
     Fuller gate@5 surfacing of this composer is #518's remainder."""
     payload = payload or {}

@@ -328,18 +328,33 @@ def followup_rounds(sess, district_ids: list) -> dict:
     return out
 
 
-# #164/#575 review: the ONE geo-escalation exhaustion threshold, shared by BOTH escalation
+# #164/#575 review: the ONE escalation-exhaustion predicate, shared by BOTH escalation
 # composers (5->1 zero-yield in stage5_followup.py, 7->1 scope-split in stage7_execute.py) so a
 # district's exhaustion status can never depend on which composer reaches it first (the bug: 7->1
 # used to exhaust at geo>=1 while 5->1 offered a "geo+widened" rung at geo==1, disagreeing for any
 # district sitting at exactly one approved geo round).
-GEO_LADDER_EXHAUSTED_AT = 2
+#
+# #719: the ladder is DIAGNOSIS-keyed, not round-count-keyed. A district WITH a usable scoping
+# domain (NCES or human-confirmed discovered — resolve_scoping_domain) ladders on DOMAIN rounds:
+# widened re-search within its domain. Geo is unrepresentable for it (queue_batch refuses the
+# compose) because a geo batch blanks the scoping domain and Stage 2's #229 gate then refuses
+# every result — a guaranteed no-op that still spends SERP budget (70 schools / 6 batches / 0
+# resolved, 2026-07-27..08-14). Geo rounds are ONLY for the Millard class (no usable domain),
+# where the job is to DISCOVER a domain.
+GEO_LADDER_EXHAUSTED_AT = 2       # one standard + one widened geo attempt
+DOMAIN_LADDER_EXHAUSTED_AT = 3    # one standard + two widened domain rounds (the pre-#719
+                                  # ladder's total-3-round spend envelope, kept)
 
 
-def geo_ladder_exhausted(rounds_row: dict) -> bool:
-    """True once a district has used its full geo-escalation ladder (>=GEO_LADDER_EXHAUSTED_AT
-    ever-approved geo rounds: one standard + one widened attempt). `rounds_row` is one entry of
-    `followup_rounds()`'s per-district dict, e.g. `rounds[district_id]`."""
+def ladder_exhausted(rounds_row: dict, *, has_domain: bool) -> bool:
+    """True once a district has used its full escalation ladder. `rounds_row` is one entry of
+    `followup_rounds()`'s per-district dict; `has_domain` is the #719 diagnosis — whether
+    resolve_scoping_domain yields a usable scoping domain (NCES or confirmed discovered).
+    Domain-having districts ladder on domain rounds (geo rounds don't count against them — a
+    pre-#719 geo round was a misdiagnosed no-op, and charging it would retire the district for
+    a round that could not have worked); domain-less districts ladder on geo rounds."""
+    if has_domain:
+        return rounds_row["domain"] >= DOMAIN_LADDER_EXHAUSTED_AT
     return rounds_row["geo"] >= GEO_LADDER_EXHAUSTED_AT
 
 

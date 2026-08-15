@@ -1,7 +1,19 @@
 """Stage 7 request-more-evidence EXECUTION planning (REQ-118) — the PURE collect/guard/cap logic that
 turns approved NEW-work directives into a targeted follow-up-batch plan. No DB/network; the DB glue
 (compose_followup_batch) is orchestration over this. Mirrors test_stage7_requests.py's pure style."""
+import pytest
+
 from infrastructure.acquisition.process_governance import stage7_execute as EX
+
+
+@pytest.fixture(autouse=True)
+def _domain_diagnosis_default(monkeypatch):
+    """#719: compose's scope diagnosis (Q1.usable_scoping_domains) reads the on-disk NCES LEA CSV,
+    absent on CI — stub it so every test district resolves as DOMAIN-HAVING (the pre-#719 round-0
+    behavior these tests were written against: 0 prior rounds -> the domain-scoped batch).
+    Escalation-path tests that need domain-less districts override in test_escalation_ladders."""
+    monkeypatch.setattr(EX.Q1, "usable_scoping_domains",
+                        lambda year, dids, dd: {d: ("zz-test.org", "nces") for d in dids})
 
 
 def _req(request_id, district_id, route="7->2", band="high"):
@@ -92,7 +104,6 @@ def test_district_order_is_first_seen_preserving_attention_sort():
 # NCES/LCT-heavy build (build_followup_batch) + persist (persist_batch) are stubbed; this asserts the
 # orchestration + that swept directives flip to 'executed' with the batch_id as executed_ref. ---
 import json  # noqa: E402
-import pytest  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 from infrastructure.acquisition.common import benchmark as BM  # noqa: E402
 from infrastructure.acquisition.common import db as gdb  # noqa: E402
