@@ -51,3 +51,40 @@ def test_stage6_js_flags_a_district_production_cannot_receive_718():
           / "static/stage6.js").read_text()
     assert 'data-feat="benchmark-only"' in js and "n_production_sendable" in js
     assert "benchmark-only" in js
+
+
+# ===================== 2026-08-15 review round (#755/#762) =====================
+def test_stage6_js_distinguishes_needs_labeling_from_needs_discovery_762():
+    """#762: the remedy must match the blocker. Baldwin's real records are HELD tier-C awaiting a
+    gate@5 label; the badge used to say "needs discovery" for exactly that shape — contradicting
+    zero_yield_reason's own conclusion for the identical district, one file over. Only when nothing
+    held could EVER reach production is discovery the answer."""
+    from pathlib import Path
+    js = (Path(__file__).resolve().parents[1] / "infrastructure/acquisition/process_governance"
+          / "static/stage6.js").read_text()
+    assert "label at gate@5" in js                       # the needs-labeling arm exists
+    assert "n_send_production" in js                     # gated on TODAY's sendability (#755 name)
+    assert "needs discovery, not dispatch" in js         # the discovery arm survives
+    # the discovery claim must be in the arm gated on production_sendable == 0, not the labeling arm
+    label_arm = js[js.index("label at gate@5") - 600:js.index("label at gate@5")]
+    assert "needs discovery" not in label_arm.split("?")[-1]
+
+
+import pytest as _pytest  # noqa: E402
+
+
+@_pytest.mark.govdb
+def test_the_sql_and_python_sendability_formulas_agree_755(gov_session):
+    """#755: two independently-written formulas shared the name `n_production_sendable` and DISAGREED
+    live on Baldwin (server: send-bucket only, 0; release.py: send+hold non-gt, 2) — the same commit
+    telling two stories about the same district. Now: `n_send_production` = dispatchable TODAY;
+    `n_production_sendable` = (send+hold) non-gt, the release.py formula, pinned equal here for every
+    district the endpoint returns."""
+    from fastapi.testclient import TestClient
+    from infrastructure.acquisition.process_governance import server as SRV
+    from infrastructure.acquisition.stage5_filter import release as REL
+    rows = TestClient(SRV.app).get("/api/handoff/candidates").json()
+    for r in rows:
+        py = REL.production_sendability(REL.load_district_records(gov_session, r["district_id"]))
+        assert py["n_production_sendable"] == r["n_production_sendable"], r["district_id"]
+        assert r["n_send_production"] == r["n_send"] - r["n_benchmark_only"]

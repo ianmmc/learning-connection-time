@@ -349,10 +349,16 @@
           const disp = c.n_dispatched > 0 ? `<span class="badge badge-warn">dispatched</span>` : "";
           // #718: a `gt://` curation artifact counts toward n_send but production can NEVER receive
           // it (the Stage-9 wall). A district whose targets are ALL gt:// used to read as ready —
-          // the inverse of the truth. It is BLOCKED on discovery, and must say so here.
-          const unsendable = c.n_send > 0 && !(c.n_production_sendable > 0)
-            ? `<span class="badge badge-red" data-feat="benchmark-only" title="All ${c.n_benchmark_only} of this district's targets are gt:// curation artifacts — unsendable to production. It needs discovery, not dispatch.">0 sendable · ${c.n_benchmark_only} benchmark-only</span>`
-            : "";
+          // the inverse of the truth. #762: the remedy must match the blocker — Baldwin's real
+          // records are HELD tier-C awaiting a gate@5 label, and this badge used to say "needs
+          // discovery" for it, contradicting zero_yield_reason's own conclusion for the identical
+          // district. Only when nothing held could EVER reach production is discovery the answer.
+          let unsendable = "";
+          if (c.n_send > 0 && !(c.n_send_production > 0)) {
+            unsendable = c.n_production_sendable > 0
+              ? `<span class="badge badge-warn" data-feat="benchmark-only" title="${c.n_benchmark_only} target(s) are gt:// curation artifacts — unsendable to production — but ${c.n_production_sendable} held real record(s) await a gate@5 label. Label those first; discovery is not the blocker.">0 sendable now · ${c.n_production_sendable} held — label at gate@5</span>`
+              : `<span class="badge badge-red" data-feat="benchmark-only" title="All ${c.n_benchmark_only} of this district's targets are gt:// curation artifacts — unsendable to production, and nothing held could reach it either. It needs discovery, not dispatch.">0 sendable · ${c.n_benchmark_only} benchmark-only</span>`;
+          }
           return `<label class="add-item">
               <input type="checkbox" value="${esc(c.district_id)}"/>
               <span class="q-sname">${esc(c.name || c.district_id)}</span>
