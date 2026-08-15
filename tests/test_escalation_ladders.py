@@ -132,8 +132,8 @@ def test_compose_scope_split_emits_two_batches_with_per_district_refs(gov_sessio
     _ensure_compose_tables(s)
     hh = "zz3bsplit"
     _seed_req(s, hh, "ZZ3B0")                       # domain-having, 0 rounds -> domain batch
-    _seed_req(s, hh, "ZZ3B1")                       # domain-less, 1 prior round -> geo+widened
-    _seed_round(s, "batch_zz3b_r1", "ZZ3B1", "domain")
+    _seed_req(s, hh, "ZZ3B1")                       # domain-less, 1 prior GEO round -> geo+widened
+    _seed_round(s, "batch_zz3b_r1", "ZZ3B1", "geo")
     calls = []
     _stub_builder(monkeypatch, calls)
     _stub_domains(monkeypatch, {"ZZ3B0": "zz3b0.org"})
@@ -146,7 +146,8 @@ def test_compose_scope_split_emits_two_batches_with_per_district_refs(gov_sessio
     by_scope = {c["scope"]: c for c in calls}
     assert set(by_scope["domain"]["targets"]) == {"ZZ3B0"}
     assert set(by_scope["geo"]["targets"]) == {"ZZ3B1"}
-    assert by_scope["geo"]["force_widen_dids"] == {"ZZ3B1"}      # >=1 prior round -> widened
+    # #737: widening counts SCOPE-PURE rounds (the same counting ladder_exhausted uses)
+    assert by_scope["geo"]["force_widen_dids"] == {"ZZ3B1"}      # >=1 prior GEO round -> widened
     assert by_scope["domain"].get("force_widen_dids") is None    # round 0 -> standard
     refs = dict(s.execute(text(
         "SELECT district_id, executed_ref FROM extraction_request WHERE handoff_hash = :h "
@@ -292,6 +293,26 @@ def test_compose_domain_district_never_escalates_to_geo(gov_session, monkeypatch
     assert out["escalation_exhausted"] == []
     assert [c["scope"] for c in out["batches"]] == ["domain"]
     assert calls[0]["force_widen_dids"] == {"ZZ719W"}   # escalation = widened vocabulary, same domain
+
+
+@govdb
+def test_compose_misrouted_geo_round_does_not_burn_the_standard_pass(gov_session, monkeypatch):
+    """#737: a domain-having district whose ONLY follow-up history is a pre-#719 misrouted geo
+    round ({domain:0, geo:1}) composes its FIRST real domain-scoped round with STANDARD
+    vocabulary — the geo round never touched its domain, so widening on it would skip the one
+    standard pass. Widen counts scope-pure rounds, exactly like ladder_exhausted."""
+    s = gov_session
+    _ensure_compose_tables(s)
+    hh = "zz737"
+    _seed_req(s, hh, "ZZ737M")
+    _seed_round(s, "batch_zz737_g1", "ZZ737M", "geo")   # the misrouted no-op round
+    calls = []
+    _stub_builder(monkeypatch, calls)
+    _stub_domains(monkeypatch, {"ZZ737M": "zz737.org"})
+    out = EX.compose_followup_batch(handoff_hash=hh, actor="zz", session=s)
+    s.flush()
+    assert [c["scope"] for c in out["batches"]] == ["domain"]
+    assert calls[0].get("force_widen_dids") is None     # standard vocabulary: round 0 of ITS ladder
 
 
 def test_build_followup_geo_scope_refuses_a_domain_having_district(monkeypatch):

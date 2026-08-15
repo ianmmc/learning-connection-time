@@ -655,8 +655,12 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
                           if BSTORE.ladder_exhausted(rounds[d], has_domain=has_domain[d])]
         geo_dids = [d for d in target_dids if d not in exhausted_dids and not has_domain[d]]
         domain_dids = [d for d in target_dids if d not in exhausted_dids and has_domain[d]]
-        widen_dids = {d for d in (domain_dids + geo_dids)
-                      if (rounds[d]["domain"] + rounds[d]["geo"]) >= 1}
+        # #737 review: widening counts the SAME scope-pure rounds the exhaustion predicate does —
+        # a domain-having district widens on its DOMAIN rounds only (a pre-#719 misrouted geo
+        # round never touched its domain, so it must not burn the district's one standard-
+        # vocabulary pass), and a domain-less district on its GEO rounds only.
+        widen_dids = ({d for d in domain_dids if rounds[d]["domain"] >= 1} |
+                      {d for d in geo_dids if rounds[d]["geo"] >= 1})
         did_by_id = {r["request_id"]: r["district_id"] for r in g.rows}
         escalation_exhausted = [
             {"request_id": rid, "district_id": did_by_id[rid], "band": None, "route": None,

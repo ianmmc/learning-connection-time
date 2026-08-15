@@ -291,11 +291,19 @@
       return;
     }
     showModal("5→1 zero-yield check", parts.join(""), async () => {
-      showOverlay("Composing the geo escalation draft…");
+      showOverlay("Composing the escalation draft(s)…");
       let out;
       try { out = await api(`/api/filter/${CURRENT}/compose-zero-yield`, postJSON({ actor: "ian" })); }
       catch (e) { hideOverlay(); alert("Compose failed: " + e.message); return; }
       hideOverlay();
+      // #735: the #719 scope split can compose TWO drafts (domain + geo) — name every one before
+      // jumping to the first, or the second silently awaits review in the list unnoticed.
+      const composed = out.batches || [];
+      if (composed.length > 1) {
+        alert("Composed " + composed.length + " scope-pure drafts — review EACH at gate@1:\n" +
+              composed.map((b) => `  ${b.batch_id} (${b.scope}-scoped, ${b.n_districts} district(s))`).join("\n") +
+              "\n\nOpening " + composed[0].batch_id + " first.");
+      }
       await loadBatches(out.batch_id);
     }, "Compose escalation draft");
   }

@@ -360,6 +360,11 @@ class TestRunBatch:
         assert any(k == "geo_derivation_failed" for k, _ in events)
         out = capsys.readouterr().out
         assert "#719 GEO DERIVATION FAILED" in out and "no-scoping-domain" in out
+        # #734: the signal is DURABLE — the state_event note carries it past the job log's death,
+        # so a later reader can distinguish this from an ordinary zero-hit manual_flag_all
+        ev_notes = [e.get("note") or "" for e in inmem_registry.get("_events", [])
+                    if e.get("district_id") == "3333333"]
+        assert any("geo_derivation_failed" in n and "#719" in n for n in ev_notes)
 
     def test_residual_triggers_wave2_runner(self, tmp_path, monkeypatch, inmem_registry):
         monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
