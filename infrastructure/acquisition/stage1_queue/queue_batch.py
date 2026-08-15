@@ -31,6 +31,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
+from infrastructure.acquisition.common import batch_types as BT
 from infrastructure.acquisition.common import school_sampling as S
 
 from infrastructure.acquisition.common import district_status as DS
@@ -219,12 +220,29 @@ def draw_interleaved_scope(weights: dict, seed: str) -> str:
 
 
 def validate_scope_combo(scope: str, batch_type: str) -> None:
-    """#569 review: scope-purity includes the TYPE axis — geo composes first-runs only.
-    Benchmark is NEVER geo (a geo-scoped batch_00000 would carry derived-host discovery inside
-    the GT wall); follow-up geo loops are the #164 PR-3 escalation builders' job, not free-form
-    composition."""
-    if scope == "geo" and batch_type != "first-run":
-        raise ValueError(f"discovery_scope 'geo' composes first-run batches only (got batch_type={batch_type!r})")
+    """#569 review: **benchmark is NEVER geo** — a geo-scoped batch_00000 would carry derived-host
+    discovery inside the GT wall.
+
+    #646 NARROWED this (2026-08-15) from "geo composes first-runs only" to the benchmark half alone.
+    The type gate was the third rule in a three-rule dead end that made a whole class of district
+    **unreachable by any composer**: a domain-less district is refused by the DOMAIN-scoped follow-up
+    (#229 — an unscoped rediscover is the #227 contamination), geo is exactly what exists for that
+    case, and first-run drops it for having been attempted (`furthest_stage >= 3`). Domain-less AND
+    already-attempted ⇒ nothing would take it. Two batch_00000 GT districts sat there — `1602100`
+    (West Ada) and `3172840` (Lincoln), both with an empty NCES `WEBSITE` in BOTH CCD vintages, so
+    #567's re-ingest could never help: a source-level gap, not a stale-ingest artifact.
+
+    The scope-PURITY the type gate was standing in for is now enforced where districts are actually
+    known, and enforced better: `build_followup_batch` REFUSES a geo compose for any district that
+    HAS a usable scoping domain (#719). So geo and follow-up together can only ever mean "the
+    districts geo exists for", which is the rule #569 wanted — a free-form geo follow-up over
+    domained districts is still impossible, it just fails on the honest predicate instead of on the
+    batch type. Together the two rules say one thing: **geo is for domain-less districts, whatever
+    the batch type.**"""
+    if scope == "geo" and batch_type == BT.BENCHMARK:
+        raise ValueError(f"discovery_scope 'geo' never composes a benchmark batch (got "
+                         f"batch_type={batch_type!r}) — derived-host discovery must not enter the "
+                         f"GT wall (#569)")
 
 
 def build_batch(year: str, n: int, batch_id: str, registry: dict, *, scope: str = "domain",

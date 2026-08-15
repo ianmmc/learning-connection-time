@@ -139,16 +139,68 @@ def test_build_batch_scope_validation():
         QB.build_batch("2024_25", 12, "batch_x", {"districts": {}}, scope="bogus")
 
 
-def test_scope_combo_validation_geo_composes_first_runs_only():
-    """#569 review: benchmark is NEVER geo (a geo batch_00000 would put derived-host discovery
-    inside the GT wall); follow-up geo loops arrive via the PR-3 escalation builders only."""
+def test_scope_combo_validation_keeps_only_the_benchmark_half():
+    """#569's benchmark half stands forever: a geo batch_00000 would put derived-host discovery
+    inside the GT wall. #646 dropped the TYPE half — see the next test for why."""
     from infrastructure.acquisition.stage1_queue import queue_batch as QB
     QB.validate_scope_combo("geo", "first-run")            # allowed
     QB.validate_scope_combo("domain", "benchmark")         # allowed
-    with pytest.raises(ValueError):
+    QB.validate_scope_combo("geo", "follow-up")            # #646: allowed now
+    with pytest.raises(ValueError) as e:
         QB.validate_scope_combo("geo", "benchmark")
-    with pytest.raises(ValueError):
-        QB.validate_scope_combo("geo", "follow-up")
+    assert "GT wall" in str(e.value)
+
+
+def test_a_domainless_already_attempted_district_is_reachable_by_some_composer(monkeypatch):
+    """#646 — the STRUCTURAL regression test, written against the intersection rather than the two
+    districts that happened to hit it (more will, as districts reach furthest_stage >= 3).
+
+    Three individually-correct rules met in a dead end: a DOMAIN-scoped follow-up refuses a
+    domain-less district (#229 — an unscoped rediscover is the #227 contamination), geo is exactly
+    what exists for that case but composed first-runs only (#569), and first-run drops an
+    already-attempted district. Domain-less AND already-attempted ⇒ no composer would take it.
+    MUST FAIL against pre-#646 code, on the middle rule."""
+    from infrastructure.acquisition.stage1_queue import queue_batch as QB
+    did = "1602100"                                        # West Ada: empty WEBSITE in BOTH CCD vintages
+    monkeypatch.setattr(QB.S, "lea_info", lambda year: {
+        did: {"name": "JOINT SCHOOL DISTRICT NO. 2", "state": "ID", "website": "", "status": "Open",
+              "lea_type": "x", "claimed_bands": {"high"}, "city": "MERIDIAN", "zip": "83642"}})
+    monkeypatch.setattr(QB.S, "school_index", lambda year: {
+        did: {"high": [{"school_id": "s1", "name": "Rocky Mountain High", "level": "High"}]}})
+    monkeypatch.setattr(QB.S, "school_level_counts", lambda year: {})
+    monkeypatch.setattr(QB, "load_enrollment", lambda: {})
+
+    # rule 1: the domain-scoped follow-up still refuses it, correctly — that guard is not the bug
+    _, skipped = QB.build_followup_batch("2024_25", "b", {did: ["high"]}, scope="domain",
+                                         discovered_domains={})
+    assert skipped and "#229" in skipped[0]["reason"]
+
+    # rule 2 (the one #646 narrowed) + the compose that was unreachable
+    QB.validate_scope_combo("geo", "follow-up")
+    doc, skipped = QB.build_followup_batch("2024_25", "b", {did: ["high"]}, scope="geo",
+                                           discovered_domains={})
+    assert [d["district_id"] for d in doc["districts"]] == [did] and not skipped
+    assert doc["discovery_scope"] == "geo"                 # the route is recorded ON the batch
+
+
+def test_geo_purity_now_rests_on_the_honest_predicate_not_the_batch_type(monkeypatch):
+    """What #569's type gate was really standing in for — "don't geo-compose free-form" — is now
+    enforced where districts are KNOWN, and enforced better: #719 refuses a geo compose for any
+    district that HAS a usable scoping domain. So geo+follow-up can only ever mean the districts geo
+    exists for; a free-form geo follow-up over domained districts is still impossible."""
+    from infrastructure.acquisition.stage1_queue import queue_batch as QB
+    monkeypatch.setattr(QB.S, "lea_info", lambda year: {
+        "0503060": {"name": "BENTONVILLE", "state": "AR", "website": "www.bentonvillek12.org",
+                    "status": "Open", "lea_type": "x", "claimed_bands": {"high"},
+                    "city": "BENTONVILLE", "zip": "72712"}})
+    monkeypatch.setattr(QB.S, "school_index", lambda year: {
+        "0503060": {"high": [{"school_id": "s1", "name": "Bentonville High", "level": "High"}]}})
+    monkeypatch.setattr(QB.S, "school_level_counts", lambda year: {})
+    monkeypatch.setattr(QB, "load_enrollment", lambda: {})
+    doc, skipped = QB.build_followup_batch("2024_25", "b", {"0503060": ["high"]}, scope="geo",
+                                           discovered_domains={})
+    assert not doc["districts"]
+    assert "geo compose refused" in skipped[0]["reason"] and "bentonvillek12.org" in skipped[0]["reason"]
 
 
 # ---------------------------------------------------------------- follow-up geo scope (PR 3a)
