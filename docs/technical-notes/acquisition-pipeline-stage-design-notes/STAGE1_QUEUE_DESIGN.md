@@ -626,11 +626,23 @@ Tests: tests/test_discovery_policy_console.py.
   (`common/discovered_domain`), else `("", "")`. Added to fix a drift bug where the follow-up
   path's own inline copy could label a domain's source `"discovered"` even when the confirmed-domain
   lookup came back empty.
-- **`validate_scope_combo(scope, batch_type)`** (`queue_batch.py:211-217`) — guards that
-  `scope="geo"` composes `batch_type="first-run"` batches only; benchmark and follow-up batches are
-  never geo-composed via this path (follow-up's geo loops are the #164 PR-3 escalation composers'
-  own job, not free-form `queue_create` composition). Wired into `server.py`'s `queue_create`
-  (governance §11k has the full `queue_create` picture).
+- **`validate_scope_combo(scope, batch_type)`** — guards that **benchmark is never geo-composed**
+  (a geo `batch_00000` would put derived-host discovery inside the GT wall, #569). Wired into
+  `server.py`'s `queue_create` (governance §11k has the full `queue_create` picture).
+  **#646 narrowed it (2026-08-15)** from "geo composes first-runs only" to that benchmark half
+  alone. The type gate was the third rule in a three-rule dead end that left a whole CLASS of
+  district unreachable by any composer: a domain-less district is refused by the DOMAIN-scoped
+  follow-up (#229 — an unscoped rediscover is the #227 contamination), **geo is exactly what exists
+  for that case**, and first-run drops it for having been attempted (`furthest_stage >= 3`).
+  Domain-less AND already-attempted ⇒ nothing would take it. Two batch_00000 GT districts sat
+  there — `1602100` (West Ada) and `3172840` (Lincoln), both with an empty NCES `WEBSITE` in BOTH
+  CCD vintages, so #567's re-ingest could never help: a source-level gap, not a stale-ingest
+  artifact.
+  The scope-PURITY the type gate stood in for now lives where districts are actually KNOWN, and is
+  stricter for it: `build_followup_batch` **refuses a geo compose for any district that HAS a usable
+  scoping domain** (#719). A free-form geo follow-up over domained districts is still impossible —
+  it now fails on the honest predicate instead of on the batch type. The two rules together say one
+  thing: **geo is for domain-less districts, whatever the batch type.**
 - **`geo_pool="all"` experiment mode** — `build_batch`'s `geo_pool` kwarg (default `"blank"`)
   controls the geo draw population. Under `"blank"`, the geo draw is restricted to districts with
   no usable domain from either source — the #229-refused class. Under `"all"` (the `geo_all`
