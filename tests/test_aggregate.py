@@ -23,6 +23,84 @@ class TestGross:
         accepted, _ = A.consensus_school_facts(rows)
         assert accepted and accepted[0]["gross"] == 390  # 14:30-08:00 = 6h30 = 390, no deduction
 
+    def test_ambiguous_pm_end_normalizes_to_afternoon(self):
+        """#716 must-fail-today case (the Washoe shape): one voter echoes the document's 12-hour
+        clock ('03:30'), the other normalizes to 24h ('15:30') — substantive agreement that used to
+        land unresolved (clusters 720 min apart). Deterministic normalization at the consensus
+        boundary accepts it with council_agree."""
+        rows = {"google/gemini-2.5-flash": [{"grade_level": "elementary", "start_time": "09:30",
+                                             "end_time": "03:30", "school_name": "Allen Elementary"}],
+                "mistralai/mistral-small-24b-instruct-2501": [
+                    {"grade_level": "elementary", "start_time": "09:30",
+                     "end_time": "15:30", "school_name": "Allen Elementary"}]}
+        accepted, unres = A.consensus_school_facts(rows)
+        assert unres == [] and len(accepted) == 1
+        f = accepted[0]
+        assert f["method"] == "council_agree" and f["end"] == "15:30" and f["gross"] == 360
+
+    def test_normalize_ambiguous_end_rules(self):
+        """#716: end < start, or end in 01:00-06:59, is afternoon (+720); everything else — real
+        morning ends (early-release 12:30), evening ends, missing values — is untouched."""
+        n = A._normalize_ambiguous_end
+        assert n(9 * 60 + 30, 3 * 60 + 30) == 15 * 60 + 30      # 03:30 after a 09:30 start -> 15:30
+        assert n(8 * 60, 60) == 13 * 60                          # 01:00 -> 13:00 (in-window)
+        assert n(8 * 60, 6 * 60 + 59) == 18 * 60 + 59            # 06:59 -> 18:59 (window edge)
+        assert n(8 * 60, 7 * 60) == 19 * 60                      # 07:00 < 08:00 start -> 19:00 (e<s rule)
+        assert n(8 * 60, 12 * 60 + 30) == 12 * 60 + 30           # 12:30 early release stays
+        assert n(8 * 60, 15 * 60 + 30) == 15 * 60 + 30           # already 24h stays
+        assert n(None, 3 * 60) == 3 * 60 and n(8 * 60, None) is None   # missing values untouched
+
+    def test_judge_rows_normalize_uniformly(self):
+        """#716: the judge tiebreak path gets the SAME normalization — a judge echoing '3:15'
+        resolves as 15:15, not a 210-minute-gross implausible."""
+        rows = {"google/gemini-2.5-flash": [{"grade_level": "middle", "start_time": "08:00",
+                                             "end_time": "14:00", "school_name": "B Middle"}],
+                "mistralai/mistral-small-24b-instruct-2501": [
+                    {"grade_level": "middle", "start_time": "09:00",
+                     "end_time": "16:00", "school_name": "B Middle"}]}
+        judge = {"qwen/qwen3-235b-a22b-2507": [{"grade_level": "middle", "start_time": "08:30",
+                                                "end_time": "03:15", "school_name": "B Middle"}]}
+        accepted, _ = A.consensus_school_facts(rows, judge_rows=judge)
+        assert len(accepted) == 1 and accepted[0]["method"] == "judge"
+        assert accepted[0]["end"] == "15:15" and accepted[0]["gross"] == 405
+
+    def test_reaggregate_receipt_replays_stored_calls_zero_spend(self, tmp_path, monkeypatch):
+        """#716 recovery path: reaggregate_receipt rebuilds consensus from the receipt's stored
+        per-call facts (no model calls), and the new row carries cost_usd=0 so the REQ-051 spend
+        governor never double-counts the original run."""
+        from infrastructure.acquisition.process_governance import reaggregate as RA
+        receipt = {"handoff_hash": "zzhash", "district": {
+            "district_id": "ZZ716", "name": "Washoe-shape", "accepted": [], "n_reps": 1,
+            "unresolved": [{"band": "elementary", "school": "allen elementary",
+                            "starts": {"a": "09:30", "b": "09:30"},
+                            "ends": {"a": "03:30", "b": "15:30"}}],
+            "reps": [{"rec_key": "ZZ716:r1", "file": "f.txt", "kind": "text", "council_id": "c1",
+                      "judged": False, "calls": [
+                          {"model": "google/gemini-2.5-flash", "role": "voter", "facts": [
+                              {"grade_level": "elementary", "start_time": "09:30",
+                               "end_time": "03:30", "school_name": "Allen Elementary"}]},
+                          {"model": "mistralai/mistral-small-24b-instruct-2501", "role": "voter",
+                           "facts": [{"grade_level": "elementary", "start_time": "09:30",
+                                      "end_time": "15:30", "school_name": "Allen Elementary"}]}]}]}}
+        p = tmp_path / "extraction_zzhash_ZZ716_x.json"
+        p.write_text(__import__("json").dumps(receipt))
+        # dry run: pure, no persist
+        out = RA.reaggregate_receipt(str(p), dry_run=True)
+        assert out["was"] == {"accepted": 0, "unresolved": 1}
+        assert out["now"] == {"accepted": 1, "unresolved": 0} and out["persisted"] is False
+        # persist path: stub the DB write + receipt dir; assert cost_usd rides as 0
+        seen = {}
+        monkeypatch.setattr(RA.S7R, "persist_run", lambda results, **kw: (
+            seen.update(results=results, **kw) or
+            {"districts": [{"extraction_id": 42, "district_id": "ZZ716"}]}))
+        monkeypatch.setattr(RA.paths, "ACQUISITION", tmp_path)
+        out = RA.reaggregate_receipt(str(p))
+        assert out["persisted"] and out["extraction_id"] == 42
+        pd = seen["results"]["districts"]["ZZ716"]
+        assert pd["telemetry"]["cost_usd"] == 0.0 and pd["reaggregated_from"] == p.name
+        assert seen["created_by"] == "auto:reaggregate-716"
+        assert pd["accepted"][0]["end"] == "15:30" and pd["accepted"][0]["rec_key"] == "ZZ716:r1"
+
     def test_no_deduction_applied(self):
         # even if a lunch is mentioned in another row, gross ignores it (end-start only)
         bands = A.district_bands_from_facts([{"band": "elementary", "school": "a", "start": "08:00", "end": "15:00", "gross": 420, "models": ["x", "y"], "method": "council_agree"}])
