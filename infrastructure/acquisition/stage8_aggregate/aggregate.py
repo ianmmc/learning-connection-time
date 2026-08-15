@@ -115,14 +115,19 @@ def _normalize_ambiguous_end(s, e):
     echoes the document's 12-hour clock verbatim ('3:30') parses 720 minutes from a voter that
     normalized to 24h ('15:30') — near-perfect substantive agreement minted into disagreement at
     scale (Washoe: 67 of ~106 schools unresolved on exactly this shape). The ambiguity is fully
-    resolvable deterministically in this domain: no school day ENDS between 01:00 and 06:59, and
-    end never precedes start — so an end < start, or an end inside 01:00–06:59, is afternoon:
-    +720. Applied uniformly to voter AND judge rows, BEFORE clustering, per REQ-054 (time
+    resolvable deterministically in this domain: no school day ENDS between 01:00 and 06:59, so an
+    end inside that window is afternoon: +720. The window is the ONLY trigger (#732 review): every
+    genuine PM-dismissal echo lands in it (12h dismissals 1:00–6:59pm; no real school dismisses
+    after 18:59), so a broader `end < start` rule adds no recall — while it WOULD launder a
+    genuinely garbled/transposed pair (start 13:00 / end 07:45 → a fabricated 19:45 accepted fact)
+    that the plausibility gate correctly routes to unresolved for human review, and could mint an
+    invalid >23:59 clock string. Window max (06:59) + 720 = 18:59, so the result is always a valid
+    time. Applied uniformly to voter AND judge rows, BEFORE clustering, per REQ-054 (time
     interpretation lives in deterministic code, never in model formatting). Starts are never
     touched (the symmetric ambiguity doesn't exist: schools start in the morning), and the
     human-override path (gross_from_times) is deliberately excluded — auto-correcting a human's
     typo would mask it instead of failing loud."""
-    if s is not None and e is not None and (e < s or 60 <= e <= 419):
+    if s is not None and e is not None and 60 <= e <= 419:
         e += 720
     return e
 
