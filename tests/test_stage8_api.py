@@ -391,3 +391,150 @@ def test_slot_assign_remove_deletes_and_backs_up(monkeypatch):
                     json={"district_id": "D1", "band": "elementary", "school": "Washington",
                           "roster_school_id": "001"})
     assert r.status_code == 200 and r.json()["ok"]
+
+
+# ===================== #682: the approve → Stage-9 write arrow =====================
+# The gap this closes: the gate model documents "gate@8 (Aggregate — Stage 9 then auto-writes)", but
+# the decide endpoint recorded the approval and returned. Worcester 2513230 was approved 2026-07-28
+# and `district_grade_minutes` stayed EMPTY until someone remembered the CLI 25 minutes later.
+
+
+class _Res9:
+    """Stand-in for IncorporationResult (the endpoint reads only these fields)."""
+    def __init__(self, status, reason=None, written=(), grades=0):
+        self.status, self.reason, self.written, self.grades = status, reason, list(written), grades
+
+
+def _approve(monkeypatch, *, result=None, raises=None, disposition="approved"):
+    """Drive the real decide endpoint through to the #682 wiring, DB-free."""
+    ca = {"district_id": "D1", "bands": {"elementary": {"gross_minutes": 400,
+          "sampling": {"coverage": 0.9}, "schools": [{"school": "a", "gross": 400}]}}}
+    monkeypatch.setattr(SRV.CA8, "load_closing_argument", lambda con, did: ca)
+    monkeypatch.setattr(SRV.APV8, "record_decision", lambda *a, **k: 42)
+    monkeypatch.setattr(SRV, "_backup_stage8_approvals", lambda con: 0)
+    monkeypatch.setattr(SRV, "_gate8_refresh_twin_and_receipt", lambda *a, **k: None)
+    monkeypatch.setattr(SRV.CAL, "record_calibration", lambda con, rec: None)
+    seen = {"calls": [], "blocked": []}
+
+    def _inc(did, **kw):
+        seen["calls"].append((did, kw))
+        if raises:
+            raise raises
+        return result or _Res9("incorporated", written=[{"grade_level": "elementary"}], grades=6)
+
+    monkeypatch.setattr(SRV.INC9, "incorporate_district", _inc)
+    monkeypatch.setattr(SRV.LEDGER9, "record_incorporation_blocked",
+                        lambda con, did, **kw: seen["blocked"].append((did, kw)))
+    _use(monkeypatch, _Con([_Result(rows=[{"name": "Test District", "state": "PA"}])]))
+    r = client.post("/api/aggregate/decision/D1",
+                    json={"disposition": disposition, "expected_fingerprint": SRV.CA8.fingerprint(ca),
+                          "reason": "thin" if disposition == "sent_back" else None, "actor": "ian"})
+    return r, seen
+
+
+def test_approval_fires_the_stage9_write(monkeypatch):
+    """MUST FAIL against pre-#682 code: the endpoint used to record the approval and return."""
+    r, seen = _approve(monkeypatch)
+    assert r.status_code == 200
+    assert [d for d, _ in seen["calls"]] == ["D1"]
+    assert seen["calls"][0][1]["actor"] == "ian"        # the gate actor, not a generic machine actor
+    inc = r.json()["incorporation"]
+    assert inc["status"] == "incorporated" and inc["bands"] == ["elementary"] and inc["grades"] == 6
+    assert not seen["blocked"]                          # a successful write stamps nothing extra
+
+
+def test_send_back_never_fires_the_write(monkeypatch):
+    r, seen = _approve(monkeypatch, disposition="sent_back")
+    assert r.status_code == 200 and seen["calls"] == []
+    assert "incorporation" not in r.json()
+
+
+def test_a_faulted_write_never_takes_the_approval_with_it(monkeypatch):
+    """The approval is precious and ALREADY COMMITTED when the write runs — a fault is reported, never
+    rolled back, and never turned into a 500 that would leave the operator thinking they must re-decide."""
+    r, seen = _approve(monkeypatch, raises=RuntimeError("Stage 9 verify failed"))
+    assert r.status_code == 200
+    body = r.json()
+    assert body["ok"] and body["approval_id"] == 42     # the decision stands
+    assert body["incorporation"]["status"] == "error"
+    assert "Stage 9 verify failed" in body["incorporation"]["reason"]
+    assert [d for d, _ in seen["blocked"]] == ["D1"]    # and the miss is on the record
+
+
+def test_a_blocked_write_makes_approved_but_unwritten_queryable(monkeypatch):
+    """A guard refusal (benchmark provenance is the common one) is not an error — but it MUST leave a
+    trace, or the timeline ends at 'approved' with production holding nothing (the #682 silence)."""
+    r, seen = _approve(monkeypatch,
+                       result=_Res9("not_eligible", reason="benchmark provenance — walled off"))
+    assert r.status_code == 200 and r.json()["incorporation"]["status"] == "not_eligible"
+    assert len(seen["blocked"]) == 1
+    did, kw = seen["blocked"][0]
+    assert did == "D1" and kw["status"] == "not_eligible"
+    assert "benchmark provenance" in kw["reason"]
+    assert kw["approval_id"] == 42 and kw["actor"] == "ian"
+
+
+def test_a_ledger_hiccup_is_reported_not_raised(monkeypatch):
+    """The blocked-stamp is the observability layer, not a THIRD place to lose the approval: if the
+    stamp itself fails, the caller still gets its answer (with the hiccup named), never an exception."""
+    def _boom(con, did, **kw):
+        raise RuntimeError("gov_db went away")
+    monkeypatch.setattr(SRV.INC9, "incorporate_district",
+                        lambda did, **kw: _Res9("no_bands", reason="receipt carried no bands"))
+    monkeypatch.setattr(SRV.LEDGER9, "record_incorporation_blocked", _boom)
+    _use(monkeypatch, _Con([]))
+    out = SRV._incorporate_after_approval("D1", actor="ian", approval_id=1, fingerprint="fp")
+    assert out["status"] == "no_bands" and "gov_db went away" in out["ledger_warning"]
+
+
+def test_the_endpoint_and_the_cli_share_one_entry_point():
+    """The issue's explicit consistency requirement: two callers, ONE `incorporate_district`, so the
+    console path and the CLI can never drift into two behaviours."""
+    import inspect
+    from infrastructure.acquisition.stage9_incorporate import __main__ as CLI9
+    assert "INC9.incorporate_district(" in inspect.getsource(SRV._incorporate_after_approval)
+    assert "incorporate_district(" in inspect.getsource(CLI9.main)
+
+
+def test_the_write_runs_after_the_approval_session_commits():
+    """Stage 9 re-validates the decision from the DB in its OWN session (the TOCTOU re-check), so it
+    must be called with the approval committed — i.e. OUTSIDE the endpoint's `with gdb.session_scope()`."""
+    import inspect
+    src = inspect.getsource(SRV.aggregate_decision)
+    body = src[src.index("with gdb.session_scope"):]
+    with_block, _, after = body.partition("\n    out = ")
+    assert "_incorporate_after_approval" not in with_block
+    assert "_incorporate_after_approval" in after
+
+
+def test_detail_reports_what_the_write_did(monkeypatch):
+    """#682: approval and incorporation are two records — the detail view carries both, and a district
+    written from facts that have since MOVED reads as written-but-not-current."""
+    ca = {"district_id": "D1", "bands": {"elementary": {"gross_minutes": 400,
+          "sampling": {"coverage": 0.9}, "schools": [{"school": "a", "gross": 400}]}}}
+    monkeypatch.setattr(SRV.CA8, "load_closing_argument", lambda con, did: ca)
+    monkeypatch.setattr(SRV.APV8, "decision_status", lambda con, did, current_fingerprint=None: {})
+    fp = SRV.CA8.fingerprint(ca)
+    _use(monkeypatch, _Con([]))
+
+    for att, expect_current in (
+            ({"kind": "incorporated", "fingerprint": fp}, True),
+            ({"kind": "incorporated", "fingerprint": "older"}, False),
+            ({"kind": "incorporation_blocked", "fingerprint": fp}, False)):
+        monkeypatch.setattr(SRV.LEDGER9, "latest_attempt", lambda con, did, a=att: dict(a))
+        got = client.get("/api/aggregate/district/D1").json()["incorporation"]
+        assert got["current"] is expect_current, att
+
+    monkeypatch.setattr(SRV.LEDGER9, "latest_attempt", lambda con, did: None)
+    assert client.get("/api/aggregate/district/D1").json()["incorporation"] is None
+
+
+def test_stage8_js_shows_the_write_beside_the_decision_682():
+    """Source-pin (no JS harness): an approved district must never render as done when production
+    never received it — the badge is the standing surface for that distinction."""
+    from pathlib import Path
+    js = (Path(__file__).resolve().parents[1] / "infrastructure/acquisition/process_governance"
+          / "static/stage8.js").read_text()
+    assert 'data-feat="incorporation"' in js
+    assert "approved, not written" in js and "written — from earlier facts" in js
+    assert "reportIncorporation(did, out.incorporation)" in js

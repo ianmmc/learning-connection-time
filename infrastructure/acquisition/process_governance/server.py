@@ -69,6 +69,8 @@ from infrastructure.acquisition.stage8_aggregate.models import Stage8Approval   
 from infrastructure.acquisition.stage8_aggregate.models import BandExclusion     # noqa: E402,F401  (precious gate@8 exclude-from-band #257 — register for init_precious_schema)
 from infrastructure.acquisition.stage8_aggregate.models import HumanAddedFact    # noqa: E402,F401  (precious gate@8 human-add #474 — register for init_precious_schema)
 from infrastructure.acquisition.stage8_aggregate.models import SlotAssignment    # noqa: E402,F401  (precious gate@8 slot disposition #499 REQ-145 — register for init_precious_schema)
+from infrastructure.acquisition.stage9_incorporate import incorporate as INC9    # noqa: E402  (#682: the approve→write arrow — the SAME entry point the CLI calls)
+from infrastructure.acquisition.stage9_incorporate import ledger as LEDGER9      # noqa: E402  (#682: the stage-9 outcome log — what the write did, or why it didn't)
 
 
 def _refresh_filtered(con, district_id: str) -> None:
@@ -2807,12 +2809,21 @@ def aggregate_district_detail(district_id: str):
     space) + its gate@8 decision status (approved / sent_back / pending, and whether an approval has gone
     STALE against the live facts). The top-level `fingerprint` is the review token: the client MUST echo
     it back to POST /api/aggregate/decision, which refuses (409) if the live facts no longer match —
-    closing the review→click window (see aggregate_decision)."""
+    closing the review→click window (see aggregate_decision).
+
+    `incorporation` (#682) is the Stage-9 half of the same story: what the write DID after the last
+    approval, or why it didn't. `current` compares the written fingerprint against the live one, so a
+    district written from facts that have since moved reads as written-but-stale rather than done."""
     with gdb.session_scope() as con:
         ca = CA8.load_closing_argument(con, district_id)
         fp = CA8.fingerprint(ca)
         status = APV8.decision_status(con, district_id, current_fingerprint=fp)
-        return {"closing_argument": ca, "decision": status, "fingerprint": fp}
+        att = LEDGER9.latest_attempt(con, district_id)
+        inc = None
+        if att:
+            inc = dict(att, current=(att["kind"] == "incorporated" and att["fingerprint"] == fp))
+        return {"closing_argument": ca, "decision": status, "fingerprint": fp,
+                "incorporation": inc}
 
 
 @app.post("/api/aggregate/override")
@@ -3101,12 +3112,56 @@ async def aggregate_recover_band(payload: dict):
     return out
 
 
+def _incorporate_after_approval(district_id: str, *, actor: str, approval_id, fingerprint,
+                                name: str = "", state=None) -> dict:
+    """#682 — the approve→Stage-9-write arrow, fired POST-COMMIT and never able to fail the approval.
+
+    Wiring this is closing a design–implementation gap, not weakening a gate: gate@8 IS the human
+    gate, and the write behind it is documented as ungated + deterministic, so the human's approval is
+    precisely the authorization the write acts on. The write's own guards stay the only other gates —
+    it re-asks EVERYTHING from the frozen receipt in its own session (benchmark provenance wall,
+    foreign-collision fail-loud, REQ-147 same-vintage staleness, REQ-026 temporal window, the TOCTOU
+    re-check), so nothing here needs to pre-judge eligibility.
+
+    Two properties this must hold, both from the issue:
+      - **The approval is precious and stands regardless.** It is already committed when we get here;
+        a write failure is REPORTED (in the response, and as a stage-9 `incorporation_blocked` event),
+        never rolled back. The write is idempotent and retryable, so the CLI remains the recovery path.
+      - **One entry point.** This calls the SAME `incorporate_district` the CLI calls — the endpoint
+        and the CLI can never drift into two behaviours.
+    """
+    try:
+        res = INC9.incorporate_district(district_id, actor=actor)
+        status, reason = res.status, res.reason
+        out = {"status": status, "reason": reason,
+               "bands": [w["grade_level"] for w in res.written], "grades": res.grades}
+    except Exception as e:  # noqa: BLE001 — a faulted write must not take the human's decision with it
+        status, reason = "error", f"{type(e).__name__}: {e}"
+        out = {"status": status, "reason": reason, "bands": [], "grades": 0}
+    if status not in ("incorporated", "already_incorporated"):
+        # The silence #682 was filed on: without this the timeline ends at 'approved' while production
+        # holds nothing. Best-effort — the ledger stamp must not become a new way to lose the approval.
+        try:
+            with gdb.session_scope() as con:
+                LEDGER9.record_incorporation_blocked(
+                    con, district_id, status=status, reason=reason, actor=actor,
+                    approval_id=approval_id, fingerprint=fingerprint, name=name, state=state)
+                con.commit()
+        except Exception as e:  # noqa: BLE001
+            out["ledger_warning"] = f"{type(e).__name__}: {e}"
+    return out
+
+
 @app.post("/api/aggregate/decision/{district_id}")
 async def aggregate_decision(district_id: str, payload: dict):
-    """Record the gate@8 verdict on the WHOLE district (§2e, all-or-nothing): 'approved' (Stage 9 may
-    write every band) or 'sent_back' (a reason is REQUIRED → an 8→1/8→6 back-edge). Re-loads the closing
+    """Record the gate@8 verdict on the WHOLE district (§2e, all-or-nothing): 'approved' (Stage 9 then
+    writes every band) or 'sent_back' (a reason is REQUIRED → an 8→1/8→6 back-edge). Re-loads the closing
     argument SERVER-side (never trusts the client's copy), freezes it as the receipt + fingerprint, fires
     the gate@8 calibration hook (accruing from day one), commits, and backs up the tracked JSON.
+
+    #682: on 'approved' the Stage-9 write then EXECUTES (`_incorporate_after_approval`, post-commit) —
+    the documented "gate@8 (Aggregate — Stage 9 then auto-writes)" arrow, which until now existed only
+    as a CLI the operator had to remember to run. The write's outcome rides back in `incorporation`.
 
     `expected_fingerprint` is REQUIRED (review round, PR #252): the fingerprint the GET handed the
     reviewer with the page they actually read. The server-side re-load alone guarded against a tampered
@@ -3150,7 +3205,15 @@ async def aggregate_decision(district_id: str, payload: dict):
         _gate8_refresh_twin_and_receipt(con, district_id, meta, ca, disposition=disposition,
                                         reason=reason, approval_id=approval_id, actor=actor,
                                         fingerprint=live_fp)
-    return {"ok": True, "approval_id": approval_id, "disposition": disposition}
+    out = {"ok": True, "approval_id": approval_id, "disposition": disposition}
+    if disposition == "approved":
+        # OUTSIDE the session_scope above: the approval must be COMMITTED before the write reads it
+        # back (Stage 9 opens its own governance session and re-validates the decision from the DB —
+        # the TOCTOU re-check). Calling it inside would have Stage 9 read a pre-approval world.
+        out["incorporation"] = _incorporate_after_approval(
+            district_id, actor=actor, approval_id=approval_id, fingerprint=live_fp,
+            name=meta.get("name", ""), state=meta.get("state"))
+    return out
 
 
 @app.post("/api/extract/request/{request_id}")

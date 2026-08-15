@@ -137,6 +137,9 @@ def _decide(monkeypatch, disposition, min_coverage=0.75):
     monkeypatch.setattr(SRV.CA8, "load_closing_argument", lambda con, did: ca)
     monkeypatch.setattr(SRV.APV8, "record_decision", lambda *a, **k: 42)
     monkeypatch.setattr(SRV, "_backup_stage8_approvals", lambda con: 0)
+    # #682: an approval now FIRES the Stage-9 write. Stub it — this test is about the calibration
+    # wiring, and an unstubbed write would reach both real DBs from a DB-free test.
+    monkeypatch.setattr(SRV, "_incorporate_after_approval", lambda did, **kw: {"status": "stubbed"})
     calls = []
     monkeypatch.setattr(SRV.CAL, "record_calibration", lambda con, rec: calls.append(rec))
     _use(monkeypatch, _Con([_Result(rows=[{"name": "Test District", "state": "PA"}])]))

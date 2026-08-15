@@ -165,6 +165,28 @@ def test_ledger_roundtrip(gov_session):
     assert LEDGER.latest_incorporation(gov_session, "NOPE") is None
 
 
+def test_a_blocked_write_is_recorded_without_ever_looking_written(gov_session):
+    """#682: the two ledger reads answer DIFFERENT questions and must not contaminate each other —
+    `latest_incorporation` = "what is written" (the idempotency key, deliberately blind to failures),
+    `latest_attempt` = "what happened last" (what the reviewer needs after clicking Approve). A later
+    blocked attempt must never make a written district look unwritten to the idempotency check, or a
+    re-run would silently re-write it."""
+    gdb.init_precious_schema()
+    LEDGER.record_incorporation(gov_session, "ZZLEDGER2", fingerprint="fp-1", approval_id=5,
+                                bands={"elementary": "council_extraction"}, actor="ian")
+    gov_session.flush()
+    LEDGER.record_incorporation_blocked(gov_session, "ZZLEDGER2", status="not_eligible",
+                                        reason="benchmark provenance — walled off", actor="ian",
+                                        approval_id=6, fingerprint="fp-2")
+    gov_session.flush()
+
+    assert LEDGER.latest_incorporation(gov_session, "ZZLEDGER2")["fingerprint"] == "fp-1"
+    att = LEDGER.latest_attempt(gov_session, "ZZLEDGER2")
+    assert att["kind"] == "incorporation_blocked" and att["status"] == "not_eligible"
+    assert "benchmark provenance" in att["note"] and att["fingerprint"] == "fp-2"
+    assert LEDGER.latest_attempt(gov_session, "NOPE") is None
+
+
 # ----------------------------- write + stamp -----------------------------
 def test_incorporate_writes_bands_and_stamps(env, monkeypatch):
     ca = _fake_ca(env, council={"elementary": {"gross": 400}, "high": {"gross": 450}})
