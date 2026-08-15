@@ -13,6 +13,7 @@
 //   F6 decision status + Approve / Send-back verdict controls                [data-feat="verdict"]
 //   F7 per-school override control (required reason)                         [data-feat="override"]
 //   F8 what the Stage-9 write DID after the approval (#682)                   [data-feat="incorporation"]
+//   F9 where a send-back GOES — the 8→1 / 8→6 routing controls (#689)         [data-feat="send-back-route"]
 // Vanilla JS on the shared window.LCT helpers; reuses q-*/badge/btn classes for visual consistency.
 (function () {
   const $g = (s, r = document) => r.querySelector(s);
@@ -106,6 +107,7 @@
     return `
       ${renderHeader(ca, dec, x.incorporation)}
       ${renderVerdict(dec)}
+      ${renderSendBackRoute(dec, x.send_back_routing)}
       <div class="s8-bands">${order.map((b) => renderBand(b, bands[b])).join("") || `<div class="empty">No accepted band facts.</div>`}</div>
       ${renderDenominatorCriteria((ca.provenance || {}).denominator)}
       ${renderNegativeSpace(ca.negative_space || {}, ca.capture_events || [])}`;
@@ -133,6 +135,24 @@
       <button class="btn" data-decide="sent_back">Send back (needs a reason)</button>
       ${approvedNote}
       <p class="s8-note">All-or-nothing at the district (§2e): approval publishes every band together; an unsatisfied band means send it back.</p>
+    </div>`;
+  }
+
+  // F9 (#689) — where a send-back actually GOES. The reason a reviewer types IS the routing
+  // instruction; until now nothing consumed it, so a sent-back district just sat at stage 8. The
+  // human still picks the route (or neither) — the console executes the choice and records it.
+  function renderSendBackRoute(dec, routing) {
+    if (!dec.decided || dec.disposition !== "sent_back") return "";
+    if (routing) {
+      return `<div class="s8-verdict" data-feat="send-back-route">
+        <span class="badge badge-success">re-routed ${esc(routing.route)} → ${esc(routing.artifact || "")}</span>
+        <span class="s8-note">${esc(routing.note || "")}</span></div>`;
+    }
+    return `<div class="s8-verdict" data-feat="send-back-route">
+      <span class="badge badge-red">sent back — not re-routed</span>
+      <button class="btn" data-route="8-&gt;1">Re-discover → Stage 1 follow-up batch</button>
+      <button class="btn" data-route="8-&gt;6">Re-dispatch → new gate@6 draft</button>
+      <p class="s8-note">8→1 goes looking for better/newer evidence (a gate@1-reviewable draft batch, never auto-flowed); 8→6 keeps the evidence and picks different representations. Preview first — nothing fires on send-back by itself.</p>
     </div>`;
   }
 
@@ -427,6 +447,38 @@
       (btn.onclick = () => slotConfirmExtra(did, btn.dataset.band, btn.dataset.school)));
     det.querySelectorAll("[data-slot-retire]").forEach((btn) =>
       (btn.onclick = () => slotRetire(did, btn.dataset.band, btn.dataset.school, btn.dataset.slotid)));
+    det.querySelectorAll("[data-route]").forEach((btn) =>
+      (btn.onclick = () => routeSendBack(did, btn.dataset.route)));
+  }
+
+  // #689: preview, then commit — a compose is cheap to preview and awkward to undo, and the operator
+  // should see WHAT would be built (which bands, which batch id) before a draft batch exists.
+  async function routeSendBack(did, route) {
+    let prev;
+    try {
+      prev = await api(`/api/aggregate/send-back/${did}/route`,
+                       postJSON({ route, actor: "ian", dry_run: true }));
+    } catch (e) { alert("Preview failed: " + e.message); return; }
+    const what = route === "8->1"
+      ? `Stage-1 follow-up batch ${prev.artifact} (${prev.scope}-scoped) targeting: ${(prev.targets || []).join(", ")}`
+      : prev.plan;
+    // #769: the #159 heads-up — a free, already-captured alternate rep (an open 7→6) is sitting
+    // unexecuted. Surfaced, never enforced: the 8→1 is the human's explicit choice.
+    const hold76 = route === "8->1" && prev.open_76
+      ? `\n\n⚠ This district has an OPEN 7→6 — an already-captured alternate rep, free to try.\n` +
+        `Consider executing it at gate@7 (or routing 8→6) before spending on new discovery.`
+      : "";
+    if (!window.confirm(`Route this send-back ${route}?\n\n${what}${hold76}\n\n` +
+                        `Reason on record: ${prev.reason_given || "(none)"}\n\n` +
+                        `It lands as a DRAFT for you to review — nothing runs or spends yet.`)) return;
+    try {
+      const out = await api(`/api/aggregate/send-back/${did}/route`,
+                            postJSON({ route, actor: "ian" }));
+      alert(`Routed ${out.route} → ${out.artifact}.\n\n` +
+            (route === "8->1" ? "Review it at gate@1 (escalation batches are never auto-flowed)."
+                              : "Pick the representations at gate@6."));
+    } catch (e) { alert("Routing failed: " + e.message); return; }
+    await openDistrict(did);
   }
 
   // #499 REQ-145: the slot-disposition actions. Candidate/slot pickers are numbered prompts over

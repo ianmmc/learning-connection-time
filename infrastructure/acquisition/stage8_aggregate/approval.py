@@ -32,7 +32,8 @@ def record_decision(con, closing_argument, *, disposition, actor="ian", reason=N
                     name="", state=None):
     """Record a gate@8 decision on a whole district (§2e per-district grain). Freezes `closing_argument`
     as the receipt + its fingerprint. `disposition` ∈ DISPOSITIONS; a 'sent_back' REQUIRES a reason (why
-    the picture isn't publishable / which band routes an 8→1). Writes the precious row + a state_event.
+    the picture isn't publishable — the reason IS the routing instruction the human then executes 8→1
+    or 8→6 at the gate, #689). Writes the precious row + a state_event.
     Returns the new approval_id. The caller commits (and backs up the tracked JSON), matching gate_mode."""
     if disposition not in DISPOSITIONS:
         raise ValueError(f"disposition must be one of {DISPOSITIONS} (got {disposition!r})")

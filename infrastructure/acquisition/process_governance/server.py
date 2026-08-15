@@ -56,6 +56,7 @@ from infrastructure.acquisition.process_governance import attribution as ATTR  #
 from infrastructure.acquisition.process_governance import stage5_followup as S5F  # noqa: E402  (5->1 zero-yield geo escalation — #164 PR 3b)
 from infrastructure.acquisition.process_governance import stage7_execute as EX  # noqa: E402  (Stage 7 request-more-evidence execution — REQ-118)
 from infrastructure.acquisition.process_governance import stage7_run as R7      # noqa: E402  (Stage 7 council extraction runner — #152)
+from infrastructure.acquisition.process_governance import stage8_sendback as SB8  # noqa: E402  (gate@8 send-back routing — the 8->1/8->6 back-edges, #689)
 from infrastructure.acquisition.stage6_handoff import handoff as HND6       # noqa: E402  (immutable handoff filename helper)
 from infrastructure.acquisition.common import paths                         # noqa: E402  (RAW_CAPTURES — rep inspect)
 from infrastructure.acquisition.stage6_handoff import councils as C6        # noqa: E402  (council registry — gate@6 override options)
@@ -2822,8 +2823,13 @@ def aggregate_district_detail(district_id: str):
         inc = None
         if att:
             inc = dict(att, current=(att["kind"] == "incorporated" and att["fingerprint"] == fp))
+        # #689: the send-back half of the same story — what THIS send-back produced (keyed on the
+        # approval_id, so an earlier routing can never make a fresh send-back look handled).
+        routing = None
+        if (status.get("latest") or {}).get("disposition") == "sent_back":
+            routing = SB8.routing_for(con, district_id, status["latest"]["approval_id"])
         return {"closing_argument": ca, "decision": status, "fingerprint": fp,
-                "incorporation": inc}
+                "incorporation": inc, "send_back_routing": routing}
 
 
 @app.post("/api/aggregate/override")
@@ -3112,6 +3118,33 @@ async def aggregate_recover_band(payload: dict):
     return out
 
 
+@app.get("/api/aggregate/send-backs")
+def aggregate_send_backs():
+    """#689: the districts whose CURRENT gate@8 state is 'sent back' with NO routing on record — the
+    silent-parked state made queryable. Before this, a forgotten send-back and a handled one were the
+    same thing: a row nobody was looking at."""
+    with gdb.session_scope() as con:
+        return SB8.unrouted_send_backs(con)
+
+
+@app.post("/api/aggregate/send-back/{district_id}/route")
+async def aggregate_send_back_route(district_id: str, payload: dict):
+    """#689 — EXECUTE the human's chosen back-edge for a sent-back district: '8->1' composes a targeted
+    DRAFT Stage-1 follow-up batch (gate@1-reviewable, never auto-flowed), '8->6' seeds a new gate@6
+    draft dispatch. Nothing fires automatically on send-back: the human picks the route (or neither) —
+    the win is that the console executes the choice and RECORDS it, instead of leaving the operator to
+    translate their own reason into another stage's UI and nothing tracking whether they did.
+    `dry_run` previews. 400 on a refusal (not sent back / already routed / not composable)."""
+    payload = payload or {}
+    out = SB8.route_send_back(district_id, route=payload.get("route", SB8.ROUTE_REDISCOVER),
+                              actor=payload.get("actor", "ian"),
+                              year=payload.get("year", "2024_25"),
+                              dry_run=bool(payload.get("dry_run")))
+    if not out.get("ok"):
+        raise HTTPException(400, out.get("reason", "send-back routing refused"))
+    return out
+
+
 def _incorporate_after_approval(district_id: str, *, actor: str, approval_id, fingerprint,
                                 name: str = "", state=None) -> dict:
     """#682 — the approve→Stage-9-write arrow, fired POST-COMMIT and never able to fail the approval.
@@ -3155,7 +3188,8 @@ def _incorporate_after_approval(district_id: str, *, actor: str, approval_id, fi
 @app.post("/api/aggregate/decision/{district_id}")
 async def aggregate_decision(district_id: str, payload: dict):
     """Record the gate@8 verdict on the WHOLE district (§2e, all-or-nothing): 'approved' (Stage 9 then
-    writes every band) or 'sent_back' (a reason is REQUIRED → an 8→1/8→6 back-edge). Re-loads the closing
+    writes every band) or 'sent_back' (a reason is REQUIRED; the human then routes it 8→1/8→6 at the
+    gate — POST /api/aggregate/send-back/{did}/route, #689). Re-loads the closing
     argument SERVER-side (never trusts the client's copy), freezes it as the receipt + fingerprint, fires
     the gate@8 calibration hook (accruing from day one), commits, and backs up the tracked JSON.
 

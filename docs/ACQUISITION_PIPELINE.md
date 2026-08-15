@@ -368,12 +368,13 @@ flowchart TD
     %% usual — 7→1 itself now SCOPE-SPLITS domain-vs-geo, ladder-position-derived from approval history
     %% (#164/#575). 5→1 is the NEW zero-yield geo escalation (#164 PR 3b): a district landing at gate@5
     %% with nothing dispatchable composes a geo-scoped DRAFT batch at gate@1 — individually gate@1'd,
-    %% NEVER auto-flowed (unlike 7→1). 8→1 / 8→6 are DESIGNED (governance §11e) but not built — gate@8's
-    %% present remedies are same-district: #473 recover-band re-extraction, #474 human-add.
+    %% NEVER auto-flowed (unlike 7→1). 8→1 / 8→6 are BUILT (#689): a SENT-BACK district is routed by the
+    %% human at gate@8 — 8→1 composes a DRAFT follow-up batch (gate@1'd, never auto-flowed), 8→6 seeds a
+    %% gate@6 draft. Same-district remedies remain: #473 recover-band re-extraction, #474 human-add.
     X_EXEC -.->|"7→6: BUNDLE the district's approved alternate-rep set into ONE dispatch/round"| H_IN
     X_EXEC -.->|"7→2/7→3/7→1: NEW discovery/capture -> SHAPED DRAFT follow-up batch (7→1 SCOPE-SPLIT: domain vs geo-scoped, ladder-derived position, #164/#575), AUTO-FLOWS gate@1+2+3+4 to gate@5 (#157)"| Q_SRC
     G5 -.->|"5→1: zero-yield geo escalation, draft at gate@1, never auto-flowed (nothing dispatchable at gate@5 -> geo-scoped DRAFT batch, #164 PR 3b, governance §11e)"| Q_SRC
-    CA_OUT -.->|"NOT BUILT (§11e stub) — band-coverage gap -> follow-up batch (district×band)"| Q_SRC
+    CA_OUT -.->|"8→1 (#689): SENT BACK -> human-chosen re-discovery -> DRAFT follow-up batch at gate@1 (never auto-flowed); 8→6 seeds a gate@6 draft instead"| Q_SRC
     CA_OUT -.->|"NOT BUILT (§11e stub) — add an existing-rep URL to a new dispatch"| H_IN
 ```
 

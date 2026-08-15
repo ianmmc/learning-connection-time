@@ -208,20 +208,10 @@ def compose_zero_yield(batch_id: str, *, actor: str = "ian", session=None, dry_r
         out = _work(s)
     batch_districts = out.pop("_batch_districts", None)
     if out.get("batch_id") and batch_districts and not out.get("dry_run"):
-        # Post-commit, best-effort (file-last): receipt + registry regenerable from the DB.
-        try:
-            with gdb.session_scope() as s:
-                for c in out.get("batches", []):
-                    BSTORE.write_receipt(s, c["batch_id"])
-            registry = DS.load()
-            for d in batch_districts:
-                DS.record_stage(registry, d["district_id"], d["name"], d["state"],
-                                stage=1, stage_name="queue", outcome="queued",
-                                batch_id=d["batch_id"])   # #719: ITS batch of the scope split
-            DS.save(registry)
-        except Exception as e:  # noqa: BLE001 — receipts/registry are regenerable; the DB committed
-            print(f"[warn] zero-yield receipt/registry refresh failed ({type(e).__name__}: {e}); "
-                  f"the DB is authoritative — regenerate later")
+        # #765: the ONE shared post-commit receipt+registry refresh (batch_store); each district
+        # records against ITS batch of the scope split (#719).
+        BSTORE.finalize_composed_batches([c["batch_id"] for c in out.get("batches", [])],
+                                         batch_districts)
     return out
 
 
