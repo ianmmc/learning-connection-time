@@ -357,10 +357,34 @@ def test_zero_yield_reason_clean_district_is_eligible(gov_session, monkeypatch):
 @govdb
 def test_zero_yield_reason_held_record_blocks(gov_session, monkeypatch):
     # a tier-B unlabeled record decides 'hold' — a maybe-target awaiting a label blocks escalation
-    held = {"label": None, "tier": "B", "signals": {}, "facets": {}, "reps": []}
+    held = {"label": None, "tier": "B", "signals": {}, "facets": {}, "reps": [], "url": "https://x/y"}
     monkeypatch.setattr(S5F.REL, "load_district_records", lambda s, d: [held])
     reason = S5F.zero_yield_reason(gov_session, "ZZ5Y1")
-    assert reason and "dispatchable/held" in reason
+    assert reason and "production-sendable/held" in reason
+
+
+@govdb
+def test_zero_yield_reason_ignores_records_production_can_never_receive(gov_session, monkeypatch):
+    """#718 — the near-miss the issue suspected, confirmed and closed. A `gt://` curation artifact
+    decides `send` (for a BENCHMARK dispatch) and the Stage-9 wall guarantees it can never reach
+    production, so counting it as dispatchable made this composer refuse the very districts it
+    exists for. Live 2026-08-14: West Ada `1602100` and Lincoln `3172840` each held ONE record,
+    `gt://`, and were refused as "1 dispatchable/held record" — leaving them unreachable by the loop
+    entirely, since their only route in is discovery and the only door to discovery is this composer.
+    MUST FAIL against pre-#718 code."""
+    gt = {"label": "school_bell_table", "tier": "A", "signals": {}, "facets": {},
+          "url": "gt://gt_curation_x/1602100_JOINT/a.pdf", "rec_key": "1602100:a",
+          "reps": [{"file_kind": "text", "usable": True, "filename": "a.txt", "n_chars": 900,
+                    "n_times": 9}]}
+    monkeypatch.setattr(S5F.REL, "load_district_records", lambda s, d: [gt])
+    assert S5F.zero_yield_reason(gov_session, "ZZ5Y9") is None      # eligible: the route opens
+
+    # ...and one real sendable record still blocks, with the uncounted gt:// ones named honestly
+    real = dict(gt, url="https://westada.org/bell", rec_key="1602100:b")
+    monkeypatch.setattr(S5F.REL, "load_district_records", lambda s, d: [gt, real])
+    reason = S5F.zero_yield_reason(gov_session, "ZZ5Y9")
+    assert reason and reason.startswith("1 production-sendable/held")
+    assert "1 further gt:// record(s) are benchmark-only and were not counted" in reason
 
 
 @govdb

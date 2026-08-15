@@ -49,10 +49,18 @@ def zero_yield_reason(session, district_id: str) -> str | None:
     """None iff the district IS zero-yield (eligible for the 5->1 geo escalation); else the
     human-readable disqualifier. Checked LIVE — never a stored verdict."""
     recs = REL.load_district_records(session, district_id)
-    n_dispatchable = sum(1 for r in recs if REL.decide(r)["decision"] in ("send", "hold"))
-    if n_dispatchable:
-        return (f"{n_dispatchable} dispatchable/held Stage-5 record(s) — not zero-yield "
-                "(a hold awaiting a label blocks escalation, spend-conservatively)")
+    # #718: count what PRODUCTION can actually receive. A `gt://` curation artifact decides `send`
+    # — for a BENCHMARK dispatch — and the Stage-9 wall guarantees it can never reach production, so
+    # counting it as dispatchable made this composer refuse the very districts it exists for. Live
+    # 2026-08-14: West Ada `1602100` and Lincoln `3172840` each held ONE record, `gt://`, and were
+    # refused as "1 dispatchable/held record" — leaving them unreachable by the loop entirely (their
+    # only route in is discovery, and the only door to discovery is this composer).
+    sd = REL.production_sendability(recs)
+    if sd["n_production_sendable"]:
+        return (f"{sd['n_production_sendable']} production-sendable/held Stage-5 record(s) — not "
+                "zero-yield (a hold awaiting a label blocks escalation, spend-conservatively)"
+                + (f"; {sd['n_benchmark_only']} further gt:// record(s) are benchmark-only and were "
+                   "not counted" if sd["n_benchmark_only"] else ""))
     # #575 review: one query with conditional aggregation instead of 3 sequential round trips —
     # priority order (retry > fidelity > security_block) is preserved in the Python checks below,
     # only the I/O is combined.

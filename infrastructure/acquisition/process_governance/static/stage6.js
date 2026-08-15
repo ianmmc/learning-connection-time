@@ -347,11 +347,17 @@
       ? shown.map((c) => {
           const bench = c.is_benchmark ? `<span class="badge badge-accent">benchmark</span>` : "";
           const disp = c.n_dispatched > 0 ? `<span class="badge badge-warn">dispatched</span>` : "";
+          // #718: a `gt://` curation artifact counts toward n_send but production can NEVER receive
+          // it (the Stage-9 wall). A district whose targets are ALL gt:// used to read as ready —
+          // the inverse of the truth. It is BLOCKED on discovery, and must say so here.
+          const unsendable = c.n_send > 0 && !(c.n_production_sendable > 0)
+            ? `<span class="badge badge-red" data-feat="benchmark-only" title="All ${c.n_benchmark_only} of this district's targets are gt:// curation artifacts — unsendable to production. It needs discovery, not dispatch.">0 sendable · ${c.n_benchmark_only} benchmark-only</span>`
+            : "";
           return `<label class="add-item">
               <input type="checkbox" value="${esc(c.district_id)}"/>
               <span class="q-sname">${esc(c.name || c.district_id)}</span>
               <span class="q-smeta">${esc(c.state || "?")} · ${effSend(c)} ${vOnly ? "verified" : "send"} · ${esc(c.labeled_topology || "?")}</span>
-              ${disp}${bench}</label>`;
+              ${disp}${bench}${unsendable}</label>`;
         }).join("")
       : `<div class="empty">No eligible districts match the filter.</div>`;
     m.innerHTML = `<div class="modal-card">
