@@ -493,6 +493,7 @@ def test_compose_zero_yield_dry_run_targets_reflect_survivors_not_candidates(gov
     _ensure_compose_tables(s)
     _seed_source_batch(s, "batch_zz5y_sk", ["ZZ5S0", "ZZ5S1"])
     monkeypatch.setattr(S5F, "zero_yield_reason", lambda sess, did: None)
+    _stub_domains(monkeypatch, {})   # the diagnosis reads the CCD CSV, absent on CI
 
     def fake_build(year, bid, targets, **kw):
         # simulate build_followup_batch dropping ZZ5S1 (e.g. no school-level coverage for its
@@ -516,6 +517,7 @@ def test_compose_zero_yield_skips_ineligible_districts(gov_session, monkeypatch)
     _seed_source_batch(s, "batch_zz5y_mix", ["ZZ5M0", "ZZ5M1"])
     monkeypatch.setattr(S5F, "zero_yield_reason",
                         lambda sess, did: None if did == "ZZ5M0" else "2 dispatchable record(s)")
+    _stub_domains(monkeypatch, {})   # the diagnosis reads the CCD CSV, absent on CI
     calls = []
     monkeypatch.setattr(S5F.Q1, "build_followup_batch",
                         lambda year, bid, targets, **kw: (calls.append(dict(targets)) or
