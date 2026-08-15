@@ -59,8 +59,11 @@ def _rebuild_rep(rep: dict, ctx: dict = None) -> dict:
 
 
 def _labels_for_recs(rec_keys: list) -> dict:
-    """{rec_key: primary_label} from the gov_db label table (the frozen receipt doesn't carry the
-    record's human label — the working store does). Best-effort: no DB ⇒ no label context."""
+    """{rec_key: primary_label} from the LIVE gov_db label table (the frozen receipt doesn't carry
+    the record's human label — the working store does). Deliberately the CURRENT label, not the
+    dispatch-time one production saw (#738): a human who re-labels a record is correcting the
+    pipeline's input, and the replay should honor the correction — replaying a stale label would
+    reproduce the mistake. Best-effort: no DB ⇒ no label context."""
     if not rec_keys:
         return {}
     try:

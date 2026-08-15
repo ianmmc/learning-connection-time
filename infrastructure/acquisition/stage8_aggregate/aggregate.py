@@ -487,22 +487,55 @@ def degenerate_school_facts(accepted):
     `detect_single_school_over_extraction` both filter through this same predicate at read time
     (self-healing, the same pattern `merge_fact_runs` uses for stale-vintage norm_school keys — no
     backfill needed). Returns the excluded facts themselves so a caller can surface them for human
-    review (detect-and-flag, never a silent drop — the #237 detector's posture)."""
-    return [f for f in accepted if not _norm_school_strict(f.get("school", ""))]
+    review (detect-and-flag, never a silent drop — the #237 detector's posture).
+    #730: stays the exact complement of _clean_school_facts — a #707 band_referent resolution is
+    NOT degenerate noise (it must never appear here while also voting in the band rollup)."""
+    return [f for f in accepted
+            if not (_norm_school_strict(f.get("school", "")) or f.get("method") == "band_referent")]
 
 
 def _clean_school_facts(accepted):
     """The complement of degenerate_school_facts (#245) — what district_bands_from_facts and
-    detect_single_school_over_extraction actually aggregate/count distinct schools over."""
-    return [f for f in accepted if _norm_school_strict(f.get("school", ""))]
+    detect_single_school_over_extraction actually aggregate/count distinct schools over.
+
+    #730 (#707 review): a `band_referent` fact DELIBERATELY keeps its degenerate referent name —
+    consensus resolved it via the record's district_hub_by_band label, so re-deriving degeneracy
+    from the school string here would silently drop the very fact #707 accepted (the band then
+    reads as having no evidence at all, at every call site: the run rollup, gate@7, gate@8's
+    closing argument, and the reaggregate replay). The #245 junk class this filter exists for is
+    UNRESOLVED noise; a method-marked resolution is not noise. (`roster_unique` rewrites to a real
+    roster name and passes the strict check on its own.)"""
+    return [f for f in accepted
+            if _norm_school_strict(f.get("school", "")) or f.get("method") == "band_referent"]
+
+
+def _dedupe_resolved_aliases(accepted):
+    """#733 (#707 review): a `roster_unique` fact is a RESOLVED ALIAS of its band's only school.
+    When the pool also holds a directly-named fact for the same (band, school) — the common shape:
+    a main page naming 'Lewiston High School' plus a hub page saying just 'HS', extracted as two
+    reps — the alias must not double-vote in the mode or inflate n_schools past the roster (the
+    direct reading is the stronger evidence and wins). Two roster_unique aliases of the same
+    school keep only the first (deterministic by pool order). Non-roster_unique facts are
+    untouched, preserving the pre-#707 behavior exactly."""
+    directs = {(f["band"], f["school"]) for f in accepted if f.get("method") != "roster_unique"}
+    seen_aliases, out = set(), []
+    for f in accepted:
+        if f.get("method") == "roster_unique":
+            key = (f["band"], f["school"])
+            if key in directs or key in seen_aliases:
+                continue
+            seen_aliases.add(key)
+        out.append(f)
+    return out
 
 
 def district_bands_from_facts(accepted):
     """Mode (deterministic) over accepted per-school gross values, per band. Returns
     {band: {gross_minutes, start, end, n_schools, method, schools:[...]}}. Facts with a degenerate
     school name (#245) are excluded from both the count and the value — see degenerate_school_facts()
-    to get the excluded facts for review."""
-    accepted = _clean_school_facts(accepted)
+    to get the excluded facts for review — EXCEPT a #707 band_referent resolution (#730), which
+    votes once for its band; and a roster_unique alias never double-counts its school (#733)."""
+    accepted = _dedupe_resolved_aliases(_clean_school_facts(accepted))
     out = {}
     for band in BANDS:
         facts = [f for f in accepted if f["band"] == band]

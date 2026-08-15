@@ -105,6 +105,43 @@ class TestGross:
         acc, unres = A.consensus_school_facts(rows, context=ctx6)
         assert acc == [] and unres[0]["reason"] == "degenerate_school_name"
 
+    def test_band_referent_fact_survives_the_band_rollup(self):
+        """#730 (the review's critical): the #245 strict-name filter in district_bands_from_facts
+        must NOT re-drop a band_referent fact consensus deliberately accepted — acceptance is
+        end-to-end: consensus_school_facts -> district_bands_from_facts must yield the band."""
+        rows = {"google/gemini-2.5-flash-lite": [{"grade_level": "elementary", "start_time": "07:40",
+                                                  "end_time": "14:55", "school_name": "Elementary Schools"}],
+                "mistralai/mistral-small-24b-instruct-2501": [
+                    {"grade_level": "elementary", "start_time": "07:40",
+                     "end_time": "14:55", "school_name": "Elementary Schools"}]}
+        acc, _ = A.consensus_school_facts(rows, context={"band_grain": True})
+        bands = A.district_bands_from_facts(acc)
+        assert "elementary" in bands and bands["elementary"]["gross_minutes"] == 435
+        # ...and the complement stays exact: the resolved fact is NOT listed as degenerate noise
+        assert A.degenerate_school_facts(acc) == []
+        # a genuinely-degenerate legacy fact (no method marker) still filters + surfaces (#245)
+        legacy = [{"band": "middle", "school": "schools", "start": "08:00", "end": "14:00",
+                   "gross": 360, "models": ["x", "y"], "method": "council_agree"}]
+        assert A.district_bands_from_facts(legacy) == {}
+        assert A.degenerate_school_facts(legacy) == legacy
+
+    def test_roster_unique_alias_never_double_counts_its_school(self):
+        """#733: a directly-named fact + a roster_unique alias of the same (band, school) — two
+        reps, one physical school — must count once (the direct reading wins); two aliases of the
+        same school also collapse to one."""
+        direct = {"band": "high", "school": "lewiston", "start": "07:45", "end": "14:00",
+                  "gross": 375, "models": ["a", "b"], "method": "council_agree"}
+        alias = {"band": "high", "school": "lewiston", "start": "07:45", "end": "14:00",
+                 "gross": 375, "models": ["a", "b"], "method": "roster_unique",
+                 "resolved_from": "hs"}
+        b = A.district_bands_from_facts([direct, alias])
+        assert b["high"]["n_schools"] == 1 and len(b["high"]["schools"]) == 1
+        b2 = A.district_bands_from_facts([alias, dict(alias)])   # two aliases -> one
+        assert b2["high"]["n_schools"] == 1
+        # an alias ALONE (no direct fact) still counts — that's the Lewiston recovery itself
+        b3 = A.district_bands_from_facts([alias])
+        assert b3["high"]["n_schools"] == 1 and b3["high"]["gross_minutes"] == 375
+
     def test_degenerate_never_converts_without_cross_family_agreement(self):
         """#707: only cross-family VOTER agreement converts — same-family agreement or a judge
         re-emission must not mint a fact the guard would otherwise refuse."""

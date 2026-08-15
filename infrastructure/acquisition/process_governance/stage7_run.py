@@ -277,8 +277,12 @@ def consensus_context_for_district(did: str, labels_by_rec: dict) -> dict:
     """#707: the deterministic per-district context that can RESOLVE a degenerate school name at
     the consensus boundary — {labels_by_rec: {rec_key: human label}, roster_by_band: {band:
     [school names]}} (the Stage-1 slot spine, live from ccd_sch; None-safe when the CCD files
-    aren't on disk). Shared by the production run and the #716 re-aggregation replay so the two
-    paths can never resolve differently."""
+    aren't on disk). Shared MECHANISM between the production run and the #716 re-aggregation
+    replay (same slicing, same resolution rules). The LABEL INPUT deliberately differs (#738):
+    production reads the handoff doc's label (current at dispatch time); the replay reads the
+    LIVE label table — the working store — so a human's label correction corrects the replay,
+    which is the point of replaying. A replay can therefore legitimately partition
+    accepted/unresolved differently than the original run when the label has since changed."""
     roster_by_band = {}
     try:
         br = SS.band_rosters_for_district(did)
