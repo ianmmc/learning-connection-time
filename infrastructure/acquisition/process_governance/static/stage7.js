@@ -211,7 +211,9 @@
   // 7->2/7->3/7->1: PREVIEW the follow-up in a modal (#154), then compose on confirm (cancel = no-op).
   async function composeFollowup(handoffHash, did) {
     let prev;
-    try { prev = await api(`/api/extract/compose-followup/preview`, postJSON({ handoff_hash: handoffHash || null, actor: "ian" })); }
+    // #736: the viewed district rides as district_id so the unscoped sweep fronts ITS directives
+    // ahead of the 12-district cap — the human's just-approved directive can't spill silently.
+    try { prev = await api(`/api/extract/compose-followup/preview`, postJSON({ handoff_hash: handoffHash || null, district_id: did || null, actor: "ian" })); }
     catch (e) { alert("Compose preview failed: " + e.message); return; }
     showComposeModal(prev, handoffHash, did);
   }
@@ -272,7 +274,7 @@
 
   async function doCompose(handoffHash, did) {
     let out;
-    try { out = await api(`/api/extract/compose-followup`, postJSON({ handoff_hash: handoffHash || null, actor: "ian" })); }
+    try { out = await api(`/api/extract/compose-followup`, postJSON({ handoff_hash: handoffHash || null, district_id: did || null, actor: "ian" })); }
     catch (e) { alert("Compose failed: " + e.message); return; }
     let msg = (out.batches || []).map((b) =>
       `Draft follow-up ${b.batch_id} (${b.scope}-scoped): ${b.n_districts} district(s), ${b.n_requests} directive(s) executed.`).join("\n")

@@ -3317,7 +3317,8 @@ async def extract_compose_followup_preview(payload: dict):
     try:
         return EX.compose_followup_batch(
             year=payload.get("year", "2024_25"), actor=payload.get("actor", "ian"),
-            handoff_hash=payload.get("handoff_hash"), cap=int(payload.get("cap", 12)), dry_run=True)
+            handoff_hash=payload.get("handoff_hash"), cap=int(payload.get("cap", 12)), dry_run=True,
+            priority_district=payload.get("district_id"))   # #736: viewed district fronts the cap
     except Exception as e:  # noqa: BLE001
         raise HTTPException(400, f"compose preview failed: {type(e).__name__}: {e}")
 
@@ -3332,7 +3333,8 @@ async def extract_compose_followup(payload: dict):
     try:
         out = EX.compose_followup_batch(
             year=payload.get("year", "2024_25"), actor=payload.get("actor", "ian"),
-            handoff_hash=payload.get("handoff_hash"), cap=int(payload.get("cap", 12)))
+            handoff_hash=payload.get("handoff_hash"), cap=int(payload.get("cap", 12)),
+            priority_district=payload.get("district_id"))   # #736: viewed district fronts the cap
     except Exception as e:  # noqa: BLE001 — surface the failure to the operator, don't 500 opaquely
         raise HTTPException(400, f"compose-followup failed: {type(e).__name__}: {e}")
     # #164 PR 3b: the scope split can emit TWO batches. Only the DOMAIN batch auto-flows — it

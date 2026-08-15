@@ -574,7 +574,8 @@ def _preview_districts(batch_doc: dict) -> list:
 
 
 def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff_hash: str = None,
-                           cap: int = 12, session=None, dry_run: bool = False) -> dict:
+                           cap: int = 12, session=None, dry_run: bool = False,
+                           priority_district: str = None) -> dict:
     """Sweep APPROVED 7->2/7->3/7->1 directives into targeted, DRAFT Stage-1 follow-up batch(es)
     (reviewable at gate@1), flipping the swept directives to 'executed' with THEIR district's
     batch_id as `executed_ref`. Directives of BENCHMARK PROVENANCE are EXCLUDED — the wall (#134),
@@ -605,6 +606,13 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
     def _work(s) -> dict:
         ca_cache: dict = {}    # one closing-argument load per district per compose (shared below)
         g = _gather(s, handoff_hash, b.max_request_rounds, ca_cache=ca_cache)
+        if priority_district:
+            # #736 review: the unscoped sweep (#715) draws its cap-limited batch from EVERY
+            # approved directive system-wide, oldest-first — so a human who just approved a
+            # directive and clicked Compose from THAT district's screen could watch 12 older
+            # unrelated directives compose while their own spilled. A stable sort floats the
+            # viewed district's rows to the front of the cap; all other ordering is preserved.
+            g.rows.sort(key=lambda r: r["district_id"] != priority_district)
         if not g.rows:
             return {**_empty_result(), "benchmark_excluded": g.benchmark_excluded}
 

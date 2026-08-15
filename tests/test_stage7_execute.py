@@ -192,6 +192,38 @@ def test_compose_unscoped_sweeps_directives_across_handoffs(gov_session, monkeyp
     assert "ZZ715B" not in scoped_a
 
 
+@govdb
+def test_compose_priority_district_fronts_the_cap(gov_session, monkeypatch):
+    """#736: the unscoped sweep is capped at 12 districts oldest-first — without priority, a
+    just-approved directive from the viewed district (newest request_id) spills while 12 older
+    unrelated ones compose. priority_district floats the viewed district ahead of the cap."""
+    gdb.init_precious_schema()
+    s = gov_session
+    for i in range(12):                                   # 12 older districts, all approved
+        _seed_req(s, "zz736old", f"ZZ736O{i:02d}", "7->2", "high")
+    _seed_req(s, "zz736new", "ZZ736ME", "7->2", "high")   # the human's own, newest request_id
+    s.flush()
+    monkeypatch.setattr(EX.Q1, "build_followup_batch",
+                        lambda year, bid, targets, **kw: ({"batch_id": bid, "districts":
+                            [{"district_id": d} for d in targets]}, []))
+    monkeypatch.setattr(EX.BSTORE, "create_batch", lambda sess, doc, **k: None)
+    # scope the sweep to this test's rows only (the live/CI DB may hold other approved work):
+    real_gather = EX._gather
+    def scoped_gather(sess, hh, mr, **kw):
+        g = real_gather(sess, hh, mr, **kw)
+        g.rows[:] = [r for r in g.rows if r["district_id"].startswith("ZZ736")]
+        return g
+    monkeypatch.setattr(EX, "_gather", scoped_gather)
+
+    out = EX.compose_followup_batch(actor="zz", session=s, dry_run=True)   # no priority
+    assert "ZZ736ME" not in out["targets"]                # the must-fail-today shape: spilled
+    assert any(sp["district_id"] == "ZZ736ME" for sp in out["spilled"])
+    out = EX.compose_followup_batch(actor="zz", session=s, dry_run=True,
+                                    priority_district="ZZ736ME")
+    assert "ZZ736ME" in out["targets"]                    # fronts the cap; one old one spills
+    assert len(out["targets"]) == 12
+
+
 def test_stage7_js_compose_button_is_unscoped_715():
     """#715 source pin (no JS harness): the compose button must carry NO handoff hash — the
     count-one-population/sweep-another mismatch was `data-compose="${e.handoff_hash}"` + a scoped
