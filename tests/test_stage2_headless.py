@@ -340,6 +340,32 @@ class TestRunBatch:
         assert ("dispatched", "1111111") in events and ("completed", "2222222") in events
         assert (D2.lea_dir("1111111", "Test Schools District") / "discovery.json").exists()
 
+    def test_geo_derivation_failure_surfaces_loudly(self, tmp_path, monkeypatch, inmem_registry, capsys):
+        """#719: a geo run whose derivation fails leaves every provider hit refused by the #229
+        gate — a TOTAL refusal that must never read as a normal manual_flag_all. run_batch must
+        return it in the summary, emit the event, and print the loud block."""
+        monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
+        batch = {"batch_id": "batch_00098", "discovery_scope": "geo",
+                 "districts": [{**_district("3333333", domain=""),
+                                "geo": {"city": "RENO", "zip": "89501"}}]}
+        # scattered hosts: no host reaches the 40%-share/3-school derivation floor -> no derivation
+        hosts = iter([f"https://site{i}.example/p" for i in range(100)])
+        events = []
+        summary = H.run_batch(batch, wave1_search=lambda q, dom: [next(hosts)],
+                              wave2_runner=lambda *a: pytest.fail("geo w/o derivation must not wave-2"),
+                              on_event=lambda k, p: events.append((k, p)))
+        assert summary["geo_derivation_failed"] == ["3333333"]
+        row = summary["results"][0]
+        assert row["outcome"] == "manual_flag_all" and row["geo_refused"] > 0
+        assert any(k == "geo_derivation_failed" for k, _ in events)
+        out = capsys.readouterr().out
+        assert "#719 GEO DERIVATION FAILED" in out and "no-scoping-domain" in out
+        # #734: the signal is DURABLE — the state_event note carries it past the job log's death,
+        # so a later reader can distinguish this from an ordinary zero-hit manual_flag_all
+        ev_notes = [e.get("note") or "" for e in inmem_registry.get("_events", [])
+                    if e.get("district_id") == "3333333"]
+        assert any("geo_derivation_failed" in n and "#719" in n for n in ev_notes)
+
     def test_residual_triggers_wave2_runner(self, tmp_path, monkeypatch, inmem_registry):
         monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
         wave2_seen = []
