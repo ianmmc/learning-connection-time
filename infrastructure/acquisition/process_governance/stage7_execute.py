@@ -25,6 +25,8 @@ from __future__ import annotations
 
 import json
 
+from datetime import datetime, timezone
+
 from sqlalchemy import text
 
 from pathlib import Path
@@ -43,6 +45,12 @@ from infrastructure.acquisition.stage1_queue import batch_store as BSTORE
 from infrastructure.acquisition.stage8_aggregate import closing_argument as CA8
 from infrastructure.acquisition.stage1_queue import queue_batch as Q1
 from infrastructure.acquisition.stage5_filter import release as REL
+
+# #720 shape 3: how long an un-fired 7->6 may keep holding back its district's NEW work. The #159
+# hold says "try the cheap in-hand alternate rep FIRST", which is only sensible while it is plausibly
+# about to be tried; #281/#282 on 5102940 held that district's rediscovery for 41 days. Two weeks is
+# a rung on the ramp-up ladder, not a law — raise or lower it as the loop's real cadence is measured.
+DEFER_76_MAX_AGE_DAYS = 14
 from infrastructure.acquisition.stage6_handoff import councils as C6
 from infrastructure.acquisition.stage6_handoff import cost as COST6
 from infrastructure.acquisition.stage6_handoff import handoff as HND
@@ -352,24 +360,53 @@ def _refuse_benchmark_reps(session, package: dict):
     return None
 
 
-def _defer_76_districts(session, district_ids: list, max_rounds=None) -> set:
+def _defer_76_districts(session, district_ids: list, max_rounds=None, now=None) -> set:
     """Districts with an UN-EXECUTED 7->6 (status pending or approved) that CAN STILL EXECUTE —
     #159: their NEW-work (7->2) requests are HELD at compose so the cheap in-hand alternate rep is
     tried before new discovery. A rejected or executed 7->6 does not defer. NEITHER does a district
     whose 7->6 ROUNDS are exhausted (review R2): its un-executed 7->6s are depth-blocked zombies that
     can never fire — deferring on them would hold the district's rediscovery FOREVER (live case:
     Las Cruces, 2/2 rounds spent, #279/#284/#288 un-executed). Exhausted -> the correct escalation is
-    to let the 7->2 proceed."""
+    to let the 7->2 proceed.
+
+    #720 shape 3 — the SAME availability bug, one rung out: an approved 7->6 that is merely NEVER
+    FIRED (0 rounds spent, so the exhaustion exit above doesn't apply) holds its district's new work
+    just as indefinitely. #281/#282 on `5102940` did exactly that for 41 days. The #159 hold means
+    "try the cheap in-hand rep FIRST", which is only a sensible instruction while it is plausibly
+    about to be tried — so the hold AGES OUT at DEFER_76_MAX_AGE_DAYS. The age-out lifts only the
+    DEFER; the 7->6 itself stays open for the human (it may still be worth firing — it just stops
+    being a reason to withhold rediscovery). `now` is injectable so the boundary is testable."""
     if not district_ids:
         return set()
     rows = session.execute(text(
-        "SELECT DISTINCT district_id FROM extraction_request "
-        f"WHERE route = :r AND status IN {RQ.OPEN_STATUSES_SQL} AND district_id = ANY(:d)"),
-        {"r": RQ.ROUTE_ALT_REP, "d": list(district_ids)})
-    cands = {r[0] for r in rows}
+        "SELECT district_id, MAX(created_at) FROM extraction_request "
+        f"WHERE route = :r AND status IN {RQ.OPEN_STATUSES_SQL} AND district_id = ANY(:d) "
+        "GROUP BY district_id"),
+        {"r": RQ.ROUTE_ALT_REP, "d": list(district_ids)}).all()
+    # Freshest open 7->6 per district: as long as ONE is recent, the "try it first" hold is honest.
+    cands = {d for d, newest in rows if not _defer_aged_out(newest, now=now)}
     if max_rounds is None:
         return cands
     return {d for d in cands if _executed_rounds_76(session, d) < max_rounds}
+
+
+def _defer_aged_out(created_at, *, now=None) -> bool:
+    """True when an un-fired 7->6 is too old to keep holding back its district's new work (#720).
+    Timestamps are the pipeline's ISO-Z strings; an unparseable/absent one NEVER ages out (fail
+    conservative — the #159 hold is the spend-conservative posture, so ambiguity keeps it)."""
+    if not created_at:
+        return False
+    try:
+        made = datetime.fromisoformat(str(created_at).replace("Z", "+00:00"))
+        ref = (datetime.fromisoformat(str(now).replace("Z", "+00:00")) if now
+               else datetime.now(timezone.utc))
+    except ValueError:
+        return False
+    if made.tzinfo is None:
+        made = made.replace(tzinfo=timezone.utc)
+    if ref.tzinfo is None:
+        ref = ref.replace(tzinfo=timezone.utc)
+    return (ref - made).days >= DEFER_76_MAX_AGE_DAYS
 
 
 class Gathered(NamedTuple):
@@ -523,17 +560,108 @@ def _flip(session, swept_ids: list, executed_ref: str) -> None:
         {"b": executed_ref, "t": M7.utcnow(), "ids": list(swept_ids)})
 
 
-def _reject_suppressed(session, suppressed: list) -> None:
-    """Resolve compose-suppressed directives to 'rejected' with the machine actor + reason — a
-    suppressed request (band covered/phantom, or no fillable gap left) would otherwise stay
-    'approved' forever, re-suppressing on every future compose (zombie). Guarded on
-    status='approved' (idempotent); a human can reverse via the gate@7 review endpoint."""
-    now = M7.utcnow()
-    for sp in suppressed:
-        session.execute(text(
+def _auto_resolve(session, rows: list, *, note_prefix: str,
+                  from_statuses: tuple = ("approved",)) -> int:
+    """Resolve directives that can NEVER execute to 'rejected', with an explicit machine actor and
+    the reason as the review note — auditable, visible in the gate@7 card, and human-REVERSIBLE via
+    the review endpoint (set back to pending). Guarded on the current OPEN status(es) (idempotent) —
+    a set, not a single value (#766): the dead-76 sweep resolves from `pending` AND `approved` in one
+    call instead of threading a per-row status through a mutation hack.
+
+    The ONE home for the mechanism (#720): a directive with no owner responsible for exiting its state
+    is re-evaluated on every compose, re-blocked, and left exactly as it was — inflating every count
+    that reads it. Returns how many rows it actually resolved."""
+    now, n = M7.utcnow(), 0
+    for sp in rows:
+        n += session.execute(text(
             "UPDATE extraction_request SET status = 'rejected', reviewed_by = 'auto:compose-gate', "
-            "reviewed_at = :t, review_note = :n WHERE request_id = :id AND status = 'approved'"),
-            {"t": now, "n": f"compose-suppressed: {sp['reason']}", "id": sp["request_id"]})
+            "reviewed_at = :t, review_note = :n WHERE request_id = :id AND status = ANY(:from)"),
+            {"t": now, "n": f"{note_prefix}: {sp['reason']}", "id": sp["request_id"],
+             "from": list(from_statuses)}).rowcount or 0
+    return n
+
+
+def _reject_suppressed(session, suppressed: list) -> None:
+    """Resolve compose-suppressed directives (band covered/phantom, or no fillable gap left) — they
+    would otherwise stay 'approved' forever, re-suppressing on every future compose (zombie)."""
+    _auto_resolve(session, suppressed, note_prefix="compose-suppressed")
+
+
+def _reject_depth_blocked(session, blocked: list) -> int:
+    """#720 shape 2 — the `blocked` bucket gets the treatment `suppressed` already had.
+
+    `_reject_suppressed`'s own docstring names the failure mode ("it would re-enter `_approved_newwork`
+    and re-suppress on EVERY future compose, forever") — and `blocked` landed in exactly that loop
+    while nothing resolved it. Verified live 2026-08-14: six directives (#3602/#3630 on `0602559`,
+    #3620/#3621/#3708/#3709 on `4220130`) had sat `approved` since 2026-07-11, **34 days**, returned
+    in the `blocked` bucket by every dry-run compose.
+
+    Depth exhaustion is MONOTONIC — executed rounds only ever increase — so a depth-blocked directive
+    can never become runnable on its own. (Raising `max_request_rounds` could revive one; that is
+    precisely the human-reversible case the review endpoint covers, and the note says what happened.)"""
+    return _auto_resolve(session, blocked, note_prefix="compose-blocked")
+
+
+def _dead_76(session, max_rounds) -> list:
+    """#720 shape 1, the COMPUTE half — every OPEN 7->6 whose district has spent its 7->6 rounds and
+    can therefore never execute. The console rendered these honestly ("depth guard: 2/2 7->6 rounds
+    spent — this alternate-rep re-dispatch can no longer execute") but offered only a manual Reject,
+    so each kept counting toward its district's "N REQ" badge (live: Lewiston #18923 at 3-against-2,
+    Little Rock #18922 at 2/2 — both `pending`; a 7->6 never had to be approved to be dead).
+
+    Two properties from the review round:
+    - **Self-scoping (#758):** candidates come from ALL districts holding an open 7->6 — never from
+      the compose's `g.rows` (approved NEW-work), whose scoping silently exempted any district whose
+      companion 7->2 had already left `approved` (a human reject, a prior compose's own sweep). A
+      lone dead 7->6 was unreachable forever.
+    - **Pure read (#770):** computing the dead set and resolving it are SEPARATE steps, matching how
+      `blocked`/`suppressed` are planned pure and resolved behind the dry_run gate — so a compose
+      PREVIEW shows exactly what the real run is about to auto-reject, instead of always `[]`."""
+    if max_rounds is None:
+        return []
+    by_did: dict = {}
+    for did, rid, status in session.execute(text(
+            "SELECT district_id, request_id, status FROM extraction_request "
+            f"WHERE route = :r AND status IN {RQ.OPEN_STATUSES_SQL} ORDER BY request_id"),
+            {"r": RQ.ROUTE_ALT_REP}).all():
+        by_did.setdefault(did, []).append(rid)
+    dead = []
+    for did, rids in by_did.items():
+        used = _executed_rounds_76(session, did)
+        if not BUD.rounds_exhausted(used, max_rounds):
+            continue
+        for rid in rids:
+            dead.append({"request_id": rid, "district_id": did, "band": None,
+                         "route": RQ.ROUTE_ALT_REP,
+                         "reason": (f"depth guard: {used}/{max_rounds} 7->6 round(s) spent — this "
+                                    "alternate-rep re-dispatch can no longer execute")})
+    return dead
+
+
+def _reject_dead_76(session, dead: list) -> int:
+    """#720 shape 1, the RESOLVE half — the same auditable, human-reversible treatment the other
+    buckets get, from either open status in one call (#766)."""
+    return _auto_resolve(session, dead, note_prefix="depth-dead 7->6",
+                         from_statuses=("pending", "approved"))
+
+
+def _aged_out_76(session, now=None) -> list:
+    """#720 shape 3's RECORD (#759) — the districts whose #159 hold has aged out: an open 7->6 whose
+    freshest request is older than DEFER_76_MAX_AGE_DAYS, so rediscovery now proceeds WITHOUT the
+    hold. Shapes 1 and 2 leave a durable trace (an auto-reject row with the reason as the note);
+    the age-out is deliberately non-mutating (the 7->6 stays open for the human — it may still be
+    worth firing), so its trace is this result key instead: "which districts got new discovery
+    because the hold timed out" stops being unanswerable. Read-only; same freshest-request rule as
+    `_defer_76_districts` so the two can never disagree about who is held."""
+    rows = session.execute(text(
+        "SELECT district_id, MAX(created_at) FROM extraction_request "
+        f"WHERE route = :r AND status IN {RQ.OPEN_STATUSES_SQL} GROUP BY district_id"),
+        {"r": RQ.ROUTE_ALT_REP}).all()
+    return [{"district_id": did, "newest_76": ts,
+             "reason": (f"#159 hold aged out: the freshest open 7->6 ({ts}) is older than "
+                        f"{DEFER_76_MAX_AGE_DAYS} days — rediscovery proceeds; the 7->6 stays "
+                        "open for the human")}
+            for did, ts in rows if _defer_aged_out(ts, now=now)]
 
 
 def _flag_escalation_exhausted(session, district_ids: list, rounds: dict) -> None:
@@ -632,9 +760,21 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
             # the review endpoint (set back to pending). If coverage later regresses, re-detection on
             # the new handoff emits a FRESH request — this row is history, not a lock.
             _reject_suppressed(s, plan["suppressed"])
+        # #720: the same treatment for the two other never-resolving shapes, so a directive that can
+        # NEVER execute stops being re-derived on every compose and stops inflating open-work counts.
+        # COMPUTED for preview and real runs alike (#770 — the preview must show what the real run is
+        # about to auto-reject); the MUTATION stays behind the dry_run gate, like every other bucket.
+        # _dead_76 self-scopes to all districts holding an open 7->6 (#758 — g.rows-scoping silently
+        # exempted a lone dead 7->6 whose companion new-work had already left 'approved').
+        dead_76 = _dead_76(s, b.max_request_rounds)
+        aged_out_76 = _aged_out_76(s)                 # #759: the hold's age-out leaves a record too
+        if not dry_run:
+            _reject_depth_blocked(s, plan["blocked"])
+            _reject_dead_76(s, dead_76)
         if not plan["targets"]:
             return {**_empty_result(), "spilled": plan["spilled"], "blocked": plan["blocked"],
                     "deferred": plan["deferred"], "suppressed": plan["suppressed"],
+                    "dead_76": dead_76, "aged_out_76": aged_out_76,
                     "benchmark_excluded": g.benchmark_excluded}
 
         # ------- #164 PR 3b: the 7->1 second-loop SCOPE SPLIT (the escalation ladder's compose leg).
@@ -723,13 +863,13 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
         if not composed:                          # nothing buildable in either scope
             return {**_empty_result(), "spilled": plan["spilled"], "blocked": plan["blocked"],
                     "deferred": plan["deferred"], "suppressed": plan["suppressed"], "skipped": skipped,
-                    "escalation_exhausted": escalation_exhausted,
-                    "benchmark_excluded": g.benchmark_excluded}
+                    "escalation_exhausted": escalation_exhausted, "dead_76": dead_76,
+                    "aged_out_76": aged_out_76, "benchmark_excluded": g.benchmark_excluded}
 
         common = {"targets": plan["targets"], "spilled": plan["spilled"], "blocked": plan["blocked"],
                   "deferred": plan["deferred"], "suppressed": plan["suppressed"], "skipped": skipped,
-                  "escalation_exhausted": escalation_exhausted,
-                  "benchmark_excluded": g.benchmark_excluded}
+                  "escalation_exhausted": escalation_exhausted, "dead_76": dead_76,
+                  "aged_out_76": aged_out_76, "benchmark_excluded": g.benchmark_excluded}
         if dry_run:                               # #154 modal preview — NO create_batch, NO flip
             return {"batch_id": composed[0]["batch_id"], "dry_run": True,
                     "n_requests": sum(len(c["flip_ids"]) for c in composed),
@@ -780,7 +920,7 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
 def _empty_result() -> dict:
     return {"batch_id": None, "n_requests": 0, "n_districts": 0, "targets": {}, "batches": [],
             "spilled": [], "blocked": [], "deferred": [], "suppressed": [], "skipped": [],
-            "escalation_exhausted": [], "benchmark_excluded": []}
+            "escalation_exhausted": [], "dead_76": [], "aged_out_76": [], "benchmark_excluded": []}
 
 
 # ===========================================================================
