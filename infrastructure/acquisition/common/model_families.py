@@ -87,6 +87,14 @@ def usable_output(model_id: str, est_prompt_tokens: int) -> "int | None":
         cap = min(cap, w["max_out"])
     return cap
 
+# The two ways a model's window can make a rep's read structurally incomplete (#709/#793). They live
+# HERE, in the base layer, because both the producer (process_governance.stage7_run.council_degraded,
+# which classifies) and the consumer (stage7_extract.requests, which words the remedy) need the same
+# vocabulary, and the layering contract forbids the lower one importing the higher. Shared constant,
+# never a literal repeated across files (the #755 lesson).
+DEGRADED_REFUSED = "context_refused"     # the voter never answered — its window rejected the request
+DEGRADED_TRUNCATED = "window_truncated"  # the voter answered PARTIALLY — the tail schools are gone
+
 # Provider-prefix aliases for the fallback: OpenRouter's prefix is sometimes NOT the family bucket we
 # catalog under ("mistralai/..." models are family "mistral"). Without this a catalogued Mistral
 # voter + an uncatalogued `mistralai/*` voter would resolve to "mistral" vs "mistralai" and slip past

@@ -22,6 +22,8 @@ detection is still valid and is exactly how we test this logic against a known c
 """
 from __future__ import annotations
 
+from infrastructure.acquisition.common.model_families import DEGRADED_REFUSED
+
 BANDS = ("elementary", "middle", "high")
 
 # route labels (the cyclic back-edges) — kept as literals so the persisted request is self-describing
@@ -277,26 +279,37 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
     # lost to its context window) — their zero is evidence about the council, never about the
     # document, so the remedy reason says re-route and the suppression is counted apart from
     # barren (a reader of `explain` must not conclude these documents were empty).
-    degraded_recs = {rep["rec_key"] for rep in result.get("reps", [])
-                     if rep.get("council_degraded")}
+    # #793: `window_truncated` is the second degradation shape — the voter ANSWERED, but only
+    # partway. It is counted and worded apart from a refusal because the two mislead differently:
+    # a refusal invites "the document was empty", a truncation invites "that was the whole roster".
+    degraded_recs = {rep["rec_key"]: (rep["council_degraded"].get("kinds") or {})
+                     for rep in result.get("reps", []) if rep.get("council_degraded")}
     if explain is not None:
         explain["suppressed_degraded_reps"] = 0
+        explain["suppressed_truncated_reps"] = 0
     for rec_key, n_acc in _accepted_by_record(result).items():
         if n_acc > 0:
             continue
-        degraded = rec_key in degraded_recs
+        kinds = degraded_recs.get(rec_key)
+        degraded = kinds is not None
+        # a rep carrying BOTH shapes counts as refused — the stronger statement about the council.
+        truncated_only = degraded and DEGRADED_REFUSED not in set(kinds.values())
         if no_fillable_gap:
             # #170/#176: every fillable band already covered (or none exists) — no barren-rep remedy
             # can add claimed coverage. Non-emission by design: re-detection re-emits if coverage
             # regresses; `explain` carries the count so the run log isn't silent about it.
             if explain is not None:
-                explain["suppressed_degraded_reps" if degraded
+                explain["suppressed_truncated_reps" if truncated_only else
+                        "suppressed_degraded_reps" if degraded
                         else "suppressed_barren_reps"] += 1
             continue
         alts = alternates_by_rec.get(rec_key) or []
         sent = files.get(rec_key)
-        deg_note = ("council-degraded (a voter's context window refused the rep — the zero is "
-                    "NOT evidence the document is empty): " if degraded else "")
+        deg_note = (("council-degraded (a voter's reply was TRUNCATED at its context window — the "
+                     "read was partial, so this zero is NOT evidence the document is empty): "
+                     if truncated_only else
+                     "council-degraded (a voter's context window refused the rep — the zero is "
+                     "NOT evidence the document is empty): ") if degraded else "")
         if alts:
             ranked = rank_alternates(alts)   # #155: best-first (higher-yield text before vision)
             reqs.append({

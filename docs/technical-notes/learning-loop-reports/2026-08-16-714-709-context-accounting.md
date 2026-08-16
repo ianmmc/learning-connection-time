@@ -100,3 +100,50 @@ replay — with the roster-identity fix (Tranche C step 1) compounding on Memphi
 `test_stage7_openrouter.py`. No live re-replay run here: the marker changes receipts/`explain`
 only — no consensus outcome shifts — so receipts backfill naturally the next time any replay or
 follow-up touches them.
+
+**2026-08-16 (same day) — #793: the clamp had to be paid for.** Reviewing the hub-page question
+(#795/#796) turned up the cost of §2's own fix. §2.2's clamp is right, but on the Orange shape it
+does not *prevent* the failure, it **changes its shape**: instead of requesting 32,000 and taking a
+provider 400 (`error_kind='context'` → marked, remedy says re-route), the call now requests 16,384,
+**succeeds**, and truncates. Reproduced against this branch's code:
+
+```
+sizing asked for 32000; max_tokens actually sent: [16384]
+ok=True  truncated=True  finish_reason='length'  retried=False  error_kind=None
+council_degraded(...) -> None
+```
+
+No retry, because `retry_ceiling = min(MAX_TOKENS_CEILING, cap) = 16384` and the call was already
+sent at 16,384. And a grep of every consumer of `finish_reason`/`truncated` outside `openrouter.py`
+returned **three hits, all display**: a per-rep progress line, a telemetry counter, a `[done]` line.
+So a partial roster entered consensus indistinguishably from a complete one — §2.6's "a degraded
+zero is never evidence a document is empty" had an unguarded twin: *a partial is never evidence
+that was the whole roster*.
+
+Already in shipped data, from a scan of all 2,586 stored call records: 9 truncated calls in 4
+districts, including **Baldwin `0100270` keeping 355 facts** and **Stroudsburg `4222860` keeping
+420** (×3 runs) from replies that ran out of room. Those read as clean.
+
+Fix (P8/P9): `council_degraded` gains `kinds` — `context_refused` vs `window_truncated` — with the
+vocabulary in `common/model_families.py` because the layering contract forbids `stage7_extract`
+importing `process_governance`. Since #169 retries whenever headroom remains and keeps the retry's
+content, a `length` finish on the final result is terminal, so no new state is needed to detect
+"headroom exhausted". Refusal outranks truncation for a model in both states; a recovered retry
+does not mark; a judge truncation does not mark. `explain` splits
+`suppressed_truncated_reps` from `suppressed_degraded_reps`, and the remedy wording says PARTIAL,
+not empty.
+
+Verified against the corpus rather than asserted: **22 (district, rep, shape) degradations are now
+derivable from shipped receipts at zero spend**, four of them the new truncation shape (Orange
+`1201440`, Stroudsburg `4222860`, Baldwin `0100270`, Bentonville `0503060`).
+
+One nuance found and deliberately left alone: the marker fires on a lost VOTER even when a
+third-family **judge** covered the gap — Broward `1200180` accepted 201 facts via `method='judge'`
+with mistral refused, so REQ-056 held and nothing was lost. That is honest (a voter *was* lost) and
+harmless (degraded remedies only fire on zero-yield records). Whether gate@8 should distinguish
+"degraded but judge-covered" is a surface question for #775.
+
+**The lesson this adds to §10.11's tally:** a fix that removes a failure's *symptom* has to be
+checked for whether it removed the failure or only its **visibility**. The clamp was justified as
+"the 400 shape becomes unrepresentable" — true, and the reason the 400 stopped appearing was that
+the same event now succeeded quietly.

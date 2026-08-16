@@ -149,7 +149,26 @@ exercise against the #200/#209-hardened pipeline, not a distinct issue awaiting 
   run output/receipt (`stage7_run.council_degraded`, derived identically on the #716 replay):
   cross-family consensus was impossible by construction, the zero is evidence about the COUNCIL,
   never the document (the 7→6 remedy reason says re-route; `explain` counts these apart from
-  barren). The truncation retry targets `min(MAX_TOKENS_CEILING, cap)`. Uncatalogued models keep
+  barren).
+  **#793 — the marker has TWO shapes, and the clamp is why.** Clamping fixed the 400 but replaced it
+  with a *successful* truncated reply: `ok=True, finish_reason="length"`, the salvage parser keeping
+  the head and the tail schools silently gone. Before #793, `finish_reason` reached a progress line
+  and a telemetry counter and **nothing else** — no marker, no remedy, no consensus effect — so a
+  partial roster read as a complete one (the watched "failure wearing a normal outcome's clothes"
+  class, worse than a refusal because a refusal at least shows a zero). Since #169 already retries a
+  truncation whenever headroom remains and keeps the retry's content, a `length` finish on the FINAL
+  result means every available token was spent — terminal, not transient. So `council_degraded`
+  returns **`kinds`** beside `{models, reasons}`: `context_refused` (never answered) vs
+  `window_truncated` (answered partway), the vocabulary shared from `common/model_families.py`
+  because the classifier (`process_governance`) sits ABOVE the consumer (`stage7_extract.requests`)
+  in the layering contract. The two are worded and counted apart end to end —
+  `explain["suppressed_truncated_reps"]` beside `suppressed_degraded_reps`, and a truncated rep's
+  remedy says the read was PARTIAL rather than the document empty. A model in both states reports
+  the refusal; a recovered retry is not degradation; a JUDGE truncation never marks (voters carry
+  REQ-056). `finish_reason` has always ridden the stored call record, so the #716 replay backfills
+  **22 (district, rep, shape) degradations from shipped receipts at zero spend** — four of them the
+  new truncation shape (Orange, Stroudsburg, Baldwin at 355 facts kept, Bentonville).
+  The truncation retry targets `min(MAX_TOKENS_CEILING, cap)`. Uncatalogued models keep
   legacy behavior. Composition remedies (chunking, long-context routing, substitutes, per-model
   ceiling raises) are #80's to measure — corpus population in
   `learning-loop-reports/2026-08-16-714-709-context-accounting.md`. `_client()` (the OpenAI SDK client) is `functools.lru_cache`d

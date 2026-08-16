@@ -9,7 +9,8 @@ mistral tests are those receipts' verbatim shapes.
 import pytest
 
 from infrastructure.acquisition.common.model_families import (
-    FAMILY, MODEL_WINDOWS, WINDOW_MARGIN_TOKENS, usable_output)
+    DEGRADED_REFUSED, DEGRADED_TRUNCATED, FAMILY, MODEL_WINDOWS, WINDOW_MARGIN_TOKENS,
+    usable_output)
 from infrastructure.acquisition.stage7_extract import openrouter as OR
 from infrastructure.acquisition.process_governance.stage7_run import council_degraded
 
@@ -175,3 +176,77 @@ class TestCouncilDegraded:
              "error": "maximum context length"},
         ]) is None
         assert council_degraded([]) is None
+
+    def test_p4_refusal_is_kinded(self):
+        d = council_degraded([{"model": MISTRAL, "role": "voter", "ok": False,
+                               "error_kind": "context", "error": "pre-flight"}])
+        assert d["kinds"] == {MISTRAL: DEGRADED_REFUSED}
+
+
+class TestTruncationDegrades793:
+    """#793: a truncated voter reply is the SECOND window failure — the model answered partway and
+    the tail schools are gone. Before this, `finish_reason == 'length'` reached a console line and a
+    counter and nothing else, so a partial roster read as a complete one."""
+
+    def test_p1_clamped_truncation_marks_degraded(self):
+        """The exact shape #792's clamp produces on Orange: max_tokens clamped to the model's cap,
+        the reply succeeds but truncates, and no retry headroom is left. Before #793 this returned
+        None — the clamp turned a loud 400 into a silent partial."""
+        calls = [
+            {"model": GEMINI, "role": "voter", "ok": True, "error": None, "n_facts": 179},
+            {"model": MISTRAL, "role": "voter", "ok": True, "error": None, "n_facts": 90,
+             "finish_reason": "length", "completion_tokens": 16384, "truncation_retried": False},
+        ]
+        d = council_degraded(calls)
+        assert d and d["models"] == [MISTRAL]
+        assert d["kinds"] == {MISTRAL: DEGRADED_TRUNCATED}
+        assert "truncated" in d["reasons"][MISTRAL].lower()
+
+    def test_p2_recovered_retry_is_not_degradation(self):
+        """#169 retried the truncation and the reply came back COMPLETE — recovery is not
+        degradation, and marking it would cry wolf on the mechanism that saved us."""
+        assert council_degraded([
+            {"model": GEMINI, "role": "voter", "ok": True, "error": None, "n_facts": 200},
+            {"model": MISTRAL, "role": "voter", "ok": True, "error": None, "n_facts": 200,
+             "finish_reason": "stop", "truncation_retried": True},
+        ]) is None
+
+    def test_p3_judge_truncation_does_not_mark(self):
+        """Same rule as #709: voters carry REQ-056 consensus, the judge does not."""
+        assert council_degraded([
+            {"model": GEMINI, "role": "voter", "ok": True, "n_facts": 12, "finish_reason": "stop"},
+            {"model": "qwen/qwen3-235b-a22b-2507", "role": "judge", "ok": True, "n_facts": 3,
+             "finish_reason": "length"},
+        ]) is None
+
+    def test_p4_legacy_receipts_backfill_at_zero_spend(self):
+        """Baldwin 0100270 (355 facts kept) and Stroudsburg 4222860 (420) — the verbatim shapes
+        sitting in shipped receipts today. `finish_reason` has always been stored, so the #716
+        replay derives the marker with no new model spend."""
+        for did, kept, toks in (("0100270", 355, 16000), ("4222860", 420, 16000)):
+            d = council_degraded([
+                {"model": GEMINI, "role": "voter", "ok": True, "error": None, "n_facts": kept,
+                 "finish_reason": "length", "completion_tokens": toks},
+                {"model": MISTRAL, "role": "voter", "ok": True, "error": None, "n_facts": kept,
+                 "finish_reason": "stop"},
+            ])
+            assert d and d["kinds"] == {GEMINI: DEGRADED_TRUNCATED}, did
+            assert str(kept) in d["reasons"][GEMINI]
+
+    def test_refusal_outranks_truncation_for_one_model(self):
+        """A model recorded in BOTH states reports the refusal — no answer at all is the stronger
+        statement, and the two must never both claim the same model."""
+        d = council_degraded([
+            {"model": MISTRAL, "role": "voter", "ok": False, "error_kind": "context",
+             "error": "pre-flight"},
+            {"model": MISTRAL, "role": "voter", "ok": True, "n_facts": 5, "finish_reason": "length"},
+        ])
+        assert d["kinds"] == {MISTRAL: DEGRADED_REFUSED}
+
+    def test_both_voters_truncated_marks_both(self):
+        d = council_degraded([
+            {"model": GEMINI, "role": "voter", "ok": True, "n_facts": 90, "finish_reason": "length"},
+            {"model": MISTRAL, "role": "voter", "ok": True, "n_facts": 40, "finish_reason": "length"},
+        ])
+        assert d["models"] == sorted([GEMINI, MISTRAL])
+        assert set(d["kinds"].values()) == {DEGRADED_TRUNCATED}

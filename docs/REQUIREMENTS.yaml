@@ -4585,9 +4585,32 @@ requirements:
       - "P5: degraded remedies/suppressions distinguishable from barren in reason + explain"
       - "P6: the truncation retry never exceeds the model's cap"
       - "P7: uncatalogued models byte-identical (whole pre-existing suite untouched)"
+      - "P8 (#793): a voter reply that finishes 'length' with no retry headroom left is the SECOND
+        degradation shape — kind 'window_truncated', distinct from 'context_refused'; recovery by the
+        #169 retry is NOT degradation, and a judge truncation never marks"
+      - "P9 (#793): the two shapes are worded and counted apart end to end — explain carries
+        suppressed_truncated_reps beside suppressed_degraded_reps, and the remedy says the read was
+        PARTIAL rather than the document empty"
+    notes: |
+      #793 (2026-08-16) closed the hole this requirement's own clamp opened. P1's clamp is right, but
+      on the Orange shape it converted a provider 400 (loud, error_kind='context', marked) into a
+      SUCCESSFUL truncated reply (ok=True, finish_reason='length', unmarked) — a partial roster that
+      read as a complete one. Nothing consumed finish_reason outside a console line and a counter.
+      A truncation with no retry headroom is the same fact as a refusal — the model could not hold
+      the answer — so council_degraded now returns `kinds` alongside {models, reasons}, and a model
+      recorded in both states reports the refusal (the stronger statement). Because finish_reason has
+      always ridden the stored call record, the #716 replay backfills it: 22 (district, rep, shape)
+      degradations are now derivable from shipped receipts at zero spend, four of them the new
+      truncation shape (Orange 1201440, Stroudsburg 4222860, Baldwin 0100270 — which kept 355 facts
+      from a truncated reply — and Bentonville 0503060).
+      Known nuance, deliberately unchanged here: the marker fires on a lost VOTER even when a
+      third-family judge covered the gap (Broward 1200180 accepted 201 facts via method='judge' with
+      mistral refused). That is honest — a voter WAS lost — and harmless, since degraded remedies only
+      fire on zero-yield records. Whether gate@8 should distinguish "degraded but judge-covered" is a
+      surface question for #775.
     tests:
-      - "tests/test_model_windows.py (catalog parity, clamp, pre-flight, classification, marker)"
-      - "tests/test_stage7_requests.py (degraded vs barren explain split)"
+      - "tests/test_model_windows.py (catalog parity, clamp, pre-flight, classification, both marker shapes)"
+      - "tests/test_stage7_requests.py (truncated vs degraded vs barren explain split + remedy wording)"
     depends_on: [REQ-051, REQ-056, REQ-117]
     notes: "MODEL_WINDOWS is checked in (fetched 2026-08-16), not fetched at runtime — sizing must
       be deterministic and test-visible; refresh command in the module. The windows fetch falsified

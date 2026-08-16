@@ -394,7 +394,9 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
         if rep_trunc:
             line += f"  ⚠ {rep_trunc} TRUNCATED"
         if degraded:
-            line += f"  ⚠ COUNCIL-DEGRADED ({', '.join(degraded['models'])})"
+            kinds = degraded.get("kinds") or {}
+            line += ("  ⚠ COUNCIL-DEGRADED (" + ", ".join(
+                f"{m}:{kinds.get(m, MF.DEGRADED_REFUSED)}" for m in degraded["models"]) + ")")
         print(line, flush=True)
 
         # #120 mode-stability early-exit (district-grain): once EVERY fillable target band's running
@@ -459,23 +461,45 @@ def _call_record(model: str, role: str, res, facts: list) -> dict:
 
 
 def council_degraded(calls: list) -> "dict | None":
-    """#709 (REQ-174): was cross-family consensus STRUCTURALLY impossible on this rep — a VOTER
-    lost to a context-window refusal (pre-flight or provider 400)? Returns {models, reasons} or
-    None. Reads `error_kind == 'context'` when present and falls back to the error text's
-    context markers, so the #716 replay derives the SAME marker from receipts written before
-    error_kind existed — existing zero-yield receipts (Memphis 3004896917ca, Orange
-    0e1bf02c3ea6) become honestly distinguishable from barren at zero spend. A degraded rep's
-    zero facts are evidence about the COUNCIL, never about the document."""
-    hit = {}
+    """#709/#793 (REQ-174): did a VOTER's context window make this rep's read structurally
+    incomplete? Two shapes, both "the model could not hold the answer", both fatal to REQ-056
+    cross-family consensus over the rows that went missing:
+
+      • `context_refused`  — the call was refused pre-flight or 400'd (ok=False). Zero facts.
+      • `window_truncated` — the call SUCCEEDED with `finish_reason == 'length'` (#793). The
+        salvage parser kept the head; the tail schools are silently gone. Because #169 already
+        retries a truncated reply whenever headroom remains (and keeps the retry's content), a
+        `length` finish on the FINAL result means every available token was spent — this is the
+        terminal state, not a transient one.
+
+    Returns {models, reasons, kinds} or None. Reads `error_kind == 'context'` when present and
+    falls back to the error text's context markers, and reads `finish_reason` — all three ride
+    the stored call record, so the #716 replay derives the SAME marker from receipts written
+    before any of this existed (Memphis 3004896917ca and Orange 0e1bf02c3ea6 for the refusal;
+    Baldwin 0100270 and Stroudsburg 4222860 for the truncation) at zero spend.
+
+    A degraded rep's facts are evidence about the COUNCIL, never about the document: a zero is
+    not "the document was empty", and a partial is not "that was the whole roster"."""
+    hit, kinds = {}, {}
     for c in calls or []:
-        if c.get("role") != "voter" or c.get("ok"):
+        if c.get("role") != "voter":
             continue
-        err = (c.get("error") or "").lower()
-        if c.get("error_kind") == "context" or any(m in err for m in OR.CONTEXT_ERROR_MARKERS):
-            hit[c.get("model")] = c.get("error") or "context refusal"
+        model, err = c.get("model"), (c.get("error") or "").lower()
+        if not c.get("ok"):
+            if c.get("error_kind") == "context" or any(m in err for m in OR.CONTEXT_ERROR_MARKERS):
+                hit[model] = c.get("error") or "context refusal"
+                kinds[model] = MF.DEGRADED_REFUSED
+        elif c.get("finish_reason") == "length":
+            # #793: a refusal already recorded for this model outranks a truncation — it is the
+            # stronger statement (no answer at all), and a model cannot be in both states usefully.
+            if kinds.get(model) != MF.DEGRADED_REFUSED:
+                hit[model] = (f"reply truncated at the window ({c.get('completion_tokens') or '?'} "
+                              f"completion tokens, {c.get('n_facts') or 0} facts kept) — the tail "
+                              f"schools were dropped")
+                kinds[model] = MF.DEGRADED_TRUNCATED
     if not hit:
         return None
-    return {"models": sorted(hit), "reasons": hit}
+    return {"models": sorted(hit), "reasons": hit, "kinds": kinds}
 
 
 def _rollup_tel(reps: list) -> dict:

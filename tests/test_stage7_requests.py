@@ -1,5 +1,6 @@
 """Stage 7 request-more-evidence detection/routing (REQ-117, STAGE7 §4) — pure, no DB/network.
 Feeds synthetic extraction results and asserts the routed requests at all three altitudes."""
+from infrastructure.acquisition.common import model_families as MF
 from infrastructure.acquisition.stage7_extract import requests as RQ
 
 
@@ -233,7 +234,54 @@ def test_explain_reports_detect_time_suppression():
                               real_bands={"elementary"}, explain=explain)
     assert reqs == []                                       # e covered; middle phantom; rep suppressed
     assert explain == {"phantom_bands": ["middle"], "suppressed_barren_reps": 1,
-                       "suppressed_degraded_reps": 0}
+                       "suppressed_degraded_reps": 0, "suppressed_truncated_reps": 0}
+
+
+# --------------------------- #793: a truncated read is not a barren one ---------------------------
+def _degraded_rep(kind, rec_key="D1:x"):
+    return {"rec_key": rec_key, "file": "a.txt", "accepted": [],
+            "council_degraded": {"models": ["m"], "reasons": {"m": "…"}, "kinds": {"m": kind}}}
+
+
+def test_793_truncated_suppression_counts_apart_from_refusal_and_barren():
+    """P5: the two degradation shapes mislead differently — a refusal invites "the document was
+    empty", a truncation invites "that was the whole roster". `explain` must not fold them."""
+    counts = {}
+    for kind in (MF.DEGRADED_TRUNCATED, MF.DEGRADED_REFUSED):
+        explain = {}
+        RQ.detect_requests(_result(reps=[_degraded_rep(kind)],
+                                   accepted=[{"band": "elementary", "school": "e"}]),
+                           claimed_bands=["elementary"], real_bands={"elementary"}, explain=explain)
+        counts[kind] = explain
+    assert counts[MF.DEGRADED_TRUNCATED]["suppressed_truncated_reps"] == 1
+    assert counts[MF.DEGRADED_TRUNCATED]["suppressed_degraded_reps"] == 0
+    assert counts[MF.DEGRADED_REFUSED]["suppressed_degraded_reps"] == 1
+    assert counts[MF.DEGRADED_REFUSED]["suppressed_truncated_reps"] == 0
+    for e in counts.values():
+        assert e["suppressed_barren_reps"] == 0             # neither is evidence of an empty doc
+
+
+def test_793_truncated_remedy_says_partial_not_empty():
+    """The emitted remedy must name the truncation — a reader deciding what to do next has to know
+    the read was PARTIAL, not that the document had nothing in it."""
+    reqs = RQ.detect_requests(
+        _result(reps=[_degraded_rep(MF.DEGRADED_TRUNCATED)], accepted=[]), claimed_bands=[])
+    assert [r["route"] for r in reqs] == ["7->3"]
+    assert reqs[0]["params"]["council_degraded"] is True
+    assert "TRUNCATED" in reqs[0]["reason"]
+    assert "partial" in reqs[0]["reason"].lower()
+
+
+def test_793_rep_with_both_shapes_reports_the_refusal():
+    """A rep where one voter was refused and another truncated is a REFUSAL rep — the stronger
+    statement about the council wins, and the counts stay disjoint (never double-counted)."""
+    rep = _degraded_rep(MF.DEGRADED_TRUNCATED)
+    rep["council_degraded"]["kinds"]["m2"] = MF.DEGRADED_REFUSED
+    explain = {}
+    RQ.detect_requests(_result(reps=[rep], accepted=[{"band": "elementary", "school": "e"}]),
+                       claimed_bands=["elementary"], real_bands={"elementary"}, explain=explain)
+    assert explain["suppressed_degraded_reps"] == 1
+    assert explain["suppressed_truncated_reps"] == 0
 
 
 # --------------------------- #231: the request records its FULL send (round lineage) ---------------------------
