@@ -816,3 +816,180 @@ def test_consensus_campus_names_union_across_models():
         m[0].pop("campus_names")
     acc2, _ = consensus_school_facts(rows)
     assert "campus_names" not in acc2[0]
+
+
+# ---------------------------------------------------------------------------------------------
+# #693/#721 — roster-anchored identity at the consensus boundary. Real-district shapes from the
+# 2026-08-15 findings report; the resolver's own rules are pinned in test_school_identity.py,
+# these pin the WIRING: grouping, band adjudication, the exclusion screen, identity marking.
+# ---------------------------------------------------------------------------------------------
+
+GEM = "google/gemini-2.5-flash-lite"
+MIS = "mistralai/mistral-small-24b-instruct-2501"
+
+
+def _recs(*pairs):
+    return [{"name": n, "school_id": s} for n, s in pairs]
+
+
+class TestRosterAnchoredConsensus:
+    def _cleveland_ctx(self):
+        return {"roster_recs": {
+            "high": _recs(("Lincoln West School of Science & Health", "H1"),
+                          ("Lincoln West School Of Global Studies", "H2"))}}
+
+    def test_p1_name_variants_reach_consensus(self):
+        """The filed #693 case at the consensus level: two models, same times, variant names —
+        MUST become one cross-family accepted fact (was: one judge-rescue + one unresolved)."""
+        rows = {GEM: [{"grade_level": "high", "start_time": "08:35", "end_time": "15:35",
+                       "school_name": "Lincoln West Science Health"}],
+                MIS: [{"grade_level": "high", "start_time": "08:35", "end_time": "15:35",
+                       "school_name": "Lincoln West Science and Health"}]}
+        acc, unres = A.consensus_school_facts(rows, context=self._cleveland_ctx())
+        assert len(acc) == 1 and not unres
+        assert acc[0]["method"] == "council_agree"
+        assert acc[0]["identity"]["school_id"] == "H1"
+
+    def test_p2_merged_group_still_needs_consensus(self):
+        """Identity resolution merges the GROUP, never the disagreement: variant names with a
+        30-min start gap (the real x-hannah-gibbons shape) stay unresolved without a judge —
+        the resolver must not manufacture agreement."""
+        ctx = {"roster_recs": {"elementary": _recs(
+            ("Hannah Gibbons-Nottingham Elementary School", "E1"))}}
+        rows = {GEM: [{"grade_level": "elementary", "start_time": "08:40", "end_time": "15:40",
+                       "school_name": "X Hannah Gibbons"}],
+                MIS: [{"grade_level": "elementary", "start_time": "09:10", "end_time": "15:40",
+                       "school_name": "Hannah Gibbons"}]}
+        acc, unres = A.consensus_school_facts(rows, context=ctx)
+        assert not acc and len(unres) == 1
+        assert set(unres[0]["starts"]) == {GEM, MIS}      # ONE row holding both votes
+
+    def test_p4_multiband_campus_adjudicated_by_roster(self):
+        """#721's Gerlach: identical times, different claimed bands, roster says one K-12 campus
+        -> pooled cross-family consensus, one accepted fact per claimed band, marked."""
+        ctx = {"roster_recs": {b: _recs(("GERLACH K-12 SCHOOL", "G1"))
+                               for b in ("elementary", "middle", "high")}}
+        rows = {GEM: [{"grade_level": "middle", "start_time": "08:00", "end_time": "15:30",
+                       "school_name": "Gerlach K-12"}],
+                MIS: [{"grade_level": "high", "start_time": "08:00", "end_time": "15:30",
+                       "school_name": "Gerlach K-12"}]}
+        acc, unres = A.consensus_school_facts(rows, context=ctx)
+        assert not unres
+        assert sorted(f["band"] for f in acc) == ["high", "middle"]
+        for f in acc:
+            assert f["method"] == "council_agree"
+            assert f["identity"]["band_adjudication"] == "roster_multiband"
+            assert f["identity"]["claimed_bands"] == ["high", "middle"]
+
+    def test_p4_wrong_band_claim_folds_into_roster_band(self):
+        """A single-band-rostered school claimed in two bands: the roster band wins; the wrong
+        band emits nothing."""
+        ctx = {"roster_recs": {"middle": _recs(("Triad Middle School", "T1"))}}
+        rows = {GEM: [{"grade_level": "middle", "start_time": "07:30", "end_time": "14:25",
+                       "school_name": "Triad Middle"}],
+                MIS: [{"grade_level": "high", "start_time": "07:30", "end_time": "14:25",
+                       "school_name": "Triad Middle School"}]}
+        acc, unres = A.consensus_school_facts(rows, context=ctx)
+        assert not unres and len(acc) == 1
+        assert acc[0]["band"] == "middle"
+        assert acc[0]["identity"]["band_adjudication"] == "roster_band"
+
+    def test_p4_unmatched_cross_band_singletons_become_band_disagreement(self):
+        """#721 option 3 (hub docs, no roster match): the loss becomes ONE explicit
+        human-adjudicable row, not two ordinary-looking no-consensus rows."""
+        ctx = {"roster_recs": {"middle": _recs(("Some Other School", "S1"))}}
+        rows = {GEM: [{"grade_level": "middle", "start_time": "08:00", "end_time": "15:00",
+                       "school_name": "Mystery Campus"}],
+                MIS: [{"grade_level": "high", "start_time": "08:00", "end_time": "15:00",
+                       "school_name": "Mystery Campus"}]}
+        acc, unres = A.consensus_school_facts(rows, context=ctx)
+        assert not acc and len(unres) == 1
+        assert unres[0]["reason"] == "band_disagreement"
+        assert unres[0]["identity"]["claimed_bands"] == ["high", "middle"]
+        assert set(unres[0]["starts"]) == {GEM, MIS}
+
+    def test_p5_level_collapse_never_band_merges(self):
+        """THE pin at the consensus level: 'apopka' in two bands = two REAL schools (distinct
+        school_ids) -> two independent facts, no pooling, no adjudication marking."""
+        ctx = {"roster_recs": {"elementary": _recs(("APOPKA ELEMENTARY", "A1")),
+                               "middle": _recs(("APOPKA MIDDLE", "A2"))}}
+        rows = {GEM: [{"grade_level": "elementary", "start_time": "08:45", "end_time": "15:00",
+                       "school_name": "Apopka"},
+                      {"grade_level": "middle", "start_time": "09:30", "end_time": "16:15",
+                       "school_name": "Apopka"}],
+                MIS: [{"grade_level": "elementary", "start_time": "08:45", "end_time": "15:00",
+                       "school_name": "Apopka"},
+                      {"grade_level": "middle", "start_time": "09:30", "end_time": "16:15",
+                       "school_name": "Apopka"}]}
+        acc, unres = A.consensus_school_facts(rows, context=ctx)
+        assert len(acc) == 2 and not unres
+        by_band = {f["band"]: f for f in acc}
+        assert by_band["elementary"]["identity"]["school_id"] == "A1"
+        assert by_band["middle"]["identity"]["school_id"] == "A2"
+        assert by_band["elementary"]["gross"] != by_band["middle"]["gross"]
+        for f in acc:
+            assert "band_adjudication" not in f["identity"]
+
+    def test_p6_ambiguous_marked_not_merged(self):
+        """'lincoln west' spans two real schools: the fact keeps its own key, marked ambiguous
+        for gate@8 — never a guess (#681)."""
+        rows = {GEM: [{"grade_level": "high", "start_time": "08:35", "end_time": "15:35",
+                       "school_name": "Lincoln West"}],
+                MIS: [{"grade_level": "high", "start_time": "08:35", "end_time": "15:35",
+                       "school_name": "Lincoln West"}]}
+        acc, _ = A.consensus_school_facts(rows, context=self._cleveland_ctx())
+        assert len(acc) == 1
+        assert acc[0]["school"] == "lincoln west"
+        assert acc[0]["identity"]["rule"] == "ambiguous"
+        assert len(acc[0]["identity"]["candidates"]) == 2
+
+    def test_p7_excluded_type_screened(self):
+        """Rung 4: an unmatched preschool-program name routes to unresolved with the explicit
+        reason — off the band mode, never silently dropped (bucks-hill-prek, Waterbury)."""
+        ctx = {"roster_recs": {"elementary": _recs(("Bucks Hill School", "B1"))}}
+        rows = {GEM: [{"grade_level": "elementary", "start_time": "08:00", "end_time": "13:00",
+                       "school_name": "Bucks Hill PreK"}],
+                MIS: [{"grade_level": "elementary", "start_time": "08:00", "end_time": "13:00",
+                       "school_name": "Bucks Hill PreK"}]}
+        acc, unres = A.consensus_school_facts(rows, context=ctx)
+        assert not acc and len(unres) == 1
+        assert unres[0]["reason"] == "excluded_school_type"
+
+    def test_p8_unmatched_clean_name_survives_marked(self):
+        """Rung 5: the name-in-lieu — an unmatched clean name stays an accepted fact, marked
+        roster_unmatched (gate@8-visible; slot fill impossible by construction)."""
+        ctx = {"roster_recs": {"high": _recs(("Some Other High", "S1"))}}
+        rows = {GEM: [{"grade_level": "high", "start_time": "07:45", "end_time": "14:45",
+                       "school_name": "Novel Academy"}],
+                MIS: [{"grade_level": "high", "start_time": "07:45", "end_time": "14:45",
+                       "school_name": "Novel Academy"}]}
+        acc, unres = A.consensus_school_facts(rows, context=ctx)
+        assert len(acc) == 1 and not unres
+        assert acc[0]["identity"] == {"roster": "unmatched"}
+
+    def test_p9_no_context_is_byte_identical(self):
+        """A no-roster call (council_lab, roster-load failure) must behave exactly as before:
+        no identity keys, no screen, no adjudication — the entire feature is context-gated."""
+        rows = {GEM: [{"grade_level": "elementary", "start_time": "08:00", "end_time": "13:00",
+                       "school_name": "Bucks Hill PreK"}],
+                MIS: [{"grade_level": "elementary", "start_time": "08:00", "end_time": "13:00",
+                       "school_name": "Bucks Hill PreK"}]}
+        acc, unres = A.consensus_school_facts(rows)
+        assert len(acc) == 1 and not unres
+        assert "identity" not in acc[0]
+
+    def test_judge_rows_group_by_resolved_key(self):
+        """A judge consulted under one spelling must be FOUND when the voters split across
+        variant spellings — judge rows resolve through the same function."""
+        ctx = self._cleveland_ctx()
+        rows = {GEM: [{"grade_level": "high", "start_time": "08:35", "end_time": "15:35",
+                       "school_name": "Lincoln West Science Health"}],
+                MIS: [{"grade_level": "high", "start_time": "09:30", "end_time": "15:35",
+                       "school_name": "Lincoln West Science and Health"}]}
+        judge = {"anthropic/claude-3-5-haiku": [
+            {"grade_level": "high", "start_time": "08:35", "end_time": "15:35",
+             "school_name": "Lincoln-West School of Science & Health"}]}
+        acc, unres = A.consensus_school_facts(rows, judge_rows=judge, context=ctx)
+        assert len(acc) == 1 and not unres
+        assert acc[0]["method"] == "judge"
+        assert acc[0]["identity"]["school_id"] == "H1"

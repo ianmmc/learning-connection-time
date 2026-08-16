@@ -283,16 +283,24 @@ def consensus_context_for_district(did: str, labels_by_rec: dict) -> dict:
     LIVE label table — the working store — so a human's label correction corrects the replay,
     which is the point of replaying. A replay can therefore legitimately partition
     accepted/unresolved differently than the original run when the label has since changed."""
-    roster_by_band = {}
+    roster_by_band, roster_recs = {}, {}
     try:
         br = SS.band_rosters_for_district(did)
         if br:
             roster_by_band = {b: list(m.get("schools") or []) for b, m in br.items()
                               if isinstance(m, dict) and not b.startswith("_")}
+            # #693/#721: the slot spine WITH ids — the roster-anchored identity resolver's input
+            # (resolve_school_identity). Same source, richer grain; names-only roster_by_band
+            # stays for #707's N=1 resolution.
+            roster_recs = {b: [{"name": sr.get("name"), "school_id": sr.get("school_id")}
+                               for sr in (m.get("slot_recs") or [])]
+                           for b, m in br.items()
+                           if isinstance(m, dict) and not b.startswith("_")}
     except Exception as e:  # noqa: BLE001 — advisory context: no roster ⇒ no N=1 resolution
         print(f"[consensus-context] roster lookup failed for {did} "
-              f"({type(e).__name__}: {str(e)[:80]}) — N=1 resolution disabled", flush=True)
-    return {"labels_by_rec": labels_by_rec or {}, "roster_by_band": roster_by_band}
+              f"({type(e).__name__}: {str(e)[:80]}) — N=1/identity resolution disabled", flush=True)
+    return {"labels_by_rec": labels_by_rec or {}, "roster_by_band": roster_by_band,
+            "roster_recs": roster_recs}
 
 
 def _rep_consensus_context(ctx: dict, rec_key: str) -> dict:
@@ -301,7 +309,8 @@ def _rep_consensus_context(ctx: dict, rec_key: str) -> dict:
     if not ctx:
         return None
     return {"band_grain": (ctx.get("labels_by_rec") or {}).get(rec_key) == "district_hub_by_band",
-            "roster_by_band": ctx.get("roster_by_band") or {}}
+            "roster_by_band": ctx.get("roster_by_band") or {},
+            "roster_recs": ctx.get("roster_recs") or {}}
 
 
 def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, use_judge: bool,
@@ -841,6 +850,8 @@ def persist_run_session(s, results: dict, *, created_by: str = "auto:stage7",
                 school_year=f.get("school_year"), applies_to=f.get("applies_to"),   # v3 readings (#254)
                 campus_names_json=(json.dumps(f["campus_names"])
                                    if f.get("campus_names") else None),      # v4 reading (#499)
+                identity_json=(json.dumps(f["identity"])
+                               if f.get("identity") else None),              # v5 marking (#693/#721)
                 rec_key=f.get("rec_key"), source_file=f.get("source_file")))
         for u in pd["unresolved"]:
             s.add(M7.SchoolFact(
@@ -848,6 +859,8 @@ def persist_run_session(s, results: dict, *, created_by: str = "auto:stage7",
                 school=u.get("school", ""), status="unresolved", gross_minutes=u.get("gross"),
                 method=u.get("reason", "disagree"),
                 detail_json=json.dumps({k: u[k] for k in ("starts", "ends", "gross") if k in u}),
+                identity_json=(json.dumps(u["identity"])
+                               if u.get("identity") else None),              # v5 marking (#693/#721)
                 rec_key=u.get("rec_key"), source_file=u.get("source_file")))
         s.execute(DS.INSERT_STATE_EVENT, {
             "district_id": did, "name": pd.get("name", ""), "state": pd.get("state"), "stage": 7,

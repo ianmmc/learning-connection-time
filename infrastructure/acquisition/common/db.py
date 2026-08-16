@@ -121,6 +121,9 @@ _PRECIOUS_ALTERS = [
     "ALTER TABLE school_fact ADD COLUMN IF NOT EXISTS school_year text",
     "ALTER TABLE school_fact ADD COLUMN IF NOT EXISTS campus_names_json text",
     "ALTER TABLE school_fact ADD COLUMN IF NOT EXISTS applies_to text",
+    # #693/#721: v5 roster-identity marking (resolution rules / band adjudication / ambiguity /
+    # roster_unmatched). Additive, NULL for pre-v5 rows (going-forward; the #716 replay re-derives).
+    "ALTER TABLE school_fact ADD COLUMN IF NOT EXISTS identity_json text",
     # #213 / PR #220 review: DB-enforce the config_pointer singleton (id = 1). create_all applies the
     # model's CheckConstraint on a FRESH table; this covers a table created before the constraint existed.
     # Guarded by a pg_constraint lookup → idempotent no-op on every re-run (additive, never drops).
