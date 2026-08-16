@@ -362,7 +362,12 @@ def consensus_school_facts(model_rows, judge_rows=None, context=None):
     # made explicit and human-adjudicable instead of two ordinary-looking no-consensus rows.
     unmatched_by_name = {}
     for (b, k), info in ident.items():
-        if (info is None or not info.get("school_id")) and (b, k) in groups:
+        # strict-degenerate keys ('junior high school', '') are GENERIC REFERENTS, not one school
+        # claimed in two bands — they belong to the #245 guard / #707 resolution downstream, and
+        # sweeping them here would shadow the more specific degenerate_school_name reason (found
+        # replaying 4222860's receipt, findings report §9 phase 3).
+        if (info is None or not info.get("school_id")) and (b, k) in groups \
+                and _norm_school_strict(k):
             unmatched_by_name.setdefault(k, []).append((b, k))
     for k, keys in unmatched_by_name.items():
         singles = [key for key in keys if len(groups[key]) == 1]

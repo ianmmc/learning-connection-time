@@ -157,7 +157,27 @@ place (with tests) rather than deleted; treat them as legacy unless/until they'r
   stripping rules were tightened in that same PR (suffix-anchored district-qualifier stripping,
   hyphen word-splitting, NFKD, ES/MS/HS): this grouping step is directly affected — e.g. "Meridian
   Consolidated School" and "Meridian School" now group as DIFFERENT schools here, where the old
-  anywhere-strip wrongly merged their council facts into one consensus group. Within each group, the
+  anywhere-strip wrongly merged their council facts into one consensus group.
+  **REQ-173 (2026-08-15, #693/#721): before grouping, every voter/judge row's name is resolved
+  against the district's NCES slot spine** (`school_match.resolve_school_identity`, fed by
+  `context["roster_recs"]` — `consensus_context_for_district` threads it, so the #716 replay
+  inherits it). A uniquely-resolved name groups under the ROSTER school's norm key (variant
+  spellings meet: acronyms, grade-span suffixes, leading-initial artifacts, token subsets);
+  2+ candidates = ambiguous, kept split and marked (never a guess — #681). After grouping, a
+  school_id claimed under 2+ bands is band-adjudicated by roster placement: a multiband campus
+  pools its cross-band votes and emits one fact per claimed-and-rostered band
+  (`band_adjudication: roster_multiband`); a single-band-rostered school's wrong-band claim folds
+  into the roster band (`roster_band`); an UNMATCHED name's cross-band singletons collapse to one
+  explicit `band_disagreement` unresolved row (strict-degenerate names are exempt — they belong
+  to the #245/#707 path). At emission, an unmatched name is screened for excluded school types
+  (→ `unresolved` reason `excluded_school_type`) or survives marked `{"roster": "unmatched"}`.
+  All marking persists via `school_fact.identity_json` (v5 additive column) for gate@8; the
+  entire mechanism is context-gated — a no-roster caller (council lab) is byte-identical to
+  pre-REQ-173 behavior. `grade_level` STAYS in the grouping key: the 2026-08-15 measurement found
+  35 level-collapse districts (APOPKA ELEMENTARY/MIDDLE/HIGH all norm to `apopka`) where the band
+  is the only discriminator between real schools. Full evidence:
+  `learning-loop-reports/2026-08-15-693-721-roster-anchored-identity.md`.
+  Within each group, the
   council reaches consensus on **START and
   END separately** (cross-family, `>=2` families within `TOL=15` min each) — same-family agreement is
   not consensus (REQ-056). On disagreement, an optional judge's `(start,end)` pair breaks the tie.

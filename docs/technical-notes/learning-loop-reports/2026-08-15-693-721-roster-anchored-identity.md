@@ -219,3 +219,25 @@ WITHOUT re-normalizing through the current function — the school_match self-he
 "guard wired into one member of a set" class). 0 live rows affected by today's `and` change, but
 any future stopword change would have silently detached stored human dispositions. Fixed at
 intake + pinned (`test_stored_disposition_key_self_heals_across_normalizer_change`).
+
+**Phase 2 (2026-08-15) — consensus wiring** (`consensus_school_facts`: resolution at grouping,
+judge rows through the same function, roster band adjudication, the rung-4 screen, rung-5
+`roster_unmatched` marking; `identity_json` v5 column with the double-DDL pair, verified against
+a throwaway fresh-`create_all` DB; `roster_recs` threaded through `consensus_context_for_district`
+→ the #716 replay inherits everything). All context-gated; P9 (no-context byte-identical) holds
+across the whole pre-existing suite untouched. Wiring pins: `TestRosterAnchoredConsensus` (P1–P9).
+
+**Phase 3 (2026-08-15) — zero-spend corpus replay (P10), dry.** All 168 receipts through the
+#716 path: **unresolved 904 → 772 (−132), accepted +18, 44 districts change, 0 wrong merges.**
+All three filed districts recover: Cleveland's Lincoln-West pair → ONE `council_agree` fact; both
+`hannah gibbons` variants merge and reveal a real cross-family 09:10 agreement the split had
+hidden (the original judge-rescued 08:40 was the artifact-name reading); Essex `fms`+`founders
+memorial` → one fact, `ems/wes/adl` resolve; Gerlach emits accepted `roster_multiband` facts in
+both claimed bands. Washoe's −65 compounds this fix with #716's (its receipt had never been
+re-aggregated post-merge). The 16 receipts where unresolved ROSE are the designed conversions:
+`bucks hill pre k` → `excluded_school_type`, `alternative` → screened, `leonardo da vinci` →
+`band_disagreement`, pre-#245 empty-name acceptances → `degenerate_school_name`. One replay
+finding fixed in-code: the band_disagreement sweep initially grabbed strict-degenerate generic
+names (`junior high school`) that belong to the #245/#707 path — now exempt. NOT yet done:
+persisting the replays (Ian's call — live pipeline writes), the gate@8 UI badge for
+identity_json, and the URL-validated slug marking (rung 5b, needs `rep_url` in context).
