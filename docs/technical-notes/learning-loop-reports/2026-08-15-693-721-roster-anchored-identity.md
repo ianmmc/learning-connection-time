@@ -189,4 +189,33 @@ bands are adjudicated by the roster's own placement (`school_id` across `slot_re
 
 ## 9. Implementation log
 
-*(append as phases land)*
+**Phase 1 (2026-08-15) — the resolver (`resolve_school_identity`, `common/school_match.py`) +
+pins (`tests/test_school_identity.py`).** Corpus validation against real rosters corrected the
+design three ways before any consensus wiring:
+
+- **§5's "norm_school untouched" was half-wrong.** The Cleveland split's root cause is a
+  normalizer ASYMMETRY — `&` was punctuation-dropped while `and` was a kept token, so the same
+  conjunction normalized two ways by typography. `and` is now in `_GENERIC` (measured first: 0
+  collisions across all 83 corpus districts' rosters). The §3 "stopword widening is
+  near-worthless" claim stands for reach (4 pairs) but the asymmetry made this one strictly
+  correct to fix at the normalizer.
+- **Grade-span stripping must require digits.** Bare `prek`/`pk` marks an excluded-grade
+  *program*, not a span — `bucks hill prek` was fusing into Bucks Hill Elementary in the first
+  validation run; it now stays unmatched for the rung-4 screen. (`k12`, `k 8`, `pk 8` still
+  strip.)
+- **Forms compose with rules.** `x hannah gibbons` needs leading-initial-strip *then*
+  token-subset, because the real roster name is `Hannah Gibbons-Nottingham Elementary School` —
+  a naive fixture with `Hannah Gibbons School` passed while production failed. Test fixtures now
+  pin the real ccd_sch names.
+
+Corpus numbers post-fix (2,082 distinct (district, band, key)): 1,121 exact · 292 resolved
+non-exact (184 token_subset, 28 acronym, 28+13 grade_span, 19 token_set, 1 leading_initial
+composite) · 11 ambiguous kept split · 677 unmatched (rungs 4–5's population) · **0 wrong
+merges** · 26 in-extraction #693 merges · 48 cross-band #721 groups.
+
+**Collateral find:** `project_slots` consumed persisted `SlotAssignment.norm_school_fact` keys
+WITHOUT re-normalizing through the current function — the school_match self-healing contract
+(merge_fact_runs, #237) was wired into some readers of the set but not this one (the recurring
+"guard wired into one member of a set" class). 0 live rows affected by today's `and` change, but
+any future stopword change would have silently detached stored human dispositions. Fixed at
+intake + pinned (`test_stored_disposition_key_self_heals_across_normalizer_change`).

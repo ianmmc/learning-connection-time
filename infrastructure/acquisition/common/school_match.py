@@ -22,7 +22,12 @@ import unicodedata
 # contamination flag in the #237 detector).
 _GENERIC = re.compile(
     r"\b(elementary|middle|high|intermediate|school|schools|jr|junior|senior|academy|the|of|at"
-    r"|es|ms|hs)\b")
+    r"|es|ms|hs|and)\b")
+# 'and' added 2026-08-15 (#693): '&' was already punctuation-dropped by _base, so the SAME
+# conjunction normalized two ways by typography — 'Science & Health' == 'science health' but
+# 'Science and Health' != it, the exact Cleveland false-split. Measured safe: 0 collisions across
+# all 83 corpus districts' rosters (findings report §9); persisted keys self-heal by re-normalizing
+# through the CURRENT function (module docstring).
 
 # DISTRICT-TYPE qualifiers (#236) — stripped ONLY as a TRAILING run that ENDS IN A HARD DISTRICT
 # MARKER (district / ISD / USD / … / SD), never mid-name and never bare. The #236 double-counts are a
@@ -83,3 +88,139 @@ def norm_school(name) -> str:
         return ""
     stripped = norm_school_strict(name)
     return stripped or _base(name)
+
+
+# ---------------------------------------------------------------------------------------------
+# Roster-anchored identity resolution (#693/#721) — measured design in
+# docs/technical-notes/learning-loop-reports/2026-08-15-693-721-roster-anchored-identity.md.
+#
+# norm_school above is deliberately UNTOUCHED: it is the persisted key (REQ-117) and the 2026-08-15
+# measurement showed stopword widening reaches 4 pairs corpus-wide while the roster reaches 323+.
+# Resolution layers ON TOP, at the consensus boundary, and is band-scoped — the band in the
+# grouping key is the only thing separating the 35 level-collapse districts (APOPKA ELEMENTARY /
+# MIDDLE / HIGH all norm to 'apopka'), so every rule below matches within the claimed band FIRST
+# and falls to cross-band only when the claimed band has no candidate (that fall-through is what
+# detects #721's multiband campuses and wrong-band claims).
+# ---------------------------------------------------------------------------------------------
+
+# Grade-span tokens glued onto extracted names ('kinston k12', 'redington sr jrsr') — these never
+# distinguish two schools within one band, unlike bare numbers ("PS 121" vs "PS 122"), so ONLY
+# these exact shapes are stripped, never digit tokens generally. DIGITS ARE REQUIRED on the
+# k-forms: bare 'prek'/'pk' is an excluded-GRADE marker, not a span — 'bucks hill prek' is
+# plausibly a preschool program whose schedule must NOT fuse into Bucks Hill Elementary; it stays
+# unmatched so the rung-4 exclusion screen adjudicates it (2026-08-15 corpus validation).
+_GRADE_SPAN = re.compile(r"\b(?:pre|p)?k\s*\d{1,2}\b|\bjr\s*sr\b"
+                         r"|\b\d{1,2}\s*(?:th)?\s+grades?\b")
+
+
+def _strip_grade_span(nkey: str) -> str:
+    return re.sub(r"\s+", " ", _GRADE_SPAN.sub(" ", nkey)).strip()
+
+
+def _acronyms(raw_name: str) -> set:
+    """Acronym forms of a roster school's FULL name — computed on the un-stripped base because the
+    level words carry the acronym's tail ('Essex Middle School' -> 'ems'; the stripped form loses
+    it, a 5x undercount in the 2026-08-15 measurement). Two variants: the whole name, and the name
+    minus trailing 'school(s)' ('Albert D. Lawton School' -> 'adls' AND 'adl')."""
+    toks = _base(raw_name).split()
+    out = set()
+    for cut in (toks, toks[:-1] if toks and toks[-1] in ("school", "schools") else None):
+        if cut and len(cut) > 1:
+            out.add("".join(t[0] for t in cut))
+    return out
+
+
+def resolve_school_identity(name, band, roster_recs):
+    """Resolve an extracted school name to a roster identity. Pure.
+
+    roster_recs: {band: [{"name": raw roster name, "school_id": NCESSCH}, ...]} — the Stage-1 slot
+    spine with ids (a superset of #707's names-only roster_by_band; both ride the same context).
+
+    Returns (key, info):
+      key  — the normalized identity to group on: the ROSTER school's norm key when uniquely
+             resolved (so variant spellings collide), else norm_school(name) unchanged.
+      info — None when the roster offers nothing (unmatched: caller applies the #693 rung-4/5
+             screen + name-in-lieu policy), else a dict:
+               {"rule": exact|grade_span|leading_initial|acronym|token_set|token_subset,
+                "school_id": ..., "roster_school": raw name,
+                "rostered_bands": [bands this school_id appears in]}         — resolved, or
+               {"rule": "ambiguous", "candidates": [raw names]}              — 2+ roster schools
+                match: the split MUST be kept (#681's false-agreement defect otherwise; §7 of the
+                findings report), the info only makes the ambiguity gate@8-visible.
+
+    The judge cannot mint an identity (the #707 rule): this changes GROUPING only — consensus
+    thresholds are untouched by the caller's contract."""
+    nkey = norm_school(name)
+    if not nkey or not roster_recs:
+        return nkey, None
+
+    # Index the roster once per call: per-band and cross-band views, each key -> {school_id}.
+    def _index(recs):
+        by_norm, by_acr, toks = {}, {}, []
+        for r in recs:
+            rk = norm_school(r.get("name"))
+            if not rk or not r.get("school_id"):
+                continue
+            by_norm.setdefault(rk, set()).add(r["school_id"])
+            by_norm.setdefault(_strip_grade_span(rk), set()).add(r["school_id"])
+            for a in _acronyms(r.get("name")):
+                by_acr.setdefault(a, set()).add(r["school_id"])
+            toks.append((frozenset(rk.split()), r["school_id"]))
+        return by_norm, by_acr, toks
+
+    id_meta = {}                     # school_id -> (raw name, [bands])
+    for b, recs in roster_recs.items():
+        for r in recs or []:
+            raw, sid = r.get("name"), r.get("school_id")
+            if not sid:
+                continue
+            meta = id_meta.setdefault(sid, (raw, []))
+            if b not in meta[1]:
+                meta[1].append(b)
+
+    def _try(recs):
+        """Run the FORMS x RULES ladder against one roster view; return (rule, {school_id}) or
+        None. Forms are cheap artifact-corrections of the extracted key (grade-span token,
+        leading single-letter); each form gets the full rule ladder — 'x hannah gibbons' needs
+        leading-initial THEN token-subset to reach 'Hannah Gibbons-Nottingham' (2026-08-15
+        corpus validation). A form is only safe because a REAL distinguishing token exact-matches
+        at the unmodified form first and never falls through."""
+        by_norm, by_acr, toks = _index(recs)
+        stripped = _strip_grade_span(nkey)
+        words = nkey.split()
+        no_initial = " ".join(words[1:]) if len(words) > 1 and len(words[0]) == 1 else None
+        forms = [("", nkey)]
+        if stripped != nkey:
+            forms.append(("grade_span", stripped))
+        if no_initial:
+            forms.append(("leading_initial", no_initial))
+        for form_name, form in forms:
+            ktoks = frozenset(form.split())
+            for rule, hits in (
+                    ("exact", by_norm.get(form)),
+                    ("acronym", by_acr.get(form.replace(" ", ""))),
+                    ("token_set", {sid for rt, sid in toks if rt == ktoks} or None),
+                    # key ⊂ roster tokens ('lincoln west science health' ⊂ roster). The REVERSE
+                    # direction (roster ⊂ key) is deliberately absent: measured value-negative —
+                    # it minted 'regular day bell schedule' -> Bell Middle (findings report §3).
+                    ("token_subset", {sid for rt, sid in toks if ktoks and ktoks < rt} or None)):
+                if hits:
+                    return (f"{form_name}+{rule}" if form_name and rule != "exact"
+                            else form_name or rule), hits
+        return None
+
+    # Claimed band first (level-collapse safety), then cross-band (multiband/wrong-band detection).
+    for view in ((roster_recs.get(band) or []),
+                 [r for b, recs in roster_recs.items() for r in (recs or [])]):
+        hit = _try(view)
+        if not hit:
+            continue
+        rule, sids = hit
+        if len(sids) > 1:
+            return nkey, {"rule": "ambiguous",
+                          "candidates": sorted(id_meta[s][0] for s in sids if s in id_meta)}
+        sid = next(iter(sids))
+        raw, bands = id_meta.get(sid, (None, []))
+        return norm_school(raw), {"rule": rule, "school_id": sid, "roster_school": raw,
+                                  "rostered_bands": sorted(bands), "resolved_from": nkey}
+    return nkey, None

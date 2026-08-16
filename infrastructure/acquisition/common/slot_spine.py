@@ -94,11 +94,16 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
     for band in bands:
         recs = (rosters.get(band) or {}).get("slot_recs") or []
         band_asg = [a for a in asg if a.get("band") == band]
-        assign_of = {(a.get("roster_school_id") or "", a["norm_school_fact"]): a
+        # SlotAssignment.norm_school_fact is a PERSISTED key: re-normalize through the CURRENT
+        # norm_school at intake (idempotent by design — school_match module contract), or a
+        # stopword-list change silently detaches every stored human disposition whose key the
+        # change rewrites (found 2026-08-15 when #693 added 'and' to _GENERIC; same class as the
+        # merge_fact_runs / #237 read-time re-norm).
+        assign_of = {(a.get("roster_school_id") or "", norm_school(a["norm_school_fact"])): a
                      for a in band_asg if a.get("disposition") == "assign"}
-        reject_of = {(a.get("roster_school_id") or "", a["norm_school_fact"]): a
+        reject_of = {(a.get("roster_school_id") or "", norm_school(a["norm_school_fact"])): a
                      for a in band_asg if a.get("disposition") == "reject"}
-        confirm_of = {a["norm_school_fact"]: a
+        confirm_of = {norm_school(a["norm_school_fact"]): a
                       for a in band_asg if a.get("disposition") == "confirm_extra"}
 
         slots, by_key, by_id = [], {}, {}
