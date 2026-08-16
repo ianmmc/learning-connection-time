@@ -238,6 +238,18 @@ re-aggregated post-merge). The 16 receipts where unresolved ROSE are the designe
 `bucks hill pre k` → `excluded_school_type`, `alternative` → screened, `leonardo da vinci` →
 `band_disagreement`, pre-#245 empty-name acceptances → `degenerate_school_name`. One replay
 finding fixed in-code: the band_disagreement sweep initially grabbed strict-degenerate generic
-names (`junior high school`) that belong to the #245/#707 path — now exempt. NOT yet done:
-persisting the replays (Ian's call — live pipeline writes), the gate@8 UI badge for
-identity_json, and the URL-validated slug marking (rung 5b, needs `rep_url` in context).
+names (`junior high school`) that belong to the #245/#707 path — now exempt. Deferred with
+trackers: the gate@8 UI badge for identity_json (#775, Tranche D) and the URL-validated slug
+marking (rung 5b, #776).
+
+**Phase 4 (2026-08-16) — the replays run for REAL (Ian authorized; PR #774 open).** All 64
+delta receipts persisted via the reaggregate CLI: extraction rows 9166–9229, `cost_usd` 0 total,
+1,523 new `school_fact` rows (1,186 carrying `identity_json`) — **DB-verified, not report-trusted**
+(Rule 6). Spot checks in the live DB: Washoe 39/67 → 104/2; Gerlach accepted `council_agree` in
+both bands under `school_id 320048000217`; Cleveland's Lincoln-West pair one `council_agree`
+fact; Essex's `founders memorial` merged with school_id, unmatched acronyms marked
+`{"roster": "unmatched"}`. The #713 re-review queue picked up **19 written districts** whose
+evidence changed — routed to gate@8, no hand-routing. One known gap: ONE receipt
+(`extraction_cb8fabfc32ae_20260703T012255Z.json`) predates the per-district format
+(`districts` plural) and the replay tool cannot read it; its three districts are covered by
+later per-district receipts (Mesa's show no delta), so nothing recoverable is lost.

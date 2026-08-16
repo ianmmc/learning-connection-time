@@ -1,0 +1,401 @@
+{
+  "handoff_hash": "a2bc80c004ca",
+  "district": {
+    "district_id": "2302820",
+    "name": "Bangor Public Schools",
+    "reps": [
+      {
+        "rec_key": "2302820:fa6e7dd32d",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:40",
+                "end_time": "15:00",
+                "school_name": "Pre-Kindergarten \u2013 Grade 3"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "15:00",
+                "school_name": "Grades 4-5"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:30",
+                "school_name": "Grades 6-8"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:00",
+                "school_name": "Bangor High School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Bangor Regional Program"
+              }
+            ],
+            "prompt_tokens": 949,
+            "completion_tokens": 245,
+            "cost_usd": 0.0001929,
+            "latency_ms": 12111,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051600-IE7spXZhNKPLNoMG079l"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:00",
+                "school_name": "Bangor School Department",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:15",
+                "end_time": "14:30",
+                "school_name": "Bangor School Department",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "14:00",
+                "school_name": "Bangor High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 984,
+            "completion_tokens": 119,
+            "cost_usd": 5.872e-05,
+            "latency_ms": 15475,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051614-LdjSbOOVDb1cLvTCinaA"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 10,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end\u6e38\u620f\u526f\u672c": "15:00",
+                "school_name": "Abraham Lincoln School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:00",
+                "school_name": "Fourteenth Street School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:00",
+                "school_name": "Fruit Street School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:00",
+                "school_name": "Vine Street School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:00",
+                "school_name": "Fairmount School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:00",
+                "school_name": "Mary Snow School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:00",
+                "school_name": "James F. Doughty School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:00",
+                "school_name": "William S. Cohen School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:15",
+                "end_time": "14:30",
+                "school_name": "Bangor School Department",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:00",
+                "school_name": "Bangor High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 937,
+            "completion_tokens": 366,
+            "cost_usd": 0.00012093,
+            "latency_ms": 36997,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051629-zLOvCZNMT8choLpMDKO3"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "bangor",
+            "start": "07:50",
+            "end": "14:00",
+            "gross": 370,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "230282000047",
+              "roster_school": "Bangor High School",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "rec_key": "2302820:fa6e7dd32d",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "bangor department",
+            "reason": "band_disagreement",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:15"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:30"
+            },
+            "identity": {
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "2302820:fa6e7dd32d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "pre kindergarten grade 3",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:40"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "2302820:fa6e7dd32d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "grades 4 5",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:35"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "2302820:fa6e7dd32d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "grades 6 8",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:30"
+            },
+            "rec_key": "2302820:fa6e7dd32d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "bangor regional program",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:30"
+            },
+            "rec_key": "2302820:fa6e7dd32d",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "bangor",
+        "start": "07:50",
+        "end": "14:00",
+        "gross": 370,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "230282000047",
+          "roster_school": "Bangor High School",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "rec_key": "2302820:fa6e7dd32d",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "bangor department",
+        "reason": "band_disagreement",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:15"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:30"
+        },
+        "identity": {
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "2302820:fa6e7dd32d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "pre kindergarten grade 3",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:40"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "2302820:fa6e7dd32d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "grades 4 5",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:35"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "2302820:fa6e7dd32d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "grades 6 8",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:30"
+        },
+        "rec_key": "2302820:fa6e7dd32d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "bangor regional program",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:30"
+        },
+        "rec_key": "2302820:fa6e7dd32d",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "high": {
+        "gross_minutes": 370,
+        "start_time": "07:50",
+        "end_time": "14:00",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "bangor",
+            "start_time": "07:50",
+            "end_time": "14:00",
+            "gross": 370,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "reaggregated_from": "extraction_a2bc80c004ca_2302820_20260703T040733Z.json"
+  }
+}

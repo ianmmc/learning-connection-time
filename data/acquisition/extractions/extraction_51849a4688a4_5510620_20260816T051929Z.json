@@ -1,0 +1,484 @@
+{
+  "handoff_hash": "51849a4688a4",
+  "district": {
+    "district_id": "5510620",
+    "name": "New Richmond School District",
+    "reps": [
+      {
+        "rec_key": "5510620:0d6537b4d0",
+        "file": "camelot_stream.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Secondary school",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Secondary school",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "15:25",
+                "school_name": "Elementary school",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2507,
+            "completion_tokens": 121,
+            "cost_usd": 0.0002991,
+            "latency_ms": 800,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783307326-XXqGbkAzCfn4ljlR742a"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "School District of New Richmond",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "15:25",
+                "school_name": "School District of New Richmond",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2315,
+            "completion_tokens": 129,
+            "cost_usd": 0.00012607,
+            "latency_ms": 1705,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783307327-SEmpQFItOJv7M3aZu8co"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "School District of New Richmond",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "School District of New Richmond",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "15:25",
+                "school_name": "School District of New Richmond",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2269,
+            "completion_tokens": 115,
+            "cost_usd": 0.00040966,
+            "latency_ms": 4588,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783307329-j1CysjwlgkkZ8bSHTMvO"
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "secondary",
+            "reason": "band_disagreement",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:10"
+            },
+            "identity": {
+              "claimed_bands": [
+                "high",
+                "middle"
+              ]
+            },
+            "rec_key": "5510620:0d6537b4d0",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "district new richmond",
+            "reason": "band_disagreement",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:25"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:25"
+            },
+            "identity": {
+              "claimed_bands": [
+                "elementary",
+                "high"
+              ]
+            },
+            "rec_key": "5510620:0d6537b4d0",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "elementary school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:25"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:25"
+            },
+            "rec_key": "5510620:0d6537b4d0",
+            "source_file": "camelot_stream.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "5510620:e0d7b6ad5c",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:55",
+                "school_name": "Hillside Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1956,
+            "completion_tokens": 44,
+            "cost_usd": 0.0002132,
+            "latency_ms": 734,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783307333-Oou3e7ZnQLWuWPUaJaqk"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:55",
+                "school_name": "Hillside Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2343,
+            "completion_tokens": 73,
+            "cost_usd": 0.00012299,
+            "latency_ms": 1385,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783307334-qOEAMtdcQC9GwXM2q2UE"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "new richmond hillside",
+            "start": "08:45",
+            "end": "15:55",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "551062002789",
+              "roster_school": "New Richmond Hillside Elementary",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "hillside": "token_subset"
+              }
+            },
+            "rec_key": "5510620:e0d7b6ad5c",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5510620:114f33ad2d",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:35",
+                "end_time": "14:57",
+                "school_name": "New Richmond Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1755,
+            "completion_tokens": 44,
+            "cost_usd": 0.0001931,
+            "latency_ms": 1006,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783307336-jCUxlnPlLppmaEeY2KhE"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:35",
+                "end_time": "14:57",
+                "school_name": "New Richmond Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2121,
+            "completion_tokens": 71,
+            "cost_usd": 0.00011173,
+            "latency_ms": 1242,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783307337-7pvTKKHl88EXfHViaI8A"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "new richmond",
+            "start": "07:35",
+            "end": "14:57",
+            "gross": 442,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "551062001391",
+              "roster_school": "New Richmond Middle",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "rec_key": "5510620:114f33ad2d",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "new richmond hillside",
+        "start": "08:45",
+        "end": "15:55",
+        "gross": 430,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "551062002789",
+          "roster_school": "New Richmond Hillside Elementary",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "hillside": "token_subset"
+          }
+        },
+        "rec_key": "5510620:e0d7b6ad5c",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "new richmond",
+        "start": "07:35",
+        "end": "14:57",
+        "gross": 442,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "551062001391",
+          "roster_school": "New Richmond Middle",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "rec_key": "5510620:114f33ad2d",
+        "source_file": "page.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "high",
+        "school": "secondary",
+        "reason": "band_disagreement",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:10"
+        },
+        "identity": {
+          "claimed_bands": [
+            "high",
+            "middle"
+          ]
+        },
+        "rec_key": "5510620:0d6537b4d0",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "district new richmond",
+        "reason": "band_disagreement",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:25"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:25"
+        },
+        "identity": {
+          "claimed_bands": [
+            "elementary",
+            "high"
+          ]
+        },
+        "rec_key": "5510620:0d6537b4d0",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "elementary school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:25"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:25"
+        },
+        "rec_key": "5510620:0d6537b4d0",
+        "source_file": "camelot_stream.txt"
+      }
+    ],
+    "n_reps": 3,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 430,
+        "start_time": "08:45",
+        "end_time": "15:55",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "new richmond hillside",
+            "start_time": "08:45",
+            "end_time": "15:55",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 442,
+        "start_time": "07:35",
+        "end_time": "14:57",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "new richmond",
+            "start_time": "07:35",
+            "end_time": "14:57",
+            "gross": 442,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "state": "WI",
+    "reaggregated_from": "extraction_51849a4688a4_5510620_20260706T030858Z.json"
+  }
+}

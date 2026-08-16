@@ -1,0 +1,331 @@
+{
+  "handoff_hash": "51849a4688a4",
+  "district": {
+    "district_id": "2905790",
+    "name": "ADAIR CO. R-II",
+    "reps": [
+      {
+        "rec_key": "2905790:5c115eb32b",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1411,
+            "completion_tokens": 5,
+            "cost_usd": 0.0001431,
+            "latency_ms": 450,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305473-rahFARas0QwGCbWtbx5r"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1459,
+            "completion_tokens": 8,
+            "cost_usd": 7.359e-05,
+            "latency_ms": 672,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305474-aeQ6ztQ41wP8cFxbRii7"
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2905790:3bf6571c0d",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:38",
+                "school_name": "Junior-Senior High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:38",
+                "school_name": "Junior-Senior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2248,
+            "completion_tokens": 85,
+            "cost_usd": 0.0002588,
+            "latency_ms": 1128,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305474-6rUexYhaNWeQ1p6vF7j9"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:38",
+                "school_name": "Brashear High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:38",
+                "school_name": "Brashear Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2305,
+            "completion_tokens": 129,
+            "cost_usd": 0.00012557,
+            "latency_ms": 2886,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305476-1ofVBfZbI0iiRNhTF9XN"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:38",
+                "school_name": "Brashear High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:38",
+                "school_name": "Brashear Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2295,
+            "completion_tokens": 78,
+            "cost_usd": 0.0003897465,
+            "latency_ms": 2293,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305478-2lJf1Bm1FcpJ6E3niWlc"
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "brashear",
+            "reason": "band_disagreement",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:55"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:38"
+            },
+            "identity": {
+              "claimed_bands": [
+                "high",
+                "middle"
+              ]
+            },
+            "rec_key": "2905790:3bf6571c0d",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "junior senior high school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:38"
+            },
+            "rec_key": "2905790:3bf6571c0d",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "junior senior high school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:38"
+            },
+            "rec_key": "2905790:3bf6571c0d",
+            "source_file": "harvest_slice.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "2905790:e39555d45b",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 3532,
+            "completion_tokens": 5,
+            "cost_usd": 0.0003552,
+            "latency_ms": 537,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305481-qNf0kSQaLL9D0r2mm7z6"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 3997,
+            "completion_tokens": 8,
+            "cost_usd": 0.00020049,
+            "latency_ms": 639,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305481-yC3CiNJZ6S6QAkDGFGBe"
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2905790:d953e92385",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1208,
+            "completion_tokens": 5,
+            "cost_usd": 0.0001228,
+            "latency_ms": 485,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305482-8hdl3KiOte4hWO8czL2F"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1263,
+            "completion_tokens": 8,
+            "cost_usd": 6.379e-05,
+            "latency_ms": 663,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305483-7H1T0nSikg6r7D7Xeqq7"
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      }
+    ],
+    "accepted": [],
+    "unresolved": [
+      {
+        "band": "high",
+        "school": "brashear",
+        "reason": "band_disagreement",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:55"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:38"
+        },
+        "identity": {
+          "claimed_bands": [
+            "high",
+            "middle"
+          ]
+        },
+        "rec_key": "2905790:3bf6571c0d",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "junior senior high school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:38"
+        },
+        "rec_key": "2905790:3bf6571c0d",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "junior senior high school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:38"
+        },
+        "rec_key": "2905790:3bf6571c0d",
+        "source_file": "harvest_slice.txt"
+      }
+    ],
+    "n_reps": 4,
+    "n_judged": 1,
+    "bands": {},
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "state": "MO",
+    "reaggregated_from": "extraction_51849a4688a4_2905790_20260706T023803Z.json"
+  }
+}

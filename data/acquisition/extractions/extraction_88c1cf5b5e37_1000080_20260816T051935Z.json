@@ -1,0 +1,2198 @@
+{
+  "handoff_hash": "88c1cf5b5e37",
+  "district": {
+    "district_id": "1000080",
+    "name": "Appoquinimink School District",
+    "reps": [
+      {
+        "rec_key": "1000080:32a6c83a29",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 19,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:20",
+                "end_time": "15:00",
+                "school_name": "Appoquinimink HS",
+                "confidence": "high",
+                "evidence_quote": "Appoquinimink HS             8:05a     8:05a     8:20a      3:00p      3:06p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:20",
+                "end_time": "15:00",
+                "school_name": "Middletown HS",
+                "confidence": "high",
+                "evidence_quote": "Middletown HS              8:05a     8:05a     8:20a      3:00p      3:06p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:20",
+                "end_time": "15:00",
+                "school_name": "Odessa HS",
+                "confidence": "high",
+                "evidence_quote": "Odessa HS                8:05a     8:05a     8:20a      3:00p      3:06p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:20",
+                "end_time": "15:00",
+                "school_name": "Special Program MS/HS",
+                "confidence": "high",
+                "evidence_quote": "Special Program MS/HS           8:05a     8:05a     8:20a       3:00p     3:06p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:10",
+                "school_name": "Everett Meredith MS",
+                "confidence": "high",
+                "evidence_quote": "Everett Meredith MS           7:15a     7:18a     7:30a       2:10p     2:16p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:10",
+                "school_name": "Louis L. Redding MS",
+                "confidence": "high",
+                "evidence_quote": "Louis L. Redding MS           7:15a     7:15a     7:30a       2:10p     2:16p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:10",
+                "school_name": "Alfred G. Waters MS",
+                "confidence": "high",
+                "evidence_quote": "Alfred G. Waters MS           7:15a     7:15a     7:30a       2:10p     2:16p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:10",
+                "school_name": "Cantwell\u2019s Bridge MS",
+                "confidence": "high",
+                "evidence_quote": "Cantwell\u2019s Bridge MS          7:15a     7:15a     7:30a      2:10p      2:16p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Brick Mill ES/ECC",
+                "confidence": "high",
+                "evidence_quote": "Brick Mill ES/ECC            9:05a     9:05a     9:10a       3:50p     3:56p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Bunker Hill ES",
+                "confidence": "high",
+                "evidence_quote": "Bunker Hill ES             9:05a     9:05a     9:10a       3:50p     3:56p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Cedar Lane ES/ECC",
+                "confidence": "high",
+                "evidence_quote": "Cedar Lane ES/ECC             9:05a     9:05a     9:10a       3:50p     3:56p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Lorewood Grove ES",
+                "confidence": "high",
+                "evidence_quote": "Lorewood Grove ES            9:05a     9:05a     9:10a       3:50p     3:56p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Crystal Run ES",
+                "confidence": "high",
+                "evidence_quote": "Crystal Run ES             9:05a     9:05a     9:10a       3:50p     3:56p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Old State ES & Spring Meadow ECC",
+                "confidence": "high",
+                "evidence_quote": "Old State ES & Spring Meadow ECC    9:05a     9:05a     9:10a       3:50p     3:56p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Olive B. Loss ES",
+                "confidence": "high",
+                "evidence_quote": "Olive B. Loss ES            9:05a     9:05a     9:10a       3:50p     3:56p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Silver Lake ES",
+                "confidence": "high",
+                "evidence_quote": "Silver Lake ES             9:05a     9:05a     9:10a       3:50p     3:56p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Townsend ES/ECC",
+                "confidence": "high",
+                "evidence_quote": "Townsend ES/ECC              9:05a     9:05a     9:10a       3:50p     3:56p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:10",
+                "school_name": "Appoquinimink Preschool Full",
+                "confidence": "high",
+                "evidence_quote": "Appoquinimink Preschool Full      9:05a     9:05a     9:10a      3:10p      3:15p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:10",
+                "school_name": "Brick Mill ECC 4\u2019s",
+                "confidence": "high",
+                "evidence_quote": "Brick Mill ECC 4\u2019s          9:05a     9:05a     9:10a      3:10p      3:15p",
+                "source_locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1749,
+            "completion_tokens": 2896,
+            "cost_usd": 0.0013333,
+            "latency_ms": 5865,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690200-4mjMqYR2sHKd3v0BRice",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 16,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:20",
+                "end_time": "15:00",
+                "school_name": "Appoquinimink HS",
+                "confidence": "high",
+                "evidence_quote": "Morning Bell Time 8:20a  Afternoon Bell Time 3:00p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:20",
+                "end_time": "15:00",
+                "school_name": "Middletown HS",
+                "confidence": "high",
+                "evidence_quote": "Morning Bell Time 8:20a  Afternoon Bell Time 3:00p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:20",
+                "end_time": "15:00",
+                "school_name": "Odessa HS",
+                "confidence": "high",
+                "evidence_quote": "Morning Bell Time 8:20a  Afternoon Bell Time 3:00p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:10",
+                "school_name": "Everett Meredith MS",
+                "confidence": "high",
+                "evidence_quote": "Morning Bell Time 7:30a  Afternoon Bell Time 2:10p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:10",
+                "school_name": "Louis L. Redding MS",
+                "confidence": "high",
+                "evidence_quote": "Morning Bell Time 7:30a  Afternoon Bell Time 2:10p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:10",
+                "school_name": "Alfred G. Waters MS",
+                "confidence": "high",
+                "evidence_quote": "Morning Bell Time 7:30a  Afternoon Bell Time 2:10p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:10",
+                "school_name": "Cantwell\u2019s Bridge MS",
+                "confidence": "high",
+                "evidence_quote": "Morning Bell Time 7:30a  Afternoon Bell Time 2:10p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Brick Mill ES/ECC",
+                "confidence": "high",
+                "evidence_quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Bunker Hill ES",
+                "confidence": "high",
+                "evidence_quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Cedar Lane ES/ECC",
+                "confidence": "high",
+                "evidence_quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Lorewood Grove ES",
+                "confidence": "high",
+                "evidence_quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Crystal Run ES",
+                "confidence": "high",
+                "evidence_quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Old State ES & Spring Meadow ECC",
+                "confidence": "high",
+                "evidence_quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Olive B. Loss ES",
+                "confidence": "high",
+                "evidence_quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Silver Lake ES",
+                "confidence": "high",
+                "evidence_quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Townsend ES/ECC",
+                "confidence": "high",
+                "evidence_quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1863,
+            "completion_tokens": 2250,
+            "cost_usd": 0.00027315,
+            "latency_ms": 45865,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690205-cncQBo9FccoU23ts2MqR",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 17,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:20",
+                "end_time": "15:00",
+                "school_name": "Appoquinimink HS",
+                "confidence": "high",
+                "evidence_quote": "Appoquinimink HS             8:05a     8:05a     8:20a      3:00p      3:06p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:20",
+                "end_time": "15:00",
+                "school_name": "Middletown HS",
+                "confidence": "high",
+                "evidence_quote": "Middletown HS              8:05a     8:05a     8:20a      3:00p      3:06p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:20",
+                "end_time": "15:00",
+                "school_name": "Odessa HS",
+                "confidence": "high",
+                "evidence_quote": "Odessa HS                8:05a     8:05a     8:20a      3:00p      3:06p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:20",
+                "end_time": "15:00",
+                "school_name": "Special Program MS/HS",
+                "confidence": "high",
+                "evidence_quote": "Special Program MS/HS           8:05a     8:05a     8:20a       3:00p     3:06p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:10",
+                "school_name": "Everett Meredith MS",
+                "confidence": "high",
+                "evidence_quote": "Everett Meredith MS           7:15a     7:18a     7:30a       2:10p     2:16p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:10",
+                "school_name": "Louis L. Redding MS",
+                "confidence": "high",
+                "evidence_quote": "Louis L. Redding MS           7:15a     7:15a     7:30a       2:10p     2:16p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:10",
+                "school_name": "Alfred G. Waters MS",
+                "confidence": "high",
+                "evidence_quote": "Alfred G. Waters MS           7:15a     7:15a     7:30a       2:10p     2:16p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:10",
+                "school_name": "Cantwell\u2019s Bridge MS",
+                "confidence": "high",
+                "evidence_quote": "Cantwell\u2019s Bridge MS          7:15a     7:15a     7:30a      2:10p      2:16p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Brick Mill ES/ECC",
+                "confidence": "high",
+                "evidence_quote": "Brick Mill ES/ECC            9:05a     9:05a     9:10a       3:50p     3:56p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Bunker Hill ES",
+                "confidence": "high",
+                "evidence_quote": "Bunker Hill ES             9:05a     9:05a     9:10a       3:50p     3:56p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Cedar Lane ES/ECC",
+                "confidence": "high",
+                "evidence_quote": "Cedar Lane ES/ECC             9:05a     9:05a     9:10a       3:50p     3:56p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Lorewood Grove ES",
+                "confidence": "high",
+                "evidence_quote": "Lorewood Grove ES            9:05a     9:05a     9:10a       3:50p     3:56p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Crystal Run ES",
+                "confidence": "high",
+                "evidence_quote": "Crystal Run ES             9:05a     9:05a     9:10a       3:50p     3:56p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Old State ES & Spring Meadow ECC",
+                "confidence": "high",
+                "evidence_quote": "Old State ES & Spring Meadow ECC    9:05a     9:05a     9:10a       3:50p     3:56p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Olive B. Loss ES",
+                "confidence": "high",
+                "evidence_quote": "Olive B. Loss ES            9:05a     9:05a     9:10a       3:50p     3:56p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Silver Lake ES",
+                "confidence": "high",
+                "evidence_quote": "Silver Lake ES             9:05a     9:05a     9:10a       3:50p     3:56p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:50",
+                "school_name": "Townsend ES/ECC",
+                "confidence": "high",
+                "evidence_quote": "Townsend ES/ECC              9:05a     9:05a     9:10a       3:50p     3:56p",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1835,
+            "completion_tokens": 2039,
+            "cost_usd": 0.0018045,
+            "latency_ms": 77535,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690251-W6IffjBAvRxmngNLKfTy",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "appoquinimink",
+            "start": "08:20",
+            "end": "15:00",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "100008000225",
+              "roster_school": "Appoquinimink High School",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Appoquinimink HS             8:05a     8:05a     8:20a      3:00p      3:06p",
+                "locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Bell Time 8:20a  Afternoon Bell Time 3:00p",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "middletown",
+            "start": "08:20",
+            "end": "15:00",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "100008000024",
+              "roster_school": "Middletown High School",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Middletown HS              8:05a     8:05a     8:20a      3:00p      3:06p",
+                "locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Bell Time 8:20a  Afternoon Bell Time 3:00p",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "odessa",
+            "start": "08:20",
+            "end": "15:00",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "100008000390",
+              "roster_school": "Odessa High School",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Odessa HS                8:05a     8:05a     8:20a      3:00p      3:06p",
+                "locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Bell Time 8:20a  Afternoon Bell Time 3:00p",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "meredith everett",
+            "start": "07:30",
+            "end": "14:10",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "100008000014",
+              "roster_school": "Meredith (Everett) Middle School",
+              "rostered_bands": [
+                "middle"
+              ],
+              "rules": {
+                "everett meredith": "token_set"
+              }
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Everett Meredith MS           7:15a     7:18a     7:30a       2:10p     2:16p",
+                "locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Bell Time 7:30a  Afternoon Bell Time 2:10p",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "redding louis l",
+            "start": "07:30",
+            "end": "14:10",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "100008000026",
+              "roster_school": "Redding (Louis L.) Middle School",
+              "rostered_bands": [
+                "middle"
+              ],
+              "rules": {
+                "louis l redding": "token_set"
+              }
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Louis L. Redding MS           7:15a     7:15a     7:30a       2:10p     2:16p",
+                "locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Bell Time 7:30a  Afternoon Bell Time 2:10p",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "waters alfred g",
+            "start": "07:30",
+            "end": "14:10",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "100008000222",
+              "roster_school": "Waters (Alfred G.) Middle School",
+              "rostered_bands": [
+                "middle"
+              ],
+              "rules": {
+                "alfred g waters": "token_set"
+              }
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Alfred G. Waters MS           7:15a     7:15a     7:30a       2:10p     2:16p",
+                "locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Bell Time 7:30a  Afternoon Bell Time 2:10p",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "cantwells bridge",
+            "start": "07:30",
+            "end": "14:10",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "100008000391",
+              "roster_school": "Cantwells Bridge Middle School",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Cantwell\u2019s Bridge MS          7:15a     7:15a     7:30a      2:10p      2:16p",
+                "locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Bell Time 7:30a  Afternoon Bell Time 2:10p",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "brick mill esecc",
+            "start": "09:10",
+            "end": "15:50",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Brick Mill ES/ECC            9:05a     9:05a     9:10a       3:50p     3:56p",
+                "locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "bunker hill",
+            "start": "09:10",
+            "end": "15:50",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "100008000339",
+              "roster_school": "Bunker Hill Elementary School",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Bunker Hill ES             9:05a     9:05a     9:10a       3:50p     3:56p",
+                "locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "cedar lane esecc",
+            "start": "09:10",
+            "end": "15:50",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Cedar Lane ES/ECC             9:05a     9:05a     9:10a       3:50p     3:56p",
+                "locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lorewood grove",
+            "start": "09:10",
+            "end": "15:50",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "100008000380",
+              "roster_school": "Lorewood Grove Elementary School",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Lorewood Grove ES            9:05a     9:05a     9:10a       3:50p     3:56p",
+                "locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "crystal run",
+            "start": "09:10",
+            "end": "15:50",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "100008000394",
+              "roster_school": "Crystal Run Elementary School",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Crystal Run ES             9:05a     9:05a     9:10a       3:50p     3:56p",
+                "locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "loss olive b",
+            "start": "09:10",
+            "end": "15:50",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "100008000121",
+              "roster_school": "Loss (Olive B.) Elementary School",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "olive b loss": "token_set"
+              }
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Olive B. Loss ES            9:05a     9:05a     9:10a       3:50p     3:56p",
+                "locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "silver lake",
+            "start": "09:10",
+            "end": "15:50",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "100008000027",
+              "roster_school": "Silver Lake Elementary School",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Silver Lake ES             9:05a     9:05a     9:10a       3:50p     3:56p",
+                "locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "townsend esecc",
+            "start": "09:10",
+            "end": "15:50",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Townsend ES/ECC              9:05a     9:05a     9:10a       3:50p     3:56p",
+                "locus": "School Bell Schedule and Bus Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "special program mshs",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:20"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "old state spring meadow ecc",
+            "reason": "excluded_school_type",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:10",
+              "mistralai/mistral-small-24b-instruct-2501": "09:10"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:50",
+              "mistralai/mistral-small-24b-instruct-2501": "15:50"
+            },
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "appoquinimink preschool full",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:10"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:10"
+            },
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "brick mill ecc 4s",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:10"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:10"
+            },
+            "rec_key": "1000080:32a6c83a29",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "appoquinimink",
+        "start": "08:20",
+        "end": "15:00",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "100008000225",
+          "roster_school": "Appoquinimink High School",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Appoquinimink HS             8:05a     8:05a     8:20a      3:00p      3:06p",
+            "locus": "School Bell Schedule and Bus Times",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Bell Time 8:20a  Afternoon Bell Time 3:00p",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "middletown",
+        "start": "08:20",
+        "end": "15:00",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "100008000024",
+          "roster_school": "Middletown High School",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Middletown HS              8:05a     8:05a     8:20a      3:00p      3:06p",
+            "locus": "School Bell Schedule and Bus Times",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Bell Time 8:20a  Afternoon Bell Time 3:00p",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "odessa",
+        "start": "08:20",
+        "end": "15:00",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "100008000390",
+          "roster_school": "Odessa High School",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Odessa HS                8:05a     8:05a     8:20a      3:00p      3:06p",
+            "locus": "School Bell Schedule and Bus Times",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Bell Time 8:20a  Afternoon Bell Time 3:00p",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "meredith everett",
+        "start": "07:30",
+        "end": "14:10",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "100008000014",
+          "roster_school": "Meredith (Everett) Middle School",
+          "rostered_bands": [
+            "middle"
+          ],
+          "rules": {
+            "everett meredith": "token_set"
+          }
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Everett Meredith MS           7:15a     7:18a     7:30a       2:10p     2:16p",
+            "locus": "School Bell Schedule and Bus Times",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Bell Time 7:30a  Afternoon Bell Time 2:10p",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "redding louis l",
+        "start": "07:30",
+        "end": "14:10",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "100008000026",
+          "roster_school": "Redding (Louis L.) Middle School",
+          "rostered_bands": [
+            "middle"
+          ],
+          "rules": {
+            "louis l redding": "token_set"
+          }
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Louis L. Redding MS           7:15a     7:15a     7:30a       2:10p     2:16p",
+            "locus": "School Bell Schedule and Bus Times",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Bell Time 7:30a  Afternoon Bell Time 2:10p",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "waters alfred g",
+        "start": "07:30",
+        "end": "14:10",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "100008000222",
+          "roster_school": "Waters (Alfred G.) Middle School",
+          "rostered_bands": [
+            "middle"
+          ],
+          "rules": {
+            "alfred g waters": "token_set"
+          }
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Alfred G. Waters MS           7:15a     7:15a     7:30a       2:10p     2:16p",
+            "locus": "School Bell Schedule and Bus Times",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Bell Time 7:30a  Afternoon Bell Time 2:10p",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "cantwells bridge",
+        "start": "07:30",
+        "end": "14:10",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "100008000391",
+          "roster_school": "Cantwells Bridge Middle School",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Cantwell\u2019s Bridge MS          7:15a     7:15a     7:30a      2:10p      2:16p",
+            "locus": "School Bell Schedule and Bus Times",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Bell Time 7:30a  Afternoon Bell Time 2:10p",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "brick mill esecc",
+        "start": "09:10",
+        "end": "15:50",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Brick Mill ES/ECC            9:05a     9:05a     9:10a       3:50p     3:56p",
+            "locus": "School Bell Schedule and Bus Times",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "bunker hill",
+        "start": "09:10",
+        "end": "15:50",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "100008000339",
+          "roster_school": "Bunker Hill Elementary School",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Bunker Hill ES             9:05a     9:05a     9:10a       3:50p     3:56p",
+            "locus": "School Bell Schedule and Bus Times",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "cedar lane esecc",
+        "start": "09:10",
+        "end": "15:50",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Cedar Lane ES/ECC             9:05a     9:05a     9:10a       3:50p     3:56p",
+            "locus": "School Bell Schedule and Bus Times",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lorewood grove",
+        "start": "09:10",
+        "end": "15:50",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "100008000380",
+          "roster_school": "Lorewood Grove Elementary School",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Lorewood Grove ES            9:05a     9:05a     9:10a       3:50p     3:56p",
+            "locus": "School Bell Schedule and Bus Times",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "crystal run",
+        "start": "09:10",
+        "end": "15:50",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "100008000394",
+          "roster_school": "Crystal Run Elementary School",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Crystal Run ES             9:05a     9:05a     9:10a       3:50p     3:56p",
+            "locus": "School Bell Schedule and Bus Times",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "loss olive b",
+        "start": "09:10",
+        "end": "15:50",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "100008000121",
+          "roster_school": "Loss (Olive B.) Elementary School",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "olive b loss": "token_set"
+          }
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Olive B. Loss ES            9:05a     9:05a     9:10a       3:50p     3:56p",
+            "locus": "School Bell Schedule and Bus Times",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "silver lake",
+        "start": "09:10",
+        "end": "15:50",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "100008000027",
+          "roster_school": "Silver Lake Elementary School",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Silver Lake ES             9:05a     9:05a     9:10a       3:50p     3:56p",
+            "locus": "School Bell Schedule and Bus Times",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "townsend esecc",
+        "start": "09:10",
+        "end": "15:50",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Townsend ES/ECC              9:05a     9:05a     9:10a       3:50p     3:56p",
+            "locus": "School Bell Schedule and Bus Times",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Bell Time 9:10a  Afternoon Bell Time 3:50p",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "special program mshs",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:20"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "old state spring meadow ecc",
+        "reason": "excluded_school_type",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:10",
+          "mistralai/mistral-small-24b-instruct-2501": "09:10"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:50",
+          "mistralai/mistral-small-24b-instruct-2501": "15:50"
+        },
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "appoquinimink preschool full",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:10"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:10"
+        },
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "brick mill ecc 4s",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:10"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:10"
+        },
+        "rec_key": "1000080:32a6c83a29",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 400,
+        "start_time": "09:10",
+        "end_time": "15:50",
+        "n_schools": 8,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "brick mill esecc",
+            "start_time": "09:10",
+            "end_time": "15:50",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "bunker hill",
+            "start_time": "09:10",
+            "end_time": "15:50",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "cedar lane esecc",
+            "start_time": "09:10",
+            "end_time": "15:50",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lorewood grove",
+            "start_time": "09:10",
+            "end_time": "15:50",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "crystal run",
+            "start_time": "09:10",
+            "end_time": "15:50",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "loss olive b",
+            "start_time": "09:10",
+            "end_time": "15:50",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "silver lake",
+            "start_time": "09:10",
+            "end_time": "15:50",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "townsend esecc",
+            "start_time": "09:10",
+            "end_time": "15:50",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 400,
+        "start_time": "07:30",
+        "end_time": "14:10",
+        "n_schools": 4,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "meredith everett",
+            "start_time": "07:30",
+            "end_time": "14:10",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "redding louis l",
+            "start_time": "07:30",
+            "end_time": "14:10",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "waters alfred g",
+            "start_time": "07:30",
+            "end_time": "14:10",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "cantwells bridge",
+            "start_time": "07:30",
+            "end_time": "14:10",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 400,
+        "start_time": "08:20",
+        "end_time": "15:00",
+        "n_schools": 3,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "appoquinimink",
+            "start_time": "08:20",
+            "end_time": "15:00",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "middletown",
+            "start_time": "08:20",
+            "end_time": "15:00",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "odessa",
+            "start_time": "08:20",
+            "end_time": "15:00",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "state": "DE",
+    "reaggregated_from": "extraction_88c1cf5b5e37_1000080_20260814T065209Z.json"
+  }
+}

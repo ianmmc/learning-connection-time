@@ -1,0 +1,3534 @@
+{
+  "handoff_hash": "bb177cd7c381",
+  "district": {
+    "district_id": "3501110",
+    "name": "GALLUP",
+    "reps": [
+      {
+        "rec_key": "3501110:430e728be2",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "NVM",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "NVM",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "15:05",
+                "school_name": "NVM",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1137,
+            "completion_tokens": 146,
+            "cost_usd": 0.0001721,
+            "latency_ms": 1145,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790156-TxE0ed3Ia406aMnrajqd",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "NVM",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1222,
+            "completion_tokens": 43,
+            "cost_usd": 6.454e-05,
+            "latency_ms": 1047,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790157-TgNYXUnPhTFGnidzHB9K",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "NVM",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1202,
+            "completion_tokens": 38,
+            "cost_usd": 0.00027384,
+            "latency_ms": 1663,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790158-tZwo4iqeTWf6tK715dkN",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "nvm",
+            "reason": "band_disagreement",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00",
+              "mistralai/mistral-small-24b-instruct-2501": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:05",
+              "mistralai/mistral-small-24b-instruct-2501": "15:05"
+            },
+            "identity": {
+              "claimed_bands": [
+                "high",
+                "middle"
+              ]
+            },
+            "rec_key": "3501110:430e728be2",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3501110:8f9b5e3052",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:05",
+                "school_name": "Crownpoint Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "15:05",
+                "school_name": "Crownpoint Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 999,
+            "completion_tokens": 83,
+            "cost_usd": 0.0001331,
+            "latency_ms": 610,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790159-uEmR7n3pmcZ24p5RqOT7",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:05",
+                "school_name": "Crownpoint Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1010,
+            "completion_tokens": 72,
+            "cost_usd": 5.626e-05,
+            "latency_ms": 1393,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790160-TVJ5pUXoEhpJWCAEJKqA",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:05",
+                "school_name": "Crownpoint Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 997,
+            "completion_tokens": 41,
+            "cost_usd": 0.00011351,
+            "latency_ms": 1047,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790161-h3KwPDSGdy2A7z8hwXiy",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "crownpoint",
+            "start": "07:55",
+            "end": "15:05",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000881",
+              "roster_school": "CROWNPOINT MIDDLE",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "rec_key": "3501110:8f9b5e3052",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "crownpoint",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:05"
+            },
+            "rec_key": "3501110:8f9b5e3052",
+            "source_file": "tesseract_raster.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3501110:793e910318",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 32,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Catherine A. Miller Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Chee Dodge Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Chief Manuelito Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Crownpoint Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Crownpoint High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:00",
+                "school_name": "Crownpoint Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "David Skeet Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Del Norte Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "15:20",
+                "school_name": "Gallup Central High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:05",
+                "end_time": "15:10",
+                "school_name": "Gallup High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Gallup Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Indian Hills Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Jefferson Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "John F. Kennedy Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Lincoln Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "McKinley Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:05",
+                "end_time": "15:10",
+                "school_name": "Miyamura High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Navajo Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Navajo Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:00",
+                "school_name": "Navajo Pine High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Ramah Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Ramah High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Red Rock Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Stagecoach Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Thoreau High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:00",
+                "school_name": "Thoreau Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Tohatchi Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Tohatchi High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:00",
+                "school_name": "Tohatchi Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Tse Yi Gai High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Turpen Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Twin Lakes Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1559,
+            "completion_tokens": 1632,
+            "cost_usd": 0.0008087,
+            "latency_ms": 3661,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790162-Y1fFjv92Ddv1ohARPCsv",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 33,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Catherine A. Miller Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Chee Dodge Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Chief Manuelito Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Crownpoint Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Crownpoint High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:00",
+                "school_name": "Crownpoint Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "David Skeet Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Del Norte Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "15:20",
+                "school_name": "Gallup Central High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:05",
+                "end_time": "15:10",
+                "school_name": "Gallup High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Gallup Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Indian Hills Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Jefferson Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "John F. Kennedy Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Lincoln Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "McKinley Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:05",
+                "end_time": "15:10",
+                "school_name": "Miyamura High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Navajo Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Navajo Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:00",
+                "school_name": "Navajo Pine High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Ramah Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Ramah High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Red Rock Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Stagecoach Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Thoreau Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Thoreau High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:00",
+                "school_name": "Thoreau Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Tohatchi Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Tohatchi High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:00",
+                "school_name": "Tohatchi Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Tse Yi Gai High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Turpen Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Twin Lakes Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1721,
+            "completion_tokens": 1850,
+            "cost_usd": 0.00023405,
+            "latency_ms": 30196,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790166-3gVuFatwEkhEeQu3xMkE",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 33,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Catherine A. Miller Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Chee Dodge Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Chief Manuelito Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Crownpoint Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Crownpoint High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:00",
+                "school_name": "Crownpoint Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "David Skeet Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Del Norte Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "15:20",
+                "school_name": "Gallup Central High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:05",
+                "end_time": "15:10",
+                "school_name": "Gallup High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Gallup Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Indian Hills Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Jefferson Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "John F. Kennedy Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Lincoln Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "McKinley Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:05",
+                "end_time": "15:10",
+                "school_name": "Miyamura High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Navajo Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Navajo Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:00",
+                "school_name": "Navajo Pine High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Ramah Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Ramah High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Red Rock Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Stagecoach Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Thoreau Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Thoreau High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:00",
+                "school_name": "Thoreau Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Tohatchi Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Tohatchi High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:00",
+                "school_name": "Tohatchi Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Tse Yi Gai High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Turpen Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Twin Lakes Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1709,
+            "completion_tokens": 1180,
+            "cost_usd": 0.00118326,
+            "latency_ms": 40795,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790196-hWUPJqcdYLGRwj1wX51t",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "catherine a miller",
+            "start": "07:45",
+            "end": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000299",
+              "roster_school": "CATHERINE A. MILLER ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "chee dodge",
+            "start": "07:45",
+            "end": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000732",
+              "roster_school": "CHEE DODGE ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "chief manuelito",
+            "start": "08:00",
+            "end": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111001027",
+              "roster_school": "CHIEF MANUELITO MIDDLE",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "crownpoint",
+            "start": "07:45",
+            "end": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000300",
+              "roster_school": "CROWNPOINT ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "crownpoint",
+            "start": "08:00",
+            "end": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000301",
+              "roster_school": "CROWNPOINT HIGH",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "crownpoint",
+            "start": "07:55",
+            "end": "15:00",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000881",
+              "roster_school": "CROWNPOINT MIDDLE",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "david skeet",
+            "start": "07:45",
+            "end": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111030021",
+              "roster_school": "DAVID SKEET ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "del norte",
+            "start": "07:45",
+            "end": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111001137",
+              "roster_school": "DEL NORTE ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "gallup central",
+            "start": "08:15",
+            "end": "15:20",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "gallup",
+            "start": "08:05",
+            "end": "15:10",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000303",
+              "roster_school": "GALLUP HIGH",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "gallup",
+            "start": "08:00",
+            "end": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000304",
+              "roster_school": "GALLUP MIDDLE",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "indian hills",
+            "start": "07:45",
+            "end": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000305",
+              "roster_school": "INDIAN HILLS ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "jefferson",
+            "start": "07:45",
+            "end": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000306",
+              "roster_school": "JEFFERSON ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "john f kennedy",
+            "start": "08:00",
+            "end": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000661",
+              "roster_school": "JOHN F. KENNEDY MIDDLE",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lincoln",
+            "start": "07:45",
+            "end": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000308",
+              "roster_school": "LINCOLN ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "mckinley",
+            "start": "08:00",
+            "end": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "miyamura",
+            "start": "08:05",
+            "end": "15:10",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000768",
+              "roster_school": "MIYAMURA HIGH SCHOOL",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "navajo",
+            "start": "07:45",
+            "end": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000309",
+              "roster_school": "NAVAJO ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "navajo",
+            "start": "08:00",
+            "end": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000861",
+              "roster_school": "NAVAJO MIDDLE SCHOOL",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "navajo pine",
+            "start": "07:55",
+            "end": "15:00",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000310",
+              "roster_school": "NAVAJO PINE HIGH",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "ramah",
+            "start": "07:45",
+            "end": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000311",
+              "roster_school": "RAMAH ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "ramah",
+            "start": "08:00",
+            "end": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000662",
+              "roster_school": "RAMAH HIGH",
+              "rostered_bands": [
+                "high",
+                "middle"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "red rock",
+            "start": "07:45",
+            "end": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000312",
+              "roster_school": "RED ROCK ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "stagecoach",
+            "start": "07:45",
+            "end": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111030020",
+              "roster_school": "STAGECOACH ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "thoreau",
+            "start": "08:00",
+            "end": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000316",
+              "roster_school": "THOREAU HIGH",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "thoreau",
+            "start": "07:55",
+            "end": "15:00",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000663",
+              "roster_school": "THOREAU MIDDLE",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "tohatchi",
+            "start": "07:45",
+            "end": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000317",
+              "roster_school": "TOHATCHI ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "tohatchi",
+            "start": "08:00",
+            "end": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000318",
+              "roster_school": "TOHATCHI HIGH",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "tohatchi",
+            "start": "07:55",
+            "end": "15:00",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000664",
+              "roster_school": "TOHATCHI MIDDLE",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "tse yi gai",
+            "start": "08:00",
+            "end": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000907",
+              "roster_school": "TSE YI GAI HIGH",
+              "rostered_bands": [
+                "high",
+                "middle"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "tobe turpen",
+            "start": "07:45",
+            "end": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000797",
+              "roster_school": "TOBE TURPEN ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "turpen": "token_subset"
+              }
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "twin lakes",
+            "start": "07:45",
+            "end": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000321",
+              "roster_school": "TWIN LAKES ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "thoreau",
+            "start": "07:45",
+            "end": "14:50",
+            "gross": 425,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "350111000315",
+              "roster_school": "THOREAU ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3501110:793e910318",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3501110:071335d0fe",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "CHS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1148,
+            "completion_tokens": 46,
+            "cost_usd": 0.0001332,
+            "latency_ms": 1336,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790238-FA49fTrBzLMBvUgK1xyj",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "CHS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1240,
+            "completion_tokens": 47,
+            "cost_usd": 6.576e-05,
+            "latency_ms": 1673,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790238-bAleRFVJqPzJASBELC88",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "chs",
+            "start": "08:00",
+            "end": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3501110:071335d0fe",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3501110:ab50724201",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:05",
+                "end_time": "15:10",
+                "school_name": "Gallup High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:05",
+                "end_time": "15:10",
+                "school_name": "Gallup High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "10:05",
+                "end_time": "15:10",
+                "school_name": "Gallup High",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1378,
+            "completion_tokens": 162,
+            "cost_usd": 0.0002026,
+            "latency_ms": 1182,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790240-Zyiq7eU37QT4z4KwAcPG",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:05",
+                "end_time": "15:10",
+                "school_name": "Gallup High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:05",
+                "end_time": "15:10",
+                "school_name": "Gallup High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "10:05",
+                "end_time": "15:10",
+                "school_name": "Gallup High",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1416,
+            "completion_tokens": 181,
+            "cost_usd": 8.528e-05,
+            "latency_ms": 2647,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790241-nacdFROflyScEJU2SfH2",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "gallup",
+            "start": "08:05",
+            "end": "15:10",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000303",
+              "roster_school": "GALLUP HIGH",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "rec_key": "3501110:ab50724201",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3501110:5ca23201c2",
+        "file": "tesseract_screenshot.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Tohatchi High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1217,
+            "completion_tokens": 79,
+            "cost_usd": 0.0001533,
+            "latency_ms": 651,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790244-hPTKuop3t1wdsai7tZWC",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Tohatchi High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1261,
+            "completion_tokens": 73,
+            "cost_usd": 6.889e-05,
+            "latency_ms": 1440,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790245-YmbJzwZMEaXUKrwXjyEP",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "tohatchi",
+            "start": "08:00",
+            "end": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350111000318",
+              "roster_school": "TOHATCHI HIGH",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "rec_key": "3501110:5ca23201c2",
+            "source_file": "tesseract_screenshot.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3501110:77fb1584c5",
+        "file": "original.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 8,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:45",
+                "school_name": "Kindergarten",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:45",
+                "school_name": "First",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:45",
+                "school_name": "Second",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:45",
+                "school_name": "Third",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:45",
+                "school_name": "Fourth",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:45",
+                "school_name": "Fifth",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:45",
+                "school_name": "6th Group 1",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:45",
+                "school_name": "6th Group 2",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2683,
+            "completion_tokens": 307,
+            "cost_usd": 0.0015724,
+            "latency_ms": 3240,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790246-HymbASxYvEGtk36w8OBr",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:00",
+                "school_name": "Unnamed Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1046,
+            "completion_tokens": 51,
+            "cost_usd": 0.0005995,
+            "latency_ms": 2443,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790249-8s4YV5KUeEGmbNlrPUAg",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-vl-235b-a22b-instruct",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 867,
+            "completion_tokens": 6,
+            "cost_usd": 0.00017868,
+            "latency_ms": 1292,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790252-93usoZ8RhgReHKLHu8df",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "kindergarten",
+            "starts": {
+              "google/gemini-2.5-flash": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "14:45"
+            },
+            "rec_key": "3501110:77fb1584c5",
+            "source_file": "original.png"
+          },
+          {
+            "band": "elementary",
+            "school": "first",
+            "starts": {
+              "google/gemini-2.5-flash": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "14:45"
+            },
+            "rec_key": "3501110:77fb1584c5",
+            "source_file": "original.png"
+          },
+          {
+            "band": "elementary",
+            "school": "second",
+            "starts": {
+              "google/gemini-2.5-flash": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "14:45"
+            },
+            "rec_key": "3501110:77fb1584c5",
+            "source_file": "original.png"
+          },
+          {
+            "band": "elementary",
+            "school": "third",
+            "starts": {
+              "google/gemini-2.5-flash": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "14:45"
+            },
+            "rec_key": "3501110:77fb1584c5",
+            "source_file": "original.png"
+          },
+          {
+            "band": "elementary",
+            "school": "fourth",
+            "starts": {
+              "google/gemini-2.5-flash": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "14:45"
+            },
+            "rec_key": "3501110:77fb1584c5",
+            "source_file": "original.png"
+          },
+          {
+            "band": "elementary",
+            "school": "fifth",
+            "starts": {
+              "google/gemini-2.5-flash": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "14:45"
+            },
+            "rec_key": "3501110:77fb1584c5",
+            "source_file": "original.png"
+          },
+          {
+            "band": "middle",
+            "school": "6th group 1",
+            "starts": {
+              "google/gemini-2.5-flash": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "14:45"
+            },
+            "rec_key": "3501110:77fb1584c5",
+            "source_file": "original.png"
+          },
+          {
+            "band": "middle",
+            "school": "6th group 2",
+            "starts": {
+              "google/gemini-2.5-flash": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "14:45"
+            },
+            "rec_key": "3501110:77fb1584c5",
+            "source_file": "original.png"
+          },
+          {
+            "band": "elementary",
+            "school": "unnamed",
+            "starts": {
+              "mistralai/mistral-large-2512": "08:15"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "15:00"
+            },
+            "rec_key": "3501110:77fb1584c5",
+            "source_file": "original.png"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "middle",
+        "school": "crownpoint",
+        "start": "07:55",
+        "end": "15:05",
+        "gross": 430,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000881",
+          "roster_school": "CROWNPOINT MIDDLE",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "rec_key": "3501110:8f9b5e3052",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "catherine a miller",
+        "start": "07:45",
+        "end": "14:50",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000299",
+          "roster_school": "CATHERINE A. MILLER ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "chee dodge",
+        "start": "07:45",
+        "end": "14:50",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000732",
+          "roster_school": "CHEE DODGE ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "chief manuelito",
+        "start": "08:00",
+        "end": "15:05",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111001027",
+          "roster_school": "CHIEF MANUELITO MIDDLE",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "crownpoint",
+        "start": "07:45",
+        "end": "14:50",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000300",
+          "roster_school": "CROWNPOINT ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "crownpoint",
+        "start": "08:00",
+        "end": "15:05",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000301",
+          "roster_school": "CROWNPOINT HIGH",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "crownpoint",
+        "start": "07:55",
+        "end": "15:00",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000881",
+          "roster_school": "CROWNPOINT MIDDLE",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "david skeet",
+        "start": "07:45",
+        "end": "14:50",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111030021",
+          "roster_school": "DAVID SKEET ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "del norte",
+        "start": "07:45",
+        "end": "14:50",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111001137",
+          "roster_school": "DEL NORTE ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "gallup central",
+        "start": "08:15",
+        "end": "15:20",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "gallup",
+        "start": "08:05",
+        "end": "15:10",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000303",
+          "roster_school": "GALLUP HIGH",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "gallup",
+        "start": "08:00",
+        "end": "15:05",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000304",
+          "roster_school": "GALLUP MIDDLE",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "indian hills",
+        "start": "07:45",
+        "end": "14:50",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000305",
+          "roster_school": "INDIAN HILLS ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "jefferson",
+        "start": "07:45",
+        "end": "14:50",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000306",
+          "roster_school": "JEFFERSON ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "john f kennedy",
+        "start": "08:00",
+        "end": "15:05",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000661",
+          "roster_school": "JOHN F. KENNEDY MIDDLE",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lincoln",
+        "start": "07:45",
+        "end": "14:50",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000308",
+          "roster_school": "LINCOLN ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "mckinley",
+        "start": "08:00",
+        "end": "15:05",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "miyamura",
+        "start": "08:05",
+        "end": "15:10",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000768",
+          "roster_school": "MIYAMURA HIGH SCHOOL",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "navajo",
+        "start": "07:45",
+        "end": "14:50",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000309",
+          "roster_school": "NAVAJO ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "navajo",
+        "start": "08:00",
+        "end": "15:05",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000861",
+          "roster_school": "NAVAJO MIDDLE SCHOOL",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "navajo pine",
+        "start": "07:55",
+        "end": "15:00",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000310",
+          "roster_school": "NAVAJO PINE HIGH",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ramah",
+        "start": "07:45",
+        "end": "14:50",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000311",
+          "roster_school": "RAMAH ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "ramah",
+        "start": "08:00",
+        "end": "15:05",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000662",
+          "roster_school": "RAMAH HIGH",
+          "rostered_bands": [
+            "high",
+            "middle"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "red rock",
+        "start": "07:45",
+        "end": "14:50",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000312",
+          "roster_school": "RED ROCK ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "stagecoach",
+        "start": "07:45",
+        "end": "14:50",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111030020",
+          "roster_school": "STAGECOACH ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "thoreau",
+        "start": "08:00",
+        "end": "15:05",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000316",
+          "roster_school": "THOREAU HIGH",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "thoreau",
+        "start": "07:55",
+        "end": "15:00",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000663",
+          "roster_school": "THOREAU MIDDLE",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "tohatchi",
+        "start": "07:45",
+        "end": "14:50",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000317",
+          "roster_school": "TOHATCHI ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "tohatchi",
+        "start": "08:00",
+        "end": "15:05",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000318",
+          "roster_school": "TOHATCHI HIGH",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "tohatchi",
+        "start": "07:55",
+        "end": "15:00",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000664",
+          "roster_school": "TOHATCHI MIDDLE",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "tse yi gai",
+        "start": "08:00",
+        "end": "15:05",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000907",
+          "roster_school": "TSE YI GAI HIGH",
+          "rostered_bands": [
+            "high",
+            "middle"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "tobe turpen",
+        "start": "07:45",
+        "end": "14:50",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000797",
+          "roster_school": "TOBE TURPEN ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "turpen": "token_subset"
+          }
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "twin lakes",
+        "start": "07:45",
+        "end": "14:50",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000321",
+          "roster_school": "TWIN LAKES ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "thoreau",
+        "start": "07:45",
+        "end": "14:50",
+        "gross": 425,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "350111000315",
+          "roster_school": "THOREAU ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3501110:793e910318",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "chs",
+        "start": "08:00",
+        "end": "15:05",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3501110:071335d0fe",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "gallup",
+        "start": "08:05",
+        "end": "15:10",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000303",
+          "roster_school": "GALLUP HIGH",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "rec_key": "3501110:ab50724201",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "high",
+        "school": "tohatchi",
+        "start": "08:00",
+        "end": "15:05",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350111000318",
+          "roster_school": "TOHATCHI HIGH",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "rec_key": "3501110:5ca23201c2",
+        "source_file": "tesseract_screenshot.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "high",
+        "school": "nvm",
+        "reason": "band_disagreement",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00",
+          "mistralai/mistral-small-24b-instruct-2501": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:05",
+          "mistralai/mistral-small-24b-instruct-2501": "15:05"
+        },
+        "identity": {
+          "claimed_bands": [
+            "high",
+            "middle"
+          ]
+        },
+        "rec_key": "3501110:430e728be2",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "crownpoint",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:05"
+        },
+        "rec_key": "3501110:8f9b5e3052",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "kindergarten",
+        "starts": {
+          "google/gemini-2.5-flash": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "14:45"
+        },
+        "rec_key": "3501110:77fb1584c5",
+        "source_file": "original.png"
+      },
+      {
+        "band": "elementary",
+        "school": "first",
+        "starts": {
+          "google/gemini-2.5-flash": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "14:45"
+        },
+        "rec_key": "3501110:77fb1584c5",
+        "source_file": "original.png"
+      },
+      {
+        "band": "elementary",
+        "school": "second",
+        "starts": {
+          "google/gemini-2.5-flash": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "14:45"
+        },
+        "rec_key": "3501110:77fb1584c5",
+        "source_file": "original.png"
+      },
+      {
+        "band": "elementary",
+        "school": "third",
+        "starts": {
+          "google/gemini-2.5-flash": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "14:45"
+        },
+        "rec_key": "3501110:77fb1584c5",
+        "source_file": "original.png"
+      },
+      {
+        "band": "elementary",
+        "school": "fourth",
+        "starts": {
+          "google/gemini-2.5-flash": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "14:45"
+        },
+        "rec_key": "3501110:77fb1584c5",
+        "source_file": "original.png"
+      },
+      {
+        "band": "elementary",
+        "school": "fifth",
+        "starts": {
+          "google/gemini-2.5-flash": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "14:45"
+        },
+        "rec_key": "3501110:77fb1584c5",
+        "source_file": "original.png"
+      },
+      {
+        "band": "middle",
+        "school": "6th group 1",
+        "starts": {
+          "google/gemini-2.5-flash": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "14:45"
+        },
+        "rec_key": "3501110:77fb1584c5",
+        "source_file": "original.png"
+      },
+      {
+        "band": "middle",
+        "school": "6th group 2",
+        "starts": {
+          "google/gemini-2.5-flash": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "14:45"
+        },
+        "rec_key": "3501110:77fb1584c5",
+        "source_file": "original.png"
+      },
+      {
+        "band": "elementary",
+        "school": "unnamed",
+        "starts": {
+          "mistralai/mistral-large-2512": "08:15"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "15:00"
+        },
+        "rec_key": "3501110:77fb1584c5",
+        "source_file": "original.png"
+      }
+    ],
+    "n_reps": 7,
+    "n_judged": 4,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 425,
+        "start_time": "07:45",
+        "end_time": "14:50",
+        "n_schools": 16,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "catherine a miller",
+            "start_time": "07:45",
+            "end_time": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "chee dodge",
+            "start_time": "07:45",
+            "end_time": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "crownpoint",
+            "start_time": "07:45",
+            "end_time": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "david skeet",
+            "start_time": "07:45",
+            "end_time": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "del norte",
+            "start_time": "07:45",
+            "end_time": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "indian hills",
+            "start_time": "07:45",
+            "end_time": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "jefferson",
+            "start_time": "07:45",
+            "end_time": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lincoln",
+            "start_time": "07:45",
+            "end_time": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "navajo",
+            "start_time": "07:45",
+            "end_time": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ramah",
+            "start_time": "07:45",
+            "end_time": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "red rock",
+            "start_time": "07:45",
+            "end_time": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "stagecoach",
+            "start_time": "07:45",
+            "end_time": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "tohatchi",
+            "start_time": "07:45",
+            "end_time": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "tobe turpen",
+            "start_time": "07:45",
+            "end_time": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "twin lakes",
+            "start_time": "07:45",
+            "end_time": "14:50",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "thoreau",
+            "start_time": "07:45",
+            "end_time": "14:50",
+            "gross": 425,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 425,
+        "start_time": "08:00",
+        "end_time": "15:05",
+        "n_schools": 9,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "crownpoint",
+            "start_time": "07:55",
+            "end_time": "15:05",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "chief manuelito",
+            "start_time": "08:00",
+            "end_time": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "crownpoint",
+            "start_time": "07:55",
+            "end_time": "15:00",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "gallup",
+            "start_time": "08:00",
+            "end_time": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "john f kennedy",
+            "start_time": "08:00",
+            "end_time": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mckinley",
+            "start_time": "08:00",
+            "end_time": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "navajo",
+            "start_time": "08:00",
+            "end_time": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "thoreau",
+            "start_time": "07:55",
+            "end_time": "15:00",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "tohatchi",
+            "start_time": "07:55",
+            "end_time": "15:00",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 425,
+        "start_time": "08:00",
+        "end_time": "15:05",
+        "n_schools": 12,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "crownpoint",
+            "start_time": "08:00",
+            "end_time": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "gallup central",
+            "start_time": "08:15",
+            "end_time": "15:20",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "gallup",
+            "start_time": "08:05",
+            "end_time": "15:10",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "miyamura",
+            "start_time": "08:05",
+            "end_time": "15:10",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "navajo pine",
+            "start_time": "07:55",
+            "end_time": "15:00",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ramah",
+            "start_time": "08:00",
+            "end_time": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "thoreau",
+            "start_time": "08:00",
+            "end_time": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "tohatchi",
+            "start_time": "08:00",
+            "end_time": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "tse yi gai",
+            "start_time": "08:00",
+            "end_time": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "chs",
+            "start_time": "08:00",
+            "end_time": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "gallup",
+            "start_time": "08:05",
+            "end_time": "15:10",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "tohatchi",
+            "start_time": "08:00",
+            "end_time": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "state": "NM",
+    "reaggregated_from": "extraction_bb177cd7c381_3501110_20260711T171733Z.json"
+  }
+}

@@ -1,0 +1,905 @@
+{
+  "handoff_hash": "54d8be261eca",
+  "district": {
+    "district_id": "4222350",
+    "name": "Southern Lehigh SD",
+    "reps": [
+      {
+        "rec_key": "4222350:6d7cb780b4",
+        "file": "md.md",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:35",
+                "end_time": "14:25",
+                "school_name": "Spartan",
+                "confidence": "high",
+                "evidence_quote": "Block 1 7:35-9:03\nBlock 4 12:57-2:25",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 967,
+            "completion_tokens": 105,
+            "cost_usd": 0.0001387,
+            "latency_ms": 18745,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784080588-giYICTBosus502XHyEtH",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 954,
+            "completion_tokens": 99,
+            "cost_usd": 5.562e-05,
+            "latency_ms": 15314,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784080603-gLYZOiiR6SnWjy8zFgy1",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:35",
+                "end_time": "14:25",
+                "school_name": "No Spartan",
+                "confidence": "high",
+                "evidence_quote": "Block 1  | 7:35-9:03",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 929,
+            "completion_tokens": 85,
+            "cost_usd": 0.00013036,
+            "latency_ms": 18677,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784080618-6vtZ0QuT1uy4oDGMv6GU",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "spartan",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:35"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:25"
+            },
+            "rec_key": "4222350:6d7cb780b4",
+            "source_file": "md.md"
+          }
+        ]
+      },
+      {
+        "rec_key": "4222350:de523f7438",
+        "file": "md.md",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:35",
+                "end_time": "14:25",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "Block 1 7:35\u20108:47",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 981,
+            "completion_tokens": 93,
+            "cost_usd": 0.0001353,
+            "latency_ms": 12959,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784080636-9zgmjmOJC8ADxIz0Df6z",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:35",
+                "end_time": "14:33",
+                "school_name": "Spartan High School",
+                "confidence": "high",
+                "evidence_quote": "Block 1  | 7:35\u20108:47 |  | Block 4  | 12:25\u20101:33 |  |",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 969,
+            "completion_tokens": 157,
+            "cost_usd": 6.101e-05,
+            "latency_ms": 15620,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784080650-EfWYT5jWWxo9pAasXTEA",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 944,
+            "completion_tokens": 6,
+            "cost_usd": 0.00013696,
+            "latency_ms": 12824,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784080664-gBgimyls0YYvmn1rJZTk",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:35"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:25"
+            },
+            "rec_key": "4222350:de523f7438",
+            "source_file": "md.md"
+          },
+          {
+            "band": "high",
+            "school": "spartan",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:35"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:33"
+            },
+            "rec_key": "4222350:de523f7438",
+            "source_file": "md.md"
+          }
+        ]
+      },
+      {
+        "rec_key": "4222350:fe0547fa35",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:30",
+                "school_name": "Southern Lehigh Elementary Schools",
+                "confidence": "high",
+                "evidence_quote": "Grades 1-3                                           9:00-3:30 pm",
+                "source_locus": "Page 8",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": "multiple"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "11:36",
+                "school_name": "Southern Lehigh Elementary Schools",
+                "confidence": "high",
+                "evidence_quote": "AM Kindergarten                                      9:00-11:36 am",
+                "source_locus": "Page 8",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": "multiple"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "12:54",
+                "end_time": "15:30",
+                "school_name": "Southern Lehigh Elementary Schools",
+                "confidence": "high",
+                "evidence_quote": "PM Kindergarten                                      12:54 pm-3:30 pm",
+                "source_locus": "Page 8",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": "multiple"
+              }
+            ],
+            "prompt_tokens": 16056,
+            "completion_tokens": 460,
+            "cost_usd": 0.0017896,
+            "latency_ms": 14052,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784080677-xzIvuC4HLj6KU0NMzRC9",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": false,
+            "error": "Error code: 400 - {'error': {'message': \"This endpoint's maximum context length is 32768 tokens. However, you requested about 37711 tokens (21711 of text input, 16000 in the output). Please reduce the length of either one, or use the context-compression plugin to compress your prompt automatically.\", 'code': 400, 'metadata': {'provider_name': None}}, 'user_id': 'user_3F6G2u57EqCPewKcTHYL5cGYfne'}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 12344,
+            "finish_reason": null,
+            "generation_id": null,
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:30",
+                "school_name": "Southern Lehigh Elementary Schools",
+                "confidence": "high",
+                "evidence_quote": "Grades 1-3                                           9:00-3:30 pm",
+                "source_locus": "ATTENDANCE REGULATIONS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 16053,
+            "completion_tokens": 104,
+            "cost_usd": 0.0024621155,
+            "latency_ms": 2818,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784080691-1ym3rt9lj2hYVUWSt7dU",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "southern lehigh",
+            "start": "09:00",
+            "end": "15:30",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "422235006967",
+              "roster_school": "Southern Lehigh Intermediate Sch",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "evidence": {
+              "judge": {
+                "quote": "Grades 1-3                                           9:00-3:30 pm",
+                "locus": "ATTENDANCE REGULATIONS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "4222350:fe0547fa35",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4222350:c03a9018d3",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:30",
+                "school_name": "Joseph P. Liberati Intermediate School",
+                "confidence": "high",
+                "evidence_quote": "The instructional day is 6 hours and 40 minutes long (8:50AM to 3:30PM).",
+                "source_locus": "JPLIS FAQ",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 4045,
+            "completion_tokens": 173,
+            "cost_usd": 0.0004737,
+            "latency_ms": 14066,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784080707-3OQ92nMDlFENdoBNh2om",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:50",
+                "end_time": "15:30",
+                "school_name": "Joseph P. Liberati Intermediate School",
+                "confidence": "high",
+                "evidence_quote": "The instructional day is 6 hours and 40 minutes long (8:50AM to 3:30PM).",
+                "source_locus": "JPLIS FAQ",
+                "stated_minutes": 400,
+                "stated_minutes_quote": "The instructional day is 6 hours and 40 minutes long",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 4147,
+            "completion_tokens": 171,
+            "cost_usd": 0.00022103,
+            "latency_ms": 18559,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784080721-ZAV8bBGuZKUsH3LTZ08N",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:50",
+                "end_time": "15:30",
+                "school_name": "Joseph P. Liberati Intermediate School",
+                "confidence": "high",
+                "evidence_quote": "The instructional day is 6 hours and 40 minutes long (8:50AM to 3:30PM).",
+                "source_locus": "JPLIS FAQ",
+                "stated_minutes": 400,
+                "stated_minutes_quote": "The instructional day is 6 hours and 40 minutes long (8:50AM to 3:30PM).",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 4066,
+            "completion_tokens": 136,
+            "cost_usd": 0.00044482,
+            "latency_ms": 14214,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784080738-0CUobudLz2KZVHxcMRuQ",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "joseph p liberati",
+            "reason": "band_disagreement",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:50",
+              "mistralai/mistral-small-24b-instruct-2501": "08:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:30",
+              "mistralai/mistral-small-24b-instruct-2501": "15:30"
+            },
+            "identity": {
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "4222350:c03a9018d3",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "4222350:b67e447312",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:25",
+                "school_name": "Joseph P. Liberati Intermediate School",
+                "confidence": "high",
+                "evidence_quote": "Grades 4-6: 8:50 AM - 3:25 PM",
+                "source_locus": "JPLIS Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2550,
+            "completion_tokens": 161,
+            "cost_usd": 0.0003194,
+            "latency_ms": 11988,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784080752-nZdkj3acahcoqe52cpPf",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:25",
+                "school_name": "Joseph P. Liberati Intermediate School",
+                "confidence": "high",
+                "evidence_quote": "Grades 4-6:  8:50 AM - 3:25 PM",
+                "source_locus": "JPLIS Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2677,
+            "completion_tokens": 150,
+            "cost_usd": 0.00014585,
+            "latency_ms": 16253,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784080767-Y4PUFIOhJiMzmBbXDVKS",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "joseph p liberati",
+            "start": "08:50",
+            "end": "15:25",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Grades 4-6: 8:50 AM - 3:25 PM",
+                "locus": "JPLIS Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Grades 4-6:  8:50 AM - 3:25 PM",
+                "locus": "JPLIS Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "4222350:b67e447312",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4222350:fa4cae5990",
+        "file": "tesseract_screenshot.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:35",
+                "end_time": "14:25",
+                "school_name": "Southern Lehigh High School",
+                "confidence": "high",
+                "evidence_quote": "Block 1 7:35-8:50\nBlock 4 1:10-2:25",
+                "source_locus": "High School Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1261,
+            "completion_tokens": 135,
+            "cost_usd": 0.0001801,
+            "latency_ms": 16083,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784080783-26DkecXg0iy8OpfpeKPq",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:35",
+                "end_time": "14:25",
+                "school_name": "Southern Lehigh High School",
+                "confidence": "high",
+                "evidence_quote": "Block 1 7:35-8:50 ... Block 4 1:10-2:25",
+                "source_locus": "High School Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1296,
+            "completion_tokens": 152,
+            "cost_usd": 7.696e-05,
+            "latency_ms": 13462,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784080796-yvwLpwVktNp7G11pwLLF",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "southern lehigh",
+            "start": "07:35",
+            "end": "14:25",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "422235002839",
+              "roster_school": "Southern Lehigh SHS",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Block 1 7:35-8:50\nBlock 4 1:10-2:25",
+                "locus": "High School Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Block 1 7:35-8:50 ... Block 4 1:10-2:25",
+                "locus": "High School Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "4222350:fa4cae5990",
+            "source_file": "tesseract_screenshot.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "southern lehigh",
+        "start": "09:00",
+        "end": "15:30",
+        "gross": 390,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "422235006967",
+          "roster_school": "Southern Lehigh Intermediate Sch",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "evidence": {
+          "judge": {
+            "quote": "Grades 1-3                                           9:00-3:30 pm",
+            "locus": "ATTENDANCE REGULATIONS",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "4222350:fe0547fa35",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "joseph p liberati",
+        "start": "08:50",
+        "end": "15:25",
+        "gross": 395,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Grades 4-6: 8:50 AM - 3:25 PM",
+            "locus": "JPLIS Bell Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Grades 4-6:  8:50 AM - 3:25 PM",
+            "locus": "JPLIS Bell Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "4222350:b67e447312",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "southern lehigh",
+        "start": "07:35",
+        "end": "14:25",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "422235002839",
+          "roster_school": "Southern Lehigh SHS",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Block 1 7:35-8:50\nBlock 4 1:10-2:25",
+            "locus": "High School Bell Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Block 1 7:35-8:50 ... Block 4 1:10-2:25",
+            "locus": "High School Bell Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "4222350:fa4cae5990",
+        "source_file": "tesseract_screenshot.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "high",
+        "school": "spartan",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:35"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:25"
+        },
+        "rec_key": "4222350:6d7cb780b4",
+        "source_file": "md.md"
+      },
+      {
+        "band": "high",
+        "school": "",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:35"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:25"
+        },
+        "rec_key": "4222350:de523f7438",
+        "source_file": "md.md"
+      },
+      {
+        "band": "high",
+        "school": "spartan",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:35"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:33"
+        },
+        "rec_key": "4222350:de523f7438",
+        "source_file": "md.md"
+      },
+      {
+        "band": "elementary",
+        "school": "joseph p liberati",
+        "reason": "band_disagreement",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:50",
+          "mistralai/mistral-small-24b-instruct-2501": "08:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:30",
+          "mistralai/mistral-small-24b-instruct-2501": "15:30"
+        },
+        "identity": {
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "4222350:c03a9018d3",
+        "source_file": "page.txt"
+      }
+    ],
+    "n_reps": 6,
+    "n_judged": 4,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 392,
+        "start_time": null,
+        "end_time": null,
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "southern lehigh",
+            "start_time": "09:00",
+            "end_time": "15:30",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "joseph p liberati",
+            "start_time": "08:50",
+            "end_time": "15:25",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 410,
+        "start_time": "07:35",
+        "end_time": "14:25",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "southern lehigh",
+            "start_time": "07:35",
+            "end_time": "14:25",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "state": "PA",
+    "reaggregated_from": "extraction_54d8be261eca_4222350_20260715T015958Z.json"
+  }
+}

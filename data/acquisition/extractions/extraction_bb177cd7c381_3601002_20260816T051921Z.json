@@ -1,0 +1,676 @@
+{
+  "handoff_hash": "bb177cd7c381",
+  "district": {
+    "district_id": "3601002",
+    "name": "BROWNSVILLE ASCEND CHARTER SCHOOL",
+    "reps": [
+      {
+        "rec_key": "3601002:af4ea4bf6f",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:15",
+                "school_name": "Ascend Elementary Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1740,
+            "completion_tokens": 44,
+            "cost_usd": 0.0001916,
+            "latency_ms": 592,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790253-asJ0yd4eziU4Nm3ad0JJ",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Ascend Public Charter Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1743,
+            "completion_tokens": 73,
+            "cost_usd": 9.299e-05,
+            "latency_ms": 1498,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790254-Pi6BAE1u2gobg2EKvMEb",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Ascend Charter Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1702,
+            "completion_tokens": 42,
+            "cost_usd": 0.00037736,
+            "latency_ms": 1788,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790255-PHFAa0qEnT4oFJDOq0DV",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "brownsville ascend charter",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "360100206167",
+              "roster_school": "BROWNSVILLE ASCEND CHARTER SCHOOL",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "rules": {
+                "ascend": "token_subset"
+              }
+            },
+            "rec_key": "3601002:af4ea4bf6f",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "ascend public charter",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:00"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:15"
+            },
+            "rec_key": "3601002:af4ea4bf6f",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3601002:6fb0dfadce",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 7,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:45",
+                "school_name": "Brooklyn Ascend Charter Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:45",
+                "school_name": "Brownsville Ascend Charter Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:45",
+                "school_name": "Bushwick Ascend Charter Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:45",
+                "school_name": "Canarsie Ascend Charter Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:45",
+                "school_name": "Central Brooklyn Ascend Charter Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:45",
+                "school_name": "Cypress Hills Ascend Charter Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:45",
+                "school_name": "Flatbush Ascend Charter Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1635,
+            "completion_tokens": 305,
+            "cost_usd": 0.0002855,
+            "latency_ms": 1355,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790257-09aNqpgWGxdDPyJEgQ1q",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 7,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:45",
+                "school_name": "Brooklyn Ascend Charter Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:45",
+                "school_name": "Brownsville Ascend Charter Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:45",
+                "school_name": "Bushwick Ascend Charter Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:45",
+                "school_name": "Canarsie Ascend Charter Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:45",
+                "school_name": "Central Brooklyn Ascend Charter Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:45",
+                "school_name": "Cypress Hills Ascend Charter Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:45",
+                "school_name": "Flatbush Ascend Charter Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1641,
+            "completion_tokens": 427,
+            "cost_usd": 0.00011621,
+            "latency_ms": 8071,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790258-02DHYxqr1CjWZzaCnDOK",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "brooklyn ascend charter",
+            "start": "08:10",
+            "end": "15:45",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3601002:6fb0dfadce",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "brownsville ascend charter",
+            "start": "08:10",
+            "end": "15:45",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "360100206167",
+              "roster_school": "BROWNSVILLE ASCEND CHARTER SCHOOL",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "3601002:6fb0dfadce",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "bushwick ascend charter",
+            "start": "08:10",
+            "end": "15:45",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3601002:6fb0dfadce",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "canarsie ascend charter",
+            "start": "08:10",
+            "end": "15:45",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3601002:6fb0dfadce",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "central brooklyn ascend charter",
+            "start": "08:10",
+            "end": "15:45",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3601002:6fb0dfadce",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "cypress hills ascend charter",
+            "start": "08:10",
+            "end": "15:45",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3601002:6fb0dfadce",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "flatbush ascend charter",
+            "start": "08:10",
+            "end": "15:45",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3601002:6fb0dfadce",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "brownsville ascend charter",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "360100206167",
+          "roster_school": "BROWNSVILLE ASCEND CHARTER SCHOOL",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "rules": {
+            "ascend": "token_subset"
+          }
+        },
+        "rec_key": "3601002:af4ea4bf6f",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "brooklyn ascend charter",
+        "start": "08:10",
+        "end": "15:45",
+        "gross": 455,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3601002:6fb0dfadce",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "brownsville ascend charter",
+        "start": "08:10",
+        "end": "15:45",
+        "gross": 455,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "360100206167",
+          "roster_school": "BROWNSVILLE ASCEND CHARTER SCHOOL",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "3601002:6fb0dfadce",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "bushwick ascend charter",
+        "start": "08:10",
+        "end": "15:45",
+        "gross": 455,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3601002:6fb0dfadce",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "canarsie ascend charter",
+        "start": "08:10",
+        "end": "15:45",
+        "gross": 455,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3601002:6fb0dfadce",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "central brooklyn ascend charter",
+        "start": "08:10",
+        "end": "15:45",
+        "gross": 455,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3601002:6fb0dfadce",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "cypress hills ascend charter",
+        "start": "08:10",
+        "end": "15:45",
+        "gross": 455,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3601002:6fb0dfadce",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "flatbush ascend charter",
+        "start": "08:10",
+        "end": "15:45",
+        "gross": 455,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3601002:6fb0dfadce",
+        "source_file": "page.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "ascend public charter",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:00"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:15"
+        },
+        "rec_key": "3601002:af4ea4bf6f",
+        "source_file": "page.txt"
+      }
+    ],
+    "n_reps": 2,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 435,
+        "start_time": "08:00",
+        "end_time": "15:15",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "brownsville ascend charter",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 455,
+        "start_time": "08:10",
+        "end_time": "15:45",
+        "n_schools": 7,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "brooklyn ascend charter",
+            "start_time": "08:10",
+            "end_time": "15:45",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "brownsville ascend charter",
+            "start_time": "08:10",
+            "end_time": "15:45",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "bushwick ascend charter",
+            "start_time": "08:10",
+            "end_time": "15:45",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "canarsie ascend charter",
+            "start_time": "08:10",
+            "end_time": "15:45",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "central brooklyn ascend charter",
+            "start_time": "08:10",
+            "end_time": "15:45",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "cypress hills ascend charter",
+            "start_time": "08:10",
+            "end_time": "15:45",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "flatbush ascend charter",
+            "start_time": "08:10",
+            "end_time": "15:45",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "state": "NY",
+    "reaggregated_from": "extraction_bb177cd7c381_3601002_20260711T171746Z.json"
+  }
+}
