@@ -138,7 +138,21 @@ exercise against the #200/#209-hardened pipeline, not a distinct issue awaiting 
   tail (#169) — a call already sent AT the ceiling that still truncates gets no retry (nowhere higher to
   go, >680 schools, never observed in 840 calls), and the ⚠ flag persists. The retry's cost/tokens/
   latency are SUMMED onto the returned `CallResult` (both attempts were real billed calls, #182), so the
-  REQ-051 budget governor sees true spend. `_client()` (the OpenAI SDK client) is `functools.lru_cache`d
+  REQ-051 budget governor sees true spend.
+  **REQ-174 (#714/#709, 2026-08-16): every call additionally clamps to the MODEL's real window** —
+  `min(max_out, context − estimated_prompt − margin)` from `model_families.MODEL_WINDOWS` (checked-in
+  2026-08-16 OpenRouter fetch, which falsified the ceiling's "inside all models' completion windows"
+  premise for 3 of 7 catalogued models: mistral-small is 16,384-completion/32,768-TOTAL, so an
+  at-ceiling request with any real prompt was auto-400'd — Orange/Memphis). A window that leaves
+  < `MIN_USEFUL_OUTPUT` refuses PRE-FLIGHT at zero spend; a provider context-length 400 classifies
+  `error_kind="context"` (structural) — either way the rep is marked **`council_degraded`** in the
+  run output/receipt (`stage7_run.council_degraded`, derived identically on the #716 replay):
+  cross-family consensus was impossible by construction, the zero is evidence about the COUNCIL,
+  never the document (the 7→6 remedy reason says re-route; `explain` counts these apart from
+  barren). The truncation retry targets `min(MAX_TOKENS_CEILING, cap)`. Uncatalogued models keep
+  legacy behavior. Composition remedies (chunking, long-context routing, substitutes, per-model
+  ceiling raises) are #80's to measure — corpus population in
+  `learning-loop-reports/2026-08-16-714-709-context-accounting.md`. `_client()` (the OpenAI SDK client) is `functools.lru_cache`d
   per `(key, timeout)` (#148) so consecutive calls in a batch reuse one httpx connection pool instead of
   a fresh TLS handshake each call (was ~30-60s/batch of pure handshake); an autouse conftest fixture
   clears the cache per test. Raises `BillingAuthError` on 401/402 (halts the run rather than burning

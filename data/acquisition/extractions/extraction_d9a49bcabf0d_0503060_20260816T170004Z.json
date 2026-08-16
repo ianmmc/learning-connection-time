@@ -1,0 +1,581 @@
+{
+  "handoff_hash": "d9a49bcabf0d",
+  "district": {
+    "district_id": "0503060",
+    "name": "BENTONVILLE SCHOOL DISTRICT",
+    "reps": [
+      {
+        "rec_key": "0503060:b52d8e9cd2",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 3066,
+            "completion_tokens": 48000,
+            "cost_usd": 0.0195066,
+            "latency_ms": 92075,
+            "finish_reason": "length",
+            "generation_id": "gen-1785295043-OaZgP6MafMk9d0jHAjtU",
+            "truncation_retried": true
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "Apple Glen ES, Centerton Gamble ES, Central Park ES, Mary Mae Jones ES, Sugar Creek ES, Thomas Jefferson ES, Cooper ES, Evening Star ES, Vaughn ES",
+                "confidence": "high",
+                "evidence_quote": "7:30 am - 2:30 pm",
+                "source_locus": "School Start and Stop Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": "multiple",
+                "campus_names": [
+                  "Apple Glen ES",
+                  "Centerton Gamble ES",
+                  "Central Park ES",
+                  "Mary Mae Jones ES",
+                  "Sugar Creek ES",
+                  "Thomas Jefferson ES",
+                  "Cooper ES",
+                  "Evening Star ES",
+                  "Vaughn ES"
+                ]
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Elm Tree ES, Ardis Ann MS, Osage Creek ES , Creekside MS , Willowbrook ES, R.E. Baker ES, Old High MS, Ruth Barker MS, Bright Field MS",
+                "confidence": "high",
+                "evidence_quote": "7:50 am - 2:50 pm",
+                "source_locus": "School Start and Stop Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": "multiple",
+                "campus_names": [
+                  "Elm Tree ES",
+                  "Osage Creek ES",
+                  "Willowbrook ES",
+                  "R.E. Baker ES"
+                ]
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Elm Tree ES, Ardis Ann MS, Osage Creek ES , Creekside MS , Willowbrook ES, R.E. Baker ES, Old High MS, Ruth Barker MS, Bright Field MS",
+                "confidence": "high",
+                "evidence_quote": "7:50 am - 2:50 pm",
+                "source_locus": "School Start and Stop Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": "multiple",
+                "campus_names": [
+                  "Ardis Ann MS",
+                  "Creekside MS",
+                  "Old High MS",
+                  "Ruth Barker MS",
+                  "Bright Field MS"
+                ]
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Fulbright JH, Grimsley JH, Lincoln JH, Washington JH",
+                "confidence": "high",
+                "evidence_quote": "8:35 am - 3:35 pm",
+                "source_locus": "School Start and Stop Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": "multiple",
+                "campus_names": [
+                  "Fulbright JH",
+                  "Grimsley JH",
+                  "Lincoln JH",
+                  "Washington JH"
+                ]
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Bentonville HS, Bentonville West HS",
+                "confidence": "high",
+                "evidence_quote": "8:55 am - 3:55 pm",
+                "source_locus": "School Start and Stop Times",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": "multiple",
+                "campus_names": [
+                  "Bentonville HS",
+                  "Bentonville West HS"
+                ]
+              }
+            ],
+            "prompt_tokens": 1532,
+            "completion_tokens": 966,
+            "cost_usd": 0.00015388,
+            "latency_ms": 23436,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785295102-29emXy7qluSrSPRgshfd",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "Apple Glen ES, Centerton Gamble ES, Central Park ES, Mary Mae Jones ES, Sugar Creek ES, Thomas Jefferson ES, Cooper ES, Evening Star ES, Vaughn ES",
+                "confidence": "high",
+                "evidence_quote": "Apple Glen ES, Centerton Gamble ES, Central Park ES, Mary Mae Jones ES, Sugar Creek ES, Thomas Jefferson ES, Cooper ES, Evening Star ES, Vaughn ES \t 7:30 am \t 2:30 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": "multiple",
+                "campus_names": [
+                  "Apple Glen ES",
+                  "Centerton Gamble ES",
+                  "Central Park ES",
+                  "Mary Mae Jones ES",
+                  "Sugar Creek ES",
+                  "Thomas Jefferson ES",
+                  "Cooper ES",
+                  "Evening Star ES",
+                  "Vaughn ES"
+                ]
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Elm Tree ES, Ardis Ann MS, Osage Creek ES , Creekside MS , Willowbrook ES, R.E. Baker ES, Old High MS, Ruth Barker MS, Bright Field MS",
+                "confidence": "high",
+                "evidence_quote": "Elm Tree ES, Ardis Ann MS, Osage Creek ES , Creekside MS , Willowbrook ES, R.E. Baker ES, Old High MS, Ruth Barker MS, Bright Field MS \t 7:50 am \t 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": "multiple",
+                "campus_names": [
+                  "Elm Tree ES",
+                  "Ardis Ann MS",
+                  "Osage Creek ES",
+                  "Creekside MS",
+                  "Willowbrook ES",
+                  "R.E. Baker ES",
+                  "Old High MS",
+                  "Ruth Barker MS",
+                  "Bright Field MS"
+                ]
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Fulbright JH, Grimsley JH, Lincoln JH, Washington JH",
+                "confidence": "high",
+                "evidence_quote": "Fulbright JH, Grimsley JH, Lincoln JH, Washington JH \t 8:35 am \t 3:35 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": "multiple",
+                "campus_names": [
+                  "Fulbright JH",
+                  "Grimsley JH",
+                  "Lincoln JH",
+                  "Washington JH"
+                ]
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Bentonville HS, Bentonville West HS",
+                "confidence": "high",
+                "evidence_quote": "Bentonville HS, Bentonville West HS \t 8:55 am \t 3:55 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": "multiple",
+                "campus_names": [
+                  "Bentonville HS",
+                  "Bentonville West HS"
+                ]
+              }
+            ],
+            "prompt_tokens": 1449,
+            "completion_tokens": 668,
+            "cost_usd": 0.00049781,
+            "latency_ms": 52209,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785295125-EHUEbWhvjc5Jm9bMS4Dw",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "apple glen centerton gamble central park mary mae jones sugar creek thomas jefferson cooper evening star vaughn",
+            "start": "07:30",
+            "end": "14:30",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "evidence": {
+              "judge": {
+                "quote": "Apple Glen ES, Centerton Gamble ES, Central Park ES, Mary Mae Jones ES, Sugar Creek ES, Thomas Jefferson ES, Cooper ES, Evening Star ES, Vaughn ES \t 7:30 am \t 2:30 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "applies_to": "multiple"
+              }
+            },
+            "applies_to": "multiple",
+            "campus_names": [
+              "Apple Glen ES",
+              "Centerton Gamble ES",
+              "Central Park ES",
+              "Cooper ES",
+              "Evening Star ES",
+              "Mary Mae Jones ES",
+              "Sugar Creek ES",
+              "Thomas Jefferson ES",
+              "Vaughn ES"
+            ],
+            "rec_key": "0503060:b52d8e9cd2",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "fulbright jh grimsley jh lincoln jh washington jh",
+            "start": "08:35",
+            "end": "15:35",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "evidence": {
+              "judge": {
+                "quote": "Fulbright JH, Grimsley JH, Lincoln JH, Washington JH \t 8:35 am \t 3:35 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "applies_to": "multiple"
+              }
+            },
+            "applies_to": "multiple",
+            "campus_names": [
+              "Fulbright JH",
+              "Grimsley JH",
+              "Lincoln JH",
+              "Washington JH"
+            ],
+            "rec_key": "0503060:b52d8e9cd2",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "bentonville west",
+            "start": "08:55",
+            "end": "15:55",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "050306001618",
+              "roster_school": "BENTONVILLE WEST HIGH SCHOOL",
+              "rostered_bands": [
+                "high"
+              ],
+              "rules": {
+                "bentonville bentonville west": "token_set"
+              }
+            },
+            "evidence": {
+              "judge": {
+                "quote": "Bentonville HS, Bentonville West HS \t 8:55 am \t 3:55 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "applies_to": "multiple"
+              }
+            },
+            "applies_to": "multiple",
+            "campus_names": [
+              "Bentonville HS",
+              "Bentonville West HS"
+            ],
+            "rec_key": "0503060:b52d8e9cd2",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "elm tree ardis ann osage creek creekside willowbrook re baker old ruth barker bright field",
+            "reason": "band_disagreement",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501 [elementary]": "07:50",
+              "mistralai/mistral-small-24b-instruct-2501 [middle]": "07:50"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501 [elementary]": "14:50",
+              "mistralai/mistral-small-24b-instruct-2501 [middle]": "14:50"
+            },
+            "identity": {
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "0503060:b52d8e9cd2",
+            "source_file": "page.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "apple glen centerton gamble central park mary mae jones sugar creek thomas jefferson cooper evening star vaughn",
+        "start": "07:30",
+        "end": "14:30",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "evidence": {
+          "judge": {
+            "quote": "Apple Glen ES, Centerton Gamble ES, Central Park ES, Mary Mae Jones ES, Sugar Creek ES, Thomas Jefferson ES, Cooper ES, Evening Star ES, Vaughn ES \t 7:30 am \t 2:30 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "applies_to": "multiple"
+          }
+        },
+        "applies_to": "multiple",
+        "campus_names": [
+          "Apple Glen ES",
+          "Centerton Gamble ES",
+          "Central Park ES",
+          "Cooper ES",
+          "Evening Star ES",
+          "Mary Mae Jones ES",
+          "Sugar Creek ES",
+          "Thomas Jefferson ES",
+          "Vaughn ES"
+        ],
+        "rec_key": "0503060:b52d8e9cd2",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "fulbright jh grimsley jh lincoln jh washington jh",
+        "start": "08:35",
+        "end": "15:35",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "evidence": {
+          "judge": {
+            "quote": "Fulbright JH, Grimsley JH, Lincoln JH, Washington JH \t 8:35 am \t 3:35 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "applies_to": "multiple"
+          }
+        },
+        "applies_to": "multiple",
+        "campus_names": [
+          "Fulbright JH",
+          "Grimsley JH",
+          "Lincoln JH",
+          "Washington JH"
+        ],
+        "rec_key": "0503060:b52d8e9cd2",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "bentonville west",
+        "start": "08:55",
+        "end": "15:55",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "050306001618",
+          "roster_school": "BENTONVILLE WEST HIGH SCHOOL",
+          "rostered_bands": [
+            "high"
+          ],
+          "rules": {
+            "bentonville bentonville west": "token_set"
+          }
+        },
+        "evidence": {
+          "judge": {
+            "quote": "Bentonville HS, Bentonville West HS \t 8:55 am \t 3:55 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "applies_to": "multiple"
+          }
+        },
+        "applies_to": "multiple",
+        "campus_names": [
+          "Bentonville HS",
+          "Bentonville West HS"
+        ],
+        "rec_key": "0503060:b52d8e9cd2",
+        "source_file": "page.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "elm tree ardis ann osage creek creekside willowbrook re baker old ruth barker bright field",
+        "reason": "band_disagreement",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501 [elementary]": "07:50",
+          "mistralai/mistral-small-24b-instruct-2501 [middle]": "07:50"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501 [elementary]": "14:50",
+          "mistralai/mistral-small-24b-instruct-2501 [middle]": "14:50"
+        },
+        "identity": {
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "0503060:b52d8e9cd2",
+        "source_file": "page.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 420,
+        "start_time": "07:30",
+        "end_time": "14:30",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "apple glen centerton gamble central park mary mae jones sugar creek thomas jefferson cooper evening star vaughn",
+            "start_time": "07:30",
+            "end_time": "14:30",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 420,
+        "start_time": "08:35",
+        "end_time": "15:35",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "fulbright jh grimsley jh lincoln jh washington jh",
+            "start_time": "08:35",
+            "end_time": "15:35",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 420,
+        "start_time": "08:55",
+        "end_time": "15:55",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "bentonville west",
+            "start_time": "08:55",
+            "end_time": "15:55",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "state": "AR",
+    "reaggregated_from": "extraction_d9a49bcabf0d_0503060_20260816T051941Z.json"
+  }
+}

@@ -55,6 +55,14 @@ def _rebuild_rep(rep: dict, ctx: dict = None) -> dict:
     rebuilt = {**rep, "judged": bool(judges) or bool(rep.get("judged")),
                "accepted": accepted, "unresolved": unresolved}
     rebuilt.pop("error", None)
+    # #709 (REQ-174): derive the council-degraded marker from the stored call records — receipts
+    # written before the marker existed (Memphis 3004896917ca, Orange 0e1bf02c3ea6) become
+    # honestly distinguishable from barren on replay, zero spend. Same derivation as the live run.
+    degraded = S7R.council_degraded(rep.get("calls") or [])
+    if degraded:
+        rebuilt["council_degraded"] = degraded
+    else:
+        rebuilt.pop("council_degraded", None)
     return rebuilt
 
 

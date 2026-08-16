@@ -89,4 +89,14 @@ numbers above are the lab's starting population.
 
 ## 5. Implementation log
 
-*(append as it lands)*
+**2026-08-16 — implemented in one pass** (`MODEL_WINDOWS`/`usable_output` in `model_families`,
+the clamp/pre-flight/classification/retry-cap in `openrouter.call`, `council_degraded` in
+`stage7_run` shared with the #716 replay, the degraded-vs-barren split in `requests.detect`).
+P1–P7 pinned in `tests/test_model_windows.py` + the `explain` split in `test_stage7_requests`.
+P4 verified end-to-end against BOTH filed receipts: Memphis `3004896917ca` rep `00f553bcfc` and
+Orange `0e1bf02c3ea6` rep `b8f930171d` each derive `council_degraded: mistral-small` on a dry
+replay — with the roster-identity fix (Tranche C step 1) compounding on Memphis's sibling rep
+(42 accepted). Faked-client tests reuse the httpx-backed `APIStatusError` construction from
+`test_stage7_openrouter.py`. No live re-replay run here: the marker changes receipts/`explain`
+only — no consensus outcome shifts — so receipts backfill naturally the next time any replay or
+follow-up touches them.

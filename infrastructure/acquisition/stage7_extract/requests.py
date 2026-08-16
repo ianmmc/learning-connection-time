@@ -273,32 +273,47 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
         explain["suppressed_barren_reps"] = 0
 
     # --- representation / URL altitude: a sent record produced no accepted facts ---
+    # #709 (REQ-174): records whose zero came from a COUNCIL-DEGRADED rep (a voter structurally
+    # lost to its context window) — their zero is evidence about the council, never about the
+    # document, so the remedy reason says re-route and the suppression is counted apart from
+    # barren (a reader of `explain` must not conclude these documents were empty).
+    degraded_recs = {rep["rec_key"] for rep in result.get("reps", [])
+                     if rep.get("council_degraded")}
+    if explain is not None:
+        explain["suppressed_degraded_reps"] = 0
     for rec_key, n_acc in _accepted_by_record(result).items():
         if n_acc > 0:
             continue
+        degraded = rec_key in degraded_recs
         if no_fillable_gap:
             # #170/#176: every fillable band already covered (or none exists) — no barren-rep remedy
             # can add claimed coverage. Non-emission by design: re-detection re-emits if coverage
             # regresses; `explain` carries the count so the run log isn't silent about it.
             if explain is not None:
-                explain["suppressed_barren_reps"] += 1
+                explain["suppressed_degraded_reps" if degraded
+                        else "suppressed_barren_reps"] += 1
             continue
         alts = alternates_by_rec.get(rec_key) or []
         sent = files.get(rec_key)
+        deg_note = ("council-degraded (a voter's context window refused the rep — the zero is "
+                    "NOT evidence the document is empty): " if degraded else "")
         if alts:
             ranked = rank_alternates(alts)   # #155: best-first (higher-yield text before vision)
             reqs.append({
                 "district_id": did, "altitude": "representation", "route": ROUTE_ALT_REP,
                 "target": rec_key, "band": None,
                 "params": {"sent_file": sent, "sent_files": files_all.get(rec_key, []),
-                           "alternate_reps": ranked},
-                "reason": _alt_reason(sent, ranked)})
+                           "alternate_reps": ranked,
+                           **({"council_degraded": True} if degraded else {})},
+                "reason": deg_note + _alt_reason(sent, ranked)})
         else:
             reqs.append({
                 "district_id": did, "altitude": "url", "route": ROUTE_RECAPTURE,
                 "target": rec_key, "band": None,
-                "params": {"sent_file": sent, "sent_files": files_all.get(rec_key, [])},
-                "reason": f"sent rep '{sent}' yielded 0 accepted facts and no alternate rep exists — "
+                "params": {"sent_file": sent, "sent_files": files_all.get(rec_key, []),
+                           **({"council_degraded": True} if degraded else {})},
+                "reason": deg_note +
+                          f"sent rep '{sent}' yielded 0 accepted facts and no alternate rep exists — "
                           f"recapture the URL"})
 
     # #159: how many records in this district have an UNEXHAUSTED existing rep (a 7->6 remedy)?

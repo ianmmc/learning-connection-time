@@ -4557,3 +4557,38 @@ requirements:
       but can never be the winner; leading-initial composes with near-exact rules only; the
       exclusion screen reads the RAW extracted names with phrase-forms for once-bare words and
       imports FACILITY_NAME_TOKENS (one source of truth)."
+
+  - id: REQ-174
+    github_issue: "#714 (sizing without accounting), #709 (silent single-family degradation);
+      measured design in docs/technical-notes/learning-loop-reports/2026-08-16-714-709-context-accounting.md"
+    description: "PER-MODEL CONTEXT ACCOUNTING + THE COUNCIL-DEGRADED MARKER — every OpenRouter call
+      clamps its max_tokens to the model's real window (MODEL_WINDOWS in the one-home catalog:
+      min(max_out, context - estimated_prompt - margin)); a call whose window leaves less than
+      MIN_USEFUL_OUTPUT is refused PRE-FLIGHT at zero spend with error_kind='context'; a provider
+      context-length 400 classifies 'context' (structural), never 'transient'. A rep with a voter
+      lost structurally is marked council_degraded ({models, reasons}) in the run output and receipt
+      — cross-family consensus was impossible by construction, so its zero facts are evidence about
+      the COUNCIL, never the document: remedies say re-route, and suppressions count apart from
+      barren. The marker derives identically from stored call records on the #716 replay (legacy
+      receipts backfill honestly). Uncatalogued models keep legacy behavior byte-identical.
+      Composition remedies (chunking, long-context routing, substitute voters, per-model ceiling
+      raises) are #80's to MEASURE, with the corpus population handed over: 35/20,927 usable reps
+      size past the 16,384 completion cap; 8 reps in 3 districts hit the 400 shape."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "P1: a 1,020-time rep against mistral-small clamps below 32,768 - prompt (the 400 shape is unrepresentable)"
+      - "P2: pre-flight refusal at zero spend when the window leaves < MIN_USEFUL_OUTPUT"
+      - "P3: a context-length 400 classifies error_kind='context'; other 400s stay transient"
+      - "P4: a structurally-lost voter marks the rep council_degraded, live and on replay of legacy receipts (Memphis 3004896917ca, Orange 0e1bf02c3ea6 — verified)"
+      - "P5: degraded remedies/suppressions distinguishable from barren in reason + explain"
+      - "P6: the truncation retry never exceeds the model's cap"
+      - "P7: uncatalogued models byte-identical (whole pre-existing suite untouched)"
+    tests:
+      - "tests/test_model_windows.py (catalog parity, clamp, pre-flight, classification, marker)"
+      - "tests/test_stage7_requests.py (degraded vs barren explain split)"
+    depends_on: [REQ-051, REQ-056, REQ-117]
+    notes: "MODEL_WINDOWS is checked in (fetched 2026-08-16), not fetched at runtime — sizing must
+      be deterministic and test-visible; refresh command in the module. The windows fetch falsified
+      MAX_TOKENS_CEILING's premise for 3 of 7 catalogued models."

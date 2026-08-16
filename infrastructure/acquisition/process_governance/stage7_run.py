@@ -370,9 +370,13 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
         for u in unresolved:
             u["rec_key"], u["source_file"] = rec_key, file
 
-        pd["reps"].append({"rec_key": rec_key, "file": file, "kind": kind, "council_id": cid,
-                           "judged": judged, "calls": calls,
-                           "accepted": accepted, "unresolved": unresolved})
+        rep_out = {"rec_key": rec_key, "file": file, "kind": kind, "council_id": cid,
+                   "judged": judged, "calls": calls,
+                   "accepted": accepted, "unresolved": unresolved}
+        degraded = council_degraded(calls)
+        if degraded:
+            rep_out["council_degraded"] = degraded       # #709: receipt-visible, ≠ barren
+        pd["reps"].append(rep_out)
         pd["accepted"].extend(accepted)
         pd["unresolved"].extend(unresolved)
         pd["n_reps"] += 1
@@ -389,6 +393,8 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
                 f"{' judged' if judged else ''} err={rep_errs} ${rep_cost:.4f}")
         if rep_trunc:
             line += f"  ⚠ {rep_trunc} TRUNCATED"
+        if degraded:
+            line += f"  ⚠ COUNCIL-DEGRADED ({', '.join(degraded['models'])})"
         print(line, flush=True)
 
         # #120 mode-stability early-exit (district-grain): once EVERY fillable target band's running
@@ -441,19 +447,45 @@ def _call(model: str, prompt_id: str, kind: str, content) -> "OR.CallResult":
 def _call_record(model: str, role: str, res, facts: list) -> dict:
     """One model call's audit row for the receipt/gate@7 — telemetry + what it read (no raw content).
     `finish_reason == "length"` marks a TRUNCATED reply (tail schools silently gone — the salvage
-    parser keeps only the head), surfaced through the telemetry rollup + progress line."""
-    return {"model": model, "role": role, "ok": res.ok, "error": res.error, "n_facts": len(facts),
+    parser keeps only the head), surfaced through the telemetry rollup + progress line.
+    `error_kind` rides along (#709): 'context' is the structural voter-dropout the degraded marker
+    reads."""
+    return {"model": model, "role": role, "ok": res.ok, "error": res.error,
+            "error_kind": res.error_kind, "n_facts": len(facts),
             "facts": facts, "prompt_tokens": res.prompt_tokens,
             "completion_tokens": res.completion_tokens, "cost_usd": res.cost_usd,
             "latency_ms": res.latency_ms, "finish_reason": res.finish_reason,
             "generation_id": res.generation_id, "truncation_retried": res.truncation_retried}
 
 
+def council_degraded(calls: list) -> "dict | None":
+    """#709 (REQ-174): was cross-family consensus STRUCTURALLY impossible on this rep — a VOTER
+    lost to a context-window refusal (pre-flight or provider 400)? Returns {models, reasons} or
+    None. Reads `error_kind == 'context'` when present and falls back to the error text's
+    context markers, so the #716 replay derives the SAME marker from receipts written before
+    error_kind existed — existing zero-yield receipts (Memphis 3004896917ca, Orange
+    0e1bf02c3ea6) become honestly distinguishable from barren at zero spend. A degraded rep's
+    zero facts are evidence about the COUNCIL, never about the document."""
+    hit = {}
+    for c in calls or []:
+        if c.get("role") != "voter" or c.get("ok"):
+            continue
+        err = (c.get("error") or "").lower()
+        if c.get("error_kind") == "context" or any(m in err for m in OR.CONTEXT_ERROR_MARKERS):
+            hit[c.get("model")] = c.get("error") or "context refusal"
+    if not hit:
+        return None
+    return {"models": sorted(hit), "reasons": hit}
+
+
 def _rollup_tel(reps: list) -> dict:
     """Sum per-call telemetry across a set of reps (per-district or global)."""
     t = {"calls": 0, "judge_calls": 0, "errors": 0, "rep_errors": 0, "truncated": 0,
-         "truncation_retries": 0, "prompt_tokens": 0, "completion_tokens": 0, "cost_usd": 0.0}
+         "truncation_retries": 0, "degraded_reps": 0,
+         "prompt_tokens": 0, "completion_tokens": 0, "cost_usd": 0.0}
     for rep in reps:
+        if rep.get("council_degraded"):   # #709: structurally un-votable, ≠ zero-yield
+            t["degraded_reps"] += 1
         if rep.get("error"):        # a rep that couldn't be read/processed at all (#173) — no calls
             t["errors"] += 1
             t["rep_errors"] += 1

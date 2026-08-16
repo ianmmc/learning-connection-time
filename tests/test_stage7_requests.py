@@ -232,7 +232,8 @@ def test_explain_reports_detect_time_suppression():
     reqs = RQ.detect_requests(res, claimed_bands=["elementary", "middle"],
                               real_bands={"elementary"}, explain=explain)
     assert reqs == []                                       # e covered; middle phantom; rep suppressed
-    assert explain == {"phantom_bands": ["middle"], "suppressed_barren_reps": 1}
+    assert explain == {"phantom_bands": ["middle"], "suppressed_barren_reps": 1,
+                       "suppressed_degraded_reps": 0}
 
 
 # --------------------------- #231: the request records its FULL send (round lineage) ---------------------------

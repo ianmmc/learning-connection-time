@@ -1,0 +1,1314 @@
+{
+  "handoff_hash": "df2b06f2f7a7",
+  "district": {
+    "district_id": "3904378",
+    "name": "Cleveland Municipal",
+    "reps": [
+      {
+        "rec_key": "3904378:5fb2f9df3f",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:30",
+                "end_time": "16:00",
+                "school_name": "WRIGHT ARTS",
+                "confidence": "high",
+                "evidence_quote": "1st Period           9:30-10:20            9:30-10:20             9:30-10:20\n                   7th Period           2:20-3:10             2:20-3:10              2:20-3:10\n                   8th Period           3:10-4:00             3:10-4:00              3:10-4:00",
+                "source_locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:30",
+                "end_time": "16:00",
+                "school_name": "WRIGHT ARTS",
+                "confidence": "high",
+                "evidence_quote": "1st Period           9:30-10:20            9:30-10:20             9:30-10:20\n                   7th Period           2:20-3:10             2:20-3:10              2:20-3:10\n                   8th Period           3:10-4:00             3:10-4:00              3:10-4:00",
+                "source_locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1238,
+            "completion_tokens": 490,
+            "cost_usd": 0.0003198,
+            "latency_ms": 2829,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305446-GoATiji3XP0ORG0EUkIg",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:30",
+                "end_time": "16:00",
+                "school_name": "Wright Arts",
+                "confidence": "high",
+                "evidence_quote": "1st Period 9:30-10:20",
+                "source_locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:30",
+                "end_time": "16:00",
+                "school_name": "Wright Arts",
+                "confidence": "high",
+                "evidence_quote": "1st Period 9:30-10:20",
+                "source_locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:30",
+                "end_time": "16:00",
+                "school_name": "Wright Arts",
+                "confidence": "high",
+                "evidence_quote": "1st Period 9:30-10:20",
+                "source_locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1271,
+            "completion_tokens": 396,
+            "cost_usd": 9.523e-05,
+            "latency_ms": 10154,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305449-pR9gsaCHoP0hp7aqnVJv",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "wright arts",
+            "start": "09:30",
+            "end": "16:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "1st Period           9:30-10:20            9:30-10:20             9:30-10:20\n                   7th Period           2:20-3:10             2:20-3:10              2:20-3:10\n                   8th Period           3:10-4:00             3:10-4:00              3:10-4:00",
+                "locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "1st Period 9:30-10:20",
+                "locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "3904378:5fb2f9df3f",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "wright arts",
+            "start": "09:30",
+            "end": "16:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "1st Period           9:30-10:20            9:30-10:20             9:30-10:20\n                   7th Period           2:20-3:10             2:20-3:10              2:20-3:10\n                   8th Period           3:10-4:00             3:10-4:00              3:10-4:00",
+                "locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "1st Period 9:30-10:20",
+                "locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "3904378:5fb2f9df3f",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3904378:6316d3e16b",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "07:42",
+                "end_time": "14:20",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "First                  7:42 a.m. \u2013 8:30 a.m.\nEighth                 1:22 p.m. \u2013 2:10 p.m.",
+                "source_locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1497,
+            "completion_tokens": 180,
+            "cost_usd": 0.0002217,
+            "latency_ms": 1067,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305459-FnvgrCcTsqVn4h0Npth9",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": false,
+            "error": "Error code: 429 - {'error': {'message': 'Provider returned error', 'code': 429, 'metadata': {'raw': 'mistralai/mistral-small-24b-instruct-2501 is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations', 'provider_name': 'DeepInfra', 'is_byok': False, 'provider_error_code': 'engine_overloaded', 'limit_source': 'upstream_provider_shared_pool', 'remedy_hint': 'Retry shortly, add your own provider key (https://openrouter.ai/settings/integrations), or route to another provider with provider routing: https://openrouter.ai/docs/features/provider-routing'}}, 'user_id': 'user_3F6G2u57EqCPewKcTHYL5cGYfne'}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 1704,
+            "finish_reason": null,
+            "generation_id": null,
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3904378:ecd98c21b2",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "11:50",
+                "school_name": "Daniel E. Morgan",
+                "confidence": "high",
+                "evidence_quote": "ast 7:40\u20148:30\n2nd \u20148:30\u20149:20\n3rd =. 9:20-10:10\n4th \u2014 10:10- 11:00\nsth 11:00-11:50",
+                "source_locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "11:50",
+                "end_time": "13:30",
+                "school_name": "Daniel E. Morgan",
+                "confidence": "high",
+                "evidence_quote": "6th \u201411:50\u201412:40 (L= 12:30)\n7th = 12:40\u2014 1:30 (L=1:20)",
+                "source_locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "13:40",
+                "end_time": "14:10",
+                "school_name": "Daniel E. Morgan",
+                "confidence": "high",
+                "evidence_quote": "8th 1:40-2:10",
+                "source_locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1141,
+            "completion_tokens": 542,
+            "cost_usd": 0.0003309,
+            "latency_ms": 2371,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305462-yfywfysewzltNcF5cPyw",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1135,
+            "completion_tokens": 12,
+            "cost_usd": 5.771e-05,
+            "latency_ms": 569,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305464-0Hp3wDFnZvcbWlhwbjJS",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:40",
+                "end_time": "14:10",
+                "school_name": "Daniel E. Morgan",
+                "confidence": "high",
+                "evidence_quote": "ast 7:40\u20148:30",
+                "source_locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1100,
+            "completion_tokens": 90,
+            "cost_usd": 0.0001512,
+            "latency_ms": 1937,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305465-L8phW2a76qMWmf8UrqNu",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "daniel e morgan",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:40"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "11:50"
+            },
+            "rec_key": "3904378:ecd98c21b2",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "daniel e morgan",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "11:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "13:30"
+            },
+            "rec_key": "3904378:ecd98c21b2",
+            "source_file": "tesseract_raster.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3904378:399eb500e7",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Rhodes School of Environmental Studies",
+                "confidence": "high",
+                "evidence_quote": "8-8:54 Class #1\n2:06-3:00 Class #6",
+                "source_locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Rhodes College & Career Academy",
+                "confidence": "high",
+                "evidence_quote": "8-8:54 Class #1\n2:05-3:00 Class #6",
+                "source_locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1220,
+            "completion_tokens": 326,
+            "cost_usd": 0.0002524,
+            "latency_ms": 1170,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305467-xp4mdAO7ip6fHaYuu57y",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Rhodes School of Environmental Studies",
+                "confidence": "high",
+                "evidence_quote": "Breakfast 8-8:54 Class #1",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Rhodes College & Career Academy",
+                "confidence": "high",
+                "evidence_quote": "Breakfast 8-8:54 Class #1",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1221,
+            "completion_tokens": 196,
+            "cost_usd": 7.673e-05,
+            "latency_ms": 5812,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305468-pWf85RHbyPfkGcE7R7cR",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "rhodes environmental studies",
+            "start": "08:00",
+            "end": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "390437805951",
+              "roster_school": "Rhodes School of Environmental Studies",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "8-8:54 Class #1\n2:06-3:00 Class #6",
+                "locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Breakfast 8-8:54 Class #1",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "3904378:399eb500e7",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "rhodes college career",
+            "start": "08:00",
+            "end": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "390437805947",
+              "roster_school": "Rhodes College and Career Academy",
+              "rostered_bands": [
+                "high",
+                "middle"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "8-8:54 Class #1\n2:05-3:00 Class #6",
+                "locus": "Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Breakfast 8-8:54 Class #1",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "3904378:399eb500e7",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3904378:806162d880",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:40",
+                "school_name": "X - Hannah Gibbons",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:40 a.m. - 3:40 p.m.",
+                "source_locus": "SCHOOL HOURS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1541,
+            "completion_tokens": 114,
+            "cost_usd": 0.0001997,
+            "latency_ms": 868,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305474-p1vb6Obwb4eXoEgfxPj8",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:40",
+                "school_name": "Hannah Gibbons",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:40 a.m. - 3:40 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1630,
+            "completion_tokens": 110,
+            "cost_usd": 9.03e-05,
+            "latency_ms": 2633,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305475-RNzjSdCO2Bs2l3CzVHJQ",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:40",
+                "end_time": "15:40",
+                "school_name": "X - Hannah Gibbons",
+                "confidence": "high",
+                "evidence_quote": "School Hours: 8:40 a.m. - 3:40 p.m.",
+                "source_locus": "SCHOOL HOURS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1518,
+            "completion_tokens": 103,
+            "cost_usd": 0.00019327,
+            "latency_ms": 41506,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305477-I3RUCmyw3qu2siXUOTqB",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "x hannah gibbons",
+            "start": "08:40",
+            "end": "15:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "evidence": {
+              "judge": {
+                "quote": "School Hours: 8:40 a.m. - 3:40 p.m.",
+                "locus": "SCHOOL HOURS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "3904378:806162d880",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "hannah gibbons nottingham",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "09:10"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:40"
+            },
+            "rec_key": "3904378:806162d880",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3904378:eb71b73264",
+        "file": "tesseract_screenshot.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "08:35",
+                "end_time": "15:05",
+                "school_name": "Cleveland School Of The Arts",
+                "confidence": "high",
+                "evidence_quote": "9 2:14 - 3:05",
+                "source_locus": "Daily Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2023-24",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1417,
+            "completion_tokens": 163,
+            "cost_usd": 0.0002069,
+            "latency_ms": 3281,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305521-BRi8dTiZ47NiXt6OLLHR",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:05",
+                "school_name": "Cleveland School Of The Arts",
+                "confidence": "high",
+                "evidence_quote": "1 8:35 - 9:29 9 2:14 - 3:05",
+                "source_locus": "CSA Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2023-24",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1450,
+            "completion_tokens": 165,
+            "cost_usd": 8.57e-05,
+            "latency_ms": 3964,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305522-YYq8RDTluaMiCLPVFBE1",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:05",
+                "school_name": "Cleveland School Of The Arts",
+                "confidence": "high",
+                "evidence_quote": "1 8:35 - 9:29",
+                "source_locus": "Daily Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2023-24",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1405,
+            "completion_tokens": 99,
+            "cost_usd": 0.00018387,
+            "latency_ms": 2178,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305526-WVCHEardJKOoASknRyxt",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "cleveland arts",
+            "start": "08:35",
+            "end": "15:05",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "390437804208",
+              "roster_school": "Cleveland School Of The Arts High School",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "evidence": {
+              "judge": {
+                "quote": "1 8:35 - 9:29",
+                "locus": "Daily Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2023-24"
+              }
+            },
+            "school_year": "2023-24",
+            "rec_key": "3904378:eb71b73264",
+            "source_file": "tesseract_screenshot.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3904378:a94e9f55c5",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Lincoln-West School Of Science & Health",
+                "confidence": "high",
+                "evidence_quote": "All classes begin at 8:35am.\nStudent Dismissal: 3:35pm",
+                "source_locus": "SCHOOL HOURS AND POLICIES",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1610,
+            "completion_tokens": 122,
+            "cost_usd": 0.0002098,
+            "latency_ms": 1552,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305528-AaGMJGXSTBYdkX8whIJV",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Lincoln-West School of Science and Health",
+                "confidence": "high",
+                "evidence_quote": "All classes begin at 8:35am...Student Dismissal: 3:35pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1656,
+            "completion_tokens": 152,
+            "cost_usd": 9.496e-05,
+            "latency_ms": 3971,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305530-bXtnHhSkZXdaOA62UXJa",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Lincoln-West School Of Science & Health",
+                "confidence": "high",
+                "evidence_quote": "All classes begin at 8:35am.",
+                "source_locus": "SCHOOL HOURS AND POLICIES",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1579,
+            "completion_tokens": 100,
+            "cost_usd": 0.00042738,
+            "latency_ms": 1836,
+            "finish_reason": "stop",
+            "generation_id": "gen-1785305534-k5U0RNYtA5nCFnQSH3pi",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "lincoln west science health",
+            "start": "08:35",
+            "end": "15:35",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "390437805888",
+              "roster_school": "Lincoln West School of Science & Health",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "All classes begin at 8:35am.\nStudent Dismissal: 3:35pm",
+                "locus": "SCHOOL HOURS AND POLICIES",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "All classes begin at 8:35am...Student Dismissal: 3:35pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "3904378:a94e9f55c5",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "wright arts",
+        "start": "09:30",
+        "end": "16:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "1st Period           9:30-10:20            9:30-10:20             9:30-10:20\n                   7th Period           2:20-3:10             2:20-3:10              2:20-3:10\n                   8th Period           3:10-4:00             3:10-4:00              3:10-4:00",
+            "locus": "Bell Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "1st Period 9:30-10:20",
+            "locus": "Bell Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "3904378:5fb2f9df3f",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "wright arts",
+        "start": "09:30",
+        "end": "16:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "1st Period           9:30-10:20            9:30-10:20             9:30-10:20\n                   7th Period           2:20-3:10             2:20-3:10              2:20-3:10\n                   8th Period           3:10-4:00             3:10-4:00              3:10-4:00",
+            "locus": "Bell Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "1st Period 9:30-10:20",
+            "locus": "Bell Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "3904378:5fb2f9df3f",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "rhodes environmental studies",
+        "start": "08:00",
+        "end": "15:00",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "390437805951",
+          "roster_school": "Rhodes School of Environmental Studies",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "8-8:54 Class #1\n2:06-3:00 Class #6",
+            "locus": "Bell Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Breakfast 8-8:54 Class #1",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "3904378:399eb500e7",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "rhodes college career",
+        "start": "08:00",
+        "end": "15:00",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "390437805947",
+          "roster_school": "Rhodes College and Career Academy",
+          "rostered_bands": [
+            "high",
+            "middle"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "8-8:54 Class #1\n2:05-3:00 Class #6",
+            "locus": "Bell Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Breakfast 8-8:54 Class #1",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "3904378:399eb500e7",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "x hannah gibbons",
+        "start": "08:40",
+        "end": "15:40",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "evidence": {
+          "judge": {
+            "quote": "School Hours: 8:40 a.m. - 3:40 p.m.",
+            "locus": "SCHOOL HOURS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "3904378:806162d880",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "cleveland arts",
+        "start": "08:35",
+        "end": "15:05",
+        "gross": 390,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "390437804208",
+          "roster_school": "Cleveland School Of The Arts High School",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "evidence": {
+          "judge": {
+            "quote": "1 8:35 - 9:29",
+            "locus": "Daily Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2023-24"
+          }
+        },
+        "school_year": "2023-24",
+        "rec_key": "3904378:eb71b73264",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "high",
+        "school": "lincoln west science health",
+        "start": "08:35",
+        "end": "15:35",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "390437805888",
+          "roster_school": "Lincoln West School of Science & Health",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "All classes begin at 8:35am.\nStudent Dismissal: 3:35pm",
+            "locus": "SCHOOL HOURS AND POLICIES",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "All classes begin at 8:35am...Student Dismissal: 3:35pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "3904378:a94e9f55c5",
+        "source_file": "page.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "daniel e morgan",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:40"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "11:50"
+        },
+        "rec_key": "3904378:ecd98c21b2",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "daniel e morgan",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "11:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "13:30"
+        },
+        "rec_key": "3904378:ecd98c21b2",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hannah gibbons nottingham",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "09:10"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:40"
+        },
+        "rec_key": "3904378:806162d880",
+        "source_file": "page.txt"
+      }
+    ],
+    "n_reps": 7,
+    "n_judged": 4,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 405,
+        "start_time": null,
+        "end_time": null,
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "wright arts",
+            "start_time": "09:30",
+            "end_time": "16:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "x hannah gibbons",
+            "start_time": "08:40",
+            "end_time": "15:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 390,
+        "start_time": "09:30",
+        "end_time": "16:00",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "wright arts",
+            "start_time": "09:30",
+            "end_time": "16:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 420,
+        "start_time": "08:00",
+        "end_time": "15:00",
+        "n_schools": 4,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "rhodes environmental studies",
+            "start_time": "08:00",
+            "end_time": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rhodes college career",
+            "start_time": "08:00",
+            "end_time": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "cleveland arts",
+            "start_time": "08:35",
+            "end_time": "15:05",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lincoln west science health",
+            "start_time": "08:35",
+            "end_time": "15:35",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "state": "OH",
+    "reaggregated_from": "extraction_df2b06f2f7a7_3904378_20260816T051850Z.json"
+  }
+}

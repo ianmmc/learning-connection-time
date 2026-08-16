@@ -33,6 +33,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from infrastructure.acquisition.common import paths
+from infrastructure.acquisition.common.model_families import usable_output
 
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 DEFAULT_TIMEOUT = 90               # with stream=True this bounds connect/read GAPS, not total duration
@@ -62,12 +63,46 @@ _TIMES_PER_SCHOOL = 2
 _SIZING_HEADROOM = 1.5             # grade-band splitting (a K-12 campus emits >1 row/school) + long names
 DEFAULT_TEMPERATURE = 0.1
 BILLING_AUTH_STATUS = {401, 402}   # key/balance — every later call fails identically → halt
+# #714 (REQ-174): per-model window accounting. The 2026-08-16 OpenRouter fetch falsified the
+# ceiling's "inside all six models' completion windows" premise for THREE catalogued models
+# (mistral-small: 16,384 completion AND 32,768 TOTAL context — so an at-ceiling request with any
+# real prompt was auto-400'd; the low-cost-text judge qwen3-235b: 16,384). Every call now clamps
+# to `usable_output(model, est_prompt)`; when even that leaves less than MIN_USEFUL_OUTPUT the
+# call is REFUSED pre-flight at zero spend (error_kind='context') — the spend-conservative
+# direction, and the honest one: a doomed call recorded as a clean zero was #709's silent
+# single-family degradation.
+MIN_USEFUL_OUTPUT = 1024
+# chars-per-token divisor for the pre-flight prompt ESTIMATE — deliberately low (overestimates
+# tokens) so the clamp errs toward smaller max_tokens, never toward a provider 400.
+_EST_CHARS_PER_TOKEN = 3
+# Provider 400 messages that mean the CONTEXT WINDOW was exceeded (structural, not transient):
+# OpenRouter/Mistral: "This endpoint's maximum context length is 32768 tokens. However, you
+# requested ...". Matched case-insensitively on stable substrings, not exact text.
+CONTEXT_ERROR_MARKERS = ("maximum context length", "context length", "context window")
 
 # App attribution (optional per the docs; identifies the app on openrouter.ai rankings/activity).
 ATTRIBUTION_HEADERS = {
     "HTTP-Referer": "https://github.com/ianmmc/learning-connection-time",
     "X-Title": "Learning Connection Time",
 }
+
+
+def _est_prompt_tokens(request_body: dict) -> int:
+    """Conservative prompt-size estimate for the pre-flight window clamp (#714): total message
+    content chars / 3 (real English runs ~3.5-4 chars/token, so this OVERestimates — the clamp
+    errs small, never toward a 400). Image parts (list content) count their textual pieces only;
+    the base64 payload is not completion-window-relevant the way text tokens are, and the image
+    models' windows dwarf the margin anyway."""
+    total = 0
+    for m in request_body.get("messages") or []:
+        c = m.get("content")
+        if isinstance(c, str):
+            total += len(c)
+        elif isinstance(c, list):                      # multimodal parts
+            for part in c:
+                if isinstance(part, dict) and isinstance(part.get("text"), str):
+                    total += len(part["text"])
+    return math.ceil(total / _EST_CHARS_PER_TOKEN)
 
 
 def size_max_tokens(n_times: Optional[int]) -> int:
@@ -102,7 +137,9 @@ class CallResult:
     cost_usd: Optional[float] = None
     latency_ms: int = 0
     error: Optional[str] = None
-    error_kind: Optional[str] = None   # 'transient' | 'other' (billing/auth raises instead)
+    error_kind: Optional[str] = None   # 'transient' | 'context' (structural: the model window
+    #                                    cannot take this request — #709/#714) | 'other'
+    #                                    (billing/auth raises instead)
     finish_reason: Optional[str] = None  # 'stop' | 'length' (TRUNCATED) | 'error' | ...
     generation_id: Optional[str] = None  # OpenRouter gen-... id (chunk.id) — the handle for
     #                                      GET /api/v1/generation (fallback cost/stats + support)
@@ -189,6 +226,19 @@ def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DE
     if not key:
         return CallResult(model=model, ok=False, error="no OPENROUTER_API_KEY", error_kind="other")
 
+    # #714 (REQ-174): per-model window accounting. Clamp the sized max_tokens to what THIS model
+    # can legally take given its estimated prompt; refuse pre-flight (zero spend) when the window
+    # leaves no useful room. `usable_output` is None for uncatalogued models (test fakes, a model
+    # mid-adoption): legacy behavior, byte-identical.
+    cap = usable_output(model, _est_prompt_tokens(request_body))
+    if cap is not None and cap < MIN_USEFUL_OUTPUT:
+        return CallResult(
+            model=model, ok=False, error_kind="context",
+            error=(f"pre-flight: window cannot take this request (usable output {cap} < "
+                   f"{MIN_USEFUL_OUTPUT} after prompt) — council-degraded, re-route (#714)"))
+    if cap is not None and max_tokens > cap:
+        max_tokens = cap
+
     client = _client(key, timeout)
 
     def _stream_once(mt: int) -> CallResult:
@@ -217,8 +267,14 @@ def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DE
             status = getattr(e, "status_code", None)
             if status in BILLING_AUTH_STATUS:
                 raise BillingAuthError(f"{model}: HTTP {status} — {e}") from e
+            # #709: a context-window 400 is STRUCTURAL — retrying the identical request fails
+            # identically, and a voter lost to it makes cross-family consensus impossible by
+            # construction. Classified apart from 'transient' so the rep can be marked degraded.
+            msg = str(e)
+            kind = ("context" if status == 400
+                    and any(mk in msg.lower() for mk in CONTEXT_ERROR_MARKERS) else "transient")
             return CallResult(model=model, ok=False, content="".join(parts), latency_ms=_ms(t0),
-                              error=str(e), error_kind="transient", generation_id=gen_id)
+                              error=msg, error_kind=kind, generation_id=gen_id)
         except (openai.APITimeoutError, openai.APIConnectionError) as e:
             return CallResult(model=model, ok=False, content="".join(parts), latency_ms=_ms(t0),
                               error=str(e), error_kind="transient", generation_id=gen_id)
@@ -244,12 +300,14 @@ def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DE
     # that ERRORED keeps the first attempt's salvaged head. Either branch: BOTH attempts were real
     # billed calls, so their cost/tokens/latency are SUMMED onto the returned result — the budget
     # governor (REQ-051) must see true spend, not just the surviving call's (#182).
-    # #187: the retry escalates to MAX_TOKENS_CEILING and only when the call was BELOW it — the same
-    # constant #180's sizing clamps to, so a rep pre-sized AT the ceiling that still truncates gets no
-    # (futile) retry: it exceeds the model window (>680 schools, never observed), and the ⚠ flag stays.
-    if not (res.truncated and max_tokens < MAX_TOKENS_CEILING):
+    # #187: the retry escalates to the ceiling and only when the call was BELOW it — a rep pre-sized
+    # AT the ceiling that still truncates gets no (futile) retry, and the ⚠ flag stays.
+    # #714: the retry target is per-model too — min(MAX_TOKENS_CEILING, cap). Without the clamp the
+    # retry itself would 400 on the very models whose windows caused the truncation.
+    retry_ceiling = min(MAX_TOKENS_CEILING, cap) if cap is not None else MAX_TOKENS_CEILING
+    if not (res.truncated and max_tokens < retry_ceiling):
         return res
-    retry = _stream_once(MAX_TOKENS_CEILING)
+    retry = _stream_once(retry_ceiling)
     keep = retry if retry.ok else res                 # recovered tail vs. salvaged head
     keep.truncation_retried = True
     keep.prompt_tokens = (res.prompt_tokens or 0) + (retry.prompt_tokens or 0)
