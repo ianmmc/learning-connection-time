@@ -47,15 +47,28 @@ def test_p1_lincoln_west_variants_share_one_identity():
     assert amb["rule"] == "ambiguous"
 
 
-def test_p2_leading_initial_artifact_resolves():
-    """'x hannah gibbons' (roster/extraction artifact) joins 'hannah gibbons' — and BOTH need a
-    second rung after the initial-strip because the roster name carries '-Nottingham'. The
-    resolver only merges the GROUP; the 30-min start disagreement inside it stays the council's
-    to adjudicate."""
+def test_p2_leading_initial_composes_near_exact_only():
+    """#790 (review round): initial-strip + subset was one guess stacked on another — against a
+    stale roster missing the true 'J Edgar Hoover', 'j edgar hoover' confidently bound to an
+    unrelated 'Edgar Hoover Annex'. The composite now allows near-exact rules only, so:
+    'x hannah gibbons' lands roster_unmatched (safe, visible, still counted — the one corpus
+    case the composite recovered), while the un-prefixed 'hannah gibbons' still resolves."""
     k1, i1 = resolve_school_identity("x hannah gibbons", "elementary", CLEVELAND)
-    k2, _ = resolve_school_identity("hannah gibbons", "elementary", CLEVELAND)
-    assert k1 == k2 == "hannah gibbons nottingham"
-    assert i1["rule"] == "leading_initial+token_subset"
+    assert (k1, i1) == ("x hannah gibbons", None)
+    k2, i2 = resolve_school_identity("hannah gibbons", "elementary", CLEVELAND)
+    assert k2 == "hannah gibbons nottingham" and i2["rule"] == "token_subset"
+    # the exact composite still works: initial-strip to a key the roster holds verbatim
+    naive = {"elementary": recs(("Hannah Gibbons School", "E9"))}
+    k3, i3 = resolve_school_identity("x hannah gibbons", "elementary", naive)
+    assert k3 == "hannah gibbons" and i3["rule"] == "leading_initial"
+
+
+def test_p2_stale_roster_never_binds_via_initial_strip():
+    """#790's filed scenario verbatim: the true school absent, an unrelated same-band school
+    containing the stripped tokens present — must resolve UNMATCHED, never to the wrong id."""
+    stale = {"high": recs(("Edgar Hoover Annex", "WRONG"))}
+    key, info = resolve_school_identity("j edgar hoover", "high", stale)
+    assert key == "j edgar hoover" and info is None
 
 
 def test_p6_ambiguity_keeps_the_split():

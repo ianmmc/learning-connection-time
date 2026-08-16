@@ -3130,9 +3130,18 @@ async def aggregate_slot_assign(payload: dict):
                                          f"slot for {did} — refresh the view and re-pick")
     key = norm_school(school)
     with gdb.session_scope() as con:
-        con.execute(text("DELETE FROM slot_assignment WHERE district_id = :d AND band = :b "
-                         "AND roster_school_id = :s AND norm_school_fact = :n"),
-                    {"d": did, "b": band, "s": slot_id, "n": key})
+        # #783: the replace-on-repost DELETE matches stored rows through the CURRENT normalizer
+        # (school_match self-healing contract), never raw SQL equality — a stored key written
+        # under an older stopword list would otherwise never match: the DELETE hits 0 rows and
+        # the INSERT mints a silent duplicate disposition.
+        stale = [r[0] for r in con.execute(
+            text("SELECT assignment_id, norm_school_fact FROM slot_assignment "
+                 "WHERE district_id = :d AND band = :b AND roster_school_id = :s"),
+            {"d": did, "b": band, "s": slot_id})
+            if norm_school(r[1]) == key]
+        if stale:
+            con.execute(text("DELETE FROM slot_assignment WHERE assignment_id = ANY(:ids)"),
+                        {"ids": stale})
         con.execute(text(
             "INSERT INTO slot_assignment (district_id, band, roster_school_id, norm_school_fact, "
             "school, disposition, reason, actor, created_at) "
@@ -3157,9 +3166,17 @@ async def aggregate_slot_assign_remove(payload: dict):
     if not did or not school or band not in AGG.BANDS:
         raise HTTPException(400, "district_id, band and school are required")
     with gdb.session_scope() as con:
-        n = con.execute(text("DELETE FROM slot_assignment WHERE district_id = :d AND band = :b "
-                             "AND roster_school_id = :s AND norm_school_fact = :n"),
-                        {"d": did, "b": band, "s": slot_id, "n": norm_school(school)}).rowcount
+        # #783: match through the CURRENT normalizer (see slot-assign above) — raw SQL equality
+        # 404s on any row whose stored key predates a stopword change, making the disposition
+        # unretirable from the console.
+        key = norm_school(school)
+        ids = [r[0] for r in con.execute(
+            text("SELECT assignment_id, norm_school_fact FROM slot_assignment "
+                 "WHERE district_id = :d AND band = :b AND roster_school_id = :s"),
+            {"d": did, "b": band, "s": slot_id})
+            if norm_school(r[1]) == key]
+        n = con.execute(text("DELETE FROM slot_assignment WHERE assignment_id = ANY(:ids)"),
+                        {"ids": ids}).rowcount if ids else 0
         if not n:
             raise HTTPException(404, f"no slot disposition for {school!r} in {band} of {did}")
         con.commit()   # persist BEFORE the backup (review): a backup failure must not roll back the decision

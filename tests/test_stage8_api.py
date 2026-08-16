@@ -343,10 +343,11 @@ def test_slot_assign_validation():
 
 
 def test_slot_assign_upserts_and_backs_up(monkeypatch):
-    # DELETE (replace-on-repost) -> INSERT -> backup SELECT (quarantined under pytest) -> commit.
-    # CCD-absent (roster None) skips the live-slot check — best-effort, never blocks.
+    # SELECT (find replaceable rows through the CURRENT normalizer, #783) -> INSERT -> backup
+    # SELECT (quarantined under pytest) -> commit. CCD-absent (roster None) skips the live-slot
+    # check — best-effort, never blocks.
     monkeypatch.setattr(SRV.SS_SAMPLING, "band_rosters_for_district", lambda d: None)
-    _use(monkeypatch, _Con([_Result(), _Result(), _Result(rows=[])]))
+    _use(monkeypatch, _Con([_Result(rows=[]), _Result(), _Result(rows=[])]))
     r = client.post("/api/aggregate/slot-assign",
                     json={"district_id": "0100810", "band": "elementary", "school": "Washington",
                           "roster_school_id": "010081000001", "disposition": "assign",
@@ -364,7 +365,7 @@ def test_slot_assign_rejects_a_slot_id_not_in_the_live_roster(monkeypatch):
          "gslo": "KG", "gshi": "05", "level": "Elementary", "effective_band": "elementary",
          "source": "level_clean"}]}, "_year": "2024_25"}
     monkeypatch.setattr(SRV.SS_SAMPLING, "band_rosters_for_district", lambda d: rosters)
-    _use(monkeypatch, _Con([_Result(), _Result(), _Result(rows=[])]))
+    _use(monkeypatch, _Con([_Result(rows=[]), _Result(), _Result(rows=[])]))
     bad = client.post("/api/aggregate/slot-assign",
                       json={"district_id": "0100810", "band": "elementary", "school": "Washington",
                             "roster_school_id": "999NOTASLOT", "disposition": "assign",
@@ -378,7 +379,7 @@ def test_slot_assign_rejects_a_slot_id_not_in_the_live_roster(monkeypatch):
 
 
 def test_slot_assign_remove_404s_when_absent(monkeypatch):
-    _use(monkeypatch, _Con([_Result(rowcount=0)]))
+    _use(monkeypatch, _Con([_Result(rows=[])]))   # SELECT finds no candidate rows -> 404
     r = client.post("/api/aggregate/slot-assign/remove",
                     json={"district_id": "D1", "band": "elementary", "school": "Washington",
                           "roster_school_id": "001"})
@@ -386,9 +387,34 @@ def test_slot_assign_remove_404s_when_absent(monkeypatch):
 
 
 def test_slot_assign_remove_deletes_and_backs_up(monkeypatch):
-    _use(monkeypatch, _Con([_Result(rowcount=1), _Result(rows=[])]))
+    _use(monkeypatch, _Con([
+        _Result(rows=[{"assignment_id": 7, "norm_school_fact": "washington"}]),   # SELECT
+        _Result(rowcount=1),                                                       # DELETE by id
+        _Result(rows=[])]))                                                        # backup
     r = client.post("/api/aggregate/slot-assign/remove",
                     json={"district_id": "D1", "band": "elementary", "school": "Washington",
+                          "roster_school_id": "001"})
+    assert r.status_code == 200 and r.json()["ok"]
+
+
+def test_783_stale_raw_key_still_replaced_and_removable(monkeypatch):
+    """#783 (review round): a row persisted under an OLDER normalizer ('lewis and clark') must
+    still be found by the current key ('lewis clark') — the upsert replaces it instead of
+    minting a duplicate, and the remove succeeds instead of 404ing."""
+    monkeypatch.setattr(SRV.SS_SAMPLING, "band_rosters_for_district", lambda d: None)
+    stale = {"assignment_id": 3, "norm_school_fact": "lewis and clark"}
+    con = _Con([_Result(rows=[stale]),      # SELECT: the stale row, matched via re-norm
+                _Result(rowcount=1),         # DELETE by assignment_id
+                _Result(),                   # INSERT
+                _Result(rows=[])])           # backup
+    _use(monkeypatch, con)
+    r = client.post("/api/aggregate/slot-assign",
+                    json={"district_id": "D1", "band": "elementary", "school": "Lewis Clark",
+                          "roster_school_id": "001", "disposition": "assign", "reason": "x"})
+    assert r.status_code == 200 and r.json()["norm_school_fact"] == "lewis clark"
+    _use(monkeypatch, _Con([_Result(rows=[stale]), _Result(rowcount=1), _Result(rows=[])]))
+    r = client.post("/api/aggregate/slot-assign/remove",
+                    json={"district_id": "D1", "band": "elementary", "school": "Lewis Clark",
                           "roster_school_id": "001"})
     assert r.status_code == 200 and r.json()["ok"]
 

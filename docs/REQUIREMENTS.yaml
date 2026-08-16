@@ -4551,4 +4551,9 @@ requirements:
     depends_on: [REQ-056, REQ-117]
     notes: "The resolver's reverse rule (roster tokens ⊂ extracted tokens) is deliberately ABSENT —
       measured value-negative ('regular day bell schedule' -> Bell Middle). Bare prek/pk are
-      excluded-grade markers, not grade spans: digits required before a span token strips."
+      excluded-grade markers, not grade spans: digits required before a span token strips.
+      Review round 2026-08-16 (#777-#791, PR #774): a strict-degenerate key never resolves (an
+      acronym coincidence must not bypass #245/#707); id-less roster entries count for ambiguity
+      but can never be the winner; leading-initial composes with near-exact rules only; the
+      exclusion screen reads the RAW extracted names with phrase-forms for once-bare words and
+      imports FACILITY_NAME_TOKENS (one source of truth)."

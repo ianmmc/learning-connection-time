@@ -852,10 +852,10 @@ class TestRosterAnchoredConsensus:
 
     def test_p2_merged_group_still_needs_consensus(self):
         """Identity resolution merges the GROUP, never the disagreement: variant names with a
-        30-min start gap (the real x-hannah-gibbons shape) stay unresolved without a judge —
-        the resolver must not manufacture agreement."""
-        ctx = {"roster_recs": {"elementary": _recs(
-            ("Hannah Gibbons-Nottingham Elementary School", "E1"))}}
+        30-min start gap stay unresolved without a judge — the resolver must not manufacture
+        agreement. (Post-#790 the artifact form uses the naive-roster exact composite; the
+        stacked-guess composite is separately pinned OFF in test_school_identity.py.)"""
+        ctx = {"roster_recs": {"elementary": _recs(("Hannah Gibbons School", "E1"))}}
         rows = {GEM: [{"grade_level": "elementary", "start_time": "08:40", "end_time": "15:40",
                        "school_name": "X Hannah Gibbons"}],
                 MIS: [{"grade_level": "elementary", "start_time": "09:10", "end_time": "15:40",
@@ -906,7 +906,8 @@ class TestRosterAnchoredConsensus:
         assert not acc and len(unres) == 1
         assert unres[0]["reason"] == "band_disagreement"
         assert unres[0]["identity"]["claimed_bands"] == ["high", "middle"]
-        assert set(unres[0]["starts"]) == {GEM, MIS}
+        # #785: votes keyed (model [band]) so a model's claims in two bands both survive
+        assert set(unres[0]["starts"]) == {f"{GEM} [middle]", f"{MIS} [high]"}
 
     def test_p5_level_collapse_never_band_merges(self):
         """THE pin at the consensus level: 'apopka' in two bands = two REAL schools (distinct
@@ -993,3 +994,146 @@ class TestRosterAnchoredConsensus:
         assert len(acc) == 1 and not unres
         assert acc[0]["method"] == "judge"
         assert acc[0]["identity"]["school_id"] == "H1"
+
+
+class TestReviewRound777to791:
+    """2026-08-16 review round of PR #774 — one pin per confirmed finding."""
+
+    def test_777_degenerate_key_never_resolves_via_acronym(self):
+        """Bare 'HS' (a band label) must not mint Hill School's identity by acronym coincidence
+        — it routes through the #245/#707 degenerate machinery like any unspecific extraction."""
+        ctx = {"roster_recs": {"high": _recs(("Hill School", "H1"),
+                                             ("Someplace Regional High School", "H2"))}}
+        rows = {GEM: [{"grade_level": "high", "start_time": "08:00", "end_time": "15:00",
+                       "school_name": "HS"}],
+                MIS: [{"grade_level": "high", "start_time": "08:00", "end_time": "15:00",
+                       "school_name": "HS"}]}
+        acc, unres = A.consensus_school_facts(rows, context=ctx)
+        assert not acc and len(unres) == 1
+        assert unres[0]["reason"] == "degenerate_school_name"
+
+    def test_778_no_context_multiband_stays_byte_identical(self):
+        """The #721 sweep is roster-gated: without context, same-name/different-band singletons
+        stay TWO independent no-consensus rows — the pre-PR shape council_lab depends on."""
+        rows = {GEM: [{"grade_level": "middle", "start_time": "08:00", "end_time": "15:00",
+                       "school_name": "Mystery Campus"}],
+                MIS: [{"grade_level": "high", "start_time": "08:00", "end_time": "15:00",
+                       "school_name": "Mystery Campus"}]}
+        acc, unres = A.consensus_school_facts(rows)
+        assert not acc and len(unres) == 2
+        assert all(u.get("reason", "disagree") == "disagree" for u in
+                   [{**u} for u in unres for _ in [0]] ) or all("identity" not in u for u in unres)
+        assert all("identity" not in u for u in unres)
+
+    def test_779_unanimous_wrong_band_folds_to_roster_band(self):
+        """A unanimous wrong-band misread of a single-band-rostered school is adjudicated, not
+        silently accepted with a self-contradictory identity."""
+        ctx = {"roster_recs": {"middle": _recs(("Triad Middle School", "T1"))}}
+        rows = {GEM: [{"grade_level": "high", "start_time": "07:30", "end_time": "14:25",
+                       "school_name": "Triad Middle School"}],
+                MIS: [{"grade_level": "high", "start_time": "07:30", "end_time": "14:25",
+                       "school_name": "Triad Middle"}]}
+        acc, unres = A.consensus_school_facts(rows, context=ctx)
+        assert not unres and len(acc) == 1
+        assert acc[0]["band"] == "middle"
+        assert acc[0]["identity"]["band_adjudication"] == "roster_band"
+
+    def test_779_unanimous_offroster_band_on_multiband_school_surfaces(self):
+        """Wrong band against a MULTIband roster has no deterministic destination: explicit
+        band_disagreement carrying both claimed and rostered bands, never a guess."""
+        ctx = {"roster_recs": {"elementary": _recs(("Gerlach K-12 School", "G1")),
+                               "middle": _recs(("Gerlach K-12 School", "G1"))}}
+        rows = {GEM: [{"grade_level": "high", "start_time": "08:00", "end_time": "15:30",
+                       "school_name": "Gerlach K-12"}],
+                MIS: [{"grade_level": "high", "start_time": "08:00", "end_time": "15:30",
+                       "school_name": "Gerlach K-12"}]}
+        acc, unres = A.consensus_school_facts(rows, context=ctx)
+        assert not acc and len(unres) == 1
+        assert unres[0]["reason"] == "band_disagreement"
+        assert unres[0]["identity"]["rostered_bands"] == ["elementary", "middle"]
+        assert unres[0]["identity"]["claimed_bands"] == ["high"]
+
+    def test_780_multiband_bands_keep_their_own_times(self):
+        """A multiband campus whose bands genuinely differ keeps each band's own votes — pooled
+        cross-band votes are BACKFILL for absent models, never an overwrite."""
+        ctx = {"roster_recs": {b: _recs(("Gerlach K-12 School", "G1"))
+                               for b in ("middle", "high")}}
+        rows = {GEM: [{"grade_level": "middle", "start_time": "08:00", "end_time": "15:30",
+                       "school_name": "Gerlach K-12"},
+                      {"grade_level": "high", "start_time": "08:05", "end_time": "15:35",
+                       "school_name": "Gerlach K-12"}],
+                MIS: [{"grade_level": "middle", "start_time": "08:00", "end_time": "15:30",
+                       "school_name": "Gerlach K-12"},
+                      {"grade_level": "high", "start_time": "08:05", "end_time": "15:35",
+                       "school_name": "Gerlach K-12"}]}
+        acc, unres = A.consensus_school_facts(rows, context=ctx)
+        assert not unres
+        by_band = {f["band"]: f for f in acc}
+        assert by_band["middle"]["start"] == "08:00" and by_band["middle"]["end"] == "15:30"
+        assert by_band["high"]["start"] == "08:05" and by_band["high"]["end"] == "15:35"
+
+    def test_780_crossband_backfill_still_meets(self):
+        """The original Gerlach shape still works: each voter in a different band, backfill
+        lets both bands reach cross-family consensus."""
+        ctx = {"roster_recs": {b: _recs(("Gerlach K-12 School", "G1"))
+                               for b in ("middle", "high")}}
+        rows = {GEM: [{"grade_level": "middle", "start_time": "08:00", "end_time": "15:30",
+                       "school_name": "Gerlach K-12"}],
+                MIS: [{"grade_level": "high", "start_time": "08:00", "end_time": "15:30",
+                       "school_name": "Gerlach K-12"}]}
+        acc, unres = A.consensus_school_facts(rows, context=ctx)
+        assert not unres and sorted(f["band"] for f in acc) == ["high", "middle"]
+
+    def test_781_judge_found_under_pre_adjudication_key(self):
+        """A judge consulted under the WRONG (pre-adjudication) band still rescues the fact
+        after the fold moves the group's key."""
+        ctx = {"roster_recs": {"middle": _recs(("Triad Middle School", "T1"))}}
+        rows = {GEM: [{"grade_level": "high", "start_time": "07:30", "end_time": "14:25",
+                       "school_name": "Triad Middle School"}],
+                MIS: [{"grade_level": "high", "start_time": "07:55", "end_time": "14:25",
+                       "school_name": "Triad Middle School"}]}
+        judge = {"anthropic/claude-3-5-haiku": [
+            {"grade_level": "high", "start_time": "07:30", "end_time": "14:25",
+             "school_name": "Triad Middle School"}]}
+        acc, unres = A.consensus_school_facts(rows, judge_rows=judge, context=ctx)
+        assert not unres and len(acc) == 1
+        assert acc[0]["band"] == "middle" and acc[0]["method"] == "judge"
+
+    def test_784_ambiguous_crossband_keeps_candidates(self):
+        """An ambiguous name claimed across bands is a NAME problem, not a band problem: the
+        sweep leaves it alone and each row keeps its candidate list."""
+        ctx = {"roster_recs": {
+            "high": _recs(("Lincoln West School of Science & Health", "H1"),
+                          ("Lincoln West School Of Global Studies", "H2"))}}
+        rows = {GEM: [{"grade_level": "high", "start_time": "08:35", "end_time": "15:35",
+                       "school_name": "Lincoln West"}],
+                MIS: [{"grade_level": "middle", "start_time": "08:35", "end_time": "15:35",
+                       "school_name": "Lincoln West"}]}
+        acc, unres = A.consensus_school_facts(rows, context=ctx)
+        assert not any(u.get("reason") == "band_disagreement" for u in unres)
+
+    def test_789_thematic_names_not_screened(self):
+        """'Evening Star Elementary' is an ordinary name, not an evening program — bare
+        exclusion words now require a program-type phrase."""
+        ctx = {"roster_recs": {"elementary": _recs(("Some Other School", "S1"))}}
+        for name in ("Evening Star Elementary", "Cyber Academy of Learning",
+                     "Adulthood Preparatory Academy"):
+            rows = {GEM: [{"grade_level": "elementary", "start_time": "08:00",
+                           "end_time": "14:30", "school_name": name}],
+                    MIS: [{"grade_level": "elementary", "start_time": "08:00",
+                           "end_time": "14:30", "school_name": name}]}
+            acc, unres = A.consensus_school_facts(rows, context=ctx)
+            assert len(acc) == 1 and not unres, name
+            assert acc[0]["identity"] == {"roster": "unmatched"}, name
+
+    def test_789_true_excluded_types_still_screen(self):
+        """The phrase forms and the SHARED facility list still catch the real classes."""
+        ctx = {"roster_recs": {"elementary": _recs(("Some Other School", "S1"))}}
+        for name in ("Katherine Johnson Enriched Virtual Academy", "Bucks Hill PreK",
+                     "Central Adult Education Center", "County Juvenile Detention School"):
+            rows = {GEM: [{"grade_level": "elementary", "start_time": "08:00",
+                           "end_time": "14:30", "school_name": name}],
+                    MIS: [{"grade_level": "elementary", "start_time": "08:00",
+                           "end_time": "14:30", "school_name": name}]}
+            acc, unres = A.consensus_school_facts(rows, context=ctx)
+            assert not acc and unres[0]["reason"] == "excluded_school_type", name

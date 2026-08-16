@@ -164,12 +164,17 @@ place (with tests) rather than deleted; treat them as legacy unless/until they'r
   inherits it). A uniquely-resolved name groups under the ROSTER school's norm key (variant
   spellings meet: acronyms, grade-span suffixes, leading-initial artifacts, token subsets);
   2+ candidates = ambiguous, kept split and marked (never a guess — #681). After grouping, a
-  school_id claimed under 2+ bands is band-adjudicated by roster placement: a multiband campus
-  pools its cross-band votes and emits one fact per claimed-and-rostered band
-  (`band_adjudication: roster_multiband`); a single-band-rostered school's wrong-band claim folds
-  into the roster band (`roster_band`); an UNMATCHED name's cross-band singletons collapse to one
-  explicit `band_disagreement` unresolved row (strict-degenerate names are exempt — they belong
-  to the #245/#707 path). At emission, an unmatched name is screened for excluded school types
+  school_id claimed under 2+ bands — or unanimously under a band the roster says it does not
+  serve (#779) — is band-adjudicated by roster placement: a multiband campus keeps each
+  claimed-and-rostered band, each band's OWN votes winning and cross-band votes serving only as
+  backfill for absent models (#780 — a campus whose bands genuinely differ keeps each band's own
+  times); a single-band-rostered school's wrong-band claim folds into the roster band
+  (`roster_band`; the judge tiebreak still finds answers filed under the pre-adjudication key,
+  #781); a wrong-band claim against a multiband roster surfaces as `band_disagreement` (no
+  deterministic destination). An UNMATCHED name's cross-band singletons collapse to one explicit
+  `band_disagreement` unresolved row, votes keyed `model [band]` (#785); strict-degenerate names
+  (#245/#707's class) and ambiguous resolutions (#784 — a NAME problem carrying its candidate
+  list) are exempt. At emission, an unmatched name is screened for excluded school types
   (→ `unresolved` reason `excluded_school_type`) or survives marked `{"roster": "unmatched"}`.
   All marking persists via `school_fact.identity_json` (v5 additive column) for gate@8; the
   entire mechanism is context-gated — a no-roster caller (council lab) is byte-identical to

@@ -242,6 +242,28 @@ names (`junior high school`) that belong to the #245/#707 path — now exempt. D
 trackers: the gate@8 UI badge for identity_json (#775, Tranche D) and the URL-validated slug
 marking (rung 5b, #776).
 
+**Phase 5 (2026-08-16) — Ian's max-effort review round: #777–#791, all 15 confirmed and fixed
+before merge.** Three critical: a strict-degenerate key ('HS') could mint a specific school via
+acronym coincidence (#777 — degenerate keys now never resolve); a UNANIMOUS wrong-band misread
+was silently accepted with a self-contradictory identity (#779 — adjudication now also fires on
+single-band off-roster claims, surfacing multiband-roster cases as band_disagreement); multiband
+adjudication shared ONE pooled-votes object across bands, cross-contaminating times/evidence
+(#780 — own-band votes win, cross-band is backfill only). Majors: the #721 sweep wasn't
+context-gated, breaking the P9 contract (#778); the judge tiebreak lost answers filed under
+pre-adjudication keys (#781); the orphan-surfacing block and BOTH live slot-assign endpoints
+still compared raw persisted keys (#782/#783 — the "guard wired into one member of a set" class,
+again: the intake fix landed while three sibling readers stayed raw); id-less roster entries
+were invisible to ambiguity detection (#786); the exclusion screen's bare words over-matched
+('Evening Star Elementary') and hand-copied a subset of FACILITY_NAME_TOKENS (#789 — phrase
+forms + the imported shared list, applied to RAW names since the norm key strips
+'academy'/'school'); leading-initial+subset stacked two guesses (#790 — near-exact-only now;
+costs the one x-hannah corpus case, which lands roster_unmatched). #787's suggested fix ('/'
+→ space in _base) would have broken the documented ES/ECC collision — fixed instead by
+stopwording sr/jrsr (0 roster collisions, measured). Minors #784/#785/#788/#791 all fixed.
+Divergence audit: 6 of yesterday's 64 persisted replays change under the review-round code, each
+explained by an intended fix (2 rescues, 2 #779 surfacings, 1 #789 un-screening, 1 #790
+regression) — re-replaying those 6 post-merge syncs the DB.
+
 **Phase 4 (2026-08-16) — the replays run for REAL (Ian authorized; PR #774 open).** All 64
 delta receipts persisted via the reaggregate CLI: extraction rows 9166–9229, `cost_usd` 0 total,
 1,523 new `school_fact` rows (1,186 carrying `identity_json`) — **DB-verified, not report-trusted**

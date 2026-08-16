@@ -22,12 +22,17 @@ import unicodedata
 # contamination flag in the #237 detector).
 _GENERIC = re.compile(
     r"\b(elementary|middle|high|intermediate|school|schools|jr|junior|senior|academy|the|of|at"
-    r"|es|ms|hs|and)\b")
+    r"|es|ms|hs|and|sr|jrsr)\b")
 # 'and' added 2026-08-15 (#693): '&' was already punctuation-dropped by _base, so the SAME
 # conjunction normalized two ways by typography — 'Science & Health' == 'science health' but
 # 'Science and Health' != it, the exact Cleveland false-split. Measured safe: 0 collisions across
 # all 83 corpus districts' rosters (findings report §9); persisted keys self-heal by re-normalizing
 # through the CURRENT function (module docstring).
+# 'sr'/'jrsr' added 2026-08-16 (#787, same asymmetry class): _base DELETES '/' (that deletion is
+# load-bearing — the documented 'Brick Mill ES/ECC' == 'brick mill esecc' collision rides on it),
+# so 'X Jr/Sr High' fuses to 'x jrsr' while 'X Jr Sr High' word-splits to 'x sr' ('jr' was a
+# stopword, 'sr' was not) — one school, two keys. Both fused and split forms are now stopworded.
+# Measured safe: 0 sr/jrsr collisions across the same 83 rosters.
 
 # DISTRICT-TYPE qualifiers (#236) — stripped ONLY as a TRAILING run that ENDS IN A HARD DISTRICT
 # MARKER (district / ISD / USD / … / SD), never mid-name and never bare. The #236 double-counts are a
@@ -103,13 +108,14 @@ def norm_school(name) -> str:
 # detects #721's multiband campuses and wrong-band claims).
 # ---------------------------------------------------------------------------------------------
 
-# Grade-span tokens glued onto extracted names ('kinston k12', 'redington sr jrsr') — these never
-# distinguish two schools within one band, unlike bare numbers ("PS 121" vs "PS 122"), so ONLY
-# these exact shapes are stripped, never digit tokens generally. DIGITS ARE REQUIRED on the
-# k-forms: bare 'prek'/'pk' is an excluded-GRADE marker, not a span — 'bucks hill prek' is
-# plausibly a preschool program whose schedule must NOT fuse into Bucks Hill Elementary; it stays
-# unmatched so the rung-4 exclusion screen adjudicates it (2026-08-15 corpus validation).
-_GRADE_SPAN = re.compile(r"\b(?:pre|p)?k\s*\d{1,2}\b|\bjr\s*sr\b"
+# Grade-span tokens glued onto extracted names ('kinston k12') — these never distinguish two
+# schools within one band, unlike bare numbers ("PS 121" vs "PS 122"), so ONLY these exact shapes
+# are stripped, never digit tokens generally. DIGITS ARE REQUIRED on the k-forms: bare 'prek'/'pk'
+# is an excluded-GRADE marker, not a span — 'bucks hill prek' is plausibly a preschool program
+# whose schedule must NOT fuse into Bucks Hill Elementary; it stays unmatched so the rung-4
+# exclusion screen adjudicates it (2026-08-15 corpus validation). jr/sr moved to _GENERIC (#787):
+# norm_school strips them before the resolver ever sees a key, so a span-alternative here was dead.
+_GRADE_SPAN = re.compile(r"\b(?:pre|p)?k\s*\d{1,2}\b"
                          r"|\b\d{1,2}\s*(?:th)?\s+grades?\b")
 
 
@@ -153,28 +159,42 @@ def resolve_school_identity(name, band, roster_recs):
     nkey = norm_school(name)
     if not nkey or not roster_recs:
         return nkey, None
+    # #777: a strict-DEGENERATE key ('hs', 'the schools' — all type/referent words) must never
+    # resolve: 'HS' is a band label, not a name, and an acronym coincidence ('Hill School' -> hs)
+    # would mint a specific school_id from an unspecific extraction, bypassing the #245 guard and
+    # #707's roster_unique/band_referent machinery, which own exactly this class.
+    if not norm_school_strict(name):
+        return nkey, None
 
     # Index the roster once per call: per-band and cross-band views, each key -> {school_id}.
+    # #786: an id-LESS roster entry (blank NCESSCH — newly-opened/closing CCD rows) indexes under
+    # a name-based sentinel: it still COUNTS as a candidate for "is this name unique" (dropping it
+    # turned a real 2-candidate ambiguity into a false-confident match), but a sentinel can never
+    # be the resolved winner — no identity without an id.
+    def _sid_of(r):
+        return r.get("school_id") or f"_noid:{norm_school(r.get('name'))}"
+
     def _index(recs):
         by_norm, by_acr, toks = {}, {}, []
         for r in recs:
             rk = norm_school(r.get("name"))
-            if not rk or not r.get("school_id"):
+            if not rk:
                 continue
-            by_norm.setdefault(rk, set()).add(r["school_id"])
-            by_norm.setdefault(_strip_grade_span(rk), set()).add(r["school_id"])
+            sid = _sid_of(r)
+            by_norm.setdefault(rk, set()).add(sid)
+            by_norm.setdefault(_strip_grade_span(rk), set()).add(sid)
             for a in _acronyms(r.get("name")):
-                by_acr.setdefault(a, set()).add(r["school_id"])
-            toks.append((frozenset(rk.split()), r["school_id"]))
+                by_acr.setdefault(a, set()).add(sid)
+            toks.append((frozenset(rk.split()), sid))
         return by_norm, by_acr, toks
 
-    id_meta = {}                     # school_id -> (raw name, [bands])
+    id_meta = {}                     # sid (real or sentinel) -> (raw name, [bands])
     for b, recs in roster_recs.items():
         for r in recs or []:
-            raw, sid = r.get("name"), r.get("school_id")
-            if not sid:
+            raw = r.get("name")
+            if not norm_school(raw):
                 continue
-            meta = id_meta.setdefault(sid, (raw, []))
+            meta = id_meta.setdefault(_sid_of(r), (raw, []))
             if b not in meta[1]:
                 meta[1].append(b)
 
@@ -204,6 +224,14 @@ def resolve_school_identity(name, band, roster_recs):
                     # direction (roster ⊂ key) is deliberately absent: measured value-negative —
                     # it minted 'regular day bell schedule' -> Bell Middle (findings report §3).
                     ("token_subset", {sid for rt, sid in toks if ktoks and ktoks < rt} or None)):
+                # #790: the leading_initial form composes with NEAR-EXACT rules only (exact /
+                # token_set). Initial-strip + subset was one guess stacked on another: against a
+                # stale roster missing the true 'J Edgar Hoover', 'j edgar hoover' confidently
+                # bound to an unrelated 'Edgar Hoover Annex'. Costs the one corpus case that
+                # needed the composite (x-hannah, Cleveland) — it now lands roster_unmatched,
+                # which is safe, visible, and still counted (findings report §9 review round).
+                if form_name == "leading_initial" and rule not in ("exact", "token_set"):
+                    continue
                 if hits:
                     return (f"{form_name}+{rule}" if form_name and rule != "exact"
                             else form_name or rule), hits
@@ -220,6 +248,10 @@ def resolve_school_identity(name, band, roster_recs):
             return nkey, {"rule": "ambiguous",
                           "candidates": sorted(id_meta[s][0] for s in sids if s in id_meta)}
         sid = next(iter(sids))
+        if str(sid).startswith("_noid:"):
+            # #786: the unique candidate has no NCESSCH — it disambiguated the field (no false
+            # confidence in a sibling), but an identity cannot be minted without an id.
+            return nkey, None
         raw, bands = id_meta.get(sid, (None, []))
         return norm_school(raw), {"rule": rule, "school_id": sid, "roster_school": raw,
                                   "rostered_bands": sorted(bands), "resolved_from": nkey}
