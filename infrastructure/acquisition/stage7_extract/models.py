@@ -87,6 +87,13 @@ class SchoolFact(gdb.Base):
     # v4 council reading (#499 REQ-148): the page's own VERBATIM campus list when the schedule
     # covers a group — sorted union across models (JSON list). NULL pre-v4; same no-backfill rule.
     campus_names_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # v5 identity marking (#693/#721): what the roster said about this fact's school at consensus
+    # time — {school_id, roster_school, rules, band_adjudication, claimed_bands} for a resolved
+    # fact, {"rule":"ambiguous", candidates} kept-split, {"roster":"unmatched"} name-in-lieu, or
+    # {"claimed_bands"} on a band_disagreement row. NULL pre-v5 and for no-roster contexts (the
+    # council lab); same no-backfill rule — the #716 replay re-derives it from receipts at zero
+    # spend. Deliberately UNindexed like every _PRECIOUS_ALTERS column.
+    identity_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     # unresolved: the per-model disagreement (starts/ends by model) or an implausible-gross note
     detail_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     # provenance + review

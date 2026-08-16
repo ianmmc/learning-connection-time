@@ -94,11 +94,16 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
     for band in bands:
         recs = (rosters.get(band) or {}).get("slot_recs") or []
         band_asg = [a for a in asg if a.get("band") == band]
-        assign_of = {(a.get("roster_school_id") or "", a["norm_school_fact"]): a
+        # SlotAssignment.norm_school_fact is a PERSISTED key: re-normalize through the CURRENT
+        # norm_school at intake (idempotent by design — school_match module contract), or a
+        # stopword-list change silently detaches every stored human disposition whose key the
+        # change rewrites (found 2026-08-15 when #693 added 'and' to _GENERIC; same class as the
+        # merge_fact_runs / #237 read-time re-norm).
+        assign_of = {(a.get("roster_school_id") or "", norm_school(a["norm_school_fact"])): a
                      for a in band_asg if a.get("disposition") == "assign"}
-        reject_of = {(a.get("roster_school_id") or "", a["norm_school_fact"]): a
+        reject_of = {(a.get("roster_school_id") or "", norm_school(a["norm_school_fact"])): a
                      for a in band_asg if a.get("disposition") == "reject"}
-        confirm_of = {a["norm_school_fact"]: a
+        confirm_of = {norm_school(a["norm_school_fact"]): a
                       for a in band_asg if a.get("disposition") == "confirm_extra"}
 
         slots, by_key, by_id = [], {}, {}
@@ -269,6 +274,12 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
         orphaned = []
         for a in band_asg:
             sid = a.get("roster_school_id") or ""
+            # #782: every comparison below uses the RE-NORMALIZED persisted key, matching the
+            # assign_of/reject_of/confirm_of intake three lines up — comparing the raw stored
+            # value against freshly-normalized match keys minted false assign_shadowed /
+            # assign_fact_absent alarms (and hid extra_now_in_roster) for any row whose key a
+            # stopword change rewrote.
+            akey = norm_school(a["norm_school_fact"])
             base = {k: a.get(k) for k in ("roster_school_id", "norm_school_fact",
                                           "school", "disposition", "reason")}
             if a["disposition"] in ("assign", "reject") and sid and sid not in by_id:
@@ -284,18 +295,33 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
             # (epic-#499 review round).
             if a["disposition"] == "assign" and sid in by_id:
                 m = by_id[sid].get("match")
-                if m and m.get("norm_school_fact") != a.get("norm_school_fact"):
+                if m and m.get("norm_school_fact") != akey:
                     orphaned.append({**base, "kind": "assign_shadowed",
                                      "slot_carries": m.get("norm_school_fact")})
                 # Review round 2: an assign whose target fact never appeared in this band's
                 # included facts (excluded via #257, rejected, superseded) binds NOTHING — the
                 # slot sits open and the disposition is inert. Without this flag the human has
                 # no signal their standing answer stopped doing anything.
-                elif a.get("norm_school_fact") not in fact_keys_seen:
+                elif akey not in fact_keys_seen:
                     orphaned.append({**base, "kind": "assign_fact_absent"})
-            if a["disposition"] == "confirm_extra" and a.get("norm_school_fact") in {
+            if a["disposition"] == "confirm_extra" and akey in {
                     s["norm_key"] for s in slots if s["roster_source"] != "human_confirmed"}:
                 orphaned.append({**base, "kind": "extra_now_in_roster"})
+        # #788: two historically-distinct confirm_extra rows whose raw keys CONVERGE under the
+        # current normalizer collide in confirm_of (one silently vanished from the denominator
+        # with no flag). Neither is auto-retired — the collision surfaces for human retirement,
+        # the same posture as every other orphan kind.
+        _confirm_raws = {}
+        for a in band_asg:
+            if a.get("disposition") == "confirm_extra":
+                _confirm_raws.setdefault(norm_school(a["norm_school_fact"]), []).append(a)
+        for ckey, rows_ in _confirm_raws.items():
+            raws = sorted({r.get("norm_school_fact") for r in rows_})
+            if len(raws) > 1:
+                orphaned.append({"roster_school_id": "", "norm_school_fact": ckey,
+                                 "school": rows_[0].get("school"),
+                                 "disposition": "confirm_extra", "reason": None,
+                                 "kind": "confirm_key_collision", "colliding_raw_keys": raws})
 
         n_filled = sum(1 for s in slots if s["slot_state"] == "filled")
         band_out = {

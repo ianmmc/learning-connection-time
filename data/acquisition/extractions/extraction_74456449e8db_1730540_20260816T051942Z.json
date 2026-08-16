@@ -1,0 +1,280 @@
+{
+  "handoff_hash": "74456449e8db",
+  "district": {
+    "district_id": "1730540",
+    "name": "Northwestern CUSD 2",
+    "reps": [
+      {
+        "rec_key": "1730540:49be09d9ce",
+        "file": "pdfplumber_lines.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:00",
+                "school_name": "Northwestern Elementary School",
+                "confidence": "high",
+                "evidence_quote": "The doors at Northwestern are opened at 7:45 A.M. Students are dismissed daily at 3:00 P.M. at the elementary and 3:06 P.M. at the Junior/Senior High School.",
+                "source_locus": "Page 8",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2020-2021",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "15:06",
+                "school_name": "Northwestern Junior/Senior High School",
+                "confidence": "high",
+                "evidence_quote": "The doors at Northwestern are opened at 7:45 A.M. Students are dismissed daily at 3:00 P.M. at the elementary and 3:06 P.M. at the Junior/Senior High School.",
+                "source_locus": "Page 8",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2020-2021",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "15:06",
+                "school_name": "Northwestern Junior/Senior High School",
+                "confidence": "high",
+                "evidence_quote": "The doors at Northwestern are opened at 7:45 A.M. Students are dismissed daily at 3:00 P.M. at the elementary and 3:06 P.M. at the Junior/Senior High School.",
+                "source_locus": "Page 8",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2020-2021",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 42499,
+            "completion_tokens": 594,
+            "cost_usd": 0.0044875,
+            "latency_ms": 2929,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784691221-TQ6uxlVVqNvurUGMe6aX",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": false,
+            "error": "Error code: 400 - {'error': {'message': \"This endpoint's maximum context length is 32768 tokens. However, you requested about 65816 tokens (49816 of text input, 16000 in the output). Please reduce the length of either one, or use the context-compression plugin to compress your prompt automatically.\", 'code': 400, 'metadata': {'provider_name': None}}, 'user_id': 'user_3F6G2u57EqCPewKcTHYL5cGYfne'}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 264,
+            "finish_reason": null,
+            "generation_id": null,
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "15:00",
+                "school_name": "Northwestern Elementary School",
+                "confidence": "high",
+                "evidence_quote": "The doors at Northwestern are opened at 7:45 A.M. Students are dismissed daily at 3:00 P.M. at the elementary and 3:06 P.M. at the Junior/Senior High School.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2020-21",
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:12",
+                "end_time": "15:06",
+                "school_name": "Northwestern Junior/Senior High School",
+                "confidence": "high",
+                "evidence_quote": "The doors at Northwestern are opened at 7:45 A.M. Students are dismissed daily at 3:00 P.M. at the elementary and 3:06 P.M. at the Junior/Senior High School.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2020-21",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:12",
+                "end_time": "15:06",
+                "school_name": "Northwestern Junior/Senior High School",
+                "confidence": "high",
+                "evidence_quote": "The doors at Northwestern are opened at 7:45 A.M. Students are dismissed daily at 3:00 P.M. at the elementary and 3:06 P.M. at the Junior/Senior High School.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2020-21",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 42367,
+            "completion_tokens": 392,
+            "cost_usd": 0.00402863,
+            "latency_ms": 17751,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784691225-6UVkCG7ESnuyCID7Fboj",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "northwestern",
+            "start": "08:10",
+            "end": "15:00",
+            "gross": 410,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "173054004785",
+              "roster_school": "Northwestern Elem School",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "evidence": {
+              "judge": {
+                "quote": "The doors at Northwestern are opened at 7:45 A.M. Students are dismissed daily at 3:00 P.M. at the elementary and 3:06 P.M. at the Junior/Senior High School.",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2020-21"
+              }
+            },
+            "rec_key": "1730540:49be09d9ce",
+            "source_file": "pdfplumber_lines.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "northwestern juniorsenior",
+            "reason": "band_disagreement",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:45"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:06"
+            },
+            "identity": {
+              "claimed_bands": [
+                "high",
+                "middle"
+              ]
+            },
+            "rec_key": "1730540:49be09d9ce",
+            "source_file": "pdfplumber_lines.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "northwestern",
+        "start": "08:10",
+        "end": "15:00",
+        "gross": 410,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "173054004785",
+          "roster_school": "Northwestern Elem School",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "evidence": {
+          "judge": {
+            "quote": "The doors at Northwestern are opened at 7:45 A.M. Students are dismissed daily at 3:00 P.M. at the elementary and 3:06 P.M. at the Junior/Senior High School.",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2020-21"
+          }
+        },
+        "rec_key": "1730540:49be09d9ce",
+        "source_file": "pdfplumber_lines.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "high",
+        "school": "northwestern juniorsenior",
+        "reason": "band_disagreement",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:45"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:06"
+        },
+        "identity": {
+          "claimed_bands": [
+            "high",
+            "middle"
+          ]
+        },
+        "rec_key": "1730540:49be09d9ce",
+        "source_file": "pdfplumber_lines.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 410,
+        "start_time": "08:10",
+        "end_time": "15:00",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "northwestern",
+            "start_time": "08:10",
+            "end_time": "15:00",
+            "gross": 410,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "state": "IL",
+    "reaggregated_from": "extraction_74456449e8db_1730540_20260722T033402Z.json"
+  }
+}

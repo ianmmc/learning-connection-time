@@ -1,0 +1,698 @@
+{
+  "handoff_hash": "a2bc80c004ca",
+  "district": {
+    "district_id": "5605302",
+    "name": "Sweetwater County School District #1",
+    "reps": [
+      {
+        "rec_key": "5605302:8f48c1d027",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 9,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:45",
+                "school_name": "Overland Elementary (PreK Head Start)"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "13:00",
+                "school_name": "Overland Elementary (Part-day Preschool)"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Rock Springs K-3 Elementary"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Rock Springs 4-6 Elementary"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:50",
+                "school_name": "Rock Springs Junior High School"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:55",
+                "school_name": "Rock Springs High Schools"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:00",
+                "school_name": "Farson-Eden Elementary School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "16:05",
+                "school_name": "Farson-Eden Middle School"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "16:05",
+                "school_name": "Farson-Eden High School"
+              }
+            ],
+            "prompt_tokens": 689,
+            "completion_tokens": 402,
+            "cost_usd": 0.0002297,
+            "latency_ms": 14087,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783052817-bdPzdBJuPJ9jgNAv9Q4j"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 7,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Rock Springs Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Wamsutter K-8",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:50",
+                "school_name": "Rock Springs Junior High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:55",
+                "school_name": "Rock Springs High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:00",
+                "school_name": "Farson-Eden Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "16:05",
+                "school_name": "Farson-Eden Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "16:05",
+                "school_name": "Farson-Eden High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 683,
+            "completion_tokens": 416,
+            "cost_usd": 6.743e-05,
+            "latency_ms": 17789,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783052830-ZFeNF32tUC0XJ6dB6qKW"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 7,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Rock Springs Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Rock Springs Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:50",
+                "school_name": "Rock Springs Junior High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:55",
+                "school_name": "Rock Springs High Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:00",
+                "school_name": "Farson-Eden School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "16:05",
+                "school_name": "Farson-Eden School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "16:05",
+                "school_name": "Farson-Eden School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 670,
+            "completion_tokens": 261,
+            "cost_usd": 0.0003026,
+            "latency_ms": 22389,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783052850-80MFasa0Hj3eQi9RlO2D"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "rock springs",
+            "start": "08:30",
+            "end": "15:50",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "560530200295",
+              "roster_school": "Rock Springs Junior High",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "rock springs",
+            "start": "08:00",
+            "end": "15:55",
+            "gross": 475,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "560530200294",
+              "roster_school": "Rock Springs High School",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "farson eden",
+            "start": "07:45",
+            "end": "15:00",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "560530200489",
+              "roster_school": "Farson-Eden Elementary",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "farson eden",
+            "start": "07:45",
+            "end": "16:05",
+            "gross": 500,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "560530200524",
+              "roster_school": "Farson-Eden Middle School",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "farson eden",
+            "start": "07:45",
+            "end": "16:05",
+            "gross": 500,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "560530200293",
+              "roster_school": "Farson-Eden High School",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "rock springs",
+            "start": "07:50",
+            "end": "15:05",
+            "gross": 435,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "rule": "ambiguous",
+              "candidates": [
+                "Rock Springs High School",
+                "Rock Springs Junior High"
+              ]
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "overland prek head start",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:45"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:45"
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "overland part day preschool",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "13:00"
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "rock springs k 3",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:05"
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "rock springs 4 6",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:15"
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "wamsutter k 8",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:00"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:15"
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "middle",
+        "school": "rock springs",
+        "start": "08:30",
+        "end": "15:50",
+        "gross": 440,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "560530200295",
+          "roster_school": "Rock Springs Junior High",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "rock springs",
+        "start": "08:00",
+        "end": "15:55",
+        "gross": 475,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "560530200294",
+          "roster_school": "Rock Springs High School",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "farson eden",
+        "start": "07:45",
+        "end": "15:00",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "560530200489",
+          "roster_school": "Farson-Eden Elementary",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "farson eden",
+        "start": "07:45",
+        "end": "16:05",
+        "gross": 500,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "560530200524",
+          "roster_school": "Farson-Eden Middle School",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "farson eden",
+        "start": "07:45",
+        "end": "16:05",
+        "gross": 500,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "560530200293",
+          "roster_school": "Farson-Eden High School",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "rock springs",
+        "start": "07:50",
+        "end": "15:05",
+        "gross": 435,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "rule": "ambiguous",
+          "candidates": [
+            "Rock Springs High School",
+            "Rock Springs Junior High"
+          ]
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "overland prek head start",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:45"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:45"
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "overland part day preschool",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "13:00"
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "rock springs k 3",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:05"
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "rock springs 4 6",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:15"
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "wamsutter k 8",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:00"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:15"
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 435,
+        "start_time": "07:45",
+        "end_time": "15:00",
+        "n_schools": 2,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "farson eden",
+            "start_time": "07:45",
+            "end_time": "15:00",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rock springs",
+            "start_time": "07:50",
+            "end_time": "15:05",
+            "gross": 435,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 470,
+        "start_time": null,
+        "end_time": null,
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "rock springs",
+            "start_time": "08:30",
+            "end_time": "15:50",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "farson eden",
+            "start_time": "07:45",
+            "end_time": "16:05",
+            "gross": 500,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 488,
+        "start_time": null,
+        "end_time": null,
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "rock springs",
+            "start_time": "08:00",
+            "end_time": "15:55",
+            "gross": 475,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "farson eden",
+            "start_time": "07:45",
+            "end_time": "16:05",
+            "gross": 500,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "reaggregated_from": "extraction_a2bc80c004ca_5605302_20260703T042739Z.json"
+  }
+}

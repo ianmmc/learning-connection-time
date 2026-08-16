@@ -1,0 +1,445 @@
+{
+  "handoff_hash": "27b64cab58a9",
+  "district": {
+    "district_id": "4843560",
+    "name": "UNION HILL ISD",
+    "reps": [
+      {
+        "rec_key": "4843560:ab5b280978",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "16:10",
+                "school_name": "Union Hill High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1072,
+            "completion_tokens": 49,
+            "cost_usd": 0.0001268,
+            "latency_ms": 569,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783806032-vvtpVv24H5hQefVMZVXW",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "16:10",
+                "school_name": "Union Hill High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1080,
+            "completion_tokens": 49,
+            "cost_usd": 5.792e-05,
+            "latency_ms": 933,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783806033-v7nwSwurfWnTrpPBrNco",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "union hill h s",
+            "start": "08:00",
+            "end": "16:10",
+            "gross": 490,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "484356004955",
+              "roster_school": "UNION HILL H S",
+              "rostered_bands": [
+                "high",
+                "middle"
+              ],
+              "rules": {
+                "union hill": "token_subset"
+              }
+            },
+            "rec_key": "4843560:ab5b280978",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4843560:2c2688daff",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "16:10",
+                "school_name": "Union Hill ISD",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "16:10",
+                "school_name": "Union Hill ISD",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "16:10",
+                "school_name": "Union Hill ISD",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1562,
+            "completion_tokens": 119,
+            "cost_usd": 0.0002038,
+            "latency_ms": 805,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783806034-MES4L2BAN2avCKlNs3yS",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "16:10",
+                "school_name": "Union Hill ISD",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1686,
+            "completion_tokens": 50,
+            "cost_usd": 8.83e-05,
+            "latency_ms": 1050,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783806035-Gl30BuEtRSoYueXjBtYv",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "16:10",
+                "school_name": "Union Hill ISD",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1583,
+            "completion_tokens": 41,
+            "cost_usd": 0.00014657,
+            "latency_ms": 3434,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783806036-IJ2GnbE8W1C9wrbcdGot",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "union hill h s",
+            "start": "08:00",
+            "end": "16:10",
+            "gross": 490,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "484356004955",
+              "roster_school": "UNION HILL H S",
+              "rostered_bands": [
+                "high",
+                "middle"
+              ],
+              "rules": {
+                "union hill": "token_subset"
+              },
+              "band_adjudication": "roster_multiband",
+              "claimed_bands": [
+                "elementary",
+                "high",
+                "middle"
+              ]
+            },
+            "rec_key": "4843560:2c2688daff",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "union hill h s",
+            "start": "08:00",
+            "end": "16:10",
+            "gross": 490,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "484356004955",
+              "roster_school": "UNION HILL H S",
+              "rostered_bands": [
+                "high",
+                "middle"
+              ],
+              "rules": {
+                "union hill": "token_subset"
+              },
+              "band_adjudication": "roster_multiband",
+              "claimed_bands": [
+                "elementary",
+                "high",
+                "middle"
+              ]
+            },
+            "rec_key": "4843560:2c2688daff",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4843560:4e1ea028f0",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 933,
+            "completion_tokens": 5,
+            "cost_usd": 9.53e-05,
+            "latency_ms": 526,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783806039-SntyS7DjziqsqnDSc4sF",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1048,
+            "completion_tokens": 12,
+            "cost_usd": 5.336e-05,
+            "latency_ms": 330,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783806040-63LfhcsMEl160TWxRiUM",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "union hill h s",
+        "start": "08:00",
+        "end": "16:10",
+        "gross": 490,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "484356004955",
+          "roster_school": "UNION HILL H S",
+          "rostered_bands": [
+            "high",
+            "middle"
+          ],
+          "rules": {
+            "union hill": "token_subset"
+          }
+        },
+        "rec_key": "4843560:ab5b280978",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "union hill h s",
+        "start": "08:00",
+        "end": "16:10",
+        "gross": 490,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "484356004955",
+          "roster_school": "UNION HILL H S",
+          "rostered_bands": [
+            "high",
+            "middle"
+          ],
+          "rules": {
+            "union hill": "token_subset"
+          },
+          "band_adjudication": "roster_multiband",
+          "claimed_bands": [
+            "elementary",
+            "high",
+            "middle"
+          ]
+        },
+        "rec_key": "4843560:2c2688daff",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "union hill h s",
+        "start": "08:00",
+        "end": "16:10",
+        "gross": 490,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "484356004955",
+          "roster_school": "UNION HILL H S",
+          "rostered_bands": [
+            "high",
+            "middle"
+          ],
+          "rules": {
+            "union hill": "token_subset"
+          },
+          "band_adjudication": "roster_multiband",
+          "claimed_bands": [
+            "elementary",
+            "high",
+            "middle"
+          ]
+        },
+        "rec_key": "4843560:2c2688daff",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 3,
+    "n_judged": 1,
+    "bands": {
+      "middle": {
+        "gross_minutes": 490,
+        "start_time": "08:00",
+        "end_time": "16:10",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "union hill h s",
+            "start_time": "08:00",
+            "end_time": "16:10",
+            "gross": 490,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 490,
+        "start_time": "08:00",
+        "end_time": "16:10",
+        "n_schools": 2,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "union hill h s",
+            "start_time": "08:00",
+            "end_time": "16:10",
+            "gross": 490,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "union hill h s",
+            "start_time": "08:00",
+            "end_time": "16:10",
+            "gross": 490,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "state": "TX",
+    "reaggregated_from": "extraction_27b64cab58a9_4843560_20260711T214040Z.json"
+  }
+}

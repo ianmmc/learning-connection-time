@@ -1,0 +1,419 @@
+{
+  "handoff_hash": "a2bc80c004ca-image",
+  "district": {
+    "district_id": "1602100",
+    "name": "JOINT SCHOOL DISTRICT NO. 2",
+    "reps": [
+      {
+        "rec_key": "1602100:450fc1cb03",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:40",
+                "end_time": "14:39",
+                "school_name": "High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:15",
+                "school_name": "High School Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:30",
+                "school_name": "Rebound School of Opportunity",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:20",
+                "end_time": "15:05",
+                "school_name": "Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "14:45",
+                "school_name": "Alternative Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:55",
+                "school_name": "Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2941,
+            "completion_tokens": 237,
+            "cost_usd": 0.0014748,
+            "latency_ms": 16736,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061263-0FTpQZtNQgf3evnPDm0d"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:40",
+                "end_time": "14:39",
+                "school_name": "High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:15",
+                "school_name": "High School Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:30",
+                "school_name": "Rebound School of Opportunity",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:20",
+                "end_time": "15:05",
+                "school_name": "Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "14:45",
+                "school_name": "Alternative Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:55",
+                "school_name": "Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2782,
+            "completion_tokens": 224,
+            "cost_usd": 0.0015758,
+            "latency_ms": 20547,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061281-BIlOVAZhLv3qFzrYDG45"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "high school",
+            "start": "07:40",
+            "end": "14:39",
+            "gross": 419,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "band_referent",
+            "resolved_from": "high school",
+            "rec_key": "1602100:450fc1cb03",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "high school academy",
+            "start": "08:00",
+            "end": "14:15",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "band_referent",
+            "resolved_from": "high school academy",
+            "rec_key": "1602100:450fc1cb03",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "rebound opportunity",
+            "start": "08:00",
+            "end": "15:30",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "1602100:450fc1cb03",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "middle school",
+            "start": "08:20",
+            "end": "15:05",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "band_referent",
+            "resolved_from": "middle school",
+            "rec_key": "1602100:450fc1cb03",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "elementary school",
+            "start": "09:10",
+            "end": "15:55",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "band_referent",
+            "resolved_from": "elementary school",
+            "rec_key": "1602100:450fc1cb03",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "alternative",
+            "reason": "excluded_school_type",
+            "starts": {
+              "google/gemini-2.5-flash": "08:35",
+              "mistralai/mistral-large-2512": "08:35"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "14:45",
+              "mistralai/mistral-large-2512": "14:45"
+            },
+            "rec_key": "1602100:450fc1cb03",
+            "source_file": "raster_p-1.png"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "high school",
+        "start": "07:40",
+        "end": "14:39",
+        "gross": 419,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "band_referent",
+        "resolved_from": "high school",
+        "rec_key": "1602100:450fc1cb03",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "high school academy",
+        "start": "08:00",
+        "end": "14:15",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "band_referent",
+        "resolved_from": "high school academy",
+        "rec_key": "1602100:450fc1cb03",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "rebound opportunity",
+        "start": "08:00",
+        "end": "15:30",
+        "gross": 450,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "1602100:450fc1cb03",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "middle school",
+        "start": "08:20",
+        "end": "15:05",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "band_referent",
+        "resolved_from": "middle school",
+        "rec_key": "1602100:450fc1cb03",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "elementary school",
+        "start": "09:10",
+        "end": "15:55",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "band_referent",
+        "resolved_from": "elementary school",
+        "rec_key": "1602100:450fc1cb03",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "alternative",
+        "reason": "excluded_school_type",
+        "starts": {
+          "google/gemini-2.5-flash": "08:35",
+          "mistralai/mistral-large-2512": "08:35"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "14:45",
+          "mistralai/mistral-large-2512": "14:45"
+        },
+        "rec_key": "1602100:450fc1cb03",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 0,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 405,
+        "start_time": "09:10",
+        "end_time": "15:55",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "elementary school",
+            "start_time": "09:10",
+            "end_time": "15:55",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 405,
+        "start_time": "08:20",
+        "end_time": "15:05",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "middle school",
+            "start_time": "08:20",
+            "end_time": "15:05",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 415,
+        "start_time": null,
+        "end_time": null,
+        "n_schools": 3,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "high school",
+            "start_time": "07:40",
+            "end_time": "14:39",
+            "gross": 419,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "high school academy",
+            "start_time": "08:00",
+            "end_time": "14:15",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rebound opportunity",
+            "start_time": "08:00",
+            "end_time": "15:30",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "reaggregated_from": "extraction_a2bc80c004ca-image_1602100_20260703T064807Z.json"
+  }
+}

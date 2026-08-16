@@ -4517,3 +4517,43 @@ requirements:
       lost: duplicate spend, duplicate captures under new hashes, and orphaned gate@5 labels at the next
       ingest. The wiring pin exists because the seen.has guard lives in un-exported main() — the unit tests
       prove seedFromPriorCaptures works, the pin proves the live loop still calls it."
+
+  - id: REQ-173
+    github_issue: "#693 (name-axis false splits), #721 (band-axis false splits); measured design in
+      docs/technical-notes/learning-loop-reports/2026-08-15-693-721-roster-anchored-identity.md"
+    description: "ROSTER-ANCHORED SCHOOL IDENTITY AT THE CONSENSUS BOUNDARY — consensus_school_facts
+      resolves every voter/judge row's school name against the district's NCES slot spine
+      (resolve_school_identity: band-scoped FORMS x RULES ladder; ambiguity NEVER guesses) before
+      grouping, so variant spellings of one school meet in one group and a name is band-merged ONLY
+      when the roster confirms one school_id serving multiple bands (roster_multiband / roster_band
+      adjudication; unmatched cross-band singletons surface as an explicit band_disagreement row).
+      An unmatched name is screened for excluded school types (routed to unresolved with reason
+      excluded_school_type) and otherwise survives as a name-in-lieu fact marked roster_unmatched.
+      Every non-exact resolution is marked on the fact (identity_json, v5 additive column) for
+      gate@8. The whole mechanism is context-gated: a no-roster caller (council lab) is byte-identical
+      to the pre-REQ-173 behavior. The grouping key keeps grade_level: the band is the only
+      discriminator for the 35 level-collapse districts (APOPKA ELEMENTARY/MIDDLE/HIGH all norm to
+      'apopka') — a name-only key mass-fuses real schools (#681's defect)."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "Cleveland 3904378: 'lincoln west science [and] health' -> ONE cross-family accepted fact (P1)"
+      - "A merged group with disagreeing times stays the council's to adjudicate — resolution never manufactures agreement (P2)"
+      - "Essex 5000395: acronym and spelled-out forms group together; acronyms computed on the FULL name (P3)"
+      - "Washoe 3200480 Gerlach: roster-confirmed multiband campus -> accepted fact per claimed-and-rostered band, marked (P4)"
+      - "Level-collapse pin: 'apopka' across bands stays 3 distinct school_ids; never band-merged (P5)"
+      - "2+ roster candidates -> ambiguous, kept split, marked (P6); excluded-type names -> unresolved excluded_school_type (P7); clean unmatched -> accepted, marked roster_unmatched (P8)"
+      - "No-context call byte-identical (P9); zero-spend receipt replay is the recovery path (#716) — corpus: unresolved 904->772, 0 wrong merges (P10)"
+    tests:
+      - "tests/test_school_identity.py (the resolver's pinned real-district cases)"
+      - "tests/test_aggregate.py::TestRosterAnchoredConsensus (the consensus wiring, P1-P9)"
+    depends_on: [REQ-056, REQ-117]
+    notes: "The resolver's reverse rule (roster tokens ⊂ extracted tokens) is deliberately ABSENT —
+      measured value-negative ('regular day bell schedule' -> Bell Middle). Bare prek/pk are
+      excluded-grade markers, not grade spans: digits required before a span token strips.
+      Review round 2026-08-16 (#777-#791, PR #774): a strict-degenerate key never resolves (an
+      acronym coincidence must not bypass #245/#707); id-less roster entries count for ambiguity
+      but can never be the winner; leading-initial composes with near-exact rules only; the
+      exclusion screen reads the RAW extracted names with phrase-forms for once-bare words and
+      imports FACILITY_NAME_TOKENS (one source of truth)."

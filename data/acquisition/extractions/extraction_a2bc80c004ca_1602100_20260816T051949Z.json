@@ -1,0 +1,506 @@
+{
+  "handoff_hash": "a2bc80c004ca",
+  "district": {
+    "district_id": "1602100",
+    "name": "JOINT SCHOOL DISTRICT NO. 2",
+    "reps": [
+      {
+        "rec_key": "1602100:450fc1cb03",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 12,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:40",
+                "end_time": "14:39",
+                "school_name": "High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:15",
+                "school_name": "High School Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:30",
+                "school_name": "Rebound School of Opportunity",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:20",
+                "end_time": "15:05",
+                "school_name": "Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "14:45",
+                "school_name": "Alternative Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:55",
+                "school_name": "Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "14:39",
+                "school_name": "High School",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "14:15",
+                "school_name": "Alternative High School Academy",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "15:30",
+                "school_name": "Rebound School of Opportunity",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "15:05",
+                "school_name": "Middle School",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:50",
+                "end_time": "14:45",
+                "school_name": "Alternative Middle School",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:25",
+                "end_time": "15:55",
+                "school_name": "Elementary School",
+                "confidence": "medium"
+              }
+            ],
+            "prompt_tokens": 1440,
+            "completion_tokens": 611,
+            "cost_usd": 0.0003884,
+            "latency_ms": 17474,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051514-38RzqRH7cizcJm8C2F8C"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:40",
+                "end_time": "14:39",
+                "school_name": "High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:15",
+                "school_name": "High School Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "14:15",
+                "school_name": "Alternative High School Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:20",
+                "end_time": "15:05",
+                "school_name": "Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "14:45",
+                "school_name": "Alternative Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:55",
+                "school_name": "Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1567,
+            "completion_tokens": 340,
+            "cost_usd": 0.00010555,
+            "latency_ms": 17102,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051530-iWs2R6T1k0LsqCfp8sEr"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:40",
+                "end_time": "14:39",
+                "school_name": "High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:20",
+                "end_time": "15:05",
+                "school_name": "Middle School",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:55",
+                "school_name": "Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1555,
+            "completion_tokens": 107,
+            "cost_usd": 0.00015065,
+            "latency_ms": 23426,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051549-WmpYwvwCfylSmu0ZM4rR"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "high school",
+            "start": "07:40",
+            "end": "14:39",
+            "gross": 419,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "high school",
+            "rec_key": "1602100:450fc1cb03",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "high school academy",
+            "start": "08:00",
+            "end": "14:15",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "high school academy",
+            "rec_key": "1602100:450fc1cb03",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "middle school",
+            "start": "08:20",
+            "end": "15:05",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "middle school",
+            "rec_key": "1602100:450fc1cb03",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "elementary school",
+            "start": "09:10",
+            "end": "15:55",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "elementary school",
+            "rec_key": "1602100:450fc1cb03",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "rebound opportunity",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:30"
+            },
+            "rec_key": "1602100:450fc1cb03",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "alternative",
+            "reason": "excluded_school_type",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:35",
+              "mistralai/mistral-small-24b-instruct-2501": "08:35"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:45",
+              "mistralai/mistral-small-24b-instruct-2501": "14:45"
+            },
+            "rec_key": "1602100:450fc1cb03",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "alternative",
+            "reason": "excluded_school_type",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:15",
+              "mistralai/mistral-small-24b-instruct-2501": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:15",
+              "mistralai/mistral-small-24b-instruct-2501": "14:15"
+            },
+            "rec_key": "1602100:450fc1cb03",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "high school",
+        "start": "07:40",
+        "end": "14:39",
+        "gross": 419,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "high school",
+        "rec_key": "1602100:450fc1cb03",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "high school academy",
+        "start": "08:00",
+        "end": "14:15",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "high school academy",
+        "rec_key": "1602100:450fc1cb03",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "middle school",
+        "start": "08:20",
+        "end": "15:05",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "middle school",
+        "rec_key": "1602100:450fc1cb03",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "elementary school",
+        "start": "09:10",
+        "end": "15:55",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "elementary school",
+        "rec_key": "1602100:450fc1cb03",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "high",
+        "school": "rebound opportunity",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:30"
+        },
+        "rec_key": "1602100:450fc1cb03",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "alternative",
+        "reason": "excluded_school_type",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:35",
+          "mistralai/mistral-small-24b-instruct-2501": "08:35"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:45",
+          "mistralai/mistral-small-24b-instruct-2501": "14:45"
+        },
+        "rec_key": "1602100:450fc1cb03",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "alternative",
+        "reason": "excluded_school_type",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:15",
+          "mistralai/mistral-small-24b-instruct-2501": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:15",
+          "mistralai/mistral-small-24b-instruct-2501": "14:15"
+        },
+        "rec_key": "1602100:450fc1cb03",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 405,
+        "start_time": "09:10",
+        "end_time": "15:55",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "elementary school",
+            "start_time": "09:10",
+            "end_time": "15:55",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 405,
+        "start_time": "08:20",
+        "end_time": "15:05",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "middle school",
+            "start_time": "08:20",
+            "end_time": "15:05",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 397,
+        "start_time": null,
+        "end_time": null,
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "high school",
+            "start_time": "07:40",
+            "end_time": "14:39",
+            "gross": 419,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "high school academy",
+            "start_time": "08:00",
+            "end_time": "14:15",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "reaggregated_from": "extraction_a2bc80c004ca_1602100_20260703T040557Z.json"
+  }
+}

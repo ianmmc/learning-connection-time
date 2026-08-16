@@ -1,0 +1,5748 @@
+{
+  "handoff_hash": "f33790e63820",
+  "district": {
+    "district_id": "3502370",
+    "name": "SANTA FE",
+    "reps": [
+      {
+        "rec_key": "3502370:3cf7e0c3e4",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Carlos Gilbert Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1766,
+            "completion_tokens": 48,
+            "cost_usd": 0.0001958,
+            "latency_ms": 1429,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840779-3JLfAgn9w0Wgut5obSXx",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Carlos Gilbert Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1854,
+            "completion_tokens": 71,
+            "cost_usd": 9.838e-05,
+            "latency_ms": 1708,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840781-tqGlSdydMXNJ36upfWWZ",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "carlos gilbert",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000538",
+              "roster_school": "CARLOS GILBERT ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:3cf7e0c3e4",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3502370:92edae428e",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 34,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Acequia Madre",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Amy Biehl at Rancho Viejo",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Atalaya",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Carlos Gilbert",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Cesar Chavez",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Chaparral",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Desert Sage (Elementary)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "E.J. Martinez",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Kearny",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Nava",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:00",
+                "school_name": "Nye",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Pinon",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Ramirez Thomas",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Salazar",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Sweeney",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Tesuque",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Wood Gormley",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Aspen",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "El Camino Real",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "El Dorado",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Gonzales",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Nina Otero",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:15",
+                "school_name": "Aspen (Grades 7-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:15",
+                "school_name": "El Camino Real (Grades 7-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:15",
+                "school_name": "El Dorado (Grades 7-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:15",
+                "school_name": "Gonzales (Grades 7-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:15",
+                "school_name": "Nina Otero (Grades 7-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "16:00",
+                "school_name": "Milagro",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "16:00",
+                "school_name": "Ortiz",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Capital",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Desert Sage (High School)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Early College Opportunities",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Santa Fe High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Mandela International Magnet School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1382,
+            "completion_tokens": 1741,
+            "cost_usd": 0.0008346,
+            "latency_ms": 3582,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840783-X5E4JhlD9lHB1mnnxux9",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 25,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Acequia Madre",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Amy Biehl at Rancho Viejo",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Atalaya",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Carlos Gilbert",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Cesar Chavez",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Chaparral",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Desert Sage",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "E.J. Martinez",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Kearny",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Nava",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Pinon",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Ramirez Thomas",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Salazar",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Sweeney",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Tesuque",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Wood Gormley",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Nye",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:15",
+                "school_name": "Aspen, El Camino Real, El Dorado, Gonzales, Nina Otero",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "16:00",
+                "school_name": "Milagro",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "16:00",
+                "school_name": "Ortiz",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Capital",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Desert Sage",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Early College Opportunities",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Santa Fe High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Mandela",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1355,
+            "completion_tokens": 1201,
+            "cost_usd": 0.00016383,
+            "latency_ms": 15663,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840786-ZQd1GB3KF2E7s8vpMHeE",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 24,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Acequia Madre",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Amy Biehl at Rancho Viejo",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Atalaya",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Carlos Gilbert",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Cesar Chavez",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Chaparral",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Desert Sage",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "E.J. Martinez",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Kearny",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Nava",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:00",
+                "school_name": "Nye",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Pinon",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Ramirez Thomas",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Salazar",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Sweeney",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Tesuque",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Wood Gormley",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "16:00",
+                "school_name": "Milagro",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "16:00",
+                "school_name": "Ortiz",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Capital",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Desert Sage",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Early College Opportunities",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Santa Fe High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Mandela International Magnet School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1335,
+            "completion_tokens": 844,
+            "cost_usd": 0.00020455,
+            "latency_ms": 23168,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840802-Hxx4IEcNvMjuse2JT6Ia",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "acequia madre",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000534",
+              "roster_school": "ACEQUIA MADRE ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "amy biehl community rancho viejo",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237001061",
+              "roster_school": "AMY BIEHL COMMUNITY SCHOOL AT RANCHO VIEJO",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "amy biehl rancho viejo": "token_subset"
+              }
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "atalaya",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000537",
+              "roster_school": "ATALAYA ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "carlos gilbert",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000538",
+              "roster_school": "CARLOS GILBERT ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "cesar chavez",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000759",
+              "roster_school": "CESAR CHAVEZ ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "chaparral",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000539",
+              "roster_school": "CHAPARRAL ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "desert sage",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "ej martinez",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000541",
+              "roster_school": "E.J. MARTINEZ ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "kearny",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000548",
+              "roster_school": "KEARNY ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "francis x nava",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000542",
+              "roster_school": "FRANCIS X. NAVA ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "nava": "token_subset"
+              }
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "nye",
+            "start": "07:52",
+            "end": "15:08",
+            "gross": 436,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "pinon",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000641",
+              "roster_school": "PINON ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "ramirez thomas",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000887",
+              "roster_school": "RAMIREZ THOMAS ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "salazar",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000550",
+              "roster_school": "SALAZAR ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "rm sweeney",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000645",
+              "roster_school": "R.M. SWEENEY ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "sweeney": "token_subset"
+              }
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "tesuque",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000552",
+              "roster_school": "TESUQUE ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "wood gormley",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000553",
+              "roster_school": "WOOD-GORMLEY ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "milagro",
+            "start": "08:35",
+            "end": "16:00",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237001139",
+              "roster_school": "MILAGRO MIDDLE",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "edward ortiz",
+            "start": "08:35",
+            "end": "16:00",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000610",
+              "roster_school": "EDWARD ORTIZ MIDDLE",
+              "rostered_bands": [
+                "middle"
+              ],
+              "rules": {
+                "ortiz": "token_subset"
+              }
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "capital",
+            "start": "08:35",
+            "end": "16:05",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000724",
+              "roster_school": "CAPITAL HIGH",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "desert sage",
+            "start": "08:35",
+            "end": "16:05",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "early college opportunities",
+            "start": "08:35",
+            "end": "16:05",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237001120",
+              "roster_school": "EARLY COLLEGE OPPORTUNITIES",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "santa fe",
+            "start": "08:35",
+            "end": "16:05",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000551",
+              "roster_school": "SANTA FE HIGH",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "mandela international magnet mims",
+            "start": "08:35",
+            "end": "16:05",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237001106",
+              "roster_school": "MANDELA INTERNATIONAL MAGNET (MIMS)",
+              "rostered_bands": [
+                "high",
+                "middle"
+              ],
+              "rules": {
+                "mandela international magnet": "token_subset",
+                "mandela": "token_subset"
+              }
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "aspen community",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:15"
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "el camino real community",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:15"
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "el dorado community",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:15"
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "gonzales",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:15"
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "nina otero community",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:15"
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "aspen grades 7 8",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:15"
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "el camino real grades 7 8",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:15"
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "el dorado grades 7 8",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:15"
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "gonzales grades 7 8",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:15"
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "nina otero grades 7 8",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:15"
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "aspen el camino real el dorado gonzales nina otero",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:50"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:15"
+            },
+            "rec_key": "3502370:92edae428e",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3502370:82bd8605d2",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Carlos Gilbert Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "K-8 Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Milagro and Ortiz Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 945,
+            "completion_tokens": 165,
+            "cost_usd": 0.0001605,
+            "latency_ms": 907,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840825-GmZBbgkpZQMln78M4PDR",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Carlos Gilbert Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 957,
+            "completion_tokens": 49,
+            "cost_usd": 5.177e-05,
+            "latency_ms": 1321,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840826-0BY9PdizwXyjwGdtCYDG",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Carlos Gilbert Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "Carlos Gilbert Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Milagro and Ortiz Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Carlos Gilbert Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 922,
+            "completion_tokens": 147,
+            "cost_usd": 0.00024855,
+            "latency_ms": 4625,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840827-MOyHgGA9GcLcTyWwZJhP",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "carlos gilbert",
+            "start": "08:00",
+            "end": "15:10",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000538",
+              "roster_school": "CARLOS GILBERT ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:82bd8605d2",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "milagro ortiz",
+            "start": "08:40",
+            "end": "16:00",
+            "gross": 440,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3502370:82bd8605d2",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "k 8",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:10"
+            },
+            "rec_key": "3502370:82bd8605d2",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "high school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:35"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "16:05"
+            },
+            "rec_key": "3502370:82bd8605d2",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3502370:11e2c8d070",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Chaparral Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "K-8 schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Milagro and Ortiz Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "High school",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 957,
+            "completion_tokens": 166,
+            "cost_usd": 0.0001621,
+            "latency_ms": 936,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840832-0O9OU7xLCamZH3176vDD",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Chaparral Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "K-8 Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Milagro Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Ortiz Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 969,
+            "completion_tokens": 292,
+            "cost_usd": 7.181e-05,
+            "latency_ms": 5286,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840833-vrfnYwAI8gVrYpsEzN8A",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Chaparral Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "Chaparral Elementary",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Milagro Middle School",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Ortiz Middle School",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Santa Fe Public Schools",
+                "confidence": "medium"
+              }
+            ],
+            "prompt_tokens": 937,
+            "completion_tokens": 185,
+            "cost_usd": 0.00019163,
+            "latency_ms": 3024,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840838-OM32np5SlBxPe49Ag3h0",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "chaparral",
+            "start": "08:00",
+            "end": "15:10",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000539",
+              "roster_school": "CHAPARRAL ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:11e2c8d070",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "k 8",
+            "start": "07:50",
+            "end": "15:10",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3502370:11e2c8d070",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "high school",
+            "start": "08:35",
+            "end": "16:05",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "high school",
+            "rec_key": "3502370:11e2c8d070",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "milagro",
+            "start": "08:40",
+            "end": "16:00",
+            "gross": 440,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "350237001139",
+              "roster_school": "MILAGRO MIDDLE",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "rec_key": "3502370:11e2c8d070",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "edward ortiz",
+            "start": "08:40",
+            "end": "16:00",
+            "gross": 440,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "350237000610",
+              "roster_school": "EDWARD ORTIZ MIDDLE",
+              "rostered_bands": [
+                "middle"
+              ],
+              "rules": {
+                "ortiz": "token_subset"
+              }
+            },
+            "rec_key": "3502370:11e2c8d070",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "milagro ortiz",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:40"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "16:00"
+            },
+            "rec_key": "3502370:11e2c8d070",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3502370:7ac2db9600",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Salazar Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "K-8 schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Milagro and Ortiz Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "High school",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 942,
+            "completion_tokens": 165,
+            "cost_usd": 0.0001602,
+            "latency_ms": 821,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840841-SwIcfWJX9qMQ38KU61YL",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Salazar Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "K-8 Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Milagro Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Ortiz Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 952,
+            "completion_tokens": 291,
+            "cost_usd": 7.088e-05,
+            "latency_ms": 4792,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840842-MuERbmn4TsNnYfWGul2u",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Salazar Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "K-8 schools",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Milagro and Ortiz Middle Schools",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "High schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 919,
+            "completion_tokens": 147,
+            "cost_usd": 9.741e-05,
+            "latency_ms": 5120,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840847-GgEwrx0lMsw2YTwaMxiu",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "salazar",
+            "start": "08:00",
+            "end": "15:10",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000550",
+              "roster_school": "SALAZAR ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:7ac2db9600",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "k 8",
+            "start": "07:50",
+            "end": "15:10",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3502370:7ac2db9600",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "milagro ortiz",
+            "start": "08:40",
+            "end": "16:00",
+            "gross": 440,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3502370:7ac2db9600",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "high school",
+            "start": "08:35",
+            "end": "16:05",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "high school",
+            "rec_key": "3502370:7ac2db9600",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "milagro",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:40"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "16:00"
+            },
+            "rec_key": "3502370:7ac2db9600",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "edward ortiz",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:40"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "16:00"
+            },
+            "rec_key": "3502370:7ac2db9600",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3502370:9a514dde74",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Pinon Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "K-8 schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Milagro and Ortiz Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "High school",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 945,
+            "completion_tokens": 271,
+            "cost_usd": 0.0002029,
+            "latency_ms": 1132,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840852-aNIFGBqUQyX65v4Jrs3E",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Pinon Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "K-8 schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Milagro Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Ortiz Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 954,
+            "completion_tokens": 291,
+            "cost_usd": 7.098e-05,
+            "latency_ms": 3517,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840853-NgYeAD75gz3xBfyMWR1g",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Pinon Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "Pinon Elementary (K-8)",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Santa Fe Public Schools",
+                "confidence": "medium"
+              }
+            ],
+            "prompt_tokens": 923,
+            "completion_tokens": 113,
+            "cost_usd": 0.00014861,
+            "latency_ms": 2123,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840857-obWOIuAPkIu69V4e09NJ",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "pinon",
+            "start": "08:00",
+            "end": "15:10",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000641",
+              "roster_school": "PINON ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:9a514dde74",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "k 8",
+            "start": "07:50",
+            "end": "15:10",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3502370:9a514dde74",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "high school",
+            "start": "08:35",
+            "end": "16:05",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "high school",
+            "rec_key": "3502370:9a514dde74",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "milagro ortiz",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:40"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "16:00"
+            },
+            "rec_key": "3502370:9a514dde74",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "milagro",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:40"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "16:00"
+            },
+            "rec_key": "3502370:9a514dde74",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "edward ortiz",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:40"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "16:00"
+            },
+            "rec_key": "3502370:9a514dde74",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3502370:cac8a984ed",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Elementary school",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "K-8 schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Milagro and Ortiz Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "High school",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 949,
+            "completion_tokens": 164,
+            "cost_usd": 0.0001605,
+            "latency_ms": 817,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840859-9CzBywqlILHavvDtImN7",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Santa Fe Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "Santa Fe Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Milagro Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Ortiz Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Santa Fe Public Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 959,
+            "completion_tokens": 294,
+            "cost_usd": 7.147e-05,
+            "latency_ms": 3553,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840859-RQ1J7nCKUwto47KA34Aa",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Santa Fe Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "Santa Fe Public Schools (K-8 schools)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Milagro and Ortiz Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Santa Fe Public Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 926,
+            "completion_tokens": 154,
+            "cost_usd": 0.000230529,
+            "latency_ms": 2222,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840863-0BCTtgtDFrhlkBaE94sh",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "milagro ortiz",
+            "start": "08:40",
+            "end": "16:00",
+            "gross": 440,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3502370:cac8a984ed",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "santa fe public",
+            "reason": "band_disagreement",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:35"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "16:05"
+            },
+            "identity": {
+              "claimed_bands": [
+                "elementary",
+                "high",
+                "middle"
+              ]
+            },
+            "rec_key": "3502370:cac8a984ed",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "elementary school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:10"
+            },
+            "rec_key": "3502370:cac8a984ed",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "k 8",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:10"
+            },
+            "rec_key": "3502370:cac8a984ed",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "high school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:35"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "16:05"
+            },
+            "rec_key": "3502370:cac8a984ed",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "milagro",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:40"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "16:00"
+            },
+            "rec_key": "3502370:cac8a984ed",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "edward ortiz",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:40"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "16:00"
+            },
+            "rec_key": "3502370:cac8a984ed",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3502370:bf18793b09",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Elementary school",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "K-8 schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Milagro and Ortiz Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "High school",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 938,
+            "completion_tokens": 164,
+            "cost_usd": 0.0001594,
+            "latency_ms": 1053,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840865-zX6dBKJLbaKVkAjCXoWA",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Santa Fe Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "Santa Fe Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Ortiz Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Santa Fe Public Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 947,
+            "completion_tokens": 238,
+            "cost_usd": 6.639e-05,
+            "latency_ms": 4542,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840866-g3MmpjQuPXy7hEsiAI5u",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:00",
+                "school_name": "Ortiz Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:10",
+                "school_name": "Santa Fe Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "16:05",
+                "school_name": "Santa Fe Public Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 914,
+            "completion_tokens": 113,
+            "cost_usd": 9.356e-05,
+            "latency_ms": 5054,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840871-AWMlyoSM8P7A7d58NHCv",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "edward ortiz",
+            "start": "08:40",
+            "end": "16:00",
+            "gross": 440,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "350237000610",
+              "roster_school": "EDWARD ORTIZ MIDDLE",
+              "rostered_bands": [
+                "middle"
+              ],
+              "rules": {
+                "ortiz": "token_subset"
+              }
+            },
+            "rec_key": "3502370:bf18793b09",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "santa fe public",
+            "reason": "band_disagreement",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:35"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "16:05"
+            },
+            "identity": {
+              "claimed_bands": [
+                "elementary",
+                "high",
+                "middle"
+              ]
+            },
+            "rec_key": "3502370:bf18793b09",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "elementary school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:10"
+            },
+            "rec_key": "3502370:bf18793b09",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "k 8",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:10"
+            },
+            "rec_key": "3502370:bf18793b09",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "milagro ortiz",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:40"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "16:00"
+            },
+            "rec_key": "3502370:bf18793b09",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "high school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:35"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "16:05"
+            },
+            "rec_key": "3502370:bf18793b09",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3502370:72a6d66f66",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:00",
+                "school_name": "Wood Gormley Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 561,
+            "completion_tokens": 50,
+            "cost_usd": 7.61e-05,
+            "latency_ms": 631,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840876-OybHhZoaEMWLZFG3LkpR",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:00",
+                "school_name": "Wood Gormley Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 589,
+            "completion_tokens": 51,
+            "cost_usd": 3.353e-05,
+            "latency_ms": 934,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840876-m6d2ZUJtlrYmFjcPjmar",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "wood gormley",
+            "start": "08:15",
+            "end": "15:00",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000553",
+              "roster_school": "WOOD-GORMLEY ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:72a6d66f66",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3502370:d7799df4df",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 17,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Acequia Madre Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Amy Biehl Community School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Atalaya Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Carlos Gilbert Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "White Tigers Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Chaparral Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "EJ Martinez Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Kearny Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Nava Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:00",
+                "school_name": "Nye Early Childhood - Full-Day",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Pinon Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Ramirez Thomas Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Salazar Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Sweeney Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Tesuque Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Wood Gormley Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Zia (at Gonzales)",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 4637,
+            "completion_tokens": 1116,
+            "cost_usd": 0.0009101,
+            "latency_ms": 2964,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840878-CX3WJ8ohzX6gWgOv1msq",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 16,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Acequia Madre Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Amy Biehl Community School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Atalaya Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Carlos Gilbert Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Chaparral Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "EJ Martinez Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Kearny Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Nava Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:00",
+                "school_name": "Nye Early Childhood - Full-Day",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Pinon Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Ramirez Thomas Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Salazar Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Sweeney Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Tesuque Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Wood Gormley Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Zia (at Gonzales)",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 4991,
+            "completion_tokens": 917,
+            "cost_usd": 0.00032291,
+            "latency_ms": 14030,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840880-Yxp94fIkWQjINXlu4ZFa",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Pinon Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 4709,
+            "completion_tokens": 40,
+            "cost_usd": 0.00044701,
+            "latency_ms": 1770,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840895-V6EJ1RBb4ep6EGawo0HV",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "acequia madre",
+            "start": "07:50",
+            "end": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000534",
+              "roster_school": "ACEQUIA MADRE ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:d7799df4df",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "amy biehl community rancho viejo",
+            "start": "07:50",
+            "end": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237001061",
+              "roster_school": "AMY BIEHL COMMUNITY SCHOOL AT RANCHO VIEJO",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "amy biehl community": "token_subset"
+              }
+            },
+            "rec_key": "3502370:d7799df4df",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "atalaya",
+            "start": "07:50",
+            "end": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000537",
+              "roster_school": "ATALAYA ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:d7799df4df",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "carlos gilbert",
+            "start": "07:50",
+            "end": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000538",
+              "roster_school": "CARLOS GILBERT ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:d7799df4df",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "chaparral",
+            "start": "07:50",
+            "end": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000539",
+              "roster_school": "CHAPARRAL ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:d7799df4df",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "ej martinez",
+            "start": "07:50",
+            "end": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000541",
+              "roster_school": "E.J. MARTINEZ ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:d7799df4df",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "kearny",
+            "start": "07:50",
+            "end": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000548",
+              "roster_school": "KEARNY ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:d7799df4df",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "francis x nava",
+            "start": "07:50",
+            "end": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000542",
+              "roster_school": "FRANCIS X. NAVA ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "nava": "token_subset"
+              }
+            },
+            "rec_key": "3502370:d7799df4df",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "pinon",
+            "start": "07:50",
+            "end": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000641",
+              "roster_school": "PINON ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:d7799df4df",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "ramirez thomas",
+            "start": "07:50",
+            "end": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000887",
+              "roster_school": "RAMIREZ THOMAS ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:d7799df4df",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "salazar",
+            "start": "07:50",
+            "end": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000550",
+              "roster_school": "SALAZAR ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:d7799df4df",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "rm sweeney",
+            "start": "07:50",
+            "end": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000645",
+              "roster_school": "R.M. SWEENEY ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "sweeney": "token_subset"
+              }
+            },
+            "rec_key": "3502370:d7799df4df",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "tesuque",
+            "start": "07:50",
+            "end": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000552",
+              "roster_school": "TESUQUE ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:d7799df4df",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "wood gormley",
+            "start": "07:50",
+            "end": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "350237000553",
+              "roster_school": "WOOD-GORMLEY ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "3502370:d7799df4df",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "zia gonzales",
+            "start": "07:50",
+            "end": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "3502370:d7799df4df",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "white tigers",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:05"
+            },
+            "rec_key": "3502370:d7799df4df",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "nye early childhood full day",
+            "reason": "excluded_school_type",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:45",
+              "mistralai/mistral-small-24b-instruct-2501": "07:45"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00",
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "3502370:d7799df4df",
+            "source_file": "tesseract_raster.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "carlos gilbert",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000538",
+          "roster_school": "CARLOS GILBERT ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:3cf7e0c3e4",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "acequia madre",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000534",
+          "roster_school": "ACEQUIA MADRE ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "amy biehl community rancho viejo",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237001061",
+          "roster_school": "AMY BIEHL COMMUNITY SCHOOL AT RANCHO VIEJO",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "amy biehl rancho viejo": "token_subset"
+          }
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "atalaya",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000537",
+          "roster_school": "ATALAYA ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "carlos gilbert",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000538",
+          "roster_school": "CARLOS GILBERT ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "cesar chavez",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000759",
+          "roster_school": "CESAR CHAVEZ ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "chaparral",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000539",
+          "roster_school": "CHAPARRAL ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "desert sage",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ej martinez",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000541",
+          "roster_school": "E.J. MARTINEZ ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "kearny",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000548",
+          "roster_school": "KEARNY ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "francis x nava",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000542",
+          "roster_school": "FRANCIS X. NAVA ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "nava": "token_subset"
+          }
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "nye",
+        "start": "07:52",
+        "end": "15:08",
+        "gross": 436,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "pinon",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000641",
+          "roster_school": "PINON ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ramirez thomas",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000887",
+          "roster_school": "RAMIREZ THOMAS ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "salazar",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000550",
+          "roster_school": "SALAZAR ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "rm sweeney",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000645",
+          "roster_school": "R.M. SWEENEY ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "sweeney": "token_subset"
+          }
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "tesuque",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000552",
+          "roster_school": "TESUQUE ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "wood gormley",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000553",
+          "roster_school": "WOOD-GORMLEY ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "milagro",
+        "start": "08:35",
+        "end": "16:00",
+        "gross": 445,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237001139",
+          "roster_school": "MILAGRO MIDDLE",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "edward ortiz",
+        "start": "08:35",
+        "end": "16:00",
+        "gross": 445,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000610",
+          "roster_school": "EDWARD ORTIZ MIDDLE",
+          "rostered_bands": [
+            "middle"
+          ],
+          "rules": {
+            "ortiz": "token_subset"
+          }
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "capital",
+        "start": "08:35",
+        "end": "16:05",
+        "gross": 450,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000724",
+          "roster_school": "CAPITAL HIGH",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "desert sage",
+        "start": "08:35",
+        "end": "16:05",
+        "gross": 450,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "early college opportunities",
+        "start": "08:35",
+        "end": "16:05",
+        "gross": 450,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237001120",
+          "roster_school": "EARLY COLLEGE OPPORTUNITIES",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "santa fe",
+        "start": "08:35",
+        "end": "16:05",
+        "gross": 450,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000551",
+          "roster_school": "SANTA FE HIGH",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "mandela international magnet mims",
+        "start": "08:35",
+        "end": "16:05",
+        "gross": 450,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237001106",
+          "roster_school": "MANDELA INTERNATIONAL MAGNET (MIMS)",
+          "rostered_bands": [
+            "high",
+            "middle"
+          ],
+          "rules": {
+            "mandela international magnet": "token_subset",
+            "mandela": "token_subset"
+          }
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "carlos gilbert",
+        "start": "08:00",
+        "end": "15:10",
+        "gross": 430,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000538",
+          "roster_school": "CARLOS GILBERT ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:82bd8605d2",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "milagro ortiz",
+        "start": "08:40",
+        "end": "16:00",
+        "gross": 440,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3502370:82bd8605d2",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "chaparral",
+        "start": "08:00",
+        "end": "15:10",
+        "gross": 430,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000539",
+          "roster_school": "CHAPARRAL ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:11e2c8d070",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "k 8",
+        "start": "07:50",
+        "end": "15:10",
+        "gross": 440,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3502370:11e2c8d070",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "high school",
+        "start": "08:35",
+        "end": "16:05",
+        "gross": 450,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "high school",
+        "rec_key": "3502370:11e2c8d070",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "milagro",
+        "start": "08:40",
+        "end": "16:00",
+        "gross": 440,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "350237001139",
+          "roster_school": "MILAGRO MIDDLE",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "rec_key": "3502370:11e2c8d070",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "edward ortiz",
+        "start": "08:40",
+        "end": "16:00",
+        "gross": 440,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "350237000610",
+          "roster_school": "EDWARD ORTIZ MIDDLE",
+          "rostered_bands": [
+            "middle"
+          ],
+          "rules": {
+            "ortiz": "token_subset"
+          }
+        },
+        "rec_key": "3502370:11e2c8d070",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "salazar",
+        "start": "08:00",
+        "end": "15:10",
+        "gross": 430,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000550",
+          "roster_school": "SALAZAR ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:7ac2db9600",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "k 8",
+        "start": "07:50",
+        "end": "15:10",
+        "gross": 440,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3502370:7ac2db9600",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "milagro ortiz",
+        "start": "08:40",
+        "end": "16:00",
+        "gross": 440,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3502370:7ac2db9600",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "high school",
+        "start": "08:35",
+        "end": "16:05",
+        "gross": 450,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "high school",
+        "rec_key": "3502370:7ac2db9600",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "pinon",
+        "start": "08:00",
+        "end": "15:10",
+        "gross": 430,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000641",
+          "roster_school": "PINON ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:9a514dde74",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "k 8",
+        "start": "07:50",
+        "end": "15:10",
+        "gross": 440,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3502370:9a514dde74",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "high school",
+        "start": "08:35",
+        "end": "16:05",
+        "gross": 450,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "high school",
+        "rec_key": "3502370:9a514dde74",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "milagro ortiz",
+        "start": "08:40",
+        "end": "16:00",
+        "gross": 440,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3502370:cac8a984ed",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "edward ortiz",
+        "start": "08:40",
+        "end": "16:00",
+        "gross": 440,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "350237000610",
+          "roster_school": "EDWARD ORTIZ MIDDLE",
+          "rostered_bands": [
+            "middle"
+          ],
+          "rules": {
+            "ortiz": "token_subset"
+          }
+        },
+        "rec_key": "3502370:bf18793b09",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "wood gormley",
+        "start": "08:15",
+        "end": "15:00",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000553",
+          "roster_school": "WOOD-GORMLEY ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:72a6d66f66",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "acequia madre",
+        "start": "07:50",
+        "end": "15:05",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000534",
+          "roster_school": "ACEQUIA MADRE ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:d7799df4df",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "amy biehl community rancho viejo",
+        "start": "07:50",
+        "end": "15:05",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237001061",
+          "roster_school": "AMY BIEHL COMMUNITY SCHOOL AT RANCHO VIEJO",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "amy biehl community": "token_subset"
+          }
+        },
+        "rec_key": "3502370:d7799df4df",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "atalaya",
+        "start": "07:50",
+        "end": "15:05",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000537",
+          "roster_school": "ATALAYA ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:d7799df4df",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "carlos gilbert",
+        "start": "07:50",
+        "end": "15:05",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000538",
+          "roster_school": "CARLOS GILBERT ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:d7799df4df",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "chaparral",
+        "start": "07:50",
+        "end": "15:05",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000539",
+          "roster_school": "CHAPARRAL ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:d7799df4df",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ej martinez",
+        "start": "07:50",
+        "end": "15:05",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000541",
+          "roster_school": "E.J. MARTINEZ ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:d7799df4df",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "kearny",
+        "start": "07:50",
+        "end": "15:05",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000548",
+          "roster_school": "KEARNY ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:d7799df4df",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "francis x nava",
+        "start": "07:50",
+        "end": "15:05",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000542",
+          "roster_school": "FRANCIS X. NAVA ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "nava": "token_subset"
+          }
+        },
+        "rec_key": "3502370:d7799df4df",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "pinon",
+        "start": "07:50",
+        "end": "15:05",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000641",
+          "roster_school": "PINON ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:d7799df4df",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ramirez thomas",
+        "start": "07:50",
+        "end": "15:05",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000887",
+          "roster_school": "RAMIREZ THOMAS ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:d7799df4df",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "salazar",
+        "start": "07:50",
+        "end": "15:05",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000550",
+          "roster_school": "SALAZAR ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:d7799df4df",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "rm sweeney",
+        "start": "07:50",
+        "end": "15:05",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000645",
+          "roster_school": "R.M. SWEENEY ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "sweeney": "token_subset"
+          }
+        },
+        "rec_key": "3502370:d7799df4df",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "tesuque",
+        "start": "07:50",
+        "end": "15:05",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000552",
+          "roster_school": "TESUQUE ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:d7799df4df",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "wood gormley",
+        "start": "07:50",
+        "end": "15:05",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "350237000553",
+          "roster_school": "WOOD-GORMLEY ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "3502370:d7799df4df",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "zia gonzales",
+        "start": "07:50",
+        "end": "15:05",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "3502370:d7799df4df",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "aspen community",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:15"
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "el camino real community",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:15"
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "el dorado community",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:15"
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "gonzales",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:15"
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "nina otero community",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:15"
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "aspen grades 7 8",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:15"
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "el camino real grades 7 8",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:15"
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "el dorado grades 7 8",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:15"
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "gonzales grades 7 8",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:15"
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "nina otero grades 7 8",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:15"
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "aspen el camino real el dorado gonzales nina otero",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:50"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:15"
+        },
+        "rec_key": "3502370:92edae428e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "k 8",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:10"
+        },
+        "rec_key": "3502370:82bd8605d2",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "high school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:35"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "16:05"
+        },
+        "rec_key": "3502370:82bd8605d2",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "milagro ortiz",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:40"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "16:00"
+        },
+        "rec_key": "3502370:11e2c8d070",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "milagro",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:40"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "16:00"
+        },
+        "rec_key": "3502370:7ac2db9600",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "edward ortiz",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:40"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "16:00"
+        },
+        "rec_key": "3502370:7ac2db9600",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "milagro ortiz",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:40"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "16:00"
+        },
+        "rec_key": "3502370:9a514dde74",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "milagro",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:40"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "16:00"
+        },
+        "rec_key": "3502370:9a514dde74",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "edward ortiz",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:40"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "16:00"
+        },
+        "rec_key": "3502370:9a514dde74",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "santa fe public",
+        "reason": "band_disagreement",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:35"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "16:05"
+        },
+        "identity": {
+          "claimed_bands": [
+            "elementary",
+            "high",
+            "middle"
+          ]
+        },
+        "rec_key": "3502370:cac8a984ed",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "elementary school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:10"
+        },
+        "rec_key": "3502370:cac8a984ed",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "k 8",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:10"
+        },
+        "rec_key": "3502370:cac8a984ed",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "high school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:35"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "16:05"
+        },
+        "rec_key": "3502370:cac8a984ed",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "milagro",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:40"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "16:00"
+        },
+        "rec_key": "3502370:cac8a984ed",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "edward ortiz",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:40"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "16:00"
+        },
+        "rec_key": "3502370:cac8a984ed",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "santa fe public",
+        "reason": "band_disagreement",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:35"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "16:05"
+        },
+        "identity": {
+          "claimed_bands": [
+            "elementary",
+            "high",
+            "middle"
+          ]
+        },
+        "rec_key": "3502370:bf18793b09",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "elementary school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:10"
+        },
+        "rec_key": "3502370:bf18793b09",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "k 8",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:10"
+        },
+        "rec_key": "3502370:bf18793b09",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "milagro ortiz",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:40"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "16:00"
+        },
+        "rec_key": "3502370:bf18793b09",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "high school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:35"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "16:05"
+        },
+        "rec_key": "3502370:bf18793b09",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "white tigers",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:05"
+        },
+        "rec_key": "3502370:d7799df4df",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "nye early childhood full day",
+        "reason": "excluded_school_type",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:45",
+          "mistralai/mistral-small-24b-instruct-2501": "07:45"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00",
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "3502370:d7799df4df",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "n_reps": 10,
+    "n_judged": 8,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 435,
+        "start_time": "08:00",
+        "end_time": "15:15",
+        "n_schools": 38,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "carlos gilbert",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "acequia madre",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "amy biehl community rancho viejo",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "atalaya",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "carlos gilbert",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "cesar chavez",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "chaparral",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "desert sage",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ej martinez",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "kearny",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "francis x nava",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "nye",
+            "start_time": "07:52",
+            "end_time": "15:08",
+            "gross": 436,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "pinon",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ramirez thomas",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "salazar",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rm sweeney",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "tesuque",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "wood gormley",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "carlos gilbert",
+            "start_time": "08:00",
+            "end_time": "15:10",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "chaparral",
+            "start_time": "08:00",
+            "end_time": "15:10",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "salazar",
+            "start_time": "08:00",
+            "end_time": "15:10",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "pinon",
+            "start_time": "08:00",
+            "end_time": "15:10",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "wood gormley",
+            "start_time": "08:15",
+            "end_time": "15:00",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "acequia madre",
+            "start_time": "07:50",
+            "end_time": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "amy biehl community rancho viejo",
+            "start_time": "07:50",
+            "end_time": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "atalaya",
+            "start_time": "07:50",
+            "end_time": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "carlos gilbert",
+            "start_time": "07:50",
+            "end_time": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "chaparral",
+            "start_time": "07:50",
+            "end_time": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ej martinez",
+            "start_time": "07:50",
+            "end_time": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "kearny",
+            "start_time": "07:50",
+            "end_time": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "francis x nava",
+            "start_time": "07:50",
+            "end_time": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "pinon",
+            "start_time": "07:50",
+            "end_time": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ramirez thomas",
+            "start_time": "07:50",
+            "end_time": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "salazar",
+            "start_time": "07:50",
+            "end_time": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rm sweeney",
+            "start_time": "07:50",
+            "end_time": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "tesuque",
+            "start_time": "07:50",
+            "end_time": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "wood gormley",
+            "start_time": "07:50",
+            "end_time": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "zia gonzales",
+            "start_time": "07:50",
+            "end_time": "15:05",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 440,
+        "start_time": "08:40",
+        "end_time": "16:00",
+        "n_schools": 11,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "milagro",
+            "start_time": "08:35",
+            "end_time": "16:00",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "edward ortiz",
+            "start_time": "08:35",
+            "end_time": "16:00",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "milagro ortiz",
+            "start_time": "08:40",
+            "end_time": "16:00",
+            "gross": 440,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "k 8",
+            "start_time": "07:50",
+            "end_time": "15:10",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "milagro",
+            "start_time": "08:40",
+            "end_time": "16:00",
+            "gross": 440,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "edward ortiz",
+            "start_time": "08:40",
+            "end_time": "16:00",
+            "gross": 440,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "k 8",
+            "start_time": "07:50",
+            "end_time": "15:10",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "milagro ortiz",
+            "start_time": "08:40",
+            "end_time": "16:00",
+            "gross": 440,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "k 8",
+            "start_time": "07:50",
+            "end_time": "15:10",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "milagro ortiz",
+            "start_time": "08:40",
+            "end_time": "16:00",
+            "gross": 440,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "edward ortiz",
+            "start_time": "08:40",
+            "end_time": "16:00",
+            "gross": 440,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 450,
+        "start_time": "08:35",
+        "end_time": "16:05",
+        "n_schools": 8,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "capital",
+            "start_time": "08:35",
+            "end_time": "16:05",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "desert sage",
+            "start_time": "08:35",
+            "end_time": "16:05",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "early college opportunities",
+            "start_time": "08:35",
+            "end_time": "16:05",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "santa fe",
+            "start_time": "08:35",
+            "end_time": "16:05",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mandela international magnet mims",
+            "start_time": "08:35",
+            "end_time": "16:05",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "high school",
+            "start_time": "08:35",
+            "end_time": "16:05",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "high school",
+            "start_time": "08:35",
+            "end_time": "16:05",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "high school",
+            "start_time": "08:35",
+            "end_time": "16:05",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "state": "NM",
+    "reaggregated_from": "extraction_f33790e63820_3502370_20260712T072136Z.json"
+  }
+}

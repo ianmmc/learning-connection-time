@@ -1,0 +1,4164 @@
+{
+  "handoff_hash": "c127b5f6e5d7",
+  "district": {
+    "district_id": "5501770",
+    "name": "Elmbrook School District",
+    "reps": [
+      {
+        "rec_key": "5501770:ba367e9037",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:35",
+                "end_time": "14:41",
+                "school_name": "Elmbrook Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:23",
+                "school_name": "Elmbrook Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:58",
+                "school_name": "Elmbrook Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1507,
+            "completion_tokens": 165,
+            "cost_usd": 0.0002167,
+            "latency_ms": 670,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285012-NlhxHNL7Cd3hnIBaoYp8"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:35",
+                "end_time": "14:41",
+                "school_name": "Elmbrook Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:23",
+                "school_name": "Elmbrook Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:58",
+                "school_name": "Elmbrook Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1466,
+            "completion_tokens": 182,
+            "cost_usd": 8.786e-05,
+            "latency_ms": 2180,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285013-2x9dllpTY5x1YjuKI0K4"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "elmbrook",
+            "start": "07:35",
+            "end": "14:41",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "5501770:ba367e9037",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "elmbrook",
+            "start": "08:10",
+            "end": "15:23",
+            "gross": 433,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "5501770:ba367e9037",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "elmbrook",
+            "start": "09:00",
+            "end": "15:58",
+            "gross": 418,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "5501770:ba367e9037",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5501770:b58c9479bd",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Elementary Schools"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:54",
+                "school_name": "Fairview South"
+              }
+            ],
+            "prompt_tokens": 750,
+            "completion_tokens": 143,
+            "cost_usd": 0.0001322,
+            "latency_ms": 1619,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285015-TAwVbuAJPRQGPbDyyDI9"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Pilgrim Park Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 786,
+            "completion_tokens": 182,
+            "cost_usd": 5.386e-05,
+            "latency_ms": 2161,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285017-gCDfqUBNXrF55c0rz688"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Pilgrim Park Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 749,
+            "completion_tokens": 111,
+            "cost_usd": 0.00026246,
+            "latency_ms": 2458,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285019-qwTHZdsGfFJGtTsm1Z9X"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "elementary schools",
+            "start": "08:50",
+            "end": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "elementary schools",
+            "rec_key": "5501770:b58c9479bd",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "high schools",
+            "start": "07:55",
+            "end": "15:09",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "high schools",
+            "rec_key": "5501770:b58c9479bd",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "pilgrim park",
+            "start": "07:18",
+            "end": "14:31",
+            "gross": 433,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "550177002331",
+              "roster_school": "Pilgrim Park Middle",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "rec_key": "5501770:b58c9479bd",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "middle schools",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:18"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:31"
+            },
+            "rec_key": "5501770:b58c9479bd",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "fairview south",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:54"
+            },
+            "rec_key": "5501770:b58c9479bd",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "5501770:eb1ca61f81",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Swanson Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:54",
+                "school_name": "Fairview South",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 736,
+            "completion_tokens": 161,
+            "cost_usd": 0.000138,
+            "latency_ms": 811,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285022-Um3gfvxPw5ep7Eb1GHhT"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Swanson Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "School District of Elmbrook",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "School District of Elmbrook",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 769,
+            "completion_tokens": 184,
+            "cost_usd": 5.317e-05,
+            "latency_ms": 2440,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285022-Z5ZS5G95XL68T4UHy4Vy"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Swanson Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 735,
+            "completion_tokens": 108,
+            "cost_usd": 0.00012879,
+            "latency_ms": 8388,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285025-7l8LKgn3NAkiR6MJ7zA2"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "swanson",
+            "start": "08:50",
+            "end": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "550177001217",
+              "roster_school": "Swanson Elementary",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "5501770:eb1ca61f81",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "district elmbrook",
+            "reason": "band_disagreement",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:55"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:09"
+            },
+            "identity": {
+              "claimed_bands": [
+                "high",
+                "middle"
+              ]
+            },
+            "rec_key": "5501770:eb1ca61f81",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "middle schools",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:18"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:31"
+            },
+            "rec_key": "5501770:eb1ca61f81",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "high schools",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:09"
+            },
+            "rec_key": "5501770:eb1ca61f81",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "fairview south",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:54"
+            },
+            "rec_key": "5501770:eb1ca61f81",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "5501770:d7b01a095a",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Tonawanda Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:54",
+                "school_name": "Fairview South",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 741,
+            "completion_tokens": 174,
+            "cost_usd": 0.0001437,
+            "latency_ms": 914,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285033-7f1EI0lvP5vT33WLgfTo"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Tonawanda Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Tonawanda Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "Tonawanda High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 774,
+            "completion_tokens": 185,
+            "cost_usd": 5.35e-05,
+            "latency_ms": 2103,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285034-8bBxYXKyCZcEBdb9w1Qq"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Tonawanda Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Fairview South",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "Fairview South",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 740,
+            "completion_tokens": 110,
+            "cost_usd": 0.00017641,
+            "latency_ms": 1732,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285036-B3budI7Z9b4pSuPSO280"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "tonawanda",
+            "start": "08:50",
+            "end": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "550177000227",
+              "roster_school": "Tonawanda Elementary",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "band_adjudication": "roster_band",
+              "claimed_bands": [
+                "elementary",
+                "high",
+                "middle"
+              ]
+            },
+            "rec_key": "5501770:d7b01a095a",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "middle schools",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:18"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:31"
+            },
+            "rec_key": "5501770:d7b01a095a",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "high schools",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:09"
+            },
+            "rec_key": "5501770:d7b01a095a",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "fairview south",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:54"
+            },
+            "rec_key": "5501770:d7b01a095a",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "5501770:79bd417034",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "BEHS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1091,
+            "completion_tokens": 47,
+            "cost_usd": 0.0001279,
+            "latency_ms": 559,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285038-CHAsCYh61GyGGCYOnXgC"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "BEHS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1161,
+            "completion_tokens": 42,
+            "cost_usd": 6.141e-05,
+            "latency_ms": 889,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285039-yQXikKrDQaCxPGRjrRrk"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "behs",
+            "start": "07:55",
+            "end": "15:09",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "5501770:79bd417034",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5501770:526bad74e8",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:53",
+                "end_time": "14:31",
+                "school_name": "Wisconsin Hills Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 883,
+            "completion_tokens": 49,
+            "cost_usd": 0.0001079,
+            "latency_ms": 948,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285040-J93tiD0xT1GM2GWCaj9y"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:53",
+                "end_time": "14:31",
+                "school_name": "Wisconsin Hills Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 950,
+            "completion_tokens": 51,
+            "cost_usd": 5.158e-05,
+            "latency_ms": 1511,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285041-UDRwua8aOJtWkI7FdhQm"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "wisconsin hills",
+            "start": "07:53",
+            "end": "14:31",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "550177000228",
+              "roster_school": "Wisconsin Hills Middle",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "rec_key": "5501770:526bad74e8",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5501770:4413437eec",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:53",
+                "end_time": "14:31",
+                "school_name": "Pilgrim Park Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 885,
+            "completion_tokens": 50,
+            "cost_usd": 0.0001085,
+            "latency_ms": 493,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285042-VAGvgQsUa2Y3ivTI9xvk"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:53",
+                "end_time": "14:31",
+                "school_name": "Pilgrim Park Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 951,
+            "completion_tokens": 52,
+            "cost_usd": 5.171e-05,
+            "latency_ms": 848,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285043-RMvmcxJwPo7ZvoEbAzN6"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "pilgrim park",
+            "start": "07:53",
+            "end": "14:31",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "550177002331",
+              "roster_school": "Pilgrim Park Middle",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "rec_key": "5501770:4413437eec",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5501770:e1f6ecf97a",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Dixon Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:54",
+                "school_name": "Fairview South",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 737,
+            "completion_tokens": 161,
+            "cost_usd": 0.0001381,
+            "latency_ms": 775,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285044-AfJpdLBg8P9rbOooaJEX"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Dixon Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 770,
+            "completion_tokens": 178,
+            "cost_usd": 5.274e-05,
+            "latency_ms": 2529,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285045-YlG1Ke8qOz8DQPcjX2aI"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Dixon Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 735,
+            "completion_tokens": 108,
+            "cost_usd": 0.00024507,
+            "latency_ms": 2315,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285047-aKlFFENJvUJG9se17agJ"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "dixon",
+            "start": "08:50",
+            "end": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "550177002367",
+              "roster_school": "Dixon Elementary",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "5501770:e1f6ecf97a",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "middle schools",
+            "start": "07:18",
+            "end": "14:31",
+            "gross": 433,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "middle schools",
+            "rec_key": "5501770:e1f6ecf97a",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "high schools",
+            "start": "07:55",
+            "end": "15:09",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "high schools",
+            "rec_key": "5501770:e1f6ecf97a",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "fairview south",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:54"
+            },
+            "rec_key": "5501770:e1f6ecf97a",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "5501770:d332f8d942",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "Brookfield East High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1269,
+            "completion_tokens": 50,
+            "cost_usd": 0.0001469,
+            "latency_ms": 771,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285049-gLmLMY9mCdMDyj6Bndt2"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "Brookfield East High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1275,
+            "completion_tokens": 51,
+            "cost_usd": 6.783e-05,
+            "latency_ms": 774,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285050-AjML9ql3nooFMAl2YIc3"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "brookfield east",
+            "start": "07:55",
+            "end": "15:09",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "550177000215",
+              "roster_school": "Brookfield East High",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "rec_key": "5501770:d332f8d942",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5501770:8c548e1d03",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Burleigh Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:54",
+                "school_name": "Fairview South",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 738,
+            "completion_tokens": 161,
+            "cost_usd": 0.0001382,
+            "latency_ms": 709,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285051-kW6FHj8sKiSIcBoYExg4"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Burleigh Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 769,
+            "completion_tokens": 178,
+            "cost_usd": 5.269e-05,
+            "latency_ms": 2298,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285052-1YP4Wrq6ZDCOnJJfModE"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Burleigh Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": null,
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": null,
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 735,
+            "completion_tokens": 105,
+            "cost_usd": 0.0001726725,
+            "latency_ms": 2115,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285054-YjPXI87SYo1AVa49ZZSS"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "burleigh",
+            "start": "08:50",
+            "end": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "550177000218",
+              "roster_school": "Burleigh Elementary",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "5501770:8c548e1d03",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "middle schools",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:18"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:31"
+            },
+            "rec_key": "5501770:8c548e1d03",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "high schools",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:09"
+            },
+            "rec_key": "5501770:8c548e1d03",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "fairview south",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:54"
+            },
+            "rec_key": "5501770:8c548e1d03",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "middle school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:18"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:31"
+            },
+            "rec_key": "5501770:8c548e1d03",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "high school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:55"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:09"
+            },
+            "rec_key": "5501770:8c548e1d03",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "5501770:8de749d287",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Elementary Schools"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:54",
+                "school_name": "Fairview South"
+              }
+            ],
+            "prompt_tokens": 761,
+            "completion_tokens": 138,
+            "cost_usd": 0.0001313,
+            "latency_ms": 717,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285056-19bnC8UytKBQxPORbMPd"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "14:54",
+                "school_name": "Fairview South",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 797,
+            "completion_tokens": 231,
+            "cost_usd": 5.833e-05,
+            "latency_ms": 3367,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285057-nCtFHoAWmHXksyYi7qf1"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 760,
+            "completion_tokens": 106,
+            "cost_usd": 0.00024528,
+            "latency_ms": 2752,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285060-ajNslioKHgH4KlNLu4Rr"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "elementary schools",
+            "start": "08:50",
+            "end": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "elementary schools",
+            "rec_key": "5501770:8de749d287",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "middle schools",
+            "start": "07:18",
+            "end": "14:31",
+            "gross": 433,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "middle schools",
+            "rec_key": "5501770:8de749d287",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "high schools",
+            "start": "07:55",
+            "end": "15:09",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "high schools",
+            "rec_key": "5501770:8de749d287",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "fairview south",
+            "reason": "band_disagreement",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:15",
+              "mistralai/mistral-small-24b-instruct-2501": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:54",
+              "mistralai/mistral-small-24b-instruct-2501": "14:54"
+            },
+            "identity": {
+              "claimed_bands": [
+                "elementary",
+                "high"
+              ]
+            },
+            "rec_key": "5501770:8de749d287",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "5501770:ed2a423605",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Brookfield Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:54",
+                "school_name": "Fairview South",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 741,
+            "completion_tokens": 161,
+            "cost_usd": 0.0001385,
+            "latency_ms": 1015,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285063-ePjtr1xEeDuzHhyx6P4k"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Brookfield Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 778,
+            "completion_tokens": 179,
+            "cost_usd": 5.322e-05,
+            "latency_ms": 2590,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285064-1kdwPZV70SiXgGguQ1kp"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Brookfield Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 742,
+            "completion_tokens": 109,
+            "cost_usd": 0.00013,
+            "latency_ms": 5536,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285067-Rqm5oajKlhPkoaWVFoxi"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "brookfield",
+            "start": "08:50",
+            "end": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "550177000216",
+              "roster_school": "Brookfield Elementary",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "5501770:ed2a423605",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "middle schools",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:18"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:31"
+            },
+            "rec_key": "5501770:ed2a423605",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "high schools",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:09"
+            },
+            "rec_key": "5501770:ed2a423605",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "fairview south",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:54"
+            },
+            "rec_key": "5501770:ed2a423605",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "middle school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:18"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:31"
+            },
+            "rec_key": "5501770:ed2a423605",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "high school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:55"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:09"
+            },
+            "rec_key": "5501770:ed2a423605",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "5501770:63543d9fbf",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Elementary Schools"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "Brookfield Central High School"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:54",
+                "school_name": "Fairview South"
+              }
+            ],
+            "prompt_tokens": 769,
+            "completion_tokens": 146,
+            "cost_usd": 0.0001353,
+            "latency_ms": 820,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285072-wIUUVG4lUmSSlMPGoC5c"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "14:54",
+                "school_name": "Fairview South",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 800,
+            "completion_tokens": 231,
+            "cost_usd": 5.848e-05,
+            "latency_ms": 2772,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285073-gSNrtUPEHTNpglmcwM1a"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 769,
+            "completion_tokens": 107,
+            "cost_usd": 0.00013127,
+            "latency_ms": 5332,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285077-0H2QeiAgAfIIdcC0tJbW"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "elementary schools",
+            "start": "08:50",
+            "end": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "elementary schools",
+            "rec_key": "5501770:63543d9fbf",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "middle schools",
+            "start": "07:18",
+            "end": "14:31",
+            "gross": 433,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "middle schools",
+            "rec_key": "5501770:63543d9fbf",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "fairview south",
+            "reason": "band_disagreement",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:15",
+              "mistralai/mistral-small-24b-instruct-2501": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:54",
+              "mistralai/mistral-small-24b-instruct-2501": "14:54"
+            },
+            "identity": {
+              "claimed_bands": [
+                "elementary",
+                "high"
+              ]
+            },
+            "rec_key": "5501770:63543d9fbf",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "brookfield central",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:09"
+            },
+            "rec_key": "5501770:63543d9fbf",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "high schools",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:55"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:09"
+            },
+            "rec_key": "5501770:63543d9fbf",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "5501770:55cfd1b998",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Wisconsin Hills Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:54",
+                "school_name": "Fairview South",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 735,
+            "completion_tokens": 161,
+            "cost_usd": 0.0001379,
+            "latency_ms": 1001,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285082-b2j566ZMaBVY35kek0oz"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Wisconsin Hills Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 770,
+            "completion_tokens": 181,
+            "cost_usd": 5.298e-05,
+            "latency_ms": 3073,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285083-MrPNgB59AUJXwPlBzk3R"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 734,
+            "completion_tokens": 107,
+            "cost_usd": 7.676e-05,
+            "latency_ms": 3759,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285086-iG4DH0CWeeVkncVNd79C"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "elementary schools",
+            "start": "08:50",
+            "end": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "elementary schools",
+            "rec_key": "5501770:55cfd1b998",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "wisconsin hills",
+            "start": "07:18",
+            "end": "14:31",
+            "gross": 433,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "550177000228",
+              "roster_school": "Wisconsin Hills Middle",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "rec_key": "5501770:55cfd1b998",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "high schools",
+            "start": "07:55",
+            "end": "15:09",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "high schools",
+            "rec_key": "5501770:55cfd1b998",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "fairview south",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:54"
+            },
+            "rec_key": "5501770:55cfd1b998",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "5501770:cf2e5a94e8",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Elementary Schools"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:54",
+                "school_name": "Fairview South"
+              }
+            ],
+            "prompt_tokens": 747,
+            "completion_tokens": 143,
+            "cost_usd": 0.0001319,
+            "latency_ms": 1417,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285090-BNlps8Zjr636aNdXMV7l"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 778,
+            "completion_tokens": 177,
+            "cost_usd": 5.306e-05,
+            "latency_ms": 3821,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285091-fZ4Knvs9vE1vyrL19z7U"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "High Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 742,
+            "completion_tokens": 107,
+            "cost_usd": 7.748e-05,
+            "latency_ms": 4861,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285095-VUPXpjIUnLKS4M7Bj62N"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "elementary schools",
+            "start": "08:50",
+            "end": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "elementary schools",
+            "rec_key": "5501770:cf2e5a94e8",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "middle schools",
+            "start": "07:18",
+            "end": "14:31",
+            "gross": 433,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "middle schools",
+            "rec_key": "5501770:cf2e5a94e8",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "high schools",
+            "start": "07:55",
+            "end": "15:09",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "band_referent",
+            "resolved_from": "high schools",
+            "rec_key": "5501770:cf2e5a94e8",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "fairview south",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:54"
+            },
+            "rec_key": "5501770:cf2e5a94e8",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "5501770:08995bf67a",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "BCHS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 671,
+            "completion_tokens": 47,
+            "cost_usd": 8.59e-05,
+            "latency_ms": 606,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285100-l6Icprek3oD3WlQKiaoF"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "BCHS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 668,
+            "completion_tokens": 47,
+            "cost_usd": 3.716e-05,
+            "latency_ms": 860,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285100-zaamblvN2PMf4sgQ3tSf"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "bchs",
+            "start": "07:55",
+            "end": "15:09",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "5501770:08995bf67a",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5501770:7b5982fec4",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Pilgrim Park Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 661,
+            "completion_tokens": 45,
+            "cost_usd": 8.41e-05,
+            "latency_ms": 496,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285101-jxA9ShrmKiqKvYnUeM5j"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Pilgrim Park Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 677,
+            "completion_tokens": 74,
+            "cost_usd": 3.977e-05,
+            "latency_ms": 1189,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285102-qts78dZhQxhf6cyitSmT"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "pilgrim park",
+            "start": "07:18",
+            "end": "14:31",
+            "gross": 433,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "550177002331",
+              "roster_school": "Pilgrim Park Middle",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "rec_key": "5501770:7b5982fec4",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5501770:c31836cd98",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:42",
+                "school_name": "Burleigh Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 601,
+            "completion_tokens": 44,
+            "cost_usd": 7.77e-05,
+            "latency_ms": 530,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285103-06awApi9Ntbm1nAeD0rx"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:42",
+                "school_name": "Burleigh Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 616,
+            "completion_tokens": 50,
+            "cost_usd": 3.48e-05,
+            "latency_ms": 785,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285104-dhjziil5gCQicyeL3Jwo"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "burleigh",
+            "start": "08:50",
+            "end": "15:42",
+            "gross": 412,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "550177000218",
+              "roster_school": "Burleigh Elementary",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "5501770:c31836cd98",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5501770:bd46f37869",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Brookfield Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 598,
+            "completion_tokens": 49,
+            "cost_usd": 7.94e-05,
+            "latency_ms": 490,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285104-0iNh60BxB8ucazpUQH82"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:43",
+                "school_name": "Brookfield Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 617,
+            "completion_tokens": 51,
+            "cost_usd": 3.493e-05,
+            "latency_ms": 797,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285105-BLVKdmAHlfjtY1FUdD77"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "brookfield",
+            "start": "08:50",
+            "end": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "550177000216",
+              "roster_school": "Brookfield Elementary",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "rec_key": "5501770:bd46f37869",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5501770:96bba5deeb",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Elmbrook School District",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1118,
+            "completion_tokens": 50,
+            "cost_usd": 0.0001318,
+            "latency_ms": 618,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285106-1tT1ACA2snjsqsQDCCBN"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:18",
+                "end_time": "14:31",
+                "school_name": "Elmbrook School District",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1126,
+            "completion_tokens": 45,
+            "cost_usd": 5.99e-05,
+            "latency_ms": 831,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285106-sPJeT3YK7384Vak75zhc"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "elmbrook",
+            "start": "07:18",
+            "end": "14:31",
+            "gross": 433,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "5501770:96bba5deeb",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "elmbrook",
+        "start": "07:35",
+        "end": "14:41",
+        "gross": 426,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "5501770:ba367e9037",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "elmbrook",
+        "start": "08:10",
+        "end": "15:23",
+        "gross": 433,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "5501770:ba367e9037",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "elmbrook",
+        "start": "09:00",
+        "end": "15:58",
+        "gross": 418,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "5501770:ba367e9037",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "elementary schools",
+        "start": "08:50",
+        "end": "15:43",
+        "gross": 413,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "elementary schools",
+        "rec_key": "5501770:b58c9479bd",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "high schools",
+        "start": "07:55",
+        "end": "15:09",
+        "gross": 434,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "high schools",
+        "rec_key": "5501770:b58c9479bd",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "pilgrim park",
+        "start": "07:18",
+        "end": "14:31",
+        "gross": 433,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "550177002331",
+          "roster_school": "Pilgrim Park Middle",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "rec_key": "5501770:b58c9479bd",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "swanson",
+        "start": "08:50",
+        "end": "15:43",
+        "gross": 413,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "550177001217",
+          "roster_school": "Swanson Elementary",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "5501770:eb1ca61f81",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "tonawanda",
+        "start": "08:50",
+        "end": "15:43",
+        "gross": 413,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "550177000227",
+          "roster_school": "Tonawanda Elementary",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "band_adjudication": "roster_band",
+          "claimed_bands": [
+            "elementary",
+            "high",
+            "middle"
+          ]
+        },
+        "rec_key": "5501770:d7b01a095a",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "behs",
+        "start": "07:55",
+        "end": "15:09",
+        "gross": 434,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "5501770:79bd417034",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "wisconsin hills",
+        "start": "07:53",
+        "end": "14:31",
+        "gross": 398,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "550177000228",
+          "roster_school": "Wisconsin Hills Middle",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "rec_key": "5501770:526bad74e8",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "pilgrim park",
+        "start": "07:53",
+        "end": "14:31",
+        "gross": 398,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "550177002331",
+          "roster_school": "Pilgrim Park Middle",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "rec_key": "5501770:4413437eec",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "dixon",
+        "start": "08:50",
+        "end": "15:43",
+        "gross": 413,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "550177002367",
+          "roster_school": "Dixon Elementary",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "5501770:e1f6ecf97a",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "middle schools",
+        "start": "07:18",
+        "end": "14:31",
+        "gross": 433,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "middle schools",
+        "rec_key": "5501770:e1f6ecf97a",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "high schools",
+        "start": "07:55",
+        "end": "15:09",
+        "gross": 434,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "high schools",
+        "rec_key": "5501770:e1f6ecf97a",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "brookfield east",
+        "start": "07:55",
+        "end": "15:09",
+        "gross": 434,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "550177000215",
+          "roster_school": "Brookfield East High",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "rec_key": "5501770:d332f8d942",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "burleigh",
+        "start": "08:50",
+        "end": "15:43",
+        "gross": 413,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "550177000218",
+          "roster_school": "Burleigh Elementary",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "5501770:8c548e1d03",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "elementary schools",
+        "start": "08:50",
+        "end": "15:43",
+        "gross": 413,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "elementary schools",
+        "rec_key": "5501770:8de749d287",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "middle schools",
+        "start": "07:18",
+        "end": "14:31",
+        "gross": 433,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "middle schools",
+        "rec_key": "5501770:8de749d287",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "high schools",
+        "start": "07:55",
+        "end": "15:09",
+        "gross": 434,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "high schools",
+        "rec_key": "5501770:8de749d287",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "brookfield",
+        "start": "08:50",
+        "end": "15:43",
+        "gross": 413,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "550177000216",
+          "roster_school": "Brookfield Elementary",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "5501770:ed2a423605",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "elementary schools",
+        "start": "08:50",
+        "end": "15:43",
+        "gross": 413,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "elementary schools",
+        "rec_key": "5501770:63543d9fbf",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "middle schools",
+        "start": "07:18",
+        "end": "14:31",
+        "gross": 433,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "middle schools",
+        "rec_key": "5501770:63543d9fbf",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "elementary schools",
+        "start": "08:50",
+        "end": "15:43",
+        "gross": 413,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "elementary schools",
+        "rec_key": "5501770:55cfd1b998",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "wisconsin hills",
+        "start": "07:18",
+        "end": "14:31",
+        "gross": 433,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "550177000228",
+          "roster_school": "Wisconsin Hills Middle",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "rec_key": "5501770:55cfd1b998",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "high schools",
+        "start": "07:55",
+        "end": "15:09",
+        "gross": 434,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "high schools",
+        "rec_key": "5501770:55cfd1b998",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "elementary schools",
+        "start": "08:50",
+        "end": "15:43",
+        "gross": 413,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "elementary schools",
+        "rec_key": "5501770:cf2e5a94e8",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "middle schools",
+        "start": "07:18",
+        "end": "14:31",
+        "gross": 433,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "middle schools",
+        "rec_key": "5501770:cf2e5a94e8",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "high schools",
+        "start": "07:55",
+        "end": "15:09",
+        "gross": 434,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "band_referent",
+        "resolved_from": "high schools",
+        "rec_key": "5501770:cf2e5a94e8",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "bchs",
+        "start": "07:55",
+        "end": "15:09",
+        "gross": 434,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "5501770:08995bf67a",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "pilgrim park",
+        "start": "07:18",
+        "end": "14:31",
+        "gross": 433,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "550177002331",
+          "roster_school": "Pilgrim Park Middle",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "rec_key": "5501770:7b5982fec4",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "burleigh",
+        "start": "08:50",
+        "end": "15:42",
+        "gross": 412,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "550177000218",
+          "roster_school": "Burleigh Elementary",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "5501770:c31836cd98",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "brookfield",
+        "start": "08:50",
+        "end": "15:43",
+        "gross": 413,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "550177000216",
+          "roster_school": "Brookfield Elementary",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "rec_key": "5501770:bd46f37869",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "elmbrook",
+        "start": "07:18",
+        "end": "14:31",
+        "gross": 433,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "5501770:96bba5deeb",
+        "source_file": "harvest_slice.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "middle schools",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:18"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:31"
+        },
+        "rec_key": "5501770:b58c9479bd",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "fairview south",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:54"
+        },
+        "rec_key": "5501770:b58c9479bd",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "district elmbrook",
+        "reason": "band_disagreement",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:55"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:09"
+        },
+        "identity": {
+          "claimed_bands": [
+            "high",
+            "middle"
+          ]
+        },
+        "rec_key": "5501770:eb1ca61f81",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "middle schools",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:18"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:31"
+        },
+        "rec_key": "5501770:eb1ca61f81",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "high schools",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:09"
+        },
+        "rec_key": "5501770:eb1ca61f81",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "fairview south",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:54"
+        },
+        "rec_key": "5501770:eb1ca61f81",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "middle schools",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:18"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:31"
+        },
+        "rec_key": "5501770:d7b01a095a",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "high schools",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:09"
+        },
+        "rec_key": "5501770:d7b01a095a",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "fairview south",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:54"
+        },
+        "rec_key": "5501770:d7b01a095a",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "fairview south",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:54"
+        },
+        "rec_key": "5501770:e1f6ecf97a",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "middle schools",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:18"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:31"
+        },
+        "rec_key": "5501770:8c548e1d03",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "high schools",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:09"
+        },
+        "rec_key": "5501770:8c548e1d03",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "fairview south",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:54"
+        },
+        "rec_key": "5501770:8c548e1d03",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "middle school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:18"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:31"
+        },
+        "rec_key": "5501770:8c548e1d03",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "high school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:55"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:09"
+        },
+        "rec_key": "5501770:8c548e1d03",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "fairview south",
+        "reason": "band_disagreement",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:15",
+          "mistralai/mistral-small-24b-instruct-2501": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:54",
+          "mistralai/mistral-small-24b-instruct-2501": "14:54"
+        },
+        "identity": {
+          "claimed_bands": [
+            "elementary",
+            "high"
+          ]
+        },
+        "rec_key": "5501770:8de749d287",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "middle schools",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:18"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:31"
+        },
+        "rec_key": "5501770:ed2a423605",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "high schools",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:09"
+        },
+        "rec_key": "5501770:ed2a423605",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "fairview south",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:54"
+        },
+        "rec_key": "5501770:ed2a423605",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "middle school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:18"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:31"
+        },
+        "rec_key": "5501770:ed2a423605",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "high school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:55"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:09"
+        },
+        "rec_key": "5501770:ed2a423605",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "fairview south",
+        "reason": "band_disagreement",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:15",
+          "mistralai/mistral-small-24b-instruct-2501": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:54",
+          "mistralai/mistral-small-24b-instruct-2501": "14:54"
+        },
+        "identity": {
+          "claimed_bands": [
+            "elementary",
+            "high"
+          ]
+        },
+        "rec_key": "5501770:63543d9fbf",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "brookfield central",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:09"
+        },
+        "rec_key": "5501770:63543d9fbf",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "high schools",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:55"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:09"
+        },
+        "rec_key": "5501770:63543d9fbf",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "fairview south",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:54"
+        },
+        "rec_key": "5501770:55cfd1b998",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "fairview south",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:54"
+        },
+        "rec_key": "5501770:cf2e5a94e8",
+        "source_file": "page.txt"
+      }
+    ],
+    "n_reps": 20,
+    "n_judged": 10,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 413,
+        "start_time": "08:50",
+        "end_time": "15:43",
+        "n_schools": 13,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "elmbrook",
+            "start_time": "09:00",
+            "end_time": "15:58",
+            "gross": 418,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "elementary schools",
+            "start_time": "08:50",
+            "end_time": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "swanson",
+            "start_time": "08:50",
+            "end_time": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "tonawanda",
+            "start_time": "08:50",
+            "end_time": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dixon",
+            "start_time": "08:50",
+            "end_time": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "burleigh",
+            "start_time": "08:50",
+            "end_time": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "elementary schools",
+            "start_time": "08:50",
+            "end_time": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "brookfield",
+            "start_time": "08:50",
+            "end_time": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "elementary schools",
+            "start_time": "08:50",
+            "end_time": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "elementary schools",
+            "start_time": "08:50",
+            "end_time": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "elementary schools",
+            "start_time": "08:50",
+            "end_time": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "burleigh",
+            "start_time": "08:50",
+            "end_time": "15:42",
+            "gross": 412,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "brookfield",
+            "start_time": "08:50",
+            "end_time": "15:43",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 433,
+        "start_time": "08:10",
+        "end_time": "15:23",
+        "n_schools": 11,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "elmbrook",
+            "start_time": "08:10",
+            "end_time": "15:23",
+            "gross": 433,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "pilgrim park",
+            "start_time": "07:18",
+            "end_time": "14:31",
+            "gross": 433,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "wisconsin hills",
+            "start_time": "07:53",
+            "end_time": "14:31",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "pilgrim park",
+            "start_time": "07:53",
+            "end_time": "14:31",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "middle schools",
+            "start_time": "07:18",
+            "end_time": "14:31",
+            "gross": 433,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "middle schools",
+            "start_time": "07:18",
+            "end_time": "14:31",
+            "gross": 433,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "middle schools",
+            "start_time": "07:18",
+            "end_time": "14:31",
+            "gross": 433,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "wisconsin hills",
+            "start_time": "07:18",
+            "end_time": "14:31",
+            "gross": 433,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "middle schools",
+            "start_time": "07:18",
+            "end_time": "14:31",
+            "gross": 433,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "pilgrim park",
+            "start_time": "07:18",
+            "end_time": "14:31",
+            "gross": 433,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "elmbrook",
+            "start_time": "07:18",
+            "end_time": "14:31",
+            "gross": 433,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 434,
+        "start_time": "07:55",
+        "end_time": "15:09",
+        "n_schools": 9,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "elmbrook",
+            "start_time": "07:35",
+            "end_time": "14:41",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "high schools",
+            "start_time": "07:55",
+            "end_time": "15:09",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "behs",
+            "start_time": "07:55",
+            "end_time": "15:09",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "high schools",
+            "start_time": "07:55",
+            "end_time": "15:09",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "brookfield east",
+            "start_time": "07:55",
+            "end_time": "15:09",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "high schools",
+            "start_time": "07:55",
+            "end_time": "15:09",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "high schools",
+            "start_time": "07:55",
+            "end_time": "15:09",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "high schools",
+            "start_time": "07:55",
+            "end_time": "15:09",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "bchs",
+            "start_time": "07:55",
+            "end_time": "15:09",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "state": "WI",
+    "reaggregated_from": "extraction_c127b5f6e5d7_5501770_20260705T205827Z.json"
+  }
+}

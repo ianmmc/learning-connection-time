@@ -172,6 +172,49 @@ class TestDispositions:
         assert by_id["001"]["match"]["disposition"]["kind"] == "assign"
         assert out["elementary"]["stats"]["n_ambiguous"] == 0
 
+    def test_stale_raw_key_raises_no_false_orphan_alarms(self):
+        """#782 (review round): the orphan-surfacing comparisons re-normalize the persisted key
+        exactly like the binding lookups do — a correctly-BOUND pre-#693 assign must not also
+        appear as assign_shadowed/assign_fact_absent (a self-contradictory alarm)."""
+        rosters = _rosters({"elementary": [_rec("001", "Lewis & Clark Elementary School")]})
+        out = SP.project_slots(rosters, {"elementary": ["lewis clark"]},
+                               assignments=[_asg("elementary", "001", "lewis and clark", "assign")])
+        by_id = {s["school_id"]: s for s in out["elementary"]["slots"]}
+        assert by_id["001"]["slot_state"] == "filled"
+        assert out["elementary"].get("orphaned_dispositions", []) == []
+
+    def test_confirm_key_collision_surfaced_not_silent(self):
+        """#788 (review round): two historically-distinct confirm_extra rows converging on one
+        current key must SURFACE as a collision for human retirement — neither silently
+        vanishes from the denominator."""
+        rosters = _rosters({"elementary": [_rec("001", "Washington Elementary School")]})
+        out = SP.project_slots(
+            rosters, {"elementary": ["bridge program annex two"]},
+            assignments=[_asg("elementary", "", "bridge program annex the two", "confirm_extra"),
+                         _asg("elementary", "", "bridge program annex two", "confirm_extra")])
+        kinds = [o["kind"] for o in out["elementary"]["orphaned_dispositions"]]
+        assert "confirm_key_collision" in kinds
+        coll = next(o for o in out["elementary"]["orphaned_dispositions"]
+                    if o["kind"] == "confirm_key_collision")
+        assert sorted(coll["colliding_raw_keys"]) == ["bridge program annex the two",
+                                                      "bridge program annex two"]
+
+    def test_stored_disposition_key_self_heals_across_normalizer_change(self):
+        """A PERSISTED norm_school_fact written under an OLDER normalizer must still bind after a
+        stopword-list change: intake re-normalizes through the CURRENT function (idempotence is
+        what makes that safe). Pinned with the exact 2026-08-15 change (#693 added 'and' to
+        _GENERIC): a pre-change key 'lewis and clark' must keep applying to the fact that now
+        norms to 'lewis clark'. Without the intake re-norm this assign silently detaches — the
+        human's decision vanishes with no signal."""
+        rosters = _rosters({"elementary": [_rec("001", "Lewis & Clark Elementary School"),
+                                           _rec("002", "Lewis Elementary School")]})
+        out = SP.project_slots(rosters, {"elementary": ["lewis clark"]},
+                               assignments=[_asg("elementary", "001", "lewis and clark", "assign")])
+        by_id = {s["school_id"]: s for s in out["elementary"]["slots"]}
+        assert by_id["001"]["slot_state"] == "filled"
+        assert by_id["001"]["match"]["disposition"]["kind"] == "assign"
+        assert out["elementary"]["extras"] == []
+
     def test_assign_beats_intent(self):
         # disposition > intent: intent points at 002, the human said 001
         out = SP.project_slots(self._rosters(),
@@ -326,7 +369,7 @@ class TestBandFactProjection:
                                         _rec("003", "Sunset Elementary School")]})
 
     def test_conjunction_fills_named_slots(self):
-        bf = {"norm_school_fact": "milagro and ortiz", "school_display": "milagro and ortiz schools",
+        bf = {"norm_school_fact": "milagro ortiz", "school_display": "milagro and ortiz schools",
               "kind": "conjunction",
               "campuses": ["Milagro Elementary School", "Ortiz Elementary School"]}
         out = SP.project_slots(self._rosters3(), {"elementary": ["milagro and ortiz schools"]},
@@ -425,7 +468,7 @@ class TestCampusShorthand:
             _rec("102", "Ortiz Middle School", effective_band="middle"),
             _rec("103", "Washington Middle School", effective_band="middle"),
             _rec("104", "Washington Academy", effective_band="middle")]})
-        bf = {"norm_school_fact": "milagro and ortiz", "school_display": "milagro and ortiz schools",
+        bf = {"norm_school_fact": "milagro ortiz", "school_display": "milagro and ortiz schools",
               "kind": "conjunction", "campuses": ["Milagro", "Ortiz Middle", "Washington"]}
         out = SP.project_slots(rosters, {"middle": ["milagro and ortiz schools"]},
                                band_facts={"middle": bf})

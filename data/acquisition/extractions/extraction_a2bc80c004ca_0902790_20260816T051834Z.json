@@ -1,0 +1,2494 @@
+{
+  "handoff_hash": "a2bc80c004ca",
+  "district": {
+    "district_id": "0902790",
+    "name": "New Haven School District",
+    "reps": [
+      {
+        "rec_key": "0902790:8f789ce38f",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 52,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:15",
+                "school_name": "METRO BUS. ACADEMY",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:10",
+                "end_time": "14:05",
+                "school_name": "NEW HAVEN ACADEMY",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "13:00",
+                "end_time": "16:00",
+                "school_name": "PLATT TECH",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:17",
+                "school_name": "SOUND SCHOOL",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:10",
+                "end_time": "14:15",
+                "school_name": "RIVERSIDE",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:10",
+                "end_time": "14:05",
+                "school_name": "HSC HS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "COMMON GROUND",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:30",
+                "school_name": "JOHN MARTINEZ",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "15:30",
+                "school_name": "JOHN MARTINEZ",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:30",
+                "school_name": "JEPSON",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "15:30",
+                "school_name": "JEPSON",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "JOHN DANIELS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "JOHN DANIELS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "LINCOLN BASSETT",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "LINCOLN BASSETT",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "14:10",
+                "school_name": "KING-ROBINSON",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "14:10",
+                "school_name": "KING-ROBINSON",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "NATHAN HALE",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "NATHAN HALE",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "ROBERTO CLEMENTE",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "ROBERTO CLEMENTE",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:30",
+                "school_name": "ROSS-WOODWARD",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "15:30",
+                "school_name": "ROSS-WOODWARD",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "MAURO-SHERIDAN",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "MAURO-SHERIDAN",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "WEXLER (WG)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "WEXLER (WG)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "TROUP",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "TROUP",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:15",
+                "school_name": "TRUMAN",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:00",
+                "end_time": "15:15",
+                "school_name": "TRUMAN",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:00",
+                "end_time": "14:30",
+                "school_name": "ELM CITY ELEM",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:00",
+                "end_time": "14:30",
+                "school_name": "ELM CITY ELEM",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "16:00",
+                "school_name": "ELM CITY MIDDLE",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "16:00",
+                "school_name": "ELM CITY MIDDLE",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:45",
+                "school_name": "HIGHVILLE CHARTER K-8",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "15:30",
+                "school_name": "HIGHVILLE CHARTER H S",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:00",
+                "school_name": "B. T. WASHINGTON ELEM",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:00",
+                "school_name": "B. T. WASHINGTON ELEM",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:00",
+                "school_name": "B.T. WASHINGTON MIDDLE",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "15:30",
+                "school_name": "B.T. WASHINGTON MIDDLE",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "DR. MAYO ECLC H1",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "17:15",
+                "school_name": "DR. MAYO ECLC H2",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:00",
+                "school_name": "ADULT EDUCATION",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:15",
+                "end_time": "15:00",
+                "school_name": "ADULT EDUCATION",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "13:30",
+                "school_name": "DR. MAYO ECLC SPED",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "13:30",
+                "school_name": "DR. MAYO ECLC SPED",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "14:45",
+                "school_name": "DR. MAYO ECLC SPED",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:00",
+                "school_name": "DR. MAYO ECLC H1",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:00",
+                "school_name": "DR. MAYO ECLC H1",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "15:00",
+                "school_name": "DR. MAYO ECLC H2",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:00",
+                "school_name": "DR. MAYO ECLC H2",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1463,
+            "completion_tokens": 2723,
+            "cost_usd": 0.0012355,
+            "latency_ms": 18816,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050974-eRzxPYBNsUQDjLmpYgPP"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 22,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:15",
+                "school_name": "Metro Bus. Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:10",
+                "end_time": "14:05",
+                "school_name": "New Haven Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:10",
+                "end_time": "14:15",
+                "school_name": "Riverside",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:10",
+                "end_time": "14:05",
+                "school_name": "HSC HS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Common Ground",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:30",
+                "school_name": "John Martinez",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:30",
+                "school_name": "Jepson",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "John Daniels",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Lincoln Bassett",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:30",
+                "school_name": "Nathan Hale",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:30",
+                "school_name": "Roberto Clemente",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:30",
+                "school_name": "Ross-Woodward",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:30",
+                "school_name": "Mauro-Sheridan",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:30",
+                "school_name": "Wexler (WG)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:30",
+                "school_name": "Troup",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:30",
+                "school_name": "Truman",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:00",
+                "school_name": "Elm City Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:00",
+                "school_name": "Elm City Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:00",
+                "school_name": "Highville Charter K-8",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:00",
+                "school_name": "Highville Charter HS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:00",
+                "school_name": "B.T. Washington Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:00",
+                "school_name": "B.T. Washington Middle",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1578,
+            "completion_tokens": 858,
+            "cost_usd": 0.00014754,
+            "latency_ms": 25184,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050991-yhEIkJtEKedI0TAOQMTb"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 16,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:15",
+                "school_name": "Metro Bus. Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:10",
+                "end_time": "14:05",
+                "school_name": "New Haven Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "13:00",
+                "end_time": "16:00",
+                "school_name": "Platt Tech",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:17",
+                "school_name": "Sound School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:10",
+                "end_time": "14:15",
+                "school_name": "Riverside",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:10",
+                "end_time": "14:05",
+                "school_name": "HSC HS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Common Ground",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:30",
+                "school_name": "John Martinez",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:30",
+                "school_name": "Jepson",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "John Daniels",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Lincoln Bassett",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "14:10",
+                "school_name": "King-Robinson",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:00",
+                "end_time": "15:15",
+                "school_name": "Truman",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "16:00",
+                "school_name": "Elm City Elem",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "16:00",
+                "school_name": "Elm City Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:40",
+                "end_time": "15:45",
+                "school_name": "Highville Charter HS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1498,
+            "completion_tokens": 555,
+            "cost_usd": 0.0006326,
+            "latency_ms": 21143,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051018-kBZW6pz1378lvFRENARH"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "metro bus",
+            "start": "07:30",
+            "end": "14:15",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "new haven",
+            "start": "07:10",
+            "end": "14:05",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090279000547",
+              "roster_school": "New Haven Academy",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "sound",
+            "start": "07:30",
+            "end": "14:17",
+            "gross": 407,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "090279001216",
+              "roster_school": "Sound School",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "riverside",
+            "start": "07:10",
+            "end": "14:15",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "hsc",
+            "start": "07:10",
+            "end": "14:05",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "common ground",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "john s martinez sea sky stem",
+            "start": "09:15",
+            "end": "15:30",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090279001386",
+              "roster_school": "John S. Martinez Sea and Sky STEM School",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "rules": {
+                "john martinez": "token_subset"
+              },
+              "band_adjudication": "roster_multiband",
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "john s martinez sea sky stem",
+            "start": "09:15",
+            "end": "15:30",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090279001386",
+              "roster_school": "John S. Martinez Sea and Sky STEM School",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "rules": {
+                "john martinez": "token_subset"
+              },
+              "band_adjudication": "roster_multiband",
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "benjamin jepson magnet",
+            "start": "09:15",
+            "end": "15:30",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090279000544",
+              "roster_school": "Benjamin Jepson Magnet School",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "rules": {
+                "jepson": "token_subset"
+              },
+              "band_adjudication": "roster_multiband",
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "benjamin jepson magnet",
+            "start": "09:15",
+            "end": "15:30",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090279000544",
+              "roster_school": "Benjamin Jepson Magnet School",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "rules": {
+                "jepson": "token_subset"
+              },
+              "band_adjudication": "roster_multiband",
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "john c daniels",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090279001443",
+              "roster_school": "John C. Daniels",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "rules": {
+                "john daniels": "token_subset"
+              },
+              "band_adjudication": "roster_multiband",
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "john c daniels",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090279001443",
+              "roster_school": "John C. Daniels",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "rules": {
+                "john daniels": "token_subset"
+              },
+              "band_adjudication": "roster_multiband",
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lincoln bassett",
+            "start": "08:35",
+            "end": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090279000566",
+              "roster_school": "Lincoln-Bassett School",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "band_adjudication": "roster_band",
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "ross woodward",
+            "start": "09:15",
+            "end": "15:30",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "truman",
+            "start": "09:08",
+            "end": "15:22",
+            "gross": 374,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090279000581",
+              "roster_school": "Truman School",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "band_adjudication": "roster_multiband",
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "truman",
+            "start": "09:08",
+            "end": "15:22",
+            "gross": 374,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090279000581",
+              "roster_school": "Truman School",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "band_adjudication": "roster_multiband",
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "elm city",
+            "start": "08:30",
+            "end": "16:00",
+            "gross": 450,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "elm city",
+            "start": "08:30",
+            "end": "16:00",
+            "gross": 450,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "highville charter",
+            "start": "07:40",
+            "end": "15:45",
+            "gross": 485,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "king robinson",
+            "reason": "band_disagreement",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:10"
+            },
+            "identity": {
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "b t washington",
+            "reason": "band_disagreement",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "identity": {
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "dr mayo eclc h1",
+            "reason": "band_disagreement",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:00"
+            },
+            "identity": {
+              "claimed_bands": [
+                "elementary",
+                "high",
+                "middle"
+              ]
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "dr mayo eclc h2",
+            "reason": "band_disagreement",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "identity": {
+              "claimed_bands": [
+                "elementary",
+                "high"
+              ]
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "adult education",
+            "reason": "band_disagreement",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "identity": {
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "dr mayo eclc sped",
+            "reason": "band_disagreement",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:45"
+            },
+            "identity": {
+              "claimed_bands": [
+                "elementary",
+                "high",
+                "middle"
+              ]
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "platt tech",
+            "gross": 180,
+            "reason": "implausible",
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "nathan hale",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:35",
+              "mistralai/mistral-small-24b-instruct-2501": "09:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:50",
+              "mistralai/mistral-small-24b-instruct-2501": "15:30"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "nathan hale",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:35",
+              "mistralai/mistral-small-24b-instruct-2501": "09:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:50",
+              "mistralai/mistral-small-24b-instruct-2501": "15:30"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "roberto clemente leadership for global awareness",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:35",
+              "mistralai/mistral-small-24b-instruct-2501": "09:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:50",
+              "mistralai/mistral-small-24b-instruct-2501": "15:30"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "roberto clemente leadership for global awareness",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:35",
+              "mistralai/mistral-small-24b-instruct-2501": "09:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:50",
+              "mistralai/mistral-small-24b-instruct-2501": "15:30"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "ross woodward",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:30"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "mauro sheridan magnet",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:30",
+              "mistralai/mistral-small-24b-instruct-2501": "09:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:00",
+              "mistralai/mistral-small-24b-instruct-2501": "15:30"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "mauro sheridan magnet",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:30",
+              "mistralai/mistral-small-24b-instruct-2501": "09:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:00",
+              "mistralai/mistral-small-24b-instruct-2501": "15:30"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "wexler wg",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:35",
+              "mistralai/mistral-small-24b-instruct-2501": "09:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:50",
+              "mistralai/mistral-small-24b-instruct-2501": "15:30"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "wexler wg",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:35"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:50"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "augusta lewis troup",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:35",
+              "mistralai/mistral-small-24b-instruct-2501": "09:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:50",
+              "mistralai/mistral-small-24b-instruct-2501": "15:30"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "augusta lewis troup",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:35",
+              "mistralai/mistral-small-24b-instruct-2501": "09:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:50",
+              "mistralai/mistral-small-24b-instruct-2501": "15:30"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "elm city",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:30"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "highville charter k 8",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00",
+              "mistralai/mistral-small-24b-instruct-2501": "08:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:45",
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "highville charter h s",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:45"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:30"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "bt washington",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:10",
+              "mistralai/mistral-small-24b-instruct-2501": "08:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00",
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "bt washington",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:40",
+              "mistralai/mistral-small-24b-instruct-2501": "08:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:30",
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "0902790:8f789ce38f",
+            "source_file": "tesseract_raster.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "metro bus",
+        "start": "07:30",
+        "end": "14:15",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "new haven",
+        "start": "07:10",
+        "end": "14:05",
+        "gross": 415,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090279000547",
+          "roster_school": "New Haven Academy",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "sound",
+        "start": "07:30",
+        "end": "14:17",
+        "gross": 407,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "090279001216",
+          "roster_school": "Sound School",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "riverside",
+        "start": "07:10",
+        "end": "14:15",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "hsc",
+        "start": "07:10",
+        "end": "14:05",
+        "gross": 415,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "common ground",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "john s martinez sea sky stem",
+        "start": "09:15",
+        "end": "15:30",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090279001386",
+          "roster_school": "John S. Martinez Sea and Sky STEM School",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "rules": {
+            "john martinez": "token_subset"
+          },
+          "band_adjudication": "roster_multiband",
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "john s martinez sea sky stem",
+        "start": "09:15",
+        "end": "15:30",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090279001386",
+          "roster_school": "John S. Martinez Sea and Sky STEM School",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "rules": {
+            "john martinez": "token_subset"
+          },
+          "band_adjudication": "roster_multiband",
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "benjamin jepson magnet",
+        "start": "09:15",
+        "end": "15:30",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090279000544",
+          "roster_school": "Benjamin Jepson Magnet School",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "rules": {
+            "jepson": "token_subset"
+          },
+          "band_adjudication": "roster_multiband",
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "benjamin jepson magnet",
+        "start": "09:15",
+        "end": "15:30",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090279000544",
+          "roster_school": "Benjamin Jepson Magnet School",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "rules": {
+            "jepson": "token_subset"
+          },
+          "band_adjudication": "roster_multiband",
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "john c daniels",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090279001443",
+          "roster_school": "John C. Daniels",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "rules": {
+            "john daniels": "token_subset"
+          },
+          "band_adjudication": "roster_multiband",
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "john c daniels",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090279001443",
+          "roster_school": "John C. Daniels",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "rules": {
+            "john daniels": "token_subset"
+          },
+          "band_adjudication": "roster_multiband",
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lincoln bassett",
+        "start": "08:35",
+        "end": "14:50",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090279000566",
+          "roster_school": "Lincoln-Bassett School",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "band_adjudication": "roster_band",
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ross woodward",
+        "start": "09:15",
+        "end": "15:30",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "truman",
+        "start": "09:08",
+        "end": "15:22",
+        "gross": 374,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090279000581",
+          "roster_school": "Truman School",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "band_adjudication": "roster_multiband",
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "truman",
+        "start": "09:08",
+        "end": "15:22",
+        "gross": 374,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090279000581",
+          "roster_school": "Truman School",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "band_adjudication": "roster_multiband",
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "elm city",
+        "start": "08:30",
+        "end": "16:00",
+        "gross": 450,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "elm city",
+        "start": "08:30",
+        "end": "16:00",
+        "gross": 450,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "highville charter",
+        "start": "07:40",
+        "end": "15:45",
+        "gross": 485,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "king robinson",
+        "reason": "band_disagreement",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:10"
+        },
+        "identity": {
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "b t washington",
+        "reason": "band_disagreement",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "identity": {
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "dr mayo eclc h1",
+        "reason": "band_disagreement",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:00"
+        },
+        "identity": {
+          "claimed_bands": [
+            "elementary",
+            "high",
+            "middle"
+          ]
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "dr mayo eclc h2",
+        "reason": "band_disagreement",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "identity": {
+          "claimed_bands": [
+            "elementary",
+            "high"
+          ]
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "adult education",
+        "reason": "band_disagreement",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "identity": {
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "dr mayo eclc sped",
+        "reason": "band_disagreement",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:45"
+        },
+        "identity": {
+          "claimed_bands": [
+            "elementary",
+            "high",
+            "middle"
+          ]
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "platt tech",
+        "gross": 180,
+        "reason": "implausible",
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "nathan hale",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:35",
+          "mistralai/mistral-small-24b-instruct-2501": "09:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:50",
+          "mistralai/mistral-small-24b-instruct-2501": "15:30"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "nathan hale",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:35",
+          "mistralai/mistral-small-24b-instruct-2501": "09:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:50",
+          "mistralai/mistral-small-24b-instruct-2501": "15:30"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "roberto clemente leadership for global awareness",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:35",
+          "mistralai/mistral-small-24b-instruct-2501": "09:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:50",
+          "mistralai/mistral-small-24b-instruct-2501": "15:30"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "roberto clemente leadership for global awareness",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:35",
+          "mistralai/mistral-small-24b-instruct-2501": "09:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:50",
+          "mistralai/mistral-small-24b-instruct-2501": "15:30"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "ross woodward",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:30"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "mauro sheridan magnet",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:30",
+          "mistralai/mistral-small-24b-instruct-2501": "09:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:00",
+          "mistralai/mistral-small-24b-instruct-2501": "15:30"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "mauro sheridan magnet",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:30",
+          "mistralai/mistral-small-24b-instruct-2501": "09:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:00",
+          "mistralai/mistral-small-24b-instruct-2501": "15:30"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "wexler wg",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:35",
+          "mistralai/mistral-small-24b-instruct-2501": "09:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:50",
+          "mistralai/mistral-small-24b-instruct-2501": "15:30"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "wexler wg",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:35"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:50"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "augusta lewis troup",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:35",
+          "mistralai/mistral-small-24b-instruct-2501": "09:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:50",
+          "mistralai/mistral-small-24b-instruct-2501": "15:30"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "augusta lewis troup",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:35",
+          "mistralai/mistral-small-24b-instruct-2501": "09:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:50",
+          "mistralai/mistral-small-24b-instruct-2501": "15:30"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "elm city",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:30"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "highville charter k 8",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00",
+          "mistralai/mistral-small-24b-instruct-2501": "08:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:45",
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "highville charter h s",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:45"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:30"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "bt washington",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:10",
+          "mistralai/mistral-small-24b-instruct-2501": "08:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00",
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "bt washington",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:40",
+          "mistralai/mistral-small-24b-instruct-2501": "08:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:30",
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "0902790:8f789ce38f",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 375,
+        "start_time": "09:15",
+        "end_time": "15:30",
+        "n_schools": 7,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "john s martinez sea sky stem",
+            "start_time": "09:15",
+            "end_time": "15:30",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "benjamin jepson magnet",
+            "start_time": "09:15",
+            "end_time": "15:30",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "john c daniels",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lincoln bassett",
+            "start_time": "08:35",
+            "end_time": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ross woodward",
+            "start_time": "09:15",
+            "end_time": "15:30",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "truman",
+            "start_time": "09:08",
+            "end_time": "15:22",
+            "gross": 374,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "elm city",
+            "start_time": "08:30",
+            "end_time": "16:00",
+            "gross": 450,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 375,
+        "start_time": "09:15",
+        "end_time": "15:30",
+        "n_schools": 5,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "john s martinez sea sky stem",
+            "start_time": "09:15",
+            "end_time": "15:30",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "benjamin jepson magnet",
+            "start_time": "09:15",
+            "end_time": "15:30",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "john c daniels",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "truman",
+            "start_time": "09:08",
+            "end_time": "15:22",
+            "gross": 374,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "elm city",
+            "start_time": "08:30",
+            "end_time": "16:00",
+            "gross": 450,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 415,
+        "start_time": "07:10",
+        "end_time": "14:05",
+        "n_schools": 7,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "metro bus",
+            "start_time": "07:30",
+            "end_time": "14:15",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "new haven",
+            "start_time": "07:10",
+            "end_time": "14:05",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "sound",
+            "start_time": "07:30",
+            "end_time": "14:17",
+            "gross": 407,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "riverside",
+            "start_time": "07:10",
+            "end_time": "14:15",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hsc",
+            "start_time": "07:10",
+            "end_time": "14:05",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "common ground",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "highville charter",
+            "start_time": "07:40",
+            "end_time": "15:45",
+            "gross": 485,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "reaggregated_from": "extraction_a2bc80c004ca_0902790_20260703T035705Z.json"
+  }
+}

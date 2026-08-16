@@ -157,7 +157,32 @@ place (with tests) rather than deleted; treat them as legacy unless/until they'r
   stripping rules were tightened in that same PR (suffix-anchored district-qualifier stripping,
   hyphen word-splitting, NFKD, ES/MS/HS): this grouping step is directly affected — e.g. "Meridian
   Consolidated School" and "Meridian School" now group as DIFFERENT schools here, where the old
-  anywhere-strip wrongly merged their council facts into one consensus group. Within each group, the
+  anywhere-strip wrongly merged their council facts into one consensus group.
+  **REQ-173 (2026-08-15, #693/#721): before grouping, every voter/judge row's name is resolved
+  against the district's NCES slot spine** (`school_match.resolve_school_identity`, fed by
+  `context["roster_recs"]` — `consensus_context_for_district` threads it, so the #716 replay
+  inherits it). A uniquely-resolved name groups under the ROSTER school's norm key (variant
+  spellings meet: acronyms, grade-span suffixes, leading-initial artifacts, token subsets);
+  2+ candidates = ambiguous, kept split and marked (never a guess — #681). After grouping, a
+  school_id claimed under 2+ bands — or unanimously under a band the roster says it does not
+  serve (#779) — is band-adjudicated by roster placement: a multiband campus keeps each
+  claimed-and-rostered band, each band's OWN votes winning and cross-band votes serving only as
+  backfill for absent models (#780 — a campus whose bands genuinely differ keeps each band's own
+  times); a single-band-rostered school's wrong-band claim folds into the roster band
+  (`roster_band`; the judge tiebreak still finds answers filed under the pre-adjudication key,
+  #781); a wrong-band claim against a multiband roster surfaces as `band_disagreement` (no
+  deterministic destination). An UNMATCHED name's cross-band singletons collapse to one explicit
+  `band_disagreement` unresolved row, votes keyed `model [band]` (#785); strict-degenerate names
+  (#245/#707's class) and ambiguous resolutions (#784 — a NAME problem carrying its candidate
+  list) are exempt. At emission, an unmatched name is screened for excluded school types
+  (→ `unresolved` reason `excluded_school_type`) or survives marked `{"roster": "unmatched"}`.
+  All marking persists via `school_fact.identity_json` (v5 additive column) for gate@8; the
+  entire mechanism is context-gated — a no-roster caller (council lab) is byte-identical to
+  pre-REQ-173 behavior. `grade_level` STAYS in the grouping key: the 2026-08-15 measurement found
+  35 level-collapse districts (APOPKA ELEMENTARY/MIDDLE/HIGH all norm to `apopka`) where the band
+  is the only discriminator between real schools. Full evidence:
+  `learning-loop-reports/2026-08-15-693-721-roster-anchored-identity.md`.
+  Within each group, the
   council reaches consensus on **START and
   END separately** (cross-family, `>=2` families within `TOL=15` min each) — same-family agreement is
   not consensus (REQ-056). On disagreement, an optional judge's `(start,end)` pair breaks the tie.

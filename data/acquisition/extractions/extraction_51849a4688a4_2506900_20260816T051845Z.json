@@ -1,0 +1,564 @@
+{
+  "handoff_hash": "51849a4688a4",
+  "district": {
+    "district_id": "2506900",
+    "name": "Lincoln",
+    "reps": [
+      {
+        "rec_key": "2506900:31b776595b",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Hanscom School K-8",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Lincoln School 5-8",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 812,
+            "completion_tokens": 146,
+            "cost_usd": 0.0001396,
+            "latency_ms": 775,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305452-ljVYKFopAdGJ3R1CF4RU"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Hanscom School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Hanscom School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Lincoln School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 779,
+            "completion_tokens": 179,
+            "cost_usd": 5.327e-05,
+            "latency_ms": 3838,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305452-S3w0FUpfvxHtYl4LNlig"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Lincoln School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Lincoln School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 761,
+            "completion_tokens": 75,
+            "cost_usd": 0.0001704,
+            "latency_ms": 10958,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305456-DKkCqQKoNhAy9ncnLuTi"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "hanscom",
+            "start": "08:00",
+            "end": "14:50",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "250690001008",
+              "roster_school": "Hanscom School",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "rules": {
+                "hanscom k 8": "grade_span"
+              },
+              "band_adjudication": "roster_multiband",
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "2506900:31b776595b",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "hanscom",
+            "start": "08:00",
+            "end": "14:50",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "250690001008",
+              "roster_school": "Hanscom School",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "band_adjudication": "roster_multiband",
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "2506900:31b776595b",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "lincoln",
+            "start": "08:00",
+            "end": "14:50",
+            "gross": 410,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "250690001183",
+              "roster_school": "Lincoln School",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "2506900:31b776595b",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "lincoln 5 8",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:50"
+            },
+            "rec_key": "2506900:31b776595b",
+            "source_file": "harvest_slice.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "2506900:057095fab4",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Hanscom School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Hanscom School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1739,
+            "completion_tokens": 112,
+            "cost_usd": 0.0002187,
+            "latency_ms": 793,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305467-wjb3BCuIYDpx7uYouvHC"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Hanscom School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Hanscom School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1730,
+            "completion_tokens": 125,
+            "cost_usd": 9.65e-05,
+            "latency_ms": 2297,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305468-Zie0rTtmMB2XZLF8mby9"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "hanscom",
+            "start": "08:00",
+            "end": "14:50",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "250690001008",
+              "roster_school": "Hanscom School",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "band_adjudication": "roster_multiband",
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "2506900:057095fab4",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "hanscom",
+            "start": "08:00",
+            "end": "14:50",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "250690001008",
+              "roster_school": "Hanscom School",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "band_adjudication": "roster_multiband",
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "2506900:057095fab4",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "hanscom",
+        "start": "08:00",
+        "end": "14:50",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "250690001008",
+          "roster_school": "Hanscom School",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "rules": {
+            "hanscom k 8": "grade_span"
+          },
+          "band_adjudication": "roster_multiband",
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "2506900:31b776595b",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "hanscom",
+        "start": "08:00",
+        "end": "14:50",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "250690001008",
+          "roster_school": "Hanscom School",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "band_adjudication": "roster_multiband",
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "2506900:31b776595b",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "lincoln",
+        "start": "08:00",
+        "end": "14:50",
+        "gross": 410,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "250690001183",
+          "roster_school": "Lincoln School",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "2506900:31b776595b",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hanscom",
+        "start": "08:00",
+        "end": "14:50",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "250690001008",
+          "roster_school": "Hanscom School",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "band_adjudication": "roster_multiband",
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "2506900:057095fab4",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "hanscom",
+        "start": "08:00",
+        "end": "14:50",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "250690001008",
+          "roster_school": "Hanscom School",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "band_adjudication": "roster_multiband",
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "2506900:057095fab4",
+        "source_file": "page.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "lincoln 5 8",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:50"
+        },
+        "rec_key": "2506900:31b776595b",
+        "source_file": "harvest_slice.txt"
+      }
+    ],
+    "n_reps": 2,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 410,
+        "start_time": "08:00",
+        "end_time": "14:50",
+        "n_schools": 2,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "hanscom",
+            "start_time": "08:00",
+            "end_time": "14:50",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hanscom",
+            "start_time": "08:00",
+            "end_time": "14:50",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 410,
+        "start_time": "08:00",
+        "end_time": "14:50",
+        "n_schools": 3,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "hanscom",
+            "start_time": "08:00",
+            "end_time": "14:50",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lincoln",
+            "start_time": "08:00",
+            "end_time": "14:50",
+            "gross": 410,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hanscom",
+            "start_time": "08:00",
+            "end_time": "14:50",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "state": "MA",
+    "reaggregated_from": "extraction_51849a4688a4_2506900_20260706T023750Z.json"
+  }
+}

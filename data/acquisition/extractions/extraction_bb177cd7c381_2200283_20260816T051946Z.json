@@ -1,0 +1,2664 @@
+{
+  "handoff_hash": "bb177cd7c381",
+  "district": {
+    "district_id": "2200283",
+    "name": "Einstein Charter School at Village De L'Est",
+    "reps": [
+      {
+        "rec_key": "2200283:bd9dadb816",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 39,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "15:05",
+                "school_name": "East",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "15:05",
+                "school_name": "Preble",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "15:05",
+                "school_name": "Southwest",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "15:05",
+                "school_name": "West",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:50",
+                "school_name": "Edison",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:45",
+                "school_name": "Franklin",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:45",
+                "school_name": "Lombardi",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:35",
+                "end_time": "14:50",
+                "school_name": "Washington",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Baird",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:57",
+                "end_time": "14:35",
+                "school_name": "Beaumont",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:42",
+                "end_time": "15:35",
+                "school_name": "Chappell",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Danz",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:12",
+                "end_time": "14:50",
+                "school_name": "Doty",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:27",
+                "end_time": "15:05",
+                "school_name": "Eisenhower",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:52",
+                "end_time": "14:35",
+                "school_name": "Elmore",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:57",
+                "end_time": "14:35",
+                "school_name": "Fort Howard",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:57",
+                "end_time": "14:35",
+                "school_name": "Howe",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:57",
+                "end_time": "14:35",
+                "school_name": "Jackson",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Kennedy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "King",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Langlade",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Lincoln",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "MacArthur",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Martin",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "McAuliffe",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Nicolet",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Sullivan",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:27",
+                "end_time": "15:05",
+                "school_name": "Webster",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:12",
+                "end_time": "14:50",
+                "school_name": "Wilder",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "14:45",
+                "school_name": "Red Smith",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:40",
+                "end_time": "14:54",
+                "school_name": "Red Smith",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Aldo Leopold",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Aldo Leopold",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Katherine Johnson Academy of Enriched Virtual Learning",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:40",
+                "school_name": "Leonardo da Vinci School for Gifted Learners",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:43",
+                "school_name": "Leonardo da Vinci School for Gifted Learners",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "John Dewey Academy of Learning",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "NEW School of Innovation",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:00",
+                "school_name": "The Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2394,
+            "completion_tokens": 1941,
+            "cost_usd": 0.0010158,
+            "latency_ms": 4303,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790027-4QuUwcQNOY6Qb4SuEdz6",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 30,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "15:05",
+                "school_name": "East",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "15:05",
+                "school_name": "Preble",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "15:05",
+                "school_name": "Southwest",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "15:05",
+                "school_name": "West",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:50",
+                "school_name": "Edison",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:45",
+                "school_name": "Franklin",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:45",
+                "school_name": "Lombardi",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:35",
+                "end_time": "14:50",
+                "school_name": "Washington",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Baird",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:42",
+                "end_time": "15:35",
+                "school_name": "Chappell",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Danz",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:27",
+                "end_time": "15:05",
+                "school_name": "Eisenhower",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Kennedy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "King",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Langlade",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Lincoln",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "MacArthur",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Martin",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "McAuliffe",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Nicolet",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Sullivan",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:27",
+                "end_time": "15:05",
+                "school_name": "Webster",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "14:45",
+                "school_name": "Red Smith",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:40",
+                "end_time": "14:54",
+                "school_name": "Red Smith",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Aldo Leopold",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Aldo Leopold",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:40",
+                "school_name": "Leonardo da Vinci",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:43",
+                "school_name": "Leonardo da Vinci",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "NEW School of Innovation",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Katherine Johnson Academy of Enriched Virtual Learning",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2273,
+            "completion_tokens": 1644,
+            "cost_usd": 0.00024517,
+            "latency_ms": 25924,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790031-OTKAD7P3GAM4bUCvXB86",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 38,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "15:05",
+                "school_name": "East",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "15:05",
+                "school_name": "Preble",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "15:05",
+                "school_name": "Southwest",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "15:05",
+                "school_name": "West",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:50",
+                "school_name": "Edison",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:45",
+                "school_name": "Franklin",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:45",
+                "school_name": "Lombardi",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:35",
+                "end_time": "14:50",
+                "school_name": "Washington",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Baird",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:57",
+                "end_time": "14:35",
+                "school_name": "Beaumont",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:42",
+                "end_time": "15:35",
+                "school_name": "Chappell",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Danz",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:12",
+                "end_time": "14:50",
+                "school_name": "Doty",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:27",
+                "end_time": "15:05",
+                "school_name": "Eisenhower",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:52",
+                "end_time": "14:35",
+                "school_name": "Elmore",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:57",
+                "end_time": "14:35",
+                "school_name": "Fort Howard",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:57",
+                "end_time": "14:35",
+                "school_name": "Howe",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:57",
+                "end_time": "14:35",
+                "school_name": "Jackson",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Kennedy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "King",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Langlade",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Lincoln",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "MacArthur",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Martin",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "McAuliffe",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Nicolet",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:57",
+                "end_time": "15:35",
+                "school_name": "Sullivan",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:27",
+                "end_time": "15:05",
+                "school_name": "Webster",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:12",
+                "end_time": "14:50",
+                "school_name": "Wilder",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "14:45",
+                "school_name": "Red Smith",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:40",
+                "end_time": "14:54",
+                "school_name": "Red Smith",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:05",
+                "school_name": "Aldo Leopold",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Aldo Leopold",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Katherine Johnson Academy of Enriched Virtual Learning",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:40",
+                "school_name": "Leonardo da Vinci School for Gifted Learners",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:43",
+                "school_name": "Leonardo da Vinci School for Gifted Learners",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "John Dewey Academy of Learning",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "NEW School of Innovation",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2227,
+            "completion_tokens": 1327,
+            "cost_usd": 0.0012416,
+            "latency_ms": 35014,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790057-PpiY2wdMyUUc10yn8K4Z",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "east",
+            "start": "07:30",
+            "end": "15:05",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "preble",
+            "start": "07:30",
+            "end": "15:05",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "southwest",
+            "start": "07:30",
+            "end": "15:05",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "west",
+            "start": "07:30",
+            "end": "15:05",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "edison",
+            "start": "07:30",
+            "end": "14:50",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "franklin",
+            "start": "07:30",
+            "end": "14:45",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "lombardi",
+            "start": "07:30",
+            "end": "14:45",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "washington",
+            "start": "07:35",
+            "end": "14:50",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "baird",
+            "start": "08:57",
+            "end": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "beaumont",
+            "start": "07:57",
+            "end": "14:35",
+            "gross": 398,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "chappell",
+            "start": "08:42",
+            "end": "15:35",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "danz",
+            "start": "08:57",
+            "end": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "doty",
+            "start": "08:12",
+            "end": "14:50",
+            "gross": 398,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "eisenhower",
+            "start": "08:27",
+            "end": "15:05",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "elmore",
+            "start": "07:52",
+            "end": "14:35",
+            "gross": 403,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "fort howard",
+            "start": "07:57",
+            "end": "14:35",
+            "gross": 398,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "howe",
+            "start": "07:57",
+            "end": "14:35",
+            "gross": 398,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "jackson",
+            "start": "07:57",
+            "end": "14:35",
+            "gross": 398,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "kennedy",
+            "start": "08:57",
+            "end": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "king",
+            "start": "08:57",
+            "end": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "langlade",
+            "start": "08:57",
+            "end": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lincoln",
+            "start": "08:57",
+            "end": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "macarthur",
+            "start": "08:57",
+            "end": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "martin",
+            "start": "08:57",
+            "end": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "mcauliffe",
+            "start": "08:57",
+            "end": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "nicolet",
+            "start": "08:57",
+            "end": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "sullivan",
+            "start": "08:57",
+            "end": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "webster",
+            "start": "08:27",
+            "end": "15:05",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "wilder",
+            "start": "08:12",
+            "end": "14:50",
+            "gross": 398,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "red smith",
+            "start": "07:50",
+            "end": "14:45",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "red smith",
+            "start": "07:40",
+            "end": "14:54",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "aldo leopold",
+            "start": "08:00",
+            "end": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "aldo leopold",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "john dewey learning",
+            "start": "08:30",
+            "end": "15:20",
+            "gross": 410,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "new innovation",
+            "start": "08:00",
+            "end": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "leonardo da vinci for gifted learners",
+            "reason": "band_disagreement",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:43"
+            },
+            "identity": {
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "leonardo da vinci",
+            "reason": "band_disagreement",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:30"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:43"
+            },
+            "identity": {
+              "claimed_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "katherine johnson enriched virtual learning",
+            "reason": "excluded_school_type",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00",
+              "mistralai/mistral-small-24b-instruct-2501": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:15",
+              "mistralai/mistral-small-24b-instruct-2501": "15:15"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "the academy",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:00"
+            },
+            "rec_key": "2200283:bd9dadb816",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "2200283:e43130e49c",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "15:10",
+                "school_name": "Einstein Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2440,
+            "completion_tokens": 48,
+            "cost_usd": 0.0002632,
+            "latency_ms": 1135,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790092-jF6hsjt9mvmApJJMzorf",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "15:10",
+                "school_name": "Einstein Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2340,
+            "completion_tokens": 71,
+            "cost_usd": 0.00012268,
+            "latency_ms": 1263,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790093-ljz1oTuXit9w3UILXr96",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "einstein charter village de lest",
+            "start": "08:40",
+            "end": "15:10",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "220028300858",
+              "roster_school": "Einstein Charter School at Village De L'Est",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "einstein": "token_subset"
+              }
+            },
+            "rec_key": "2200283:e43130e49c",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "east",
+        "start": "07:30",
+        "end": "15:05",
+        "gross": 455,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "preble",
+        "start": "07:30",
+        "end": "15:05",
+        "gross": 455,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "southwest",
+        "start": "07:30",
+        "end": "15:05",
+        "gross": 455,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "west",
+        "start": "07:30",
+        "end": "15:05",
+        "gross": 455,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "edison",
+        "start": "07:30",
+        "end": "14:50",
+        "gross": 440,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "franklin",
+        "start": "07:30",
+        "end": "14:45",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "lombardi",
+        "start": "07:30",
+        "end": "14:45",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "washington",
+        "start": "07:35",
+        "end": "14:50",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "baird",
+        "start": "08:57",
+        "end": "15:35",
+        "gross": 398,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "beaumont",
+        "start": "07:57",
+        "end": "14:35",
+        "gross": 398,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "chappell",
+        "start": "08:42",
+        "end": "15:35",
+        "gross": 413,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "danz",
+        "start": "08:57",
+        "end": "15:35",
+        "gross": 398,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "doty",
+        "start": "08:12",
+        "end": "14:50",
+        "gross": 398,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "eisenhower",
+        "start": "08:27",
+        "end": "15:05",
+        "gross": 398,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "elmore",
+        "start": "07:52",
+        "end": "14:35",
+        "gross": 403,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "fort howard",
+        "start": "07:57",
+        "end": "14:35",
+        "gross": 398,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "howe",
+        "start": "07:57",
+        "end": "14:35",
+        "gross": 398,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "jackson",
+        "start": "07:57",
+        "end": "14:35",
+        "gross": 398,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "kennedy",
+        "start": "08:57",
+        "end": "15:35",
+        "gross": 398,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "king",
+        "start": "08:57",
+        "end": "15:35",
+        "gross": 398,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "langlade",
+        "start": "08:57",
+        "end": "15:35",
+        "gross": 398,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lincoln",
+        "start": "08:57",
+        "end": "15:35",
+        "gross": 398,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "macarthur",
+        "start": "08:57",
+        "end": "15:35",
+        "gross": 398,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "martin",
+        "start": "08:57",
+        "end": "15:35",
+        "gross": 398,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "mcauliffe",
+        "start": "08:57",
+        "end": "15:35",
+        "gross": 398,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "nicolet",
+        "start": "08:57",
+        "end": "15:35",
+        "gross": 398,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "sullivan",
+        "start": "08:57",
+        "end": "15:35",
+        "gross": 398,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "webster",
+        "start": "08:27",
+        "end": "15:05",
+        "gross": 398,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "wilder",
+        "start": "08:12",
+        "end": "14:50",
+        "gross": 398,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "red smith",
+        "start": "07:50",
+        "end": "14:45",
+        "gross": 415,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "red smith",
+        "start": "07:40",
+        "end": "14:54",
+        "gross": 434,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "aldo leopold",
+        "start": "08:00",
+        "end": "15:05",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "aldo leopold",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "john dewey learning",
+        "start": "08:30",
+        "end": "15:20",
+        "gross": 410,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "new innovation",
+        "start": "08:00",
+        "end": "15:00",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "einstein charter village de lest",
+        "start": "08:40",
+        "end": "15:10",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "220028300858",
+          "roster_school": "Einstein Charter School at Village De L'Est",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "einstein": "token_subset"
+          }
+        },
+        "rec_key": "2200283:e43130e49c",
+        "source_file": "page.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "leonardo da vinci for gifted learners",
+        "reason": "band_disagreement",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:43"
+        },
+        "identity": {
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "leonardo da vinci",
+        "reason": "band_disagreement",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:30"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:43"
+        },
+        "identity": {
+          "claimed_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "katherine johnson enriched virtual learning",
+        "reason": "excluded_school_type",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00",
+          "mistralai/mistral-small-24b-instruct-2501": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:15",
+          "mistralai/mistral-small-24b-instruct-2501": "15:15"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "the academy",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:00"
+        },
+        "rec_key": "2200283:bd9dadb816",
+        "source_file": "page.txt"
+      }
+    ],
+    "n_reps": 2,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 398,
+        "start_time": "08:57",
+        "end_time": "15:35",
+        "n_schools": 24,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "baird",
+            "start_time": "08:57",
+            "end_time": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "beaumont",
+            "start_time": "07:57",
+            "end_time": "14:35",
+            "gross": 398,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "chappell",
+            "start_time": "08:42",
+            "end_time": "15:35",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "danz",
+            "start_time": "08:57",
+            "end_time": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "doty",
+            "start_time": "08:12",
+            "end_time": "14:50",
+            "gross": 398,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "eisenhower",
+            "start_time": "08:27",
+            "end_time": "15:05",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "elmore",
+            "start_time": "07:52",
+            "end_time": "14:35",
+            "gross": 403,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "fort howard",
+            "start_time": "07:57",
+            "end_time": "14:35",
+            "gross": 398,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "howe",
+            "start_time": "07:57",
+            "end_time": "14:35",
+            "gross": 398,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "jackson",
+            "start_time": "07:57",
+            "end_time": "14:35",
+            "gross": 398,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "kennedy",
+            "start_time": "08:57",
+            "end_time": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "king",
+            "start_time": "08:57",
+            "end_time": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "langlade",
+            "start_time": "08:57",
+            "end_time": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lincoln",
+            "start_time": "08:57",
+            "end_time": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "macarthur",
+            "start_time": "08:57",
+            "end_time": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "martin",
+            "start_time": "08:57",
+            "end_time": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mcauliffe",
+            "start_time": "08:57",
+            "end_time": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "nicolet",
+            "start_time": "08:57",
+            "end_time": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "sullivan",
+            "start_time": "08:57",
+            "end_time": "15:35",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "webster",
+            "start_time": "08:27",
+            "end_time": "15:05",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "wilder",
+            "start_time": "08:12",
+            "end_time": "14:50",
+            "gross": 398,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "red smith",
+            "start_time": "07:50",
+            "end_time": "14:45",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "aldo leopold",
+            "start_time": "08:00",
+            "end_time": "15:05",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "john dewey learning",
+            "start_time": "08:30",
+            "end_time": "15:20",
+            "gross": 410,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 435,
+        "start_time": "07:30",
+        "end_time": "14:45",
+        "n_schools": 7,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "edison",
+            "start_time": "07:30",
+            "end_time": "14:50",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "franklin",
+            "start_time": "07:30",
+            "end_time": "14:45",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lombardi",
+            "start_time": "07:30",
+            "end_time": "14:45",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "washington",
+            "start_time": "07:35",
+            "end_time": "14:50",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "red smith",
+            "start_time": "07:40",
+            "end_time": "14:54",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "aldo leopold",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "einstein charter village de lest",
+            "start_time": "08:40",
+            "end_time": "15:10",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 455,
+        "start_time": "07:30",
+        "end_time": "15:05",
+        "n_schools": 5,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "east",
+            "start_time": "07:30",
+            "end_time": "15:05",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "preble",
+            "start_time": "07:30",
+            "end_time": "15:05",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "southwest",
+            "start_time": "07:30",
+            "end_time": "15:05",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "west",
+            "start_time": "07:30",
+            "end_time": "15:05",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "new innovation",
+            "start_time": "08:00",
+            "end_time": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "state": "LA",
+    "reaggregated_from": "extraction_bb177cd7c381_2200283_20260711T171454Z.json"
+  }
+}

@@ -1,0 +1,4776 @@
+{
+  "handoff_hash": "88c1cf5b5e37",
+  "district": {
+    "district_id": "0904830",
+    "name": "Waterbury School District",
+    "reps": [
+      {
+        "rec_key": "0904830:0de11b59a5",
+        "file": "camelot_stream.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 47,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:50",
+                "school_name": "Crosby",
+                "confidence": "high",
+                "evidence_quote": "Crosby | 7:20 am \u2013 1:50 pm",
+                "source_locus": "HIGH SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:50",
+                "school_name": "Kennedy",
+                "confidence": "high",
+                "evidence_quote": "Kennedy | 7:20 am \u2013 1:50 pm",
+                "source_locus": "HIGH SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:50",
+                "school_name": "Wtby Arts Magnet",
+                "confidence": "high",
+                "evidence_quote": "Wtby Arts Magnet | 7:20 am \u2013 1:50 pm",
+                "source_locus": "HIGH SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:50",
+                "school_name": "Wtby Career Academy",
+                "confidence": "high",
+                "evidence_quote": "Wtby Career Academy | 7:20 am \u2013 1:50 pm",
+                "source_locus": "HIGH SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:50",
+                "school_name": "Wilby",
+                "confidence": "high",
+                "evidence_quote": "Wilby | 7:20 am \u2013 1:50 pm",
+                "source_locus": "HIGH SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "North End",
+                "confidence": "high",
+                "evidence_quote": "North End | 7:50 am \u2013 2:20 pm",
+                "source_locus": "MIDDLE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "Wallace",
+                "confidence": "high",
+                "evidence_quote": "Wallace | 7:50 am \u2013 2:20 pm",
+                "source_locus": "MIDDLE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:20",
+                "end_time": "13:50",
+                "school_name": "Wtby Arts Magnet",
+                "confidence": "high",
+                "evidence_quote": "Wtby Arts Magnet | 7:20 am \u2013 1:50 pm",
+                "source_locus": "MIDDLE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "West Side",
+                "confidence": "high",
+                "evidence_quote": "West Side | 7:50 am \u2013 2:20 pm",
+                "source_locus": "MIDDLE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Bucks Hill",
+                "confidence": "high",
+                "evidence_quote": "Bucks Hill | 8:35 am \u2013 2:50 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Bunker Hill",
+                "confidence": "high",
+                "evidence_quote": "Bunker Hill | 8:35 am \u2013 2:50 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Carrington",
+                "confidence": "high",
+                "evidence_quote": "Carrington | 8:35 am \u2013 2:50 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Chase",
+                "confidence": "high",
+                "evidence_quote": "Chase | 8:35 am \u2013 2:50 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Cross, Wendell",
+                "confidence": "high",
+                "evidence_quote": "Cross, Wendell | 8:35 am \u2013 2:50 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:20",
+                "school_name": "Driggs",
+                "confidence": "high",
+                "evidence_quote": "Driggs | 8:05 am \u2013 2:20 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:20",
+                "school_name": "Duggan",
+                "confidence": "high",
+                "evidence_quote": "Duggan | 8:05 am \u2013 2:20 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Generali",
+                "confidence": "high",
+                "evidence_quote": "Generali | 8:35 am \u2013 2:50 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Gilmartin",
+                "confidence": "high",
+                "evidence_quote": "Gilmartin | 8:35 am \u2013 2:50 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Hopeville",
+                "confidence": "high",
+                "evidence_quote": "Hopeville | 8:35 am \u2013 2:50 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Kingsbury",
+                "confidence": "high",
+                "evidence_quote": "Kingsbury | 8:35 am \u2013 2:50 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Maloney",
+                "confidence": "high",
+                "evidence_quote": "Maloney | 8:35 am \u2013 2:50 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Reed",
+                "confidence": "high",
+                "evidence_quote": "Reed | 8:35 AM \u2013 2:50 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Regan",
+                "confidence": "high",
+                "evidence_quote": "Regan | 8:35 am \u2013 2:50 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:05",
+                "end_time": "15:20",
+                "school_name": "Roberto Clemente",
+                "confidence": "high",
+                "evidence_quote": "Roberto Clemente | 9:05 am \u2013 3:20 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:05",
+                "end_time": "15:20",
+                "school_name": "Rotella",
+                "confidence": "high",
+                "evidence_quote": "Rotella | 9:05 am \u2013 3:20 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:20",
+                "school_name": "Sprague",
+                "confidence": "high",
+                "evidence_quote": "Sprague | 8:05 am \u2013 2:20 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:20",
+                "school_name": "Tinker",
+                "confidence": "high",
+                "evidence_quote": "Tinker | 8:05 am \u2013 2:20 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Walsh",
+                "confidence": "high",
+                "evidence_quote": "Walsh | 8:35 am \u2013 2:50 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:20",
+                "school_name": "Washington",
+                "confidence": "high",
+                "evidence_quote": "Washington | 8:05 am \u2013 2:20 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Wilson",
+                "confidence": "high",
+                "evidence_quote": "Wilson | 8:35 am \u2013 2:50 pm",
+                "source_locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "Academic Academy (at W allace)",
+                "confidence": "high",
+                "evidence_quote": "Academic Academy (at W allace) | 7:50 am \u2013 2:20 pm",
+                "source_locus": "PROGRAMS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:21",
+                "school_name": "Bucks Hill Pre-K",
+                "confidence": "high",
+                "evidence_quote": "Bucks Hill Pre-K | 9:00 am \u2013 3:21 pm",
+                "source_locus": "PROGRAMS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "11:30",
+                "school_name": "AM Session",
+                "confidence": "high",
+                "evidence_quote": "AM Session | 9:00 am \u2013 11:30 am",
+                "source_locus": "PROGRAMS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "12:51",
+                "end_time": "15:21",
+                "school_name": "PM Session",
+                "confidence": "high",
+                "evidence_quote": "PM Session | 12:51 pm \u2013 3:21 pm",
+                "source_locus": "PROGRAMS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:00",
+                "school_name": "Enlightenment",
+                "confidence": "high",
+                "evidence_quote": "Enlightenment | 7:20 am \u2013 1:00 pm",
+                "source_locus": "PROGRAMS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "13:35",
+                "school_name": "State Street",
+                "confidence": "high",
+                "evidence_quote": "State Street | 7:30 am \u2013 1:35 pm",
+                "source_locus": "PROGRAMS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "ACES at Chase",
+                "confidence": "high",
+                "evidence_quote": "ACES at Chase | 7:45 am \u2013 2:50 pm",
+                "source_locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Alpha & Omega Academy",
+                "confidence": "high",
+                "evidence_quote": "8:00 am \u2013 3:00 pm",
+                "source_locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:05",
+                "end_time": "15:20",
+                "school_name": "Catholic Academy of Waterbury",
+                "confidence": "high",
+                "evidence_quote": "Catholic Academy of Waterbury | 9:05 am \u2013 3:20 pm",
+                "source_locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "15:45",
+                "school_name": "Brass City Charter",
+                "confidence": "high",
+                "evidence_quote": "Brass City Charter | 7:30 am \u2013 3:45 pm",
+                "source_locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:05",
+                "end_time": "15:20",
+                "school_name": "Children's Community",
+                "confidence": "high",
+                "evidence_quote": "Children's Community | 9:05 am \u2013 3:20 pm",
+                "source_locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "13:45",
+                "school_name": "Holy Cross High School",
+                "confidence": "high",
+                "evidence_quote": "Holy Cross High School | 7:30 am \u2013 1:45 pm",
+                "source_locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:25",
+                "end_time": "14:20",
+                "school_name": "Kaynor Technical",
+                "confidence": "high",
+                "evidence_quote": "Kaynor Technical | 7:25 am \u2013 2:20 pm",
+                "source_locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:05",
+                "end_time": "15:20",
+                "school_name": "Our Lady of Mount Carmel",
+                "confidence": "high",
+                "evidence_quote": "Our Lady of Mount Carmel | 9: 5 am \u2013 3:20 pm",
+                "source_locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "16:00",
+                "school_name": "Yeshiva Bais Yaakov (Girls HS)",
+                "confidence": "high",
+                "evidence_quote": "Yeshiva Bais Yaakov (Girls HS) | 9:00 am \u2013 4:00 pm",
+                "source_locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "16:00",
+                "school_name": "Yeshiva Gedolah (Boys HS)",
+                "confidence": "high",
+                "evidence_quote": "Yeshiva Gedolah (Boys HS) | 9:00 am \u2013 4:00 pm",
+                "source_locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "16:00",
+                "school_name": "Yeshiva K'Tana (Elementary)",
+                "confidence": "high",
+                "evidence_quote": "Yeshiva K'Tana (Elementary) | 9:00 am \u2013 4:00 pm",
+                "source_locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 5769,
+            "completion_tokens": 5807,
+            "cost_usd": 0.0028997,
+            "latency_ms": 10941,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690051-tWNicEAUx8knXPEAptkT",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 37,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:50",
+                "school_name": "Crosby",
+                "confidence": "high",
+                "evidence_quote": "7:20 am \u2013 1:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:50",
+                "school_name": "Kennedy",
+                "confidence": "high",
+                "evidence_quote": "7:20 am \u2013 1:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:50",
+                "school_name": "Wtby Arts Magnet",
+                "confidence": "high",
+                "evidence_quote": "7:20 am \u2013 1:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:50",
+                "school_name": "Wtby Career Academy",
+                "confidence": "high",
+                "evidence_quote": "7:20 am \u2013 1:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:50",
+                "school_name": "Wilby",
+                "confidence": "high",
+                "evidence_quote": "7:20 am \u2013 1:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "North End",
+                "confidence": "high",
+                "evidence_quote": "7:50 am \u2013 2:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "Wallace",
+                "confidence": "high",
+                "evidence_quote": "7:50 am \u2013 2:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "West Side",
+                "confidence": "high",
+                "evidence_quote": "7:50 am \u2013 2:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Bucks Hill",
+                "confidence": "high",
+                "evidence_quote": "8:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Bunker Hill",
+                "confidence": "high",
+                "evidence_quote": "8:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Carrington",
+                "confidence": "high",
+                "evidence_quote": "8:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Chase",
+                "confidence": "high",
+                "evidence_quote": "8:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Cross, Wendell",
+                "confidence": "high",
+                "evidence_quote": "8:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:20",
+                "school_name": "Driggs",
+                "confidence": "high",
+                "evidence_quote": "8:05 am \u2013 2:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:20",
+                "school_name": "Duggan",
+                "confidence": "high",
+                "evidence_quote": "8:05 am \u2013 2:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Generali",
+                "confidence": "high",
+                "evidence_quote": "8:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Gilmartin",
+                "confidence": "high",
+                "evidence_quote": "8:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Hopeville",
+                "confidence": "high",
+                "evidence_quote": "8:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Kingsbury",
+                "confidence": "high",
+                "evidence_quote": "8:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Maloney",
+                "confidence": "high",
+                "evidence_quote": "8:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Reed",
+                "confidence": "high",
+                "evidence_quote": "8:35 AM \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Regan",
+                "confidence": "high",
+                "evidence_quote": "8:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:05",
+                "end_time": "15:20",
+                "school_name": "Roberto Clemente",
+                "confidence": "high",
+                "evidence_quote": "9:05 am \u2013 3:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:05",
+                "end_time": "15:20",
+                "school_name": "Rotella",
+                "confidence": "high",
+                "evidence_quote": "9:05 am \u2013 3:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:20",
+                "school_name": "Sprague",
+                "confidence": "high",
+                "evidence_quote": "8:05 am \u2013 2:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:20",
+                "school_name": "Tinker",
+                "confidence": "high",
+                "evidence_quote": "8:05 am \u2013 2:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Walsh",
+                "confidence": "high",
+                "evidence_quote": "8:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:20",
+                "school_name": "Washington",
+                "confidence": "high",
+                "evidence_quote": "8:05 am \u2013 2:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Wilson",
+                "confidence": "high",
+                "evidence_quote": "8:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "Academic Academy (at W allace)",
+                "confidence": "high",
+                "evidence_quote": "7:50 am \u2013 2:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:21",
+                "school_name": "Bucks Hill Pre-K",
+                "confidence": "high",
+                "evidence_quote": "9:00 am \u2013 3:21 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "13:45",
+                "school_name": "Holy Cross High School",
+                "confidence": "high",
+                "evidence_quote": "7:30 am \u2013 1:45 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:25",
+                "end_time": "14:20",
+                "school_name": "Kaynor Technical",
+                "confidence": "high",
+                "evidence_quote": "7:25 am \u2013 2:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:05",
+                "end_time": "15:20",
+                "school_name": "Our Lady of Mount Carmel",
+                "confidence": "high",
+                "evidence_quote": "9: 5 am \u2013 3:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "16:00",
+                "school_name": "Yeshiva Bais Yaakov (Girls HS)",
+                "confidence": "high",
+                "evidence_quote": "9:00 am \u2013 4:00 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "16:00",
+                "school_name": "Yeshiva Gedolah (Boys HS)",
+                "confidence": "high",
+                "evidence_quote": "9:00 am \u2013 4:00 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "16:00",
+                "school_name": "Yeshiva K'Tana (Elementary)",
+                "confidence": "high",
+                "evidence_quote": "9:00 am \u2013 4:00 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 5738,
+            "completion_tokens": 4534,
+            "cost_usd": 0.00064962,
+            "latency_ms": 64384,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690062-xkS5qhxncXU3mtH2PPCN",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 29,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:50",
+                "school_name": "Crosby",
+                "confidence": "high",
+                "evidence_quote": "Crosby | 7:20 am \u2013 1:50 pm | 7:20 am \u2013 11:00 am | 9:20 am \u2013 1:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:50",
+                "school_name": "Kennedy",
+                "confidence": "high",
+                "evidence_quote": "Kennedy | 7:20 am \u2013 1:50 pm | 7:20 am \u2013 11:00 am | 9:20 am \u2013 1:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:50",
+                "school_name": "Wtby Arts Magnet",
+                "confidence": "high",
+                "evidence_quote": "Wtby Arts Magnet | 7:20 am \u2013 1:50 pm | 7:20 am \u2013 11:00 am | 9:20 am \u2013 1:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:50",
+                "school_name": "Wtby Career Academy",
+                "confidence": "high",
+                "evidence_quote": "Wtby Career Academy | 7:20 am \u2013 1:50 pm | 7:20 am \u2013 11:00 am | 9:20 am \u2013 1:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:50",
+                "school_name": "Wilby",
+                "confidence": "high",
+                "evidence_quote": "Wilby | 7:20 am \u2013 1:50 pm | 7:20 am \u2013 11:00 am | 9:20 am \u2013 1:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "North End",
+                "confidence": "high",
+                "evidence_quote": "North End | 7:50 am \u2013 2:20 pm | 7:50 am \u2013 11:30 am | 9:50 am \u2013 2:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "Wallace",
+                "confidence": "high",
+                "evidence_quote": "Wallace | 7:50 am \u2013 2:20 pm | 7:50 am \u2013 11:30 am | 9:50 am \u2013 2:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "West Side",
+                "confidence": "high",
+                "evidence_quote": "West Side | 7:50 am \u2013 2:20 pm | 7:50 am \u2013 11:30 am | 9:50 am \u2013 2:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Bucks Hill",
+                "confidence": "high",
+                "evidence_quote": "Bucks Hill | 8:35 am \u2013 2:50 pm | 8:35 am \u2013 12:00 pm | 10:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Bunker Hill",
+                "confidence": "high",
+                "evidence_quote": "Bunker Hill | 8:35 am \u2013 2:50 pm | 8:35 am \u2013 12:00 pm | 10:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Carrington",
+                "confidence": "high",
+                "evidence_quote": "Carrington | 8:35 am \u2013 2:50 pm | 8:35 am \u2013 12:00 pm | 10:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Chase",
+                "confidence": "high",
+                "evidence_quote": "Chase | 8:35 am \u2013 2:50 pm | 8:35 am \u2013 12:00 pm | 10:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Cross, Wendell",
+                "confidence": "high",
+                "evidence_quote": "Cross, Wendell | 8:35 am \u2013 2:50 pm | 8:35 am \u2013 12:00 pm | 10:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:20",
+                "school_name": "Driggs",
+                "confidence": "high",
+                "evidence_quote": "Driggs | 8:05 am \u2013 2:20 pm | 8:05 am \u2013 11:30 am | 10:05 am \u2013 2:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:20",
+                "school_name": "Duggan",
+                "confidence": "high",
+                "evidence_quote": "Duggan | 8:05 am \u2013 2:20 pm | 8:05 am \u2013 11:30 am | 10:05 am \u2013 2:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Generali",
+                "confidence": "high",
+                "evidence_quote": "Generali | 8:35 am \u2013 2:50 pm | 8:35 am \u2013 12:00 pm | 10:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Gilmartin",
+                "confidence": "high",
+                "evidence_quote": "Gilmartin | 8:35 am \u2013 2:50 pm | 8:35 am \u2013 12:00 pm | 10:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Hopeville",
+                "confidence": "high",
+                "evidence_quote": "Hopeville | 8:35 am \u2013 2:50 pm | 8:35 am \u2013 12:00 pm | 10:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Kingsbury",
+                "confidence": "high",
+                "evidence_quote": "Kingsbury | 8:35 am \u2013 2:50 pm | 8:35 am \u2013 12:00 pm | 10:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Maloney",
+                "confidence": "high",
+                "evidence_quote": "Maloney | 8:35 am \u2013 2:50 pm | 8:35 am \u2013 12:00 pm | 10:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Reed",
+                "confidence": "high",
+                "evidence_quote": "Reed | 8:35 AM \u2013 2:50 pm | 8:35 am \u2013 12:00 pm | 10:35 AM \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Regan",
+                "confidence": "high",
+                "evidence_quote": "Regan | 8:35 am \u2013 2:50 pm | 8:35 am \u2013 12:00 pm | 10:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:05",
+                "end_time": "15:20",
+                "school_name": "Roberto Clemente",
+                "confidence": "high",
+                "evidence_quote": "Roberto Clemente | 9:05 am \u2013 3:20 pm | 9:05 am \u2013 12:30 pm | 11:05 am \u2013 3:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:05",
+                "end_time": "15:20",
+                "school_name": "Rotella",
+                "confidence": "high",
+                "evidence_quote": "Rotella | 9:05 am \u2013 3:20 pm | 9:05 am \u2013 12:30 pm | 11:05 am \u2013 3:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:20",
+                "school_name": "Sprague",
+                "confidence": "high",
+                "evidence_quote": "Sprague | 8:05 am \u2013 2:20 pm | 8:05 am \u2013 11:30 pm | 10:05 am \u2013 2:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:20",
+                "school_name": "Tinker",
+                "confidence": "high",
+                "evidence_quote": "Tinker | 8:05 am \u2013 2:20 pm | 8:05 am \u2013 11:30 am | 10:05 am \u2013 2:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Walsh",
+                "confidence": "high",
+                "evidence_quote": "Walsh | 8:35 am \u2013 2:50 pm | 8:35 am \u2013 12:00 pm | 10:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:20",
+                "school_name": "Washington",
+                "confidence": "high",
+                "evidence_quote": "Washington | 8:05 am \u2013 2:20 pm | 8:05 am \u2013 11:30 am | 10:05 am \u2013 2:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "14:50",
+                "school_name": "Wilson",
+                "confidence": "high",
+                "evidence_quote": "Wilson | 8:35 am \u2013 2:50 pm | 8:35 am \u2013 12:00 pm | 10:35 am \u2013 2:50 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 5681,
+            "completion_tokens": 3412,
+            "cost_usd": 0.00397942,
+            "latency_ms": 73141,
+            "finish_reason": "stop",
+            "generation_id": "gen-1786690129-YZIChmHYLfgeUslfZu5t",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "crosby",
+            "start": "07:20",
+            "end": "13:50",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000971",
+              "roster_school": "Crosby High School",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Crosby | 7:20 am \u2013 1:50 pm",
+                "locus": "HIGH SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:20 am \u2013 1:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "high",
+            "school": "john f kennedy",
+            "start": "07:20",
+            "end": "13:50",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000979",
+              "roster_school": "John F. Kennedy High School",
+              "rostered_bands": [
+                "high"
+              ],
+              "rules": {
+                "kennedy": "token_subset"
+              }
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Kennedy | 7:20 am \u2013 1:50 pm",
+                "locus": "HIGH SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:20 am \u2013 1:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "high",
+            "school": "wtby arts magnet",
+            "start": "07:20",
+            "end": "13:50",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Wtby Arts Magnet | 7:20 am \u2013 1:50 pm",
+                "locus": "HIGH SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:20 am \u2013 1:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "high",
+            "school": "wtby career",
+            "start": "07:20",
+            "end": "13:50",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Wtby Career Academy | 7:20 am \u2013 1:50 pm",
+                "locus": "HIGH SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:20 am \u2013 1:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "high",
+            "school": "wilby",
+            "start": "07:20",
+            "end": "13:50",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000992",
+              "roster_school": "Wilby High School",
+              "rostered_bands": [
+                "high"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Wilby | 7:20 am \u2013 1:50 pm",
+                "locus": "HIGH SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:20 am \u2013 1:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "middle",
+            "school": "north end",
+            "start": "07:50",
+            "end": "14:20",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483001115",
+              "roster_school": "North End Middle School",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "North End | 7:50 am \u2013 2:20 pm",
+                "locus": "MIDDLE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:50 am \u2013 2:20 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "middle",
+            "school": "michael f wallace",
+            "start": "07:50",
+            "end": "14:20",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000983",
+              "roster_school": "Michael F. Wallace Middle School",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "rules": {
+                "wallace": "token_subset"
+              }
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Wallace | 7:50 am \u2013 2:20 pm",
+                "locus": "MIDDLE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:50 am \u2013 2:20 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "middle",
+            "school": "west side",
+            "start": "07:50",
+            "end": "14:20",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000991",
+              "roster_school": "West Side Middle School",
+              "rostered_bands": [
+                "middle"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "West Side | 7:50 am \u2013 2:20 pm",
+                "locus": "MIDDLE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:50 am \u2013 2:20 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "bucks hill",
+            "start": "08:35",
+            "end": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000968",
+              "roster_school": "Bucks Hill School",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Bucks Hill | 8:35 am \u2013 2:50 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:35 am \u2013 2:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "bunker hill",
+            "start": "08:35",
+            "end": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000969",
+              "roster_school": "Bunker Hill School",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Bunker Hill | 8:35 am \u2013 2:50 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:35 am \u2013 2:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "carrington",
+            "start": "08:35",
+            "end": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000970",
+              "roster_school": "Carrington School",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Carrington | 8:35 am \u2013 2:50 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:35 am \u2013 2:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "h s chase",
+            "start": "08:35",
+            "end": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000977",
+              "roster_school": "H. S. Chase School",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "chase": "token_subset"
+              }
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Chase | 8:35 am \u2013 2:50 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:35 am \u2013 2:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "wendell l cross",
+            "start": "08:35",
+            "end": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000990",
+              "roster_school": "Wendell L. Cross School",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "rules": {
+                "cross wendell": "token_subset"
+              }
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Cross, Wendell | 8:35 am \u2013 2:50 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:35 am \u2013 2:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "driggs",
+            "start": "08:05",
+            "end": "14:20",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000972",
+              "roster_school": "Driggs School",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Driggs | 8:05 am \u2013 2:20 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:05 am \u2013 2:20 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "duggan",
+            "start": "08:05",
+            "end": "14:20",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483001602",
+              "roster_school": "Duggan School",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Duggan | 8:05 am \u2013 2:20 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:05 am \u2013 2:20 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "margaret m generali",
+            "start": "08:35",
+            "end": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000974",
+              "roster_school": "Margaret M. Generali Elementary School",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "generali": "token_subset"
+              }
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Generali | 8:35 am \u2013 2:50 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:35 am \u2013 2:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "gilmartin",
+            "start": "08:35",
+            "end": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000976",
+              "roster_school": "Gilmartin School",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Gilmartin | 8:35 am \u2013 2:50 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:35 am \u2013 2:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "hopeville",
+            "start": "08:35",
+            "end": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000978",
+              "roster_school": "Hopeville School",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Hopeville | 8:35 am \u2013 2:50 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:35 am \u2013 2:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "f j kingsbury",
+            "start": "08:35",
+            "end": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000975",
+              "roster_school": "F. J. Kingsbury School",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "kingsbury": "token_subset"
+              }
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Kingsbury | 8:35 am \u2013 2:50 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:35 am \u2013 2:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "maloney interdistrict magnet",
+            "start": "08:35",
+            "end": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000541",
+              "roster_school": "Maloney Interdistrict Magnet School",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "maloney": "token_subset"
+              }
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Maloney | 8:35 am \u2013 2:50 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:35 am \u2013 2:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "reed",
+            "start": "08:35",
+            "end": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483001613",
+              "roster_school": "Reed School",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Reed | 8:35 AM \u2013 2:50 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:35 AM \u2013 2:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "regan",
+            "start": "08:35",
+            "end": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000984",
+              "roster_school": "Regan School",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Regan | 8:35 am \u2013 2:50 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:35 am \u2013 2:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "roberto clemente international dual language",
+            "start": "09:05",
+            "end": "15:20",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483001950",
+              "roster_school": "Roberto Clemente International Dual Language School",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "roberto clemente": "token_subset"
+              }
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Roberto Clemente | 9:05 am \u2013 3:20 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "9:05 am \u2013 3:20 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "rotella interdistrict magnet",
+            "start": "09:05",
+            "end": "15:20",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483001131",
+              "roster_school": "Rotella Interdistrict Magnet School",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "rotella": "token_subset"
+              }
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Rotella | 9:05 am \u2013 3:20 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "9:05 am \u2013 3:20 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "sprague",
+            "start": "08:05",
+            "end": "14:20",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000986",
+              "roster_school": "Sprague School",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Sprague | 8:05 am \u2013 2:20 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:05 am \u2013 2:20 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "b w tinker",
+            "start": "08:05",
+            "end": "14:20",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000966",
+              "roster_school": "B. W. Tinker School",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "tinker": "token_subset"
+              }
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Tinker | 8:05 am \u2013 2:20 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:05 am \u2013 2:20 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "walsh",
+            "start": "08:35",
+            "end": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000987",
+              "roster_school": "Walsh School",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Walsh | 8:35 am \u2013 2:50 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:35 am \u2013 2:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "washington",
+            "start": "08:05",
+            "end": "14:20",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000988",
+              "roster_school": "Washington School",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Washington | 8:05 am \u2013 2:20 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:05 am \u2013 2:20 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "woodrow wilson",
+            "start": "08:35",
+            "end": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "090483000685",
+              "roster_school": "Woodrow Wilson School",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "wilson": "token_subset"
+              }
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Wilson | 8:35 am \u2013 2:50 pm",
+                "locus": "ELEMENTARY SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "8:35 am \u2013 2:50 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "middle",
+            "school": "academic w allace",
+            "start": "07:50",
+            "end": "14:20",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Academic Academy (at W allace) | 7:50 am \u2013 2:20 pm",
+                "locus": "PROGRAMS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:50 am \u2013 2:20 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "high",
+            "school": "holy cross",
+            "start": "07:30",
+            "end": "13:45",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Holy Cross High School | 7:30 am \u2013 1:45 pm",
+                "locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:30 am \u2013 1:45 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "high",
+            "school": "kaynor technical",
+            "start": "07:25",
+            "end": "14:20",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Kaynor Technical | 7:25 am \u2013 2:20 pm",
+                "locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "7:25 am \u2013 2:20 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "our lady mount carmel",
+            "start": "09:05",
+            "end": "15:20",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Our Lady of Mount Carmel | 9: 5 am \u2013 3:20 pm",
+                "locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "9: 5 am \u2013 3:20 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "high",
+            "school": "yeshiva bais yaakov girls",
+            "start": "09:00",
+            "end": "16:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Yeshiva Bais Yaakov (Girls HS) | 9:00 am \u2013 4:00 pm",
+                "locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "9:00 am \u2013 4:00 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "high",
+            "school": "yeshiva gedolah boys",
+            "start": "09:00",
+            "end": "16:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Yeshiva Gedolah (Boys HS) | 9:00 am \u2013 4:00 pm",
+                "locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "9:00 am \u2013 4:00 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "yeshiva ktana",
+            "start": "09:00",
+            "end": "16:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Yeshiva K'Tana (Elementary) | 9:00 am \u2013 4:00 pm",
+                "locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "9:00 am \u2013 4:00 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "wtby arts magnet",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:20"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "13:50"
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "bucks hill pre k",
+            "reason": "excluded_school_type",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00",
+              "mistralai/mistral-small-24b-instruct-2501": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:21",
+              "mistralai/mistral-small-24b-instruct-2501": "15:21"
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "am session",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "11:30"
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "pm session",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "12:51"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:21"
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "high",
+            "school": "enlightenment",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:20"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "13:00"
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "high",
+            "school": "state street",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "13:35"
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "aces chase",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:45"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:50"
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "high",
+            "school": "alpha omega",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "high",
+            "school": "catholic waterbury",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:05"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:20"
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "high",
+            "school": "brass city charter",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:45"
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "childrens community",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:05"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:20"
+            },
+            "rec_key": "0904830:0de11b59a5",
+            "source_file": "camelot_stream.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "crosby",
+        "start": "07:20",
+        "end": "13:50",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000971",
+          "roster_school": "Crosby High School",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Crosby | 7:20 am \u2013 1:50 pm",
+            "locus": "HIGH SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:20 am \u2013 1:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "high",
+        "school": "john f kennedy",
+        "start": "07:20",
+        "end": "13:50",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000979",
+          "roster_school": "John F. Kennedy High School",
+          "rostered_bands": [
+            "high"
+          ],
+          "rules": {
+            "kennedy": "token_subset"
+          }
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Kennedy | 7:20 am \u2013 1:50 pm",
+            "locus": "HIGH SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:20 am \u2013 1:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "high",
+        "school": "wtby arts magnet",
+        "start": "07:20",
+        "end": "13:50",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Wtby Arts Magnet | 7:20 am \u2013 1:50 pm",
+            "locus": "HIGH SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:20 am \u2013 1:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "high",
+        "school": "wtby career",
+        "start": "07:20",
+        "end": "13:50",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Wtby Career Academy | 7:20 am \u2013 1:50 pm",
+            "locus": "HIGH SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:20 am \u2013 1:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "high",
+        "school": "wilby",
+        "start": "07:20",
+        "end": "13:50",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000992",
+          "roster_school": "Wilby High School",
+          "rostered_bands": [
+            "high"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Wilby | 7:20 am \u2013 1:50 pm",
+            "locus": "HIGH SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:20 am \u2013 1:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "middle",
+        "school": "north end",
+        "start": "07:50",
+        "end": "14:20",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483001115",
+          "roster_school": "North End Middle School",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "North End | 7:50 am \u2013 2:20 pm",
+            "locus": "MIDDLE SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:50 am \u2013 2:20 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "middle",
+        "school": "michael f wallace",
+        "start": "07:50",
+        "end": "14:20",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000983",
+          "roster_school": "Michael F. Wallace Middle School",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "rules": {
+            "wallace": "token_subset"
+          }
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Wallace | 7:50 am \u2013 2:20 pm",
+            "locus": "MIDDLE SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:50 am \u2013 2:20 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "middle",
+        "school": "west side",
+        "start": "07:50",
+        "end": "14:20",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000991",
+          "roster_school": "West Side Middle School",
+          "rostered_bands": [
+            "middle"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "West Side | 7:50 am \u2013 2:20 pm",
+            "locus": "MIDDLE SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:50 am \u2013 2:20 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "bucks hill",
+        "start": "08:35",
+        "end": "14:50",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000968",
+          "roster_school": "Bucks Hill School",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Bucks Hill | 8:35 am \u2013 2:50 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:35 am \u2013 2:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "bunker hill",
+        "start": "08:35",
+        "end": "14:50",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000969",
+          "roster_school": "Bunker Hill School",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Bunker Hill | 8:35 am \u2013 2:50 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:35 am \u2013 2:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "carrington",
+        "start": "08:35",
+        "end": "14:50",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000970",
+          "roster_school": "Carrington School",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Carrington | 8:35 am \u2013 2:50 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:35 am \u2013 2:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "h s chase",
+        "start": "08:35",
+        "end": "14:50",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000977",
+          "roster_school": "H. S. Chase School",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "chase": "token_subset"
+          }
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Chase | 8:35 am \u2013 2:50 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:35 am \u2013 2:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "wendell l cross",
+        "start": "08:35",
+        "end": "14:50",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000990",
+          "roster_school": "Wendell L. Cross School",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "rules": {
+            "cross wendell": "token_subset"
+          }
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Cross, Wendell | 8:35 am \u2013 2:50 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:35 am \u2013 2:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "driggs",
+        "start": "08:05",
+        "end": "14:20",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000972",
+          "roster_school": "Driggs School",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Driggs | 8:05 am \u2013 2:20 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:05 am \u2013 2:20 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "duggan",
+        "start": "08:05",
+        "end": "14:20",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483001602",
+          "roster_school": "Duggan School",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Duggan | 8:05 am \u2013 2:20 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:05 am \u2013 2:20 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "margaret m generali",
+        "start": "08:35",
+        "end": "14:50",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000974",
+          "roster_school": "Margaret M. Generali Elementary School",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "generali": "token_subset"
+          }
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Generali | 8:35 am \u2013 2:50 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:35 am \u2013 2:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "gilmartin",
+        "start": "08:35",
+        "end": "14:50",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000976",
+          "roster_school": "Gilmartin School",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Gilmartin | 8:35 am \u2013 2:50 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:35 am \u2013 2:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hopeville",
+        "start": "08:35",
+        "end": "14:50",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000978",
+          "roster_school": "Hopeville School",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Hopeville | 8:35 am \u2013 2:50 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:35 am \u2013 2:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "f j kingsbury",
+        "start": "08:35",
+        "end": "14:50",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000975",
+          "roster_school": "F. J. Kingsbury School",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "kingsbury": "token_subset"
+          }
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Kingsbury | 8:35 am \u2013 2:50 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:35 am \u2013 2:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "maloney interdistrict magnet",
+        "start": "08:35",
+        "end": "14:50",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000541",
+          "roster_school": "Maloney Interdistrict Magnet School",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "maloney": "token_subset"
+          }
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Maloney | 8:35 am \u2013 2:50 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:35 am \u2013 2:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "reed",
+        "start": "08:35",
+        "end": "14:50",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483001613",
+          "roster_school": "Reed School",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Reed | 8:35 AM \u2013 2:50 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:35 AM \u2013 2:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "regan",
+        "start": "08:35",
+        "end": "14:50",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000984",
+          "roster_school": "Regan School",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Regan | 8:35 am \u2013 2:50 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:35 am \u2013 2:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "roberto clemente international dual language",
+        "start": "09:05",
+        "end": "15:20",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483001950",
+          "roster_school": "Roberto Clemente International Dual Language School",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "roberto clemente": "token_subset"
+          }
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Roberto Clemente | 9:05 am \u2013 3:20 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "9:05 am \u2013 3:20 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "rotella interdistrict magnet",
+        "start": "09:05",
+        "end": "15:20",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483001131",
+          "roster_school": "Rotella Interdistrict Magnet School",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "rotella": "token_subset"
+          }
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Rotella | 9:05 am \u2013 3:20 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "9:05 am \u2013 3:20 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "sprague",
+        "start": "08:05",
+        "end": "14:20",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000986",
+          "roster_school": "Sprague School",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Sprague | 8:05 am \u2013 2:20 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:05 am \u2013 2:20 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "b w tinker",
+        "start": "08:05",
+        "end": "14:20",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000966",
+          "roster_school": "B. W. Tinker School",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "tinker": "token_subset"
+          }
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Tinker | 8:05 am \u2013 2:20 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:05 am \u2013 2:20 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "walsh",
+        "start": "08:35",
+        "end": "14:50",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000987",
+          "roster_school": "Walsh School",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Walsh | 8:35 am \u2013 2:50 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:35 am \u2013 2:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "washington",
+        "start": "08:05",
+        "end": "14:20",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000988",
+          "roster_school": "Washington School",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Washington | 8:05 am \u2013 2:20 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:05 am \u2013 2:20 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "woodrow wilson",
+        "start": "08:35",
+        "end": "14:50",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "090483000685",
+          "roster_school": "Woodrow Wilson School",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "wilson": "token_subset"
+          }
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Wilson | 8:35 am \u2013 2:50 pm",
+            "locus": "ELEMENTARY SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "8:35 am \u2013 2:50 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "middle",
+        "school": "academic w allace",
+        "start": "07:50",
+        "end": "14:20",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Academic Academy (at W allace) | 7:50 am \u2013 2:20 pm",
+            "locus": "PROGRAMS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:50 am \u2013 2:20 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "high",
+        "school": "holy cross",
+        "start": "07:30",
+        "end": "13:45",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Holy Cross High School | 7:30 am \u2013 1:45 pm",
+            "locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:30 am \u2013 1:45 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "high",
+        "school": "kaynor technical",
+        "start": "07:25",
+        "end": "14:20",
+        "gross": 415,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Kaynor Technical | 7:25 am \u2013 2:20 pm",
+            "locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "7:25 am \u2013 2:20 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "our lady mount carmel",
+        "start": "09:05",
+        "end": "15:20",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Our Lady of Mount Carmel | 9: 5 am \u2013 3:20 pm",
+            "locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "9: 5 am \u2013 3:20 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "high",
+        "school": "yeshiva bais yaakov girls",
+        "start": "09:00",
+        "end": "16:00",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Yeshiva Bais Yaakov (Girls HS) | 9:00 am \u2013 4:00 pm",
+            "locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "9:00 am \u2013 4:00 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "high",
+        "school": "yeshiva gedolah boys",
+        "start": "09:00",
+        "end": "16:00",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Yeshiva Gedolah (Boys HS) | 9:00 am \u2013 4:00 pm",
+            "locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "9:00 am \u2013 4:00 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "yeshiva ktana",
+        "start": "09:00",
+        "end": "16:00",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Yeshiva K'Tana (Elementary) | 9:00 am \u2013 4:00 pm",
+            "locus": "NON-PUBLIC AND PRIVATE SCHOOLS",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "9:00 am \u2013 4:00 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "wtby arts magnet",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:20"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "13:50"
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "bucks hill pre k",
+        "reason": "excluded_school_type",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00",
+          "mistralai/mistral-small-24b-instruct-2501": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:21",
+          "mistralai/mistral-small-24b-instruct-2501": "15:21"
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "am session",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "11:30"
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "pm session",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "12:51"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:21"
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "high",
+        "school": "enlightenment",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:20"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "13:00"
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "high",
+        "school": "state street",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "13:35"
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "aces chase",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:45"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:50"
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "high",
+        "school": "alpha omega",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "high",
+        "school": "catholic waterbury",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:05"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:20"
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "high",
+        "school": "brass city charter",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:45"
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "childrens community",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:05"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:20"
+        },
+        "rec_key": "0904830:0de11b59a5",
+        "source_file": "camelot_stream.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 375,
+        "start_time": "08:35",
+        "end_time": "14:50",
+        "n_schools": 23,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "bucks hill",
+            "start_time": "08:35",
+            "end_time": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "bunker hill",
+            "start_time": "08:35",
+            "end_time": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "carrington",
+            "start_time": "08:35",
+            "end_time": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "h s chase",
+            "start_time": "08:35",
+            "end_time": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "wendell l cross",
+            "start_time": "08:35",
+            "end_time": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "driggs",
+            "start_time": "08:05",
+            "end_time": "14:20",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "duggan",
+            "start_time": "08:05",
+            "end_time": "14:20",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "margaret m generali",
+            "start_time": "08:35",
+            "end_time": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "gilmartin",
+            "start_time": "08:35",
+            "end_time": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hopeville",
+            "start_time": "08:35",
+            "end_time": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "f j kingsbury",
+            "start_time": "08:35",
+            "end_time": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "maloney interdistrict magnet",
+            "start_time": "08:35",
+            "end_time": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "reed",
+            "start_time": "08:35",
+            "end_time": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "regan",
+            "start_time": "08:35",
+            "end_time": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "roberto clemente international dual language",
+            "start_time": "09:05",
+            "end_time": "15:20",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rotella interdistrict magnet",
+            "start_time": "09:05",
+            "end_time": "15:20",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "sprague",
+            "start_time": "08:05",
+            "end_time": "14:20",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "b w tinker",
+            "start_time": "08:05",
+            "end_time": "14:20",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "walsh",
+            "start_time": "08:35",
+            "end_time": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "washington",
+            "start_time": "08:05",
+            "end_time": "14:20",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "woodrow wilson",
+            "start_time": "08:35",
+            "end_time": "14:50",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "our lady mount carmel",
+            "start_time": "09:05",
+            "end_time": "15:20",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "yeshiva ktana",
+            "start_time": "09:00",
+            "end_time": "16:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 390,
+        "start_time": "07:50",
+        "end_time": "14:20",
+        "n_schools": 4,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "north end",
+            "start_time": "07:50",
+            "end_time": "14:20",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "michael f wallace",
+            "start_time": "07:50",
+            "end_time": "14:20",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "west side",
+            "start_time": "07:50",
+            "end_time": "14:20",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "academic w allace",
+            "start_time": "07:50",
+            "end_time": "14:20",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 390,
+        "start_time": "07:20",
+        "end_time": "13:50",
+        "n_schools": 9,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "crosby",
+            "start_time": "07:20",
+            "end_time": "13:50",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "john f kennedy",
+            "start_time": "07:20",
+            "end_time": "13:50",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "wtby arts magnet",
+            "start_time": "07:20",
+            "end_time": "13:50",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "wtby career",
+            "start_time": "07:20",
+            "end_time": "13:50",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "wilby",
+            "start_time": "07:20",
+            "end_time": "13:50",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "holy cross",
+            "start_time": "07:30",
+            "end_time": "13:45",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "kaynor technical",
+            "start_time": "07:25",
+            "end_time": "14:20",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "yeshiva bais yaakov girls",
+            "start_time": "09:00",
+            "end_time": "16:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "yeshiva gedolah boys",
+            "start_time": "09:00",
+            "end_time": "16:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "state": "CT",
+    "reaggregated_from": "extraction_88c1cf5b5e37_0904830_20260814T064959Z.json"
+  }
+}

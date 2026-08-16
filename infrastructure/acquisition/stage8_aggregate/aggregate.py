@@ -107,6 +107,28 @@ import re as _re
 # one home in common (REQ-117). See common.school_match.
 from infrastructure.acquisition.common.school_match import norm_school as _norm_school
 from infrastructure.acquisition.common.school_match import norm_school_strict as _norm_school_strict
+from infrastructure.acquisition.common.school_match import resolve_school_identity
+from infrastructure.acquisition.common.school_match import _base as _base_name
+# #789: the facility-token list is IMPORTED, never hand-copied — the two screens must not drift.
+from infrastructure.acquisition.common.school_sampling import FACILITY_NAME_TOKENS
+
+# #693 rung-4 exclusion screen: an UNMATCHED extracted name that pattern-matches an
+# excluded-school-type (standalone preschool/EC, alternative/credit-recovery, adult/evening ed —
+# the classes _eligible keeps out of the roster denominator) is routed to `unresolved` with an
+# explicit reason, never accepted into a band mode and never silently dropped. Applies ONLY after
+# roster resolution fails: a rostered school never reaches this (its roster presence already
+# passed _eligible). Review #789: the once-bare words (adult/evening/virtual/cyber) over-matched
+# ordinary thematic names ('Evening Star Elementary') — they now require a program-type phrase;
+# bare 'cyber' is dropped entirely (true virtual schools are excluded upstream by the CCD
+# virtual-ids list in _eligible, not by name). The facility tokens ride in from the one shared
+# list (#222's FACILITY_NAME_TOKENS).
+_EXCLUDED_NAME = _re.compile(
+    r"\b(pre\s?k|prek|preschool|pre\s?kindergarten|early\s+childhood|early\s+learning|ecc|eclc"
+    r"|head\s+start|alternative|credit\s+recovery"
+    r"|adult\s+(?:ed|education|learning|school)|evening\s+(?:school|program|academy)"
+    r"|virtual\s+(?:school|academy|learning|program)|online\s+(?:school|academy)"
+    r"|" + "|".join(_re.escape(t).replace(r"\ ", r"\s+") for t in FACILITY_NAME_TOKENS)
+    + r")\b")
 # #638: ONE canonical HH:MM parser (was a private copy here + another in stage9 provenance).
 from infrastructure.acquisition.common.timeutil import hhmm_to_min as _to_min
 
@@ -254,7 +276,24 @@ def consensus_school_facts(model_rows, judge_rows=None, context=None):
     (#241's visible-and-confirmable posture), and a band_referent keeps its referent name so the
     #253 combined-scope detector + REQ-146 band-grain projection classify it downstream. A
     degenerate name in a >1-school band with no band-grain label is still refused."""
+    # #693: roster-anchored identity resolution at the grouping boundary. The resolver is pure and
+    # deterministic (the #716 replay re-derives identical groupings); it changes GROUPING only —
+    # consensus thresholds and the judge's non-minting rule are untouched. Resolution info is
+    # remembered per resolved key for the fact's identity marking (gate@8 visibility).
+    roster_recs = (context or {}).get("roster_recs") or {}
+    _rcache = {}
+
+    def _resolve(b, raw_name):
+        raw_key = _norm_school(raw_name)
+        if not roster_recs or not raw_key:
+            return raw_key, None
+        if (b, raw_key) not in _rcache:
+            _rcache[(b, raw_key)] = resolve_school_identity(raw_key, b, roster_recs)
+        return _rcache[(b, raw_key)]
+
     groups = {}   # (band, nschool) -> {model: [(start_min, end_min, start_raw, end_raw)]}
+    ident = {}    # (band, nschool) -> {"school_id","roster_school","rostered_bands",
+                  #                     "rules":{raw_key: rule}} | {"rule":"ambiguous",...} | None
     for model, rows in model_rows.items():
         for r in rows:
             b = r.get("grade_level");
@@ -262,7 +301,18 @@ def consensus_school_facts(model_rows, judge_rows=None, context=None):
             s, e = _to_min(r.get("start_time")), _to_min(r.get("end_time"))
             e = _normalize_ambiguous_end(s, e)   # #716: 12h echo -> 24h, before clustering
             if s is None or e is None: continue
-            key = (b, _norm_school(r.get("school_name")))
+            rkey, rinfo = _resolve(b, r.get("school_name"))
+            key = (b, rkey)
+            if rinfo and rinfo.get("school_id"):
+                gi = ident.get(key)
+                if not (gi and gi.get("school_id")):   # a None/ambiguous placeholder never wins
+                    gi = {k: rinfo[k] for k in ("school_id", "roster_school", "rostered_bands")}
+                    gi["rules"] = {}
+                    ident[key] = gi
+                if rinfo["rule"] != "exact":           # exact is the norm, not worth an audit row
+                    gi["rules"][rinfo["resolved_from"]] = rinfo["rule"]
+            elif key not in ident:
+                ident[key] = rinfo     # None (unmatched) or {"rule": "ambiguous", ...}
             groups.setdefault(key, {}).setdefault(model, []).append((s, e, r.get("start_time"), r.get("end_time"), r))
     jgroups = {}
     if judge_rows:
@@ -273,9 +323,108 @@ def consensus_school_facts(model_rows, judge_rows=None, context=None):
                 s, e = _to_min(r.get("start_time")), _to_min(r.get("end_time"))
                 e = _normalize_ambiguous_end(s, e)   # #716: uniform — judge rows too
                 if s is None or e is None: continue
-                jgroups.setdefault((b, _norm_school(r.get("school_name"))), []).append((s, e, r.get("start_time"), r.get("end_time"), r))
+                jkey, _ = _resolve(b, r.get("school_name"))   # judge rows group by the SAME
+                jgroups.setdefault((b, jkey), []).append((s, e, r.get("start_time"), r.get("end_time"), r))
 
     accepted, unresolved = [], []
+
+    # ---- #721: band adjudication by roster placement, BEFORE consensus ----------------------
+    # Same resolved school_id claimed under 2+ bands — or unanimously under ONE band the roster
+    # says the school does not serve (#779: a unanimous misread must not be silently accepted
+    # with a self-contradictory identity). The roster — not the voters — adjudicates:
+    # a multiband campus keeps each claimed-and-rostered band; a single-band-rostered school's
+    # wrong-band claim folds into its one rostered band; a wrong-band claim against a MULTIband
+    # roster has no deterministic destination and surfaces as an explicit band_disagreement.
+    # level_collapse names never reach here: their bands resolve to DIFFERENT school_ids (P5).
+    # jalias (#781): adjudication moves group keys, but the judge was consulted under the
+    # PRE-adjudication key — every kept key remembers its source keys so the tiebreak can still
+    # find the judge's answer.
+    jalias = {}
+    by_sid = {}
+    for key, info in ident.items():
+        if info and info.get("school_id"):
+            by_sid.setdefault(info["school_id"], []).append(key)
+    for sid, keys in by_sid.items():
+        bands = sorted({b for b, _ in keys})
+        rostered = set(ident[keys[0]].get("rostered_bands") or [])
+        if not rostered or set(bands) <= rostered and len(bands) < 2:
+            continue                       # single claimed band the roster confirms: nothing to do
+        adjudication = {"band_adjudication": None, "claimed_bands": bands}
+
+        def _votes_for(band):
+            # #780: per kept band, a model's OWN-band votes win; other-band votes are BACKFILL
+            # for models absent in this band (Gerlach's cross-band singletons still meet), never
+            # an overwrite — a campus whose bands genuinely differ keeps each band's own times,
+            # evidence, and v3/v4 readings. Fresh dict per band: no shared object.
+            own = groups.get((band, keys[0][1])) or {}
+            models = {m for k in keys for m in groups.get(k, {})}
+            return {m: list(own.get(m) or [v for k in keys if k[0] != band
+                                           for v in (groups.get(k) or {}).get(m, [])])
+                    for m in models}
+
+        if len(rostered) > 1:
+            keep = [k for k in keys if k[0] in rostered]
+            if not keep:
+                # #779: unanimous (or split) claims, NONE in a rostered band, 2+ rostered bands:
+                # no deterministic destination — surface, never guess.
+                starts = {f"{m} [{k[0]}]": v[0][2] for k in keys for m, v in groups[k].items()}
+                ends = {f"{m} [{k[0]}]": v[0][3] for k in keys for m, v in groups[k].items()}
+                unresolved.append({"band": bands[0], "school": keys[0][1],
+                                   "reason": "band_disagreement", "starts": starts, "ends": ends,
+                                   "identity": {"claimed_bands": bands,
+                                                "rostered_bands": sorted(rostered),
+                                                "school_id": sid,
+                                                "roster_school": ident[keys[0]].get("roster_school")}})
+                for k in keys:
+                    del groups[k]
+                continue
+            adjudication["band_adjudication"] = "roster_multiband"
+        else:
+            # single-band rostered: the roster band wins; a claim in a band the school does not
+            # serve is a voter attribute error, not a second school (#779: including UNANIMOUS)
+            tb = next(iter(rostered))
+            keep = [(tb, keys[0][1])]
+            adjudication["band_adjudication"] = "roster_band"
+            ident.setdefault(keep[0], ident[keys[0]])
+        new_votes = {k: _votes_for(k[0]) for k in keep}      # build BEFORE mutating groups
+        for key in keys:
+            if key not in keep:
+                del groups[key]
+        for key in keep:
+            groups[key] = new_votes[key]
+            ident[key] = {**ident[key], **adjudication}
+            jalias[key] = [k for k in keys if k != key]
+
+    # ---- #721 option 3: unmatched same-name cross-band singletons become ONE visible row -----
+    # No roster to adjudicate with (hub docs, 91% of unmatched — findings report §4): the loss is
+    # made explicit and human-adjudicable instead of two ordinary-looking no-consensus rows.
+    # Gated on roster_recs (#778): a no-context caller (council lab) must stay byte-identical —
+    # the same contract the screen and marking already honor. Only TRULY-unmatched keys sweep
+    # (#784): an 'ambiguous' resolution is a name-disambiguation problem carrying its candidate
+    # list — collapsing it to claimed_bands would discard exactly what the reviewer needs.
+    unmatched_by_name = {}
+    if roster_recs:
+        for (b, k), info in ident.items():
+            # strict-degenerate keys ('junior high school', '') are GENERIC REFERENTS, not one
+            # school claimed in two bands — they belong to the #245 guard / #707 resolution
+            # downstream, and sweeping them would shadow the more specific
+            # degenerate_school_name reason (found replaying 4222860, findings report §9).
+            if info is None and (b, k) in groups and _norm_school_strict(k):
+                unmatched_by_name.setdefault(k, []).append((b, k))
+    for k, keys in unmatched_by_name.items():
+        singles = [key for key in keys if len(groups[key]) == 1]
+        if len(singles) < 2 or len({b for b, _ in singles}) < 2:
+            continue
+        # #785: keyed (model [band]) — a model claiming the same name under TWO bands keeps both
+        # votes in the audit trail; a model-keyed dict silently overwrote the earlier band's.
+        starts = {f"{m} [{key[0]}]": v[0][2] for key in singles for m, v in groups[key].items()}
+        ends = {f"{m} [{key[0]}]": v[0][3] for key in singles for m, v in groups[key].items()}
+        unresolved.append({"band": sorted(b for b, _ in singles)[0], "school": k,
+                           "reason": "band_disagreement",
+                           "starts": starts, "ends": ends,
+                           "identity": {"claimed_bands": sorted({b for b, _ in singles})}})
+        for key in singles:
+            del groups[key]
     for (band, nschool), per_model in groups.items():
         # #245: a group whose normalized name is empty or purely generic (e.g. an extracted
         # school_name of "" or "Schools") is not a real, distinct school — the #236 empty-key guard
@@ -314,12 +463,17 @@ def consensus_school_facts(model_rows, judge_rows=None, context=None):
                                "starts": {m: v[0][2] for m, v in per_model.items()},
                                "ends": {m: v[0][3] for m, v in per_model.items()}})
             continue
-        if not (s_ok and e_ok) and (band, nschool) in jgroups:   # judge tiebreak on the pair
-            js, je = jgroups[(band, nschool)][0][0], jgroups[(band, nschool)][0][1]
+        # judge tiebreak on the pair. #781: band adjudication may have MOVED this group's key —
+        # the judge answered under the band it was actually consulted on, so the pre-adjudication
+        # source keys (jalias) are checked when the adjudicated key itself has no judge row.
+        jkey = next((cand for cand in [(band, nschool)] + jalias.get((band, nschool), [])
+                     if cand in jgroups), None)
+        if not (s_ok and e_ok) and jkey is not None:
+            js, je = jgroups[jkey][0][0], jgroups[jkey][0][1]
             start_m, end_m, method = js, je, "judge"
             models = ["judge"]
-            ev = {"judge": _evidence_of(jgroups[(band, nschool)][0][4])}
-            meta_rows = [jgroups[(band, nschool)][0][4]]
+            ev = {"judge": _evidence_of(jgroups[jkey][0][4])}
+            meta_rows = [jgroups[jkey][0][4]]
         elif s_ok and e_ok:
             start_m = round(mean([v for _, v in sc[0]["members"]]))
             end_m   = round(mean([v for _, v in ec[0]["members"]]))
@@ -334,6 +488,22 @@ def consensus_school_facts(model_rows, judge_rows=None, context=None):
         gross = end_m - start_m
         if not is_plausible(gross):
             unresolved.append({"band": band, "school": nschool, "gross": gross, "reason": "implausible"}); continue
+        info = ident.get((band, nschool))
+        # #693 rung 4: an unmatched name that pattern-matches an excluded school type routes to
+        # unresolved — auditable, off the band mode, never silently dropped. Gated on roster_recs:
+        # a no-roster context (council_lab benchmark runs, roster-load failure) screens nothing,
+        # matching the resolver's own no-roster no-op. Rung 5: an unmatched CLEAN name survives
+        # as the name-in-lieu identity, marked so gate@8 sees it and no roster slot fills from it.
+        # #789: the screen reads the RAW extracted names (the page's own words) — the norm key
+        # has already stripped 'academy'/'school', so a phrase like 'virtual academy' can never
+        # match it.
+        if not degenerate and roster_recs and info is None and any(
+                _EXCLUDED_NAME.search(f" {_base_name(v[0][4].get('school_name') or '')} ")
+                for v in per_model.values()):
+            unresolved.append({"band": band, "school": nschool, "reason": "excluded_school_type",
+                               "starts": {m: v[0][2] for m, v in per_model.items()},
+                               "ends": {m: v[0][3] for m, v in per_model.items()}})
+            continue
         school_out = nschool
         if degenerate:
             # #707: the resolution's method REPLACES council_agree so gate@8 sees exactly what
@@ -346,6 +516,16 @@ def consensus_school_facts(model_rows, judge_rows=None, context=None):
                 "gross": gross, "models": models, "method": method}
         if degenerate:
             fact["resolved_from"] = nschool    # the raw referent, auditable on the fact itself
+        elif roster_recs:
+            # #693/#721 identity marking (v5, persisted to identity_json): what the roster said
+            # about this fact's school, so gate@8 sees merges/ambiguity/unmatched — attached only
+            # when a roster was consulted, so no-context callers stay byte-identical.
+            if info and info.get("school_id"):
+                fact["identity"] = {k: v for k, v in info.items() if k != "rules" or v}
+            elif info and info.get("rule") == "ambiguous":
+                fact["identity"] = info
+            else:
+                fact["identity"] = {"roster": "unmatched"}
         if _has_evidence(ev):   # only v2+ rows carry it; v1 accepted facts stay byte-identical
             fact["evidence"] = ev
         # #254 (v3): categorical corroboration — NEVER part of the (band, norm_school) grouping key

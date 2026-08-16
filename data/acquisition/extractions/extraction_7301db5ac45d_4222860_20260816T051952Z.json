@@ -1,0 +1,4824 @@
+{
+  "handoff_hash": "7301db5ac45d",
+  "district": {
+    "district_id": "4222860",
+    "name": "Stroudsburg Area SD",
+    "reps": [
+      {
+        "rec_key": "4222860:fa8bdfce9a",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:20",
+                "end_time": "15:41",
+                "school_name": "5531 Hamilton South",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1012,
+            "completion_tokens": 56,
+            "cost_usd": 0.0001236,
+            "latency_ms": 1279,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293131-OgxX7BuxJnJeGg5xbHGt"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "09:20",
+                "end_time": "15:41",
+                "school_name": "5531 Hamilton South",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 999,
+            "completion_tokens": 73,
+            "cost_usd": 5.579e-05,
+            "latency_ms": 1163,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293132-RauaIOzc4kQRAUe9B2pn"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 981,
+            "completion_tokens": 5,
+            "cost_usd": 0.0001496495,
+            "latency_ms": 1064,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293133-srSIJsq2bRiU93Mtlpg7"
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "5531 hamilton south",
+            "reason": "band_disagreement",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:20",
+              "mistralai/mistral-small-24b-instruct-2501": "09:20"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:41",
+              "mistralai/mistral-small-24b-instruct-2501": "15:41"
+            },
+            "identity": {
+              "claimed_bands": [
+                "high",
+                "middle"
+              ]
+            },
+            "rec_key": "4222860:fa8bdfce9a",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "4222860:0b76e3c493",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:20",
+                "end_time": "15:50",
+                "school_name": "Elementary Schools K-4",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:12",
+                "school_name": "Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:10",
+                "end_time": "14:22",
+                "school_name": "Junior High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:15",
+                "end_time": "14:20",
+                "school_name": "Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1167,
+            "completion_tokens": 213,
+            "cost_usd": 0.0002019,
+            "latency_ms": 754,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293134-QTyKswus9yQFPajH6Lf0"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:20",
+                "end_time": "15:50",
+                "school_name": "Elementary Schools K-4",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:12",
+                "school_name": "Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:10",
+                "end_time": "14:22",
+                "school_name": "Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1151,
+            "completion_tokens": 181,
+            "cost_usd": 7.203e-05,
+            "latency_ms": 2708,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293135-En8NUJq67seLCJaKawRG"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:50",
+                "school_name": "Elementary Schools K-4",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:12",
+                "school_name": "Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:02",
+                "end_time": "14:22",
+                "school_name": "Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1124,
+            "completion_tokens": 111,
+            "cost_usd": 0.00034496,
+            "latency_ms": 2740,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293138-e0w9jlrRxwouftAOKWoY"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "k 4",
+            "start": "09:20",
+            "end": "15:50",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "4222860:0b76e3c493",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "middle school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:10",
+              "mistralai/mistral-small-24b-instruct-2501": "08:10"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:12",
+              "mistralai/mistral-small-24b-instruct-2501": "15:12"
+            },
+            "rec_key": "4222860:0b76e3c493",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "middle",
+            "school": "junior high school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:10"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:22"
+            },
+            "rec_key": "4222860:0b76e3c493",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "high",
+            "school": "junior high school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:10"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:22"
+            },
+            "rec_key": "4222860:0b76e3c493",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "4222860:0ba126eb4d",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:27",
+                "end_time": "14:22",
+                "school_name": "Stroudsburg Jr. High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 909,
+            "completion_tokens": 53,
+            "cost_usd": 0.0001121,
+            "latency_ms": 460,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293140-xlmAYoprBkrX8nTSuR7Z"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:27",
+                "end_time": "14:22",
+                "school_name": "Stroudsburg Jr. High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 961,
+            "completion_tokens": 53,
+            "cost_usd": 5.229e-05,
+            "latency_ms": 915,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293141-ORtBxpbHaU3xJfMGXcXo"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "stroudsburg",
+            "start": "07:27",
+            "end": "14:22",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "rule": "ambiguous",
+              "candidates": [
+                "Stroudsburg JHS",
+                "Stroudsburg MS"
+              ]
+            },
+            "rec_key": "4222860:0ba126eb4d",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4222860:1f51effa21",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:20",
+                "end_time": "15:41",
+                "school_name": "Hamilton Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 675,
+            "completion_tokens": 47,
+            "cost_usd": 8.63e-05,
+            "latency_ms": 1869,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293142-CXaSnpoq4kZhqqxFC4TC"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:20",
+                "end_time": "15:41",
+                "school_name": "Hamilton Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 704,
+            "completion_tokens": 49,
+            "cost_usd": 3.912e-05,
+            "latency_ms": 1100,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293144-5vzbSdlYKtM2a8OK0rJo"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "hamilton twp",
+            "start": "09:20",
+            "end": "15:41",
+            "gross": 381,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "school_id": "422286007571",
+              "roster_school": "Hamilton Twp El Sch",
+              "rostered_bands": [
+                "elementary"
+              ],
+              "rules": {
+                "hamilton": "token_subset"
+              }
+            },
+            "rec_key": "4222860:1f51effa21",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4222860:5d7778b6a7",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:20",
+                "end_time": "15:50",
+                "school_name": "Hamilton Township Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 668,
+            "completion_tokens": 49,
+            "cost_usd": 8.64e-05,
+            "latency_ms": 592,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293145-9ferFL9Ijy5dOoMSsQvI"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:20",
+                "end_time": "15:50",
+                "school_name": "Hamilton Township Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 705,
+            "completion_tokens": 51,
+            "cost_usd": 3.933e-05,
+            "latency_ms": 2458,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293146-lGSrBcZoLCQ8B2kS8Mbg"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "hamilton township",
+            "start": "09:20",
+            "end": "15:50",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "4222860:5d7778b6a7",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4222860:6271fb3277",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:09",
+                "school_name": "Stroudsburg Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 815,
+            "completion_tokens": 46,
+            "cost_usd": 9.99e-05,
+            "latency_ms": 1637,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293148-ADeu0m9vXlyIL1YKixm8"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:09",
+                "school_name": "Stroudsburg Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 848,
+            "completion_tokens": 73,
+            "cost_usd": 4.824e-05,
+            "latency_ms": 1849,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293150-nxK3RPxwhsKhzO955tFY"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "stroudsburg",
+            "start": "08:17",
+            "end": "15:09",
+            "gross": 412,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "rule": "ambiguous",
+              "candidates": [
+                "Stroudsburg JHS",
+                "Stroudsburg MS"
+              ]
+            },
+            "rec_key": "4222860:6271fb3277",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4222860:6a908720a1",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:20",
+                "end_time": "15:50",
+                "school_name": "Elementary Schools K-4",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:12",
+                "school_name": "Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:10",
+                "end_time": "14:22",
+                "school_name": "Junior High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:15",
+                "end_time": "14:20",
+                "school_name": "Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1242,
+            "completion_tokens": 158,
+            "cost_usd": 0.0001874,
+            "latency_ms": 3931,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293154-JQfSx4tD3dANAhK7LfXD"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:20",
+                "end_time": "15:50",
+                "school_name": "Elementary Schools K-4",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:12",
+                "school_name": "Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:10",
+                "end_time": "14:22",
+                "school_name": "Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1223,
+            "completion_tokens": 181,
+            "cost_usd": 7.563e-05,
+            "latency_ms": 2273,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293156-RBdyqQGN8PIMvq5XeNAm"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:50",
+                "school_name": "Elementary Schools K-4",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:12",
+                "school_name": "Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:02",
+                "end_time": "14:22",
+                "school_name": "Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1194,
+            "completion_tokens": 111,
+            "cost_usd": 0.00011856,
+            "latency_ms": 5350,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293158-MaY7ejIQB3EdER8Wgats"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "k 4",
+            "start": "09:20",
+            "end": "15:50",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "4222860:6a908720a1",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "middle school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:10",
+              "mistralai/mistral-small-24b-instruct-2501": "08:10"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:12",
+              "mistralai/mistral-small-24b-instruct-2501": "15:12"
+            },
+            "rec_key": "4222860:6a908720a1",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "middle",
+            "school": "junior high school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:10"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:22"
+            },
+            "rec_key": "4222860:6a908720a1",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "high",
+            "school": "junior high school",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:10"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:22"
+            },
+            "rec_key": "4222860:6a908720a1",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "4222860:7bbb2ff11e",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "Stroudsburg High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 786,
+            "completion_tokens": 51,
+            "cost_usd": 9.9e-05,
+            "latency_ms": 1450,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293164-wbYR7bGdEOPOxSNHCNln"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "Stroudsburg High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 817,
+            "completion_tokens": 73,
+            "cost_usd": 4.669e-05,
+            "latency_ms": 1113,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293165-hZLxpGg317zHpLn86NMt"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "stroudsburg",
+            "start": "07:30",
+            "end": "14:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "rule": "ambiguous",
+              "candidates": [
+                "Stroudsburg HS",
+                "Stroudsburg JHS"
+              ]
+            },
+            "rec_key": "4222860:7bbb2ff11e",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4222860:a622435c8a",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1278,
+            "completion_tokens": 44,
+            "cost_usd": 0.0001454,
+            "latency_ms": 1038,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293166-wC118qKhiD3zg9BK5Qhx"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1256,
+            "completion_tokens": 72,
+            "cost_usd": 6.856e-05,
+            "latency_ms": 1975,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293167-phPUFnFIShu3GkqhiUif"
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4222860:77a6eec89d",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:12",
+                "school_name": "Stroudsburg Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 674,
+            "completion_tokens": 51,
+            "cost_usd": 8.78e-05,
+            "latency_ms": 540,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293169-Tv26ZvYPFSm1ZFDdVgkL"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:09",
+                "school_name": "Stroudsburg Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 701,
+            "completion_tokens": 47,
+            "cost_usd": 3.881e-05,
+            "latency_ms": 1157,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293170-ES7GDfHWHi0O1fictz4F"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "stroudsburg",
+            "start": "08:17",
+            "end": "15:10",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "rule": "ambiguous",
+              "candidates": [
+                "Stroudsburg JHS",
+                "Stroudsburg MS"
+              ]
+            },
+            "rec_key": "4222860:77a6eec89d",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4222860:0115cb4b01",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:05",
+                "end_time": "15:41",
+                "school_name": "Hamilton Township Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 734,
+            "completion_tokens": 49,
+            "cost_usd": 9.3e-05,
+            "latency_ms": 1064,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293171-b75O4bDhnprETI968Vew"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:20",
+                "end_time": "15:41",
+                "school_name": "Hamilton Township Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 772,
+            "completion_tokens": 51,
+            "cost_usd": 4.268e-05,
+            "latency_ms": 961,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293172-92tyM4Em0xQiUarRqWK5"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "hamilton township",
+            "start": "09:12",
+            "end": "15:41",
+            "gross": 389,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "4222860:0115cb4b01",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4222860:0286264bfb",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:10",
+                "end_time": "14:22",
+                "school_name": "Stroudsburg Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 868,
+            "completion_tokens": 47,
+            "cost_usd": 0.0001056,
+            "latency_ms": 675,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293173-LMg8Z2mJFe79PhoCvqmJ"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:27",
+                "end_time": "14:22",
+                "school_name": "Stroudsburg Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 899,
+            "completion_tokens": 74,
+            "cost_usd": 5.087e-05,
+            "latency_ms": 1274,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293174-Zwp3DdnuzPkNHuI1T20O"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:27",
+                "end_time": "14:22",
+                "school_name": "Stroudsburg Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 874,
+            "completion_tokens": 43,
+            "cost_usd": 0.0001036,
+            "latency_ms": 2012,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293175-x4w9ChDiWBLgJWh1ACyW"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "stroudsburg",
+            "start": "07:27",
+            "end": "14:22",
+            "gross": 415,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "rule": "ambiguous",
+              "candidates": [
+                "Stroudsburg JHS",
+                "Stroudsburg MS"
+              ]
+            },
+            "rec_key": "4222860:0286264bfb",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4222860:68c1d17836",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "Stroudsburg High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:35",
+                "end_time": "14:20",
+                "school_name": "Stroudsburg High School - Normal AM MCTI Schedule",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "Stroudsburg High School - Normal PM MCTI Schedule",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1425,
+            "completion_tokens": 145,
+            "cost_usd": 0.0002005,
+            "latency_ms": 800,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293177-xuWnaxQRpnC9wltCVph7"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "Stroudsburg High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1568,
+            "completion_tokens": 46,
+            "cost_usd": 8.208e-05,
+            "latency_ms": 739,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293178-BIefh2tsQepMPJo54PWp"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "Stroudsburg High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1556,
+            "completion_tokens": 42,
+            "cost_usd": 0.0003364,
+            "latency_ms": 1796,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293179-JKjHF5CFdjsubuW7x1La"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "stroudsburg",
+            "start": "07:30",
+            "end": "14:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "rule": "ambiguous",
+              "candidates": [
+                "Stroudsburg HS",
+                "Stroudsburg JHS"
+              ]
+            },
+            "rec_key": "4222860:68c1d17836",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "stroudsburg normal am mcti schedule",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:35"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:20"
+            },
+            "rec_key": "4222860:68c1d17836",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "stroudsburg normal pm mcti schedule",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:20"
+            },
+            "rec_key": "4222860:68c1d17836",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "4222860:2ca0e1c23b",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 420,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:28",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3391,
+            "completion_tokens": 16000,
+            "cost_usd": 0.0067391,
+            "latency_ms": 28277,
+            "finish_reason": "length",
+            "generation_id": "gen-1783293181-81yh1rrBkPJLk0Bxke50"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:20",
+                "school_name": "MCTI",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3302,
+            "completion_tokens": 70,
+            "cost_usd": 0.0001707,
+            "latency_ms": 1074,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293209-0vZovVXcziW1cZftcusM"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "mcti",
+            "start": "07:30",
+            "end": "14:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "identity": {
+              "roster": "unmatched"
+            },
+            "rec_key": "4222860:2ca0e1c23b",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "k 4",
+        "start": "09:20",
+        "end": "15:50",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "4222860:0b76e3c493",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "middle",
+        "school": "stroudsburg",
+        "start": "07:27",
+        "end": "14:22",
+        "gross": 415,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "rule": "ambiguous",
+          "candidates": [
+            "Stroudsburg JHS",
+            "Stroudsburg MS"
+          ]
+        },
+        "rec_key": "4222860:0ba126eb4d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hamilton twp",
+        "start": "09:20",
+        "end": "15:41",
+        "gross": 381,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "school_id": "422286007571",
+          "roster_school": "Hamilton Twp El Sch",
+          "rostered_bands": [
+            "elementary"
+          ],
+          "rules": {
+            "hamilton": "token_subset"
+          }
+        },
+        "rec_key": "4222860:1f51effa21",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hamilton township",
+        "start": "09:20",
+        "end": "15:50",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "4222860:5d7778b6a7",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "stroudsburg",
+        "start": "08:17",
+        "end": "15:09",
+        "gross": 412,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "rule": "ambiguous",
+          "candidates": [
+            "Stroudsburg JHS",
+            "Stroudsburg MS"
+          ]
+        },
+        "rec_key": "4222860:6271fb3277",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "k 4",
+        "start": "09:20",
+        "end": "15:50",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "4222860:6a908720a1",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "high",
+        "school": "stroudsburg",
+        "start": "07:30",
+        "end": "14:20",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "rule": "ambiguous",
+          "candidates": [
+            "Stroudsburg HS",
+            "Stroudsburg JHS"
+          ]
+        },
+        "rec_key": "4222860:7bbb2ff11e",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "stroudsburg",
+        "start": "08:17",
+        "end": "15:10",
+        "gross": 413,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "rule": "ambiguous",
+          "candidates": [
+            "Stroudsburg JHS",
+            "Stroudsburg MS"
+          ]
+        },
+        "rec_key": "4222860:77a6eec89d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hamilton township",
+        "start": "09:12",
+        "end": "15:41",
+        "gross": 389,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "4222860:0115cb4b01",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "stroudsburg",
+        "start": "07:27",
+        "end": "14:22",
+        "gross": 415,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "rule": "ambiguous",
+          "candidates": [
+            "Stroudsburg JHS",
+            "Stroudsburg MS"
+          ]
+        },
+        "rec_key": "4222860:0286264bfb",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "stroudsburg",
+        "start": "07:30",
+        "end": "14:20",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "rule": "ambiguous",
+          "candidates": [
+            "Stroudsburg HS",
+            "Stroudsburg JHS"
+          ]
+        },
+        "rec_key": "4222860:68c1d17836",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "mcti",
+        "start": "07:30",
+        "end": "14:20",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "identity": {
+          "roster": "unmatched"
+        },
+        "rec_key": "4222860:2ca0e1c23b",
+        "source_file": "camelot_hybrid.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "high",
+        "school": "5531 hamilton south",
+        "reason": "band_disagreement",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:20",
+          "mistralai/mistral-small-24b-instruct-2501": "09:20"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:41",
+          "mistralai/mistral-small-24b-instruct-2501": "15:41"
+        },
+        "identity": {
+          "claimed_bands": [
+            "high",
+            "middle"
+          ]
+        },
+        "rec_key": "4222860:fa8bdfce9a",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "middle",
+        "school": "middle school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:10",
+          "mistralai/mistral-small-24b-instruct-2501": "08:10"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:12",
+          "mistralai/mistral-small-24b-instruct-2501": "15:12"
+        },
+        "rec_key": "4222860:0b76e3c493",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "middle",
+        "school": "junior high school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:10"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:22"
+        },
+        "rec_key": "4222860:0b76e3c493",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "high",
+        "school": "junior high school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:10"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:22"
+        },
+        "rec_key": "4222860:0b76e3c493",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "middle",
+        "school": "middle school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:10",
+          "mistralai/mistral-small-24b-instruct-2501": "08:10"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:12",
+          "mistralai/mistral-small-24b-instruct-2501": "15:12"
+        },
+        "rec_key": "4222860:6a908720a1",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "middle",
+        "school": "junior high school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:10"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:22"
+        },
+        "rec_key": "4222860:6a908720a1",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "high",
+        "school": "junior high school",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:10"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:22"
+        },
+        "rec_key": "4222860:6a908720a1",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "high",
+        "school": "stroudsburg normal am mcti schedule",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:35"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:20"
+        },
+        "rec_key": "4222860:68c1d17836",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "stroudsburg normal pm mcti schedule",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:20"
+        },
+        "rec_key": "4222860:68c1d17836",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "n_reps": 14,
+    "n_judged": 5,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 390,
+        "start_time": "09:20",
+        "end_time": "15:50",
+        "n_schools": 5,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "k 4",
+            "start_time": "09:20",
+            "end_time": "15:50",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hamilton twp",
+            "start_time": "09:20",
+            "end_time": "15:41",
+            "gross": 381,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hamilton township",
+            "start_time": "09:20",
+            "end_time": "15:50",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "k 4",
+            "start_time": "09:20",
+            "end_time": "15:50",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hamilton township",
+            "start_time": "09:12",
+            "end_time": "15:41",
+            "gross": 389,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 415,
+        "start_time": "07:27",
+        "end_time": "14:22",
+        "n_schools": 4,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "stroudsburg",
+            "start_time": "07:27",
+            "end_time": "14:22",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "stroudsburg",
+            "start_time": "08:17",
+            "end_time": "15:09",
+            "gross": 412,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "stroudsburg",
+            "start_time": "08:17",
+            "end_time": "15:10",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "stroudsburg",
+            "start_time": "07:27",
+            "end_time": "14:22",
+            "gross": 415,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 410,
+        "start_time": "07:30",
+        "end_time": "14:20",
+        "n_schools": 3,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "stroudsburg",
+            "start_time": "07:30",
+            "end_time": "14:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "stroudsburg",
+            "start_time": "07:30",
+            "end_time": "14:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mcti",
+            "start_time": "07:30",
+            "end_time": "14:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "state": "PA",
+    "reaggregated_from": "extraction_7301db5ac45d_4222860_20260705T231330Z.json"
+  }
+}

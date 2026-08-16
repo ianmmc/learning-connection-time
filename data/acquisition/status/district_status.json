@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-08-14T20:07:32Z",
+  "last_updated": "2026-08-16T05:19:54Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -158,8 +158,8 @@
       "name": "Coffee County",
       "state": "AL",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -279,9 +279,15 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:51Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "c127b5f6e5d7"
     },
     "0101410": {
       "name": "Eufaula City",
@@ -698,9 +704,15 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:50Z"
         }
       ],
-      "notes": "96edcbf7141c"
+      "notes": "a2bc80c004ca"
     },
     "0103390": {
       "name": "Tuscaloosa County",
@@ -847,8 +859,8 @@
       "name": "Matanuska-Susitna Borough School District",
       "state": "AK",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -1015,9 +1027,15 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:47Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "3004896917ca"
     },
     "0200600": {
       "name": "Fairbanks North Star Borough School District",
@@ -1747,8 +1765,8 @@
       "name": "BENTONVILLE SCHOOL DISTRICT",
       "state": "AR",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -1909,18 +1927,24 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:41Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "d9a49bcabf0d"
     },
     "0509000": {
       "name": "LITTLE ROCK SCHOOL DISTRICT",
       "state": "AR",
       "furthest_stage": 7,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00037",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -2154,16 +2178,28 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-08-14T18:06:10Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:36Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:15Z"
         }
       ],
-      "notes": "1 needs_oauth_reauth"
+      "notes": "3004896917ca"
     },
     "0512660": {
       "name": "SPRINGDALE SCHOOL DISTRICT",
       "state": "AR",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -2338,9 +2374,15 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:16Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "a2bc80c004ca"
     },
     "0513530": {
       "name": "VILONIA SCHOOL DISTRICT",
@@ -2931,8 +2973,8 @@
       "name": "Aspire Summit Charter Academy District",
       "state": "CA",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -3067,9 +3109,15 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:46Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "545683ec83cd"
     },
     "0602459": {
       "name": "Aurum Preparatory Academy District",
@@ -3102,10 +3150,10 @@
       "name": "Aspen Ridge Public District",
       "state": "CA",
       "furthest_stage": 7,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00020",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -3349,9 +3397,21 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-15T05:44:04Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:49Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:17Z"
         }
       ],
-      "notes": "gate@1 auto-approved (follow-up autoflow) batch_00020"
+      "notes": "9e786ee44873"
     },
     "0616080": {
       "name": "Greenfield Union Elementary",
@@ -3375,10 +3435,10 @@
       "name": "New Haven Unified",
       "state": "CA",
       "furthest_stage": 7,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00039",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -3596,16 +3656,22 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-08-14T17:44:02Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:52Z"
         }
       ],
-      "notes": "1 needs_oauth_reauth"
+      "notes": "0e1bf02c3ea6"
     },
     "0634320": {
       "name": "San Diego Unified",
       "state": "CA",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -3780,9 +3846,21 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:41Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:32Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "a2bc80c004ca"
     },
     "0802070": {
       "name": "Alamosa School District No. Re-11J",
@@ -4124,8 +4202,8 @@
       "name": "Bridgeport School District",
       "state": "CT",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -4300,18 +4378,30 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:55Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:57Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "d9a49bcabf0d"
     },
     "0902790": {
       "name": "New Haven School District",
       "state": "CT",
       "furthest_stage": 7,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00041",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -4529,16 +4619,28 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-08-14T17:52:40Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:34Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:43Z"
         }
       ],
-      "notes": "gate@1 approved batch_00041"
+      "notes": "a2bc80c004ca-image"
     },
     "0904830": {
       "name": "Waterbury School District",
       "state": "CT",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -4713,16 +4815,22 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:33Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "88c1cf5b5e37"
     },
     "1000080": {
       "name": "Appoquinimink School District",
       "state": "DE",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -4912,9 +5020,27 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:22Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:35Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:36Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "a2bc80c004ca"
     },
     "1100020": {
       "name": "Roots PCS",
@@ -4947,8 +5073,8 @@
       "name": "BROWARD",
       "state": "FL",
       "furthest_stage": 8,
-      "stage_name": "aggregate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -5108,9 +5234,15 @@
           "checkpoint": "gate@8",
           "event_type": "sent_back",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:18Z"
         }
       ],
-      "notes": "Broward is a massive district and the sample is thin. I want to see if we can find an updated version of the PDF we found with the benchmark batch_00000 run."
+      "notes": "d9a49bcabf0d"
     },
     "1201440": {
       "name": "ORANGE",
@@ -5382,9 +5514,21 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:48:07Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:48Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:49Z"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "a2bc80c004ca"
     },
     "1713590": {
       "name": "Egyptian CUSD 5",
@@ -5810,8 +5954,8 @@
       "name": "Northwestern CUSD 2",
       "state": "IL",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -6003,9 +6147,21 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:56Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:42Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "74456449e8db"
     },
     "1731410": {
       "name": "Porta CUSD 202",
@@ -6038,8 +6194,8 @@
       "name": "Triad CUSD 2",
       "state": "IL",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -6159,9 +6315,15 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:37Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "bdefebeba6c3"
     },
     "1739960": {
       "name": "Urbana SD 116",
@@ -6338,8 +6500,8 @@
       "name": "Franklin County Community Sch Corp",
       "state": "IN",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -6459,9 +6621,15 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:59Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "51849a4688a4"
     },
     "1810380": {
       "name": "South Henry School Corp",
@@ -6819,8 +6987,8 @@
       "name": "Marion Independent School District",
       "state": "IA",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -6958,9 +7126,15 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:00Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "77d066cb5324"
     },
     "1928020": {
       "name": "Tri-County Comm School District",
@@ -7071,8 +7245,8 @@
       "name": "Einstein Charter School at Village De L'Est",
       "state": "LA",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -7192,16 +7366,22 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:47Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "bb177cd7c381"
     },
     "2302820": {
       "name": "Bangor Public Schools",
       "state": "ME",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -7376,9 +7556,21 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:02Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:24Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "a2bc80c004ca"
     },
     "2307320": {
       "name": "Lewiston Public Schools",
@@ -7572,9 +7764,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-08-04T04:53:55Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:53Z"
         }
       ],
-      "notes": "40907f65b352"
+      "notes": "3004896917ca"
     },
     "2500587": {
       "name": "Old Sturbridge Academy Charter Public School",
@@ -7731,9 +7929,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-22T03:33:35Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:38Z"
         }
       ],
-      "notes": "9b2d32b7d21f"
+      "notes": "bb177cd7c381"
     },
     "2506750": {
       "name": "Lenox",
@@ -7814,8 +8018,8 @@
       "name": "Lincoln",
       "state": "MA",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -7935,16 +8139,22 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:45Z"
         }
       ],
-      "notes": "wrote 2 band(s): elementary=council_extraction,middle=council_extraction"
+      "notes": "51849a4688a4"
     },
     "2507080": {
       "name": "Lunenburg",
       "state": "MA",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -8136,9 +8346,15 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:03Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "bb177cd7c381"
     },
     "2513230": {
       "name": "Worcester",
@@ -9241,8 +9457,8 @@
       "name": "ADAIR CO. R-II",
       "state": "MO",
       "furthest_stage": 7,
-      "stage_name": "process",
-      "outcome": "processed_partial",
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -9404,9 +9620,15 @@
           "stage_name": "process",
           "outcome": "processed_partial",
           "at": "2026-07-06T05:02:34Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:43Z"
         }
       ],
-      "notes": "gate@1 auto-approved (follow-up autoflow) batch_00012"
+      "notes": "51849a4688a4"
     },
     "2921720": {
       "name": "NAYLOR R-II",
@@ -9788,10 +10010,10 @@
       "name": "Washoe County",
       "state": "NV",
       "furthest_stage": 7,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00040",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -10009,9 +10231,27 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-08-14T18:04:12Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:32Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:39Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:20Z"
         }
       ],
-      "notes": "gate@1 approved batch_00040"
+      "notes": "a2bc80c004ca"
     },
     "3300030": {
       "name": "North Country Charter Academy",
@@ -10411,8 +10651,8 @@
       "name": "Township of Union School District",
       "state": "NJ",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -10553,9 +10793,21 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:25Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:45Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "bb177cd7c381"
     },
     "3500127": {
       "name": "TAOS INTEGRATED SCHOOL OF ARTS",
@@ -10654,8 +10906,8 @@
       "name": "GALLUP",
       "state": "NM",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -10781,16 +11033,22 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:26Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "bb177cd7c381"
     },
     "3501500": {
       "name": "LAS CRUCES",
       "state": "NM",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -10948,9 +11206,15 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:40Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "bdefebeba6c3"
     },
     "3502280": {
       "name": "ROY",
@@ -11130,8 +11394,8 @@
       "name": "SANTA FE",
       "state": "NM",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -11278,9 +11542,15 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:31Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "f33790e63820"
     },
     "3600119": {
       "name": "NEW YORK CITY GEOGRAPHIC DISTRICT #14",
@@ -11373,8 +11643,8 @@
       "name": "BROWNSVILLE ASCEND CHARTER SCHOOL",
       "state": "NY",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -11587,9 +11857,21 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:04Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:21Z"
         }
       ],
-      "notes": "wrote 2 band(s): elementary=council_extraction,middle=council_extraction"
+      "notes": "bb177cd7c381"
     },
     "3601175": {
       "name": "CYPRESS HILLS ASCEND CHARTER SCHOOL",
@@ -12768,8 +13050,8 @@
       "name": "Dayton Early College Academy Inc",
       "state": "OH",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -12919,9 +13201,21 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:06Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:07Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "c127b5f6e5d7"
     },
     "3901587": {
       "name": "Dayton Athletic Vocational Academy",
@@ -12945,8 +13239,8 @@
       "name": "Cleveland Municipal",
       "state": "OH",
       "furthest_stage": 8,
-      "stage_name": "aggregate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -13106,9 +13400,21 @@
           "checkpoint": "gate@8",
           "event_type": "sent_back",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:35Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:50Z"
         }
       ],
-      "notes": "thin coverage plus duplicate entities (#693), flagged in issue #674"
+      "notes": "df2b06f2f7a7"
     },
     "3904519": {
       "name": "Amherst Exempted Village",
@@ -14497,6 +14803,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-15T01:59:58Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:28Z"
         }
       ],
       "notes": "54d8be261eca"
@@ -14505,8 +14817,8 @@
       "name": "Stroudsburg Area SD",
       "state": "PA",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -14638,9 +14950,21 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:53Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:54Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "c127b5f6e5d7"
     },
     "4600041": {
       "name": "Britton-Hecla School District 45-4",
@@ -14733,8 +15057,8 @@
       "name": "Memphis-Shelby County Schools",
       "state": "TN",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -14909,9 +15233,15 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:39Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "a2bc80c004ca"
     },
     "4812640": {
       "name": "CAMERON ISD",
@@ -15347,10 +15677,10 @@
       "name": "UNION HILL ISD",
       "state": "TX",
       "furthest_stage": 7,
-      "stage_name": "discover",
-      "outcome": "manual_flag_all",
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00025",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -15596,9 +15926,21 @@
           "stage_name": "discover",
           "outcome": "manual_flag_all",
           "at": "2026-07-26T08:41:51Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:08Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:09Z"
         }
       ],
-      "notes": "gate@1 approved batch_00025"
+      "notes": "27b64cab58a9"
     },
     "4900025": {
       "name": "North Star Academy",
@@ -15903,8 +16245,8 @@
       "name": "Essex Westford Educational Community Unified Union SD #51",
       "state": "VT",
       "furthest_stage": 8,
-      "stage_name": "aggregate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -16085,9 +16427,15 @@
           "checkpoint": "gate@8",
           "event_type": "sent_back",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:11Z"
         }
       ],
-      "notes": "hub-priority suppression of other viable times with no follow-up (#691)"
+      "notes": "df2b06f2f7a7"
     },
     "5000425": {
       "name": "Mt. Abraham Unified School District #61",
@@ -16290,8 +16638,8 @@
       "name": "Prince Edward County Public Schools",
       "state": "VA",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -16417,9 +16765,15 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:33Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "bb177cd7c381"
     },
     "5103480": {
       "name": "Scott County Public Schools",
@@ -16461,8 +16815,8 @@
       "name": "Elmbrook School District",
       "state": "WI",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -16582,9 +16936,15 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:51Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "c127b5f6e5d7"
     },
     "5505100": {
       "name": "Geneva J4 School District",
@@ -16892,8 +17252,8 @@
       "name": "New Richmond School District",
       "state": "WI",
       "furthest_stage": 9,
-      "stage_name": "incorporate",
-      "outcome": null,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -17013,18 +17373,24 @@
           "checkpoint": "incorporated",
           "event_type": "incorporated",
           "actor": "auto:stage9"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:29Z"
         }
       ],
-      "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+      "notes": "51849a4688a4"
     },
     "5605302": {
       "name": "Sweetwater County School District #1",
       "state": "WY",
       "furthest_stage": 7,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00038",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -17242,9 +17608,27 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-08-14T17:44:17Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:18:40Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:12Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T05:19:13Z"
         }
       ],
-      "notes": "gate@1 approved batch_00038"
+      "notes": "a2bc80c004ca"
     },
     "5900038": {
       "name": "Circle of Life Academy",
