@@ -202,10 +202,14 @@ distinct-school-name counter no stored signal provides) moved to #795, which own
 
 **Chasing the 56 under-predictions found the real defect.** They are not big rosters. Stroudsburg
 `4222860` — a SEVEN-school district — emitted 420 rows that are `MCTI` repeated 420 times. A sweep
-of all 2,340 fact-bearing calls found **6 with a distinct-row ratio ≤ 0.005, and they are exactly
-the 6 truncated-with-facts calls in the receipt store.** There is no genuine dropped-tail
-truncation anywhere in the corpus — which retroactively falsifies how §5 described Baldwin and
-Stroudsburg (corrected in place above).
+of all 2,340 fact-bearing calls found **6 with a distinct-row ratio ≤ 0.005 — 5 of them the 5
+truncated-with-facts calls in the receipt store, plus a 6th (New Haven `0626910`, mistral-small,
+420 rows / 1 distinct) that never truncated at all** (`ok=True, finish_reason=None`; #814 corrected
+this section's original "exactly the 6" claim). There is no genuine dropped-tail truncation
+anywhere in the corpus — which retroactively falsifies how §5 described Baldwin and Stroudsburg
+(corrected in place above). The New Haven case is the strongest argument for the detector: with no
+truncation signal, nothing else in the pipeline would ever have flagged it — it read as a clean
+420-fact extraction.
 
 **The fix.** `parse.dedupe_identical` (unthresholded — identical rows carry no information and
 consensus already groups them) plus `parse.degenerate_repetition` (ratio ≤ 0.10 over ≥ 10 rows).
@@ -213,9 +217,9 @@ The threshold is measured, not chosen: the corpus separates into 6 loops at ≤ 
 next-lowest real case at 0.143 (7 identical rows — redundant content faithfully read). Verified on
 the shipped receipts: **2,455 rows → 10 distinct, 0 false positives across 2,340 calls**, every one
 derived at zero spend from stored records. `DEGRADED_LOOPED` joins `DEGRADED_PRECEDENCE` between
-REFUSED and TRUNCATED — every looped call is also truncated, so the loop is the cause and the
+REFUSED and TRUNCATED — when a call is both (5 of 6 corpus loops), the loop is the cause and the
 truncation the symptom, and reporting the symptom would point a human at document size when the
-document is fine.
+document is fine. The 6th loop needed no ceiling to stop (#814).
 
 **P5 (mid-stream abort) deferred on measurement:** the entire population cost **$0.034** across 6
 calls. That does not justify an invasive change to the streaming client; the `max_tokens` ceiling

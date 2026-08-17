@@ -455,4 +455,7 @@ def test_812_zero_yield_loop_reason_names_the_loop():
     reqs = RQ.detect_requests(_result(reps=[_looped_rep()], accepted=[]), claimed_bands=[])
     assert [r["route"] for r in reqs] == ["7->3"]
     assert "REPETITION LOOP" in reqs[0]["reason"]
-    assert "could not read" in reqs[0]["reason"]
+    # #820: states what is known — the zero is about the council's read, never an assertion
+    # that the document is unreadable/empty
+    assert "council's read" in reqs[0]["reason"]
+    assert "could not read" not in reqs[0]["reason"]

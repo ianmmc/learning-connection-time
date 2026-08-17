@@ -474,11 +474,35 @@ class TestLoopDegrades812:
         ])
         assert d["kinds"] == {MISTRAL: DEGRADED_REFUSED}
 
-    def test_a_looped_then_errored_call_is_still_a_loop(self):
-        """The salvage parser keeps partial content on a failed call, so a loop that then errored
-        transiently must still classify — the `ok` gate must not hide it."""
+    def test_loop_check_is_data_driven_not_ok_gated(self):
+        """#817 correction: live, an errored call records facts=[] (run_council parses only on
+        ok), so the ungated loop check is a no-op there — the ungated form exists for call records
+        AS DATA: a record that DOES carry looped facts classifies whatever its ok flag says."""
         c = self._looped_call(ok=False, error_kind="transient", error="stream reset")
         assert council_degraded([c])["kinds"] == {GEMINI: DEGRADED_LOOPED}
+        # the live errored shape — no facts — is a harmless no-op, not a marker
+        assert council_degraded([{"model": GEMINI, "role": "voter", "ok": False,
+                                  "error_kind": "transient", "error": "stream reset",
+                                  "facts": []}]) is None
+
+    def test_816_transient_error_with_length_finish_is_not_truncated(self):
+        """#816: the mid-stream-error path returns ok=False with finish_reason still populated —
+        minting DEGRADED_TRUNCATED from it would re-route a URL that genuinely timed out (the
+        #802 shape, one field over). Truncation stays gated on ok."""
+        assert council_degraded([
+            {"model": MISTRAL, "role": "voter", "ok": False, "error_kind": "transient",
+             "error": "mid-stream: upstream disconnected", "finish_reason": "length",
+             "facts": [], "n_facts": 0},
+        ]) is None
+
+    def test_814_untruncated_loop_still_marks(self):
+        """#814: New Haven 0626910's verbatim shape — 420 rows / 1 distinct, ok=True,
+        finish_reason=None. No truncation signal exists; ONLY the loop detector catches it
+        (it read as a clean 420-fact extraction before #812)."""
+        c = self._looped_call(model=MISTRAL)
+        c["finish_reason"] = None
+        d = council_degraded([c])
+        assert d and d["kinds"] == {MISTRAL: DEGRADED_LOOPED}
 
     def test_a_judge_loop_never_marks(self):
         c = self._looped_call(model="qwen/qwen3-235b-a22b-2507")
@@ -491,3 +515,60 @@ class TestLoopDegrades812:
         assert DEGRADED_PRECEDENCE == (DEGRADED_REFUSED, DEGRADED_LOOPED, DEGRADED_TRUNCATED)
         assert strongest_kind([DEGRADED_TRUNCATED, DEGRADED_LOOPED]) == DEGRADED_LOOPED
         assert strongest_kind([DEGRADED_LOOPED, DEGRADED_REFUSED]) == DEGRADED_REFUSED
+
+
+class TestOperatorSurfaces815:
+    """#815: the operator-facing telemetry applies the SAME loop-vs-truncation precedence as the
+    classifier — gate@7's human reads these lines to pick a re-route, and 'TRUNCATED, check tail
+    loss' about a loop points them at document size when the document is fine."""
+
+    def _mk(self, **c):
+        base = {"model": GEMINI, "role": "voter", "ok": True, "error": None, "n_facts": 1,
+                "prompt_tokens": 10, "completion_tokens": 20, "cost_usd": 0.001,
+                "facts": [{"school_name": "MCTI", "grade_level": "high",
+                           "start_time": "07:30", "end_time": "14:20"}]}
+        base.update(c)
+        return base
+
+    def test_looped_call_counts_looped_not_truncated(self):
+        from infrastructure.acquisition.process_governance.stage7_run import _rollup_tel
+        rep = {"calls": [self._mk(finish_reason="length", max_tokens_sent=16384,
+                                  degenerate_repetition={"n_rows": 420, "n_distinct": 1,
+                                                         "ratio": 0.0024})]}
+        t = _rollup_tel([rep])
+        assert t["looped"] == 1
+        assert t["truncated"] == 0
+        assert t["truncated_caps"] == []            # the cap list is for GENUINE truncations
+
+    def test_genuine_truncation_still_counts_truncated(self):
+        from infrastructure.acquisition.process_governance.stage7_run import _rollup_tel
+        rep = {"calls": [self._mk(finish_reason="length", max_tokens_sent=16384)]}
+        # 1 distinct fact, finish=length, no loop marker -> a real truncation
+        t = _rollup_tel([rep])
+        assert t["truncated"] == 1 and t["looped"] == 0
+        assert t["truncated_caps"] == [16384]
+
+    def test_legacy_receipt_rows_derive_the_loop_in_rollup(self):
+        """A legacy receipt has no stored marker — the rollup re-derives from raw facts, same
+        fallback as the classifier, so replay-viewed telemetry matches too."""
+        from infrastructure.acquisition.process_governance.stage7_run import _rollup_tel
+        fact = {"school_name": "MCTI", "grade_level": "high",
+                "start_time": "07:30", "end_time": "14:20"}
+        rep = {"calls": [self._mk(finish_reason="length", n_facts=420,
+                                  facts=[dict(fact) for _ in range(420)])]}
+        t = _rollup_tel([rep])
+        assert t["looped"] == 1 and t["truncated"] == 0
+
+
+def test_818_raw_row_count_always_rides_the_call_record():
+    """#818: n_rows_raw is the pre-dedupe emitted-row count — the #794 ground-truth quantity —
+    recorded on EVERY call, sub-threshold duplicates included (the 7-identical-row case would
+    otherwise be unrecoverable from the receipt)."""
+    from infrastructure.acquisition.process_governance.stage7_run import _call_record
+    from infrastructure.acquisition.stage7_extract.openrouter import CallResult
+    res = CallResult(model=GEMINI, ok=True)
+    fact = {"school_name": "MCTI", "grade_level": "high",
+            "start_time": "07:30", "end_time": "14:20"}
+    rec = _call_record(GEMINI, "voter", res, [dict(fact) for _ in range(7)])
+    assert rec["n_rows_raw"] == 7 and rec["n_facts"] == 1     # sub-threshold: no loop marker,
+    assert "degenerate_repetition" not in rec                 # but the raw count survives

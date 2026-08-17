@@ -97,11 +97,15 @@ def _salvage(text: str) -> list[dict]:
 # #812 — DEGENERATE REPETITION. A voter can fall into a loop, emitting one row over and over until
 # max_tokens cuts it off, and the pipeline recorded that as a large successful extraction: Stroudsburg
 # 4222860 (a SEVEN-school district) "returned 420 facts" that are `MCTI` repeated 420 times. A corpus
-# scan of all 2,340 fact-bearing calls found 6 with a distinct-row ratio <= 0.005 — and those 6 are
-# EXACTLY the 6 truncated-with-facts calls in the receipt store. The next-lowest ratio is 0.143 (7
-# identical rows, incidental redundancy in a document, not a runaway), so 0.10 separates the two
-# populations with room on both sides. `MIN_ROWS` is belt-and-braces: at ratio <= 0.10 a call needs
-# >= 10 rows arithmetically anyway.
+# scan of all 2,340 fact-bearing calls found 6 with a distinct-row ratio <= 0.005 — 5 of them also
+# truncated (`length`), 1 (New Haven 0626910) with no truncation signal at all (#814: loops and
+# truncation CORRELATE but are not coextensive; that 6th case is the strongest argument for this
+# detector — nothing else would have caught it). #819 — what the threshold really is: at FULL
+# duplication ratio == 1/n_rows, so `ratio <= 0.10` is arithmetically `n_rows >= 10` and MIN_ROWS
+# *is* the effective rule in that regime, not belt-and-braces on top of it. The measured corpus:
+# all-duplicate calls at 355-420 rows (loops) vs 7 rows (incidental redundancy) — a row-count
+# separation; within the >=10-row population the next-lowest real ratio is 0.400, so the ratio
+# margin only exists once PARTIAL duplication is possible.
 REPETITION_MAX_DISTINCT_RATIO = 0.10
 REPETITION_MIN_ROWS = 10
 # The fields that make a schedule row's IDENTITY. Two rows agreeing on all four carry no information

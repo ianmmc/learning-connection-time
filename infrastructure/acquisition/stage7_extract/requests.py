@@ -359,7 +359,7 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
         alts = alternates_by_rec.get(rec_key) or []
         sent = files.get(rec_key)
         deg_note = (("council-degraded (a voter fell into a REPETITION LOOP on this rep, #812 — "
-                     "the zero says the model could not read it, NOT that it is empty): "
+                     "the zero is about the council's read, NOT the document's content): "
                      if looped else
                      "council-degraded (a voter's reply was TRUNCATED at its context window — the "
                      "read was incomplete, so this zero is NOT evidence the document is empty): "
