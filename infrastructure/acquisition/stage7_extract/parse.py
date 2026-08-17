@@ -94,6 +94,63 @@ def _salvage(text: str) -> list[dict]:
     return out
 
 
+# #812 — DEGENERATE REPETITION. A voter can fall into a loop, emitting one row over and over until
+# max_tokens cuts it off, and the pipeline recorded that as a large successful extraction: Stroudsburg
+# 4222860 (a SEVEN-school district) "returned 420 facts" that are `MCTI` repeated 420 times. A corpus
+# scan of all 2,340 fact-bearing calls found 6 with a distinct-row ratio <= 0.005 — 5 of them also
+# truncated (`length`), 1 (New Haven 0626910) with no truncation signal at all (#814: loops and
+# truncation CORRELATE but are not coextensive; that 6th case is the strongest argument for this
+# detector — nothing else would have caught it). #819 — what the threshold really is: at FULL
+# duplication ratio == 1/n_rows, so `ratio <= 0.10` is arithmetically `n_rows >= 10` and MIN_ROWS
+# *is* the effective rule in that regime, not belt-and-braces on top of it. The measured corpus:
+# all-duplicate calls at 355-420 rows (loops) vs 7 rows (incidental redundancy) — a row-count
+# separation; within the >=10-row population the next-lowest real ratio is 0.400, so the ratio
+# margin only exists once PARTIAL duplication is possible.
+REPETITION_MAX_DISTINCT_RATIO = 0.10
+REPETITION_MIN_ROWS = 10
+# The fields that make a schedule row's IDENTITY. Two rows agreeing on all four carry no information
+# the first one didn't — consensus already groups by (band, normalized school), so collapsing them
+# changes no outcome; it only stops a loop from LOOKING like a big roster.
+_IDENTITY_KEYS = ("school_name", "grade_level", "start_time", "end_time")
+
+
+def _identity(sched: dict) -> tuple:
+    return tuple(str(sched.get(k) or "").strip().lower() for k in _IDENTITY_KEYS)
+
+
+def dedupe_identical(scheds: list) -> list:
+    """Drop rows identical on `_IDENTITY_KEYS`, first-seen order preserved (the first occurrence
+    keeps its evidence/campus fields). ALWAYS correct — never thresholded — so `n_facts` means
+    'distinct schedules read' everywhere rather than 'rows the model emitted'."""
+    seen, out = set(), []
+    for s in scheds or []:
+        if not isinstance(s, dict):
+            continue
+        k = _identity(s)
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append(s)
+    return out
+
+
+def degenerate_repetition(scheds: list) -> "dict | None":
+    """Was this a repetition LOOP rather than a read? Pure, over a RAW (pre-dedupe) fact list — so
+    it derives identically from a stored receipt's `facts` on the #716 replay, at zero spend.
+    Returns {n_rows, n_distinct, ratio} or None.
+
+    A loop is NOT a partial roster: sizing its call larger only buys more duplicate rows, and its
+    remedy is 're-route, this document made the model loop', never 'the tail was dropped'."""
+    rows = [s for s in (scheds or []) if isinstance(s, dict)]
+    if len(rows) < REPETITION_MIN_ROWS:
+        return None
+    n_distinct = len({_identity(s) for s in rows})
+    ratio = n_distinct / len(rows)
+    if ratio > REPETITION_MAX_DISTINCT_RATIO:
+        return None
+    return {"n_rows": len(rows), "n_distinct": n_distinct, "ratio": round(ratio, 4)}
+
+
 def parse_schedules(content: str) -> list[dict]:
     """Return the list of schedule dicts from a model reply. `[]` on empty/none.
     Clean parse first; salvage individual objects if the whole payload won't parse."""

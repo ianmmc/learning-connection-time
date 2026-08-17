@@ -4588,9 +4588,14 @@ requirements:
       - "P8 (#793): a voter reply that finishes 'length' with no retry headroom left is the SECOND
         degradation shape — kind 'window_truncated', distinct from 'context_refused'; recovery by the
         #169 retry is NOT degradation, and a judge truncation never marks"
-      - "P9 (#793): the two shapes are worded and counted apart end to end — explain carries
-        suppressed_truncated_reps beside suppressed_degraded_reps, and the remedy says the read was
-        PARTIAL rather than the document empty"
+      - "P9 (#793): the shapes are worded and counted apart end to end — explain carries
+        suppressed_truncated_reps and suppressed_looped_reps beside suppressed_degraded_reps, and a
+        remedy states what is KNOWN rather than asserting the document was empty"
+      - "P10 (#812): a voter reply whose distinct-row ratio is <= 0.10 over >= 10 rows is a
+        REPETITION LOOP — kind 'degenerate_repetition', outranking the truncation that stopped it;
+        identical rows de-duplicate ALWAYS (unthresholded) so n_facts means distinct schedules read;
+        derived from stored call records on replay; measured 0 false positives over 2,340
+        fact-bearing calls"
     notes: |
       MODEL_WINDOWS is checked in (fetched 2026-08-16), not fetched at runtime — sizing must be
       deterministic and test-visible; refresh command in the module. The windows fetch falsified
@@ -4607,8 +4612,24 @@ requirements:
       recorded in both states reports the refusal (the stronger statement). Because finish_reason has
       always ridden the stored call record, the #716 replay backfills it: 22 (district, rep, shape)
       degradations are now derivable from shipped receipts at zero spend, four of them the new
-      truncation shape (Orange 1201440, Stroudsburg 4222860, Baldwin 0100270 — which kept 355 facts
-      from a truncated reply — and Bentonville 0503060).
+      truncation shape (Orange 1201440, Stroudsburg 4222860, Baldwin 0100270, Bentonville 0503060).
+      #812 (2026-08-16) is now FIXED here: the loop is detected in parse.py (pure, replay-derivable),
+      identical rows collapse (Stroudsburg 420 -> 2, Baldwin 355 -> 1; 2,455 rows -> 10 distinct
+      across the 6), DEGRADED_LOOPED joins DEGRADED_PRECEDENCE between REFUSED and TRUNCATED (when a
+      call is both, the loop is the CAUSE and the truncation the symptom of max_tokens stopping it —
+      but per #814 the two are NOT coextensive: 5 of 6 corpus loops truncated, and New Haven
+      0626910's looped with NO truncation signal, ok=True/finish=None, previously reading as a clean
+      420-fact extraction — the case only this detector catches), and the remedy says
+      'the model looped, a bigger window buys more duplicates, try another rep'. The mid-stream
+      abort (#812 P5) is DEFERRED on measurement: the whole population cost $0.034 across 6 calls,
+      which does not justify an invasive change to the streaming client.
+      CORRECTION (2026-08-16, #812; re-corrected 2026-08-17, #814): those fact-bearing truncations
+      were first described here as partial rosters with a dropped tail. A corpus scan proved
+      otherwise — all 5 fact-bearing truncations are degenerate REPETITION LOOPS (Stroudsburg: 420
+      rows, 1 distinct school name; Baldwin: 355 rows, 1 name), there is no genuine partial-roster
+      truncation in the receipt store, and a 6th loop (New Haven 0626910, 420 rows / 1 distinct)
+      never truncated at all. The marker and the re-route remedy stay correct (an incomplete read
+      is an incomplete read); the remedy WORDING no longer asserts which shape the loss took.
       Known nuance, deliberately unchanged here: the marker fires on a lost VOTER even when a
       third-family judge covered the gap (Broward 1200180 accepted 201 facts via method='judge' with
       mistral refused). That is honest — a voter WAS lost — and harmless. Whether gate@8 should

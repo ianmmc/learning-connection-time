@@ -234,7 +234,8 @@ def test_explain_reports_detect_time_suppression():
                               real_bands={"elementary"}, explain=explain)
     assert reqs == []                                       # e covered; middle phantom; rep suppressed
     assert explain == {"phantom_bands": ["middle"], "suppressed_barren_reps": 1,
-                       "suppressed_degraded_reps": 0, "suppressed_truncated_reps": 0}
+                       "suppressed_degraded_reps": 0, "suppressed_truncated_reps": 0,
+                       "suppressed_looped_reps": 0}
 
 
 # --------------------------- #793: a truncated read is not a barren one ---------------------------
@@ -269,7 +270,7 @@ def test_793_truncated_remedy_says_partial_not_empty():
     assert [r["route"] for r in reqs] == ["7->3"]
     assert reqs[0]["params"]["council_degraded"] is True
     assert "TRUNCATED" in reqs[0]["reason"]
-    assert "partial" in reqs[0]["reason"].lower()
+    assert "incomplete" in reqs[0]["reason"].lower()
 
 
 def test_793_rep_with_both_shapes_reports_the_refusal():
@@ -297,7 +298,11 @@ def test_797_truncated_with_facts_emits_partial_read_remedy():
     assert [r["route"] for r in reqs] == ["7->6"]
     assert reqs[0]["params"]["partial_read"] is True
     assert reqs[0]["params"]["council_degraded"] is True
-    assert "PARTIAL" in reqs[0]["reason"] and "TRUNCATED" in reqs[0]["reason"]
+    # #812: the reason states what is KNOWN (the read was cut, so the facts are not known to be
+    # the whole document) and must NOT assert a shape — every truncation measured in the corpus
+    # was a repetition loop, not a dropped tail, so "the head of the document" would be false.
+    assert "INCOMPLETE" in reqs[0]["reason"] and "TRUNCATED" in reqs[0]["reason"]
+    assert "head of the document" not in reqs[0]["reason"]
 
 
 def test_797_truncated_with_facts_all_covered_is_counted_not_silent():
@@ -391,3 +396,66 @@ def test_7to3_recapture_params_also_record_sent_files():
     reqs = RQ.detect_requests(res, claimed_bands=["elementary"])        # no alternates -> 7->3
     r = next(r for r in reqs if r["route"] == RQ.ROUTE_RECAPTURE)
     assert r["params"]["sent_files"] == ["page.txt"]
+
+
+# --------------------------- #812: a loop is not a truncation ---------------------------
+def _looped_rep(rec_key="D1:x"):
+    return {"rec_key": rec_key, "file": "camelot_hybrid.txt", "accepted": [],
+            "council_degraded": {"models": ["m"], "reasons": {"m": "repetition loop"},
+                                 "kinds": {"m": MF.DEGRADED_LOOPED}}}
+
+
+def test_812_looped_rep_with_facts_says_loop_not_dropped_tail():
+    """The remedy must name the actionable diagnosis: the model looped, so a bigger window is
+    futile and only a different rep can help."""
+    rep = _looped_rep()
+    rep["accepted"] = [{"band": "high", "school": "mcti"}]
+    reqs = RQ.detect_requests(
+        _result(reps=[rep], accepted=rep["accepted"]), claimed_bands=[],
+        alternates_by_rec={"D1:x": [{"file": "pdftotext.txt", "kind": "text", "n_times": 90}]})
+    assert [r["route"] for r in reqs] == ["7->6"]
+    assert reqs[0]["params"]["degenerate_repetition"] is True
+    assert "REPETITION LOOP" in reqs[0]["reason"]
+    assert "more duplicates" in reqs[0]["reason"]
+    assert "dropped tail" not in reqs[0]["reason"]
+
+
+def test_812_loop_and_truncation_counted_apart():
+    """Three shapes, three counters — a run log that says 'truncated' for a loop points the human
+    at document size when the document is fine."""
+    got = {}
+    for kind in (MF.DEGRADED_LOOPED, MF.DEGRADED_TRUNCATED, MF.DEGRADED_REFUSED):
+        rep = _looped_rep()
+        rep["council_degraded"]["kinds"] = {"m": kind}
+        rep["accepted"] = [{"band": "high", "school": "h"}]
+        explain = {}
+        RQ.detect_requests(_result(reps=[rep], accepted=rep["accepted"]),
+                           claimed_bands=["high"], real_bands={"high"}, explain=explain)
+        got[kind] = explain
+    assert got[MF.DEGRADED_LOOPED]["suppressed_looped_reps"] == 1
+    assert got[MF.DEGRADED_LOOPED]["suppressed_truncated_reps"] == 0
+    assert got[MF.DEGRADED_TRUNCATED]["suppressed_truncated_reps"] == 1
+    assert got[MF.DEGRADED_TRUNCATED]["suppressed_looped_reps"] == 0
+    # a REFUSAL with facts is not counted here at all, and that is correct (#797): a refused
+    # voter yields zero by construction, so the record's facts came from a complete surviving
+    # read — there is nothing incomplete to report. Its counter is exercised on the zero-yield
+    # path below.
+    assert got[MF.DEGRADED_REFUSED]["suppressed_degraded_reps"] == 0
+    rep = _looped_rep()
+    rep["council_degraded"]["kinds"] = {"m": MF.DEGRADED_REFUSED}
+    explain = {}
+    RQ.detect_requests(_result(reps=[rep], accepted=[{"band": "high", "school": "h"}]),
+                       claimed_bands=["high"], real_bands={"high"}, explain=explain)
+    assert explain["suppressed_degraded_reps"] == 1      # zero-yield rep, refused council
+    for e in got.values():
+        assert e["suppressed_barren_reps"] == 0
+
+
+def test_812_zero_yield_loop_reason_names_the_loop():
+    reqs = RQ.detect_requests(_result(reps=[_looped_rep()], accepted=[]), claimed_bands=[])
+    assert [r["route"] for r in reqs] == ["7->3"]
+    assert "REPETITION LOOP" in reqs[0]["reason"]
+    # #820: states what is known — the zero is about the council's read, never an assertion
+    # that the document is unreadable/empty
+    assert "council's read" in reqs[0]["reason"]
+    assert "could not read" not in reqs[0]["reason"]
