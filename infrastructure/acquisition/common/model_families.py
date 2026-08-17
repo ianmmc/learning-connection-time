@@ -46,6 +46,79 @@ def is_vision_capable(model_id: str) -> bool:
     proven vision-capable before it can serve on an image-input council (the #82 guard)."""
     return model_id in VISION_CAPABLE
 
+
+# Per-model WINDOWS (#714/#709, REQ-174) — total context and max completion tokens, the inputs to
+# per-call output sizing (`openrouter.call`'s clamp). Fetched from the public OpenRouter catalog
+# (GET /api/v1/models: `context_length`, `top_provider.max_completion_tokens`) 2026-08-16; refresh
+# with:  curl -s https://openrouter.ai/api/v1/models | jq '.data[]|{id,context_length,
+# top_provider}'.  Checked in rather than fetched at runtime: sizing must be deterministic and
+# test-visible (commandment #1), and the roster only changes via council-lab PRs anyway.
+# max_out None = the provider declares no separate completion cap (bounded by context alone).
+# The 2026-08-16 fetch falsified MAX_TOKENS_CEILING's premise for THREE of these (mistral-small
+# 16,384 completion AND 32,768 TOTAL context; the low-cost-text judge qwen3-235b 16,384) — the
+# Orange/Memphis 400s (#714/#709). `tests/test_model_windows.py` pins this dict's key-set to
+# FAMILY's, so a model can't join the catalog without its windows. #809: the hand-refreshed
+# snapshot needs a DETECTOR for the staleness it accepts (the premise above went stale silently
+# once already) — `tests/test_model_windows_integration.py` re-fetches nightly/locally and fails
+# with "refresh the catalog" on any value drift. Bump MODEL_WINDOWS_FETCHED with every refresh.
+MODEL_WINDOWS_FETCHED = "2026-08-16"
+MODEL_WINDOWS = {
+    "google/gemini-2.5-flash": {"context": 1_048_576, "max_out": 65_535},
+    "google/gemini-2.5-flash-lite": {"context": 1_048_576, "max_out": 65_535},
+    "mistralai/mistral-small-24b-instruct-2501": {"context": 32_768, "max_out": 16_384},
+    "mistralai/mistral-large-2512": {"context": 262_144, "max_out": None},
+    "deepseek/deepseek-v3.2": {"context": 163_840, "max_out": 65_536},
+    "qwen/qwen3-235b-a22b-2507": {"context": 262_144, "max_out": 16_384},
+    "qwen/qwen3-vl-235b-a22b-instruct": {"context": 262_144, "max_out": 32_768},
+}
+
+# Completion-side safety margin: the request's own overhead + tokenizer-estimate error. Small on
+# purpose — the prompt estimate (chars/3) already overestimates.
+WINDOW_MARGIN_TOKENS = 512
+
+
+def usable_output(model_id: str, est_prompt_tokens: int) -> "int | None":
+    """The most completion tokens a call to `model_id` can legally request given its estimated
+    prompt: min(max_out, context − prompt − margin). None for an uncatalogued model (test fakes,
+    a model mid-adoption) — the caller keeps legacy sizing, so nothing outside the curated roster
+    changes behavior. May return <= 0: the prompt alone (nearly) fills the window — the caller's
+    pre-flight refusal case (#714)."""
+    w = MODEL_WINDOWS.get(model_id)
+    if not w:
+        return None
+    cap = w["context"] - int(est_prompt_tokens) - WINDOW_MARGIN_TOKENS
+    if w["max_out"] is not None:
+        cap = min(cap, w["max_out"])
+    return cap
+
+# The two ways a model's window can make a rep's read structurally incomplete (#709/#793). They live
+# HERE, in the base layer, because both the producer (process_governance.stage7_run.council_degraded,
+# which classifies) and the consumer (stage7_extract.requests, which words the remedy) need the same
+# vocabulary, and the layering contract forbids the lower one importing the higher. Shared constant,
+# never a literal repeated across files (the #755 lesson).
+DEGRADED_REFUSED = "context_refused"     # the voter never answered — its window rejected the request
+DEGRADED_TRUNCATED = "window_truncated"  # the voter answered PARTIALLY — the tail schools are gone
+
+# #810: the precedence ("a refusal outranks a truncation — no answer at all is the stronger
+# statement about the council") is ONE rule in ONE place, next to the constants it orders. Both
+# consumers call `strongest_kind` rather than re-expressing the order in their own idiom — the #798
+# defect was exactly two sites defaulting an absent `kinds` in opposite directions.
+DEGRADED_PRECEDENCE = (DEGRADED_REFUSED, DEGRADED_TRUNCATED)   # strongest first
+
+
+def strongest_kind(kinds) -> str:
+    """The strongest degradation kind present in `kinds` (an iterable of kind strings, or a
+    {model: kind} dict whose values are read). A marker with an absent/empty `kinds` — receipts
+    written between #709 and #793, or a hand-built marker — defaults to the STRONGEST
+    (`context_refused`): under-claiming a refusal as a truncation invites 'that was the whole
+    roster', the exact misdirection #793 exists to prevent. An unknown kind string also defaults
+    strongest, for the same fail-honest reason."""
+    vals = set(kinds.values() if isinstance(kinds, dict) else (kinds or ()))
+    for k in DEGRADED_PRECEDENCE:
+        if k in vals:
+            return k
+    return DEGRADED_PRECEDENCE[0]
+
 # Provider-prefix aliases for the fallback: OpenRouter's prefix is sometimes NOT the family bucket we
 # catalog under ("mistralai/..." models are family "mistral"). Without this a catalogued Mistral
 # voter + an uncatalogued `mistralai/*` voter would resolve to "mistral" vs "mistralai" and slip past

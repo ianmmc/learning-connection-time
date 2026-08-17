@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-08-16T05:19:54Z",
+  "last_updated": "2026-08-16T17:00:05Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -1933,6 +1933,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-08-16T05:19:41Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T17:00:04Z"
         }
       ],
       "notes": "d9a49bcabf0d"
@@ -3409,6 +3415,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-08-16T05:19:17Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T16:59:58Z"
         }
       ],
       "notes": "9e786ee44873"
@@ -7935,6 +7947,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-08-16T05:18:38Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T17:00:01Z"
         }
       ],
       "notes": "bb177cd7c381"
@@ -10249,6 +10267,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-08-16T05:19:20Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T17:00:00Z"
         }
       ],
       "notes": "a2bc80c004ca"
@@ -13213,6 +13237,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-08-16T05:19:07Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T17:00:02Z"
         }
       ],
       "notes": "c127b5f6e5d7"
@@ -13412,6 +13442,12 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-08-16T05:18:50Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-08-16T17:00:05Z"
         }
       ],
       "notes": "df2b06f2f7a7"

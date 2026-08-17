@@ -55,6 +55,14 @@ def _rebuild_rep(rep: dict, ctx: dict = None) -> dict:
     rebuilt = {**rep, "judged": bool(judges) or bool(rep.get("judged")),
                "accepted": accepted, "unresolved": unresolved}
     rebuilt.pop("error", None)
+    # #709 (REQ-174): derive the council-degraded marker from the stored call records — receipts
+    # written before the marker existed (Memphis 3004896917ca, Orange 0e1bf02c3ea6) become
+    # honestly distinguishable from barren on replay, zero spend. Same derivation as the live run.
+    degraded = S7R.council_degraded(rep.get("calls") or [])
+    if degraded:
+        rebuilt["council_degraded"] = degraded
+    else:
+        rebuilt.pop("council_degraded", None)
     return rebuilt
 
 
@@ -124,11 +132,17 @@ def reaggregate_receipt(receipt_path: str, *, dry_run: bool = False) -> dict:
                 "extraction_id": summary["districts"][0]["extraction_id"]})
     # #739 review: production's persist path withdraws open directives the new facts satisfy
     # (#233) — the replay must too, or a recovered band's 7->2 sits pending until a later sweep
-    # auto-rejects it via a noisier path. Production-only: probe/benchmark rows never drive the
+    # auto-rejects it via a noisier path. #800: and it must also DETECT — a marker derived on
+    # replay (council_degraded, #709/#793) is only honest if it produces the remedy the
+    # requirement promises; without this, the zero-spend backfill changed the receipt and nothing
+    # downstream. Detect before withdraw (backfill_requests' own order); idempotent by
+    # detect_and_persist_requests' two-layer dedup (#234), so replaying a receipt an earlier live
+    # run already detected adds nothing. Production-only: probe/benchmark rows never drive the
     # request loop (#148).
     if run_kind == "production":
         from infrastructure.acquisition.common import db as gdb
         with gdb.session_scope() as s:
+            out["new_requests"] = S7R.detect_and_persist_requests(s, pd, hh)
             withdrawn = S7R.withdraw_satisfied_requests(s, did)
         out["withdrawn_requests"] = [req_id for req_id, _note in (withdrawn or [])]
     return out
@@ -168,6 +182,9 @@ def main():
     if out.get("persisted"):
         print(f"persisted extraction_id={out['extraction_id']} (cost_usd=0, append-only)\n"
               f"receipt: {out['receipt']}")
+        if "new_requests" in out:
+            print(f"requests: {out['new_requests']} newly detected, "
+                  f"{len(out.get('withdrawn_requests') or [])} withdrawn")
 
 
 if __name__ == "__main__":

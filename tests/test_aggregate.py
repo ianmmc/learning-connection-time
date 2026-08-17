@@ -182,13 +182,18 @@ class TestGross:
         assert out["now"] == {"accepted": 1, "unresolved": 0} and out["persisted"] is False
         # persist path: stub the DB write + receipt dir; assert cost_usd rides as 0 and the
         # ORIGINAL run_kind is threaded (#731) + satisfied directives withdraw (#739)
-        seen, withdrew = {}, []
+        seen, withdrew, detected = {}, [], []
         monkeypatch.setattr(RA.S7R, "persist_run", lambda results, **kw: (
             seen.update(results=results, **kw) or
             {"districts": [{"extraction_id": 42, "district_id": "ZZ716"}]}))
         monkeypatch.setattr(RA, "_original_run_kind", lambda hh, did: "production")
         monkeypatch.setattr(RA.S7R, "withdraw_satisfied_requests",
                             lambda s, did, **kw: withdrew.append(did) or [(7, "note")])
+        # #800: the replay must DETECT too — a marker derived on replay is only honest if it
+        # produces the remedy; the dedup layers make the call idempotent.
+        monkeypatch.setattr(RA.S7R, "detect_and_persist_requests",
+                            lambda s, pd_arg, hh, **kw: detected.append(
+                                (pd_arg["district_id"], hh)) or 2)
         import contextlib
         from infrastructure.acquisition.common import db as gdb
         monkeypatch.setattr(gdb, "session_scope", lambda: contextlib.nullcontext(None))
@@ -198,6 +203,7 @@ class TestGross:
         pd = seen["results"]["districts"]["ZZ716"]
         assert seen["results"]["run_kind"] == "production"          # #731: threaded, not defaulted
         assert withdrew == ["ZZ716"] and out["withdrawn_requests"] == [7]   # #739
+        assert detected == [("ZZ716", "zzhash")] and out["new_requests"] == 2   # #800
         assert pd["telemetry"]["cost_usd"] == 0.0 and pd["reaggregated_from"] == p.name
         assert seen["created_by"] == "auto:reaggregate-716"
         assert pd["accepted"][0]["end"] == "15:30" and pd["accepted"][0]["rec_key"] == "ZZ716:r1"
@@ -221,17 +227,20 @@ class TestGross:
                           {"model": "qwen/qwen3-235b-a22b-2507", "role": "judge", "facts": []}]}]}}
         p = tmp_path / "extraction_zzbmh_ZZ716B_x.json"
         p.write_text(__import__("json").dumps(receipt))
-        seen, withdrew = {}, []
+        seen, withdrew, detected = {}, [], []
         monkeypatch.setattr(RA.S7R, "persist_run", lambda results, **kw: (
             seen.update(results=results) or
             {"districts": [{"extraction_id": 43, "district_id": "ZZ716B"}]}))
         monkeypatch.setattr(RA, "_original_run_kind", lambda hh, did: "benchmark")
         monkeypatch.setattr(RA.S7R, "withdraw_satisfied_requests",
                             lambda s, did, **kw: withdrew.append(did) or [])
+        monkeypatch.setattr(RA.S7R, "detect_and_persist_requests",
+                            lambda s, pd_arg, hh, **kw: detected.append(pd_arg["district_id"]) or 0)
         monkeypatch.setattr(RA.paths, "ACQUISITION", tmp_path)
         out = RA.reaggregate_receipt(str(p))
         assert seen["results"]["run_kind"] == "benchmark" and out["run_kind"] == "benchmark"
         assert withdrew == []                       # #739: non-production never touches the request loop
+        assert detected == []                       # #800/#148: nor does detect — benchmark walled off
         rep = seen["results"]["districts"]["ZZ716B"]["reps"][0]
         assert rep["judged"] is True                # #742: empty-facts judge call still = escalated
         assert "error" not in rep                   # #741: stale error cleared on successful recompute

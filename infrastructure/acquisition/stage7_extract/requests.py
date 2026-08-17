@@ -22,6 +22,8 @@ detection is still valid and is exactly how we test this logic against a known c
 """
 from __future__ import annotations
 
+from infrastructure.acquisition.common.model_families import DEGRADED_TRUNCATED, strongest_kind
+
 BANDS = ("elementary", "middle", "high")
 
 # route labels (the cyclic back-edges) — kept as literals so the persisted request is self-describing
@@ -273,32 +275,89 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
         explain["suppressed_barren_reps"] = 0
 
     # --- representation / URL altitude: a sent record produced no accepted facts ---
+    # #709 (REQ-174): records whose zero came from a COUNCIL-DEGRADED rep (a voter structurally
+    # lost to its context window) — their zero is evidence about the council, never about the
+    # document, so the remedy reason says re-route and the suppression is counted apart from
+    # barren (a reader of `explain` must not conclude these documents were empty).
+    # #793: `window_truncated` is the second degradation shape — the voter ANSWERED, but only
+    # partway. It is counted and worded apart from a refusal because the two mislead differently:
+    # a refusal invites "the document was empty", a truncation invites "that was the whole roster".
+    # #799: a record can send SEVERAL reps in one dispatch (see the module docstring), so kinds are
+    # MERGED across all of a record's markers, never last-write-wins (the #785 shape: a dict
+    # comprehension on a non-unique key silently discarding a sibling). #798/#810: which kind wins —
+    # and what an absent/empty `kinds` means — is `strongest_kind`'s ONE decision in the base layer,
+    # not re-expressed here in a second idiom.
+    degraded_kinds: dict = {}
+    for rep in result.get("reps", []):
+        if rep.get("council_degraded"):
+            degraded_kinds.setdefault(rep["rec_key"], []).extend(
+                (rep["council_degraded"].get("kinds") or {}).values())
+    if explain is not None:
+        explain["suppressed_degraded_reps"] = 0
+        explain["suppressed_truncated_reps"] = 0
     for rec_key, n_acc in _accepted_by_record(result).items():
+        degraded = rec_key in degraded_kinds
+        truncated_only = degraded and strongest_kind(degraded_kinds[rec_key]) == DEGRADED_TRUNCATED
         if n_acc > 0:
+            # #797: a TRUNCATED rep with facts is a known-PARTIAL read. The zero-yield gate below
+            # catches refusals (zero by construction, cannot miss) and would miss truncations
+            # (a partial yield is their NORMAL case — Baldwin kept 355 facts from a cut reply).
+            # Fact count is not evidence of completeness here.
+            if not truncated_only:
+                continue
+            ranked = rank_alternates(alternates_by_rec.get(rec_key) or [])
+            if no_fillable_gap or not ranked:
+                # no fillable gap: nothing a remedy could add. No alternate: nothing at THIS
+                # altitude can help — recapturing the same URL re-reads the same document into the
+                # same window; the band-grain remedies pursue any gap. Either way the count keeps
+                # the run log honest that a completed-looking district rests on a partial read.
+                if explain is not None:
+                    explain["suppressed_truncated_reps"] += 1
+                continue
+            sent = files.get(rec_key)
+            reqs.append({
+                "district_id": did, "altitude": "representation", "route": ROUTE_ALT_REP,
+                "target": rec_key, "band": None,
+                "params": {"sent_file": sent, "sent_files": files_all.get(rec_key, []),
+                           "alternate_reps": ranked, "council_degraded": True,
+                           "partial_read": True},
+                "reason": (f"known-PARTIAL read: a voter's reply was TRUNCATED at the model window "
+                           f"— the {n_acc} accepted fact(s) are the head of the document, not "
+                           f"necessarily all of it; " + _alt_reason(sent, ranked))})
             continue
         if no_fillable_gap:
             # #170/#176: every fillable band already covered (or none exists) — no barren-rep remedy
             # can add claimed coverage. Non-emission by design: re-detection re-emits if coverage
             # regresses; `explain` carries the count so the run log isn't silent about it.
             if explain is not None:
-                explain["suppressed_barren_reps"] += 1
+                explain["suppressed_truncated_reps" if truncated_only else
+                        "suppressed_degraded_reps" if degraded
+                        else "suppressed_barren_reps"] += 1
             continue
         alts = alternates_by_rec.get(rec_key) or []
         sent = files.get(rec_key)
+        deg_note = (("council-degraded (a voter's reply was TRUNCATED at its context window — the "
+                     "read was partial, so this zero is NOT evidence the document is empty): "
+                     if truncated_only else
+                     "council-degraded (a voter's context window refused the rep — the zero is "
+                     "NOT evidence the document is empty): ") if degraded else "")
         if alts:
             ranked = rank_alternates(alts)   # #155: best-first (higher-yield text before vision)
             reqs.append({
                 "district_id": did, "altitude": "representation", "route": ROUTE_ALT_REP,
                 "target": rec_key, "band": None,
                 "params": {"sent_file": sent, "sent_files": files_all.get(rec_key, []),
-                           "alternate_reps": ranked},
-                "reason": _alt_reason(sent, ranked)})
+                           "alternate_reps": ranked,
+                           **({"council_degraded": True} if degraded else {})},
+                "reason": deg_note + _alt_reason(sent, ranked)})
         else:
             reqs.append({
                 "district_id": did, "altitude": "url", "route": ROUTE_RECAPTURE,
                 "target": rec_key, "band": None,
-                "params": {"sent_file": sent, "sent_files": files_all.get(rec_key, [])},
-                "reason": f"sent rep '{sent}' yielded 0 accepted facts and no alternate rep exists — "
+                "params": {"sent_file": sent, "sent_files": files_all.get(rec_key, []),
+                           **({"council_degraded": True} if degraded else {})},
+                "reason": deg_note +
+                          f"sent rep '{sent}' yielded 0 accepted facts and no alternate rep exists — "
                           f"recapture the URL"})
 
     # #159: how many records in this district have an UNEXHAUSTED existing rep (a 7->6 remedy)?

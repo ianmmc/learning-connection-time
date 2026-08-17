@@ -1,0 +1,325 @@
+{
+  "handoff_hash": "9e786ee44873",
+  "district": {
+    "district_id": "0602559",
+    "name": "Aspen Ridge Public District",
+    "reps": [
+      {
+        "rec_key": "0602559:4c1bdf91ac",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:55",
+                "school_name": "Aspen Meadow",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:55",
+                "school_name": "Aspen Valley",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1011,
+            "completion_tokens": 81,
+            "cost_usd": 0.0001335,
+            "latency_ms": 4075,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783806755-uAgYiP6Vi4xi3til32VF",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:58",
+                "end_time": "15:55",
+                "school_name": "Aspen",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:58",
+                "end_time": "15:55",
+                "school_name": "Aspen",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 987,
+            "completion_tokens": 122,
+            "cost_usd": 5.911e-05,
+            "latency_ms": 2953,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783806756-UFnMLJAYBhL4Nc3ukq0J",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:55",
+                "school_name": "Ridge Aspen Public Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 954,
+            "completion_tokens": 42,
+            "cost_usd": 0.00023562,
+            "latency_ms": 1296,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783806759-WE61TbBholhyto67lHyU",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "aspen ridge public",
+            "start": "08:30",
+            "end": "15:55",
+            "gross": 445,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "060255914587",
+              "roster_school": "Aspen Ridge Public",
+              "rostered_bands": [
+                "high",
+                "middle"
+              ],
+              "rules": {
+                "aspen": "token_subset"
+              },
+              "band_adjudication": "roster_multiband",
+              "claimed_bands": [
+                "high",
+                "middle"
+              ]
+            },
+            "rec_key": "0602559:4c1bdf91ac",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "aspen ridge public",
+            "start": "08:30",
+            "end": "15:55",
+            "gross": 445,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "060255914587",
+              "roster_school": "Aspen Ridge Public",
+              "rostered_bands": [
+                "high",
+                "middle"
+              ],
+              "rules": {
+                "aspen": "token_subset"
+              },
+              "band_adjudication": "roster_multiband",
+              "claimed_bands": [
+                "high",
+                "middle"
+              ]
+            },
+            "rec_key": "0602559:4c1bdf91ac",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "aspen meadow",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:55"
+            },
+            "rec_key": "0602559:4c1bdf91ac",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "aspen valley",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:55"
+            },
+            "rec_key": "0602559:4c1bdf91ac",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "middle",
+        "school": "aspen ridge public",
+        "start": "08:30",
+        "end": "15:55",
+        "gross": 445,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "060255914587",
+          "roster_school": "Aspen Ridge Public",
+          "rostered_bands": [
+            "high",
+            "middle"
+          ],
+          "rules": {
+            "aspen": "token_subset"
+          },
+          "band_adjudication": "roster_multiband",
+          "claimed_bands": [
+            "high",
+            "middle"
+          ]
+        },
+        "rec_key": "0602559:4c1bdf91ac",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "aspen ridge public",
+        "start": "08:30",
+        "end": "15:55",
+        "gross": 445,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "060255914587",
+          "roster_school": "Aspen Ridge Public",
+          "rostered_bands": [
+            "high",
+            "middle"
+          ],
+          "rules": {
+            "aspen": "token_subset"
+          },
+          "band_adjudication": "roster_multiband",
+          "claimed_bands": [
+            "high",
+            "middle"
+          ]
+        },
+        "rec_key": "0602559:4c1bdf91ac",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "aspen meadow",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:55"
+        },
+        "rec_key": "0602559:4c1bdf91ac",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "aspen valley",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:55"
+        },
+        "rec_key": "0602559:4c1bdf91ac",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "middle": {
+        "gross_minutes": 445,
+        "start_time": "08:30",
+        "end_time": "15:55",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "aspen ridge public",
+            "start_time": "08:30",
+            "end_time": "15:55",
+            "gross": 445,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 445,
+        "start_time": "08:30",
+        "end_time": "15:55",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "aspen ridge public",
+            "start_time": "08:30",
+            "end_time": "15:55",
+            "gross": 445,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 0,
+      "judge_calls": 0,
+      "errors": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0
+    },
+    "state": "CA",
+    "reaggregated_from": "extraction_9e786ee44873_0602559_20260816T051917Z.json"
+  }
+}

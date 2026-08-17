@@ -138,7 +138,57 @@ exercise against the #200/#209-hardened pipeline, not a distinct issue awaiting 
   tail (#169) — a call already sent AT the ceiling that still truncates gets no retry (nowhere higher to
   go, >680 schools, never observed in 840 calls), and the ⚠ flag persists. The retry's cost/tokens/
   latency are SUMMED onto the returned `CallResult` (both attempts were real billed calls, #182), so the
-  REQ-051 budget governor sees true spend. `_client()` (the OpenAI SDK client) is `functools.lru_cache`d
+  REQ-051 budget governor sees true spend.
+  **REQ-174 (#714/#709, 2026-08-16): every call additionally clamps to the MODEL's real window** —
+  `min(max_out, context − estimated_prompt − margin)` from `model_families.MODEL_WINDOWS` (checked-in
+  2026-08-16 OpenRouter fetch, which falsified the ceiling's "inside all models' completion windows"
+  premise for 3 of 7 catalogued models: mistral-small is 16,384-completion/32,768-TOTAL, so an
+  at-ceiling request with any real prompt was auto-400'd — Orange/Memphis). A window that leaves
+  < `MIN_USEFUL_OUTPUT` refuses PRE-FLIGHT at zero spend; a provider context-length 400 classifies
+  `error_kind="context"` (structural) — either way the rep is marked **`council_degraded`** in the
+  run output/receipt (`stage7_run.council_degraded`, derived identically on the #716 replay):
+  cross-family consensus was impossible by construction, the zero is evidence about the COUNCIL,
+  never the document (the 7→6 remedy reason says re-route; `explain` counts these apart from
+  barren).
+  **#793 — the marker has TWO shapes, and the clamp is why.** Clamping fixed the 400 but replaced it
+  with a *successful* truncated reply: `ok=True, finish_reason="length"`, the salvage parser keeping
+  the head and the tail schools silently gone. Before #793, `finish_reason` reached a progress line
+  and a telemetry counter and **nothing else** — no marker, no remedy, no consensus effect — so a
+  partial roster read as a complete one (the watched "failure wearing a normal outcome's clothes"
+  class, worse than a refusal because a refusal at least shows a zero). Since #169 already retries a
+  truncation whenever headroom remains and keeps the retry's content, a `length` finish on the FINAL
+  result means every available token was spent — terminal, not transient. So `council_degraded`
+  returns **`kinds`** beside `{models, reasons}`: `context_refused` (never answered) vs
+  `window_truncated` (answered partway), the vocabulary shared from `common/model_families.py`
+  because the classifier (`process_governance`) sits ABOVE the consumer (`stage7_extract.requests`)
+  in the layering contract. The two are worded and counted apart end to end —
+  `explain["suppressed_truncated_reps"]` beside `suppressed_degraded_reps`, and a truncated rep's
+  remedy says the read was PARTIAL rather than the document empty. A model in both states reports
+  the refusal; a recovered retry is not degradation; a JUDGE truncation never marks (voters carry
+  REQ-056). `finish_reason` has always ridden the stored call record, so the #716 replay backfills
+  **22 (district, rep, shape) degradations from shipped receipts at zero spend** — four of them the
+  new truncation shape (Orange, Stroudsburg, Baldwin at 355 facts kept, Bentonville).
+  **Review round #797-#811 hardening:** a truncated rep WITH facts is remedied on fact-count
+  evidence, not zero-yield (#797 — the zero-yield gate catches refusals, which zero by
+  construction, and structurally misses truncations, whose normal case is a partial): a 7→6 fires
+  when a fillable gap + an unexhausted alternate exist (`params.partial_read`), else the count
+  lands in `explain["suppressed_truncated_reps"]` — never silent. Which kind wins, what an absent
+  `kinds` means (the stronger refusal), and the per-record merge across a record's SEVERAL reps
+  all live in ONE base-layer helper, `model_families.strongest_kind` (#798/#799/#810). A present
+  `error_kind` is authoritative — the text markers are legacy-receipt fallback only (#802); the
+  mid-stream SSE error branch classifies through the same shared `openrouter.classify_error`
+  (#803); the per-rep except branch attaches the marker from its partial `calls` too (#804).
+  Image parts cost `IMAGE_PART_EST_TOKENS` in the prompt estimate so the clamp is not inert for
+  the vision tier (#805); `CallResult.was_billed` is the one definition of "never reached the
+  provider" (#806); the truncation run-log lines report the per-model cap actually sent
+  (`CallResult.max_tokens_sent` → `telemetry.truncated_caps`), never the global constant (#801);
+  and the `reaggregate` replay runs `detect_and_persist_requests` (idempotent via #234's dedup,
+  production-only) so a replay-derived marker produces its remedy (#800). MODEL_WINDOWS staleness
+  has a nightly detector, `tests/test_model_windows_integration.py` (#809).
+  The truncation retry targets `min(MAX_TOKENS_CEILING, cap)`. Uncatalogued models keep
+  legacy behavior. Composition remedies (chunking, long-context routing, substitutes, per-model
+  ceiling raises) are #80's to measure — corpus population in
+  `learning-loop-reports/2026-08-16-714-709-context-accounting.md`. `_client()` (the OpenAI SDK client) is `functools.lru_cache`d
   per `(key, timeout)` (#148) so consecutive calls in a batch reuse one httpx connection pool instead of
   a fresh TLS handshake each call (was ~30-60s/batch of pure handshake); an autouse conftest fixture
   clears the cache per test. Raises `BillingAuthError` on 401/402 (halts the run rather than burning

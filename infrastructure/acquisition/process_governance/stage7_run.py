@@ -355,14 +355,25 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
         except HALTING_EXCEPTIONS:
             raise                       # halt — every later paid call fails identically (#173/#189)
         except Exception as e:          # noqa: BLE001 — a bad rep must not lose the whole district
-            pd["reps"].append({"rec_key": rg.get("rec_key"), "file": rg.get("file"),
-                               "kind": rg.get("kind"), "council_id": rg.get("council_id"),
-                               "judged": False, "calls": calls, "accepted": [], "unresolved": [],
-                               "error": f"{type(e).__name__}: {e}"})
+            # #804: `calls` is appended as the voters run, so at the throw it may already hold a
+            # context-refused/truncated voter — the two facts are not mutually exclusive (a rep can
+            # both have a lost voter AND have thrown later). Without the marker here, the receipt
+            # records an ordinary processing miss and the degraded_reps rollup under-counts; the
+            # replay would re-derive it, but live and replay must not disagree about what a rep was.
+            failed = {"rec_key": rg.get("rec_key"), "file": rg.get("file"),
+                      "kind": rg.get("kind"), "council_id": rg.get("council_id"),
+                      "judged": False, "calls": calls, "accepted": [], "unresolved": [],
+                      "error": f"{type(e).__name__}: {e}"}
+            deg = council_degraded(calls)
+            if deg:
+                failed["council_degraded"] = deg
+            pd["reps"].append(failed)
             pd["n_reps"] += 1
             print(f"  [rep {i}/{n_total}] {did} {str(rg.get('file', ''))[:28]:28s} "
                   f"({rg.get('kind')}->{rg.get('council_id')})  "
-                  f"⚠ SKIPPED — {type(e).__name__}: {str(e)[:80]}", flush=True)
+                  f"⚠ SKIPPED — {type(e).__name__}: {str(e)[:80]}"
+                  + (f"  ⚠ COUNCIL-DEGRADED ({', '.join(deg['models'])})" if deg else ""),
+                  flush=True)
             continue
 
         for f in accepted:      # provenance: the rep each fact came from (consensus runs per rep)
@@ -370,9 +381,13 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
         for u in unresolved:
             u["rec_key"], u["source_file"] = rec_key, file
 
-        pd["reps"].append({"rec_key": rec_key, "file": file, "kind": kind, "council_id": cid,
-                           "judged": judged, "calls": calls,
-                           "accepted": accepted, "unresolved": unresolved})
+        rep_out = {"rec_key": rec_key, "file": file, "kind": kind, "council_id": cid,
+                   "judged": judged, "calls": calls,
+                   "accepted": accepted, "unresolved": unresolved}
+        degraded = council_degraded(calls)
+        if degraded:
+            rep_out["council_degraded"] = degraded       # #709: receipt-visible, ≠ barren
+        pd["reps"].append(rep_out)
         pd["accepted"].extend(accepted)
         pd["unresolved"].extend(unresolved)
         pd["n_reps"] += 1
@@ -389,6 +404,10 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
                 f"{' judged' if judged else ''} err={rep_errs} ${rep_cost:.4f}")
         if rep_trunc:
             line += f"  ⚠ {rep_trunc} TRUNCATED"
+        if degraded:
+            kinds = degraded.get("kinds") or {}
+            line += ("  ⚠ COUNCIL-DEGRADED (" + ", ".join(
+                f"{m}:{kinds.get(m, MF.DEGRADED_REFUSED)}" for m in degraded["models"]) + ")")
         print(line, flush=True)
 
         # #120 mode-stability early-exit (district-grain): once EVERY fillable target band's running
@@ -441,19 +460,75 @@ def _call(model: str, prompt_id: str, kind: str, content) -> "OR.CallResult":
 def _call_record(model: str, role: str, res, facts: list) -> dict:
     """One model call's audit row for the receipt/gate@7 — telemetry + what it read (no raw content).
     `finish_reason == "length"` marks a TRUNCATED reply (tail schools silently gone — the salvage
-    parser keeps only the head), surfaced through the telemetry rollup + progress line."""
-    return {"model": model, "role": role, "ok": res.ok, "error": res.error, "n_facts": len(facts),
+    parser keeps only the head), surfaced through the telemetry rollup + progress line.
+    `error_kind` rides along (#709): 'context' is the structural voter-dropout the degraded marker
+    reads."""
+    return {"model": model, "role": role, "ok": res.ok, "error": res.error,
+            "error_kind": res.error_kind, "n_facts": len(facts),
             "facts": facts, "prompt_tokens": res.prompt_tokens,
             "completion_tokens": res.completion_tokens, "cost_usd": res.cost_usd,
             "latency_ms": res.latency_ms, "finish_reason": res.finish_reason,
-            "generation_id": res.generation_id, "truncation_retried": res.truncation_retried}
+            "generation_id": res.generation_id, "truncation_retried": res.truncation_retried,
+            "max_tokens_sent": res.max_tokens_sent}
+
+
+def council_degraded(calls: list) -> "dict | None":
+    """#709/#793 (REQ-174): did a VOTER's context window make this rep's read structurally
+    incomplete? Two shapes, both "the model could not hold the answer", both fatal to REQ-056
+    cross-family consensus over the rows that went missing:
+
+      • `context_refused`  — the call was refused pre-flight or 400'd (ok=False). Zero facts.
+      • `window_truncated` — the call SUCCEEDED with `finish_reason == 'length'` (#793). The
+        salvage parser kept the head; the tail schools are silently gone. Because #169 already
+        retries a truncated reply whenever headroom remains (and keeps the retry's content), a
+        `length` finish on the FINAL result means every available token was spent — this is the
+        terminal state, not a transient one.
+
+    Returns {models, reasons, kinds} or None. Reads `error_kind == 'context'` when present and
+    falls back to the error text's context markers, and reads `finish_reason` — all three ride
+    the stored call record, so the #716 replay derives the SAME marker from receipts written
+    before any of this existed (Memphis 3004896917ca and Orange 0e1bf02c3ea6 for the refusal;
+    Baldwin 0100270 and Stroudsburg 4222860 for the truncation) at zero spend.
+
+    A degraded rep's facts are evidence about the COUNCIL, never about the document: a zero is
+    not "the document was empty", and a partial is not "that was the whole roster"."""
+    hit, kinds = {}, {}
+    for c in calls or []:
+        if c.get("role") != "voter":
+            continue
+        model, err = c.get("model"), (c.get("error") or "").lower()
+        if not c.get("ok"):
+            # #802: a PRESENT error_kind is authoritative in both directions — the text markers are
+            # the fallback for legacy receipts only. Provider error strings routinely echo window
+            # metadata, so letting the text override a correct 'transient' would re-route a URL
+            # that genuinely timed out.
+            ek = c.get("error_kind")
+            is_context = (ek == "context") if ek else any(m in err for m in OR.CONTEXT_ERROR_MARKERS)
+            if is_context:
+                hit[model] = c.get("error") or "context refusal"
+                kinds[model] = MF.DEGRADED_REFUSED
+        elif c.get("finish_reason") == "length":
+            # #793: a refusal already recorded for this model outranks a truncation — it is the
+            # stronger statement (no answer at all), and a model cannot be in both states usefully.
+            if kinds.get(model) != MF.DEGRADED_REFUSED:
+                hit[model] = (f"reply truncated at the window ({c.get('completion_tokens') or '?'} "
+                              f"completion tokens, {c.get('n_facts') or 0} facts kept) — the tail "
+                              f"schools were dropped")
+                kinds[model] = MF.DEGRADED_TRUNCATED
+    if not hit:
+        return None
+    return {"models": sorted(hit), "reasons": hit, "kinds": kinds}
 
 
 def _rollup_tel(reps: list) -> dict:
     """Sum per-call telemetry across a set of reps (per-district or global)."""
     t = {"calls": 0, "judge_calls": 0, "errors": 0, "rep_errors": 0, "truncated": 0,
-         "truncation_retries": 0, "prompt_tokens": 0, "completion_tokens": 0, "cost_usd": 0.0}
+         "truncation_retries": 0, "degraded_reps": 0, "truncated_caps": [],
+         "prompt_tokens": 0, "completion_tokens": 0, "cost_usd": 0.0}
+    caps = set()
     for rep in reps:
+        if rep.get("council_degraded"):   # #709: structurally un-votable, ≠ zero-yield
+            t["degraded_reps"] += 1
         if rep.get("error"):        # a rep that couldn't be read/processed at all (#173) — no calls
             t["errors"] += 1
             t["rep_errors"] += 1
@@ -468,8 +543,14 @@ def _rollup_tel(reps: list) -> dict:
                 t["errors"] += 1
             if c.get("finish_reason") == "length":
                 t["truncated"] += 1
+                # #801: the ceiling that mattered is per-CALL now (mistral-small caps at 16,384
+                # while the global constant says 32,000) — collect the real ones for the run line.
+                # 0 = a legacy record without the field; skip rather than report a lie.
+                if c.get("max_tokens_sent"):
+                    caps.add(c["max_tokens_sent"])
             if c["role"] == "judge":
                 t["judge_calls"] += 1
+    t["truncated_caps"] = sorted(caps)
     return t
 
 
@@ -803,11 +884,18 @@ def _print_district_progress(did: str, pd: dict, gt_data: dict = None) -> None:
     line = (f"[done]  {did} {pd['name'][:22]:22s} reps={pd['n_reps']:2d} "
             f"acc={len(pd['accepted']):2d} unres={len(pd['unresolved']):2d} "
             f"err={tel.get('errors', 0)} ${tel.get('cost_usd', 0):.4f} | {band_str}")
+    # #801: the ceiling is PER-MODEL now (mistral-small caps at 16,384 while the global constant
+    # says 32,000) — report the caps actually sent, and name the cause honestly: a completion-cap
+    # bound is the model's window, not necessarily an oversized roster. The operator reads exactly
+    # this line at gate@7 to pick a re-route.
+    caps = tel.get("truncated_caps") or []
+    cap_str = "/".join(f"{c // 1000}k" if c % 1000 == 0 else str(c) for c in caps) \
+        if caps else f"≤{OR.MAX_TOKENS_CEILING // 1000}k"
     if tel.get("truncation_retries"):
-        line += f"  ↻ {tel['truncation_retries']} retried@{OR.MAX_TOKENS_CEILING//1000}k"
+        line += f"  ↻ {tel['truncation_retries']} retried@model-cap"
     if tel.get("truncated"):
-        line += (f"  ⚠ {tel['truncated']} STILL TRUNCATED at the "
-                 f"{OR.MAX_TOKENS_CEILING//1000}k ceiling — roster exceeds the model window; check tail loss")
+        line += (f"  ⚠ {tel['truncated']} STILL TRUNCATED at {cap_str} (the model's usable "
+                 f"window) — the reply could not fit; check tail loss")
     if gt_data and did in gt_data:
         card = VALID.score_district(pd, gt_data[did])
         hit = sum(1 for b in card["bands"] if b["status"] == "hit")
@@ -1029,12 +1117,25 @@ def detect_and_persist_requests(session, result: dict, handoff_hash: str,
                               slot_gaps=slot_gaps, explain=explain)
     # Detect-time suppression is NON-emission (nothing persists; re-detection re-emits if coverage
     # regresses) — log it so a barren rep with no request next to it is explicable from the run log.
-    if explain.get("suppressed_barren_reps") or explain.get("phantom_bands"):
+    # #807: every counter detect_requests writes MUST have a print path — the comment justifying
+    # non-emission ("explain carries the count so the run log isn't silent") only holds if the log
+    # actually prints it. Degraded/truncated are worded apart from barren: those suppressions mean
+    # the council could not (fully) read the document, never that the document was empty.
+    if any(explain.get(k) for k in ("suppressed_barren_reps", "phantom_bands",
+                                    "suppressed_degraded_reps", "suppressed_truncated_reps")):
         did = result.get("district_id")
         bits = []
         if explain.get("suppressed_barren_reps"):
             bits.append(f"{explain['suppressed_barren_reps']} barren-rep remedy(ies) suppressed — "
                         f"no fillable band gap remains")
+        if explain.get("suppressed_degraded_reps"):
+            bits.append(f"{explain['suppressed_degraded_reps']} COUNCIL-DEGRADED rep remedy(ies) "
+                        f"suppressed — no fillable gap, but a voter's window refused these reps "
+                        f"(the zero is not evidence the document is empty)")
+        if explain.get("suppressed_truncated_reps"):
+            bits.append(f"{explain['suppressed_truncated_reps']} TRUNCATED-read remedy(ies) "
+                        f"suppressed — no fillable gap, but these reps' replies were cut at the "
+                        f"model window (the read was partial, not complete)")
         if explain.get("phantom_bands"):
             bits.append(f"phantom claimed band(s) {explain['phantom_bands']} — no school serves "
                         f"those grades, no 7->2 emitted")
