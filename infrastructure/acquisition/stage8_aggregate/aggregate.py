@@ -1,15 +1,22 @@
-"""Per-school -> district band aggregation + Path-1 council accept logic + mode-stability early-exit.
+"""Per-school -> district band aggregation: council consensus, the per-band mode, and the
+mode-stability early-exit.
 
-Pure logic, no I/O. Consumes per-school extractions (each: {band: net_minutes}) and produces
-a district band value with the rule decided in ACQUISITION_PIPELINE.md:
+Pure logic, no I/O. The rule, per ACQUISITION_PIPELINE.md:
 
-  - Within a school, the COUNCIL decides the school's per-band value (cross-family agreement
-    within TOL; judge breaks ties). See council_school().
+  - Within a school, the COUNCIL agrees the school's (start, end) pair — cross-family agreement
+    within TOL, judge breaks ties (REQ-056). See `consensus_school_facts()`, the live entry point.
+  - Deterministic code then computes `gross = end - start`; models never compute minutes and never
+    pick a "typical" schedule (REQ-054), and the metric is GROSS bell-to-bell, never net (REQ-055).
   - Across schools, the district band value is the MODAL school value (ties/uncertain -> MEAN).
   - Mode-stability early-exit: stop sampling a band once the running mode is stable.
 
 Cross-family agreement (the family buckets) uses the canonical map in
 `common.model_families`, keyed by FULL OpenRouter model id — the ids the live Stage-7 path passes.
+
+`aggregate_band`/`aggregate_district` take already-decided per-school MINUTES rather than times, so
+they predate the REQ-054 split; they survive only as the arithmetic the mode rule is specified in
+(and are exercised as such by `tests/test_schedule_aggregation.py`). New callers want
+`consensus_school_facts` + `district_bands_from_facts`.
 """
 from collections import Counter
 from statistics import mean
@@ -37,30 +44,6 @@ def _cluster(values, tol=TOL):
 
 def _cross_family(members):
     return len({family(m) for m, _ in members})
-
-def council_school(votes, judge=None):
-    """votes: {model: {band: minutes}}; judge: optional callable(band)->minutes (re-reads page).
-    Returns {band: {"value": int|None, "consensus_models": [...], "method": str}} per band.
-    Accept when a cluster has >=2 CROSS-FAMILY members within TOL; else judge; else None (fallback)."""
-    out = {}
-    for band in BANDS:
-        vals = [(m, sch[band]) for m, sch in votes.items() if sch.get(band) is not None]
-        if not vals:
-            out[band] = {"value": None, "consensus_models": [], "method": "no_extraction"}; continue
-        clusters = _cluster(vals)
-        top = clusters[0]
-        if len(top["members"]) >= 2 and _cross_family(top["members"]) >= 2:
-            val = round(mean([v for _, v in top["members"]]))
-            out[band] = {"value": val, "consensus_models": [m for m, _ in top["members"]], "method": "council_agree"}
-        elif judge is not None:
-            jv = judge(band)
-            if jv is not None and PLAUSIBLE[0] <= jv <= PLAUSIBLE[1]:
-                out[band] = {"value": jv, "consensus_models": ["judge"], "method": "judge"}
-            else:
-                out[band] = {"value": None, "consensus_models": [], "method": "judge_implausible"}
-        else:
-            out[band] = {"value": None, "consensus_models": [], "method": "no_consensus"}
-    return out
 
 def mode_stable(values, window=5, min_n=3, min_share=0.6):
     """Early-exit for large-district band sampling. True when, over the last `window` schools,

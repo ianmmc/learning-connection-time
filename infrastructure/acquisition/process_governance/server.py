@@ -511,7 +511,6 @@ def stage5_districts(
     would auto-send, human said absent); `lane='fn'` = the #211 reject-audit sample (tier-D rejects drawn
     for a human to check for false negatives). A lane FOCUSES the list to districts that hold a matching
     record (not "filter URLs, keep districts" — a review queue wants only the districts with work)."""
-    gcol = _GROUP_COLS.get(group_by, None)
     scol = _SORT_COLS.get(sort, "d.attention_score")
     order = "ASC" if dir == "asc" else "DESC"
     nulls = "NULLS LAST" if order == "DESC" else "NULLS FIRST"

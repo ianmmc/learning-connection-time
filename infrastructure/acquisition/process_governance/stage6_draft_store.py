@@ -166,12 +166,6 @@ def set_dispatch_type(sess, draft_id: str, dispatch_type: str) -> None:
 
 
 # ---------------------------------------------------------------- read
-def _included_districts(sess, draft_id: str) -> list[DispatchDraftDistrict]:
-    return list(sess.scalars(select(DispatchDraftDistrict).where(
-        DispatchDraftDistrict.draft_id == draft_id, DispatchDraftDistrict.included.is_(True))
-        .order_by(DispatchDraftDistrict.ord)))
-
-
 def _all_districts(sess, draft_id: str) -> list[DispatchDraftDistrict]:
     return list(sess.scalars(select(DispatchDraftDistrict).where(
         DispatchDraftDistrict.draft_id == draft_id).order_by(DispatchDraftDistrict.ord)))
