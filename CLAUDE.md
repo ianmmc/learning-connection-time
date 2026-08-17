@@ -135,108 +135,75 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-08-15): Tranches 0/A/B are ALL MERGED — the "limbo" class is closed and
-#620's three unreachable districts are reachable again.** Six PRs (#745-750) landed gate@8's three
-missing arrows — **#682** (approval fires the Stage-9 write directly, no more manual CLI; a
-blocked/faulted write stamps `incorporation_blocked` instead of going silent), **#689** (send-back
-finally routes: 8→1 composes a follow-up batch, 8→6 seeds a gate@6 draft, both keyed on the
-approval id), **#713** (a written district that gains evidence is flagged + shown a delta, gated on
-REQ-147 staleness, never on raw fact-count) — plus the campaign's dead ends: **#720** (directives
-that can never execute now auto-resolve instead of re-deriving the same block forever), **#646**
-(a domain-less + already-attempted district — West Ada, Lincoln — had NO composer that would take
-it; geo now composes follow-ups too, not just first-runs), and **#718** (a `gt://`-only district —
-Baldwin, the #646 pair — read DONE-ENOUGH instead of BLOCKED, so the 5→1 zero-yield composer
-refused the very districts it exists for). A same-day max-effort review of all six PRs found 23
-real defects (#751-773, all fixed before merge — see `PROJECT_HISTORY.md` 2026-08-15 for the two
-worth remembering: a cross-file naming collision on `n_production_sendable`, #755, and #689
-quietly reproducing three defect shapes this same batch had just fixed elsewhere, #752/#757/#771).
+**Current status (2026-08-17): Tranche C steps 1-2 are MERGED, and step 3's premise was measured
+false and re-scoped.** Three PRs landed the extraction-correctness core. **#774** — roster-anchored
+school identity (REQ-173): variant spellings of one school now meet instead of minting false
+disagreement, ambiguity is never auto-resolved, the roster (not voter agreement) adjudicates a
+cross-band claim, and an unmatched name survives as `roster_unmatched`; `grade_level` STAYS in the
+grouping key (35 level-collapse districts would mass-merge without it). **#792** — per-model context
+accounting (REQ-174): every call clamps to the model's real window, a doomed call refuses pre-flight
+at zero spend, and a rep records `council_degraded` when a VOTER is structurally lost. **#813** —
+repetition-loop detection (#812): a voter emitting one row until the ceiling stops it is no longer
+recorded as a large successful extraction. Three review rounds (#777-791, #797-811, #814-820 — 37
+findings, all real, all fixed before merge). Docs re-synced to code 2026-08-17 (38adc81):
+ACQUISITION_PIPELINE.md de-changelogged (109 date/BUILT stamps → 0, two false diagram claims fixed),
+governance §14 added (extraction integrity), PROJECT_HISTORY entry written.
 
-**#620 campaign, unblocked:** Broward/Cleveland/Essex's send-backs are routable now (gate@8 → 8→1
-or 8→6) instead of requiring a hand-composed batch; West Ada/Lincoln/Baldwin are reachable via the
-5→1 composer. None of this has been RUN yet this session — the campaign's next move (route the three
-send-backs, resume the zero-yield composer on the reachable trio) is Ian's call to make from the
-console, per the standing rule below.
+**What the measurements changed (the reason this session's plan moved):** four times the issue's own
+diagnosis was wrong. #721's proposed fix would have mass-merged schools; #714's clamp turned a loud
+400 into a *silent* partial; #793's own marker was then gated on zero-yield, which structurally
+misses the partial it was built for; and **#794 was closed `not planned`** — bounding the school
+estimate by roster size is worse than the status quo in the direction that loses data (570/918 and
+82/918 under-predictions vs 56/918), and charter networks break its premise outright (KIPP Durham:
+`nces_school_count=1`, 50 accepted schools). Chasing that found #812 and falsified our own record:
+**there is no genuine dropped-tail truncation anywhere in the receipt store** — all six
+truncated-with-facts calls are repetition loops. **#795 was stopped rather than shipped**: a
+deterministic pre-dispatch hub classifier tops out ~59%/63%, misses the three biggest hubs, and
+under a better matcher false-positives on the exact document its acceptance criteria reject.
 
-**Tranches 0/A/B are DONE. Two remain — Tranche C (extraction-yield correctness) and Tranche D (UI
-weave-ins) — both approved in shape, not yet started:**
+**Tranche C's remainder + Tranche D (approved in shape, not started):** step 3 capture-completeness
+(#708 OCR name-mangling ships as fidelity-clean · #685 Stage 3 captures only the ACTIVE tab panel ·
+#672 the 5→1 widened rung dilutes geo derivation) · step 4 ladder-guard robustness (#710 a document
+that never names its school burns 3 alternate-rep rounds · #711 a transient 429 records as a clean
+zero-yield). **Tranche D** paired by surface: gate@5 (#673 no vintage surface + #674 a human label
+unconditionally overrides the #241 validity floor — same floor, fix together) and the Stage 2-4
+console triple (#669/#670/#671 — settle #671's design question first, the other two fall out of it).
+**Deliberately deferred behind both:** epic #723's receipts→gov_db work and epic #617's remainder.
 
-**Tranche C — extraction-yield correctness (epic #706 + adjacent council-lab correctness issues).**
-Grouped by shared subsystem, in the order to tackle them (measure each before assuming the proposed
-fix, per the standing method note below):
-1. **Consensus/grouping correctness** — #693 (school-name normalization mints false disagreement:
-   `'lincoln west science health'` vs `'…science AND health'` splits one true agreement into an
-   accepted fact + an unresolved twin) + #721 (band disagreement on a multi-band campus fragments
-   consensus because `grade_level` is part of the grouping key — two readings of the same school
-   never meet). Same family: both are "correct data, wrong grouping" bugs in the consensus code.
-2. **Context-limit handling** — #714 (`size_max_tokens` has no per-model accounting; a mega-roster
-   hub rep zeroed BOTH council voters on Orange) + #709 (a voter's context-limit 400 silently
-   degrades the council to single-family, with no chunking path and no "degraded" marker). Same
-   subsystem (`openrouter`/request-sizing); likely one shared fix.
-3. **Capture-completeness** — #708 (systematic OCR name-mangling ships as fidelity-clean — every
-   school name lost its first letter) + #685 (Stage 3 captures only the ACTIVE tab panel; Cedar
-   Rapids lost elementary + middle, 54 of 110 times) + #672 (the 5→1 widened rung dilutes geo
-   derivation below threshold and discards up to 109 URLs including on-domain hits — independent of
-   #719's fix, a distinct mechanism in `apply_geo_derivation`).
-4. **Ladder-guard robustness** (lower severity — wasted spend, not wrong data) — #710 (a document
-   that never names its school burns 3 alternate-rep rounds no representation can fix) + #711 (a
-   transient 429 records as a clean zero-yield and consumes a ladder rung).
-Epic #706's F6 (#712, long-table recall asymmetry) is routed to epic #80 (Council Lab) — composition/
-measurement, not a pipeline defect; leave it there.
-
-**Tranche D — UI weave-ins, paired by surface (per the original plan: weave console work in
-alongside the pipeline-correctness passes above, don't block on it separately):**
-- **gate@5 pair** — #673 (no vintage surface: the derived school year and the #241 floor's HOLD are
-  invisible, no way for a human to flag an out-of-window schedule) + #674 (a human target label
-  UNCONDITIONALLY overrides the #241 validity floor — following the labeling doctrine guarantees an
-  out-of-window release; epic #92). Same surface, same floor — fix together.
-- **Stage 2-4 console triple** — #669 (the console shows CUMULATIVE district state as if it were
-  this run's work, and the redo confirm dialog states the opposite of what redo does) + #670 (a late
-  capture timeout is silently masked — a timed-out district with a populated `captures.json` renders
-  as cleanly done) + #671 (design question: what should a stage's status badge mean during a re-run?
-  an in-flight redo district renders as done, with the PRIOR run's results, for up to 38 min). These
-  three share one root design gap (the badge doesn't distinguish "done" from "done as of the last
-  run, currently redoing") — settle #671's design question first, then #669/#670 likely fall out of it.
-
-**Deliberately still deferred behind the above (unchanged from the last checkpoint):** epic #723's
-REQ-171 receipts→gov_db work (#622 → #623 → #645 → #624) and epic #617's remainder (#640/#625) —
-both flow-unblocking work outranks them, and #723 was carved out FROM #617 specifically so #617
-could close without carrying them.
-
-**Method notes that carry forward (now proven twice more this session):** measure-first has
-overturned the issue's own proposed fix five times total (#691, #684, #719, and — in this session —
-#755's own two-formula reconciliation and #706's F1-F5 severity ranking); the newest instance is the
-review-round pattern: **a fix landing in one file can silently reproduce a defect shape a sibling
-fix just closed in another file, inside the SAME review batch** (#689's send-back router shipped a
-hardcoded `scope="domain"` — #646's exact dead end — and a falsy-OR band fallback and a
-zero-facts-only signal, both patterns #713's REQ-149 rework had just replaced elsewhere; found and
-fixed as #752/#757/#771). Countermeasure:
-when a review batch spans multiple PRs touching the same subsystem, diff each new code path against
-every defect class the OTHER PRs in the batch just fixed, don't just review each PR in isolation.
-Also carried forward: **a guard wired into one member of a set whose siblings share the property**
-(closure-pin countermeasure) and **a total failure wearing a normal outcome's clothes** (100% gate
-refusal as ordinary `manual_flag_all`; both-voters-failed as a clean zero) — both classes to keep
-watching for in Tranche C's consensus/grouping work.
-
-**Process lesson (new, 2026-08-15):** a PR's "Closes #N" must be in the PR BODY (`gh pr create
---body`), never a follow-up `gh pr comment` — GitHub only auto-closes on a body-level keyword, so
-23 issues merged fixed-but-open and had to be closed by hand. Always author the body with the
-closing keywords from the start.
-
-**Next (RESUME HERE — 2026-08-15):**
-1. **Tranche C, step 1** — #693 + #721 (consensus/grouping correctness), following the grouped
-   order above. Measure each live against real districts before proposing a fix (Bangor/Wyandanch-
-   style traces, not a guess from the code).
-2. **In parallel, weave in Tranche D's gate@5 pair** (#673/#674) when touching gate@5 surfaces for
-   any Tranche C work that lands there (#693's evidence review is a gate@5-adjacent surface).
-3. **Ian's call, not a session task:** whether to route Broward/Cleveland/Essex's send-backs and
-   resume the 5→1 composer on West Ada/Lincoln/Baldwin now that #689/#646/#718 are merged — that is
-   live pipeline spend and stays console-driven.
-4. Then: Tranche C steps 2-4 (context-limit, capture-completeness, ladder-guard) → Tranche D's
-   Stage 2-4 console triple → epic #723's receipts queue.
-Ian drives the console; prepare and verify, don't execute stage runs (Stage 9 CLI runs are the
-verification exception — read-only intent, idempotent, guarded). *Falsifier unchanged: if any
-district needs a hand-edit or a re-adjudicated gate@8 call, the mechanism is wrong — fix the
+**Next (RESUME HERE — 2026-08-17):**
+1. **#796 — page scoping is reachable only through the handbook door.** A roster table inside a long
+   non-handbook PDF is sent whole. `harvest_pages` is already computed for EVERY PDF record; only
+   slice *materialization* is gated on `is_handbook`, so widening that trigger needs no hub
+   classifier — #796 does NOT depend on #795 (which is why it's next). The #230 yield guard is
+   load-bearing and must keep holding: a slice that clips half the table must never shadow the full
+   read.
+2. **Then #795, re-scoped** — its surviving half is "fix `roster_school_names_hit` to use
+   `norm_school`" (measured: Memphis 0→27, Broward 3→42, Orange 1→36), which needs the district-name
+   collision handled (level-stripping collapses a small district's roster to the district's own
+   name). The population half needs no classifier and is already measured.
+3. **Then** Tranche C steps 3-4 → Tranche D's gate@5 pair → the Stage 2-4 console triple → #723.
+4. **Ian's call, not a session task:** routing Broward/Cleveland/Essex's send-backs and resuming the
+   5→1 composer on West Ada/Lincoln/Baldwin — live pipeline spend, stays console-driven.
+Ian drives the console; prepare and verify, don't execute stage runs (Stage 9 CLI + the #716 replay
+are the verification exceptions — read-only intent, idempotent, guarded). *Falsifier unchanged: if
+any district needs a hand-edit or a re-adjudicated gate@8 call, the mechanism is wrong — fix the
 pipeline, not the district.*
+
+**Standing method note (now on its seventh instance): measure the thing before fixing it.** An
+issue's proposed fix has been overturned by measurement seven times (#691, #684, #719, #755, #706's
+severity ranking, #721, #794). Two corollaries earned this session: **a fix can remove a failure's
+VISIBILITY instead of the failure** (#792's clamp made the 400 unrepresentable by making the same
+event succeed quietly), and **a marker without a consequence is decoration** (#793 marked the
+truncation, then gated its remedy on a condition that shape cannot meet). Before calling a fix done,
+ask what would now be *observable* if it were wrong.
+
+**The implemented-twice-drifts class (four instances this session — keep watching):** the
+absent-`kinds` default resolved opposite ways in two files (#798); refusal-outranks-truncation was a
+`!=` guard in one file and a set-membership negation in another (#810); a per-record dict
+comprehension discarded a sibling rep's marker (#799, the #785 shape one subsystem over); and #816's
+`ok` gate had two unguarded siblings in the telemetry layer. Countermeasure that works: **one
+function in the base layer both callers invoke**, then diff every sibling path against a new fix —
+including siblings inside the SAME PR.
 
 **The standing lesson (now tripled): three separate layers shipped green against measurements that
 could not fail (§10.11), then the fix round's own review findings repeated it (§10.19/§10.20), then a
@@ -265,12 +232,15 @@ Documented-in-code deferrals: `_satisfied_bands_now` batching; the #522 guardrai
 keyword/table attribution (needs a server payload change); JS behavioral tests (no JS harness);
 the remediation-receipt exception is not STAGE-scoped (30-day expiry since 2026-07-20); attribution
 v1 reads each district's LATEST candidate plan.
-Resume-essentials (ALL re-verified 2026-08-15 on this checkpoint, post-merge): `pip install -e .` →
+Resume-essentials (ALL re-verified 2026-08-17 on this checkpoint, post-merge): `pip install -e .` →
 Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) →
-`lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **2226**
+`lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **2325**
 pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **396** pass, Postgres up) + `pytest
-tests/test_*_integration.py` (expect **256** pass, 149 skipped) + `cd infrastructure/scraper &&
-npm test` (expect **91**).
+tests/test_*_integration.py` (expect **257** pass, 149 skipped) + `cd infrastructure/scraper &&
+npm test` (expect **91**). NB `pytest -m integration` now also carries a NETWORK test
+(`test_model_windows_integration.py`, #809) that re-fetches OpenRouter and fails with "refresh the
+catalog" if `MODEL_WINDOWS` has drifted — it skips cleanly offline and is excluded from the default
+suite; a failure there means bump the catalog + `MODEL_WINDOWS_FETCHED`, not a broken build.
 **pytest is 9.1.1**: `pytest.ini` declares `pythonpath = .` — without it, pytest 9's bare `pytest`
 script fails COLLECTION on `tests/test_benchmark_*` (`from tests import benchmark_seed`).
 `requirements.txt` floor raised to `pytest>=9.0`. **Scheduled CI now runs nightly (#722, merged)** —
