@@ -1792,3 +1792,79 @@ Authority: PRs #745-750 (merged) and their six review-round commits; issues #682
 #646/#718 and #751-773 (all closed 2026-08-15); live gov_db/lct_db reads verifying each fix
 (rolled-back transactions for the #720 sweeps, a 116-district sendability comparison for #755, a
 Playwright pass against real send-back/re-review records for the gate@8 console surfaces).
+
+---
+
+### 2026-08-16/17 — Tranche C's first two steps, and four times the measurement overturned the issue that asked for the work
+
+Two epics' worth of extraction-correctness work landed in three PRs (#774, #792, #813) plus two
+review rounds (22 findings, all real). The durable lessons are not in the fixes — they are in how
+often *the issue's own diagnosis was wrong*, and in one defect class that recurred four times inside
+a single session.
+
+**Identity is a correctness boundary, not a formatting detail (REQ-173).** Consensus groups facts by
+school, so "what counts as the same school" decides whether two readings of one school agree or mint
+a false disagreement. #693/#721 asked for name-normalization; the measurement said the proposed fix —
+group by name alone — would mass-merge real schools across **35 level-collapse districts** (Apopka
+Elementary/Middle/High all normalize to `apopka`). So `grade_level` STAYS in the grouping key, and
+the fix became a roster-anchored resolution ladder instead: variant spellings meet, 2+ candidates are
+never auto-resolved, the roster (not voter agreement) adjudicates a cross-band claim, and an
+unmatched name survives as `roster_unmatched` rather than being discarded — because the pipeline's
+reach exceeds its roster and refusing those facts would silently narrow coverage.
+
+**A fix can remove a failure's visibility instead of the failure.** #714/#709 added per-model window
+accounting: clamp every call to what the model can actually take, refuse pre-flight when it can't.
+Correct — and on the Orange shape it converted a *loud* provider 400 into a **successful truncated
+reply** that nothing downstream read. `finish_reason` reached a console line and a counter and
+nothing else. The clamp was justified as "the 400 shape becomes unrepresentable"; the reason the 400
+stopped appearing was that the same event now succeeded quietly. **When a change is justified by a
+symptom disappearing, check whether the symptom or the failure was removed.**
+
+**Then the same session did it again, one level up.** #793 added the truncation marker — and gated
+its remedies on zero-yield, a gate that catches refusals (zero by construction) and *structurally
+misses* truncations, whose normal case is a partial. Baldwin's 355-fact partial was marked and then
+ignored: no remedy, no count, district reads DONE-ENOUGH. A marker without a consequence is
+decoration.
+
+**Measure an estimator against what it estimates, before "fixing" it.** #794 claimed
+`size_max_tokens` should be bounded by roster size. Ground truth (rows a model actually emitted, 918
+observations) said both proposed signals were *worse than the status quo in the direction that loses
+data*: `roster_school_names_hit` under-predicts 570/918, `nces_school_count` 82/918, today's
+`n_times/2` 56/918. And the premise — "a document can never imply more schools than the district
+has" — is false: charter networks publish network-wide hubs (KIPP Durham: `nces_school_count = 1`,
+50 accepted schools). #794 closed `not planned`.
+
+**Chasing that measurement found the real defect, and falsified our own record.** The under-predicted
+cases were not big rosters. Stroudsburg — a **seven-school district** — emitted 420 rows that are
+`MCTI` repeated 420 times. Six of 2,340 fact-bearing calls are repetition loops, and **there is no
+genuine dropped-tail truncation anywhere in the receipt store.** Everything we had written about
+Baldwin and Stroudsburg "losing their tail" was wrong, in four durable artifacts. The correction was
+made in place and marked as a correction. The follow-on review then found that claim had been
+over-tightened the other way ("every loop IS truncated") — one of the six loops never truncated at
+all, and it was the case *only* the new detector could catch: the strongest evidence for the fix,
+written up as its weakest.
+
+**#795 was stopped rather than shipped.** A deterministic pre-dispatch hub classifier tops out around
+59% recall / 63% precision, misses the three biggest hubs in the corpus, and — under a *better*
+matcher — false-positives on the exact document its acceptance criteria require it to reject
+(level-stripping collapses a 3-school district's roster to the district's own name, which its policy
+book says on every page). Shipping it would have fed routing and chunking decisions a signal wrong
+precisely where those decisions matter. The honest half moved to the issue that owns the mechanism.
+
+**The recurring defect class, now four instances in one session:** *a rule implemented twice drifts.*
+The absent-`kinds` default resolved one way in the classifier and the opposite way in the remedy
+wording (#798); refusal-outranks-truncation was expressed as a `!=` guard in one file and a
+set-membership negation in another (#810); a per-record dict comprehension discarded a sibling rep's
+marker (#799, the same shape as #785 one subsystem over); and the `ok` gate added in #816 had two
+unguarded siblings in the telemetry layer. The countermeasure that keeps working: **put the rule in
+the base layer as one function both callers invoke** (`model_families.strongest_kind`), and after
+fixing a defect, diff every sibling code path against it — including the ones in the *same* PR.
+
+**Also corrected: the spec ledger silently lost content.** REQ-174 briefly declared `notes:` twice;
+YAML keeps only the last duplicate, so an entire rationale block vanished at parse time while the raw
+text sat in the file looking fine. Now guarded ledger-wide by a duplicate-key-rejecting loader
+(`tests/test_requirements_yaml_hygiene.py`) rather than a spot fix.
+
+Authority: PRs #774/#792/#813 (merged); issues #693/#721/#714/#709/#793/#812 and the review batches
+#777-791, #797-811, #814-820 (all closed); corpus measurements over 2,586 stored call records, 918
+text-rep observations, and 504 district×record yield pairs, all re-runnable against the live gov_db.

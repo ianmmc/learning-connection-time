@@ -171,7 +171,9 @@ place (with tests) rather than deleted; treat them as legacy unless/until they'r
   times); a single-band-rostered school's wrong-band claim folds into the roster band
   (`roster_band`; the judge tiebreak still finds answers filed under the pre-adjudication key,
   #781); a wrong-band claim against a multiband roster surfaces as `band_disagreement` (no
-  deterministic destination). An UNMATCHED name's cross-band singletons collapse to one explicit
+  deterministic destination). The adjudication itself is stamped on the fact —
+  `band_adjudication`: `roster_multiband` | `roster_band` | `band_disagreement` — so gate@8 reads the
+  rule that moved a band, never just the result. An UNMATCHED name's cross-band singletons collapse to one explicit
   `band_disagreement` unresolved row, votes keyed `model [band]` (#785); strict-degenerate names
   (#245/#707's class) and ambiguous resolutions (#784 — a NAME problem carrying its candidate
   list) are exempt. At emission, an unmatched name is screened for excluded school types

@@ -104,11 +104,14 @@ DEGRADED_LOOPED = "degenerate_repetition"  # #812: the voter answered with ONE r
 # statement about the council") is ONE rule in ONE place, next to the constants it orders. Both
 # consumers call `strongest_kind` rather than re-expressing the order in their own idiom — the #798
 # defect was exactly two sites defaulting an absent `kinds` in opposite directions.
-# #812 slots LOOPED between them: a loop yields no usable content at all (strictly worse than a
-# partial read), but unlike a refusal the model did answer. It also outranks TRUNCATED because when
-# a call is both — and in this corpus every looped call IS truncated — the loop is the CAUSE and the
-# truncation merely the symptom of max_tokens stopping it; reporting "truncated" would point a human
-# at document size when the document is fine and the read is not.
+# #812 slots LOOPED between them: a loop's row volume tells you about the LOOP, not the document
+# (Stroudsburg's 2-distinct loops did land their surviving rows in consensus), but unlike a refusal
+# the model did answer. It outranks TRUNCATED because when a call is both, the loop is the CAUSE and
+# the truncation merely the symptom of max_tokens stopping it; reporting "truncated" would point a
+# human at document size when the document is fine. The two are correlated, NOT coextensive (#814):
+# 5 of the corpus's 6 loops truncated; New Haven 0626910's looped with no truncation signal at all
+# (ok=True, finish_reason=None) and read as a clean 420-fact extraction until this detector existed
+# — a loop needs no ceiling to be a loop.
 DEGRADED_PRECEDENCE = (DEGRADED_REFUSED, DEGRADED_LOOPED, DEGRADED_TRUNCATED)   # strongest first
 
 

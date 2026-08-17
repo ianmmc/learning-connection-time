@@ -1934,3 +1934,98 @@ currently be distinguished from a fresh one. This is REQ-165's *"from what evide
 close it, but it is not yet wired to `label`. Until it is, label inheritance should be read as
 correct-and-safe but **not fully auditable** in the sense the rest of this doc's precious-state model
 otherwise guarantees.
+
+---
+
+## 14. Extraction integrity: what a council result is allowed to claim about itself
+
+The gates rest on a premise this doc has otherwise left implicit: **a stage's output must be
+distinguishable from its failure modes.** Stage 7 is where that premise is hardest to keep, because a
+council can fail in ways that look exactly like success — and every such failure lands as facts in
+`school_fact`, which every later gate treats as evidence.
+
+**The governing rule: a result reports what is KNOWN, never an inferred shape of its own loss.** A read
+that was cut short does not know whether it lost a tail or repeated itself; a zero does not know whether
+the document was empty or the council could not read it. Wording that guesses is not a cosmetic problem —
+it is the thing a human acts on at gate@7 to choose a re-route, so a wrong guess sends real spend in the
+wrong direction.
+
+### 14a. The three degradation kinds — one vocabulary, one precedence
+
+A rep records `council_degraded` when a **voter** (never the judge — voters carry REQ-056 cross-family
+consensus) was structurally lost:
+
+| kind | what happened | what it is NOT evidence of |
+|---|---|---|
+| `context_refused` | the call never answered — refused pre-flight, or a provider context-length 400 | the document being empty |
+| `degenerate_repetition` | the reply was one row repeated until something stopped it | the document being large |
+| `window_truncated` | the reply was cut at the model's usable window | any particular shape of loss |
+
+The kinds, their precedence, and the rule for an absent/unknown kind live **once**, in
+`common/model_families.py` (`DEGRADED_PRECEDENCE`, `strongest_kind`) — the base layer, because the
+producer (`process_governance.stage7_run`) sits *above* the consumer (`stage7_extract.requests`) in the
+layering contract and the lower one may not import the higher. A rule spelled out twice in two idioms is
+the defect class this project keeps re-learning; here it is one function both callers use.
+
+Precedence is `refused` → `looped` → `truncated`, strongest first. A refusal outranks everything (no
+answer at all). A **loop outranks a truncation** because when a call is both, the loop is the *cause* and
+the truncation merely the symptom of the ceiling stopping it — reporting the symptom points a human at
+document size when the document is fine. The two are correlated but **not coextensive**: a loop needs no
+ceiling to be a loop. An absent kind resolves to the *strongest*, because under-claiming a refusal as a
+truncation is precisely the misdirection this machinery exists to prevent.
+
+### 14b. Consequences must follow the marker, or the marker is decoration
+
+Marking a rep is only half the contract. The failure this most often takes is a marker that lands and
+changes nothing downstream:
+
+- **Remedies are gated on the right evidence.** A refusal yields zero by construction, so a zero-yield
+  gate catches every one. A truncation or loop yields a *partial*, so gating those on zero-yield misses
+  them structurally — they are detected on fact-count evidence instead, and a completed-looking district
+  resting on an incomplete read is never silent.
+- **Suppression counts are kept apart** (`explain`: barren vs degraded vs truncated vs looped) and every
+  counter has a print path in the run log. A counter written and never surfaced is the same silence in a
+  different place.
+- **Operator surfaces apply the same precedence as the classifier.** The per-rep line, the district
+  `[done]` line and the telemetry rollup all report a looped call as looped — never as truncated — so
+  what a human reads at gate@7 matches what the receipt stored.
+- **Replay derives the same markers at zero spend.** Every classification reads from stored call records
+  (`error_kind`, `finish_reason`, `facts`, or a stored marker), so re-aggregating a frozen receipt
+  backfills honesty into historical data without re-buying the council — and the replay path also
+  re-runs request detection, so a marker derived on replay produces the remedy it promises.
+
+### 14c. Counts must mean what they say
+
+`n_facts` means **distinct schedules read**, not rows the model emitted: identical rows (same
+school/band/start/end) collapse unconditionally, since consensus already groups by (band, school) and a
+duplicate carries no information the first row didn't. The pre-dedupe count survives as `n_rows_raw` for
+audit, so the emitted-row quantity — the ground truth any future estimator must be measured against —
+is never lost.
+
+The related standing caution: **an estimator is not a measurement.** `size_max_tokens` produces an
+output-token *ceiling* from a document's clock-time count; it is deliberately biased to over-estimate,
+because over-sizing is free and under-sizing truncates. It is not a school count and must never be read
+as one — a 60-page policy book in a three-school district scores as if it held 1,605 schools. Before
+"fixing" such an estimator, measure it against what it estimates; more than once, the proposed fix has
+been in the direction that would cause the harm it described.
+
+### 14d. Identity is roster-anchored (REQ-173)
+
+Consensus groups facts by school, so **what counts as the same school** is a correctness boundary, not a
+formatting detail. Every voter/judge row's name resolves against the district's NCES roster through a
+band-scoped ladder before grouping, so variant spellings meet instead of minting false disagreement.
+Three properties are load-bearing:
+
+- **Ambiguity is never auto-resolved.** Two or more candidate matches surface as ambiguous rather than
+  guessing; a stale or incomplete roster must not be able to bind a fact to the wrong school.
+- **`grade_level` stays in the grouping key.** Districts exist whose level words are the only thing
+  distinguishing separate schools ("Apopka Elementary / Middle / High"), so dropping the band from the
+  key would mass-merge real schools. Band disagreement on a genuinely multi-band campus is resolved by
+  the **roster** adjudicating, not by voter agreement.
+- **An unmatched name is not discarded.** Once screened against excluded school types, it survives as an
+  accepted fact marked `roster_unmatched` and never fills a roster slot — the pipeline's reach exceeds
+  its roster (charter networks publish hubs naming schools no district roster holds), and refusing those
+  facts would silently narrow coverage.
+
+The resolution method, any ambiguity, and the adjudication persist in `school_fact.identity_json` so
+gate@8 can see *why* a fact is attached to the school it is attached to.

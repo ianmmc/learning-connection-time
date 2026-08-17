@@ -206,6 +206,15 @@ exercise against the #200/#209-hardened pipeline, not a distinct issue awaiting 
   school, and blacklisting it permanently blinded extraction to it; the prompt itself no longer
   contains the string (replaced with `[SCHOOL NAME]`), so that specific leak cannot recur. Never
   add a real school name here — fix the prompt instead.
+  Two pure functions beside the salvage rules make a reply's *volume* honest (#812):
+  **`dedupe_identical`** drops rows agreeing on school/band/start/end — unthresholded and always
+  correct, since consensus already groups by (band, school), so `n_facts` means *distinct schedules
+  read* rather than *rows the model emitted* (the pre-dedupe count rides the call record as
+  `n_rows_raw`); and **`degenerate_repetition`** classifies a repetition LOOP (distinct-row ratio
+  ≤ `REPETITION_MAX_DISTINCT_RATIO` over ≥ `REPETITION_MIN_ROWS`), returning `{n_rows, n_distinct,
+  ratio}`. Both are pure over a fact list, so a stored receipt classifies identically on replay at
+  zero spend. Note what the threshold *is*: at full duplication `ratio == 1/n_rows`, so it acts as a
+  row-count floor in that regime; the ratio margin only exists once partial duplication is possible.
 - `content.py` — `image_data_url()` (base64 data-URL; `.webp`→PNG conversion exists but the picker never
   selects `.webp` — PNG-only, per Ian) and `is_image_kind()`.
 - `requests.py` — the request-more-evidence **detection/routing engine** (§4): pure, no DB/network,

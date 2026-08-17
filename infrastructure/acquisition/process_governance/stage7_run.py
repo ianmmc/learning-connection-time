@@ -463,10 +463,11 @@ def _call(model: str, prompt_id: str, kind: str, content) -> "OR.CallResult":
 
 def _call_record(model: str, role: str, res, facts: list) -> dict:
     """One model call's audit row for the receipt/gate@7 — telemetry + what it read (no raw content).
-    `finish_reason == "length"` marks a TRUNCATED reply (tail schools silently gone — the salvage
-    parser keeps only the head), surfaced through the telemetry rollup + progress line.
-    `error_kind` rides along (#709): 'context' is the structural voter-dropout the degraded marker
-    reads."""
+    `finish_reason == "length"` marks a TRUNCATED reply: the salvage parser keeps whatever parsed,
+    and what was lost is NOT knowable from here (a dropped tail and a repetition loop both present
+    this way — #812/#814), so downstream states the fact, never the shape. Surfaced through the
+    telemetry rollup + progress line. `error_kind` rides along (#709): 'context' is the structural
+    voter-dropout the degraded marker reads."""
     # #812: a repetition LOOP is classified from the RAW reply, then the identical rows are dropped
     # — so `n_facts` and the stored `facts` mean "distinct schedules read", never "rows the model
     # emitted". Stroudsburg's 420-row `MCTI` loop recorded as a 420-fact extraction; it is 1.
@@ -492,11 +493,13 @@ def council_degraded(calls: list) -> "dict | None":
     cross-family consensus over the rows that went missing:
 
       • `context_refused`  — the call was refused pre-flight or 400'd (ok=False). Zero facts.
-      • `window_truncated` — the call SUCCEEDED with `finish_reason == 'length'` (#793). The
-        salvage parser kept the head; the tail schools are silently gone. Because #169 already
+      • `window_truncated` — the call SUCCEEDED with `finish_reason == 'length'` (#793). The reply
+        was cut mid-flight, so what parsed is not known to be all of it. Because #169 already
         retries a truncated reply whenever headroom remains (and keeps the retry's content), a
         `length` finish on the FINAL result means every available token was spent — this is the
         terminal state, not a transient one.
+      • `degenerate_repetition` — the reply was one row repeated (#812). Outranks the truncation
+        that usually stops it, and needs no truncation to occur (#814).
 
     Returns {models, reasons, kinds} or None. Reads `error_kind == 'context'` when present and
     falls back to the error text's context markers, and reads `finish_reason` — all three ride
