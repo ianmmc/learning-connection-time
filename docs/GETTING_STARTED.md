@@ -43,7 +43,7 @@ pip install -e .
 ```
 
 > **Architecture checks (optional, recommended in CI):** `lint-imports` enforces the
-> acquisition layering contracts (pyproject.toml), `vulture infrastructure/acquisition`
+> acquisition layering contracts (pyproject.toml), `vulture infrastructure/acquisition .vulture_whitelist.py`
 > finds dead code, and `cd infrastructure/scraper && npm run lint:deps` checks the Node
 > capture layer. See `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE.md` §10.
 

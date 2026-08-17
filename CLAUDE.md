@@ -327,7 +327,8 @@ lint-imports                 # enforce the acquisition layering contracts (confi
 python3 -c "import grimp; g=grimp.build_graph('infrastructure'); \
   print(sorted(g.find_modules_directly_imported_by('infrastructure.acquisition.stage1_queue.queue_batch')))"
                              # grimp: query the real import graph (what a module imports / is imported by)
-vulture infrastructure/acquisition    # dead-code sweep
+vulture infrastructure/acquisition .vulture_whitelist.py    # dead-code sweep vs the audited baseline
+                             # (a finding = NEW since 2026-08-17: prove it reachable + whitelist, or delete it)
 cd infrastructure/scraper && npm run lint:deps   # Node (.mjs) side — depcruise over the flat *.mjs (no lib/ dir)
 pytest tests/test_arch_manifest.py    # cross-boundary FITNESS functions vs arch-manifest.json (#124)
 ```
