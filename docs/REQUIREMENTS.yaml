@@ -4607,8 +4607,13 @@ requirements:
       recorded in both states reports the refusal (the stronger statement). Because finish_reason has
       always ridden the stored call record, the #716 replay backfills it: 22 (district, rep, shape)
       degradations are now derivable from shipped receipts at zero spend, four of them the new
-      truncation shape (Orange 1201440, Stroudsburg 4222860, Baldwin 0100270 — which kept 355 facts
-      from a truncated reply — and Bentonville 0503060).
+      truncation shape (Orange 1201440, Stroudsburg 4222860, Baldwin 0100270, Bentonville 0503060).
+      CORRECTION (2026-08-16, #812): those fact-bearing truncations were first described here as
+      partial rosters with a dropped tail. A corpus scan proved otherwise — all 6 fact-bearing
+      truncations are degenerate REPETITION LOOPS (Stroudsburg: 420 rows, 1 distinct school name;
+      Baldwin: 355 rows, 1 name), and there is no genuine partial-roster truncation in the receipt
+      store. The marker and the re-route remedy stay correct (an incomplete read is an incomplete
+      read); the remedy WORDING no longer asserts which shape the loss took.
       Known nuance, deliberately unchanged here: the marker fires on a lost VOTER even when a
       third-family judge covered the gap (Broward 1200180 accepted 201 facts via method='judge' with
       mistral refused). That is honest — a voter WAS lost — and harmless. Whether gate@8 should

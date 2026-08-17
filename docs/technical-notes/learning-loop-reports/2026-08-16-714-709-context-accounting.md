@@ -121,8 +121,16 @@ zero is never evidence a document is empty" had an unguarded twin: *a partial is
 that was the whole roster*.
 
 Already in shipped data, from a scan of all 2,586 stored call records: 9 truncated calls in 4
-districts, including **Baldwin `0100270` keeping 355 facts** and **Stroudsburg `4222860` keeping
-420** (×3 runs) from replies that ran out of room. Those read as clean.
+districts, including **Baldwin `0100270`** at 355 facts and **Stroudsburg `4222860`** at 420 (×3
+runs) from replies that ran out of room. Those read as clean.
+
+> **Correction (same day, #812):** those fact-bearing truncations are *not* partial rosters. A
+> later scan of the 156 fact-bearing calls found 6 with ≥90% duplicate rows — Stroudsburg's 420
+> rows are `MCTI` repeated 420 times, Baldwin's 355 are one name — and those 6 are **exactly** the
+> 6 truncated-with-facts calls. There is no genuine dropped-tail truncation anywhere in the receipt
+> store. #793's marker and re-route remedy remain right (both shapes are incomplete reads wanting
+> the same action); only the claim about *what was lost* was wrong, and the remedy wording is
+> corrected to state what is known rather than assert a shape.
 
 Fix (P8/P9): `council_degraded` gains `kinds` — `context_refused` vs `window_truncated` — with the
 vocabulary in `common/model_families.py` because the layering contract forbids `stage7_extract`

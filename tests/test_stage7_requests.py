@@ -297,7 +297,11 @@ def test_797_truncated_with_facts_emits_partial_read_remedy():
     assert [r["route"] for r in reqs] == ["7->6"]
     assert reqs[0]["params"]["partial_read"] is True
     assert reqs[0]["params"]["council_degraded"] is True
-    assert "PARTIAL" in reqs[0]["reason"] and "TRUNCATED" in reqs[0]["reason"]
+    # #812: the reason states what is KNOWN (the read was cut, so the facts are not known to be
+    # the whole document) and must NOT assert a shape — every truncation measured in the corpus
+    # was a repetition loop, not a dropped tail, so "the head of the document" would be false.
+    assert "INCOMPLETE" in reqs[0]["reason"] and "TRUNCATED" in reqs[0]["reason"]
+    assert "head of the document" not in reqs[0]["reason"]
 
 
 def test_797_truncated_with_facts_all_covered_is_counted_not_silent():

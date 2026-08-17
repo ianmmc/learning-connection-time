@@ -167,7 +167,7 @@ exercise against the #200/#209-hardened pipeline, not a distinct issue awaiting 
   the refusal; a recovered retry is not degradation; a JUDGE truncation never marks (voters carry
   REQ-056). `finish_reason` has always ridden the stored call record, so the #716 replay backfills
   **22 (district, rep, shape) degradations from shipped receipts at zero spend** — four of them the
-  new truncation shape (Orange, Stroudsburg, Baldwin at 355 facts kept, Bentonville).
+  new truncation shape (Orange, Stroudsburg, Baldwin, Bentonville) — all of whose fact-bearing cases were later shown to be repetition LOOPS, not dropped tails (#812).
   **Review round #797-#811 hardening:** a truncated rep WITH facts is remedied on fact-count
   evidence, not zero-yield (#797 — the zero-yield gate catches refusals, which zero by
   construction, and structurally misses truncations, whose normal case is a partial): a 7→6 fires

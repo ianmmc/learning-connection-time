@@ -321,9 +321,15 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
                 "params": {"sent_file": sent, "sent_files": files_all.get(rec_key, []),
                            "alternate_reps": ranked, "council_degraded": True,
                            "partial_read": True},
-                "reason": (f"known-PARTIAL read: a voter's reply was TRUNCATED at the model window "
-                           f"— the {n_acc} accepted fact(s) are the head of the document, not "
-                           f"necessarily all of it; " + _alt_reason(sent, ranked))})
+                # #812: do NOT assert the shape of the loss — every truncation in the corpus so far
+                # was a degenerate repetition loop (one school repeated to the ceiling), not a
+                # dropped tail. Both are known-incomplete reads and both want the same action
+                # (re-route); claiming "the head of the document" would be false for the only
+                # population measured. Say what is KNOWN.
+                "reason": (f"INCOMPLETE read: a voter's reply was TRUNCATED at the model window, so "
+                           f"the {n_acc} accepted fact(s) are not known to be the whole document "
+                           f"(a dropped tail or a repetition loop, #812); "
+                           + _alt_reason(sent, ranked))})
             continue
         if no_fillable_gap:
             # #170/#176: every fillable band already covered (or none exists) — no barren-rep remedy
