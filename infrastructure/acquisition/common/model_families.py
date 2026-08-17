@@ -97,13 +97,19 @@ def usable_output(model_id: str, est_prompt_tokens: int) -> "int | None":
 # vocabulary, and the layering contract forbids the lower one importing the higher. Shared constant,
 # never a literal repeated across files (the #755 lesson).
 DEGRADED_REFUSED = "context_refused"     # the voter never answered — its window rejected the request
-DEGRADED_TRUNCATED = "window_truncated"  # the voter answered PARTIALLY — the tail schools are gone
+DEGRADED_TRUNCATED = "window_truncated"  # the voter answered PARTIALLY — some rows are missing
+DEGRADED_LOOPED = "degenerate_repetition"  # #812: the voter answered with ONE row over and over
 
 # #810: the precedence ("a refusal outranks a truncation — no answer at all is the stronger
 # statement about the council") is ONE rule in ONE place, next to the constants it orders. Both
 # consumers call `strongest_kind` rather than re-expressing the order in their own idiom — the #798
 # defect was exactly two sites defaulting an absent `kinds` in opposite directions.
-DEGRADED_PRECEDENCE = (DEGRADED_REFUSED, DEGRADED_TRUNCATED)   # strongest first
+# #812 slots LOOPED between them: a loop yields no usable content at all (strictly worse than a
+# partial read), but unlike a refusal the model did answer. It also outranks TRUNCATED because when
+# a call is both — and in this corpus every looped call IS truncated — the loop is the CAUSE and the
+# truncation merely the symptom of max_tokens stopping it; reporting "truncated" would point a human
+# at document size when the document is fine and the read is not.
+DEGRADED_PRECEDENCE = (DEGRADED_REFUSED, DEGRADED_LOOPED, DEGRADED_TRUNCATED)   # strongest first
 
 
 def strongest_kind(kinds) -> str:

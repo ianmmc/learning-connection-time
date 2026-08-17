@@ -178,3 +178,50 @@ silently discarded this very narrative, now guarded ledger-wide (#808) · a nigh
 detector for MODEL_WINDOWS (#809) · exact-value pins on both terms of the clamp's min() (#811).
 The batch-diff countermeasure held: #799 was this batch's own #785 shape caught crossing files,
 and #808 was the ledger's first parse-loss — both now have class-level guards, not spot fixes.
+
+## 6. #812 — the loop, found by measuring #794 (2026-08-16)
+
+Setting out to fix #794 (the school-count estimator) produced two findings that killed it and one
+that mattered more.
+
+**#794's fix was the wrong polarity.** Ground truth: `n_facts` per successful voter call — exactly
+how many rows a model emitted — over 918 text-rep observations. Under-prediction starves
+`max_tokens` and truncates; over-prediction is free (a ceiling billed on actual).
+
+| candidate | under-predicts | median over |
+|---|---|---|
+| `n_times/2` (today) | **56 / 918** | 5.0× |
+| `nces_school_count` (#794's proposed bound) | 82 / 918 | 9.0× |
+| `roster_school_names_hit` (#794's primary signal) | **570 / 918** | 0.4× |
+
+`roster_school_names_hit` counts matches against the *sampled* roster, so it can never exceed it.
+And the premise "a document can never imply more schools than the district has" is false: charter
+networks capture network-wide hubs — KIPP Durham `3700385` has `nces_school_count = 1` and **50
+accepted schools**. #794 closed `not planned`; its durable half (an honest school count needs a
+distinct-school-name counter no stored signal provides) moved to #795, which owns that mechanism.
+
+**Chasing the 56 under-predictions found the real defect.** They are not big rosters. Stroudsburg
+`4222860` — a SEVEN-school district — emitted 420 rows that are `MCTI` repeated 420 times. A sweep
+of all 2,340 fact-bearing calls found **6 with a distinct-row ratio ≤ 0.005, and they are exactly
+the 6 truncated-with-facts calls in the receipt store.** There is no genuine dropped-tail
+truncation anywhere in the corpus — which retroactively falsifies how §5 described Baldwin and
+Stroudsburg (corrected in place above).
+
+**The fix.** `parse.dedupe_identical` (unthresholded — identical rows carry no information and
+consensus already groups them) plus `parse.degenerate_repetition` (ratio ≤ 0.10 over ≥ 10 rows).
+The threshold is measured, not chosen: the corpus separates into 6 loops at ≤ 0.005 and a
+next-lowest real case at 0.143 (7 identical rows — redundant content faithfully read). Verified on
+the shipped receipts: **2,455 rows → 10 distinct, 0 false positives across 2,340 calls**, every one
+derived at zero spend from stored records. `DEGRADED_LOOPED` joins `DEGRADED_PRECEDENCE` between
+REFUSED and TRUNCATED — every looped call is also truncated, so the loop is the cause and the
+truncation the symptom, and reporting the symptom would point a human at document size when the
+document is fine.
+
+**P5 (mid-stream abort) deferred on measurement:** the entire population cost **$0.034** across 6
+calls. That does not justify an invasive change to the streaming client; the `max_tokens` ceiling
+is already functioning as the runaway brake. Revisit if the population grows.
+
+**The lesson:** #794 asserted a harm from a number nobody had checked against ground truth, and
+proposed a fix in the direction that would have caused the harm it described. The general form —
+*before fixing an estimator, measure it against what it estimates* — is the same discipline that
+overturned #691, #684, #719, #755 and #706's severity ranking, now on its seventh instance.

@@ -22,7 +22,8 @@ detection is still valid and is exactly how we test this logic against a known c
 """
 from __future__ import annotations
 
-from infrastructure.acquisition.common.model_families import DEGRADED_TRUNCATED, strongest_kind
+from infrastructure.acquisition.common.model_families import (
+    DEGRADED_LOOPED, DEGRADED_TRUNCATED, strongest_kind)
 
 BANDS = ("elementary", "middle", "high")
 
@@ -295,24 +296,32 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
     if explain is not None:
         explain["suppressed_degraded_reps"] = 0
         explain["suppressed_truncated_reps"] = 0
+        explain["suppressed_looped_reps"] = 0
     for rec_key, n_acc in _accepted_by_record(result).items():
         degraded = rec_key in degraded_kinds
-        truncated_only = degraded and strongest_kind(degraded_kinds[rec_key]) == DEGRADED_TRUNCATED
+        kind = strongest_kind(degraded_kinds[rec_key]) if degraded else None
+        looped = kind == DEGRADED_LOOPED
+        # #812: a loop is an INCOMPLETE-read shape too — the model answered with nothing usable —
+        # so it takes the same fact-count-evidence path as a truncation rather than the zero-yield
+        # gate. It is worded and counted apart because the ACTION differs: a looped document made
+        # the model repeat itself, so resizing is futile and only a different rep can help.
+        incomplete = kind in (DEGRADED_TRUNCATED, DEGRADED_LOOPED)
         if n_acc > 0:
-            # #797: a TRUNCATED rep with facts is a known-PARTIAL read. The zero-yield gate below
-            # catches refusals (zero by construction, cannot miss) and would miss truncations
-            # (a partial yield is their NORMAL case — Baldwin kept 355 facts from a cut reply).
+            # #797: an INCOMPLETE-read rep with facts is still incomplete. The zero-yield gate
+            # below catches refusals (zero by construction, cannot miss) and would miss these
+            # (a partial yield is their NORMAL case — Baldwin's cut reply carried 355 rows).
             # Fact count is not evidence of completeness here.
-            if not truncated_only:
+            if not incomplete:
                 continue
             ranked = rank_alternates(alternates_by_rec.get(rec_key) or [])
             if no_fillable_gap or not ranked:
                 # no fillable gap: nothing a remedy could add. No alternate: nothing at THIS
                 # altitude can help — recapturing the same URL re-reads the same document into the
                 # same window; the band-grain remedies pursue any gap. Either way the count keeps
-                # the run log honest that a completed-looking district rests on a partial read.
+                # the run log honest that a completed-looking district rests on an incomplete read.
                 if explain is not None:
-                    explain["suppressed_truncated_reps"] += 1
+                    explain["suppressed_looped_reps" if looped
+                            else "suppressed_truncated_reps"] += 1
                 continue
             sent = files.get(rec_key)
             reqs.append({
@@ -320,15 +329,21 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
                 "target": rec_key, "band": None,
                 "params": {"sent_file": sent, "sent_files": files_all.get(rec_key, []),
                            "alternate_reps": ranked, "council_degraded": True,
-                           "partial_read": True},
-                # #812: do NOT assert the shape of the loss — every truncation in the corpus so far
-                # was a degenerate repetition loop (one school repeated to the ceiling), not a
-                # dropped tail. Both are known-incomplete reads and both want the same action
-                # (re-route); claiming "the head of the document" would be false for the only
-                # population measured. Say what is KNOWN.
-                "reason": (f"INCOMPLETE read: a voter's reply was TRUNCATED at the model window, so "
-                           f"the {n_acc} accepted fact(s) are not known to be the whole document "
-                           f"(a dropped tail or a repetition loop, #812); "
+                           "partial_read": True,
+                           **({"degenerate_repetition": True} if looped else {})},
+                # #812: when the loop is DETECTED, say so — that is the actionable diagnosis (a
+                # bigger window buys more duplicates; only a different rep helps). When it is only
+                # a truncation, do NOT assert the shape of the loss: both a dropped tail and an
+                # undetected loop present this way, and claiming "the head of the document" would
+                # be false for the only population measured. Say what is KNOWN.
+                "reason": ((f"INCOMPLETE read: a voter fell into a REPETITION LOOP on this document "
+                            f"(one row emitted over and over until the window stopped it, #812) — "
+                            f"the {n_acc} accepted fact(s) are what survived de-duplication, and a "
+                            f"bigger window would only buy more duplicates; try another rep: "
+                            if looped else
+                            f"INCOMPLETE read: a voter's reply was TRUNCATED at the model window, "
+                            f"so the {n_acc} accepted fact(s) are not known to be the whole "
+                            f"document (a dropped tail or a repetition loop, #812); ")
                            + _alt_reason(sent, ranked))})
             continue
         if no_fillable_gap:
@@ -336,15 +351,19 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
             # can add claimed coverage. Non-emission by design: re-detection re-emits if coverage
             # regresses; `explain` carries the count so the run log isn't silent about it.
             if explain is not None:
-                explain["suppressed_truncated_reps" if truncated_only else
+                explain["suppressed_looped_reps" if looped else
+                        "suppressed_truncated_reps" if kind == DEGRADED_TRUNCATED else
                         "suppressed_degraded_reps" if degraded
                         else "suppressed_barren_reps"] += 1
             continue
         alts = alternates_by_rec.get(rec_key) or []
         sent = files.get(rec_key)
-        deg_note = (("council-degraded (a voter's reply was TRUNCATED at its context window — the "
-                     "read was partial, so this zero is NOT evidence the document is empty): "
-                     if truncated_only else
+        deg_note = (("council-degraded (a voter fell into a REPETITION LOOP on this rep, #812 — "
+                     "the zero says the model could not read it, NOT that it is empty): "
+                     if looped else
+                     "council-degraded (a voter's reply was TRUNCATED at its context window — the "
+                     "read was incomplete, so this zero is NOT evidence the document is empty): "
+                     if kind == DEGRADED_TRUNCATED else
                      "council-degraded (a voter's context window refused the rep — the zero is "
                      "NOT evidence the document is empty): ") if degraded else "")
         if alts:

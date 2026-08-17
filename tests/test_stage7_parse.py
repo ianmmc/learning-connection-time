@@ -141,3 +141,54 @@ def test_campus_names_scrubbed_in_salvage_path():
            '"school_name":"k8 schools","campus_names":["[SCHOOL NAME]","Ortiz MS"]}  TRUNCATED')
     out = parse_schedules(txt)
     assert out and out[0]["campus_names"] == ["Ortiz MS"]
+
+
+# --------------------------- #812: degenerate repetition ---------------------------
+from infrastructure.acquisition.stage7_extract import parse as _P   # noqa: E402
+
+
+def _row(name="MCTI", band="high", s="07:30", e="14:20"):
+    return {"school_name": name, "grade_level": band, "start_time": s, "end_time": e}
+
+
+class TestDegenerateRepetition:
+    def test_p1_stroudsburg_shape_is_a_loop_and_collapses_to_one(self):
+        """P1 (must fail before #812): Stroudsburg 4222860's stored call — 420 rows of `MCTI` in a
+        SEVEN-school district — is a loop, and its effective fact count is 1, not 420."""
+        raw = [_row() for _ in range(420)]
+        loop = _P.degenerate_repetition(raw)
+        assert loop and loop["n_rows"] == 420 and loop["n_distinct"] == 1
+        assert len(_P.dedupe_identical(raw)) == 1
+
+    def test_p3_a_real_roster_is_never_a_loop(self):
+        """P3: no genuine multi-school read may be misclassified — 200 distinct schools sharing
+        one bell time is a completely normal district table."""
+        roster = [_row(name=f"School {i}") for i in range(200)]
+        assert _P.degenerate_repetition(roster) is None
+        assert len(_P.dedupe_identical(roster)) == 200
+
+    def test_incidental_duplication_is_not_a_loop(self):
+        """The measured next-lowest case (7 identical rows, ratio 0.143): a document that repeats
+        a schedule is redundant content faithfully read, NOT a runaway. It still de-duplicates."""
+        rows = [_row() for _ in range(7)]
+        assert _P.degenerate_repetition(rows) is None
+        assert len(_P.dedupe_identical(rows)) == 1
+
+    def test_short_lists_never_trip_the_detector(self):
+        assert _P.degenerate_repetition([_row(), _row()]) is None
+        assert _P.degenerate_repetition([]) is None
+
+    def test_distinct_bands_of_one_campus_are_not_duplicates(self):
+        """A K-8 campus emitting an elementary AND a middle row is two facts, not a repeat —
+        grade_level is part of the identity."""
+        rows = [_row(name="Hamilton", band="elementary"), _row(name="Hamilton", band="middle")]
+        assert len(_P.dedupe_identical(rows)) == 2
+
+    def test_dedupe_keeps_first_occurrence_with_its_extra_fields(self):
+        a = {**_row(), "evidence": "page 3"}
+        out = _P.dedupe_identical([a, _row()])
+        assert out == [a]
+
+    def test_threshold_sits_between_the_two_measured_populations(self):
+        """The corpus separates cleanly: 6 loops at ratio <= 0.005, next real case at 0.143."""
+        assert 0.005 < _P.REPETITION_MAX_DISTINCT_RATIO < 0.143

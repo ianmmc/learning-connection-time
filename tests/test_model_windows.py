@@ -9,8 +9,8 @@ mistral tests are those receipts' verbatim shapes.
 import pytest
 
 from infrastructure.acquisition.common.model_families import (
-    DEGRADED_REFUSED, DEGRADED_TRUNCATED, FAMILY, MODEL_WINDOWS, WINDOW_MARGIN_TOKENS,
-    usable_output)
+    DEGRADED_LOOPED, DEGRADED_REFUSED, DEGRADED_TRUNCATED, FAMILY, MODEL_WINDOWS,
+    WINDOW_MARGIN_TOKENS, usable_output)
 from infrastructure.acquisition.stage7_extract import openrouter as OR
 from infrastructure.acquisition.process_governance.stage7_run import council_degraded
 
@@ -428,3 +428,66 @@ class TestStrongestKind:
         assert strongest_kind({}) == DEGRADED_REFUSED
         assert strongest_kind(None) == DEGRADED_REFUSED
         assert strongest_kind(["some_future_kind"]) == DEGRADED_REFUSED
+
+
+class TestLoopDegrades812:
+    """#812: a repetition loop is a THIRD degradation shape — the voter answered with one row over
+    and over. It outranks the truncation that stopped it (the loop is the cause, the truncation the
+    symptom), so a human is pointed at the read and not at document size."""
+
+    def _looped_call(self, model=GEMINI, rows=420, **kw):
+        fact = {"school_name": "MCTI", "grade_level": "high",
+                "start_time": "07:30", "end_time": "14:20"}
+        return {"model": model, "role": "voter", "ok": True, "error": None, "n_facts": rows,
+                "facts": [dict(fact) for _ in range(rows)], "finish_reason": "length", **kw}
+
+    def test_p1_loop_marks_and_outranks_its_truncation(self):
+        d = council_degraded([
+            {"model": MISTRAL, "role": "voter", "ok": True, "n_facts": 12, "finish_reason": "stop"},
+            self._looped_call(),
+        ])
+        assert d and d["kinds"] == {GEMINI: DEGRADED_LOOPED}      # not window_truncated
+        assert "repetition loop" in d["reasons"][GEMINI]
+
+    def test_p2_legacy_receipt_derives_the_loop_at_zero_spend(self):
+        """Old receipts store the RAW 420 rows and carry no marker — the classifier re-derives it
+        from `facts`, so the #716 replay backfills Stroudsburg/Baldwin without a model call."""
+        c = self._looped_call()
+        c.pop("degenerate_repetition", None)
+        assert council_degraded([c])["kinds"] == {GEMINI: DEGRADED_LOOPED}
+
+    def test_new_receipt_uses_the_stored_marker_over_deduped_facts(self):
+        """New receipts store DEDUPED facts (1 row) plus the marker — the stored marker must win,
+        or a looped rep would read clean the moment de-duplication started working."""
+        c = {"model": GEMINI, "role": "voter", "ok": True, "n_facts": 1,
+             "facts": [{"school_name": "MCTI", "grade_level": "high",
+                        "start_time": "07:30", "end_time": "14:20"}],
+             "finish_reason": "length",
+             "degenerate_repetition": {"n_rows": 420, "n_distinct": 1, "ratio": 0.0024}}
+        assert council_degraded([c])["kinds"] == {GEMINI: DEGRADED_LOOPED}
+
+    def test_refusal_still_outranks_a_loop(self):
+        d = council_degraded([
+            {"model": MISTRAL, "role": "voter", "ok": False, "error_kind": "context",
+             "error": "pre-flight"},
+            self._looped_call(model=MISTRAL),
+        ])
+        assert d["kinds"] == {MISTRAL: DEGRADED_REFUSED}
+
+    def test_a_looped_then_errored_call_is_still_a_loop(self):
+        """The salvage parser keeps partial content on a failed call, so a loop that then errored
+        transiently must still classify — the `ok` gate must not hide it."""
+        c = self._looped_call(ok=False, error_kind="transient", error="stream reset")
+        assert council_degraded([c])["kinds"] == {GEMINI: DEGRADED_LOOPED}
+
+    def test_a_judge_loop_never_marks(self):
+        c = self._looped_call(model="qwen/qwen3-235b-a22b-2507")
+        c["role"] = "judge"
+        assert council_degraded([c]) is None
+
+    def test_precedence_order_is_refused_looped_truncated(self):
+        from infrastructure.acquisition.common.model_families import (
+            DEGRADED_PRECEDENCE, strongest_kind)
+        assert DEGRADED_PRECEDENCE == (DEGRADED_REFUSED, DEGRADED_LOOPED, DEGRADED_TRUNCATED)
+        assert strongest_kind([DEGRADED_TRUNCATED, DEGRADED_LOOPED]) == DEGRADED_LOOPED
+        assert strongest_kind([DEGRADED_LOOPED, DEGRADED_REFUSED]) == DEGRADED_REFUSED
