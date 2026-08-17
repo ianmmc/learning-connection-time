@@ -284,6 +284,92 @@ def test_793_rep_with_both_shapes_reports_the_refusal():
     assert explain["suppressed_truncated_reps"] == 0
 
 
+# ------------- #797/#798/#799: the review round on #793's own wiring -------------
+def test_797_truncated_with_facts_emits_partial_read_remedy():
+    """#797: a truncated rep WITH facts is a known-PARTIAL read — Baldwin kept 355 facts and read
+    as clean. With a fillable gap and an unexhausted alternate, a 7->6 fires on fact-count
+    evidence, not zero-yield."""
+    rep = _degraded_rep(MF.DEGRADED_TRUNCATED)
+    rep["accepted"] = [{"band": "elementary", "school": f"s{i}"} for i in range(5)]
+    reqs = RQ.detect_requests(
+        _result(reps=[rep], accepted=rep["accepted"]), claimed_bands=[],
+        alternates_by_rec={"D1:x": [{"file": "pdftotext.txt", "kind": "text", "n_times": 90}]})
+    assert [r["route"] for r in reqs] == ["7->6"]
+    assert reqs[0]["params"]["partial_read"] is True
+    assert reqs[0]["params"]["council_degraded"] is True
+    assert "PARTIAL" in reqs[0]["reason"] and "TRUNCATED" in reqs[0]["reason"]
+
+
+def test_797_truncated_with_facts_all_covered_is_counted_not_silent():
+    """The filed scenario verbatim: all bands covered, facts present, truncated — before #797 this
+    produced zero remedies AND zero explain counts (the district read DONE-ENOUGH on a partial
+    roster). Now the suppression is at least counted."""
+    rep = _degraded_rep(MF.DEGRADED_TRUNCATED)
+    rep["accepted"] = [{"band": b, "school": f"s{b}"} for b in ("elementary", "middle", "high")]
+    explain = {}
+    reqs = RQ.detect_requests(
+        _result(reps=[rep], accepted=rep["accepted"]),
+        claimed_bands=["elementary", "middle", "high"],
+        real_bands={"elementary", "middle", "high"}, explain=explain)
+    assert reqs == []
+    assert explain["suppressed_truncated_reps"] == 1
+
+
+def test_797_truncated_with_facts_no_alternate_counts_not_recaptures():
+    """No alternate rep: recapturing the same URL re-reads the same document into the same window
+    — no 7->3 fires, but the partial read is counted, never silent."""
+    rep = _degraded_rep(MF.DEGRADED_TRUNCATED)
+    rep["accepted"] = [{"band": "elementary", "school": "s"}]
+    explain = {}
+    reqs = RQ.detect_requests(_result(reps=[rep], accepted=rep["accepted"]),
+                              claimed_bands=[], explain=explain)
+    assert reqs == []
+    assert explain["suppressed_truncated_reps"] == 1
+
+
+def test_797_refused_rep_with_facts_from_sibling_stays_quiet():
+    """The zero-yield gate is still the RIGHT gate for refusals: a refusal yields zero by
+    construction, so a record with facts got them from a complete surviving read — no remedy."""
+    rep = _degraded_rep(MF.DEGRADED_REFUSED)
+    rep["accepted"] = [{"band": "elementary", "school": "s"}]
+    explain = {}
+    reqs = RQ.detect_requests(_result(reps=[rep], accepted=rep["accepted"]),
+                              claimed_bands=[], explain=explain)
+    assert reqs == []
+    assert explain["suppressed_truncated_reps"] == 0
+
+
+def test_799_multi_rep_record_merges_kinds_refusal_wins():
+    """#799: two reps of ONE record — first refused, second truncated. Last-write-wins would call
+    the record 'truncated'; the merge must report the refusal (the stronger statement)."""
+    refused = _degraded_rep(MF.DEGRADED_REFUSED)
+    refused["file"] = "page.txt"
+    truncated = _degraded_rep(MF.DEGRADED_TRUNCATED)
+    truncated["file"] = "camelot_hybrid.txt"
+    explain = {}
+    reqs = RQ.detect_requests(_result(reps=[refused, truncated], accepted=[]),
+                              claimed_bands=[], explain=explain)
+    assert [r["route"] for r in reqs] == ["7->3"]
+    assert "refused" in reqs[0]["reason"]           # refusal wording, not 'TRUNCATED'
+    assert "TRUNCATED" not in reqs[0]["reason"]
+
+
+def test_798_marker_with_no_kinds_reads_as_refusal():
+    """#798: a marker with absent `kinds` (a receipt written between #709 and #793) must NOT be
+    vacuously worded as a truncation — the shared default is the stronger refusal."""
+    rep = {"rec_key": "D1:x", "file": "a.txt", "accepted": [],
+           "council_degraded": {"models": ["m"], "reasons": {"m": "…"}}}   # no 'kinds' at all
+    explain = {}
+    reqs = RQ.detect_requests(_result(reps=[rep], accepted=[]),
+                              claimed_bands=[], explain=explain)
+    assert [r["route"] for r in reqs] == ["7->3"]
+    assert "refused" in reqs[0]["reason"] and "TRUNCATED" not in reqs[0]["reason"]
+    explain2 = {}
+    RQ.detect_requests(_result(reps=[rep], accepted=[{"band": "elementary", "school": "e"}]),
+                       claimed_bands=["elementary"], real_bands={"elementary"}, explain=explain2)
+    assert explain2["suppressed_degraded_reps"] == 1    # counted as degraded, not truncated
+
+
 # --------------------------- #231: the request records its FULL send (round lineage) ---------------------------
 def test_7to6_params_record_all_sent_files_not_just_the_first():
     # One dispatch sent TWO reps of the same record, both barren. The single first-seen `sent_file`

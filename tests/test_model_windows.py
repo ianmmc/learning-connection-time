@@ -92,9 +92,39 @@ class TestCallClamp:
         mt = OR.size_max_tokens(1020)                        # the Orange sizing: 32,000
         assert mt == 32000
         OR.call(_body(MISTRAL, "x" * 13000), max_tokens=mt)  # ~4.3k est prompt tokens
-        assert sent["max_tokens"] <= 16384                   # the completion cap binds
+        # #811: the clamp is fully determined for this input — min(16_384, 32_768 - 4_334 - 512)
+        # = 16_384 exactly. `<=` passed for every OVER-aggressive regression too (a doubled
+        # margin, a clamp to MIN_USEFUL_OUTPUT, a clamp to 0) — each of which under-sizes and
+        # truncates the roster, #793's own harm, silently. Pin the value AND the invariant.
+        assert sent["max_tokens"] == 16384                   # the completion cap binds, exactly
         est = OR._est_prompt_tokens(_body(MISTRAL, "x" * 13000))
         assert est + sent["max_tokens"] <= 32768             # the 400 shape is unrepresentable
+
+    def test_p1_context_term_binds_exactly(self, monkeypatch):
+        """#811's second half: a prompt big enough that the CONTEXT term of the min() binds, not
+        max_out — pinned exactly, so neither term of the clamp can be dropped unnoticed (the old
+        assertion would have survived removing the context term entirely)."""
+        sent = {}
+        import openai
+
+        class _Completions:
+            def create(self, **kw):
+                sent.update(kw)
+                raise openai.APITimeoutError(request=None)
+
+        class _Chat:
+            completions = _Completions()
+
+        class _Client:
+            def __init__(self, *a, **k):
+                self.chat = _Chat()
+
+        monkeypatch.setattr(openai, "OpenAI", _Client)
+        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+        body = _body(MISTRAL, "x" * 90000)                   # exactly 30,000 est tokens
+        assert OR._est_prompt_tokens(body) == 30000
+        OR.call(body, max_tokens=32000)
+        assert sent["max_tokens"] == 32768 - 30000 - WINDOW_MARGIN_TOKENS   # context binds: 2,256
 
     def test_p2_preflight_refusal_costs_nothing(self, monkeypatch):
         """A prompt that (nearly) fills the window refuses BEFORE the network: no client is
@@ -250,3 +280,151 @@ class TestTruncationDegrades793:
         ])
         assert d["models"] == sorted([GEMINI, MISTRAL])
         assert set(d["kinds"].values()) == {DEGRADED_TRUNCATED}
+
+    def test_802_present_transient_error_kind_is_authoritative(self):
+        """#802: the text markers are the FALLBACK for legacy receipts, never an override — a call
+        authoritatively classified 'transient' whose message merely echoes window metadata (a
+        timeout string quoting request params) must NOT mark the council degraded."""
+        assert council_degraded([
+            {"model": MISTRAL, "role": "voter", "ok": False, "error_kind": "transient",
+             "error": "upstream timeout while streaming (model context window: 32768)"},
+        ]) is None
+        # and the fallback still works when error_kind is ABSENT (a legacy receipt)
+        d = council_degraded([
+            {"model": MISTRAL, "role": "voter", "ok": False,
+             "error": "maximum context length is 32768 tokens"},
+        ])
+        assert d and d["kinds"] == {MISTRAL: DEGRADED_REFUSED}
+
+
+class TestClassifyAndEstimate:
+    def test_803_midstream_context_error_classifies_structural(self, monkeypatch):
+        """#803: a provider that rejects on context AFTER the stream opens (mid-stream SSE error
+        event) classifies 'context' via the same ONE rule as the HTTP-400 branch."""
+        import os
+        from types import SimpleNamespace as NS
+        import openai
+
+        def _chunks():
+            yield NS(id="gen-1", usage=None,
+                     model_extra={"error": {"message": "maximum context length exceeded"}},
+                     choices=[])
+
+        class _C:
+            def create(self, **kw):
+                return _chunks()
+
+        class _Client:
+            def __init__(self, *a, **k):
+                self.chat = NS(completions=_C())
+
+        monkeypatch.setattr(openai, "OpenAI", _Client)
+        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+        res = OR.call(_body(MISTRAL, "small"))
+        assert not res.ok and res.error_kind == "context"
+
+    def test_803_midstream_ordinary_error_stays_transient(self, monkeypatch):
+        from types import SimpleNamespace as NS
+        import openai
+
+        def _chunks():
+            yield NS(id="gen-1", usage=None,
+                     model_extra={"error": {"message": "upstream disconnected"}}, choices=[])
+
+        class _C:
+            def create(self, **kw):
+                return _chunks()
+
+        class _Client:
+            def __init__(self, *a, **k):
+                self.chat = NS(completions=_C())
+
+        monkeypatch.setattr(openai, "OpenAI", _Client)
+        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+        res = OR.call(_body(MISTRAL, "small"))
+        assert not res.ok and res.error_kind == "transient"
+
+    def test_classify_error_gates_http_status_on_400(self):
+        """A 500 whose message echoes window metadata stays transient; only a 400 (or a
+        status-less mid-stream event) can classify structural."""
+        assert OR.classify_error(500, "maximum context length is 32768") == "transient"
+        assert OR.classify_error(400, "maximum context length is 32768") == "context"
+        assert OR.classify_error(None, "maximum context length is 32768") == "context"
+        assert OR.classify_error(400, "invalid role in message 3") == "transient"
+
+    def test_805_image_parts_cost_prompt_tokens(self):
+        """#805: an image part is real prompt-side context — counting it zero made the clamp and
+        pre-flight refusal inert for the whole vision tier."""
+        text_only = _body(MISTRAL, "x" * 3000)
+        with_img = {"model": MISTRAL, "messages": [{"role": "user", "content": [
+            {"type": "text", "text": "x" * 3000},
+            {"type": "image_url", "image_url": {"url": "data:image/png;base64,AAAA"}},
+        ]}]}
+        base = OR._est_prompt_tokens(text_only)
+        assert OR._est_prompt_tokens(with_img) == base + OR.IMAGE_PART_EST_TOKENS
+
+    def test_805_many_images_can_trip_preflight(self, monkeypatch):
+        """Enough image parts must be able to fill a small window — the refusal fires with no
+        client ever constructed (the vision-shaped case #805 said nothing tested)."""
+        import openai
+
+        def _boom(*a, **k):
+            raise AssertionError("client constructed — image prompt should refuse pre-flight")
+
+        monkeypatch.setattr(openai, "OpenAI", _boom)
+        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+        n = (MODEL_WINDOWS[MISTRAL]["context"] // OR.IMAGE_PART_EST_TOKENS) + 1
+        body = {"model": MISTRAL, "messages": [{"role": "user", "content": [
+            {"type": "image_url", "image_url": {"url": "data:image/png;base64,AA"}}] * n}]}
+        res = OR.call(body)
+        assert not res.ok and res.error_kind == "context"
+
+    def test_806_preflight_refusal_is_not_billed(self, monkeypatch):
+        import openai
+        monkeypatch.setattr(openai, "OpenAI",
+                            lambda *a, **k: (_ for _ in ()).throw(AssertionError("no client")))
+        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+        res = OR.call(_body(MISTRAL, "x" * 105000))
+        assert not res.ok and res.error_kind == "context"
+        assert res.was_billed is False
+        # a provider 400 DID reach the provider — was_billed stays True (latency > 0)
+        billed = OR.CallResult(model=MISTRAL, ok=False, error_kind="context",
+                               error="400", latency_ms=120)
+        assert billed.was_billed is True
+
+    def test_801_max_tokens_sent_rides_the_result(self, monkeypatch):
+        """#801: the run log reports the ceiling ACTUALLY sent (per-model), not the global
+        constant — the value must ride the CallResult for the call record to carry it."""
+        from types import SimpleNamespace as NS
+        import openai
+
+        def _chunks():
+            yield NS(id="g", usage=NS(prompt_tokens=10, completion_tokens=16384, cost=0.01),
+                     model_extra={},
+                     choices=[NS(delta=NS(content="x"), finish_reason="length")])
+
+        class _C:
+            def create(self, **kw):
+                return _chunks()
+
+        class _Client:
+            def __init__(self, *a, **k):
+                self.chat = NS(completions=_C())
+
+        monkeypatch.setattr(openai, "OpenAI", _Client)
+        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+        res = OR.call(_body(MISTRAL, "x" * 13000), max_tokens=32000)
+        assert res.max_tokens_sent == 16384         # the clamp's cap, not the requested 32,000
+
+
+class TestStrongestKind:
+    def test_precedence_and_defaults(self):
+        from infrastructure.acquisition.common.model_families import strongest_kind
+        assert strongest_kind([DEGRADED_TRUNCATED]) == DEGRADED_TRUNCATED
+        assert strongest_kind([DEGRADED_TRUNCATED, DEGRADED_REFUSED]) == DEGRADED_REFUSED
+        assert strongest_kind({"m": DEGRADED_TRUNCATED}) == DEGRADED_TRUNCATED
+        # #798: absent/empty kinds (receipts between #709 and #793) default to the STRONGEST —
+        # under-claiming a refusal as a truncation is the misdirection #793 exists to prevent
+        assert strongest_kind({}) == DEGRADED_REFUSED
+        assert strongest_kind(None) == DEGRADED_REFUSED
+        assert strongest_kind(["some_future_kind"]) == DEGRADED_REFUSED

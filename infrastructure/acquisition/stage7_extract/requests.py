@@ -22,7 +22,7 @@ detection is still valid and is exactly how we test this logic against a known c
 """
 from __future__ import annotations
 
-from infrastructure.acquisition.common.model_families import DEGRADED_REFUSED
+from infrastructure.acquisition.common.model_families import DEGRADED_TRUNCATED, strongest_kind
 
 BANDS = ("elementary", "middle", "high")
 
@@ -282,18 +282,49 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
     # #793: `window_truncated` is the second degradation shape — the voter ANSWERED, but only
     # partway. It is counted and worded apart from a refusal because the two mislead differently:
     # a refusal invites "the document was empty", a truncation invites "that was the whole roster".
-    degraded_recs = {rep["rec_key"]: (rep["council_degraded"].get("kinds") or {})
-                     for rep in result.get("reps", []) if rep.get("council_degraded")}
+    # #799: a record can send SEVERAL reps in one dispatch (see the module docstring), so kinds are
+    # MERGED across all of a record's markers, never last-write-wins (the #785 shape: a dict
+    # comprehension on a non-unique key silently discarding a sibling). #798/#810: which kind wins —
+    # and what an absent/empty `kinds` means — is `strongest_kind`'s ONE decision in the base layer,
+    # not re-expressed here in a second idiom.
+    degraded_kinds: dict = {}
+    for rep in result.get("reps", []):
+        if rep.get("council_degraded"):
+            degraded_kinds.setdefault(rep["rec_key"], []).extend(
+                (rep["council_degraded"].get("kinds") or {}).values())
     if explain is not None:
         explain["suppressed_degraded_reps"] = 0
         explain["suppressed_truncated_reps"] = 0
     for rec_key, n_acc in _accepted_by_record(result).items():
+        degraded = rec_key in degraded_kinds
+        truncated_only = degraded and strongest_kind(degraded_kinds[rec_key]) == DEGRADED_TRUNCATED
         if n_acc > 0:
+            # #797: a TRUNCATED rep with facts is a known-PARTIAL read. The zero-yield gate below
+            # catches refusals (zero by construction, cannot miss) and would miss truncations
+            # (a partial yield is their NORMAL case — Baldwin kept 355 facts from a cut reply).
+            # Fact count is not evidence of completeness here.
+            if not truncated_only:
+                continue
+            ranked = rank_alternates(alternates_by_rec.get(rec_key) or [])
+            if no_fillable_gap or not ranked:
+                # no fillable gap: nothing a remedy could add. No alternate: nothing at THIS
+                # altitude can help — recapturing the same URL re-reads the same document into the
+                # same window; the band-grain remedies pursue any gap. Either way the count keeps
+                # the run log honest that a completed-looking district rests on a partial read.
+                if explain is not None:
+                    explain["suppressed_truncated_reps"] += 1
+                continue
+            sent = files.get(rec_key)
+            reqs.append({
+                "district_id": did, "altitude": "representation", "route": ROUTE_ALT_REP,
+                "target": rec_key, "band": None,
+                "params": {"sent_file": sent, "sent_files": files_all.get(rec_key, []),
+                           "alternate_reps": ranked, "council_degraded": True,
+                           "partial_read": True},
+                "reason": (f"known-PARTIAL read: a voter's reply was TRUNCATED at the model window "
+                           f"— the {n_acc} accepted fact(s) are the head of the document, not "
+                           f"necessarily all of it; " + _alt_reason(sent, ranked))})
             continue
-        kinds = degraded_recs.get(rec_key)
-        degraded = kinds is not None
-        # a rep carrying BOTH shapes counts as refused — the stronger statement about the council.
-        truncated_only = degraded and DEGRADED_REFUSED not in set(kinds.values())
         if no_fillable_gap:
             # #170/#176: every fillable band already covered (or none exists) — no barren-rep remedy
             # can add claimed coverage. Non-emission by design: re-detection re-emits if coverage

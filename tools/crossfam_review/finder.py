@@ -44,7 +44,12 @@ class FinderResult:
 
 def _settle_cost(model: Model, res: OR.CallResult, estimate: float) -> float:
     """Prefer OpenRouter's billed cost; fall back to computing it from returned token counts; last
-    resort the pre-call estimate. Never under-count."""
+    resort the pre-call estimate. Never under-count A BILLED CALL — but a pre-flight context
+    refusal (#714) never reached the provider at all, and booking it at the estimate would halt a
+    run on budget that was never spent (#806). `was_billed` is the ONE shared definition of that
+    shape."""
+    if not res.was_billed:
+        return 0.0
     if res.cost_usd is not None:
         return float(res.cost_usd)
     if res.prompt_tokens or res.completion_tokens:

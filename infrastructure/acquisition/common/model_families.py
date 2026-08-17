@@ -57,7 +57,11 @@ def is_vision_capable(model_id: str) -> bool:
 # The 2026-08-16 fetch falsified MAX_TOKENS_CEILING's premise for THREE of these (mistral-small
 # 16,384 completion AND 32,768 TOTAL context; the low-cost-text judge qwen3-235b 16,384) — the
 # Orange/Memphis 400s (#714/#709). `tests/test_model_windows.py` pins this dict's key-set to
-# FAMILY's, so a model can't join the catalog without its windows.
+# FAMILY's, so a model can't join the catalog without its windows. #809: the hand-refreshed
+# snapshot needs a DETECTOR for the staleness it accepts (the premise above went stale silently
+# once already) — `tests/test_model_windows_integration.py` re-fetches nightly/locally and fails
+# with "refresh the catalog" on any value drift. Bump MODEL_WINDOWS_FETCHED with every refresh.
+MODEL_WINDOWS_FETCHED = "2026-08-16"
 MODEL_WINDOWS = {
     "google/gemini-2.5-flash": {"context": 1_048_576, "max_out": 65_535},
     "google/gemini-2.5-flash-lite": {"context": 1_048_576, "max_out": 65_535},
@@ -94,6 +98,26 @@ def usable_output(model_id: str, est_prompt_tokens: int) -> "int | None":
 # never a literal repeated across files (the #755 lesson).
 DEGRADED_REFUSED = "context_refused"     # the voter never answered — its window rejected the request
 DEGRADED_TRUNCATED = "window_truncated"  # the voter answered PARTIALLY — the tail schools are gone
+
+# #810: the precedence ("a refusal outranks a truncation — no answer at all is the stronger
+# statement about the council") is ONE rule in ONE place, next to the constants it orders. Both
+# consumers call `strongest_kind` rather than re-expressing the order in their own idiom — the #798
+# defect was exactly two sites defaulting an absent `kinds` in opposite directions.
+DEGRADED_PRECEDENCE = (DEGRADED_REFUSED, DEGRADED_TRUNCATED)   # strongest first
+
+
+def strongest_kind(kinds) -> str:
+    """The strongest degradation kind present in `kinds` (an iterable of kind strings, or a
+    {model: kind} dict whose values are read). A marker with an absent/empty `kinds` — receipts
+    written between #709 and #793, or a hand-built marker — defaults to the STRONGEST
+    (`context_refused`): under-claiming a refusal as a truncation invites 'that was the whole
+    roster', the exact misdirection #793 exists to prevent. An unknown kind string also defaults
+    strongest, for the same fail-honest reason."""
+    vals = set(kinds.values() if isinstance(kinds, dict) else (kinds or ()))
+    for k in DEGRADED_PRECEDENCE:
+        if k in vals:
+            return k
+    return DEGRADED_PRECEDENCE[0]
 
 # Provider-prefix aliases for the fallback: OpenRouter's prefix is sometimes NOT the family bucket we
 # catalog under ("mistralai/..." models are family "mistral"). Without this a catalogued Mistral

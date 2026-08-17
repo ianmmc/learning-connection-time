@@ -4592,6 +4592,12 @@ requirements:
         suppressed_truncated_reps beside suppressed_degraded_reps, and the remedy says the read was
         PARTIAL rather than the document empty"
     notes: |
+      MODEL_WINDOWS is checked in (fetched 2026-08-16), not fetched at runtime — sizing must be
+      deterministic and test-visible; refresh command in the module. The windows fetch falsified
+      MAX_TOKENS_CEILING's premise for 3 of 7 catalogued models. (#808: this paragraph and the one
+      below were briefly two duplicate `notes:` keys — YAML silently keeps only the LAST duplicate,
+      so the whole #793 narrative vanished at parse time; tests/test_requirements_yaml_hygiene.py
+      now rejects duplicate mapping keys ledger-wide.)
       #793 (2026-08-16) closed the hole this requirement's own clamp opened. P1's clamp is right, but
       on the Orange shape it converted a provider 400 (loud, error_kind='context', marked) into a
       SUCCESSFUL truncated reply (ok=True, finish_reason='length', unmarked) — a partial roster that
@@ -4605,13 +4611,28 @@ requirements:
       from a truncated reply — and Bentonville 0503060).
       Known nuance, deliberately unchanged here: the marker fires on a lost VOTER even when a
       third-family judge covered the gap (Broward 1200180 accepted 201 facts via method='judge' with
-      mistral refused). That is honest — a voter WAS lost — and harmless, since degraded remedies only
-      fire on zero-yield records. Whether gate@8 should distinguish "degraded but judge-covered" is a
-      surface question for #775.
+      mistral refused). That is honest — a voter WAS lost — and harmless. Whether gate@8 should
+      distinguish "degraded but judge-covered" is a surface question for #775.
+      Review round #797-#811 (2026-08-16, all 15 confirmed real): the biggest was #797 — degraded
+      remedies were gated on zero-yield, which catches refusals (zero by construction) and MISSES
+      truncations (partial is their normal case; Baldwin's 355-fact partial earned no remedy and no
+      count). A truncated rep with facts now fires a 7->6 on fact-count evidence when a gap + an
+      alternate exist, else is counted in explain — never silent. #798/#799/#810: which kind wins,
+      what absent kinds mean, and the per-record merge across multiple reps are ONE shared helper
+      (model_families.strongest_kind; absent defaults to the STRONGER refusal). #800: the replay now
+      runs detect_and_persist_requests (idempotent via #234's dedup) so a replay-derived marker
+      produces its remedy. #801: run-log lines report the per-model cap actually sent
+      (CallResult.max_tokens_sent), not the global 32k constant. #802: a present error_kind is
+      authoritative; text markers are fallback-only. #803: mid-stream SSE errors classify through
+      the same ONE rule (openrouter.classify_error, status-gated to 400/None). #804: the per-rep
+      except branch attaches the marker too. #805: image parts cost IMAGE_PART_EST_TOKENS in the
+      prompt estimate (zero made the clamp inert for the vision tier). #806: a pre-flight refusal
+      is not billed (CallResult.was_billed; crossfam SpendGuard books $0). #807: the new explain
+      counters print in the run log. #808: the duplicate-notes-key parse loss, guarded ledger-wide
+      by tests/test_requirements_yaml_hygiene.py. #809: nightly value-drift detector
+      (tests/test_model_windows_integration.py) + MODEL_WINDOWS_FETCHED. #811: the P1 clamp test
+      pins exact values for BOTH terms of the min().
     tests:
       - "tests/test_model_windows.py (catalog parity, clamp, pre-flight, classification, both marker shapes)"
       - "tests/test_stage7_requests.py (truncated vs degraded vs barren explain split + remedy wording)"
     depends_on: [REQ-051, REQ-056, REQ-117]
-    notes: "MODEL_WINDOWS is checked in (fetched 2026-08-16), not fetched at runtime — sizing must
-      be deterministic and test-visible; refresh command in the module. The windows fetch falsified
-      MAX_TOKENS_CEILING's premise for 3 of 7 catalogued models."

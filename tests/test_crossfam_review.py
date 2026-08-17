@@ -191,6 +191,7 @@ class _FakeCall:
         self.completion_tokens = 50
         self.finish_reason = finish_reason
         self.error = None
+        self.was_billed = True   # #806: a fake that returned content "reached the provider"
 
 
 def test_run_finder_stamps_and_settles(monkeypatch, tmp_path):

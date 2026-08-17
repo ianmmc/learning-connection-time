@@ -41,6 +41,9 @@ _GRANDFATHERED = {
     # legitimate pure-filesystem fitness functions — same shape as test_arch_manifest.py, nothing
     # production-Python to import (test_ci_workflows.py scans .github/workflows/*.yml, not infra code)
     "test_suite_hygiene.py", "test_ci_workflows.py",
+    # test_requirements_yaml_hygiene.py (#808) parses docs/REQUIREMENTS.yaml with a strict loader —
+    # a ledger fitness function; there is no production module to import (the ledger IS the artifact)
+    "test_requirements_yaml_hygiene.py",
     # test_one_home_fitness.py (#650) scans acquisition + tests SOURCE for re-spelled rules — it must
     # NOT import the modules it polices (importing would prove nothing about their text, and the
     # policed set includes test files). Same shape as test_arch_manifest.py.

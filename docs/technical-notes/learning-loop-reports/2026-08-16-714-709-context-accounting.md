@@ -147,3 +147,26 @@ harmless (degraded remedies only fire on zero-yield records). Whether gate@8 sho
 checked for whether it removed the failure or only its **visibility**. The clamp was justified as
 "the 400 shape becomes unrepresentable" — true, and the reason the 400 stopped appearing was that
 the same event now succeeded quietly.
+
+**2026-08-16 (review round #797-#811) — 15 findings on this branch, all 15 confirmed real, all
+fixed before merge.** The headline (#797) was #793's own fix repeating #793's mistake one level
+up: the truncation marker landed, but remedies consulted it only on the ZERO-YIELD path — a gate
+that catches refusals (zero by construction) and structurally misses truncations (partial is
+their normal case). Baldwin's 355-fact partial was marked and then ignored: no remedy, no count,
+district reads DONE-ENOUGH. Fixed by remedying `window_truncated` on fact-count evidence (7→6
+when a gap + alternate exist; counted in `explain` otherwise). Three findings (#798/#799/#810)
+were one defect family — the refusal-outranks-truncation rule and the absent-`kinds` default
+expressed in two idioms at two grains — collapsed into `model_families.strongest_kind` (absent
+defaults to the STRONGER refusal; per-record kinds merge across ALL of a record's reps, never
+last-write-wins, the #785 shape again). #800: the zero-spend replay derived markers that changed
+nothing downstream — `reaggregate` now runs `detect_and_persist_requests` (idempotent, #234
+dedup, production-only per #148). The rest: per-model cap in the run-log truncation lines via
+`CallResult.max_tokens_sent` (#801) · `error_kind` authoritative over text markers (#802) ·
+mid-stream SSE errors classify through the shared `classify_error` (#803) · the per-rep except
+branch attaches the marker (#804) · image parts cost `IMAGE_PART_EST_TOKENS` so the clamp isn't
+inert for vision (#805) · `CallResult.was_billed` stops crossfam booking $0 refusals at estimate
+(#806) · the new `explain` counters print (#807) · the REQ-174 duplicate-`notes:` YAML key that
+silently discarded this very narrative, now guarded ledger-wide (#808) · a nightly value-drift
+detector for MODEL_WINDOWS (#809) · exact-value pins on both terms of the clamp's min() (#811).
+The batch-diff countermeasure held: #799 was this batch's own #785 shape caught crossing files,
+and #808 was the ledger's first parse-loss — both now have class-level guards, not spot fixes.

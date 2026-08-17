@@ -79,6 +79,25 @@ _EST_CHARS_PER_TOKEN = 3
 # OpenRouter/Mistral: "This endpoint's maximum context length is 32768 tokens. However, you
 # requested ...". Matched case-insensitively on stable substrings, not exact text.
 CONTEXT_ERROR_MARKERS = ("maximum context length", "context length", "context window")
+# #805: an image part carries NO text but is real prompt-side context at the provider (tiled at
+# ~hundreds-to-low-thousands of tokens per image). A crude constant beats the zero it replaced —
+# zero made the clamp and pre-flight refusal INERT for the whole vision tier, failing silently the
+# day a narrow-window vision model joins the catalog. Conservative-high, matching the estimator's
+# deliberate overestimation bias.
+IMAGE_PART_EST_TOKENS = 1600
+
+
+def classify_error(status: "int | None", message: str) -> str:
+    """'context' when a provider error says the model window was exceeded (structural — retrying
+    the identical request fails identically), else 'transient'. ONE rule for every error path
+    (#803: the mid-stream SSE branch used to hardcode 'transient', so a provider that rejects on
+    context AFTER the stream opens dodged #709's whole classification). An HTTP status, when
+    present, must be 400 — a 500/timeout whose message merely echoes window metadata stays
+    transient; a mid-stream error event has no status (None) and the markers alone decide."""
+    if status is not None and status != 400:
+        return "transient"
+    return ("context" if any(mk in (message or "").lower() for mk in CONTEXT_ERROR_MARKERS)
+            else "transient")
 
 # App attribution (optional per the docs; identifies the app on openrouter.ai rankings/activity).
 ATTRIBUTION_HEADERS = {
@@ -90,19 +109,25 @@ ATTRIBUTION_HEADERS = {
 def _est_prompt_tokens(request_body: dict) -> int:
     """Conservative prompt-size estimate for the pre-flight window clamp (#714): total message
     content chars / 3 (real English runs ~3.5-4 chars/token, so this OVERestimates — the clamp
-    errs small, never toward a 400). Image parts (list content) count their textual pieces only;
-    the base64 payload is not completion-window-relevant the way text tokens are, and the image
-    models' windows dwarf the margin anyway."""
+    errs small, never toward a 400). An image part (#805) counts IMAGE_PART_EST_TOKENS — images are
+    real prompt-side context at the provider (tiled), and counting them zero made the clamp inert
+    for the whole vision tier. The base64 length itself is NOT the estimate (base64 chars are not
+    tokens); a flat conservative constant keeps the overestimation bias."""
     total = 0
+    images = 0
     for m in request_body.get("messages") or []:
         c = m.get("content")
         if isinstance(c, str):
             total += len(c)
         elif isinstance(c, list):                      # multimodal parts
             for part in c:
-                if isinstance(part, dict) and isinstance(part.get("text"), str):
+                if not isinstance(part, dict):
+                    continue
+                if isinstance(part.get("text"), str):
                     total += len(part["text"])
-    return math.ceil(total / _EST_CHARS_PER_TOKEN)
+                elif part.get("type") == "image_url" or "image_url" in part:
+                    images += 1
+    return math.ceil(total / _EST_CHARS_PER_TOKEN) + images * IMAGE_PART_EST_TOKENS
 
 
 def size_max_tokens(n_times: Optional[int]) -> int:
@@ -145,12 +170,24 @@ class CallResult:
     #                                      GET /api/v1/generation (fallback cost/stats + support)
     truncation_retried: bool = False     # #169: this call was re-run once at MAX_TOKENS_CEILING
     #                                      after a first truncated reply (recovery attempt; the tail)
+    max_tokens_sent: int = 0             # #801: the max_tokens the FINAL attempt actually sent
+    #                                      (post-clamp, post-retry) — the effective ceiling the run
+    #                                      log must report; the global constant may be double it
 
     @property
     def truncated(self) -> bool:
         """The reply was cut by max_tokens — the tail of a multi-school JSON is GONE (the salvage
         parser keeps the head silently, so this flag is the only honest signal)."""
         return self.finish_reason == "length"
+
+    @property
+    def was_billed(self) -> bool:
+        """Did this call reach the provider at all? A pre-flight context refusal (#714) never
+        constructs a client — no request, no bill. ONE definition for every cost-settling site
+        (#806: crossfam's SpendGuard booked a $0 refusal at its full pre-call estimate)."""
+        return not (self.error_kind == "context"
+                    and not self.prompt_tokens and not self.completion_tokens
+                    and self.cost_usd is None and self.latency_ms == 0)
 
 
 @functools.lru_cache(maxsize=8)
@@ -271,26 +308,31 @@ def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DE
             # identically, and a voter lost to it makes cross-family consensus impossible by
             # construction. Classified apart from 'transient' so the rep can be marked degraded.
             msg = str(e)
-            kind = ("context" if status == 400
-                    and any(mk in msg.lower() for mk in CONTEXT_ERROR_MARKERS) else "transient")
             return CallResult(model=model, ok=False, content="".join(parts), latency_ms=_ms(t0),
-                              error=msg, error_kind=kind, generation_id=gen_id)
+                              error=msg, error_kind=classify_error(status, msg),
+                              generation_id=gen_id, max_tokens_sent=mt)
         except (openai.APITimeoutError, openai.APIConnectionError) as e:
             return CallResult(model=model, ok=False, content="".join(parts), latency_ms=_ms(t0),
-                              error=str(e), error_kind="transient", generation_id=gen_id)
+                              error=str(e), error_kind="transient", generation_id=gen_id,
+                              max_tokens_sent=mt)
         except Exception as e:  # noqa: BLE001 — any other SDK/parse error is a per-call miss, not a halt
             return CallResult(model=model, ok=False, content="".join(parts), latency_ms=_ms(t0),
-                              error=str(e), error_kind="other", generation_id=gen_id)
+                              error=str(e), error_kind="other", generation_id=gen_id,
+                              max_tokens_sent=mt)
 
         common = dict(
             model=model, content="".join(parts),
             prompt_tokens=(getattr(usage, "prompt_tokens", 0) or 0) if usage else 0,
             completion_tokens=(getattr(usage, "completion_tokens", 0) or 0) if usage else 0,
             cost_usd=_usage_cost(usage), latency_ms=_ms(t0), finish_reason=finish,
-            generation_id=gen_id)
+            generation_id=gen_id, max_tokens_sent=mt)
         if mid_err or finish == "error":
             msg = (mid_err or {}).get("message") if isinstance(mid_err, dict) else str(mid_err or "stream error")
-            return CallResult(ok=False, error=f"mid-stream: {msg}", error_kind="transient", **common)
+            # #803: a provider can reject on context AFTER the stream opens (the router accepted,
+            # the upstream model refused). Same ONE classification rule as the HTTP-400 branch —
+            # hardcoding 'transient' here was the one error path #709's marker could not reach.
+            return CallResult(ok=False, error=f"mid-stream: {msg}",
+                              error_kind=classify_error(None, msg), **common)
         return CallResult(ok=True, **common)
 
     res = _stream_once(max_tokens)
@@ -314,4 +356,7 @@ def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DE
     keep.completion_tokens = (res.completion_tokens or 0) + (retry.completion_tokens or 0)
     keep.cost_usd = _sum_cost(res.cost_usd, retry.cost_usd)
     keep.latency_ms = res.latency_ms + retry.latency_ms
+    # #801: the ceiling worth reporting is the highest actually attempted (the retry's), whichever
+    # attempt's content survived — "still truncated at N" must name the N that was really sent.
+    keep.max_tokens_sent = max(res.max_tokens_sent, retry.max_tokens_sent)
     return keep
