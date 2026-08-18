@@ -273,7 +273,27 @@ DB table above gets exactly one git-tracked JSON twin, swept into every commit b
 This is a good machine-checkable ground-truth table for a future audit: `TRACKED_BACKUPS` (`common/paths.py`)
 and the `PRECIOUS_BACKUPS` array in `.githooks/pre-commit` should always be the same 12 paths — a drift
 between them means a precious table's export either never got wired to the hook or got wired without
-registering in `TRACKED_BACKUPS` (which also governs pytest's export quarantine, `guard_tracked_backup`).
+registering in `TRACKED_BACKUPS` (which also governs the export quarantine, `guard_tracked_backup`).
+
+**The twins are regenerated ONLY from the canonical `governance` database (REQ-176).** Every exporter
+rebuilds its twin *wholesale* from the connected DB's log — so a process pointed at any other database
+writes a file describing a different world. Cloning the DB does **not** isolate these files: they live on
+disk and know nothing about which database was chosen. A scratch console on a `TEMPLATE governance` clone
+will faithfully record its throwaway drafts into `district_status.json`; a scratch server on an *empty*
+governance DB would regenerate all twelve twins as `{}` — measured, the tracked status file holds 175
+districts and an empty-DB export produces 0. That is data loss on precious state, reachable through a
+workflow this project actively recommends (scratch servers on `:8015`).
+
+So `guard_tracked_backup` quarantines a tracked export under **either** of two causes — the process is
+under pytest, or it is connected to a non-canonical DB — with a one-time note naming the reason. The two
+causes are the same *harm* (a twin regenerated from state that is not the real world), and a guard aimed at
+only one cause of a harm leaves the others open; the pytest guard already existed and did not fire on the
+clone. It **redirects rather than raises**, deliberately: scratch verification keeps working end to end,
+which is what makes a guard something people leave switched on. Canonical identity is defined once, in
+`db.is_canonical_target()`, read from the *resolved* URL (parsed, not string-split — `…/governance?sslmode=require`
+is canonical) so the `GOVERNANCE_DATABASE_URL` override cannot bypass it and `paths` never re-derives it.
+**Seeing the quarantine line while running against a clone is the guard working; not seeing it is the
+moment to stop and check `git status data/acquisition/`.**
 
 ---
 
@@ -1950,29 +1970,66 @@ the document was empty or the council could not read it. Wording that guesses is
 it is the thing a human acts on at gate@7 to choose a re-route, so a wrong guess sends real spend in the
 wrong direction.
 
-### 14a. The three degradation kinds — one vocabulary, one precedence
+### 14a. The four degradation kinds — one vocabulary, one precedence, one fold
 
-A rep records `council_degraded` when a **voter** (never the judge — voters carry REQ-056 cross-family
-consensus) was structurally lost:
+A rep is degraded when the council could not have read it whole. That has two sources, kept
+distinct because they are known at different moments:
 
-| kind | what happened | what it is NOT evidence of |
-|---|---|---|
-| `context_refused` | the call never answered — refused pre-flight, or a provider context-length 400 | the document being empty |
-| `degenerate_repetition` | the reply was one row repeated until something stopped it | the document being large |
-| `window_truncated` | the reply was cut at the model's usable window | any particular shape of loss |
+- **Per-call markers** (`council_degraded`) — a **voter** (never the judge — voters carry REQ-056
+  cross-family consensus) was structurally lost *during a call that was made*.
+- **The pre-flight verdict** (`overflow`) — the rep's estimated output exceeds the assigned
+  council's ceiling, known at **dispatch**, from content size + council membership, before a cent is
+  spent. The ceiling is the *weakest member's* usable window at the same prompt estimate — voters
+  **and** judge, since a call the judge cannot serve is a call the council cannot serve, even though
+  only voters ever carry a per-call marker.
 
-The kinds, their precedence, and the rule for an absent/unknown kind live **once**, in
-`common/model_families.py` (`DEGRADED_PRECEDENCE`, `strongest_kind`) — the base layer, because the
-producer (`process_governance.stage7_run`) sits *above* the consumer (`stage7_extract.requests`) in the
-layering contract and the lower one may not import the higher. A rule spelled out twice in two idioms is
-the defect class this project keeps re-learning; here it is one function both callers use.
+| kind | source | what happened | what it is NOT evidence of |
+|---|---|---|---|
+| `output_overflow` | pre-flight | the council structurally cannot emit what this rep needs | anything about the model's behavior — the dispatch decision was the problem |
+| `context_refused` | per-call | the call never answered — refused pre-flight, or a provider context-length 400 | the document being empty |
+| `degenerate_repetition` | per-call | the reply was one row repeated until something stopped it | the document being large |
+| `window_truncated` | per-call | the reply was cut at the model's usable window | any particular shape of loss |
 
-Precedence is `refused` → `looped` → `truncated`, strongest first. A refusal outranks everything (no
-answer at all). A **loop outranks a truncation** because when a call is both, the loop is the *cause* and
-the truncation merely the symptom of the ceiling stopping it — reporting the symptom points a human at
-document size when the document is fine. The two are correlated but **not coextensive**: a loop needs no
-ceiling to be a loop. An absent kind resolves to the *strongest*, because under-claiming a refusal as a
-truncation is precisely the misdirection this machinery exists to prevent.
+The kinds, their precedence, the rule for an absent/unknown kind, **and the fold that reads both
+sources into one answer** live once, in `common/model_families.py` (`DEGRADED_PRECEDENCE`,
+`strongest_kind`, `rep_degraded_kinds`) — the base layer, because the producer
+(`process_governance.stage7_run`) sits *above* the consumers (`stage7_extract.requests`, the replay)
+in the layering contract and the lower ones may not import the higher. The fold is one function
+because "how is this rep degraded" was, at one point, hand-written at four sites (live success path,
+live failure path, replay, request detection) and two of them disagreed — an overflow-only rep counted
+as degraded in telemetry and as ordinary barren in `explain`. A rule spelled out twice in two idioms is
+the defect class this project keeps re-learning; here it is one function every caller uses.
+
+Precedence is `overflow` → `refused` → `looped` → `truncated`, strongest first. **Overflow heads the
+list because it is the cause the other three are symptoms of**: a council that structurally cannot
+emit the answer will then refuse, or truncate, or loop, and reporting the symptom points a human at
+the model when the dispatch was what was wrong. A refusal outranks the remaining two (no answer at
+all). A **loop outranks a truncation** because when a call is both, the loop is the *cause* and the
+truncation merely the symptom of the ceiling stopping it. Loop and truncation are correlated but
+**not coextensive**: a loop needs no ceiling to be a loop.
+
+An absent or unknown kind resolves to a **named** default (`context_refused`) — deliberately not to
+"whatever heads the precedence tuple." Coupling the classification default to the ordering would have
+let the overflow reorder retroactively relabel every receipt written before the kinds existed as a
+pre-flight claim it never made. Under-claiming a refusal as a truncation is still the misdirection
+this machinery exists to prevent, so the default remains the strongest *per-call* kind; a legacy marker
+carrying no kinds at all is still a degradation and reads as that default.
+
+**The overflow verdict is tri-state, and the third state is the point.** `True` overflows, `False` fits,
+`None` is *un-assessable* — a binary/image rep carries no countable clock times, or a council member is
+outside the catalog. `None` is never folded into `False`, never counts as a kind, and is counted on its
+own line everywhere the other two are. The vision tier has no countable times, so scoring it "fits" would
+report it clean while it was merely unmeasured — and the vision tier is exactly where the higher-ceiling
+remedy routing lives, so a silent `False` there would bias the population those experiments choose among.
+
+**The verdict is a fact about the dispatch, not the extraction.** Its two inputs — rep size and assigned
+council — are both fixed at Stage 6, on the frozen handoff. So it is *stored testimony*: "at that
+moment, against that council, we judged it would not fit." The replay recomputes `degraded_kind` (a
+projection of the two sources) but never re-judges `overflow` against a since-retuned registry — the
+replay re-runs only the deterministic consensus half over a frozen receipt and holds both inputs constant
+by definition, so there is no moment inside it at which the stored verdict could legitimately differ from
+a "current" one. Wanting a fresh verdict means wanting a fresh **dispatch**: a new frozen handoff with its
+own verdict, its own `state_event`. That is remedy routing's territory, not the replay's.
 
 ### 14b. Consequences must follow the marker, or the marker is decoration
 
@@ -1989,10 +2046,21 @@ changes nothing downstream:
 - **Operator surfaces apply the same precedence as the classifier.** The per-rep line, the district
   `[done]` line and the telemetry rollup all report a looped call as looped — never as truncated — so
   what a human reads at gate@7 matches what the receipt stored.
-- **Replay derives the same markers at zero spend.** Every classification reads from stored call records
-  (`error_kind`, `finish_reason`, `facts`, or a stored marker), so re-aggregating a frozen receipt
-  backfills honesty into historical data without re-buying the council — and the replay path also
-  re-runs request detection, so a marker derived on replay produces the remedy it promises.
+- **Replay derives the same markers at zero spend — and the same rollup.** Every per-call classification
+  reads from stored call records (`error_kind`, `finish_reason`, `facts`, or a stored marker), so
+  re-aggregating a frozen receipt backfills honesty into historical data without re-buying the council,
+  and the replay re-runs request detection so a marker derived on replay produces the remedy it promises.
+  The replay's *telemetry* is derived through the same rollup the live run uses (then zero-spend-
+  overridden), never hand-written: a replayed degraded receipt that persisted an empty rollup would
+  insert a newer extraction row that gate@7 reads as clean — the clean zero this whole section forbids,
+  arriving through the recovery path.
+- **The degradation rollup reaches SQL.** `extraction.degraded_json` — `{n, kinds, unassessable}`,
+  always written, `{}` when clean — carries all four kinds and the un-assessable count onto the row
+  gate@7 actually reads. Before it existed no kind reached SQL at all: they lived only in the disk
+  receipt, which the console does not read, so a structurally impossible run and an empty district were
+  indistinguishable at the one gate whose job is to tell them apart. Surfaced as a per-rep badge at
+  gate@6 (before spend) and a run banner at gate@7 (after), each with a distinct rendering for
+  un-assessable that is not styled as "fits".
 
 ### 14c. Counts must mean what they say
 
@@ -2002,12 +2070,23 @@ duplicate carries no information the first row didn't. The pre-dedupe count surv
 audit, so the emitted-row quantity — the ground truth any future estimator must be measured against —
 is never lost.
 
-The related standing caution: **an estimator is not a measurement.** `size_max_tokens` produces an
-output-token *ceiling* from a document's clock-time count; it is deliberately biased to over-estimate,
-because over-sizing is free and under-sizing truncates. It is not a school count and must never be read
-as one — a 60-page policy book in a three-school district scores as if it held 1,605 schools. Before
-"fixing" such an estimator, measure it against what it estimates; more than once, the proposed fix has
-been in the direction that would cause the harm it described.
+The related standing caution: **an estimator is not a measurement.** The output-token model
+(`common/model_families.py`) answers two different questions with two functions that must not be
+conflated. `size_max_tokens` is *what we may request* — the need clamped to `[floor, ceiling]`, biased
+to over-estimate because over-sizing is free and under-sizing truncates. `estimate_output_tokens` is
+*what the rep needs*, **unclamped** — because the overflow verdict compares it against a council ceiling,
+and a need estimate that cannot exceed the thing it is compared against is not a measurement. (The clamp
+tops out at 32,000; the image council's ceiling is 32,768; a clamped need could never overflow it, and
+"0 records exceed the image council" was true by construction until the two were separated.) Neither is
+a school count and must never be read as one — a 60-page policy book in a three-school district scores
+as if it held 1,605 schools. Before "fixing" such an estimator, measure it against what it estimates;
+more than once, the proposed fix has been in the direction that would cause the harm it described.
+
+The estimator's **inputs** are one construction too, not just its body. Dispatch knows a rep as a signal
+row (`n_chars`/`n_times`); extraction holds the assembled request. Both feed the same input builder
+(`rep_prompt_size`: content + system prompt, shaped by kind) — an identity assertion on the function
+alone locks the arithmetic while leaving the two call sites free to disagree about what they feed it,
+which they once did by the whole system prompt.
 
 ### 14d. Identity is roster-anchored (REQ-173)
 
