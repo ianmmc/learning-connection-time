@@ -64,6 +64,39 @@ def _best_image(images: list) -> dict:
     return next((r for r in images if (r.get("source") or "").startswith("capture:png")), images[0])
 
 
+# The floor slice must EARN its send: it is a recall-preserving filter, not a precision selector,
+# so unlike the handbook branch (where ties go to the slice and no saving test applies) it also has
+# to be materially smaller. Value chosen from the measured saving distribution, not asserted.
+MIN_SLICE_SAVING_FRAC = 0.20
+
+
+def prefer_timebearing_slice(slice_rep: dict, best_text: dict,
+                             min_saving_frac: float = MIN_SLICE_SAVING_FRAC) -> bool:
+    """#821: send the absolute-floor slice only when it is (a) yield-competitive — the same #230
+    rule the handbook branch uses, `n_times >= the densest text rep's` — AND (b) materially smaller.
+
+    Deliberately NOT shared with the handbook branch: that branch's policy is fixed by the
+    byte-identity guarantee and must not move when this one is tuned.
+
+    On (a): the two counts are NOT like-for-like, and that asymmetry is load-bearing. A slice's
+    `n_times` comes from `build_signals.time_positions` (regex PLUS `to_minutes` validity
+    filtering); a general text rep's comes from Stage 4's different regex with NO validity filter.
+    So for identical text `stage4_count >= build_signals_count`, and the slice is systematically
+    DISADVANTAGED here. That means a provably lossless slice can still lose and fall back to the
+    full read — fail-safe, and the reason the projected token saving is an upper bound. Do not
+    "fix" this into a like-for-like comparison: aligning the counters would move the handbook
+    branch too, which is exactly what the byte-identity guarantee forbids."""
+    if not best_text:
+        return True                                  # nothing to compare against; scoping is free
+    if (slice_rep.get("n_times") or 0) < (best_text.get("n_times") or 0):
+        return False
+    full = best_text.get("n_chars") or 0
+    if not full:
+        return False
+    saved = (full - (slice_rep.get("n_chars") or 0)) / full
+    return saved >= min_saving_frac
+
+
 def best_send(reps: list, signals: dict, facets: dict) -> list:
     """The ONE best representation for the council to read (governance §4). reps: the record's
     representation rows ({source, filename, file_kind, n_chars, n_times, usable}). Returns a list
@@ -72,9 +105,12 @@ def best_send(reps: list, signals: dict, facets: dict) -> list:
     else the densest text."""
     facets = facets or {}
     signals = signals or {}
-    # the harvest slice is a purpose-built handbook rep — never a general "densest text" candidate
+    # a page SLICE is a purpose-built scoped rep — never a general "densest text" candidate.
+    # Reads BS.SLICE_SOURCES rather than naming one source: with a second slice kind (#821) an
+    # `!= "harvest_slice"` test would let the timebearing slice into the pool, where it would become
+    # its own `best_text` and the yield guard below would degenerate into comparing it with itself.
     usable_text = [r for r in reps if r.get("file_kind") == "text" and r.get("usable") and r.get("filename")
-                   and r.get("source") != "harvest_slice"]
+                   and r.get("source") not in BS.SLICE_SOURCES]
     images = [r for r in reps if r.get("file_kind") == "image" and r.get("filename")]
     pdfs = [r for r in reps if r.get("file_kind") == "pdf" and r.get("filename")]
     # #109: the human-labeled page range (Axis-3 _pages_list) outranks the auto harvest_pages — and a
@@ -108,6 +144,20 @@ def best_send(reps: list, signals: dict, facets: dict) -> list:
         return [{"file": pdfs[0]["filename"], "kind": "pdf", "pages": harvest}]
     if (facets.get("needs_vision") == "yes" or signals.get("visual_text_gap")) and images:
         return [{"file": _best_image(images)["filename"], "kind": "image"}]
+    # #821 the ABSOLUTE page floor. Sits AFTER the vision branch — a record whose text never
+    # captured the content is exactly where a slice OF that text is worst, and vision is right.
+    #
+    # `not handbookish` is load-bearing, not redundant with the mutually-exclusive materialization:
+    # a handbook whose slice LOST the #230 yield compare falls through to here, and without this
+    # guard the floor slice would intercept that fall-through and re-route a handbook document —
+    # precisely the interception the #230 review caught in the pdf+pages fallback. Materialization
+    # makes it unreachable in production; this makes it unreachable by construction.
+    tb_rep = None if handbookish else next(
+        (r for r in reps if r.get("source") == BS.TIMEBEARING_SLICE_SOURCE and r.get("filename")),
+        None)
+    if tb_rep and prefer_timebearing_slice(tb_rep, best_text):
+        return [{"file": tb_rep["filename"], "kind": "text",
+                 "pages": signals.get("timebearing_pages") or []}]
     if best_text:
         return [{"file": best_text["filename"], "kind": "text"}]
     # degenerate fallbacks (a target with no usable text rep): any image, else any pdf

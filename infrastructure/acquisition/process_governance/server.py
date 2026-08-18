@@ -1105,10 +1105,11 @@ async def views_delete(view_id: int):
     return {"ok": True}
 
 
-def _harvest_slice_fallback(district_dir: str, rec_hash: str):
-    """A harvest_slice.txt that isn't in the legacy capture dir may live in the NEW derived-artifact
-    location (issue #58 moved writes there; wave 1D added the resolver). Look the record up by
-    (district_dir, hash) to get the ids resolve_harvest_slice needs. None if unresolvable."""
+def _slice_fallback(district_dir: str, rec_hash: str, filename: str):
+    """A page slice (harvest_slice.txt, timebearing_slice.txt) that isn't in the legacy capture dir
+    may live in the NEW derived-artifact location (issue #58 moved writes there; wave 1D added the
+    resolver). Look the record up by (district_dir, hash) to get the ids resolve_slice needs.
+    None if unresolvable — or if `filename` isn't a slice at all, which resolve_slice decides."""
     try:
         with gdb.session_scope() as con:
             row = con.execute(text(
@@ -1118,7 +1119,7 @@ def _harvest_slice_fallback(district_dir: str, rec_hash: str):
         return None
     if not row:
         return None
-    return BS.resolve_harvest_slice(row[0], district_dir, row[1])
+    return BS.resolve_slice(row[0], district_dir, row[1], filename)
 
 
 @app.get("/files/{district_dir}/{rec_hash}/{filename}")
@@ -1132,11 +1133,11 @@ def serve_file(district_dir: str, rec_hash: str, filename: str):
     if not (base.is_relative_to(root) and target.is_relative_to(base)):
         raise HTTPException(404, "not found")
     if not target.is_file():
-        # harvest slices moved out of the raw capture dir (issue #58) — resolve new-location-first
-        if filename == BS.HARVEST_SLICE_FILE:
-            alt = _harvest_slice_fallback(district_dir, rec_hash)
-            if alt is not None:
-                return FileResponse(alt)
+        # page slices moved out of the raw capture dir (issue #58) — resolve new-location-first.
+        # No filename test here: _slice_fallback -> resolve_slice returns None for a non-slice.
+        alt = _slice_fallback(district_dir, rec_hash, filename)
+        if alt is not None:
+            return FileResponse(alt)
         raise HTTPException(404, "not found")
     return FileResponse(target)
 
@@ -2531,12 +2532,12 @@ def handoff_inspect(district_id: str, rec_key: str, file: str):
         raise HTTPException(404, "no such district")
     fp = paths.RAW_CAPTURES / ddir / "captures" / h / file
     if not fp.exists():
-        # harvest slices moved out of the raw capture dir (issue #58) — resolve new-location-first,
-        # legacy fallback (issue #48: this resolver only knew the legacy captures path)
-        if file == BS.HARVEST_SLICE_FILE:
-            alt = BS.resolve_harvest_slice(district_id, ddir, rec_key)
-            if alt is not None:
-                return FileResponse(alt)
+        # page slices moved out of the raw capture dir (issue #58) — resolve new-location-first,
+        # legacy fallback (issue #48: this resolver only knew the legacy captures path). No filename
+        # test: resolve_slice returns None for a non-slice, so the 404 below still fires.
+        alt = BS.resolve_slice(district_id, ddir, rec_key, file)
+        if alt is not None:
+            return FileResponse(alt)
         raise HTTPException(404, f"file not found: {file}")
     return FileResponse(fp)
 

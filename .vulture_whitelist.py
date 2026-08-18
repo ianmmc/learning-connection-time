@@ -186,3 +186,12 @@ exclusion_id  # unused variable (infrastructure/acquisition/stage8_aggregate/mod
 added_id  # unused variable (infrastructure/acquisition/stage8_aggregate/models.py:85)
 source_url  # unused variable (infrastructure/acquisition/stage8_aggregate/models.py:92)
 assignment_id  # unused variable (infrastructure/acquisition/stage8_aggregate/models.py:123)
+
+# --- #821 slice-plumbing back-compat wrappers (2026-08-17) ---
+# Production calls the generalized `slice_path` / `resolve_slice` / `build_slice`; these three thin
+# wrappers survive because their tests are the UNMODIFIED proof that the harvest-slice path did not
+# move when the second slice kind was added. Deleting them would force edits to exactly the tests
+# that serve as that lock — a lock you edited is not a lock. Reachable from tests, kept on purpose.
+harvest_slice_path  # unused function (infrastructure/acquisition/stage5_filter/build_signals.py)
+resolve_harvest_slice  # unused function (infrastructure/acquisition/stage5_filter/build_signals.py)
+build_harvest_slice  # unused function (infrastructure/acquisition/stage5_filter/build_signals.py)

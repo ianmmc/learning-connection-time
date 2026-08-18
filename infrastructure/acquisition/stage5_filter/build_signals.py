@@ -758,6 +758,19 @@ def is_handbook_doc(text_lc: str, files: dict, n_pages: int, max_chars: int) -> 
     return "handbook" in blob and (n_pages > 1 or max_chars > 8000)
 
 
+def page_text_from(page_texts: list, page: int) -> str:
+    """One page's text in the EXACT form `pdf_page_text` returns it — including the trailing form
+    feed pdftotext emits per page.
+
+    `pdf_page_texts` splits ON those form feeds, so re-adding one is what keeps a slice cut from
+    the cached texts byte-identical to a slice cut by re-extracting. Verified across every harvest
+    page in the corpus: `pdf_page_text(pdf, p) == pdf_page_texts(pdf)[p-1] + "\\f"`, 185/185.
+    Without this, all 131 existing harvest slices would silently change by one character per page
+    on the next re-ingest — a cosmetic diff, but one that breaks the byte-identity guarantee the
+    handbook path is held to. Out-of-range page ⇒ "" (the caller decides whether to re-extract)."""
+    return (page_texts[page - 1] + "\f") if 0 < page <= len(page_texts) else ""
+
+
 def page_time_signals(page_texts: list) -> list:
     """Per-page evidence the page-scoping selectors read: `[{"page", "n_times", "instr"}, ...]`,
     page numbers 1-based. ONE producer for that shape so a selector can never be fed a dict built
@@ -770,6 +783,52 @@ def page_time_signals(page_texts: list) -> list:
     return [{"page": i, "n_times": len(time_positions(t or "")),
              "instr": instructional_declaration(t or "")}
             for i, t in enumerate(page_texts, 1)]
+
+
+def time_bearing_pages(pages: list, *, keep_first: bool = True, keep_neighbors: bool = True) -> list:
+    """#821 — the ABSOLUTE page floor: the pages that could plausibly carry schedule or
+    instructional-time content. Keep page N iff it has a clock time, OR declares instructional
+    minutes, OR is the first page, OR neighbours a time-bearing page.
+
+    LOSSLESS on the time signal by construction — every page with a time is kept. That is the
+    whole difference from `harvest_schedule_pages`, a peak-RELATIVE standout selector that cuts at
+    max(6, peak*0.5) and measurably drops 26.3% of the corpus's clock times (and selects nothing at
+    all in 887 of 1,640 multi-page docs). Per-page time counts follow a power law, not a normal
+    distribution, so a threshold set off the peak discards the tail; an absolute floor cannot.
+
+    The three non-time terms each answer a measured failure, not a hypothetical:
+      * `instr`  — `explicit_instructional_time` evidence is colon-free ("495 minutes of instruction
+                   per day") and scores n_times == 0. Memphis 4700148:00f553bcfc p39 is exactly this
+                   and is that record's ONLY such page; a bare n_times>0 floor drops it.
+      * first    — the masthead carries the district/school name and year the council needs to
+                   ATTRIBUTE times to a school.
+      * neighbor — a roster table's names column and its times can straddle a page break. Sampled
+                   150 records: 86 had a school name appearing only on a zero-time page.
+
+    Returns [] — meaning "no scoping, send the whole thing" — when there is nothing to scope
+    (<=1 page), nothing qualifies, or EVERY page qualifies (a slice identical to the document is
+    pure duplication). The keep_* switches exist so the corpus sweep can measure each term's cost
+    rather than assume it."""
+    if not pages or len(pages) <= 1:
+        return []
+    nums = {p["page"] for p in pages}
+    bearing = {p["page"] for p in pages if (p.get("n_times") or 0) > 0}
+    anchor = bearing | {p["page"] for p in pages if p.get("instr")}
+    if not anchor:
+        # Nothing to scope AROUND. `keep_first`/`keep_neighbors` are MODIFIERS on a real signal,
+        # not signals themselves — without this guard a document with no time content anywhere
+        # would be "scoped" to its cover page, which is both useless and lossy-looking.
+        return []
+    keep = set(anchor)
+    if keep_first:
+        keep.add(min(nums))
+    if keep_neighbors:
+        for n in bearing:
+            keep |= {n - 1, n + 1}
+    keep &= nums
+    if keep == nums:
+        return []
+    return sorted(keep)
 
 
 def harvest_schedule_pages(pages: list, min_times: int = HANDBOOK_HARVEST_MIN) -> list:
@@ -935,6 +994,9 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
         "max_text_chars": max_chars, "pages": pages,
         "is_handbook": is_handbook_doc(all_lc, files, len(pages), max_chars),
         "harvest_pages": harvest_schedule_pages(pages),
+        # #821: computed UNCONDITIONALLY, like harvest_pages — so a corpus sweep can replay the
+        # floor from the DB alone, without re-extracting every PDF.
+        "timebearing_pages": time_bearing_pages(pages),
         "dechromed": dechromed,   # REQ-091: KEYWORD signals computed over MAIN (chrome removed)?
         # ---- V2 (REQ-113) ----
         "footer_hours": footer, "header_hours": header,
@@ -1212,30 +1274,64 @@ def _rep(rec_key, source, filename, file_kind, n_chars, n_times, usable):
 
 HARVEST_SLICE_SOURCE = "harvest_slice"
 HARVEST_SLICE_FILE = "harvest_slice.txt"
+# #821: the ABSOLUTE page floor's slice — a different question from the harvest slice (see
+# time_bearing_pages), so a distinct source/filename rather than a widened harvest_slice. Keeping
+# them separate is what makes "handbook records are byte-identical" structural: materialization is
+# mutually exclusive, so a handbook record never carries one of these at all.
+TIMEBEARING_SLICE_SOURCE = "timebearing_slice"
+TIMEBEARING_SLICE_FILE = "timebearing_slice.txt"
+# ONE table of the derived page-slice kinds. Every consumer reads THIS rather than testing a
+# filename it spells itself — a second slice kind added without collapsing those tests is exactly
+# the implemented-twice-drifts class (#798/#810/#799/#816).
+SLICE_FILE_BY_SOURCE = {HARVEST_SLICE_SOURCE: HARVEST_SLICE_FILE,
+                        TIMEBEARING_SLICE_SOURCE: TIMEBEARING_SLICE_FILE}
+SLICE_SOURCES = frozenset(SLICE_FILE_BY_SOURCE)
 # DERIVED artifact home (issue #58): slices are ingest OUTPUT, so they live under data/acquisition/
 # (regenerable), never under data/raw/ (write-once Stage-3 captures — Critical Rule 5). Pre-#58
-# ingests wrote harvest_slice.txt next to the raw capture; resolve_harvest_slice() keeps those
+# ingests wrote harvest_slice.txt next to the raw capture; resolve_slice() keeps those
 # readable (read fallback to the old location; writes go ONLY to the new one).
 HARVEST_SLICES_DIR = paths.HARVEST_SLICES_DIR
 
 
+def slice_path(district_id: str, rec_key: str, source: str = HARVEST_SLICE_SOURCE) -> Path:
+    """The canonical WRITE location for one record's derived page slice:
+    data/acquisition/harvest_slices/<district_id>/<rec_key with ':'→'_'>[.<kind>].txt
+
+    The harvest slice keeps its historical unsuffixed name so no existing artifact moves; any other
+    slice kind gets a suffixed sibling, so the two can coexist for one record."""
+    stem = rec_key.replace(":", "_")
+    if source != HARVEST_SLICE_SOURCE:
+        stem = f"{stem}.{source}"
+    return HARVEST_SLICES_DIR / str(district_id) / f"{stem}.txt"
+
+
 def harvest_slice_path(district_id: str, rec_key: str) -> Path:
-    """The canonical WRITE location for one record's harvest slice:
-    data/acquisition/harvest_slices/<district_id>/<rec_key with ':'→'_'>.txt"""
-    return HARVEST_SLICES_DIR / str(district_id) / f"{rec_key.replace(':', '_')}.txt"
+    """Back-compat wrapper — the harvest slice's canonical write location."""
+    return slice_path(district_id, rec_key, HARVEST_SLICE_SOURCE)
 
 
-def resolve_harvest_slice(district_id: str, district_dir: str, rec_key: str) -> Path | None:
-    """Where a record's harvest slice actually IS: the new derived-artifact location first, else the
-    legacy pre-#58 location inside the raw capture dir (RAW_DIR/<district_dir>/captures/<hash>/
-    harvest_slice.txt). Returns None when neither exists. Consumers materializing a rep whose
-    source == 'harvest_slice' should call this instead of joining the capture dir themselves."""
-    new = harvest_slice_path(district_id, rec_key)
+def resolve_slice(district_id: str, district_dir: str, rec_key: str, filename: str) -> Path | None:
+    """Where a record's derived page slice actually IS, keyed by the FILENAME a consumer already
+    holds: the new derived-artifact location first, else (harvest only) the legacy pre-#58 location
+    inside the raw capture dir. Returns None when `filename` is not a slice at all, or when no slice
+    exists — so a caller needs no membership test of its own, which is the point: the four sites
+    that used to compare against HARVEST_SLICE_FILE by hand now all ask this one function."""
+    source = next((s for s, f in SLICE_FILE_BY_SOURCE.items() if f == filename), None)
+    if source is None:
+        return None
+    new = slice_path(district_id, rec_key, source)
     if new.exists():
         return new
+    if source != HARVEST_SLICE_SOURCE:
+        return None                      # only the harvest slice ever lived in the legacy location
     rec_hash = rec_key.split(":", 1)[-1]
     legacy = RAW_DIR / district_dir / "captures" / rec_hash / HARVEST_SLICE_FILE
     return legacy if legacy.exists() else None
+
+
+def resolve_harvest_slice(district_id: str, district_dir: str, rec_key: str) -> Path | None:
+    """Back-compat wrapper — resolve specifically the harvest slice."""
+    return resolve_slice(district_id, district_dir, rec_key, HARVEST_SLICE_FILE)
 
 
 # #517: the schedule-intent vocabulary for the link-only shape — a page whose keywords CLAIM a bell
@@ -1268,18 +1364,25 @@ def labeled_pages_of(facets_json_str) -> list:
         return []
 
 
-def build_harvest_slice(harvest_pages: list, page_text_fn):
-    """Q2.1 (Ian 2026-06-30): materialize the high-signal HARVEST PAGES of a long doc (a handbook, or a
-    big district-hub listing) as a small standalone text slice, so Stage 6 dispatches just those ~1-4
-    pages — not the whole 60-100-page PDF (cost containment; the paid council reads the slice, and the
-    measured cost model prices the slice's tokens). `page_text_fn(page)->str` extracts one page's text.
-    Returns `(slice_text, rep_kwargs)` ready for INSERT_REP, or None when nothing usable extracts."""
-    slice_text = "\n\n".join((page_text_fn(p) or "") for p in (harvest_pages or []))
+def build_slice(page_nums: list, page_text_fn, source: str = HARVEST_SLICE_SOURCE):
+    """Materialize the selected PAGES of a long doc as a small standalone text rep, so Stage 6
+    dispatches just those pages — not the whole PDF (cost containment; the paid council reads the
+    slice, and the measured cost model prices the slice's tokens). `page_text_fn(page)->str`
+    extracts one page's text. Returns `(slice_text, rep_kwargs)` ready for INSERT_REP, or None when
+    nothing usable extracts. ONE builder for every slice kind — the kind only changes WHICH pages
+    were selected and what the rep is called."""
+    slice_text = "\n\n".join((page_text_fn(p) or "") for p in (page_nums or []))
     if not slice_text.strip():
         return None
-    return slice_text, {"source": HARVEST_SLICE_SOURCE, "filename": HARVEST_SLICE_FILE,
+    return slice_text, {"source": source, "filename": SLICE_FILE_BY_SOURCE[source],
                         "file_kind": "text", "n_chars": len(slice_text),
                         "n_times": len(time_positions(slice_text)), "usable": 1}
+
+
+def build_harvest_slice(harvest_pages: list, page_text_fn):
+    """Q2.1 (Ian 2026-06-30): the HARVEST-pages slice — a handbook's ~1-4 high-signal pages.
+    Behaviour-preserving wrapper over `build_slice`."""
+    return build_slice(harvest_pages, page_text_fn, HARVEST_SLICE_SOURCE)
 
 
 # ---- cross-stage cache (REQ-103c): the queryable/auditable mirror of each stage's raw artifact,
@@ -1408,19 +1511,34 @@ def ingest_district(sess, ddir: Path, *, splits: set, batches: dict, nces: dict)
         # missed it (the buried_handbook case is exactly a doc the auto path misread).
         human_hp = labeled_pages_of(district_facets.get(rec_key))
         hp = human_hp or sig.get("harvest_pages") or []
+        pdf_name = files.get("pdf") or (files.get("bin")
+                   if str(files.get("bin", "")).lower().endswith(".pdf") else None)
+        pdf = rdir / pdf_name if pdf_name else None
+        # `page_texts` came back from compute_signals, so a slice is cut from the SAME extraction
+        # the per-page counts were computed over — re-extracting here would be a second chance to
+        # drift from the numbers the signal stored. `page_text_from` restores the per-page form
+        # feed so the bytes match what re-extraction would have produced. Falls back to a direct
+        # read for a page the cached scan didn't reach.
+        def page_text_of(p, _pt=page_texts, _pdf=pdf):
+            return page_text_from(_pt, p) if 0 < p <= len(_pt) else (pdf_page_text(_pdf, p) if _pdf else "")
+
+        slice_spec = None
         if hp and (human_hp or sig.get("is_handbook")):
-            pdf_name = files.get("pdf") or (files.get("bin")
-                       if str(files.get("bin", "")).lower().endswith(".pdf") else None)
-            pdf = rdir / pdf_name if pdf_name else None
-            if pdf and pdf.exists():
-                built = build_harvest_slice(hp, lambda p: pdf_page_text(pdf, p))
-                if built:
-                    slice_text, rep_kwargs = built
-                    # write to the DERIVED-artifact home, never into the raw capture dir (issue #58)
-                    sp = harvest_slice_path(did, rec_key)
-                    sp.parent.mkdir(parents=True, exist_ok=True)
-                    sp.write_text(slice_text)
-                    sess.execute(INSERT_REP, _rep(rec_key, **rep_kwargs))
+            slice_spec = (hp, HARVEST_SLICE_SOURCE)
+        elif sig.get("timebearing_pages"):
+            # #821 the ABSOLUTE floor, and deliberately an `elif`: mutual exclusion is what makes
+            # "a handbook record behaves byte-identically" STRUCTURAL rather than argued — a
+            # handbook never carries a timebearing_slice, so the new best_send branch is inert for it.
+            slice_spec = (sig["timebearing_pages"], TIMEBEARING_SLICE_SOURCE)
+        if slice_spec and pdf and pdf.exists():
+            built = build_slice(slice_spec[0], page_text_of, slice_spec[1])
+            if built:
+                slice_text, rep_kwargs = built
+                # write to the DERIVED-artifact home, never into the raw capture dir (issue #58)
+                sp = slice_path(did, rec_key, slice_spec[1])
+                sp.parent.mkdir(parents=True, exist_ok=True)
+                sp.write_text(slice_text)
+                sess.execute(INSERT_REP, _rep(rec_key, **rep_kwargs))
         for key, fname in files.items():
             fk = BIN_KINDS.get(key)
             if not fk:

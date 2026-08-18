@@ -93,14 +93,14 @@ def test_harvest_slice_resolves_via_new_location(tmp_path, monkeypatch):
     monkeypatch.setattr(SRV.gdb, "session_scope", fake_scope)
     calls = {}
 
-    def fake_resolve(district_id, district_dir, rec_key):
-        calls["args"] = (district_id, district_dir, rec_key)
+    def fake_resolve(district_id, district_dir, rec_key, filename):
+        calls["args"] = (district_id, district_dir, rec_key, filename)
         return slice_path
 
-    monkeypatch.setattr(SRV.BS, "resolve_harvest_slice", fake_resolve)
+    monkeypatch.setattr(SRV.BS, "resolve_slice", fake_resolve)
     r = client.get("/files/lea_x/abc123/harvest_slice.txt")
     assert r.status_code == 200 and r.text == "pages 4-6 of the handbook"
-    assert calls["args"] == ("0100810", "lea_x", "0100810:abc123")
+    assert calls["args"] == ("0100810", "lea_x", "0100810:abc123", "harvest_slice.txt")
 
 
 def test_missing_harvest_slice_is_a_plain_404_even_with_db_down(tmp_path, monkeypatch):

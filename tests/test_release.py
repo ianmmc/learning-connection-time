@@ -61,6 +61,91 @@ def test_best_send_handbook_prefers_the_materialized_slice():
     assert R.best_send(reps, sig, {}) == [{"file": "harvest_slice.txt", "kind": "text", "pages": [4, 9]}]
 
 
+def _tb_rep(n_times, n_chars):
+    return _text_rep(BS.TIMEBEARING_SLICE_FILE, n_times=n_times, n_chars=n_chars,
+                     source=BS.TIMEBEARING_SLICE_SOURCE)
+
+
+# ---- #821 the ABSOLUTE time-bearing page floor ----
+def test_best_send_sends_the_floor_slice_for_a_non_handbook_multipage_pdf():
+    # MUST FAIL TODAY: page scoping was reachable only through the handbook door, so this record's
+    # whole 90k-char text was sent. Same yield, 90% fewer characters.
+    reps = [_tb_rep(n_times=80, n_chars=9_000),
+            _text_rep("pdftotext.txt", n_times=80, n_chars=90_000),
+            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
+    sig = {"is_handbook": False, "harvest_pages": [], "timebearing_pages": [1, 12, 13]}
+    assert R.best_send(reps, sig, {}) == [
+        {"file": BS.TIMEBEARING_SLICE_FILE, "kind": "text", "pages": [1, 12, 13]}]
+
+
+def test_best_send_floor_slice_loses_the_230_yield_guard():
+    # The #230 rule applies unchanged: a slice that clips half the table must never shadow the
+    # full read, however much smaller it is.
+    reps = [_tb_rep(n_times=26, n_chars=2_000),
+            _text_rep("pdftotext.txt", n_times=90, n_chars=90_000)]
+    sig = {"is_handbook": False, "timebearing_pages": [4]}
+    assert R.best_send(reps, sig, {}) == [{"file": "pdftotext.txt", "kind": "text"}]
+
+
+def test_best_send_floor_slice_declined_when_the_saving_is_trivial():
+    # It is a recall-preserving filter that must also EARN its send — a slice that saves 2% is
+    # churn, not scoping (unlike the handbook branch, where ties go to the slice unconditionally).
+    reps = [_tb_rep(n_times=80, n_chars=88_000),
+            _text_rep("pdftotext.txt", n_times=80, n_chars=90_000)]
+    sig = {"is_handbook": False, "timebearing_pages": [1, 2, 3]}
+    assert R.best_send(reps, sig, {}) == [{"file": "pdftotext.txt", "kind": "text"}]
+
+
+def test_best_send_floor_slice_never_enters_the_densest_text_pool():
+    # If the slice were a general "densest text" candidate it would become its own best_text and
+    # the yield guard would degenerate into comparing it with itself.
+    reps = [_tb_rep(n_times=5, n_chars=100),
+            _text_rep("page.txt", n_times=9, n_chars=400)]
+    sig = {"is_handbook": False, "timebearing_pages": [2]}
+    assert R.best_send(reps, sig, {}) == [{"file": "page.txt", "kind": "text"}]
+
+
+def test_best_send_vision_outranks_the_floor_slice():
+    # A record whose text never captured the content is exactly where a slice OF that text is
+    # worst — vision is the right answer and must win.
+    reps = [_tb_rep(n_times=3, n_chars=200),
+            _text_rep("a.txt", n_times=3, n_chars=9_000),
+            {"source": "capture:png", "filename": "page.png", "file_kind": "image"}]
+    sig = {"is_handbook": False, "timebearing_pages": [1], "visual_text_gap": True}
+    assert R.best_send(reps, sig, {}) == [{"file": "page.png", "kind": "image"}]
+
+
+@pytest.mark.parametrize("extra", [False, True])
+def test_best_send_handbook_records_are_byte_identical(extra):
+    """P3: this widens scoping to records that had none — it must not re-route an existing one.
+    Every handbook case is re-asserted with a timebearing_slice rep ALSO present; the presence of
+    the new rep must change nothing. (In production the two are mutually exclusive at
+    materialization, so this is belt-and-braces against a mis-ordered branch.)"""
+    def maybe(reps):
+        return reps + [_tb_rep(n_times=999, n_chars=10)] if extra else reps
+
+    # slice preferred
+    reps = maybe([_text_rep("harvest_slice.txt", n_times=30, n_chars=900, source="harvest_slice"),
+                  _text_rep("a.txt", n_times=4),
+                  {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}])
+    sig = {"is_handbook": True, "harvest_pages": [4, 9], "timebearing_pages": [1, 2]}
+    assert R.best_send(reps, sig, {}) == [
+        {"file": "harvest_slice.txt", "kind": "text", "pages": [4, 9]}]
+
+    # pdf+pages fallback when no slice was materialized
+    reps = maybe([_text_rep("a.txt", n_times=4),
+                  {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}])
+    sig = {"is_handbook": True, "harvest_pages": [2, 3], "timebearing_pages": [1, 2]}
+    assert R.best_send(reps, sig, {}) == [{"file": "page.pdf", "kind": "pdf", "pages": [2, 3]}]
+
+    # #230: a denser general text rep beats the slice
+    reps = maybe([_text_rep("harvest_slice.txt", n_times=26, source="harvest_slice"),
+                  _text_rep("pdftotext.txt", n_times=90),
+                  {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}])
+    sig = {"is_handbook": True, "harvest_pages": [12], "timebearing_pages": [1, 2]}
+    assert R.best_send(reps, sig, {}) == [{"file": "pdftotext.txt", "kind": "text"}]
+
+
 def test_best_send_handbook_falls_back_to_pdf_when_no_slice():
     reps = [_text_rep("a.txt", n_times=4),
             {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
