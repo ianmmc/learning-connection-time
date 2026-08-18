@@ -171,3 +171,21 @@ def parse_schedules(content: str) -> list[dict]:
         return []
     return [_scrub_campus_names(s) for s in scheds
             if isinstance(s, dict) and not _is_prompt_leak(s)]
+
+def nameless_yield(facts: list) -> bool:
+    """#710 — did this rep extract real schedules that NONE of which can be attributed to a school?
+
+    A distinct outcome from barren (0 facts) and from degraded (the council could not read it): the
+    rep read fine, the DOCUMENT never names the institution it describes. Little Rock
+    `0509000:9f652a5606` is the filed case — a 36-time bell-schedule PDF whose every fact returns
+    `school_name: None`, walked across four representations because the 7->6 ladder's premise ("a
+    different rep of the same URL will extract better") cannot hold when the information is absent
+    from the document rather than lost in transcription.
+
+    PARTIAL namelessness is normal and must NOT trip this (measured: 20 corpus rounds are partial
+    vs 13 fully nameless) — a hub page listing five schools plus one unattributed table is a
+    perfectly good read. The condition is ALL-or-nothing by construction: facts exist, and not one
+    carries a name."""
+    if not facts:
+        return False                      # barren is a different outcome, already handled
+    return not any((f.get("school_name") or "").strip() for f in facts)

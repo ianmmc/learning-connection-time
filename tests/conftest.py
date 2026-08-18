@@ -330,6 +330,19 @@ def snapshot_serializer():
 
 
 @pytest.fixture(autouse=True)
+def _no_transient_backoff_sleep(monkeypatch):
+    """#711: the transient-retry backoff sleeps for real seconds. A test suite must never sleep —
+    the retry LOGIC is what is under test, not the wall clock (leaving it live took the openrouter
+    suite from ~1s to ~25s). Zeroed for every test; a test that wants to assert the backoff
+    schedule reads TRANSIENT_BACKOFF_S from the module rather than waiting for it."""
+    try:
+        from infrastructure.acquisition.stage7_extract import openrouter as _OR
+        monkeypatch.setattr(_OR, "TRANSIENT_BACKOFF_S", ())
+    except Exception:
+        pass
+
+
+@pytest.fixture(autouse=True)
 def _reset_openrouter_client_cache():
     """#148: `openrouter._client` is lru-cached per (key, timeout) for connection reuse. Tests swap
     `openai.OpenAI` for a fake per test — clear the cache before each so a prior test's cached fake

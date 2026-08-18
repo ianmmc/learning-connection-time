@@ -202,13 +202,19 @@ def _alt_reason(sent: str, ranked: list) -> str:
 
 def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = None,
                     band_schools: dict = None, covered_bands=None, real_bands=None,
-                    slot_gaps: dict = None, explain: dict = None) -> list:
+                    slot_gaps: dict = None, prior_nameless=None, explain: dict = None) -> list:
     """Emit routed request objects for one district's extraction `result` (a `run_council_streaming`
     per-district dict: {district_id, reps[], accepted[], unresolved[], bands}).
 
     `claimed_bands`   — the bands the district claims (from `district_target.lea_claimed_bands_json`).
     `alternates_by_rec` — {rec_key: [{file, kind, n_times}, ...]} of OTHER captured reps of the same
                           URL not sent this dispatch (drives 7→6 vs 7→3). Empty/None ⇒ none known.
+    `prior_nameless`  — rec_keys that ALREADY produced a nameless-yield round (#710). Passed in
+                          rather than queried: this function is pure, and the history lives in the
+                          persisted request chain. The SECOND occurrence stops the alternate-rep
+                          ladder — the first is indistinguishable from a bad extraction, the second
+                          is evidence the DOCUMENT never names its school, which no representation
+                          of that document can fix.
     `band_schools`    — optional {band: [school names]} (from `schools_by_band_json`) to name the
                           targets in a district-band request.
     `covered_bands`   — bands with accepted facts DISTRICT-WIDE (across ALL prior extractions —
@@ -274,6 +280,7 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
     if explain is not None:
         explain["phantom_bands"] = sorted(claimed_set - target_bands) if real_bands is not None else []
         explain["suppressed_barren_reps"] = 0
+        explain["suppressed_nameless_reps"] = 0      # #710: ladder stopped, needs a human
 
     # --- representation / URL altitude: a sent record produced no accepted facts ---
     # #709 (REQ-174): records whose zero came from a COUNCIL-DEGRADED rep (a voter structurally
@@ -292,10 +299,13 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
     # telemetry rollup reads — an overflow-only rep counted as degraded in telemetry but explained
     # here as ordinary barren was two counters disagreeing about the same population.
     degraded_kinds: dict = {}
+    nameless_now = set()
     for rep in result.get("reps", []):
         kinds = rep_degraded_kinds(rep)
         if kinds:
             degraded_kinds.setdefault(rep["rec_key"], []).extend(kinds)
+        if rep.get("nameless_yield"):
+            nameless_now.add(rep["rec_key"])
     if explain is not None:
         explain["suppressed_degraded_reps"] = 0
         explain["suppressed_truncated_reps"] = 0
@@ -361,6 +371,27 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
             continue
         alts = alternates_by_rec.get(rec_key) or []
         sent = files.get(rec_key)
+        # #710: facts were READ but not one carries a school name. The 7->6 ladder's premise — "a
+        # different rep of the same URL will extract better" — cannot hold when the information is
+        # absent from the DOCUMENT rather than lost in transcription, so every remaining rung fails
+        # identically and the terminal one is the expensive vision call. Stop on the SECOND
+        # occurrence (the first could still be a bad read) and hand the record to a human, whose
+        # question is not "which rep reads better" but "who does this document belong to".
+        if rec_key in nameless_now:
+            if rec_key in (prior_nameless or set()):
+                if explain is not None:
+                    explain["suppressed_nameless_reps"] += 1
+                continue
+            reqs.append({
+                "district_id": did, "altitude": "representation", "route": ROUTE_ALT_REP,
+                "target": rec_key, "band": None,
+                "params": {"sent_file": sent, "sent_files": files_all.get(rec_key, []),
+                           "alternate_reps": rank_alternates(alts), "nameless_yield": True},
+                "reason": (f"sent rep '{sent}' read real schedules but NOT ONE carries a school "
+                           f"name — the document may never name the institution it describes. "
+                           f"Trying one more representation; if that is nameless too, the ladder "
+                           f"stops and the record needs a human to identify the school (#710).")})
+            continue
         deg_note = (("council-degraded (a voter fell into a REPETITION LOOP on this rep, #812 — "
                      "the zero is about the council's read, NOT the document's content): "
                      if looped else

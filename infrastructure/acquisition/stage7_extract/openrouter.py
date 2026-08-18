@@ -59,6 +59,15 @@ DEFAULT_TIMEOUT = 90               # with stream=True this bounds connect/read G
 #     (nowhere higher to go within the model windows — >680 schools, never observed in 840 calls);
 #     `finish_reason == "length"` persists so the incompleteness stays visible.
 
+# #711: a TRANSIENT provider error (429 rate-limit, 5xx, timeout) says nothing about the document —
+# the same rep would very likely succeed seconds later. Left unretried it scored the rep zero-yield
+# and consumed a rung of the finite 7->6 alternate ladder, so escalation ordering (cheap text ->
+# expensive vision) was partly driven by provider weather rather than evidence. Bounded, because the
+# budget governor must not be exposed to an unbounded loop; measured corpus population: 4 calls.
+# This GENERALIZES the #169 truncation-retry surface below rather than adding a second mechanism.
+TRANSIENT_RETRIES = 2                # attempts AFTER the first (so at most 3 total)
+TRANSIENT_BACKOFF_S = (1.0, 3.0)     # per-attempt sleep; tests monkeypatch to ()
+
 DEFAULT_TEMPERATURE = 0.1
 BILLING_AUTH_STATUS = {401, 402}   # key/balance — every later call fails identically → halt
 # #714 (REQ-174): per-model window accounting. The 2026-08-16 OpenRouter fetch falsified the
@@ -147,6 +156,10 @@ class CallResult:
     finish_reason: Optional[str] = None  # 'stop' | 'length' (TRUNCATED) | 'error' | ...
     generation_id: Optional[str] = None  # OpenRouter gen-... id (chunk.id) — the handle for
     #                                      GET /api/v1/generation (fallback cost/stats + support)
+    transient_retries: int = 0           # #711: how many times this call was re-attempted after a
+    #                                      TRANSIENT provider error (429/5xx/timeout). A silent
+    #                                      retry is its own auditability problem, so it rides the
+    #                                      record and the telemetry rollup.
     truncation_retried: bool = False     # #169: this call was re-run once at MAX_TOKENS_CEILING
     #                                      after a first truncated reply (recovery attempt; the tail)
     max_tokens_sent: int = 0             # #801: the max_tokens the FINAL attempt actually sent
@@ -315,6 +328,26 @@ def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DE
         return CallResult(ok=True, **common)
 
     res = _stream_once(max_tokens)
+    # #711: bounded retry on a TRANSIENT error before the rep is judged. Deliberately NOT applied to
+    # 'context' (structural — the identical request fails identically, #709) or 'other'. A retry that
+    # succeeds returns the good result carrying the attempt count; one that exhausts returns the LAST
+    # failure, still error_kind='transient', which is what lets the caller resolve the rep as
+    # not-attempted rather than zero-yield.
+    attempt = 0
+    while (not res.ok and res.error_kind == "transient" and attempt < TRANSIENT_RETRIES):
+        backoff = TRANSIENT_BACKOFF_S[attempt] if attempt < len(TRANSIENT_BACKOFF_S) else 0
+        if backoff:
+            time.sleep(backoff)
+        attempt += 1
+        retried = _stream_once(max_tokens)
+        # cost/tokens accumulate across attempts: a 429 bills nothing, but a 5xx mid-stream may have
+        # billed a partial, and the REQ-051 governor must see true spend (the #182 rule).
+        retried.prompt_tokens = (res.prompt_tokens or 0) + (retried.prompt_tokens or 0)
+        retried.completion_tokens = (res.completion_tokens or 0) + (retried.completion_tokens or 0)
+        retried.cost_usd = _sum_cost(res.cost_usd, retried.cost_usd)
+        retried.latency_ms = res.latency_ms + retried.latency_ms
+        res = retried
+        res.transient_retries = attempt
     # #169: a truncated reply silently drops the tail schools — retry ONCE at the ceiling to recover
     # them. Keep the retry's CONTENT when it SUCCEEDED (fully recovered, or at least a longer head — a
     # still-truncated reply is ok=True with finish_reason "length", so the ⚠ flag persists); a retry

@@ -235,7 +235,8 @@ def test_explain_reports_detect_time_suppression():
     assert reqs == []                                       # e covered; middle phantom; rep suppressed
     assert explain == {"phantom_bands": ["middle"], "suppressed_barren_reps": 1,
                        "suppressed_degraded_reps": 0, "suppressed_truncated_reps": 0,
-                       "suppressed_looped_reps": 0}
+                       "suppressed_looped_reps": 0,
+                       "suppressed_nameless_reps": 0}      # #710
 
 
 # --------------------------- #793: a truncated read is not a barren one ---------------------------
@@ -459,3 +460,96 @@ def test_812_zero_yield_loop_reason_names_the_loop():
     # that the document is unreadable/empty
     assert "council's read" in reqs[0]["reason"]
     assert "could not read" not in reqs[0]["reason"]
+
+
+# --------------------------- #710/#711: outcomes that are not evidence ---------------------------
+def test_710_nameless_yield_gets_one_more_rung_then_stops(monkeypatch):
+    """#710 — Little Rock 0509000:9f652a5606: a 36-time bell-schedule PDF whose every fact returns
+    school_name=None because the DOCUMENT never names its school. The ladder walked four reps
+    against a defect no representation can fix. First occurrence still tries one more rep (it could
+    be a bad read); the SECOND stops."""
+    rep = {"rec_key": "D1:x", "file": "camelot_hybrid.txt", "accepted": [], "unresolved": [],
+           "calls": [], "nameless_yield": True}
+    alts = {"D1:x": [{"file": "pdftotext.txt", "kind": "text", "n_times": 34}]}
+
+    first = RQ.detect_requests(_result(reps=[rep], accepted=[]), claimed_bands=[],
+                               alternates_by_rec=alts, prior_nameless=set())
+    assert [r["route"] for r in first] == ["7->6"]
+    assert first[0]["params"]["nameless_yield"] is True
+    assert "not one carries a school name" in first[0]["reason"].lower()
+
+    explain = {}
+    second = RQ.detect_requests(_result(reps=[rep], accepted=[]), claimed_bands=[],
+                                alternates_by_rec=alts, prior_nameless={"D1:x"}, explain=explain)
+    assert [r["route"] for r in second] == []          # MUST FAIL today: a 7->6 would be raised
+    assert explain["suppressed_nameless_reps"] == 1
+
+
+def test_710_partial_namelessness_is_untouched():
+    """20 corpus rounds are PARTIALLY nameless (a hub listing five schools plus one unattributed
+    table). That is a normal read and must not trip the stop."""
+    from infrastructure.acquisition.stage7_extract.parse import nameless_yield
+    assert nameless_yield([{"school_name": "Lincoln"}, {"school_name": None}]) is False
+    assert nameless_yield([]) is False                             # barren is a different outcome
+    assert nameless_yield([{"school_name": None}, {"school_name": " "}]) is True
+
+
+def test_711_a_transient_429_retries_the_same_rep_then_the_ladder_is_untouched(monkeypatch):
+    """#711 — a 429 says nothing about the document; retrying the SAME rep is obviously correct.
+    Asserts the bounded retry happens at the call layer and is visible in the record."""
+    import openai
+    from infrastructure.acquisition.stage7_extract import openrouter as OR
+    calls = {"n": 0}
+
+    class _Completions:
+        def create(self, **kw):
+            calls["n"] += 1
+            if calls["n"] == 1:
+                raise openai.APITimeoutError(request=None)     # transient
+            raise openai.APITimeoutError(request=None)
+
+    class _Chat:
+        completions = _Completions()
+
+    class _Client:
+        def __init__(self, *a, **k):
+            self.chat = _Chat()
+
+    monkeypatch.setattr(openai, "OpenAI", _Client)
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+    res = OR.call({"model": "google/gemini-2.5-flash-lite",
+                   "messages": [{"role": "user", "content": "x"}]})
+    assert not res.ok and res.error_kind == "transient"
+    assert calls["n"] == 1 + OR.TRANSIENT_RETRIES        # the same rep was re-attempted, bounded
+    assert res.transient_retries == OR.TRANSIENT_RETRIES  # ...and the count is auditable
+
+
+def test_711_a_structural_context_error_is_NOT_retried(monkeypatch):
+    """The taxonomy that matters: transient retries the same rep, STRUCTURAL does not (the
+    identical request fails identically — #709). Retrying a context 400 would just burn money."""
+    import httpx
+    import openai
+    from infrastructure.acquisition.stage7_extract import openrouter as OR
+    calls = {"n": 0}
+    msg = "Error code: 400 - This endpoint's maximum context length is 32768 tokens."
+    resp = httpx.Response(400, request=httpx.Request("POST", "https://openrouter.ai/x"), text=msg)
+
+    class _Completions:
+        def create(self, **kw):
+            calls["n"] += 1
+            raise openai.APIStatusError(msg, response=resp, body=None)
+
+    class _Chat:
+        completions = _Completions()
+
+    class _Client:
+        def __init__(self, *a, **k):
+            self.chat = _Chat()
+
+    monkeypatch.setattr(openai, "OpenAI", _Client)
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+    res = OR.call({"model": "google/gemini-2.5-flash-lite",
+                   "messages": [{"role": "user", "content": "x"}]})
+    assert not res.ok and res.error_kind == "context"
+    assert calls["n"] == 1                    # exactly once — no retry
+    assert res.transient_retries == 0
