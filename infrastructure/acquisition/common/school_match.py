@@ -95,6 +95,48 @@ def norm_school(name) -> str:
     return stripped or _base(name)
 
 
+def norm_document(text_: str) -> str:
+    """Put a DOCUMENT into the same character space as a `norm_school` key: lowercase, accents
+    folded, hyphens→spaces, other punctuation dropped, whitespace collapsed (#826).
+
+    Deliberately applies `_base` only — never the generic-word stripping. A roster key is stripped
+    ('memphis central'); the document must keep its type words so that key is still findable inside
+    "Memphis Central High School". Stripping both sides would delete the very words that make the
+    substring test meaningful.
+
+    Why this exists: roster keys were already normalized (they go through `norm_school`) but were
+    searched for inside RAW lowercased text, so a key like 'st marys' could never match "St. Mary's".
+    The defect was the ASYMMETRY, not a missing normalization."""
+    return _base(text_ or "")
+
+
+def roster_match_keys(school_names, district_name=None, min_len: int = 4) -> list:
+    """The roster keys a document is scanned for (#826) — the ONE construction, so the ingest and
+    any measurement script cannot drift.
+
+    Two filters, both about keys that cannot carry evidence:
+      * `min_len` — short stems over-match ("Marion High"/"Marion Middle" both → 'marion').
+      * the DISTRICT-NAME COLLISION — a roster entry normalizing to the district's own normalized
+        name is dropped. Level-stripping collapses "Springfield Elementary School" and "Springfield
+        School District" onto the same key, so every mention of the DISTRICT would score as a school
+        hit. Measured 2026-08-18: 53 of 114 corpus districts have such an entry, and 309 records had
+        it as their ONLY hit — a pure false positive.
+
+    The drop is honest rather than lossy: where the collision exists, the district name and the
+    school name are the same string, so no evidence could distinguish "the page names this school"
+    from "the page names the district". Reporting a hit there is false confidence, not information.
+    For a single-school district whose one school shares the district name this zeroes the signal —
+    correctly: both consumers threshold at >= 2 (hub) / >= 3 (homepage), so such a district could
+    never reach either regardless, and a count it cannot act on is better absent than wrong."""
+    dkey = norm_school(district_name) if district_name else ""
+    out = set()
+    for nm in school_names or []:
+        k = norm_school(nm)
+        if len(k) >= min_len and not (dkey and k == dkey):
+            out.add(k)
+    return sorted(out)
+
+
 # ---------------------------------------------------------------------------------------------
 # Roster-anchored identity resolution (#693/#721) — measured design in
 # docs/technical-notes/learning-loop-reports/2026-08-15-693-721-roster-anchored-identity.md.

@@ -605,6 +605,7 @@ def pdf_page_texts(pdf: Path) -> "PageTexts":
 # weaker copy (substring .replace(), no word boundaries, missing the #236 district suffixes), so
 # Stage 5's topology denominator silently disagreed with Stage 7/8's school-identity key — the exact
 # drift class the shared function exists to prevent.
+from infrastructure.acquisition.common import school_match as SM  # noqa: E402
 from infrastructure.acquisition.common.school_match import norm_school  # noqa: E402,F401
 
 
@@ -1019,7 +1020,11 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
     table_period_rows = max((len(PERIOD_RE.findall(t)) for t in table_reps), default=0)
     has_table = bool(table_reps)
     period_hits = len(PERIOD_RE.findall(all_text))
-    roster_hits = sum(1 for rn in roster_norm if rn and rn in all_lc)
+    # #826: match the (already-normalized) roster keys against a document put into the SAME
+    # character space. `all_lc` stays raw-lowercase for keyword scanning — those patterns expect
+    # real punctuation — so the roster basis is its own normalization, computed once per record.
+    roster_basis = SM.norm_document(all_text)
+    roster_hits = sum(1 for rn in roster_norm if rn and rn in roster_basis)
     nonstandard_day = any(k in all_lc for k in NONSTANDARD_DAY_KW)
     # positional non-regular-day evidence (#537): computed over the TIME basis (best_text) AND every
     # table rep — each against its OWN in-window offsets (offsets never cross texts). The table pass
@@ -1540,10 +1545,12 @@ def ingest_district(sess, ddir: Path, *, splits: set, batches: dict, nces: dict)
         return None
     disc = json.loads(dj.read_text())
     did = disc["district_id"]
-    # Dedup + drop short stems: schools sharing the district name ("Marion High"/"Marion
-    # Middle" both -> "marion") must not over-count roster hits (would false-positive hub).
-    roster_norm = sorted({rn for sc in disc.get("schools", [])
-                          if len(rn := norm_school(sc.get("school", ""))) >= 4})
+    # Dedup, drop short stems ("Marion High"/"Marion Middle" both -> "marion"), and drop any entry
+    # colliding with the DISTRICT's own normalized name (#826) — one shared construction in
+    # `common/school_match.py` so a measurement script and the ingest cannot disagree about what a
+    # roster key is.
+    roster_norm = SM.roster_match_keys([sc.get("school", "") for sc in disc.get("schools", [])],
+                                       disc.get("name"))
     roster_size = len(roster_norm)
     caps = {r["hash"]: r for r in json.loads(cj.read_text())}
     processed = {r["hash"]: r for r in json.loads(pj.read_text())}

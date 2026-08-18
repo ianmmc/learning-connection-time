@@ -144,3 +144,69 @@ class TestNcesAbbreviationTails:
         from infrastructure.acquisition.common.school_match import norm_school
         for n in ("Liberty Bell El Sch", "Southern Lehigh SHS", "El Camino High School"):
             assert norm_school(norm_school(n)) == norm_school(n)
+
+
+class TestRosterMatchKeys826:
+    """#826 — the roster-hit signal's key construction and document basis.
+
+    The issue framed the defect as "roster names don't go through norm_school". Measurement showed
+    the roster side ALWAYS did (build_signals.py:1545); the DOCUMENT side did not, so a normalized
+    key was searched inside raw lowercased text. The asymmetry was the bug."""
+
+    def test_p2_a_variant_spelling_matches_once_the_document_is_normalized(self):
+        """MUST FAIL against raw-lowercase matching: punctuation in the document blocked the key."""
+        from infrastructure.acquisition.common.school_match import norm_document, roster_match_keys
+        keys = roster_match_keys(["St. Mary's Elementary School", "Mount Vernon High School"],
+                                 "Somewhere School District")
+        doc = "Bell schedules for St. Mary's Elementary and Mt Vernon High follow."
+        assert all(k not in doc.lower() for k in keys)          # today's behaviour: no match
+        basis = norm_document(doc)
+        assert "st marys" in basis                              # apostrophe + period folded
+        assert any(k in basis for k in keys)
+
+    def test_p3_the_district_name_collision_is_guarded(self):
+        """A roster entry normalizing to the district's own name cannot produce a hit: level
+        stripping collapses "Springfield Elementary School" and "Springfield School District" onto
+        the same key, so every mention of the DISTRICT would score as a school."""
+        from infrastructure.acquisition.common.school_match import norm_document, roster_match_keys
+        keys = roster_match_keys(["Springfield Elementary School", "Lincoln Middle School"],
+                                 "Springfield School District")
+        assert "springfield" not in keys
+        assert keys == ["lincoln"]
+        # ...and the guard is what stops a bare district mention scoring
+        basis = norm_document("Welcome to Springfield School District.")
+        assert sum(1 for k in keys if k in basis) == 0
+
+    def test_p3_the_guard_only_drops_the_COLLIDING_entry(self):
+        """It must not drop schools that merely share a word with the district."""
+        from infrastructure.acquisition.common.school_match import roster_match_keys
+        keys = roster_match_keys(
+            ["Springfield Elementary School", "Springfield Heights Academy", "Lincoln Middle"],
+            "Springfield School District")
+        assert "springfield heights" in keys       # distinct key, kept
+        assert "lincoln" in keys
+        assert "springfield" not in keys           # the exact collision, dropped
+
+    def test_no_district_name_means_no_guard(self):
+        from infrastructure.acquisition.common.school_match import roster_match_keys
+        assert "springfield" in roster_match_keys(["Springfield Elementary School"], None)
+
+    def test_short_stems_still_filtered(self):
+        from infrastructure.acquisition.common.school_match import roster_match_keys
+        assert roster_match_keys(["Ada High School"], "Somewhere ISD") == []      # 'ada' < 4
+        assert roster_match_keys(["Adams High School"], "Somewhere ISD") == ["adams"]
+
+    def test_norm_document_keeps_type_words(self):
+        """The document must NOT be generic-stripped: a stripped key ('memphis central') has to
+        remain findable inside the full name. Stripping both sides deletes the bridge."""
+        from infrastructure.acquisition.common.school_match import norm_document, roster_match_keys
+        basis = norm_document("Memphis Central High School")
+        assert basis == "memphis central high school"
+        assert roster_match_keys(["Memphis Central High School"], "Shelby County")[0] in basis
+
+    def test_p4_pure_function_of_roster_plus_district_name(self):
+        """No DB, no filesystem, no ordering dependence — recomputable from a re-ingest."""
+        from infrastructure.acquisition.common.school_match import roster_match_keys
+        a = roster_match_keys(["B School", "A Academy", "B School"], "D District")
+        b = roster_match_keys(["A Academy", "B School"], "D District")
+        assert a == b == sorted(set(a))
