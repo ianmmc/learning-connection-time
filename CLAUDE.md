@@ -116,8 +116,9 @@ path. See `INSTRUCTIONAL_TIME_HARVEST.md`.
 ## Fresh-session essentials
 
 `/catchup` → `pip install -e .` → **Docker up** (`docker-compose up -d`) → `lint-imports` (expect "kept/0
-broken") + `pytest -q -m "not integration"`. `build_signals` full re-ingest (~2.5 min, idempotent, preserves
-labels/facets) is only needed after a scoring/config change or new captures — not just to reboot the app.
+broken") + `pytest -q -m "not integration"`. `build_signals` full re-ingest (**~8.5 min** since 2026-08-18 —
+whole documents are scanned, the 60-page cap is gone; idempotent, preserves labels/facets) is only needed
+after a scoring/config change or new captures — not just to reboot the app. Run it `--assert-floor`.
 
 Console: `python3 -m infrastructure.acquisition.process_governance.server` (→ :8005; Stage 5 default).
 **Reload the browser for `static/*.js`, restart the server for Python changes.** Self-verify UI changes with
@@ -135,81 +136,82 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-08-17): Tranche C steps 1-2 are MERGED, and step 3's premise was measured
-false and re-scoped.** Three PRs landed the extraction-correctness core. **#774** — roster-anchored
-school identity (REQ-173): variant spellings of one school now meet instead of minting false
-disagreement, ambiguity is never auto-resolved, the roster (not voter agreement) adjudicates a
-cross-band claim, and an unmatched name survives as `roster_unmatched`; `grade_level` STAYS in the
-grouping key (35 level-collapse districts would mass-merge without it). **#792** — per-model context
-accounting (REQ-174): every call clamps to the model's real window, a doomed call refuses pre-flight
-at zero spend, and a rep records `council_degraded` when a VOTER is structurally lost. **#813** —
-repetition-loop detection (#812): a voter emitting one row until the ceiling stops it is no longer
-recorded as a large successful extraction. Three review rounds (#777-791, #797-811, #814-820 — 37
-findings, all real, all fixed before merge). Docs re-synced to code 2026-08-17 (38adc81):
-ACQUISITION_PIPELINE.md de-changelogged (109 date/BUILT stamps → 0, two false diagram claims fixed),
-governance §14 added (extraction integrity), PROJECT_HISTORY entry written.
+**Current status (2026-08-18): page scoping is redesigned around an ABSOLUTE floor, both PRs are
+MERGED, and the live DB is re-ingested against merged `main`.** **#828** — the per-page signal was
+silently truncated at 60 pages (Memphis `00f553bcfc` read 3 times; it has 838, on pp.89-91; 10
+records were suppressed by `lf_no_times` purely because their times lived past the cap). Cap
+removed, one `pdftotext` call split on form feed, a guard test so it cannot return. **#829** — the
+absolute time-bearing page floor (#821): keep a page iff it carries a clock time, or an
+instructional-minutes declaration, or is page 1, or neighbours a time-bearing page. Lossless on the
+time signal by construction (0/30,848); drops 43% of pages; **16.0% fewer characters dispatched
+corpus-wide, 88% on the 166 records it re-routes**. It replaces #796's proposal (widen the
+peak-relative harvest), which measured as losing **26.3% of the corpus's times** — 45% on Memphis —
+and was closed `not planned`. Two review rounds absorbed before merge (#830-#840, 11 findings, all
+real, all fixed). Re-ingest post-merge (8m18s — **not the ~2.5 min this file used to say**; whole
+documents are scanned now): recall floor 0.9947 ≥ 0.98, tiers unchanged, precious state verified
+row-for-row, 727 `timebearing_slice` + 150 `harvest_slice` reps live.
 
-**What the measurements changed (the reason this session's plan moved):** four times the issue's own
-diagnosis was wrong. #721's proposed fix would have mass-merged schools; #714's clamp turned a loud
-400 into a *silent* partial; #793's own marker was then gated on zero-yield, which structurally
-misses the partial it was built for; and **#794 was closed `not planned`** — bounding the school
-estimate by roster size is worse than the status quo in the direction that loses data (570/918 and
-82/918 under-predictions vs 56/918), and charter networks break its premise outright (KIPP Durham:
-`nces_school_count=1`, 50 accepted schools). Chasing that found #812 and falsified our own record:
-**there is no genuine dropped-tail truncation anywhere in the receipt store** — all six
-truncated-with-facts calls are repetition loops. **#795 was stopped rather than shipped**: a
-deterministic pre-dispatch hub classifier tops out ~59%/63%, misses the three biggest hubs, and
-under a better matcher false-positives on the exact document its acceptance criteria reject.
+**Where the output-ceiling work went (Ian was right that it was open):** #714's chunking half was
+never built — its "or minimally, mark degraded" clause let it close. Measured against the REAL
+council ceilings (the weakest of voter/voter/judge): the text council (16,384) leaves **4 records
+with no fitting rep**; **0 records exceed the image council's** 32,768; a 4× text council is
+constructible from the approved roster. That is an experiment set, not a scripted rule → **epic #80
+children #823 (higher-ceiling routing) / #824 (a model that partitions) / #825 (overflow as
+follow-up routing)**, behind **#822** (fail-loud overflow monitoring, the tripwire that says which
+experiment matters).
 
-**Tranche C's remainder + Tranche D (approved in shape, not started):** step 3 capture-completeness
-(#708 OCR name-mangling ships as fidelity-clean · #685 Stage 3 captures only the ACTIVE tab panel ·
-#672 the 5→1 widened rung dilutes geo derivation) · step 4 ladder-guard robustness (#710 a document
-that never names its school burns 3 alternate-rep rounds · #711 a transient 429 records as a clean
-zero-yield). **Tranche D** paired by surface: gate@5 (#673 no vintage surface + #674 a human label
-unconditionally overrides the #241 validity floor — same floor, fix together) and the Stage 2-4
-console triple (#669/#670/#671 — settle #671's design question first, the other two fall out of it).
-**Deliberately deferred behind both:** epic #723's receipts→gov_db work and epic #617's remainder.
-
-**Next (RESUME HERE — 2026-08-17):**
-1. **#796 — page scoping is reachable only through the handbook door.** A roster table inside a long
-   non-handbook PDF is sent whole. `harvest_pages` is already computed for EVERY PDF record; only
-   slice *materialization* is gated on `is_handbook`, so widening that trigger needs no hub
-   classifier — #796 does NOT depend on #795 (which is why it's next). The #230 yield guard is
-   load-bearing and must keep holding: a slice that clips half the table must never shadow the full
-   read.
-2. **Then #795, re-scoped** — its surviving half is "fix `roster_school_names_hit` to use
-   `norm_school`" (measured: Memphis 0→27, Broward 3→42, Orange 1→36), which needs the district-name
-   collision handled (level-stripping collapses a small district's roster to the district's own
-   name). The population half needs no classifier and is already measured.
-3. **Then** Tranche C steps 3-4 → Tranche D's gate@5 pair → the Stage 2-4 console triple → #723.
-4. **Ian's call, not a session task:** routing Broward/Cleveland/Essex's send-backs and resuming the
-   5→1 composer on West Ada/Lincoln/Baldwin — live pipeline spend, stays console-driven.
-Ian drives the console; prepare and verify, don't execute stage runs (Stage 9 CLI + the #716 replay
-are the verification exceptions — read-only intent, idempotent, guarded). *Falsifier unchanged: if
+**Next (RESUME HERE — 2026-08-18):**
+1. **#822 — output-overflow monitoring.** A rep whose estimated output exceeds its assigned
+   council's ceiling (weakest member's `usable_output`, never a global constant) must be a
+   first-class degraded kind next to `DEGRADED_REFUSED/TRUNCATED/LOOPED` in
+   `common/model_families.py`, surfaced at gate@6/7, and can never record as a clean zero. One
+   shared estimate helper — not a second copy of `openrouter.py`'s sizing (the drift class).
+   Acceptance: the 4 no-fitting-rep records are flagged today; a rep that fits is not.
+2. **#826 — `roster_school_names_hit` via `norm_school`** (Memphis 0→27, Broward 3→42, Orange 1→36),
+   with the district-name collision guarded. Also carries #795's P4: Northwestern
+   `1730540:bcd9c539fb` is a 320-student, 3-school district whose 886-page policy book now reads
+   3,211 clock times — a scope error, better solved by not sending it than by any capacity work.
+3. **#841 — the three 7→6 alternates collectors disagree on `segment:main`** (release admits it,
+   both Stage-7 sites exclude all `segment:*`). Settle by MEASUREMENT (how often an unsent
+   `segment:main` carries `n_times` ≥ the sent full text, and whether any gained facts on retry),
+   then one rule in `release.NON_SWAPPABLE_SOURCES`, all three collectors reading it.
+4. **Then** Tranche C steps 3-4 (#708/#685/#672 · #710/#711) → Tranche D's gate@5 pair (#673/#674)
+   → the Stage 2-4 console triple (#669/#670/#671, settle #671 first) → #723.
+5. **Ian's call, not a session task:** routing Broward/Cleveland/Essex's send-backs and resuming the
+   5→1 composer on West Ada/Lincoln/Baldwin — live pipeline spend, stays console-driven. The epic
+   #80 experiments (#823-#825) also spend real money and are Ian's to schedule.
+Ian drives the console; prepare and verify, don't execute stage runs (Stage 9 CLI, the #716 replay,
+and the **read-only measurement scripts** are the verification exceptions). *Falsifier unchanged: if
 any district needs a hand-edit or a re-adjudicated gate@8 call, the mechanism is wrong — fix the
 pipeline, not the district.*
 
-**Standing method note (now on its seventh instance): measure the thing before fixing it.** An
-issue's proposed fix has been overturned by measurement seven times (#691, #684, #719, #755, #706's
-severity ranking, #721, #794). Two corollaries earned this session: **a fix can remove a failure's
-VISIBILITY instead of the failure** (#792's clamp made the 400 unrepresentable by making the same
-event succeed quietly), and **a marker without a consequence is decoration** (#793 marked the
-truncation, then gated its remedy on a condition that shape cannot meet). Before calling a fix done,
+**Standing method note (now on its NINTH instance): measure the thing before fixing it.** An issue's
+proposed fix has been overturned by measurement nine times (#691, #684, #719, #755, #706's severity
+ranking, #721, #794, **#796, #795**). Corollaries: **a fix can remove a failure's VISIBILITY instead
+of the failure** (#792); **a marker without a consequence is decoration** (#793); and, new this
+session, **re-run the measurement after the fix it motivated** — the design measurement that said
+"Memphis keeps 60/60 pages, the floor can't help" was itself computed over the truncated signal (at
+154 pages it keeps 101; the conclusion held, the stated reason was wrong). Before calling a fix done,
 ask what would now be *observable* if it were wrong.
 
-**The implemented-twice-drifts class (four instances this session — keep watching):** the
-absent-`kinds` default resolved opposite ways in two files (#798); refusal-outranks-truncation was a
-`!=` guard in one file and a set-membership negation in another (#810); a per-record dict
-comprehension discarded a sibling rep's marker (#799, the #785 shape one subsystem over); and #816's
-`ok` gate had two unguarded siblings in the telemetry layer. Countermeasure that works: **one
-function in the base layer both callers invoke**, then diff every sibling path against a new fix —
-including siblings inside the SAME PR.
+**The implemented-twice-drifts class (FIVE instances across two sessions — it recurred in the PR
+whose commit message named it):** #798/#810/#799/#816 last session; this session, "which slice does
+this record get" was a hand-written predicate in ingest and another in `best_send`, disagreeing on
+**43 live records** (35 handbooks with a floor slice cut then hidden; 8 human-labelled records
+refused by one gate and starved by the other, #834). The P3 byte-identity test only locked the case
+where the two copies happened to agree. Countermeasure, applied at its smallest scale:
+`select_slice()` in the base layer, ingest cuts what it returns, `best_send` sends only a match —
+mutual exclusion as a property of the RETURN TYPE, not of branch order in two files. **A test that
+locks agreement proves nothing about where two copies diverge; the only lock is having one copy.**
 
-**The standing lesson (now tripled): three separate layers shipped green against measurements that
-could not fail (§10.11), then the fix round's own review findings repeated it (§10.19/§10.20), then a
-MERGED fix sat un-run against the live DB for a day and nothing detected it (§13.1).** When a change
-is justified by "it diverges only in the future case," construct that case and test it — and for
-precious-state migrations, "merged" is not "landed": verify against the live system, not the diff.
+**The standing lesson (now on its FOURTH shape): a measurement that cannot fail.** §10.11, then the
+fix round's own findings, then a merged fix un-run against the live DB (§13.1) — and this session
+**Pass B re-run after the re-ingest printed `VERDICT: PASS` with 0 changed / 0% saved**: its baseline
+read the live DB, which already held the reps the change had written, so it compared the post-state
+with itself, and B6's safety block (inside `if changed`) never ran — every safety number was 0
+because nothing was measured. Fixed with an idempotent baseline and `NOTHING MEASURED` instead of
+`PASS` on an empty sweep. **A verdict that cannot fail is not a verdict; make the script say so.**
+For precious-state migrations, "merged" is not "landed": verify against the live system.
 
 **Schema invariant (bit us on PR #641):** a `_PRECIOUS_ALTERS` column's DDL must be declared TWICE,
 identically — a SQLAlchemy `default=` never reaches the DDL, so a fresh `create_all()` DB diverges
@@ -217,49 +219,56 @@ from a migrated one and fails raw `text()` INSERTs **on CI only**. Always pair w
 Enforced DB-free by `tests/test_precious_alters_parity.py`. **Verify a new precious column against a
 THROWAWAY governance DB — the local migrated one tests the path that isn't broken.**
 
-**Outstanding:** Playwright-verify the gate@6 + gate@1 console changes AND #647's Stage 2/3/4
-status/Run control (static-source-pinned only; #667's gate@8/#662's gate@5 badges, #684's gate@5
-staff-day surfacing, AND the three new gate@8 arrows ARE verified — rerunnable verifiers:
-`infrastructure/scraper/verify_684_console.mjs` (gate@5 staff-day) and
-`infrastructure/scraper/verify_682_console.mjs` (gate@8's write badge / send-back routing /
-re-review flag — covers #682/#689/#713 together, the pattern to extend for Tranche D's console work).
-**Deferred by design (epic #128):** **#642** (content-derived document vintage — #662 makes this MORE
-valuable) and **#643** (the Stage-3 render-facts probe; rides #623's Node seam).
-**Retired, do not do:** Phase 2e's retroactive `dispatch_type='benchmark'` tagging — arm 2 derives it.
-Banked routing: #112 → epic #128. Parked: #475/#476, #103/#80 (+#110); the SEA integration follow-up
-(~9 states) is an opt-in backlog item — ask Ian before filing.
-Documented-in-code deferrals: `_satisfied_bands_now` batching; the #522 guardrail's per-rep
-keyword/table attribution (needs a server payload change); JS behavioral tests (no JS harness);
-the remediation-receipt exception is not STAGE-scoped (30-day expiry since 2026-07-20); attribution
-v1 reads each district's LATEST candidate plan.
-Resume-essentials (ALL re-verified 2026-08-17 on this checkpoint, post-merge): `pip install -e .` →
-Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) →
-`lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **2325**
-pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **396** pass, Postgres up) + `pytest
-tests/test_*_integration.py` (expect **257** pass, 149 skipped) + `cd infrastructure/scraper &&
-npm test` (expect **91**). NB `pytest -m integration` now also carries a NETWORK test
-(`test_model_windows_integration.py`, #809) that re-fetches OpenRouter and fails with "refresh the
-catalog" if `MODEL_WINDOWS` has drifted — it skips cleanly offline and is excluded from the default
-suite; a failure there means bump the catalog + `MODEL_WINDOWS_FETCHED`, not a broken build.
+**Outstanding:** Playwright-verify the gate@6 + gate@1 console changes, #647's Stage 2/3/4 status/Run
+control, AND **#840's new gate@5 page-scoping card** (★ harvest / ◆ floor markers, `data-scoping=`
+DOM hook — static-source-pinned only so far); #667's gate@8/#662's gate@5 badges, #684's staff-day
+surfacing and the three gate@8 arrows ARE verified — rerunnable verifiers
+`infrastructure/scraper/verify_684_console.mjs` and `verify_682_console.mjs` (the pattern to extend).
+**Deferred by design (epic #128):** #642 (content-derived document vintage) and #643 (the Stage-3
+render-facts probe; rides #623's Node seam). **Retired, do not do:** Phase 2e's retroactive
+`dispatch_type='benchmark'` tagging — arm 2 derives it. Banked routing: #112 → epic #128. Parked:
+#475/#476, #103 (+#110); the SEA integration follow-up (~9 states) is an opt-in backlog item — ask
+Ian before filing. Documented-in-code deferrals: `_satisfied_bands_now` batching; the #522 guardrail's
+per-rep keyword/table attribution (needs a server payload change); JS behavioral tests (no JS
+harness); the remediation-receipt exception is not STAGE-scoped (30-day expiry since 2026-07-20);
+attribution v1 reads each district's LATEST candidate plan; the `stage6_handoff/requests.py:17-18`
+docstring falsely claims Stage 7 "reads ONLY the flagged pages" — the `pages` hint never scoped
+content (the slice FILE is the scoping), a live source of wrong inferences worth a one-line issue.
+Resume-essentials (ALL re-verified 2026-08-18 on this checkpoint, post-merge, on `main`): `pip
+install -e .` → Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh
+clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect
+**2371** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **396** pass, Postgres up) +
+`pytest tests/test_*_integration.py` (expect **257** pass, 149 skipped) + `cd infrastructure/scraper
+&& npm test` (expect **91**) + `flake8 . --count --select=E9,F63,F7,F82` (expect **0** — this is CI's
+blocking lint; the vulture whitelist is `per-file-ignores`'d for F821, main had been red on it since
+ebcc1a1). NB `pytest -m integration` also carries a NETWORK test (`test_model_windows_integration.py`,
+#809) that re-fetches OpenRouter and fails with "refresh the catalog" if `MODEL_WINDOWS` has drifted
+— skips cleanly offline, excluded from the default suite. **Full re-ingest is now ~8.5 min**
+(`python3 -m infrastructure.acquisition.stage5_filter.build_signals --assert-floor`; whole documents
+scanned, largest is 1,017 pages) — needed only after a scoring/config change or new captures; run it
+with `--assert-floor` so a recall regression rolls back inside the transaction; take a `pg_dump` of
+the precious tables first (governance DB is `postgresql://…@localhost:5432/governance`, separate
+from the LCT DB).
 **pytest is 9.1.1**: `pytest.ini` declares `pythonpath = .` — without it, pytest 9's bare `pytest`
-script fails COLLECTION on `tests/test_benchmark_*` (`from tests import benchmark_seed`).
-`requirements.txt` floor raised to `pytest>=9.0`. **Scheduled CI now runs nightly (#722, merged)** —
-`main` no longer sits silently red between pushes the way it did 08-11→08-14.
+script fails COLLECTION on `tests/test_benchmark_*`. `requirements.txt` floor is `pytest>=9.0`.
+Scheduled CI runs nightly (#722).
 Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (Huntington
-`4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters; Bentonville
-`0503060:a5f32ff869` staff-day tier B, `0503060` again for gate@8's write badge; Broward `1200180`
-for gate@8 send-back routing). Drive the Node Playwright from `infrastructure/scraper` (a script in
-/tmp cannot resolve the package); run scratch console servers on a spare port (`:8015`), never
+`4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters + a floor-slice PDF at
+311 pages; Bentonville `0503060:a5f32ff869` staff-day tier B, `0503060` again for gate@8's write
+badge; Broward `1200180` for gate@8 send-back routing; **`0904830:71acfa3404` the 1,017-page
+handbook whose floor slice was #834's dead-slice case — the record to Playwright #840 against**).
+Drive the Node Playwright from `infrastructure/scraper`; scratch console servers on `:8015`, never
 Ian's `:8005`.
 Stage 9 incorporate CLI: `python3 -m infrastructure.acquisition.stage9_incorporate <did> [--dry-run]`
-(now also fires automatically on gate@8 approval, #682 — the CLI stays the recovery/backfill path);
-gate@8 send-back routing CLI: `python3 -m infrastructure.acquisition.process_governance.stage8_sendback
-{route <did> --route 8->1|8->6|unrouted} [--dry-run]` (#689); re-review audit CLI: `python3 -m
+(fires automatically on gate@8 approval, #682 — the CLI is the recovery/backfill path); gate@8
+send-back routing: `python3 -m infrastructure.acquisition.process_governance.stage8_sendback {route
+<did> --route 8->1|8->6|unrouted} [--dry-run]` (#689); re-review audit: `python3 -m
 infrastructure.acquisition.stage8_aggregate.rereview [<did> …]` (#713); sign-off preview: `python3
--m infrastructure.scripts.analyze.per_grade_lct_sample`.
-Full detail: `docs/PROJECT_HISTORY.md`, `STAGE1-9_*_DESIGN.md`, `PIPELINE_GOVERNANCE_AND_STATE.md`,
-`docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md` §14,
-`docs/REQUIREMENTS.yaml`.
+-m infrastructure.scripts.analyze.per_grade_lct_sample`. **Measurement scripts (rerunnable,
+read-only, import the LIVE functions):**
+`docs/technical-notes/production-quality-control-research/2026-08-17-{per-page-uncap,timebearing-floor}-measure.py`.
+Full detail: `docs/PROJECT_HISTORY.md` (2026-08-17/18 entry), `STAGE1-9_*_DESIGN.md`,
+`PIPELINE_GOVERNANCE_AND_STATE.md`, `docs/REQUIREMENTS.yaml`.
 
 ---
 

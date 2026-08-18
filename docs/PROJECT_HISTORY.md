@@ -1868,3 +1868,69 @@ text sat in the file looking fine. Now guarded ledger-wide by a duplicate-key-re
 Authority: PRs #774/#792/#813 (merged); issues #693/#721/#714/#709/#793/#812 and the review batches
 #777-791, #797-811, #814-820 (all closed); corpus measurements over 2,586 stored call records, 918
 text-rep observations, and 504 district×record yield pairs, all re-runnable against the live gov_db.
+
+### 2026-08-17/18 — Page scoping is redesigned around an absolute floor, and the measurement falsified the issue that asked for it (again), then falsified two of the session's own measurements
+
+Two PRs (#828, #829) landed page scoping's replacement, closed two issues on measurement, filed
+eight new ones, and absorbed two review rounds (#830-#840, eleven findings, all real). The durable
+content is three lessons about *how the measurement is done*, and one design principle.
+
+**A peak-relative threshold is the wrong tool for a power-law signal.** #796 asked to widen the
+trigger for `harvest_schedule_pages` (keep pages ≥ 50% of the peak page's time count) so non-handbook
+PDFs would be scoped too. Measured across 1,640 multi-page PDFs it **loses 26.3% of the corpus's
+clock times** — 45% on Memphis, 31% on Orange, the very districts the issue named — because per-page
+time counts follow a power law and a threshold set off the peak discards the tail. Widening it would
+have made that loss deterministic on the documents it was written to protect. Closed `not planned`
+(the ninth issue whose proposed fix measurement overturned). The replacement is an **absolute** floor:
+keep a page iff it carries a clock time, or an instructional-minutes declaration (colon-free —
+"495 minutes of instruction per day" scores zero clock times), or is page 1, or neighbours a
+time-bearing page. Lossless on the time signal by construction (0 / 30,848); drops 43% of pages;
+16.0% fewer characters dispatched corpus-wide, 88% on the 166 records it re-routes. Ian's framing was
+the key: *"we're trying to ensure we don't send content that is all but certain to have no useful
+information"* — that is an absolute question, and the statistical tools for a relative one are limited
+when the distribution has no useful centre.
+
+**A silent truncation was hiding under the signal the whole time.** The per-page scan was capped at
+60 pages (raised once already, from 15, for this same class of miss). Memphis `00f553bcfc` read as a
+3-time document; it has 838, on pp.89-91. Ten records were suppressed by `lf_no_times` purely because
+their times lived past the cap. Removed rather than raised, with a guard test. The lesson is the one
+already on the board — a cap that hides data is the bug, not the document — but the second-order one
+is new: **the measurement that justified this session's own design was itself computed over the
+truncated signal**, so "Memphis keeps 60/60 pages, the floor can't help" was the cap talking (at 154
+pages it keeps 101). The conclusion held; the stated reason was wrong. Re-run the measurement after
+the fix it motivated.
+
+**Two of the session's own measurements were caught wrong by their own re-run.** Pass B, re-run
+after the re-ingest, printed `VERDICT: PASS` with 0 sends changed and 0% saved — its baseline read the
+live DB, which by then already held the reps the change had written, so it compared the post-state
+with itself, and B6's safety block (inside `if changed`) never ran at all: every safety number was 0
+because nothing was measured. The §10.11 pattern (a measurement that cannot fail) reappearing inside
+the verification of a fix for another instance of it. Fixed both ways — an idempotent baseline, and
+`NOTHING MEASURED` instead of `PASS` on an empty sweep. Earlier the same day a raw school-name diff
+over-reported (a name on a time-free page cannot contribute a (school, start, end) triple) and a
+regex spanning a page join produced a phantom loss. **A verdict that cannot fail is not a verdict;
+say so in the script, not in a comment.**
+
+**The implemented-twice-drifts class recurred a fifth time — in the PR whose commit message named
+it.** "Which slice does this record get" was a hand-written predicate in ingest and another in
+`best_send`, and they disagreed on 43 live records: 35 handbooks whose harvest found no peak had a
+floor slice cut and then hidden by a separate `not handbookish` guard (a 1,017-page handbook sent
+whole while a lossless 19-page slice sat dead on disk); 8 human-labelled records were refused by one
+gate and starved by the other. The P3 byte-identity test only locked the case where the two
+predicates happened to agree. Countermeasure applied at its smallest scale: `select_slice()` in the
+base layer, ingest cuts what it returns, `best_send` sends only a match — mutual exclusion as a
+property of the return type, not of branch order in two files. **A test that locks agreement proves
+nothing about the cases where two copies of a rule diverge; the only lock is having one copy.**
+
+**Where the output-ceiling overflow work actually went.** #714's chunking half was never built —
+its "or minimally, mark degraded" clause let it close — and Ian correctly remembered it as open. But
+council capacity is set by the *weakest member* (voter/voter/judge), and against the real ceilings
+the text council (16,384) leaves 4 records with no fitting rep while **0 records exceed the image
+council's** (32,768). A 4× text council is constructible from the approved roster. That is an
+experiment set, not a scripted rule, so it went to epic #80 (#823-#825) behind a fail-loud overflow
+monitor (#822) — the tripwire that says which experiment matters.
+
+Authority: PRs #828/#829 (merged 2026-08-18); issues #796/#795 closed on measurement, #821-#827
+filed, #830-#840 the review rounds (closed), #841 the surfaced segment:main disagreement (open);
+measurements in `docs/technical-notes/production-quality-control-research/2026-08-17-*` (rerunnable,
+read-only, live functions never re-implemented).
