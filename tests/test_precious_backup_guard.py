@@ -3,7 +3,12 @@ hook sweeps them into every commit, so test-driven exporter side effects pollute
 (and a rolled-back fixture can leave a backup CONTRADICTING the DB). The invariant is enforced once,
 at `paths.guard_tracked_backup()` (the exporters' shared path-resolution moment), not per test.
 
-These tests run UNDER pytest by construction, so the guard's redirect branch is live here."""
+These tests run UNDER pytest by construction, so the guard's redirect branch is live here.
+
+#822 added a SECOND cause of the same harm, and the TestNonCanonicalDb822 class below covers it:
+a process connected to a non-canonical governance DB (a `TEMPLATE governance` clone used for
+scratch console verification, an empty probe DB). Cloning the DB does not isolate these files —
+they live on disk, and every exporter rebuilds them WHOLESALE from the connected DB's log."""
 import tempfile
 from pathlib import Path
 
@@ -79,3 +84,98 @@ def test_export_status_under_pytest_never_touches_the_tracked_file(gov_session):
     assert before == after                                       # tracked backup untouched
     q = Path(tempfile.gettempdir()) / "lct-test-quarantine" / tracked.name
     assert q.exists()                                            # the write landed in quarantine
+
+
+class TestNonCanonicalDb822:
+    """#822: the tracked twins must be regenerated ONLY from the canonical governance DB.
+
+    Found the hard way. A #822 console verification cloned the governance DB (`TEMPLATE
+    governance`) so the real one was untouched, then created a gate@6 draft against the clone —
+    and `district_status.json`, a file on disk that knows nothing about which DB you chose, was
+    regenerated from the clone's event log and picked up a `draft_add_district` event for district
+    1201440 with actor `verify822`. The #178 guard did not fire because that server was not pytest.
+
+    The stakes are larger than a stray event: every exporter rebuilds its file WHOLESALE, so a
+    scratch server on an EMPTY governance DB writes `{}` over the lot. Measured 2026-08-18: the
+    tracked file held 175 districts; an empty-DB export produced 0."""
+
+    def _outside_pytest(self, monkeypatch):
+        monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)   # isolate the #822 cause from #178
+
+    def test_canonical_db_passes_through(self, monkeypatch):
+        self._outside_pytest(monkeypatch)
+        monkeypatch.delenv("GOVERNANCE_DATABASE_URL", raising=False)
+        monkeypatch.setenv("GOVERNANCE_DB_NAME", "governance")
+        assert paths.guard_tracked_backup(paths.STATUS_FILE) == paths.STATUS_FILE
+
+    def test_the_actual_leak_a_template_clone_is_quarantined(self, monkeypatch):
+        """The exact configuration that leaked: a scratch server on `gov_822_scratch`."""
+        self._outside_pytest(monkeypatch)
+        monkeypatch.delenv("GOVERNANCE_DATABASE_URL", raising=False)
+        monkeypatch.setenv("GOVERNANCE_DB_NAME", "gov_822_scratch")
+        out = paths.guard_tracked_backup(paths.STATUS_FILE)
+        assert out != paths.STATUS_FILE
+        assert paths.REPO_ROOT not in out.parents
+        assert out.name == paths.STATUS_FILE.name
+
+    def test_every_tracked_file_is_covered_not_just_district_status(self, monkeypatch):
+        """The leak hit district_status.json, but all twelve twins share the exporter pattern."""
+        self._outside_pytest(monkeypatch)
+        monkeypatch.delenv("GOVERNANCE_DATABASE_URL", raising=False)
+        monkeypatch.setenv("GOVERNANCE_DB_NAME", "gov_scratch")
+        for tracked in paths.TRACKED_BACKUPS:
+            assert paths.guard_tracked_backup(tracked) != tracked, tracked.name
+
+    def test_a_full_url_override_to_another_db_is_also_caught(self, monkeypatch):
+        """The guard reads the RESOLVED url, so the GOVERNANCE_DATABASE_URL path (cloud/prod
+        override) cannot bypass it — the check is not a special case of the env-var branch."""
+        self._outside_pytest(monkeypatch)
+        monkeypatch.setenv("GOVERNANCE_DATABASE_URL",
+                           "postgresql://u:p@remote.example:5432/some_other_db")
+        assert paths.guard_tracked_backup(paths.STATUS_FILE) != paths.STATUS_FILE
+        monkeypatch.setenv("GOVERNANCE_DATABASE_URL",
+                           "postgresql://u:p@remote.example:5432/governance")
+        assert paths.guard_tracked_backup(paths.STATUS_FILE) == paths.STATUS_FILE
+
+    def test_is_canonical_target_is_the_one_definition(self, monkeypatch):
+        """Canonical identity is defined once in db.py; paths asks rather than re-deriving it from
+        the env vars (a second copy is the implemented-twice-drifts class)."""
+        import inspect
+        from infrastructure.acquisition.common import db as gdb
+        self._outside_pytest(monkeypatch)
+        monkeypatch.delenv("GOVERNANCE_DATABASE_URL", raising=False)
+        monkeypatch.setenv("GOVERNANCE_DB_NAME", "governance")
+        assert gdb.is_canonical_target() is True
+        monkeypatch.setenv("GOVERNANCE_DB_NAME", "clone")
+        assert gdb.is_canonical_target() is False
+        src = inspect.getsource(paths.guard_tracked_backup)
+        assert "is_canonical_target" in src
+        assert "GOVERNANCE_DB_NAME" not in src      # paths must NOT re-derive the identity
+
+
+class TestCanonicalDbNameParsing844:
+    """#844: `is_canonical_target` string-split the raw URL, so any query string stayed in the
+    compared token — `…/governance?sslmode=require` (the documented Supabase/cloud form) read as
+    NON-canonical, and every precious export silently quarantined. The name is now PARSED."""
+
+    def _outside_pytest(self, monkeypatch):
+        monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
+
+    def test_sslmode_query_string_is_still_canonical(self, monkeypatch):
+        self._outside_pytest(monkeypatch)
+        monkeypatch.setenv("GOVERNANCE_DATABASE_URL",
+                           "postgresql://u:p@db.example:5432/governance?sslmode=require")
+        assert paths.guard_tracked_backup(paths.STATUS_FILE) == paths.STATUS_FILE
+
+    def test_trailing_slash_and_credentials_with_slash(self, monkeypatch):
+        from infrastructure.acquisition.common import db as gdb
+        assert gdb._db_name("postgresql://u:p@h:5432/governance/") == "governance"
+        assert gdb._db_name("postgresql://u:p%2Fx@h:5432/governance?a=1") == "governance"
+        assert gdb._db_name("postgresql://u:p@h:5432/governance") == "governance"
+
+    def test_a_non_canonical_name_with_a_query_string_is_still_caught(self, monkeypatch):
+        """Parsing must not over-correct into accepting everything."""
+        self._outside_pytest(monkeypatch)
+        monkeypatch.setenv("GOVERNANCE_DATABASE_URL",
+                           "postgresql://u:p@h:5432/gov_scratch?sslmode=require")
+        assert paths.guard_tracked_backup(paths.STATUS_FILE) != paths.STATUS_FILE

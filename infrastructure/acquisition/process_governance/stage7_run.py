@@ -36,6 +36,7 @@ from infrastructure.acquisition.common import school_sampling as SS
 from infrastructure.acquisition.common import timeutil as TU
 from infrastructure.acquisition.stage5_filter import build_signals as BS
 from infrastructure.acquisition.stage6_handoff import cost as COST6
+from infrastructure.acquisition.stage6_handoff import package as PKG6
 from infrastructure.acquisition.stage6_handoff import councils as C6
 from infrastructure.acquisition.stage6_handoff import prompts as P6
 from infrastructure.acquisition.stage6_handoff import requests as R6
@@ -370,6 +371,12 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
             deg = council_degraded(calls)
             if deg:
                 failed["council_degraded"] = deg
+            # #847: a rep that threw BEFORE its overflow could be assessed is exactly what the
+            # tri-state's third arm is for. Set it explicitly so it counts as un-assessable rather
+            # than vanishing from all three arms. (An assessment that did happen before the throw
+            # is not recoverable here — content may never have resolved.)
+            failed["overflow"] = None
+            _stamp_degraded_kind(failed)      # #822/#849: ONE fold, same as the success path
             pd["reps"].append(failed)
             pd["n_reps"] += 1
             print(f"  [rep {i}/{n_total}] {did} {str(rg.get('file', ''))[:28]:28s} "
@@ -390,6 +397,12 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
         degraded = council_degraded(calls)
         if degraded:
             rep_out["council_degraded"] = degraded       # #709: receipt-visible, ≠ barren
+        # #822: overflow is a fact about the DISPATCH decision, not about any call that was made,
+        # so it stands beside `council_degraded` rather than inside it. `degraded_kind` is the ONE
+        # field a consumer reads to ask "how was this rep degraded, worst-first" — folded through
+        # `strongest_kind`, never by re-expressing the precedence here (#810).
+        rep_out["overflow"] = _content_overflow(cfg, kind, content)   # tri-state; None = un-assessable
+        _stamp_degraded_kind(rep_out)
         pd["reps"].append(rep_out)
         pd["accepted"].extend(accepted)
         pd["unresolved"].extend(unresolved)
@@ -455,6 +468,23 @@ def _content_n_times(kind: str, content) -> "int | None":
     about to send, so #180 sizing needs no handoff plumbing (n_times isn't carried through freeze).
     Image reps (content is a data/URL) can't be counted → None → the 16k floor + the #169 retry."""
     return len(BS.time_positions(content)) if kind == "text" and isinstance(content, str) else None
+
+
+def _content_overflow(cfg: dict, kind: str, content) -> "bool | None":
+    """#822 — does what we are ABOUT TO SEND exceed this council's ceiling? Tri-state; `None` is
+    un-assessable (an image rep has no countable times), never False.
+
+    Recomputed from the RESOLVED CONTENT rather than read back off the frozen rep, so this is a real
+    second observation of the same property and not a tautology: Stage 6 measured the DB's
+    `representation` row at dispatch, Stage 7 measures the bytes actually in hand. The shared
+    function they both call lives in `common.model_families` (P4), so the two can disagree only if
+    the content genuinely differs from what was signalled — which is itself worth knowing."""
+    n_times = _content_n_times(kind, content)
+    n_chars = len(content) if isinstance(content, str) else None
+    # #846: the system prompt is prompt-side context too. Same helper Stage 6 uses at dispatch, so
+    # the two sites construct the estimator's INPUTS identically — not merely share its body.
+    return MF.rep_overflow(cfg, n_chars, n_times, kind=kind or "text",
+                           system_chars=PKG6.system_prompt_chars(cfg))
 
 
 def _call(model: str, prompt_id: str, kind: str, content) -> "OR.CallResult":
@@ -561,15 +591,37 @@ def council_degraded(calls: list) -> "dict | None":
     return {"models": sorted(hit), "reasons": hit, "kinds": kinds}
 
 
+def _stamp_degraded_kind(rep: dict) -> None:
+    """Set/clear `rep['degraded_kind']` from BOTH degradation sources via the ONE base-layer fold
+    (`MF.rep_degraded_kinds` + `strongest_kind`). Called by the live success path, the live failure
+    path, and the #716 replay — #843/#845/#847 were three hand-written copies of this disagreeing."""
+    kinds = MF.rep_degraded_kinds(rep)
+    if kinds:
+        rep["degraded_kind"] = MF.strongest_kind(kinds)
+    else:
+        rep.pop("degraded_kind", None)
+
+
 def _rollup_tel(reps: list) -> dict:
     """Sum per-call telemetry across a set of reps (per-district or global)."""
     t = {"calls": 0, "judge_calls": 0, "errors": 0, "rep_errors": 0, "truncated": 0,
          "truncation_retries": 0, "degraded_reps": 0, "truncated_caps": [], "looped": 0,
-         "prompt_tokens": 0, "completion_tokens": 0, "cost_usd": 0.0}
+         "prompt_tokens": 0, "completion_tokens": 0, "cost_usd": 0.0,
+         # #822: the per-kind split behind `degraded_reps`, plus the tri-state's third arm. An
+         # un-assessable rep is NOT a clean one — counting it as such is how the vision tier
+         # reported clean while being unmeasured — so it gets its own line, never a fold into zero.
+         "degraded_kinds": {}, "overflow_reps": 0, "overflow_unassessable": 0}
     caps = set()
     for rep in reps:
-        if rep.get("council_degraded"):   # #709: structurally un-votable, ≠ zero-yield
-            t["degraded_reps"] += 1
+        if rep.get("council_degraded") or rep.get("degraded_kind"):
+            t["degraded_reps"] += 1       # #709: structurally un-votable, ≠ zero-yield
+        if rep.get("degraded_kind"):
+            k = rep["degraded_kind"]
+            t["degraded_kinds"][k] = t["degraded_kinds"].get(k, 0) + 1
+        if rep.get("overflow") is True:
+            t["overflow_reps"] += 1
+        elif rep.get("overflow") is None and "overflow" in rep:
+            t["overflow_unassessable"] += 1
         if rep.get("error"):        # a rep that couldn't be read/processed at all (#173) — no calls
             t["errors"] += 1
             t["rep_errors"] += 1
@@ -577,10 +629,13 @@ def _rollup_tel(reps: list) -> dict:
             if c.get("truncation_retried"):
                 t["truncation_retries"] += 1
             t["calls"] += 1
-            t["prompt_tokens"] += c["prompt_tokens"]
-            t["completion_tokens"] += c["completion_tokens"]
-            t["cost_usd"] += (c["cost_usd"] or 0.0)
-            if not c["ok"]:
+            # .get: the live path (_call_record) always writes these, but the #716 replay now
+            # derives its rollup from STORED call records (#843), and a receipt need not carry
+            # every telemetry key to be a valid audit trail of who said what.
+            t["prompt_tokens"] += c.get("prompt_tokens") or 0
+            t["completion_tokens"] += c.get("completion_tokens") or 0
+            t["cost_usd"] += (c.get("cost_usd") or 0.0)
+            if not c.get("ok", True):
                 t["errors"] += 1
             # #815: the same loop-outranks-truncation precedence the classifier applies — a
             # looped call counts LOOPED even when the ceiling stopped it, so the operator line
@@ -597,7 +652,7 @@ def _rollup_tel(reps: list) -> dict:
                 # 0 = a legacy record without the field; skip rather than report a lie.
                 if c.get("max_tokens_sent"):
                     caps.add(c["max_tokens_sent"])
-            if c["role"] == "judge":
+            if c.get("role") == "judge":
                 t["judge_calls"] += 1
     t["truncated_caps"] = sorted(caps)
     return t
@@ -977,6 +1032,13 @@ def persist_run_session(s, results: dict, *, created_by: str = "auto:stage7",
             prompt_tokens=tel.get("prompt_tokens", 0),
             completion_tokens=tel.get("completion_tokens", 0), cost_usd=tel.get("cost_usd", 0.0),
             n_accepted=len(pd["accepted"]), n_unresolved=len(pd["unresolved"]),
+            # #822: always written, so a degraded run can never be read as a clean zero. `{}` is the
+            # honest empty — an absent key would be indistinguishable from a pre-#822 row.
+            degraded_json=json.dumps({
+                "n": tel.get("degraded_reps", 0),
+                "kinds": tel.get("degraded_kinds", {}),
+                "unassessable": tel.get("overflow_unassessable", 0),
+            } if (tel.get("degraded_reps") or tel.get("overflow_unassessable")) else {}),
             receipt_path=receipt_path)
         s.add(ex)
         s.flush()   # assign extraction_id

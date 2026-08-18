@@ -96,6 +96,33 @@ def test_district_detail_shape(monkeypatch):
     assert body["degenerate_school_facts"] == []                # #245: no junk-named facts here
 
 
+def test_822_an_overflow_run_is_never_shown_as_a_clean_zero(monkeypatch):
+    """#822 P3 — the whole point of the feature. A run whose rep the council could not structurally
+    serve completes with 0 accepted / 0 unresolved and, before this, was indistinguishable at gate@7
+    from a district whose documents simply held nothing. The degraded rollup must ride the payload."""
+    ext = _Result(rows=[{"extraction_id": 3, "handoff_hash": "h", "created_at": "t",
+                         "created_by": "x", "cost_usd": 0.002, "n_accepted": 0,
+                         "n_unresolved": 0, "n_reps": 2, "n_reps_skipped": 0,
+                         "degraded_json": '{"n": 1, "kinds": {"output_overflow": 1},'
+                                          ' "unassessable": 2}'}])
+    _use(monkeypatch, _Con([ext, _Result(), _Result()]))
+    body = client.get("/api/extract/district/D1").json()
+    assert body["extraction"]["n_accepted"] == 0 and body["extraction"]["n_unresolved"] == 0
+    assert body["degraded"]["n"] == 1                       # ...but the run is NOT clean
+    assert body["degraded"]["kinds"]["output_overflow"] == 1
+    assert body["degraded"]["unassessable"] == 2            # the tri-state's third arm survives
+
+
+def test_822_a_pre_822_row_degrades_to_empty_not_to_a_lie(monkeypatch):
+    """A row written before the column existed has no value. The payload must say "nothing known"
+    ({}), never invent a zero-degraded claim about a run that was never assessed."""
+    ext = _Result(rows=[{"extraction_id": 4, "handoff_hash": "h", "created_at": "t",
+                         "created_by": "x", "cost_usd": 0.0, "n_accepted": 1,
+                         "n_unresolved": 0, "n_reps": 1, "degraded_json": None}])
+    _use(monkeypatch, _Con([ext, _Result(), _Result()]))
+    assert client.get("/api/extract/district/D1").json()["degraded"] == {}
+
+
 def test_district_detail_is_cumulative_a_barren_retry_does_not_regress_the_view(monkeypatch):
     # REQ-122 / #232 (the Brownsville case): the header row is the LATEST run (a scoped 7->6 retry
     # that accepted nothing), but accepted/bands must still show run 1's solid facts — the facts

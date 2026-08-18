@@ -4657,3 +4657,130 @@ requirements:
       - "tests/test_model_windows.py (catalog parity, clamp, pre-flight, classification, both marker shapes)"
       - "tests/test_stage7_requests.py (truncated vs degraded vs barren explain split + remedy wording)"
     depends_on: [REQ-051, REQ-056, REQ-117]
+
+  - id: REQ-175
+    github_issue: "#822 (output-overflow monitoring); epic #706; carries the unbuilt monitoring half
+      of #714. Corpus sweep + the two corrected premises:
+      docs/technical-notes/production-quality-control-research/2026-08-18-output-overflow-measure.py"
+    description: "OUTPUT-OVERFLOW MONITORING — a rep whose ESTIMATED OUTPUT exceeds its assigned
+      council's ceiling is detected PRE-FLIGHT (at dispatch, from content size + council membership,
+      before a cent is spent) and again at extraction, and can never record as a clean zero. The
+      ceiling is the WEAKEST member's usable_output at the same prompt estimate — voters AND judge,
+      since a call the judge cannot serve is a call the council cannot serve — never a per-model or
+      global constant. Recorded as DEGRADED_OVERFLOW, a first-class kind heading DEGRADED_PRECEDENCE
+      (it is the CAUSE the other three are symptoms of: a council that structurally cannot emit the
+      answer will then refuse, truncate, or loop). Surfaced at gate@6 (per-rep badge) and gate@7
+      (run banner), and persisted on extraction.degraded_json — before this, NONE of the four kinds
+      reached SQL, so gate@7 could not distinguish a structurally impossible run from an empty one.
+      The verdict is TRI-STATE: True overflows, False fits, None UN-ASSESSABLE (a binary/image rep
+      carries no countable n_times, or a member is uncatalogued). None is never folded into False."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "P1: the four no-fitting-rep records overflow on their live values (4700148:8d0058ac10,
+        1200180:52b4f372cd, 0100270:e1ecbe7cfe, 3501110:ed61346ff2 — n_times 477-658); a fitting rep
+        does not. Two of the four have since left the dispatch population via a gate@5 target_absent
+        label — the sweep reports the REASON, so an explained absence is never read as a miss"
+      - "P2: the ceiling is the weakest council member's usable_output — a council whose judge is
+        narrower than both voters takes the judge's; an uncatalogued member yields None (unknown),
+        never an assumed-infinite ceiling"
+      - "P3: an overflow can never coexist with a clean-zero run record — a run with 0 accepted /
+        0 unresolved and an overflow rep still ships degraded_json.n >= 1 to gate@7"
+      - "P4: the output estimate has EXACTLY ONE implementation, asserted by IDENTITY
+        (openrouter.size_max_tokens IS model_families.size_max_tokens), not by comparing two results
+        — two copies that agree today are the implemented-twice-drifts class. #846 sharpened this:
+        identity locks the FUNCTION, not its INPUTS — the two sites can disagree without either
+        copy being edited if they construct the inputs differently. So the input construction is
+        ALSO one function (rep_prompt_size: content + system prompt, shaped by kind), and P4 is
+        asserted a second time at the CALL SITES — Stage 6 from the signal row and Stage 7 from
+        the assembled body must yield the same estimate for the same rep, text and image"
+      - "P8 (#843/#845/#847/#848): the fold 'how is this rep degraded' — union of the per-call
+        council_degraded kinds and the pre-flight overflow verdict — is ONE base-layer function
+        (rep_degraded_kinds), read by the live success path, the live failure path, the #716 replay,
+        the telemetry rollup, and detect_requests. It was four hand-written copies at review and two
+        disagreed (an overflow-only rep: degraded in telemetry, barren in explain). A replay derives
+        its telemetry through the same rollup as the live run, so a replayed degraded receipt cannot
+        persist degraded_json='{}' and read clean at gate@7. On replay, degraded_kind (a projection)
+        is always recomputed; the stored overflow verdict (the receipt's dispatch-time testimony) is
+        NOT re-judged against today's registry — that would be the retroactive relabelling P7 forbids"
+      - "P5: the corpus population is swept and reported: 43 reps / 43 records / 19 districts
+        overflow (35 of them already ceiling <= 0, i.e. prompt alone fills the window), 8 reps
+        un-assessable, over 873 sent reps / 114 districts (2026-08-18)"
+      - "P6: estimate_output_tokens is UNCLAMPED. size_max_tokens clamps to MAX_TOKENS_CEILING
+        (32,000), which is BELOW the image council's 32,768 ceiling — so a clamped need could never
+        exceed it and the issue's '0 records exceed the image council' was true by construction.
+        A need estimate that cannot exceed what it is compared against is not a measurement"
+      - "P7: the empty/unknown-kinds default is pinned to a NAMED kind (DEGRADED_DEFAULT =
+        context_refused), NOT to DEGRADED_PRECEDENCE[0] — prepending OVERFLOW must not retroactively
+        relabel #709-#793-era receipts as a pre-flight claim they never made"
+    notes: |
+      Two of this issue's own stated premises were falsified by measurement before implementation,
+      the tenth instance of the standing "measure the thing before fixing it" lesson.
+      (1) The vision tier was un-flaggable by CONSTRUCTION, for two independent reasons: image reps
+      carry n_chars/n_times NULL in `representation` (so the estimate floors), and the clamp tops out
+      below the image council's ceiling. The reported "0 records exceed the image council's ceiling"
+      was therefore a tautology. The corrected reading is 0 overflow AND 8 un-assessable — unmeasured,
+      not clean. This matters to epic #80: the vision tier is exactly where the higher-ceiling remedy
+      routing (#823) lives, so a False there would bias the population those experiments choose among.
+      (2) n_times is now load-bearing for a SECOND decision. It was the output-sizing input (REQ-174,
+      #180); via overflow it now also gates a dispatch signal, so a capture undercount (#685, Cedar
+      Rapids: 110 clock times present, 54 captured) understates the estimate and can make a rep read
+      "fits" when it overflows. Measured exposure 2026-08-18: 5 of 822 fitting reps sit within a 2x
+      undercount of their ceiling. Cedar Rapids itself is not among them (~3,878 need vs 16,384).
+    tests:
+      - "tests/test_model_windows.py::TestOverflowDegrades822 (P1/P2/P4/P6/P7 + precedence)"
+      - "tests/test_model_windows.py::TestReviewFindings843to849 (P4 call-site equality, P8; 10 of
+        11 verified to FAIL against the pre-fix code)"
+      - "tests/test_stage7_api.py::test_822_* (P3 — the clean-zero payload, and a pre-822 row
+        degrading to {} rather than to a fabricated zero-degraded claim)"
+      - "infrastructure/scraper/verify_822_console.mjs (gate@6 badge + gate@7 banner, 15/15;
+        includes the discrimination checks — the banner HIDES on an undegraded run, and 1 of 21
+        reps is badged, so neither surface is a thing that always fires)"
+    depends_on: [REQ-056, REQ-117, REQ-174]
+
+  - id: REQ-176
+    github_issue: "#822 (found during its console verification)"
+    description: "TRACKED PRECIOUS BACKUPS ARE REGENERATED ONLY FROM THE CANONICAL GOVERNANCE DB —
+      every exporter rebuilds its git-tracked JSON twin WHOLESALE from the connected DB's event log,
+      so a process pointed at any other database writes a file describing a different world. Cloning
+      the governance DB does NOT isolate these files: they live on disk and know nothing about which
+      database was chosen. `paths.guard_tracked_backup` therefore quarantines a tracked export under
+      EITHER cause — running under pytest (REQ's #178 original) or connected to a non-canonical DB —
+      with a one-time stderr note naming the reason. Redirecting rather than raising is deliberate:
+      it keeps scratch console verification working end to end, which is what makes the guard
+      something people leave switched on. Canonical identity is defined ONCE, in
+      db.is_canonical_target(), read from the RESOLVED url so the GOVERNANCE_DATABASE_URL override
+      cannot bypass it; paths asks rather than re-deriving it from the env vars."
+    type: non-functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "P1 (must fail before the fix): a tracked export while connected to a `TEMPLATE governance`
+        clone is quarantined, not written to the tracked path — the exact configuration that leaked"
+      - "P2: all twelve TRACKED_BACKUPS are covered, not only district_status.json"
+      - "P3: a GOVERNANCE_DATABASE_URL override naming a non-canonical database is caught too — the
+        check reads the resolved url, so it is not a special case of the env-var branch"
+      - "P4: the canonical DB passes through unchanged (the guard discriminates)"
+      - "P5: canonical identity has one definition — guard_tracked_backup references
+        is_canonical_target and does NOT mention GOVERNANCE_DB_NAME"
+      - "P6 (#844): the database name is PARSED from the URL, never string-split — the documented
+        cloud form `…/governance?sslmode=require` is canonical; a trailing slash and credentials
+        containing '/' are handled; a non-canonical name WITH a query string is still caught"
+    notes: |
+      Found by doing the thing, not by review. A #822 console verification cloned the governance DB
+      precisely so the real one stayed untouched, then created a gate@6 draft against the clone —
+      and district_status.json picked up a `draft_add_district` event for district 1201440 with
+      actor `verify822`. Reverted by hand; the guard is so it cannot recur.
+      The stakes are larger than a stray event. Because each exporter rebuilds its file wholesale,
+      a scratch server on an EMPTY governance DB blanks the lot: measured 2026-08-18, the tracked
+      file held 175 districts and an empty-DB export produced 0. That is data loss on precious
+      state, reachable by a workflow the project actively recommends (scratch servers on :8015).
+      The #178 guard already existed and did not fire, because it keys on "am I in pytest" — the
+      CAUSE — rather than on "is this state the real world" — the HARM. Same shape as several
+      earlier findings: a guard aimed at one cause of a harm leaves the other causes open.
+    tests:
+      - "tests/test_precious_backup_guard.py::TestNonCanonicalDb822 (P1-P5; 4 of the 5 verified to
+        FAIL against the pre-#822 guard body and pass after)"
+      - "tests/test_precious_backup_guard.py::TestCanonicalDbNameParsing844 (P6)"
+    depends_on: [REQ-175]

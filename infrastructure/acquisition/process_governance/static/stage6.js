@@ -235,6 +235,22 @@
       </div>`;
   }
 
+  // #822: does this rep's estimated output exceed the assigned council's ceiling (its weakest
+  // member's usable window)? TRI-STATE, and the third state gets its OWN rendering: `null` means
+  // un-assessable (an image rep carries no countable clock times), which is NOT "fits". Rendering
+  // un-assessable as clean is precisely how the vision tier read as fine while being unmeasured.
+  function overflowBadge(rep) {
+    if (rep.overflow === true) {
+      return `<span class="badge badge-red" data-feat="overflow-badge" data-overflow="true"
+        title="estimated output exceeds this council's ceiling (weakest member's usable window) — the call cannot return a complete roster (#822)">output-overflow</span>`;
+    }
+    if (rep.overflow === null || rep.overflow === undefined) {
+      return `<span class="badge badge-warn" data-feat="overflow-badge" data-overflow="unassessable"
+        title="output size cannot be assessed for this rep (no countable clock times — binary/image). Not a clean fit: unmeasured (#822)">overflow: un-assessable</span>`;
+    }
+    return "";
+  }
+
   function repRow(did, recKey, rep, editable) {
     const key = `${recKey}::${rep.file}`;
     const current = rep.councils[0] || "";
@@ -248,6 +264,7 @@
               data-kind="${esc(rep.kind)}" title="click to inspect this representation">${esc(rep.file)}</code> →
         ${councilCell}
         ${rep.fidelity_suspect ? `<span class="badge badge-warn">fidelity-suspect</span>` : ""}
+        ${overflowBadge(rep)}
         ${BM_KEYS.has(`${did}::${recKey}`) ? `<span class="badge badge-red" title="injected curated-GT representation (capture source 'benchmark_gt') — blocks a production freeze">gt:// injected</span>` : ""}
         <span class="s6-usd">${usd(rep.est_usd)}</span></div>`;
   }

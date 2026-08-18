@@ -55,6 +55,14 @@ class Extraction(gdb.Base):
     n_accepted: Mapped[int] = mapped_column(Integer, default=0)
     n_unresolved: Mapped[int] = mapped_column(Integer, default=0)
     receipt_path: Mapped[str | None] = mapped_column(String, nullable=True)
+    # #822: the run's degradation rollup — {"n": reps degraded, "kinds": {kind: count},
+    # "unassessable": reps whose overflow could not be assessed}. ALWAYS written (an undegraded run
+    # stores `{}`), because the whole point is that a structurally impossible call must never be
+    # indistinguishable from a clean zero-yield one: before this column, none of the four degraded
+    # kinds reached SQL at all — they lived only in the disk receipt, which gate@7 does not read.
+    # Deliberately UNindexed, like every other _PRECIOUS_ALTERS column.
+    degraded_json: Mapped[str] = mapped_column(String, default="{}", server_default="{}",
+                                               nullable=False)
 
 
 class SchoolFact(gdb.Base):

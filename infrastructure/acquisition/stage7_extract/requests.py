@@ -23,7 +23,7 @@ detection is still valid and is exactly how we test this logic against a known c
 from __future__ import annotations
 
 from infrastructure.acquisition.common.model_families import (
-    DEGRADED_LOOPED, DEGRADED_TRUNCATED, strongest_kind)
+    DEGRADED_LOOPED, DEGRADED_TRUNCATED, rep_degraded_kinds, strongest_kind)
 
 BANDS = ("elementary", "middle", "high")
 
@@ -288,11 +288,14 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
     # comprehension on a non-unique key silently discarding a sibling). #798/#810: which kind wins —
     # and what an absent/empty `kinds` means — is `strongest_kind`'s ONE decision in the base layer,
     # not re-expressed here in a second idiom.
+    # #848 (#822): read BOTH degradation sources through the ONE base-layer fold, the same one the
+    # telemetry rollup reads — an overflow-only rep counted as degraded in telemetry but explained
+    # here as ordinary barren was two counters disagreeing about the same population.
     degraded_kinds: dict = {}
     for rep in result.get("reps", []):
-        if rep.get("council_degraded"):
-            degraded_kinds.setdefault(rep["rec_key"], []).extend(
-                (rep["council_degraded"].get("kinds") or {}).values())
+        kinds = rep_degraded_kinds(rep)
+        if kinds:
+            degraded_kinds.setdefault(rep["rec_key"], []).extend(kinds)
     if explain is not None:
         explain["suppressed_degraded_reps"] = 0
         explain["suppressed_truncated_reps"] = 0

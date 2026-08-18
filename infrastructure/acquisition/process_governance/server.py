@@ -2675,7 +2675,7 @@ def extract_district(district_id: str):
     with gdb.session_scope() as con:
         ext = con.execute(text(
             "SELECT extraction_id, handoff_hash, created_at, created_by, cost_usd, "
-            "n_accepted, n_unresolved, n_reps, n_reps_skipped FROM extraction "
+            "n_accepted, n_unresolved, n_reps, n_reps_skipped, degraded_json FROM extraction "
             "WHERE district_id = :d AND run_kind = 'production' "     # #148: exclude probe runs
             "ORDER BY extraction_id DESC LIMIT 1"), {"d": district_id}).mappings().first()
         if not ext:
@@ -2759,9 +2759,16 @@ def extract_district(district_id: str):
         # would show n_accepted=0 beside a non-empty accepted[]).
         ext_out = dict(ext)
         ext_out["n_accepted"], ext_out["n_unresolved"] = len(accepted), len(unresolved)
+        # #822: the run's degradation rollup, so gate@7 can never show a structurally impossible
+        # run as a clean zero. Written by every run since #822 ('{}' when undegraded); a pre-#822
+        # row has no column value at all, which is why a parse failure yields {} rather than a lie.
+        try:
+            degraded = json.loads(ext_out.get("degraded_json") or "{}")
+        except (TypeError, ValueError):
+            degraded = {}
         return {"extraction": ext_out, "bands": bands, "accepted": accepted,
                 "unresolved": unresolved, "requests": req_dicts, "contamination": contamination,
-                "degenerate_school_facts": degenerate}
+                "degenerate_school_facts": degenerate, "degraded": degraded}
 
 
 # ==================== Stage 8 / gate@8 — Aggregate (the closing argument) ====================

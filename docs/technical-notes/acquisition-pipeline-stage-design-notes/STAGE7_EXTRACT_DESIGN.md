@@ -188,7 +188,31 @@ exercise against the #200/#209-hardened pipeline, not a distinct issue awaiting 
   The truncation retry targets `min(MAX_TOKENS_CEILING, cap)`. Uncatalogued models keep
   legacy behavior. Composition remedies (chunking, long-context routing, substitutes, per-model
   ceiling raises) are #80's to measure — corpus population in
-  `learning-loop-reports/2026-08-16-714-709-context-accounting.md`. `_client()` (the OpenAI SDK client) is `functools.lru_cache`d
+  `learning-loop-reports/2026-08-16-714-709-context-accounting.md`.
+  **#822/REQ-175 — the per-call marker is no longer the ONLY degradation source, and the rollup
+  reaches SQL.** A fourth kind, `output_overflow`, is a *pre-flight* fact (the rep's estimated
+  output exceeds the routed council's ceiling — its weakest member's usable window, judge included)
+  stamped on the rep at Stage 6 and recomputed here from the RESOLVED content (a second observation,
+  not a read-back). It heads `DEGRADED_PRECEDENCE` as the cause the other three are symptoms of.
+  Every consumer — the live success and failure paths, the #716 replay, `_rollup_tel`, and
+  `requests.detect_requests` — reads BOTH sources through the one base-layer fold
+  `model_families.rep_degraded_kinds` (#843/#845/#847/#848: four hand-written copies of that fold
+  once disagreed, an overflow-only rep counting as degraded in telemetry and barren in `explain`).
+  The verdict is tri-state (`True`/`False`/`None` un-assessable) and the failure path sets `None`
+  explicitly, so an errored rep is *assessed-as-unassessable* rather than absent from all three
+  arms. `persist_run_session` always writes `extraction.degraded_json` (`{n, kinds, unassessable}`,
+  `{}` when clean; a `_PRECIOUS_ALTERS` dual-DDL column) — before it, no kind reached SQL at all and
+  gate@7 could not tell a structurally impossible run from an empty district. The replay's telemetry
+  is derived through the same `_rollup_tel` (then zero-spend-overridden), never hand-written, so a
+  replayed degraded receipt cannot insert a newer row that reads clean; the replay recomputes
+  `degraded_kind` (a projection) but keeps the stored `overflow` as the receipt's dispatch-time
+  testimony (§3D of the Stage 6 note). Sizing constants and the output/prompt estimators now live in
+  `common/model_families.py` (openrouter re-exports every name — the move is forced by the layering
+  contract, since Stage 6 may not import Stage 7); the need estimate `estimate_output_tokens` is
+  UNCLAMPED (distinct from `size_max_tokens`, what we request), and the estimator's inputs are one
+  construction too (`rep_prompt_size`: content + system prompt, shaped by kind — #846), asserted at
+  the call sites: the same rep yields the same estimate from a signal row and an assembled body.
+  `_client()` (the OpenAI SDK client) is `functools.lru_cache`d
   per `(key, timeout)` (#148) so consecutive calls in a batch reuse one httpx connection pool instead of
   a fresh TLS handshake each call (was ~30-60s/batch of pure handshake); an autouse conftest fixture
   clears the cache per test. Raises `BillingAuthError` on 401/402 (halts the run rather than burning

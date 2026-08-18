@@ -509,10 +509,12 @@ class TestLoopDegrades812:
         c["role"] = "judge"
         assert council_degraded([c]) is None
 
-    def test_precedence_order_is_refused_looped_truncated(self):
+    def test_precedence_order_is_overflow_refused_looped_truncated(self):
+        """#822 prepends OVERFLOW; the #812 relative order below it is unchanged."""
         from infrastructure.acquisition.common.model_families import (
-            DEGRADED_PRECEDENCE, strongest_kind)
-        assert DEGRADED_PRECEDENCE == (DEGRADED_REFUSED, DEGRADED_LOOPED, DEGRADED_TRUNCATED)
+            DEGRADED_OVERFLOW, DEGRADED_PRECEDENCE, strongest_kind)
+        assert DEGRADED_PRECEDENCE == (
+            DEGRADED_OVERFLOW, DEGRADED_REFUSED, DEGRADED_LOOPED, DEGRADED_TRUNCATED)
         assert strongest_kind([DEGRADED_TRUNCATED, DEGRADED_LOOPED]) == DEGRADED_LOOPED
         assert strongest_kind([DEGRADED_LOOPED, DEGRADED_REFUSED]) == DEGRADED_REFUSED
 
@@ -572,3 +574,247 @@ def test_818_raw_row_count_always_rides_the_call_record():
     rec = _call_record(GEMINI, "voter", res, [dict(fact) for _ in range(7)])
     assert rec["n_rows_raw"] == 7 and rec["n_facts"] == 1     # sub-threshold: no loop marker,
     assert "degenerate_repetition" not in rec                 # but the raw count survives
+
+
+class TestOverflowDegrades822:
+    """#822 — a rep whose estimated OUTPUT exceeds its assigned council's ceiling is degraded
+    pre-flight, before a cent is spent, and can never record as a clean zero.
+
+    Distinct from the three kinds above: those are facts about a call that was MADE (it refused, it
+    truncated, it looped). Overflow is a fact about the dispatch DECISION, computable from content
+    size plus council membership alone. `n_times`/`n_chars` below are the live `representation`
+    values for the four records the issue pins (read 2026-08-18)."""
+
+    # (rec_key, n_chars, n_times) — the smallest-n_times usable text rep of each pinned record.
+    NO_FITTING_REP = [
+        ("4700148:8d0058ac10", 109259, 658),   # Memphis
+        ("1200180:52b4f372cd", 12555, 477),    # Broward
+        ("0100270:e1ecbe7cfe", 15414, 626),    # Baldwin
+        ("3501110:ed61346ff2", 16773, 545),
+    ]
+
+    def _text_council(self):
+        from infrastructure.acquisition.stage6_handoff import councils as C6
+        return C6.load_configs()["low-cost-text"]
+
+    def test_p1_the_four_no_fitting_rep_records_overflow(self):
+        """P1 — must fail before this feature existed: each pinned record's text rep needs more
+        completion tokens than the low-cost-text council's weakest member can emit."""
+        from infrastructure.acquisition.common.model_families import rep_overflow
+        cfg = self._text_council()
+        for rec_key, n_chars, n_times in self.NO_FITTING_REP:
+            assert rep_overflow(cfg, n_chars, n_times) is True, f"{rec_key} should overflow"
+
+    def test_p1_a_rep_that_fits_is_not_flagged(self):
+        """The other half of P1 — the flag must discriminate, not fire on everything."""
+        from infrastructure.acquisition.common.model_families import rep_overflow
+        cfg = self._text_council()
+        assert rep_overflow(cfg, 2360, 120) is False      # 0102370:059ddd4a31, live values
+        assert rep_overflow(cfg, 4715, 136) is False      # 0200510:e089ddd8c5
+
+    def test_p2_the_ceiling_is_the_weakest_member_including_the_judge(self):
+        """P2 — a council whose JUDGE is narrower than both voters takes the judge's ceiling.
+        `council_degraded` only ever MARKS voters, but a call the judge cannot serve is a call the
+        council cannot serve, so capacity must count all three."""
+        from infrastructure.acquisition.common.model_families import (
+            council_ceiling, usable_output)
+        wide_voters_narrow_judge = {
+            "id": "t", "voters": ["google/gemini-2.5-flash", "mistralai/mistral-large-2512"],
+            "judge": "qwen/qwen3-235b-a22b-2507"}          # max_out 16,384 — the narrowest
+        assert council_ceiling(wide_voters_narrow_judge, 1000) == \
+            usable_output("qwen/qwen3-235b-a22b-2507", 1000)
+        assert council_ceiling(wide_voters_narrow_judge, 1000) == 16_384
+
+    def test_p2_an_uncatalogued_member_makes_the_ceiling_unknown_not_infinite(self):
+        from infrastructure.acquisition.common.model_families import council_ceiling
+        cfg = {"id": "t", "voters": ["google/gemini-2.5-flash", "who/unknown-model"],
+               "judge": "deepseek/deepseek-v3.2"}
+        assert council_ceiling(cfg, 1000) is None
+
+    def test_p4_the_output_estimate_has_exactly_one_implementation(self):
+        """P4 — asserted by IDENTITY, not by comparing two results. Two copies that agree today are
+        the implemented-twice-drifts class (#798/#810/#799/#816, #834); the only real lock is that
+        there is nothing to diverge. `openrouter` re-exports `common`'s function object itself."""
+        from infrastructure.acquisition.common import model_families as MF
+        assert OR.size_max_tokens is MF.size_max_tokens
+        assert OR.MAX_TOKENS_CEILING is MF.MAX_TOKENS_CEILING
+        assert OR.MIN_USEFUL_OUTPUT is MF.MIN_USEFUL_OUTPUT
+        # ...and the prompt estimate agrees across the two ways its inputs are obtained: Stage 6
+        # counts chars/images off the signal row, Stage 7 walks the assembled body.
+        body = {"messages": [{"role": "user", "content": "x" * 9000}]}
+        assert OR._est_prompt_tokens(body) == MF.estimate_prompt_tokens(9000, 0)
+
+    def test_an_image_rep_is_unassessable_never_false(self):
+        """The finding that reshaped this issue. Image reps carry n_times NULL, so scoring them
+        `False` would report the whole vision tier as fitting when it was merely unmeasured — and
+        the vision tier is exactly where the higher-ceiling remedy (#823) lives."""
+        from infrastructure.acquisition.common.model_families import (
+            estimate_output_tokens, rep_overflow)
+        cfg = self._text_council()
+        assert rep_overflow(cfg, None, None) is None
+        assert estimate_output_tokens(None) is None
+        assert rep_overflow(cfg, None, None) is not False    # explicit: the trap this guards
+
+    def test_the_need_estimate_is_unclamped_so_the_image_ceiling_stays_falsifiable(self):
+        """`size_max_tokens` clamps to 32,000, which is BELOW the image council's 32,768 ceiling —
+        so a clamped need could never exceed it and '0 records overflow the image council' would be
+        true by construction. The need estimate must be able to exceed what it is compared against,
+        or the comparison is not a measurement."""
+        from infrastructure.acquisition.common.model_families import (
+            MAX_TOKENS_CEILING, council_ceiling, estimate_output_tokens, size_max_tokens)
+        from infrastructure.acquisition.stage6_handoff import councils as C6
+        image_ceiling = council_ceiling(C6.load_configs()["image"], 0)
+        assert MAX_TOKENS_CEILING < image_ceiling            # the trap, pinned
+        assert size_max_tokens(3211) == MAX_TOKENS_CEILING   # clamped: could never exceed it
+        assert estimate_output_tokens(3211) > image_ceiling  # unclamped: it can, and does
+
+    def test_the_empty_kinds_default_survives_a_precedence_reorder(self):
+        """#822 put OVERFLOW at index 0. The absent/unknown-kinds default must stay pinned to a
+        NAMED kind: a legacy #709-#793 receipt carries no `kinds`, and relabelling it
+        `output_overflow` would assert a dispatch-time claim it never made."""
+        from infrastructure.acquisition.common.model_families import (
+            DEGRADED_DEFAULT, DEGRADED_PRECEDENCE, strongest_kind)
+        assert DEGRADED_DEFAULT == DEGRADED_REFUSED
+        assert DEGRADED_DEFAULT is not DEGRADED_PRECEDENCE[0]
+        assert strongest_kind({}) == DEGRADED_REFUSED
+        assert strongest_kind(["not-a-real-kind"]) == DEGRADED_REFUSED
+
+    def test_overflow_outranks_every_symptom_it_causes(self):
+        from infrastructure.acquisition.common.model_families import (
+            DEGRADED_OVERFLOW, strongest_kind)
+        for symptom in (DEGRADED_REFUSED, DEGRADED_LOOPED, DEGRADED_TRUNCATED):
+            assert strongest_kind([symptom, DEGRADED_OVERFLOW]) == DEGRADED_OVERFLOW
+
+
+class TestReviewFindings843to849:
+    """The 2026-08-18 review of PR #842 (#843–#849). Each test FAILS against the pre-fix code —
+    verified by reverting — or it locks nothing. The common root of #843/#845/#847/#848: the
+    "how is this rep degraded" fold was written by hand at FOUR sites (live success, live failure,
+    replay, detect_requests) and two of them disagreed at review — the implemented-twice-drifts
+    class one layer up. The fix is ONE fold in the base layer, `MF.rep_degraded_kinds`."""
+
+    def test_848_the_one_fold_reads_both_sources(self):
+        from infrastructure.acquisition.common.model_families import (
+            DEGRADED_DEFAULT, DEGRADED_OVERFLOW, rep_degraded_kinds)
+        # overflow-only rep — the case detect_requests explained as ordinary barren
+        assert rep_degraded_kinds({"overflow": True}) == {DEGRADED_OVERFLOW}
+        # per-call marker only
+        assert rep_degraded_kinds({"council_degraded": {"kinds": {"m": DEGRADED_TRUNCATED}}}) \
+            == {DEGRADED_TRUNCATED}
+        # both — union, not last-write-wins
+        assert rep_degraded_kinds({"overflow": True,
+                                   "council_degraded": {"kinds": {"m": DEGRADED_LOOPED}}}) \
+            == {DEGRADED_OVERFLOW, DEGRADED_LOOPED}
+        # un-assessable is NOT a kind — it is the absence of an assessment
+        assert rep_degraded_kinds({"overflow": None}) == set()
+        assert rep_degraded_kinds({}) == set()
+        # #798: a legacy marker with NO kinds is still a degradation, read as the default
+        assert rep_degraded_kinds({"council_degraded": {"models": ["m"]}}) == {DEGRADED_DEFAULT}
+
+    def test_848_detect_requests_explains_an_overflow_rep_as_degraded_not_barren(self):
+        """Two counters describing the same population must agree: telemetry counted this rep
+        degraded, `explain` called it barren."""
+        from infrastructure.acquisition.stage7_extract import requests as RQ
+        rep = {"rec_key": "D1:x", "file": "a.txt", "accepted": [], "overflow": True}
+        explain = {}
+        RQ.detect_requests({"district_id": "D1", "reps": [rep], "accepted": [
+            {"band": "elementary", "school": "e", "rec_key": "D1:x"}]},
+            claimed_bands=["elementary"], real_bands={"elementary"}, explain=explain)
+        assert explain["suppressed_degraded_reps"] == 1
+
+    def test_847_an_errored_rep_is_unassessable_not_absent(self):
+        """The exception path must set overflow=None explicitly, so the rep lands in the tri-state's
+        third arm rather than in none of the three."""
+        from infrastructure.acquisition.process_governance.stage7_run import _rollup_tel
+        # what the failure path produces now
+        failed = {"rec_key": "D1:x", "file": "a", "calls": [], "accepted": [], "unresolved": [],
+                  "error": "boom", "overflow": None}
+        assert _rollup_tel([failed])["overflow_unassessable"] == 1
+        # and the source itself: the failure path SETS the key
+        import inspect
+        from infrastructure.acquisition.process_governance import stage7_run as S7R
+        src = inspect.getsource(S7R._run_district)
+        assert 'failed["overflow"] = None' in src
+
+    def test_849_failure_path_has_one_degraded_guard_not_two(self):
+        import inspect
+        from infrastructure.acquisition.process_governance import stage7_run as S7R
+        src = inspect.getsource(S7R._run_district)
+        # the failure block: from `failed = {` to `pd["reps"].append(failed)`
+        blk = src[src.index("failed = {"):src.index('pd["reps"].append(failed)')]
+        assert blk.count("if deg:") == 1
+        assert "_stamp_degraded_kind(failed)" in blk    # ...and it uses the ONE fold
+
+    def test_845_replay_re_derives_degraded_kind_but_keeps_the_receipts_overflow_testimony(self):
+        """`degraded_kind` is a projection and is always recomputed. `overflow` is the receipt's
+        own dispatch-time verdict and is NOT re-judged against today's registry (REQ-175 P7: never
+        retroactively relabel). A pre-#822 receipt without the key stays without it."""
+        from infrastructure.acquisition.common.model_families import DEGRADED_OVERFLOW
+        from infrastructure.acquisition.process_governance.reaggregate import _rebuild_rep
+        # (a) pre-#822 receipt: no overflow key, a stale degraded_kind that should NOT survive
+        pre = {"rec_key": "D1:x", "file": "a", "calls": [], "degraded_kind": "output_overflow"}
+        out = _rebuild_rep(pre)
+        assert "overflow" not in out                       # not invented
+        assert "degraded_kind" not in out                  # stale projection recomputed away
+        # (b) post-#822 receipt with a stored verdict: testimony kept, kind derived FROM it
+        post = {"rec_key": "D1:x", "file": "a", "calls": [], "overflow": True}
+        out = _rebuild_rep(post)
+        assert out["overflow"] is True
+        assert out["degraded_kind"] == DEGRADED_OVERFLOW
+
+    def test_843_replay_telemetry_carries_the_degraded_rollup(self, tmp_path, monkeypatch):
+        """A replayed degraded receipt must not persist degraded_json='{}' — that inserts a
+        higher extraction_id row that gate@7 reads as CLEAN, the exact clean zero #822 forbids.
+        Asserted through the dry-run preview, which now surfaces the rollup the replay WILL
+        persist (built by the same `_rollup_tel` the live path uses, then zero-spend-overridden)."""
+        import json
+        from infrastructure.acquisition.process_governance import reaggregate as RA
+        rec = {"handoff_hash": "h", "district": {
+            "district_id": "D1", "n_reps": 1, "accepted": [], "unresolved": [],
+            "reps": [{"rec_key": "D1:x", "file": "a", "kind": "text", "council_id": "c",
+                      "judged": False, "calls": [], "accepted": [], "unresolved": [],
+                      "overflow": True}]}}
+        p = tmp_path / "extraction_h_D1_t.json"
+        p.write_text(json.dumps(rec))
+        monkeypatch.setattr(RA, "_labels_for_recs", lambda k: {})
+        monkeypatch.setattr(RA.S7R, "consensus_context_for_district", lambda *a, **k: None)
+        out = RA.reaggregate_receipt(str(p), dry_run=True)
+        assert out["degraded"] == {"n": 1, "kinds": {"output_overflow": 1}, "unassessable": 0}
+        # ...and the replay's rollup IS the live rollup, not a hand-written dict
+        import inspect
+        assert "_rollup_tel(reps)" in inspect.getsource(RA.reaggregate_receipt)
+
+    def test_846_dispatch_and_extraction_construct_the_same_estimator_inputs(self):
+        """P4 asserted at the CALL SITES, not just the function body: Stage 6 (signal row +
+        system prompt) and Stage 7 (assembled body) must yield the same prompt-token estimate for
+        the same rep — text AND image."""
+        from infrastructure.acquisition.common import model_families as MF
+        from infrastructure.acquisition.stage6_handoff import councils as C6, package as PKG6, prompts as P6
+        from infrastructure.acquisition.stage6_handoff import requests as R6
+        text_cfg = C6.load_configs()["low-cost-text"]
+        img_cfg = C6.load_configs()["image"]
+        for cfg, kind, content in ((text_cfg, "text", "7:45 AM to 2:30 PM " * 400),
+                                   (img_cfg, "image", "data:image/png;base64," + "A" * 5000)):
+            model = cfg["voters"][0]
+            planned = {"model": model, "prompt_id": P6.select_prompt_id(cfg, model), "kind": kind}
+            body = R6.build_request(planned, content)
+            stage7 = OR._est_prompt_tokens(body)                       # walks the assembled body
+            n_chars = len(content) if kind == "text" else None
+            tot, nimg = MF.rep_prompt_size(n_chars, PKG6.system_prompt_chars(cfg), kind)
+            stage6 = MF.estimate_prompt_tokens(tot, nimg)             # from the signal row
+            assert stage6 == stage7, (kind, stage6, stage7)
+
+    def test_846_the_system_prompt_is_no_longer_omitted(self):
+        """The content-only estimate was up to ~1,000 tokens optimistic on v4. Pin that the
+        dispatch estimate now exceeds the content-only figure by the system prompt's share."""
+        from infrastructure.acquisition.common import model_families as MF
+        from infrastructure.acquisition.stage6_handoff import councils as C6, package as PKG6
+        cfg = C6.load_configs()["low-cost-text"]
+        sys_chars = PKG6.system_prompt_chars(cfg)
+        assert sys_chars > 1000                                       # v4 is ~3k chars
+        content_only = MF.estimate_prompt_tokens(30000, 0)
+        tot, nimg = MF.rep_prompt_size(30000, sys_chars, "text")
+        with_system = MF.estimate_prompt_tokens(tot, nimg)
+        # the gap is the system prompt's token share (chars/3, ceil'd once over the total)
+        assert with_system - content_only >= sys_chars // 3
+        assert with_system - content_only <= -(-sys_chars // 3) + 1
