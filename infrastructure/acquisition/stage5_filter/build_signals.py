@@ -1576,7 +1576,13 @@ def ingest_district(sess, ddir: Path, *, splits: set, batches: dict, nces: dict)
         hp = human_hp or sig.get("harvest_pages") or []
         pdf_name = files.get("pdf") or (files.get("bin")
                    if str(files.get("bin", "")).lower().endswith(".pdf") else None)
+        # #833: same exists() guard compute_signals applies. A capture that NAMES a PDF absent from
+        # disk otherwise leaves `pdf` truthy here while page_texts stayed [] upstream, and the
+        # closure below would spawn pdftotext against a file that isn't there for every requested
+        # page — harmless (pdf_page_text returns "") but a wasted subprocess each time.
         pdf = rdir / pdf_name if pdf_name else None
+        if pdf is not None and not pdf.exists():
+            pdf = None
         # `page_texts` came back from compute_signals, so a slice is cut from the SAME extraction
         # the per-page counts were computed over — re-extracting here would be a second chance to
         # drift from the numbers the signal stored. `page_text_from` restores the per-page form
@@ -1593,7 +1599,7 @@ def ingest_district(sess, ddir: Path, *, splits: set, batches: dict, nces: dict)
             # "a handbook record behaves byte-identically" STRUCTURAL rather than argued — a
             # handbook never carries a timebearing_slice, so the new best_send branch is inert for it.
             slice_spec = (sig["timebearing_pages"], TIMEBEARING_SLICE_SOURCE)
-        if slice_spec and pdf and pdf.exists():
+        if slice_spec and pdf:                    # pdf is already None when absent (#833)
             built = build_slice(slice_spec[0], page_text_of, slice_spec[1])
             if built:
                 slice_text, rep_kwargs = built
