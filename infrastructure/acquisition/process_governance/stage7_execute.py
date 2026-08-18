@@ -949,7 +949,13 @@ def live_alternates(rec: dict, sent_files: set) -> list:
         fn, kind = rp.get("filename"), rp.get("file_kind")
         if fn in sent_files or not rp.get("usable"):
             continue
-        if (rp.get("source") or "").startswith("segment:"):
+        src = rp.get("source") or ""
+        # #837: a page SLICE is a strict subset of another rep of this record — never a swap
+        # candidate (see release.NON_SWAPPABLE_SOURCES for the reasoning). NB this site keeps its
+        # own, WIDER segment rule (all `segment:*`, incl. main) — release.alternates admits
+        # segment:main; that pre-existing three-way disagreement is real but is not #837's to
+        # settle silently, so only the slice exclusion is added here.
+        if src.startswith("segment:") or src in REL.NON_SWAPPABLE_SOURCES:
             continue
         if kind == "text" or CONTENT.is_image_kind(kind):
             out.append({"file": fn, "kind": kind, "n_times": rp.get("n_times")})

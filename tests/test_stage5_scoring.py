@@ -268,6 +268,172 @@ def test_page_time_signals_counts_times_and_flags_an_instructional_declaration()
     assert [p["instr"] for p in out] == [False, False, True]
 
 
+# ---- #821 the ABSOLUTE time-bearing page floor ----
+def _ipages(*specs):
+    """specs: (n_times, instr) per page, 1-based."""
+    return [{"page": i + 1, "n_times": n, "instr": ins} for i, (n, ins) in enumerate(specs)]
+
+
+def test_floor_keeps_every_page_the_relative_harvest_throws_away():
+    # MUST FAIL TODAY against harvest_schedule_pages: nothing clears its floor of 6, so it selects
+    # NOTHING and the whole 10-page document is sent. The absolute floor keeps p2 and p5 (times),
+    # p1 (identity) and the neighbours of the time-bearing pages — and drops pages 7-10.
+    pages = _pages(0, 1, 0, 0, 3, 0, 0, 0, 0, 0)
+    assert BS.harvest_schedule_pages(pages) == []
+    assert BS.time_bearing_pages(pages) == [1, 2, 3, 4, 5, 6]
+
+
+def test_floor_is_lossless_where_the_relative_harvest_is_not():
+    # Memphis-shaped: a peak page sets cut = max(6, peak*0.5) and the tail is discarded. The floor
+    # keeps EVERY page carrying a time — that is the whole property.
+    pages = _pages(22, 22, 34, 56, 12, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0)
+    harvested = set(BS.harvest_schedule_pages(pages))
+    floored = set(BS.time_bearing_pages(pages))
+    lost_by_harvest = sum(p["n_times"] for p in pages if p["page"] not in harvested)
+    lost_by_floor = sum(p["n_times"] for p in pages if p["page"] not in floored)
+    assert harvested == {3, 4}          # cut = max(6, 56*0.5) = 28
+    assert lost_by_harvest == 65        # p1, p2, p5 and p11 discarded despite carrying times
+    assert lost_by_floor == 0           # the absolute floor cannot lose a time
+    assert floored                      # and it still scopes: pages 7-10 and 13-15 are dropped
+
+
+def test_floor_keeps_an_instructional_only_page():
+    # MUST FAIL against a naive n_times>0 floor. explicit_instructional_time evidence is colon-free
+    # ("495 minutes of instruction per day") so it scores zero clock times — Memphis
+    # 4700148:00f553bcfc p39 is exactly this, and it is that record's ONLY such page.
+    pages = _ipages((4, False), (0, False), (0, False), (0, False), (0, False),
+                    (0, False), (0, True), (0, False), (0, False))
+    assert 7 in BS.time_bearing_pages(pages)
+    # and it is kept for the DECLARATION, not by neighbouring a time-bearing page
+    assert 6 not in BS.time_bearing_pages(pages) and 8 not in BS.time_bearing_pages(pages)
+
+
+def test_floor_keeps_page_one_and_the_neighbours_of_a_time_bearing_page():
+    pages = _pages(0, 0, 0, 0, 9, 0, 0, 0)
+    assert BS.time_bearing_pages(pages) == [1, 4, 5, 6]
+    assert BS.time_bearing_pages(pages, keep_first=False) == [4, 5, 6]
+    assert BS.time_bearing_pages(pages, keep_neighbors=False) == [1, 5]
+
+
+def test_floor_declines_when_there_is_nothing_to_gain():
+    assert BS.time_bearing_pages([]) == []
+    assert BS.time_bearing_pages(_pages(9)) == []              # single page — nothing to scope
+    assert BS.time_bearing_pages(_pages(0, 0, 0)) == []        # nothing qualifies -> full read
+    # EVERY page qualifies -> a slice identical to the document is pure duplication
+    assert BS.time_bearing_pages(_pages(3, 3, 3)) == []
+
+
+def test_floor_is_inert_for_a_record_with_no_page_concept():
+    # An HTML capture has no PDF and therefore no `pages` at all — the floor cannot fire.
+    assert BS.time_bearing_pages(None) == []
+
+
+# ---- #834 the ONE slice predicate: ingest and best_send must agree by construction ----
+def test_select_slice_precedence_human_then_harvest_then_floor():
+    hb = {"is_handbook": True, "harvest_pages": [4, 9], "timebearing_pages": [1, 2, 4, 9]}
+    # a human range beats everything, whether or not buried_handbook was ticked (#109: they looked)
+    assert BS.select_slice(hb, {"_pages_list": [12]}) == (BS.HARVEST_SLICE_SOURCE, [12])
+    assert BS.select_slice({"timebearing_pages": [1, 3]}, {"_pages_list": [7]}) == \
+        (BS.HARVEST_SLICE_SOURCE, [7])
+    # a handbook whose harvest FOUND pages takes the harvest slice
+    assert BS.select_slice(hb, {}) == (BS.HARVEST_SLICE_SOURCE, [4, 9])
+    # otherwise the floor
+    assert BS.select_slice({"is_handbook": False, "timebearing_pages": [1, 3]}, {}) == \
+        (BS.TIMEBEARING_SLICE_SOURCE, [1, 3])
+    # nothing at all -> None (send whole)
+    assert BS.select_slice({"is_handbook": False}, {}) is None
+    # facets may arrive as the raw JSON string the label row stores
+    assert BS.select_slice({"timebearing_pages": [2]}, '{"_pages_list": [5]}') == \
+        (BS.HARVEST_SLICE_SOURCE, [5])
+
+
+def test_select_slice_a_handbook_with_no_harvest_peak_gets_the_floor():
+    # THE #834 case 1 — 35 live records. is_handbook=True but no page clears the harvest floor of
+    # 6, so harvest_pages is []. The old ingest predicate fell into the floor branch and cut a
+    # timebearing slice; best_send's separate `not handbookish` guard then hid it forever — a
+    # 1,017-page handbook sent whole while a lossless 19-page slice sat unreachable. With ONE
+    # predicate the answer is the same on both sides: this record gets the floor, and may send it.
+    sig = {"is_handbook": True, "harvest_pages": [], "timebearing_pages": [1, 12, 13]}
+    assert BS.select_slice(sig, {}) == (BS.TIMEBEARING_SLICE_SOURCE, [1, 12, 13])
+
+
+def test_select_slice_result_is_a_single_kind_never_both():
+    # mutual exclusion is now a property of the RETURN TYPE, not of branch order in two files
+    for sig in ({"is_handbook": True, "harvest_pages": [3], "timebearing_pages": [1, 3]},
+                {"is_handbook": True, "harvest_pages": [], "timebearing_pages": [1, 3]},
+                {"is_handbook": False, "harvest_pages": [3], "timebearing_pages": [1, 3]}):
+        out = BS.select_slice(sig, {})
+        assert out is None or out[0] in BS.SLICE_SOURCES
+
+
+def test_page_texts_carry_a_completeness_flag(monkeypatch):
+    # #839: the split path is complete; a fallback that stopped short says so.
+    _fake_pdftotext(monkeypatch, "a\fb\fc\f", n_pages=3)
+    out = BS.pdf_page_texts(Path("x.pdf"))
+    assert isinstance(out, BS.PageTexts) and out.complete is True and list(out) == ["a", "b", "c"]
+    # force the per-page fallback to exhaust its budget after 1 page
+    _fake_pdftotext(monkeypatch, None, n_pages=50)
+    monkeypatch.setattr(BS, "PDF_FALLBACK_BUDGET_S", -1)          # already exhausted on entry
+    out = BS.pdf_page_texts(Path("x.pdf"))
+    assert out.complete is False and len(out) < 50
+
+
+def test_floor_declines_to_scope_an_incomplete_scan():
+    # #839: "every page with a time is kept" is a claim about the DOCUMENT. If `pages` is a prefix
+    # of a scan that stopped short, the floor must decline (send whole) rather than scope a prefix
+    # and silently drop the unscanned tail.
+    pages = _pages(0, 9, 0, 0, 0, 0, 0, 0)          # p1 + p2 + p3 kept, p4-8 dropped
+    assert BS.time_bearing_pages(pages, complete=True) == [1, 2, 3]
+    assert BS.time_bearing_pages(pages, complete=False) == []
+
+
+def test_fallback_path_yields_the_same_element_shape_as_the_split_path(monkeypatch):
+    # #835: the two paths used to leave DIFFERENT shapes (fallback kept the trailing \f), so
+    # page_text_from doubled it — "text\f\f" — breaking the byte-identity guarantee on the exact
+    # branches #830/#831 touched. ONE shape leaves pdf_page_texts now.
+    # model the per-page primitive returning text WITH its trailing form feed, as pdf_page_text does
+    def fake_run(cmd, **kw):
+        if "-f" in cmd:
+            return SimpleNamespace(stdout="PAGE\f", returncode=0)
+        return SimpleNamespace(stdout="x", returncode=1)          # force the fallback
+    monkeypatch.setattr(BS.subprocess, "run", fake_run)
+    monkeypatch.setattr(BS, "pdf_page_count", lambda _p: 2)
+    fb = list(BS.pdf_page_texts(Path("x.pdf")))
+    assert fb == ["PAGE", "PAGE"]                                  # form feed stripped, like the split
+    assert BS.page_text_from(fb, 1) == "PAGE\f"                    # restored exactly once
+    assert not BS.page_text_from(fb, 1).endswith("\f\f")
+
+
+def test_page_text_from_restores_the_per_page_form_feed():
+    # pdf_page_texts splits ON the form feeds; pdf_page_text KEEPS the one for its page. Re-adding
+    # it is what keeps a slice cut from cached texts byte-identical to one cut by re-extracting —
+    # without it all 131 existing harvest slices shift by one char per page on re-ingest.
+    assert BS.page_text_from(["alpha", "beta"], 1) == "alpha\f"
+    assert BS.page_text_from(["alpha", "beta"], 2) == "beta\f"
+    assert BS.page_text_from(["alpha"], 7) == ""           # out of range, caller re-extracts
+
+
+def test_build_slice_labels_each_kind_and_shares_one_builder():
+    got = BS.build_slice([1, 2], lambda p: f"page{p} 8:0{p} AM", BS.TIMEBEARING_SLICE_SOURCE)
+    assert got is not None
+    _, kw = got
+    assert kw["source"] == BS.TIMEBEARING_SLICE_SOURCE
+    assert kw["filename"] == BS.TIMEBEARING_SLICE_FILE and kw["usable"] == 1
+    # the harvest wrapper is the SAME builder, only the labelling differs
+    _, hkw = BS.build_slice([1], lambda p: "8:05 AM", BS.HARVEST_SLICE_SOURCE)
+    assert hkw["filename"] == BS.HARVEST_SLICE_FILE
+    assert BS.build_slice([1], lambda p: "   ", BS.HARVEST_SLICE_SOURCE) is None   # nothing usable
+
+
+def test_slice_path_keeps_the_harvest_name_and_suffixes_the_others():
+    # the harvest slice must not MOVE — every existing artifact keeps its path
+    h = BS.slice_path("0100810", "0100810:abc123", BS.HARVEST_SLICE_SOURCE)
+    t = BS.slice_path("0100810", "0100810:abc123", BS.TIMEBEARING_SLICE_SOURCE)
+    assert h.name == "0100810_abc123.txt"
+    assert t.name == f"0100810_abc123.{BS.TIMEBEARING_SLICE_SOURCE}.txt"
+    assert h != t and h.parent == t.parent          # they coexist for one record
+
+
 def test_is_handbook_needs_the_word_and_real_length():
     assert BS.is_handbook_doc("student parent handbook ...", {}, n_pages=15, max_chars=9000) is True
     assert BS.is_handbook_doc("bell schedule", {}, n_pages=1, max_chars=400) is False   # not a handbook

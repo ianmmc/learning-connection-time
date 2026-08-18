@@ -22,7 +22,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from sqlalchemy import text
+from sqlalchemy import bindparam, text
 
 from infrastructure.acquisition.common import benchmark as BM
 from infrastructure.acquisition.common import budget as BUD
@@ -66,17 +66,20 @@ def resolve_content(district_dir: str, rec_key: str, file: str, kind: str = "tex
     hex tail of `rec_key` — the same path gate@6's `inspect` serves. Text reps → the file text;
     image reps → a base64 data: URL for the vision council (`.webp`→`.png` normalized).
 
-    A `harvest_slice.txt` rep is a DERIVED artifact that was relocated OUT of the capture dir (the #58
-    relocation), so joining the capture dir ourselves fails for every relocated slice. Resolve it
-    through `build_signals.resolve_harvest_slice` (new-location-first, legacy fallback) — the same
-    resolver gate@6's `inspect` uses — so the extraction read agrees with what the console serves."""
+    A page-SLICE rep (`harvest_slice.txt`, `timebearing_slice.txt`) is a DERIVED artifact that was
+    relocated OUT of the capture dir (the #58 relocation), so joining the capture dir ourselves fails
+    for every relocated slice. Resolve it through `build_signals.resolve_slice` (new-location-first,
+    legacy fallback) — the same resolver gate@6's `inspect` uses — so the extraction read agrees with
+    what the console serves. `resolve_slice` returns None for a non-slice filename, so this needs no
+    membership test of its own: ONE function knows which files are slices and where they live."""
     h = rec_key.split(":", 1)[1]
-    if file == BS.HARVEST_SLICE_FILE and not CONTENT.is_image_kind(kind):
+    if not CONTENT.is_image_kind(kind):
         district_id = rec_key.split(":", 1)[0]
-        slice_fp = BS.resolve_harvest_slice(district_id, district_dir, rec_key)
+        slice_fp = BS.resolve_slice(district_id, district_dir, rec_key, file)
         if slice_fp is not None:
             return slice_fp.read_text(errors="replace")
-        # neither location exists — fall through so the legacy path raises the same clear error
+        # not a slice, or neither location exists — fall through so the legacy path raises the
+        # same clear error
     fp = paths.RAW_CAPTURES / district_dir / "captures" / h / file
     if CONTENT.is_image_kind(kind):
         return CONTENT.image_data_url(fp)
@@ -1131,8 +1134,11 @@ def _district_request_inputs(session, result: dict, ca_cache: dict = None):
         for fn, kind, nt in session.execute(
                 text("SELECT filename, file_kind, n_times FROM representation WHERE rec_key = :k "
                      "AND usable = 1 AND file_kind IN ('text', 'image') "
-                     "AND source NOT LIKE 'segment:%'"),
-                {"k": rec_key}).all():
+                     "AND source NOT LIKE 'segment:%' "
+                     # #837: a page slice is a strict subset of another rep — never a swap candidate
+                     "AND source NOT IN :slice_sources"
+                     ).bindparams(bindparam("slice_sources", expanding=True)),
+                {"k": rec_key, "slice_sources": sorted(BS.SLICE_SOURCES)}).all():
             if fn not in sent_files:
                 alts.setdefault(rec_key, []).append({"file": fn, "kind": kind, "n_times": nt})
     # District-WIDE band coverage across ALL extractions (this run's facts are already flushed on

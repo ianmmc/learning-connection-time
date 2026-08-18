@@ -64,6 +64,53 @@ def _best_image(images: list) -> dict:
     return next((r for r in images if (r.get("source") or "").startswith("capture:png")), images[0])
 
 
+# The floor slice must EARN its send: it is a recall-preserving filter, not a precision selector,
+# so unlike the handbook branch (where ties go to the slice and no saving test applies) it also has
+# to be materially smaller. Value chosen from the measured saving distribution, not asserted.
+MIN_SLICE_SAVING_FRAC = 0.20
+
+
+def prefer_timebearing_slice(slice_rep: dict, best_text: dict, reps: list = None,
+                             min_saving_frac: float = MIN_SLICE_SAVING_FRAC) -> bool:
+    """#821: send the absolute-floor slice only when it is (a) yield-competitive — the same #230
+    rule the handbook branch uses, `n_times >= the densest text rep's` — AND (b) materially smaller.
+
+    Deliberately NOT shared with the handbook branch: that branch's policy is fixed by the
+    byte-identity guarantee and must not move when this one is tuned.
+
+    On (a): the two counts are NOT like-for-like, and that asymmetry is load-bearing. A slice's
+    `n_times` comes from `build_signals.time_positions` (regex PLUS `to_minutes` validity
+    filtering); a general text rep's comes from Stage 4's different regex with NO validity filter.
+    So for identical text `stage4_count >= build_signals_count`, and the slice is systematically
+    DISADVANTAGED here. That means a provably lossless slice can still lose and fall back to the
+    full read — fail-safe, and the reason the projected token saving is an upper bound. Do not
+    "fix" this into a like-for-like comparison: aligning the counters would move the handbook
+    branch too, which is exactly what the byte-identity guarantee forbids."""
+    if not best_text:
+        return True                                  # nothing to compare against; scoping is free
+    if (slice_rep.get("n_times") or 0) < (best_text.get("n_times") or 0):
+        return False
+    slice_chars = slice_rep.get("n_chars") or 0
+    # #838: the slice is cut from the PDF rendering, whose text rep is `pdftotext`. On an HTML
+    # capture the densest text can be a DIFFERENT extraction (page.txt, an OCR rep) — so a slice
+    # can "save" against what it displaces while being no smaller than, or larger than, its own
+    # parent (3800038:df6bcfc4b7: a 1,786-char slice of a 1,783-char pdftotext, displacing a
+    # 2,985-char page.txt). A slice that is not smaller than the document it was cut FROM is not
+    # scoping that document; it is a re-labelled copy, and it must not win. Both tests apply: no
+    # bigger than its parent AND a material saving against what it displaces — the second is the
+    # one that matters for spend (that is what would otherwise be sent), the first is the one that
+    # keeps the word "slice" honest.
+    parent = next((r for r in (reps or []) if r.get("source") == "pdftotext"
+                   and r.get("file_kind") == "text" and r.get("filename")), None)
+    if parent and slice_chars >= (parent.get("n_chars") or 0):
+        return False
+    full = best_text.get("n_chars") or 0
+    if not full:
+        return False
+    saved = (full - slice_chars) / full
+    return saved >= min_saving_frac
+
+
 def best_send(reps: list, signals: dict, facets: dict) -> list:
     """The ONE best representation for the council to read (governance §4). reps: the record's
     representation rows ({source, filename, file_kind, n_chars, n_times, usable}). Returns a list
@@ -72,16 +119,25 @@ def best_send(reps: list, signals: dict, facets: dict) -> list:
     else the densest text."""
     facets = facets or {}
     signals = signals or {}
-    # the harvest slice is a purpose-built handbook rep — never a general "densest text" candidate
+    # a page SLICE is a purpose-built scoped rep — never a general "densest text" candidate.
+    # Reads BS.SLICE_SOURCES rather than naming one source: with a second slice kind (#821) an
+    # `!= "harvest_slice"` test would let the timebearing slice into the pool, where it would become
+    # its own `best_text` and the yield guard below would degenerate into comparing it with itself.
     usable_text = [r for r in reps if r.get("file_kind") == "text" and r.get("usable") and r.get("filename")
-                   and r.get("source") != "harvest_slice"]
+                   and r.get("source") not in BS.SLICE_SOURCES]
     images = [r for r in reps if r.get("file_kind") == "image" and r.get("filename")]
     pdfs = [r for r in reps if r.get("file_kind") == "pdf" and r.get("filename")]
-    # #109: the human-labeled page range (Axis-3 _pages_list) outranks the auto harvest_pages — and a
-    # human range also qualifies a doc the auto is_handbook classifier missed (buried_handbook).
-    human_pages = BS.labeled_pages_of(facets)
-    harvest = human_pages or signals.get("harvest_pages") or []
-    handbookish = bool(signals.get("is_handbook") or (human_pages and facets.get("buried_handbook") == "yes"))
+    # WHICH slice this record gets is decided ONCE, by select_slice (#834) — the same call ingest
+    # made when it cut the slice. `handbookish` here means "select_slice chose the harvest slice":
+    # a human page range (#109 — the human looked, so it outranks the auto harvest_pages), or a
+    # handbook whose peak-relative harvest found pages. NB this is deliberately wider than the old
+    # `is_handbook or (human_pages and buried_handbook == "yes")`: that extra `buried_handbook`
+    # test was the second half of the #834 disagreement — ingest honoured a bare human range and
+    # cut a harvest slice, this gate then refused to send it, and the record was ALSO denied the
+    # floor. A reviewer who typed a page range but did not tick buried_handbook still looked.
+    chosen = BS.select_slice(signals, facets)
+    handbookish = bool(chosen and chosen[0] == BS.HARVEST_SLICE_SOURCE)
+    harvest = chosen[1] if handbookish else []
     slice_rep = next((r for r in reps if r.get("source") == "harvest_slice" and r.get("filename")), None)
 
     # ONE densest-text computation (n_times, then n_chars) — shared by the handbook yield-compare
@@ -108,6 +164,24 @@ def best_send(reps: list, signals: dict, facets: dict) -> list:
         return [{"file": pdfs[0]["filename"], "kind": "pdf", "pages": harvest}]
     if (facets.get("needs_vision") == "yes" or signals.get("visual_text_gap")) and images:
         return [{"file": _best_image(images)["filename"], "kind": "image"}]
+    # #821 the ABSOLUTE page floor. Sits AFTER the vision branch — a record whose text never
+    # captured the content is exactly where a slice OF that text is worst, and vision is right.
+    #
+    # Gated on what select_slice() CHOSE for this record (#834), not on a hand-written "is this a
+    # handbook" test. The two must agree with ingest, and a separate predicate here didn't: it
+    # hid the floor slice on 35 live handbooks whose peak-relative harvest found nothing (so the
+    # floor was the only scoping they had), and starved 8 human-labelled records. select_slice is
+    # the ONE arbiter both sides call. The hijack this guard was protecting against — a handbook
+    # whose HARVEST slice lost the #230 compare falling through into a floor slice — is still
+    # impossible: if select_slice chose harvest, a floor rep is never sent (nor cut), and if it
+    # chose the floor, there is no harvest slice to fall through FROM.
+    tb_rep = None
+    if chosen and chosen[0] == BS.TIMEBEARING_SLICE_SOURCE:
+        tb_rep = next((r for r in reps if r.get("source") == BS.TIMEBEARING_SLICE_SOURCE
+                       and r.get("filename")), None)
+    if tb_rep and prefer_timebearing_slice(tb_rep, best_text, reps):
+        return [{"file": tb_rep["filename"], "kind": "text",
+                 "pages": signals.get("timebearing_pages") or []}]
     if best_text:
         return [{"file": best_text["filename"], "kind": "text"}]
     # degenerate fallbacks (a target with no usable text rep): any image, else any pdf
@@ -121,6 +195,16 @@ def best_send(reps: list, signals: dict, facets: dict) -> list:
 # The quarantined de-chrome segments (header/footer/nav) are NOT swappable schedule representations —
 # they're the chrome we deliberately screened OUT. (segment:main, the de-chromed body, IS a candidate.)
 CHROME_SOURCES = {"segment:header", "segment:footer", "segment:nav"}
+# The FULL set of sources that are never a 7->6 swap candidate (#837), defined ONCE for the three
+# collectors (release.alternates, stage7_run's alternates SQL, stage7_execute.live_alternates) —
+# each of which used to spell its own exclusion (`in CHROME_SOURCES` / `NOT LIKE 'segment:%'` /
+# `.startswith("segment:")`), the implemented-twice-drifts class. Chrome, because it was screened
+# out on purpose; page SLICES, because a slice is a strict SUBSET of another rep of the same
+# record — retrying a subset of text that already failed is the 7->6 ladder run downward
+# ("partial-text -> FULLER text -> vision", rank_alternates), and a slice with high n_times used to
+# outrank the vision escalation. Measured live: 126 unsent slices carried n_times >= the sent full
+# text; 2 were already the top-ranked alternate.
+NON_SWAPPABLE_SOURCES = frozenset(CHROME_SOURCES) | BS.SLICE_SOURCES
 
 
 def alternates(reps: list, exclude: set) -> list:
@@ -132,7 +216,7 @@ def alternates(reps: list, exclude: set) -> list:
         fn = r.get("filename")
         if not fn or fn in seen:
             continue
-        if (r.get("source") or "") in CHROME_SOURCES:   # quarantined chrome, not a schedule rep
+        if (r.get("source") or "") in NON_SWAPPABLE_SOURCES:   # chrome + slices (#837)
             continue
         fk = r.get("file_kind")
         if fk == "text" and not r.get("usable"):
