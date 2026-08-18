@@ -20,6 +20,8 @@ import json
 import re
 import shutil
 import subprocess
+import time
+from collections import Counter
 from pathlib import Path
 
 from sqlalchemy import text
@@ -323,7 +325,9 @@ HEADING_HOURS_RE = re.compile(
     r"(office hours|school hours|school day hours|hours of operation|bell schedule|school day|"
     r"daily schedule|arrival (?:and|&) dismissal|start and end times?)\b[:\-–—\s]*", re.I)
 HEADING_PROX_CHARS = 140   # a time within this many chars AFTER an hours heading = a heading-hours hit
-HANDBOOK_MAX_PAGES = 60    # per-page scan cap (was 15 — targets cited on pp.16-22 were structurally invisible)
+# NB: there is deliberately NO per-page scan cap. One lived here (15, then 60) and made pages past it
+# structurally invisible — the cap itself, not the document, was the reason a target went unseen.
+# `pdf_page_texts` scans the whole document in one call; do not reintroduce a ceiling here.
 # A CMS news/social-feed URL shape (the #1 tier-A pollutant — incidental post times). A DOWN-WEIGHT signal.
 # #226: "feed" matches as a BOUNDED token only — bare-substring would hit "feeder" (a real K-12 term:
 # feeder pattern/schools) and "feedback". Left bound = separator (or camelCase for query tokens like
@@ -463,23 +467,118 @@ def keyword_hits(text_lc: str, kws: list) -> list:
     return [k.strip() for k in kws if k in text_lc]
 
 
-def pdf_page_count(pdf: Path) -> int:
+# The subprocess failures we expect from a poppler tool on a bad file or a slow box. Deliberately
+# NOT a bare `except Exception` (#831): a TypeError/AttributeError from a caller bug would be
+# swallowed and re-read as "the tool failed", which is precisely the silent-loss class this
+# module exists to remove.
+_TOOL_ERRORS = (subprocess.TimeoutExpired, OSError)
+
+
+def pdf_page_count(pdf: Path):
+    """The page count `pdfinfo` reports, or **None when it could not be determined** — a timeout,
+    a missing binary, a non-zero exit, or a `Pages:` line that never appears.
+
+    Returning None (not 1) on failure is the #830 fix. The old `return 1` sentinel COLLIDED with a
+    real value: a caller cross-checking a correct 50-way `pdftotext` split against a "count" of 1
+    threw the correct result away and kept page 1 only — a genuinely multi-page document silently
+    read as single-page, with `harvest_pages` / `timebearing_pages` / `lf_no_times` all computed
+    on the truncated view. `None` makes "unknown" distinguishable from "one"."""
     try:
-        out = subprocess.run(["pdfinfo", str(pdf)], capture_output=True, text=True, timeout=30).stdout
-        for line in out.splitlines():
-            if line.startswith("Pages:"):
+        r = subprocess.run(["pdfinfo", str(pdf)], capture_output=True, text=True, timeout=30)
+    except _TOOL_ERRORS:
+        return None
+    if r.returncode != 0:
+        return None
+    for line in r.stdout.splitlines():
+        if line.startswith("Pages:"):
+            try:
                 return int(line.split()[1])
-    except Exception:
-        pass
-    return 1
+            except (IndexError, ValueError):
+                return None
+    return None
 
 
 def pdf_page_text(pdf: Path, page: int) -> str:
     try:
         return subprocess.run(["pdftotext", "-layout", "-f", str(page), "-l", str(page), str(pdf), "-"],
                                capture_output=True, text=True, timeout=30).stdout or ""
-    except Exception:
+    except _TOOL_ERRORS:
         return ""
+
+
+# Whole-document extraction gets real headroom: the per-page primitive's 30s is per PAGE (never
+# slow), but one call over a 783-page PDF is a different order of work.
+PDFTOTEXT_TIMEOUT_S = 180
+# #831(5): the per-page FALLBACK's own worst case is n × 30s, and n is no longer capped at 60. On
+# the corpus's largest document (1,017 pages) that is theoretically ~8.5h — but only if EVERY page
+# times out, and a per-page call takes ~20-50ms in practice. Rather than reintroduce a page cap
+# (the exact bug #828 removed), the fallback stops early once it has spent this much wall-clock,
+# and stops loudly: whatever it did read is returned and the shortfall is visible in the mismatch
+# between len(result) and the page count, which `page_time_signals` consumers can see.
+PDF_FALLBACK_BUDGET_S = 600
+
+# Fallback telemetry (#831(4)): WHY the one-call path was rejected, counted per process so an
+# ingest can report how often each branch fired instead of the cause being invisible without DB
+# archaeology. Keys are stable strings; consumers may read this after ingest and reset it.
+PDF_TEXTS_FALLBACKS = Counter()
+
+
+def pdf_page_texts(pdf: Path) -> list:
+    """Per-page text for the WHOLE document — `out[N-1]` is page N. ONE `pdftotext -layout` call,
+    split on the form feed pdftotext emits between pages (measured identical to the per-page
+    `-f/-l` extraction, and ~3x faster on a 154-page doc: one fork instead of N).
+
+    NEVER returns [] for a real PDF. That guarantee is load-bearing, not defensive style: an empty
+    `pages` empties `harvest_pages`, which re-arms `lf_no_times` (detectors.py) and can suppress a
+    record out of dispatch entirely — a silently lost district rather than a visible error.
+
+    TRUST ORDER when the two poppler tools disagree (#830):
+      * whole-doc `pdftotext` succeeded (rc 0, non-empty) and `pdfinfo` agrees, or `pdfinfo` is
+        UNKNOWN (None) → trust the split. A split we already hold is direct evidence; a count that
+        could not be read is no evidence, and must never veto it.
+      * both succeeded but DISAGREE → fall back to the per-page loop over `pdfinfo`'s count. This
+        is the one place the count outranks the split, because a genuine disagreement means one
+        tool mis-parsed and per-page `-f/-l` is the independent tiebreaker.
+      * whole-doc call failed → per-page loop over `pdfinfo`'s count, or over 1 page if that is
+        unknown too (still never [])."""
+    n = pdf_page_count(pdf)                       # int, or None = could not be determined
+    out, rc = None, None
+    try:
+        r = subprocess.run(["pdftotext", "-layout", str(pdf), "-"],
+                           capture_output=True, text=True, timeout=PDFTOTEXT_TIMEOUT_S)
+        out, rc = r.stdout, r.returncode
+    except subprocess.TimeoutExpired:
+        PDF_TEXTS_FALLBACKS["whole_doc_timeout"] += 1
+    except OSError:
+        PDF_TEXTS_FALLBACKS["whole_doc_oserror"] += 1
+    # #831(2): success is rc 0 AND non-empty stdout, not stdout truthiness alone — poppler can exit
+    # non-zero after writing partial output on a malformed-but-parseable file, and a partial read
+    # accepted as complete is exactly the silent truncation this function exists to prevent.
+    if out and rc == 0:
+        parts = out.split("\f")
+        # pdftotext writes a trailing form feed after the LAST page, leaving one empty tail part.
+        # Drop exactly that one — and do NOT strip the whole output first, or a legitimately blank
+        # final page loses its slot and every page number shifts. Page numbers are user-visible:
+        # the `pages` send hint and the human `_pages_list` label both index into this.
+        if parts and not parts[-1]:
+            parts.pop()
+        if parts and (n is None or len(parts) == n):
+            if n is None:
+                PDF_TEXTS_FALLBACKS["count_unknown_trusted_split"] += 1
+            return parts
+        PDF_TEXTS_FALLBACKS["count_disagrees" if n is not None else "empty_split"] += 1
+    elif out is not None:
+        PDF_TEXTS_FALLBACKS["whole_doc_nonzero_rc" if rc else "whole_doc_empty"] += 1
+    # Per-page fallback, over the count we trust — or 1 page when nothing could be determined.
+    n = n or 1
+    started = time.monotonic()
+    pages = []
+    for p in range(1, n + 1):
+        if time.monotonic() - started > PDF_FALLBACK_BUDGET_S:
+            PDF_TEXTS_FALLBACKS["fallback_budget_exhausted"] += 1
+            break
+        pages.append(pdf_page_text(pdf, p))
+    return pages
 
 
 # One home for the school-identity key (REQ-117; PR #247 review): this module carried its own
@@ -722,6 +821,20 @@ def is_handbook_doc(text_lc: str, files: dict, n_pages: int, max_chars: int) -> 
     return "handbook" in blob and (n_pages > 1 or max_chars > 8000)
 
 
+def page_time_signals(page_texts: list) -> list:
+    """Per-page evidence the page-scoping selectors read: `[{"page", "n_times", "instr"}, ...]`,
+    page numbers 1-based. ONE producer for that shape so a selector can never be fed a dict built
+    a second way.
+
+    `instr` is `instructional_declaration()` — the colon-free `explicit_instructional_time` class
+    the clock-time count structurally cannot see ("495 minutes of instruction per day" carries no
+    clock time at all). Counting it here is free (the text is already in hand) and keeps a page
+    whose only payload is an instructional declaration from reading as empty."""
+    return [{"page": i, "n_times": len(time_positions(t or "")),
+             "instr": instructional_declaration(t or "")}
+            for i, t in enumerate(page_texts, 1)]
+
+
 def harvest_schedule_pages(pages: list, min_times: int = HANDBOOK_HARVEST_MIN) -> list:
     """Deterministic harvest: in a multi-page doc, the page number(s) whose clock-time count stands
     out are the likely schedule page(s) -> Stage 6/7 sends ONLY these to the council, not the whole
@@ -864,14 +977,18 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
     has_visual = bool(files.get("png") or (files.get("bin") and not files.get("txt"))) or "pdf" in files
     visual_text_gap = has_visual and max_chars < USABLE_MIN_CHARS
 
-    # Per-page n_times for any PDF present (handbook-harvest signal).
-    pages = []
+    # Per-page evidence for any PDF present (the page-scoping selectors). Scans the WHOLE document:
+    # the former HANDBOOK_MAX_PAGES=60 cap made pages 61+ structurally invisible to every consumer
+    # (Memphis 4700148:8d0058ac10 is 154 pages and lost 111 of its 942 times that way). The cap had
+    # already been raised once, 15 -> 60, for this same class of miss; it is now gone rather than
+    # raised again, and one whole-document call is cheaper than the per-page loop it replaces.
+    pages, page_texts = [], []
     pdf_name = files.get("pdf") or (files.get("bin") if str(files.get("bin", "")).lower().endswith(".pdf") else None)
     if pdf_name:
         pdf = record_dir / pdf_name
         if pdf.exists():
-            for p in range(1, min(pdf_page_count(pdf), HANDBOOK_MAX_PAGES) + 1):
-                pages.append({"page": p, "n_times": len(time_positions(pdf_page_text(pdf, p)))})
+            page_texts = pdf_page_texts(pdf)
+            pages = page_time_signals(page_texts)
 
     sig = {
         "n_times": n_times, "n_times_in_window": len(in_window), "times_after_5pm": len(after5),
@@ -892,7 +1009,10 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
         "staff_duty_times": staff_duty_times, "student_ref_times": student_ref_times,   # #684
     }
     # Clustering dedups by WHOLE-page content, so it uses the full best text, not the de-chromed main.
-    return sig, full_best
+    # `page_texts` rides along so the ingest loop can materialize a page slice from the SAME
+    # extraction the per-page counts were computed over — re-extracting there would be a second
+    # chance to drift from the numbers the signal stored. [] for a non-PDF record.
+    return sig, full_best, page_texts
 
 
 # The V1 tier cascade (`tier_and_category` + DEFAULT_TIER_PARAMS) was DELETED here (issue #56):
@@ -1285,7 +1405,8 @@ def ingest_district(sess, ddir: Path, *, splits: set, batches: dict, nces: dict)
         # De-chrome (REQ-091): if a Stage-3 page.main.txt segment exists, signals compute over it.
         mp = rdir / "page.main.txt"
         main_text = mp.read_text(errors="replace") if mp.exists() else None
-        sig, best_text = compute_signals(rdir, prec.get("texts", []), roster_norm, files, main_text)
+        sig, best_text, page_texts = compute_signals(rdir, prec.get("texts", []), roster_norm,
+                                                     files, main_text)
         # V2 (REQ-113): record-level signals the text scan can't see, then the labeling-function combiner.
         sig["cms_hint"] = cms_hint_of(cap)
         sig["url_feed_pattern"] = feed_url(prec["url"]) or feed_url(cap.get("final_url") or "")

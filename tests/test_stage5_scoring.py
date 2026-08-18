@@ -3,6 +3,10 @@
 hit rescues a record from the n==0 / neg-keyword drop (now via the V2 detectors+combiner — the V1
 tier_and_category cascade was deleted, issue #56)."""
 import json
+import shutil
+import subprocess
+from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -86,6 +90,184 @@ def test_harvest_empty_when_single_page_or_nothing_stands_out():
     assert BS.harvest_schedule_pages([]) == []
 
 
+# ---- whole-document per-page extraction (the removed 60-page scan cap) ----
+def _fake_pdftotext(monkeypatch, stdout, *, n_pages, per_page="PER-PAGE", rc=0):
+    """Stub the two subprocess primitives: the whole-doc call returns `stdout` (None => it raised)
+    with exit code `rc`, and the per-page fallback returns a marker so a test can tell which path
+    ran. `n_pages=None` models pdfinfo FAILING (its real return on failure — the #830 case)."""
+    calls = []
+
+    def fake_run(cmd, **kw):
+        calls.append(cmd)
+        if "-f" in cmd:                      # the per-page primitive
+            return SimpleNamespace(stdout=f"{per_page}{cmd[cmd.index('-f') + 1]}", returncode=0)
+        if stdout is None:
+            raise subprocess.TimeoutExpired(cmd, 1)
+        return SimpleNamespace(stdout=stdout, returncode=rc)
+
+    monkeypatch.setattr(BS.subprocess, "run", fake_run)
+    monkeypatch.setattr(BS, "pdf_page_count", lambda _pdf: n_pages)
+    BS.PDF_TEXTS_FALLBACKS.clear()
+    return calls
+
+
+def test_page_texts_drop_only_the_trailing_form_feed(monkeypatch):
+    # pdftotext writes a form feed after the LAST page -> exactly one empty tail part to drop.
+    _fake_pdftotext(monkeypatch, "a\fb\f", n_pages=2)
+    assert BS.pdf_page_texts(Path("x.pdf")) == ["a", "b"]
+    _fake_pdftotext(monkeypatch, "a\fb", n_pages=2)          # no trailing feed
+    assert BS.pdf_page_texts(Path("x.pdf")) == ["a", "b"]
+
+
+def test_page_texts_keep_a_blank_final_page_so_page_numbers_stay_true(monkeypatch):
+    # a legitimately EMPTY last page must keep its slot — stripping it would shift every later
+    # page number, and page numbers are user-visible (the send hint + the human _pages_list).
+    _fake_pdftotext(monkeypatch, "a\f\f", n_pages=2)
+    assert BS.pdf_page_texts(Path("x.pdf")) == ["a", ""]
+
+
+def test_page_texts_fall_back_when_the_split_disagrees_with_the_page_count(monkeypatch):
+    # 3 parts but pdfinfo says 5 pages -> an off-by-N would silently misnumber every page.
+    calls = _fake_pdftotext(monkeypatch, "a\fb\fc\f", n_pages=5)
+    assert BS.pdf_page_texts(Path("x.pdf")) == [f"PER-PAGE{p}" for p in range(1, 6)]
+    assert sum("-f" in c for c in calls) == 5          # the per-page primitive really ran
+
+
+def test_page_texts_never_return_empty_when_the_whole_doc_call_fails(monkeypatch):
+    # The load-bearing guarantee: [] would empty harvest_pages, re-arm lf_no_times, and suppress
+    # the record out of dispatch entirely — a silently lost district, not a visible error.
+    _fake_pdftotext(monkeypatch, None, n_pages=3)
+    assert BS.pdf_page_texts(Path("x.pdf")) == ["PER-PAGE1", "PER-PAGE2", "PER-PAGE3"]
+    _fake_pdftotext(monkeypatch, "", n_pages=2)       # empty stdout is a failure too
+    assert BS.pdf_page_texts(Path("x.pdf")) == ["PER-PAGE1", "PER-PAGE2"]
+
+
+def test_page_texts_trust_the_split_when_the_page_count_is_unknown(monkeypatch):
+    # #830 — the under-count collision. pdfinfo FAILS (returns None); pdftotext correctly splits a
+    # real 3-page document. The old code cross-checked 3 against pdfinfo's failure-sentinel of 1,
+    # threw the correct split away, and re-read page 1 ONLY: a multi-page document silently read
+    # as single-page, with harvest_pages / timebearing_pages / lf_no_times all computed on that.
+    # A split we already hold is evidence; a count that could not be read is not, and must never
+    # veto it. Reproduced against a real ghostscript-built 3-page PDF before this test was written.
+    calls = _fake_pdftotext(monkeypatch, "a\fb\fc\f", n_pages=None)
+    assert BS.pdf_page_texts(Path("x.pdf")) == ["a", "b", "c"]
+    assert not any("-f" in c for c in calls)            # no per-page re-read happened at all
+    assert BS.PDF_TEXTS_FALLBACKS["count_unknown_trusted_split"] == 1
+
+
+def test_page_count_returns_none_not_one_when_pdfinfo_fails(monkeypatch):
+    # The root cause of #830: `1` collided with a real value. None cannot.
+    def boom(cmd, **kw):
+        raise subprocess.TimeoutExpired(cmd, 1)
+    monkeypatch.setattr(BS.subprocess, "run", boom)
+    assert BS.pdf_page_count(Path("x.pdf")) is None
+    # non-zero exit and a missing Pages: line are failures too, not "one page"
+    monkeypatch.setattr(BS.subprocess, "run",
+                        lambda cmd, **kw: SimpleNamespace(stdout="Pages: 7", returncode=1))
+    assert BS.pdf_page_count(Path("x.pdf")) is None
+    monkeypatch.setattr(BS.subprocess, "run",
+                        lambda cmd, **kw: SimpleNamespace(stdout="Title: x\n", returncode=0))
+    assert BS.pdf_page_count(Path("x.pdf")) is None
+
+
+def test_page_texts_reject_a_nonzero_exit_even_with_stdout(monkeypatch):
+    # #831(2): success is rc 0 AND non-empty stdout. A partial read that exits non-zero must not
+    # be accepted as complete — that IS the silent truncation this function exists to prevent.
+    calls = _fake_pdftotext(monkeypatch, "a\fb\f", n_pages=2, rc=1)
+    assert BS.pdf_page_texts(Path("x.pdf")) == ["PER-PAGE1", "PER-PAGE2"]
+    assert sum("-f" in c for c in calls) == 2
+    assert BS.PDF_TEXTS_FALLBACKS["whole_doc_nonzero_rc"] == 1
+
+
+def test_page_texts_still_never_empty_when_everything_is_unknown(monkeypatch):
+    # pdfinfo failed AND pdftotext failed: still not [] — one page, read per-page.
+    _fake_pdftotext(monkeypatch, None, n_pages=None)
+    assert BS.pdf_page_texts(Path("x.pdf")) == ["PER-PAGE1"]
+
+
+def test_page_texts_do_not_swallow_a_caller_bug(monkeypatch):
+    # #831(1): the catch is (TimeoutExpired, OSError), not bare Exception. A TypeError from a
+    # caller must SURFACE, not be re-read as "pdftotext failed" and turned into a fallback.
+    def bug(cmd, **kw):
+        raise TypeError("caller passed the wrong thing")
+    monkeypatch.setattr(BS.subprocess, "run", bug)
+    monkeypatch.setattr(BS, "pdf_page_count", lambda _pdf: 2)
+    with pytest.raises(TypeError):
+        BS.pdf_page_texts(Path("x.pdf"))
+
+
+def test_page_texts_fallback_records_why_it_fired(monkeypatch):
+    # #831(4): the branch that rejected the one-call path is counted, not invisible.
+    _fake_pdftotext(monkeypatch, "a\fb\fc\f", n_pages=5)        # over-count disagreement
+    BS.pdf_page_texts(Path("x.pdf"))
+    assert BS.PDF_TEXTS_FALLBACKS["count_disagrees"] == 1
+    _fake_pdftotext(monkeypatch, None, n_pages=3)               # whole-doc timeout
+    BS.pdf_page_texts(Path("x.pdf"))
+    assert BS.PDF_TEXTS_FALLBACKS["whole_doc_timeout"] == 1
+
+
+def test_no_per_page_scan_cap_is_reintroduced():
+    # A cap lived here twice (15, then 60) and both times made pages past it structurally invisible
+    # — Memphis 4700148:00f553bcfc read 3 times instead of 838 because its schedule is on pp.89-91.
+    # The whole document is scanned; a reintroduced ceiling would silently restore that bug.
+    assert not hasattr(BS, "HANDBOOK_MAX_PAGES")
+
+
+def test_page_texts_scan_past_the_old_cap(monkeypatch):
+    _fake_pdftotext(monkeypatch, "\f".join(f"page{p}" for p in range(1, 121)) + "\f", n_pages=120)
+    out = BS.pdf_page_texts(Path("x.pdf"))
+    assert len(out) == 120 and out[119] == "page120"
+
+
+def _real_pdf(tmp_path, pages):
+    """Build a REAL multi-page PDF from PostScript via ghostscript (a Stage 4 requirement, so no new
+    dependency). `pages` = the text to put on each page. Skips cleanly where gs is absent."""
+    if not shutil.which("gs") or not shutil.which("pdftotext"):
+        pytest.skip("ghostscript/poppler not installed")
+    body = "".join(f"72 700 moveto ({t}) show showpage\n" for t in pages)
+    ps = tmp_path / "doc.ps"
+    ps.write_text("%!PS\n/Helvetica findfont 12 scalefont setfont\n" + body)
+    pdf = tmp_path / "doc.pdf"
+    subprocess.run(["gs", "-q", "-dNOPAUSE", "-dBATCH", "-sDEVICE=pdfwrite",
+                    f"-sOutputFile={pdf}", str(ps)], check=True, capture_output=True)
+    return pdf
+
+
+def test_compute_signals_threads_page_texts_from_a_real_pdf_on_disk(tmp_path):
+    # #832 — the integration path. Every other compute_signals test passes files={} so the PDF
+    # branch never runs and page_texts is always the pre-initialized []. This is the one test that
+    # exercises compute_signals -> pdf_page_texts -> page_time_signals through a REAL file, so a
+    # future change to that wiring fails pytest instead of only a re-run of the measurement script.
+    pdf = _real_pdf(tmp_path, ["Nothing here", "Doors open 7:45 AM close 2:30 PM", "Blank"])
+    (tmp_path / "page.txt").write_text("x" * 200)          # a usable text rep, needed by text_bases
+    texts = [{"source": "pdftotext", "text_file": "page.txt", "n_chars": 200, "n_times": 0,
+              "usable": True}]
+    sig, _, page_texts = BS.compute_signals(tmp_path, texts, [], {"pdf": pdf.name})
+    assert len(page_texts) == 3
+    assert "7:45" in page_texts[1]
+    assert [p["page"] for p in sig["pages"]] == [1, 2, 3]
+    assert [p["n_times"] for p in sig["pages"]] == [0, 2, 0]
+    assert all("instr" in p for p in sig["pages"])
+
+
+def test_page_texts_survive_pdfinfo_failure_on_a_real_multipage_pdf(tmp_path, monkeypatch):
+    # #830 end-to-end, on a REAL file: pdfinfo "fails", pdftotext succeeds — all 3 pages come back.
+    pdf = _real_pdf(tmp_path, ["one", "two", "three"])
+    monkeypatch.setattr(BS, "pdf_page_count", lambda _p: None)
+    out = BS.pdf_page_texts(pdf)
+    assert len(out) == 3 and "three" in out[2]
+
+
+def test_page_time_signals_counts_times_and_flags_an_instructional_declaration():
+    out = BS.page_time_signals(["nothing here", "doors open 7:45 a.m. and close 2:30 p.m.",
+                                "We have 181 instructional days with 495 minutes of instruction per day."])
+    assert [p["page"] for p in out] == [1, 2, 3]
+    assert [p["n_times"] for p in out] == [0, 2, 0]
+    # page 3 carries an explicit_instructional_time declaration and NO clock time — the colon-free
+    # class a time count structurally cannot see.
+    assert [p["instr"] for p in out] == [False, False, True]
+
+
 def test_is_handbook_needs_the_word_and_real_length():
     assert BS.is_handbook_doc("student parent handbook ...", {}, n_pages=15, max_chars=9000) is True
     assert BS.is_handbook_doc("bell schedule", {}, n_pages=1, max_chars=400) is False   # not a handbook
@@ -99,8 +281,8 @@ def test_signals_compute_over_dechromed_main_not_full_page(tmp_path):
     (tmp_path / "page.txt").write_text(full)
     texts = [{"usable": True, "text_file": "page.txt", "n_chars": len(full), "n_times": 2}]
     main = "Bell Schedule. School starts at 8:00 AM and dismissal is at 3:00 PM every day. " * 5  # clean, >120
-    sig_full, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=None)
-    sig_dech, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=main)
+    sig_full, _, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=None)
+    sig_dech, _, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=main)
     assert sig_full["dechromed"] is False and sig_dech["dechromed"] is True
     # chrome negatives (board/sports) drop out when we score MAIN; the real positive kw is present
     assert sig_dech["neg_total"] < sig_full["neg_total"]
@@ -131,7 +313,7 @@ def test_dechrome_falls_back_when_main_too_thin(tmp_path):
     full = "School hours 8:00 AM to 3:00 PM bell schedule dismissal arrival every school day here."
     (tmp_path / "page.txt").write_text(full)
     texts = [{"usable": True, "text_file": "page.txt", "n_chars": len(full), "n_times": 2}]
-    sig, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text="too short")  # below USABLE_MIN_CHARS
+    sig, _, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text="too short")  # below USABLE_MIN_CHARS
     assert sig["dechromed"] is False  # graceful fallback to the full page — never worse than today
 
 
@@ -405,7 +587,7 @@ def test_nonstandard_positional_reads_table_reps_too(tmp_path):
     texts = [{"usable": True, "text_file": "page.txt", "n_chars": len(prose), "n_times": 6},
              {"usable": True, "text_file": "camelot.txt", "source": "camelot_hybrid",
               "n_chars": len(tbl), "n_times": 6}]
-    sig, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=None)
+    sig, _, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=None)
     assert sig["nonstandard_heading"] >= 1, "the table rep's wrong-day title must be seen"
 
 
@@ -416,7 +598,7 @@ def test_regular_day_guard_only_computed_with_positional_evidence(tmp_path):
     t = "Our regular schedule is great. School Hours: 8:00 AM - 3:00 PM. " * 3
     (tmp_path / "page.txt").write_text(t)
     texts = [{"usable": True, "text_file": "page.txt", "n_chars": len(t), "n_times": 2}]
-    sig, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=None)
+    sig, _, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=None)
     assert not (sig["nonstandard_near_times"] or sig["nonstandard_heading"])
     assert sig["regular_day_language"] is False
 
