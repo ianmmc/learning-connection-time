@@ -1686,8 +1686,15 @@ def ingest_district(sess, ddir: Path, *, splits: set, batches: dict, nces: dict)
         for seg in ("page.main.txt", "page.header.txt", "page.footer.txt", "page.nav.txt"):
             sp = rdir / seg
             if sp.exists():
+                # #841: n_times was hardcoded None because segments were added as INSPECTABLE reps
+                # (gate@5 viewing), never as dispatch candidates. Once `segment:main` is a legitimate
+                # 7->6 alternate it must be RANKABLE: `rank_alternates` files text with n_times
+                # 0/None in its LAST tier, behind even the vision escalation, so an unscored main
+                # would be retried after the expensive image — backwards. The text is already read
+                # here for n_chars, so the scan is free.
+                seg_text = sp.read_text(errors="replace")
                 sess.execute(INSERT_REP, _rep(rec_key, f"segment:{seg.split('.')[1]}", seg, "text",
-                                              len(sp.read_text(errors='replace')), None, 1))
+                                              len(seg_text), len(time_positions(seg_text)), 1))
         district_records.append((rec_key, sig, tier, dup_of))
 
     # near-duplicate clustering (content-similarity; honors human splits) -> UPDATE records

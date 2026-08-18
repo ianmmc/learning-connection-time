@@ -950,12 +950,12 @@ def live_alternates(rec: dict, sent_files: set) -> list:
         if fn in sent_files or not rp.get("usable"):
             continue
         src = rp.get("source") or ""
-        # #837: a page SLICE is a strict subset of another rep of this record — never a swap
-        # candidate (see release.NON_SWAPPABLE_SOURCES for the reasoning). NB this site keeps its
-        # own, WIDER segment rule (all `segment:*`, incl. main) — release.alternates admits
-        # segment:main; that pre-existing three-way disagreement is real but is not #837's to
-        # settle silently, so only the slice exclusion is added here.
-        if src.startswith("segment:") or src in REL.NON_SWAPPABLE_SOURCES:
+        # #841: the ONE rule — chrome + slices (release.NON_SWAPPABLE_SOURCES). This site used to
+        # carry a WIDER private rule (`startswith("segment:")`, excluding segment:main too), which
+        # is the three-way disagreement #841 settled by measurement: segment:main is the uniquely
+        # best alternate on 27 corpus records and dominated on only 4, so it is ADMITTED here as it
+        # always was in release.alternates.
+        if src in REL.NON_SWAPPABLE_SOURCES:
             continue
         if kind == "text" or CONTENT.is_image_kind(kind):
             out.append({"file": fn, "kind": kind, "n_times": rp.get("n_times")})

@@ -35,6 +35,7 @@ from infrastructure.acquisition.common import receipts as RCPT
 from infrastructure.acquisition.common import school_sampling as SS
 from infrastructure.acquisition.common import timeutil as TU
 from infrastructure.acquisition.stage5_filter import build_signals as BS
+from infrastructure.acquisition.stage5_filter import release as REL
 from infrastructure.acquisition.stage6_handoff import cost as COST6
 from infrastructure.acquisition.stage6_handoff import package as PKG6
 from infrastructure.acquisition.stage6_handoff import councils as C6
@@ -1196,11 +1197,14 @@ def _district_request_inputs(session, result: dict, ca_cache: dict = None):
         for fn, kind, nt in session.execute(
                 text("SELECT filename, file_kind, n_times FROM representation WHERE rec_key = :k "
                      "AND usable = 1 AND file_kind IN ('text', 'image') "
-                     "AND source NOT LIKE 'segment:%' "
-                     # #837: a page slice is a strict subset of another rep — never a swap candidate
-                     "AND source NOT IN :slice_sources"
-                     ).bindparams(bindparam("slice_sources", expanding=True)),
-                {"k": rec_key, "slice_sources": sorted(BS.SLICE_SOURCES)}).all():
+                     # #841: ONE rule — release.NON_SWAPPABLE_SOURCES (chrome + slices), the same
+                     # set release.alternates and stage7_execute.live_alternates read. It replaces
+                     # BOTH this site's old `NOT LIKE 'segment:%'` (which also excluded
+                     # segment:main, admitted by release) and the separate slice clause, which was
+                     # a subset of it. Three collectors, three spellings, is the drift class.
+                     "AND (source IS NULL OR source NOT IN :nonswap)"
+                     ).bindparams(bindparam("nonswap", expanding=True)),
+                {"k": rec_key, "nonswap": sorted(REL.NON_SWAPPABLE_SOURCES)}).all():
             if fn not in sent_files:
                 alts.setdefault(rec_key, []).append({"file": fn, "kind": kind, "n_times": nt})
     # District-WIDE band coverage across ALL extractions (this run's facts are already flushed on
