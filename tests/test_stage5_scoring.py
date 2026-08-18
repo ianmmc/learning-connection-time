@@ -3,6 +3,9 @@
 hit rescues a record from the n==0 / neg-keyword drop (now via the V2 detectors+combiner — the V1
 tier_and_category cascade was deleted, issue #56)."""
 import json
+import subprocess
+from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -86,6 +89,79 @@ def test_harvest_empty_when_single_page_or_nothing_stands_out():
     assert BS.harvest_schedule_pages([]) == []
 
 
+# ---- whole-document per-page extraction (the removed 60-page scan cap) ----
+def _fake_pdftotext(monkeypatch, stdout, *, n_pages, per_page="PER-PAGE"):
+    """Stub the two subprocess primitives: the whole-doc call returns `stdout` (None => it raised),
+    and the per-page fallback returns a marker so a test can tell which path ran."""
+    calls = []
+
+    def fake_run(cmd, **kw):
+        calls.append(cmd)
+        if "-f" in cmd:                      # the per-page primitive
+            return SimpleNamespace(stdout=f"{per_page}{cmd[cmd.index('-f') + 1]}")
+        if stdout is None:
+            raise subprocess.TimeoutExpired(cmd, 1)
+        return SimpleNamespace(stdout=stdout)
+
+    monkeypatch.setattr(BS.subprocess, "run", fake_run)
+    monkeypatch.setattr(BS, "pdf_page_count", lambda _pdf: n_pages)
+    return calls
+
+
+def test_page_texts_drop_only_the_trailing_form_feed(monkeypatch):
+    # pdftotext writes a form feed after the LAST page -> exactly one empty tail part to drop.
+    _fake_pdftotext(monkeypatch, "a\fb\f", n_pages=2)
+    assert BS.pdf_page_texts(Path("x.pdf")) == ["a", "b"]
+    _fake_pdftotext(monkeypatch, "a\fb", n_pages=2)          # no trailing feed
+    assert BS.pdf_page_texts(Path("x.pdf")) == ["a", "b"]
+
+
+def test_page_texts_keep_a_blank_final_page_so_page_numbers_stay_true(monkeypatch):
+    # a legitimately EMPTY last page must keep its slot — stripping it would shift every later
+    # page number, and page numbers are user-visible (the send hint + the human _pages_list).
+    _fake_pdftotext(monkeypatch, "a\f\f", n_pages=2)
+    assert BS.pdf_page_texts(Path("x.pdf")) == ["a", ""]
+
+
+def test_page_texts_fall_back_when_the_split_disagrees_with_the_page_count(monkeypatch):
+    # 3 parts but pdfinfo says 5 pages -> an off-by-N would silently misnumber every page.
+    calls = _fake_pdftotext(monkeypatch, "a\fb\fc\f", n_pages=5)
+    assert BS.pdf_page_texts(Path("x.pdf")) == [f"PER-PAGE{p}" for p in range(1, 6)]
+    assert sum("-f" in c for c in calls) == 5          # the per-page primitive really ran
+
+
+def test_page_texts_never_return_empty_when_the_whole_doc_call_fails(monkeypatch):
+    # The load-bearing guarantee: [] would empty harvest_pages, re-arm lf_no_times, and suppress
+    # the record out of dispatch entirely — a silently lost district, not a visible error.
+    _fake_pdftotext(monkeypatch, None, n_pages=3)
+    assert BS.pdf_page_texts(Path("x.pdf")) == ["PER-PAGE1", "PER-PAGE2", "PER-PAGE3"]
+    _fake_pdftotext(monkeypatch, "", n_pages=2)       # empty stdout is a failure too
+    assert BS.pdf_page_texts(Path("x.pdf")) == ["PER-PAGE1", "PER-PAGE2"]
+
+
+def test_no_per_page_scan_cap_is_reintroduced():
+    # A cap lived here twice (15, then 60) and both times made pages past it structurally invisible
+    # — Memphis 4700148:00f553bcfc read 3 times instead of 838 because its schedule is on pp.89-91.
+    # The whole document is scanned; a reintroduced ceiling would silently restore that bug.
+    assert not hasattr(BS, "HANDBOOK_MAX_PAGES")
+
+
+def test_page_texts_scan_past_the_old_cap(monkeypatch):
+    _fake_pdftotext(monkeypatch, "\f".join(f"page{p}" for p in range(1, 121)) + "\f", n_pages=120)
+    out = BS.pdf_page_texts(Path("x.pdf"))
+    assert len(out) == 120 and out[119] == "page120"
+
+
+def test_page_time_signals_counts_times_and_flags_an_instructional_declaration():
+    out = BS.page_time_signals(["nothing here", "doors open 7:45 a.m. and close 2:30 p.m.",
+                                "We have 181 instructional days with 495 minutes of instruction per day."])
+    assert [p["page"] for p in out] == [1, 2, 3]
+    assert [p["n_times"] for p in out] == [0, 2, 0]
+    # page 3 carries an explicit_instructional_time declaration and NO clock time — the colon-free
+    # class a time count structurally cannot see.
+    assert [p["instr"] for p in out] == [False, False, True]
+
+
 def test_is_handbook_needs_the_word_and_real_length():
     assert BS.is_handbook_doc("student parent handbook ...", {}, n_pages=15, max_chars=9000) is True
     assert BS.is_handbook_doc("bell schedule", {}, n_pages=1, max_chars=400) is False   # not a handbook
@@ -99,8 +175,8 @@ def test_signals_compute_over_dechromed_main_not_full_page(tmp_path):
     (tmp_path / "page.txt").write_text(full)
     texts = [{"usable": True, "text_file": "page.txt", "n_chars": len(full), "n_times": 2}]
     main = "Bell Schedule. School starts at 8:00 AM and dismissal is at 3:00 PM every day. " * 5  # clean, >120
-    sig_full, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=None)
-    sig_dech, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=main)
+    sig_full, _, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=None)
+    sig_dech, _, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=main)
     assert sig_full["dechromed"] is False and sig_dech["dechromed"] is True
     # chrome negatives (board/sports) drop out when we score MAIN; the real positive kw is present
     assert sig_dech["neg_total"] < sig_full["neg_total"]
@@ -131,7 +207,7 @@ def test_dechrome_falls_back_when_main_too_thin(tmp_path):
     full = "School hours 8:00 AM to 3:00 PM bell schedule dismissal arrival every school day here."
     (tmp_path / "page.txt").write_text(full)
     texts = [{"usable": True, "text_file": "page.txt", "n_chars": len(full), "n_times": 2}]
-    sig, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text="too short")  # below USABLE_MIN_CHARS
+    sig, _, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text="too short")  # below USABLE_MIN_CHARS
     assert sig["dechromed"] is False  # graceful fallback to the full page — never worse than today
 
 
@@ -405,7 +481,7 @@ def test_nonstandard_positional_reads_table_reps_too(tmp_path):
     texts = [{"usable": True, "text_file": "page.txt", "n_chars": len(prose), "n_times": 6},
              {"usable": True, "text_file": "camelot.txt", "source": "camelot_hybrid",
               "n_chars": len(tbl), "n_times": 6}]
-    sig, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=None)
+    sig, _, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=None)
     assert sig["nonstandard_heading"] >= 1, "the table rep's wrong-day title must be seen"
 
 
@@ -416,7 +492,7 @@ def test_regular_day_guard_only_computed_with_positional_evidence(tmp_path):
     t = "Our regular schedule is great. School Hours: 8:00 AM - 3:00 PM. " * 3
     (tmp_path / "page.txt").write_text(t)
     texts = [{"usable": True, "text_file": "page.txt", "n_chars": len(t), "n_times": 2}]
-    sig, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=None)
+    sig, _, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=None)
     assert not (sig["nonstandard_near_times"] or sig["nonstandard_heading"])
     assert sig["regular_day_language"] is False
 

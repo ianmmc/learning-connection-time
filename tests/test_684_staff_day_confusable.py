@@ -343,7 +343,7 @@ def test_the_signal_is_emitted_by_compute_signals(tmp_path):
     (tmp_path / "camelot_stream.txt").write_text("| --- |\n" + BENTONVILLE_TEXT)
     texts = [{"usable": True, "text_file": "camelot_stream.txt", "source": "camelot_stream",
               "n_times": 12, "n_chars": len(BENTONVILLE_TEXT)}]
-    s, _ = BS.compute_signals(tmp_path, texts, [], {})
+    s, _, _ = BS.compute_signals(tmp_path, texts, [], {})
     assert s["staff_duty_times"] > s["student_ref_times"] >= 0
     assert json.loads(json.dumps(s))["staff_duty_times"] == s["staff_duty_times"]   # JSON-safe
     assert "lf_staff_day" in C.score_record(s)["fired"]
