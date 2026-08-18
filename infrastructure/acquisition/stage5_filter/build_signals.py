@@ -20,6 +20,8 @@ import json
 import re
 import shutil
 import subprocess
+import time
+from collections import Counter
 from pathlib import Path
 
 from sqlalchemy import text
@@ -465,28 +467,60 @@ def keyword_hits(text_lc: str, kws: list) -> list:
     return [k.strip() for k in kws if k in text_lc]
 
 
-def pdf_page_count(pdf: Path) -> int:
+# The subprocess failures we expect from a poppler tool on a bad file or a slow box. Deliberately
+# NOT a bare `except Exception` (#831): a TypeError/AttributeError from a caller bug would be
+# swallowed and re-read as "the tool failed", which is precisely the silent-loss class this
+# module exists to remove.
+_TOOL_ERRORS = (subprocess.TimeoutExpired, OSError)
+
+
+def pdf_page_count(pdf: Path):
+    """The page count `pdfinfo` reports, or **None when it could not be determined** — a timeout,
+    a missing binary, a non-zero exit, or a `Pages:` line that never appears.
+
+    Returning None (not 1) on failure is the #830 fix. The old `return 1` sentinel COLLIDED with a
+    real value: a caller cross-checking a correct 50-way `pdftotext` split against a "count" of 1
+    threw the correct result away and kept page 1 only — a genuinely multi-page document silently
+    read as single-page, with `harvest_pages` / `timebearing_pages` / `lf_no_times` all computed
+    on the truncated view. `None` makes "unknown" distinguishable from "one"."""
     try:
-        out = subprocess.run(["pdfinfo", str(pdf)], capture_output=True, text=True, timeout=30).stdout
-        for line in out.splitlines():
-            if line.startswith("Pages:"):
+        r = subprocess.run(["pdfinfo", str(pdf)], capture_output=True, text=True, timeout=30)
+    except _TOOL_ERRORS:
+        return None
+    if r.returncode != 0:
+        return None
+    for line in r.stdout.splitlines():
+        if line.startswith("Pages:"):
+            try:
                 return int(line.split()[1])
-    except Exception:
-        pass
-    return 1
+            except (IndexError, ValueError):
+                return None
+    return None
 
 
 def pdf_page_text(pdf: Path, page: int) -> str:
     try:
         return subprocess.run(["pdftotext", "-layout", "-f", str(page), "-l", str(page), str(pdf), "-"],
                                capture_output=True, text=True, timeout=30).stdout or ""
-    except Exception:
+    except _TOOL_ERRORS:
         return ""
 
 
 # Whole-document extraction gets real headroom: the per-page primitive's 30s is per PAGE (never
 # slow), but one call over a 783-page PDF is a different order of work.
 PDFTOTEXT_TIMEOUT_S = 180
+# #831(5): the per-page FALLBACK's own worst case is n × 30s, and n is no longer capped at 60. On
+# the corpus's largest document (1,017 pages) that is theoretically ~8.5h — but only if EVERY page
+# times out, and a per-page call takes ~20-50ms in practice. Rather than reintroduce a page cap
+# (the exact bug #828 removed), the fallback stops early once it has spent this much wall-clock,
+# and stops loudly: whatever it did read is returned and the shortfall is visible in the mismatch
+# between len(result) and the page count, which `page_time_signals` consumers can see.
+PDF_FALLBACK_BUDGET_S = 600
+
+# Fallback telemetry (#831(4)): WHY the one-call path was rejected, counted per process so an
+# ingest can report how often each branch fired instead of the cause being invisible without DB
+# archaeology. Keys are stable strings; consumers may read this after ingest and reset it.
+PDF_TEXTS_FALLBACKS = Counter()
 
 
 def pdf_page_texts(pdf: Path) -> list:
@@ -494,18 +528,33 @@ def pdf_page_texts(pdf: Path) -> list:
     split on the form feed pdftotext emits between pages (measured identical to the per-page
     `-f/-l` extraction, and ~3x faster on a 154-page doc: one fork instead of N).
 
-    NEVER returns [] for a real PDF. On a subprocess failure, or when the split's part count
-    disagrees with `pdf_page_count`, it falls back to the per-page loop. That guarantee is
-    load-bearing, not defensive style: an empty `pages` empties `harvest_pages`, which re-arms
-    `lf_no_times` (detectors.py) and can suppress a record out of dispatch entirely — a silently
-    lost district rather than a visible error."""
-    n = max(1, pdf_page_count(pdf))
+    NEVER returns [] for a real PDF. That guarantee is load-bearing, not defensive style: an empty
+    `pages` empties `harvest_pages`, which re-arms `lf_no_times` (detectors.py) and can suppress a
+    record out of dispatch entirely — a silently lost district rather than a visible error.
+
+    TRUST ORDER when the two poppler tools disagree (#830):
+      * whole-doc `pdftotext` succeeded (rc 0, non-empty) and `pdfinfo` agrees, or `pdfinfo` is
+        UNKNOWN (None) → trust the split. A split we already hold is direct evidence; a count that
+        could not be read is no evidence, and must never veto it.
+      * both succeeded but DISAGREE → fall back to the per-page loop over `pdfinfo`'s count. This
+        is the one place the count outranks the split, because a genuine disagreement means one
+        tool mis-parsed and per-page `-f/-l` is the independent tiebreaker.
+      * whole-doc call failed → per-page loop over `pdfinfo`'s count, or over 1 page if that is
+        unknown too (still never [])."""
+    n = pdf_page_count(pdf)                       # int, or None = could not be determined
+    out, rc = None, None
     try:
-        out = subprocess.run(["pdftotext", "-layout", str(pdf), "-"],
-                             capture_output=True, text=True, timeout=PDFTOTEXT_TIMEOUT_S).stdout
-    except Exception:
-        out = None
-    if out:
+        r = subprocess.run(["pdftotext", "-layout", str(pdf), "-"],
+                           capture_output=True, text=True, timeout=PDFTOTEXT_TIMEOUT_S)
+        out, rc = r.stdout, r.returncode
+    except subprocess.TimeoutExpired:
+        PDF_TEXTS_FALLBACKS["whole_doc_timeout"] += 1
+    except OSError:
+        PDF_TEXTS_FALLBACKS["whole_doc_oserror"] += 1
+    # #831(2): success is rc 0 AND non-empty stdout, not stdout truthiness alone — poppler can exit
+    # non-zero after writing partial output on a malformed-but-parseable file, and a partial read
+    # accepted as complete is exactly the silent truncation this function exists to prevent.
+    if out and rc == 0:
         parts = out.split("\f")
         # pdftotext writes a trailing form feed after the LAST page, leaving one empty tail part.
         # Drop exactly that one — and do NOT strip the whole output first, or a legitimately blank
@@ -513,9 +562,23 @@ def pdf_page_texts(pdf: Path) -> list:
         # the `pages` send hint and the human `_pages_list` label both index into this.
         if parts and not parts[-1]:
             parts.pop()
-        if len(parts) == n:
+        if parts and (n is None or len(parts) == n):
+            if n is None:
+                PDF_TEXTS_FALLBACKS["count_unknown_trusted_split"] += 1
             return parts
-    return [pdf_page_text(pdf, p) for p in range(1, n + 1)]
+        PDF_TEXTS_FALLBACKS["count_disagrees" if n is not None else "empty_split"] += 1
+    elif out is not None:
+        PDF_TEXTS_FALLBACKS["whole_doc_nonzero_rc" if rc else "whole_doc_empty"] += 1
+    # Per-page fallback, over the count we trust — or 1 page when nothing could be determined.
+    n = n or 1
+    started = time.monotonic()
+    pages = []
+    for p in range(1, n + 1):
+        if time.monotonic() - started > PDF_FALLBACK_BUDGET_S:
+            PDF_TEXTS_FALLBACKS["fallback_budget_exhausted"] += 1
+            break
+        pages.append(pdf_page_text(pdf, p))
+    return pages
 
 
 # One home for the school-identity key (REQ-117; PR #247 review): this module carried its own
