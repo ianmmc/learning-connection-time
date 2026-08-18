@@ -13,21 +13,31 @@ tail: measured, it **loses 26.3% of the corpus's clock times** and selects nothi
 The floor keeps page N iff `n_times > 0` **or** `instr` **or** `N == 1` **or** `N±1 is time-bearing`
 — lossless on the time signal by construction.
 
-## Results (full corpus, 3,532 records with a per-page signal)
+## Results (post-re-ingest, the corrected uncapped signal)
 
 | check | result |
 |---|---|
-| **B1** sends changed | **155**, and **0** that are not `full text → timebearing_slice` |
-| **B2** chars sent | 22,165,144 → 18,665,966 — **15.8% saved through the guard** |
+| **B1** sends changed | **166**, and **0** that are not `full text → timebearing_slice` |
+| **B2** chars sent, swept population | 22,627,274 → 13,494,882 — **40.4% saved through the guard** |
 | **B3** handbook sends differing | **0** — byte-identical |
 | **B6** records losing a **pairable** school name | **0** |
-| B6 records losing any name string | 113 (nav chrome + address directories on time-free pages) |
-| B6 records losing a positive keyword | 25 |
+| B6 records losing any name string | 124 (nav chrome + address directories on time-free pages) |
+| B6 records losing a positive keyword | 33 |
 
-### B2: the realized saving is a quarter of the theoretical one — as predicted
+Three denominators, all consistent — quote the one that matches the question:
 
-Raw page analysis suggested ~64.6% of characters could be dropped. **Realized: 15.8%**, because the
-#230 yield guard rejected **446 lossless slices**.
+| scope | saving |
+|---|---|
+| the 166 records the floor actually re-routes | **88.0%** (10,378,692 → 1,246,300) |
+| the swept population (records carrying a per-page signal, i.e. PDFs) | **40.4%** |
+| **corpus-wide, every dispatched record** | **16.0%** (57,229,220 → 48,096,828) |
+
+The pre-re-ingest estimate was 15.8% corpus-wide; the realized figure is 16.0%. The estimate held.
+
+### B2: the guard rejects most of the theoretical saving — as predicted
+
+Raw page analysis suggested ~64.6% of characters could be dropped from PDF-bearing records;
+realized is 40.4% there, because the #230 yield guard rejected **435 lossless slices**.
 
 That gap is the counter asymmetry, and it is working as designed. A slice's `n_times` comes from
 `build_signals.time_positions` (regex **plus** `to_minutes` validity filtering); a general text rep's
@@ -74,17 +84,33 @@ Over 828 scoped documents: `times + instr` alone keeps 2,241 pages; adding `firs
 keeps 5,333 (+3,092). That is the price of the two terms that close the identity and
 name/time-straddle risks — paid deliberately, and now measured rather than assumed.
 
-## Scope limit (confirmed)
+## A false PASS, and the fix (worth reading before trusting any re-run)
 
-**B4 found none of the named dense hubs in the changed population**, exactly as predicted. Memphis
-`4700148:8d0058ac10`, Orange `1201440:b8f930171d` and Broward `1200180:52b4f372cd` are genuinely
-dense — every page carries times, so the floor returns `[]` ("nothing to scope, send it whole").
-This change solves *"40 pages of policy text wrapped around 2 pages of times"*. Dense-hub output
-overflow is a different problem, tracked in #822 (monitoring) and #823-825 (Council Lab experiments).
+The first re-run **after** the re-ingest reported `VERDICT: PASS` with **0 sends changed and 0.0%
+saved** — and it was meaningless. The script's baseline was `best_send(reps, …)` read from the live
+DB, which by then already carried the `timebearing_slice` reps the re-ingest had written, so it
+compared the post-state with itself. Worse, B6 lives inside the `if after != before` block, so with
+zero changes it never ran at all: **every safety number printed 0 because nothing was measured, and
+the verdict said PASS over an empty sweep.**
 
-## Caveat on these numbers
+Two fixes, both in the script:
 
-The sweep replays against the **stored** `pages` signal, which predates the cap fix (#827): it is
-truncated at 60 pages and carries no `instr` field. The measurement is therefore **conservative** —
-after a re-ingest the floor will see whole documents and the instructional-declaration term will be
-live. Re-run this script after the re-ingest to get the true figures.
+- the baseline now strips the floor's own reps (`reps = [r for r in reps if r["source"] !=
+  TIMEBEARING_SLICE_SOURCE]`), so the same effect is measured identically before and after landing;
+- zero changed sends now prints **`NOTHING MEASURED`**, never `PASS`. A verdict that cannot fail is
+  not a verdict.
+
+This is the §10.11 pattern (a measurement that could not fail) reappearing inside the verification
+of a fix for a different instance of it. Worth stating plainly rather than quietly patching.
+
+## Scope limit (confirmed, with a correction)
+
+Dense hubs are still not solved here: `4700148:8d0058ac10` is re-scoped by the floor but the yield
+guard rejects the slice, so it sends whole. This change solves *"40 pages of policy text wrapped
+around 2 pages of times"*. Dense-hub output overflow is #822 (monitoring) and #823-825 (Council Lab).
+
+**Correction to the pre-re-ingest reading.** It was recorded that Memphis "keeps 60/60 pages, so the
+floor returns `[]`". That was an artifact of the truncated signal. At true 154-page resolution the
+floor keeps **101/154** and trims 170,591 → 135,534 chars — the document is not uniformly dense, it
+just looked that way through a 60-page window. The conclusion (dense hubs need #822/#823-825, not
+this) is unchanged; the stated reason was wrong.

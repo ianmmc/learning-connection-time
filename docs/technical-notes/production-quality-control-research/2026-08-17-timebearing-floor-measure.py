@@ -81,6 +81,13 @@ for i, (rk, did, ddir, sig) in enumerate(pop):
     except Exception:
         fdict = {}
 
+    # IDEMPOTENT BASELINE. Once the change has landed and the corpus is re-ingested, the DB already
+    # carries timebearing_slice reps — so a naive `before = best_send(reps, ...)` compares the
+    # post-state with itself, reports "0 sends changed / 0% saved", and skips the B6 block entirely
+    # because that only runs for a CHANGED send. The first re-run after the re-ingest did exactly
+    # that and printed a PASS having measured nothing. Strip the floor's own reps from the baseline
+    # so this script measures the same effect before and after landing.
+    reps = [r for r in reps if r.get("source") != BS.TIMEBEARING_SLICE_SOURCE]
     before = R.best_send(reps, sig, fdict)
     tb_pages = BS.time_bearing_pages(sig["pages"])
 
@@ -224,5 +231,11 @@ if term_cost["docs"]:
           f"+first+neighbours = {term_cost['pages_full']} pages "
           f"(+{term_cost['pages_full'] - term_cost['pages_base']})")
 
-print("\nVERDICT:", "PASS" if not bad and not handbook_diffs and not pairable_loss
-      else "REVIEW REQUIRED")
+# A verdict that cannot fail is not a verdict: B6 only runs for a CHANGED send, so zero changes
+# means zero evidence, not a pass. Say so rather than printing a green light over an empty sweep.
+if not changed:
+    print("\nVERDICT: NOTHING MEASURED — no send changed, so B6 never ran. "
+          "Check the baseline is excluding the floor's own reps.")
+else:
+    print("\nVERDICT:", "PASS" if not bad and not handbook_diffs and not pairable_loss
+          else "REVIEW REQUIRED")
