@@ -4,3 +4,10 @@
 # critical check (F821/F824) and failing CI for code we deliberately archived.
 extend-exclude = data,node_modules,.venv,venv,build,dist,*.egg-info,__pycache__
 max-line-length = 127
+# A vulture whitelist is BY CONSTRUCTION a file of bare names — that is the format vulture reads —
+# so every line is an F821 "undefined name" to flake8. 159 of them landed with the audited baseline
+# (ebcc1a1) and turned the blocking critical check (--select=E9,F63,F7,F82; F821 is inside F82) red
+# on main itself. Ignore only F821, and only here, so real syntax errors (E9) in this file are still
+# caught — the same reasoning as the data/archive exclusion above, narrowed to one rule.
+per-file-ignores =
+    .vulture_whitelist.py:F821
