@@ -520,3 +520,65 @@ def test_labeled_pages_of_handles_str_dict_and_junk():
     assert BS.labeled_pages_of(None) == []
     assert BS.labeled_pages_of("{not json") == []
     assert BS.labeled_pages_of({"buried_handbook": "yes"}) == []    # facet without a range
+
+
+# --------------------- #674: the human's out-of-window HOLD (Option 1 + 3) ---------------------
+class TestOutOfWindowHold674:
+    """#674 — the human override was one-directional. #241 let a target label force-SEND a
+    below-floor record ("preserve a district whose ONLY evidence is old") but gave no way to
+    force-HOLD one. Composed with the labeling doctrine — which REQUIRES a correctly-shaped
+    2014-15 schedule to be target-labeled, because withholding the label teaches the detector the
+    shape is not a target — following the rules correctly GUARANTEED out-of-window material
+    reached paid extraction. TAOS 3500127 shipped two such reps in a frozen production dispatch."""
+
+    def _taos(self, facets=None):
+        """TAOS `3500127:47750e00fb`: target-labeled, content_school_year 2014-15 — the record
+        #674 names as the falsifier."""
+        return {"rec_key": "3500127:47750e00fb", "tier": "A",
+                "label": "school_start_end_prose",
+                "signals": {"content_school_year": "2014-15"},
+                "facets": facets or {},
+                "reps": [{"filename": "Parent-Student-Handbook-2014-15.pdf", "file_kind": "text",
+                          "source": "pdftotext", "n_times": 20, "n_chars": 9000, "usable": 1}]}
+
+    def test_the_falsifier_a_marked_record_does_not_send(self):
+        """MUST FAIL against today's code: the target-label branch returns send unconditionally."""
+        d = R.decide(self._taos({"out_of_window": "yes"}))
+        assert d["decision"] == "hold"
+        assert d["reason"] == "human:out-of-window"
+        assert d["send"] == []
+
+    def test_without_the_mark_the_target_label_still_sends(self):
+        """#241's send override is intact — this issue adds the converse, it does not invert it."""
+        assert R.decide(self._taos())["decision"] == "send"
+
+    def test_the_shape_label_survives_the_hold(self):
+        """The record stays countable as training signal: the hold is a FITNESS judgment and must
+        not touch primary_label."""
+        rec = self._taos({"out_of_window": "yes"})
+        R.decide(rec)
+        assert rec["label"] == "school_start_end_prose"      # untouched by the decision
+
+    def test_the_mark_holds_an_in_window_record_too(self):
+        """It is a human judgment, not a floor: a reviewer may know a current-looking document is
+        the wrong instance. No automatic recency veto is introduced — only this explicit mark."""
+        rec = self._taos({"out_of_window": "yes"})
+        rec["signals"] = {"content_school_year": "2024-25"}
+        assert R.decide(rec)["decision"] == "hold"
+
+    def test_no_automatic_veto_above_the_241_floor(self):
+        """Guards against re-introducing the measured-harmful behaviour: on 473 labeled tier-A
+        records a stale veto at the bell-year floor removed 1 false-send while vetoing 17 real
+        targets and RAISED the false-send rate. Only the explicit mark holds."""
+        rec = self._taos()
+        rec["signals"] = {"content_school_year": "2019-20"}    # old, but above the 2017-18 floor
+        assert R.decide(rec)["decision"] == "send"
+        rec["label"] = None
+        assert R.decide(rec)["decision"] == "send"             # unlabeled tier A: still sends
+
+    def test_the_facet_is_not_a_training_confounder(self):
+        """A fitness judgment must never enter the confounder set — counting it would teach the
+        loop that an out-of-window document has a non-target SHAPE, the exact corruption the facet
+        exists to avoid."""
+        from infrastructure.acquisition.stage5_filter import harness as H
+        assert "out_of_window" in H._NON_CONFOUNDER_FACETS
