@@ -4689,7 +4689,21 @@ requirements:
         0 unresolved and an overflow rep still ships degraded_json.n >= 1 to gate@7"
       - "P4: the output estimate has EXACTLY ONE implementation, asserted by IDENTITY
         (openrouter.size_max_tokens IS model_families.size_max_tokens), not by comparing two results
-        — two copies that agree today are the implemented-twice-drifts class"
+        — two copies that agree today are the implemented-twice-drifts class. #846 sharpened this:
+        identity locks the FUNCTION, not its INPUTS — the two sites can disagree without either
+        copy being edited if they construct the inputs differently. So the input construction is
+        ALSO one function (rep_prompt_size: content + system prompt, shaped by kind), and P4 is
+        asserted a second time at the CALL SITES — Stage 6 from the signal row and Stage 7 from
+        the assembled body must yield the same estimate for the same rep, text and image"
+      - "P8 (#843/#845/#847/#848): the fold 'how is this rep degraded' — union of the per-call
+        council_degraded kinds and the pre-flight overflow verdict — is ONE base-layer function
+        (rep_degraded_kinds), read by the live success path, the live failure path, the #716 replay,
+        the telemetry rollup, and detect_requests. It was four hand-written copies at review and two
+        disagreed (an overflow-only rep: degraded in telemetry, barren in explain). A replay derives
+        its telemetry through the same rollup as the live run, so a replayed degraded receipt cannot
+        persist degraded_json='{}' and read clean at gate@7. On replay, degraded_kind (a projection)
+        is always recomputed; the stored overflow verdict (the receipt's dispatch-time testimony) is
+        NOT re-judged against today's registry — that would be the retroactive relabelling P7 forbids"
       - "P5: the corpus population is swept and reported: 43 reps / 43 records / 19 districts
         overflow (35 of them already ceiling <= 0, i.e. prompt alone fills the window), 8 reps
         un-assessable, over 873 sent reps / 114 districts (2026-08-18)"
@@ -4716,6 +4730,8 @@ requirements:
       undercount of their ceiling. Cedar Rapids itself is not among them (~3,878 need vs 16,384).
     tests:
       - "tests/test_model_windows.py::TestOverflowDegrades822 (P1/P2/P4/P6/P7 + precedence)"
+      - "tests/test_model_windows.py::TestReviewFindings843to849 (P4 call-site equality, P8; 10 of
+        11 verified to FAIL against the pre-fix code)"
       - "tests/test_stage7_api.py::test_822_* (P3 — the clean-zero payload, and a pre-822 row
         degrading to {} rather than to a fabricated zero-degraded claim)"
       - "infrastructure/scraper/verify_822_console.mjs (gate@6 badge + gate@7 banner, 15/15;
@@ -4748,6 +4764,9 @@ requirements:
       - "P4: the canonical DB passes through unchanged (the guard discriminates)"
       - "P5: canonical identity has one definition — guard_tracked_backup references
         is_canonical_target and does NOT mention GOVERNANCE_DB_NAME"
+      - "P6 (#844): the database name is PARSED from the URL, never string-split — the documented
+        cloud form `…/governance?sslmode=require` is canonical; a trailing slash and credentials
+        containing '/' are handled; a non-canonical name WITH a query string is still caught"
     notes: |
       Found by doing the thing, not by review. A #822 console verification cloned the governance DB
       precisely so the real one stayed untouched, then created a gate@6 draft against the clone —
@@ -4763,4 +4782,5 @@ requirements:
     tests:
       - "tests/test_precious_backup_guard.py::TestNonCanonicalDb822 (P1-P5; 4 of the 5 verified to
         FAIL against the pre-#822 guard body and pass after)"
+      - "tests/test_precious_backup_guard.py::TestCanonicalDbNameParsing844 (P6)"
     depends_on: [REQ-175]

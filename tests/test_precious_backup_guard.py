@@ -151,3 +151,31 @@ class TestNonCanonicalDb822:
         src = inspect.getsource(paths.guard_tracked_backup)
         assert "is_canonical_target" in src
         assert "GOVERNANCE_DB_NAME" not in src      # paths must NOT re-derive the identity
+
+
+class TestCanonicalDbNameParsing844:
+    """#844: `is_canonical_target` string-split the raw URL, so any query string stayed in the
+    compared token — `…/governance?sslmode=require` (the documented Supabase/cloud form) read as
+    NON-canonical, and every precious export silently quarantined. The name is now PARSED."""
+
+    def _outside_pytest(self, monkeypatch):
+        monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
+
+    def test_sslmode_query_string_is_still_canonical(self, monkeypatch):
+        self._outside_pytest(monkeypatch)
+        monkeypatch.setenv("GOVERNANCE_DATABASE_URL",
+                           "postgresql://u:p@db.example:5432/governance?sslmode=require")
+        assert paths.guard_tracked_backup(paths.STATUS_FILE) == paths.STATUS_FILE
+
+    def test_trailing_slash_and_credentials_with_slash(self, monkeypatch):
+        from infrastructure.acquisition.common import db as gdb
+        assert gdb._db_name("postgresql://u:p@h:5432/governance/") == "governance"
+        assert gdb._db_name("postgresql://u:p%2Fx@h:5432/governance?a=1") == "governance"
+        assert gdb._db_name("postgresql://u:p@h:5432/governance") == "governance"
+
+    def test_a_non_canonical_name_with_a_query_string_is_still_caught(self, monkeypatch):
+        """Parsing must not over-correct into accepting everything."""
+        self._outside_pytest(monkeypatch)
+        monkeypatch.setenv("GOVERNANCE_DATABASE_URL",
+                           "postgresql://u:p@h:5432/gov_scratch?sslmode=require")
+        assert paths.guard_tracked_backup(paths.STATUS_FILE) != paths.STATUS_FILE

@@ -36,6 +36,7 @@ from infrastructure.acquisition.common import school_sampling as SS
 from infrastructure.acquisition.common import timeutil as TU
 from infrastructure.acquisition.stage5_filter import build_signals as BS
 from infrastructure.acquisition.stage6_handoff import cost as COST6
+from infrastructure.acquisition.stage6_handoff import package as PKG6
 from infrastructure.acquisition.stage6_handoff import councils as C6
 from infrastructure.acquisition.stage6_handoff import prompts as P6
 from infrastructure.acquisition.stage6_handoff import requests as R6
@@ -370,10 +371,12 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
             deg = council_degraded(calls)
             if deg:
                 failed["council_degraded"] = deg
-            # #822: same folding as the success path. A rep that threw may ALSO have been
-            # structurally un-servable; recording only the exception would hide the reason.
-            if deg:
-                failed["degraded_kind"] = MF.strongest_kind(deg.get("kinds", {}))
+            # #847: a rep that threw BEFORE its overflow could be assessed is exactly what the
+            # tri-state's third arm is for. Set it explicitly so it counts as un-assessable rather
+            # than vanishing from all three arms. (An assessment that did happen before the throw
+            # is not recoverable here — content may never have resolved.)
+            failed["overflow"] = None
+            _stamp_degraded_kind(failed)      # #822/#849: ONE fold, same as the success path
             pd["reps"].append(failed)
             pd["n_reps"] += 1
             print(f"  [rep {i}/{n_total}] {did} {str(rg.get('file', ''))[:28]:28s} "
@@ -398,13 +401,8 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
         # so it stands beside `council_degraded` rather than inside it. `degraded_kind` is the ONE
         # field a consumer reads to ask "how was this rep degraded, worst-first" — folded through
         # `strongest_kind`, never by re-expressing the precedence here (#810).
-        overflow = _content_overflow(cfg, kind, content)
-        rep_out["overflow"] = overflow                   # tri-state; None = un-assessable
-        _kinds = set((degraded or {}).get("kinds", {}).values())
-        if overflow is True:
-            _kinds.add(MF.DEGRADED_OVERFLOW)
-        if _kinds:
-            rep_out["degraded_kind"] = MF.strongest_kind(_kinds)
+        rep_out["overflow"] = _content_overflow(cfg, kind, content)   # tri-state; None = un-assessable
+        _stamp_degraded_kind(rep_out)
         pd["reps"].append(rep_out)
         pd["accepted"].extend(accepted)
         pd["unresolved"].extend(unresolved)
@@ -483,7 +481,10 @@ def _content_overflow(cfg: dict, kind: str, content) -> "bool | None":
     the content genuinely differs from what was signalled — which is itself worth knowing."""
     n_times = _content_n_times(kind, content)
     n_chars = len(content) if isinstance(content, str) else None
-    return MF.rep_overflow(cfg, n_chars, n_times)
+    # #846: the system prompt is prompt-side context too. Same helper Stage 6 uses at dispatch, so
+    # the two sites construct the estimator's INPUTS identically — not merely share its body.
+    return MF.rep_overflow(cfg, n_chars, n_times, kind=kind or "text",
+                           system_chars=PKG6.system_prompt_chars(cfg))
 
 
 def _call(model: str, prompt_id: str, kind: str, content) -> "OR.CallResult":
@@ -590,6 +591,17 @@ def council_degraded(calls: list) -> "dict | None":
     return {"models": sorted(hit), "reasons": hit, "kinds": kinds}
 
 
+def _stamp_degraded_kind(rep: dict) -> None:
+    """Set/clear `rep['degraded_kind']` from BOTH degradation sources via the ONE base-layer fold
+    (`MF.rep_degraded_kinds` + `strongest_kind`). Called by the live success path, the live failure
+    path, and the #716 replay — #843/#845/#847 were three hand-written copies of this disagreeing."""
+    kinds = MF.rep_degraded_kinds(rep)
+    if kinds:
+        rep["degraded_kind"] = MF.strongest_kind(kinds)
+    else:
+        rep.pop("degraded_kind", None)
+
+
 def _rollup_tel(reps: list) -> dict:
     """Sum per-call telemetry across a set of reps (per-district or global)."""
     t = {"calls": 0, "judge_calls": 0, "errors": 0, "rep_errors": 0, "truncated": 0,
@@ -617,10 +629,13 @@ def _rollup_tel(reps: list) -> dict:
             if c.get("truncation_retried"):
                 t["truncation_retries"] += 1
             t["calls"] += 1
-            t["prompt_tokens"] += c["prompt_tokens"]
-            t["completion_tokens"] += c["completion_tokens"]
-            t["cost_usd"] += (c["cost_usd"] or 0.0)
-            if not c["ok"]:
+            # .get: the live path (_call_record) always writes these, but the #716 replay now
+            # derives its rollup from STORED call records (#843), and a receipt need not carry
+            # every telemetry key to be a valid audit trail of who said what.
+            t["prompt_tokens"] += c.get("prompt_tokens") or 0
+            t["completion_tokens"] += c.get("completion_tokens") or 0
+            t["cost_usd"] += (c.get("cost_usd") or 0.0)
+            if not c.get("ok", True):
                 t["errors"] += 1
             # #815: the same loop-outranks-truncation precedence the classifier applies — a
             # looped call counts LOOPED even when the ceiling stopped it, so the operator line
@@ -637,7 +652,7 @@ def _rollup_tel(reps: list) -> dict:
                 # 0 = a legacy record without the field; skip rather than report a lie.
                 if c.get("max_tokens_sent"):
                     caps.add(c["max_tokens_sent"])
-            if c["role"] == "judge":
+            if c.get("role") == "judge":
                 t["judge_calls"] += 1
     t["truncated_caps"] = sorted(caps)
     return t

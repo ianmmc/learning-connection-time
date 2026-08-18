@@ -26,6 +26,7 @@ from infrastructure.acquisition.common import model_families as MF
 from infrastructure.acquisition.common.db import session_scope
 from infrastructure.acquisition.stage5_filter import release as R
 from infrastructure.acquisition.stage6_handoff import councils as C6
+from infrastructure.acquisition.stage6_handoff import package as PKG6
 from infrastructure.acquisition.stage6_handoff import routing
 
 ap = argparse.ArgumentParser()
@@ -69,9 +70,12 @@ with session_scope() as s:
                 cfg = COUNCILS.get(cid)
                 if cfg is None:
                     continue
-                verdict = MF.rep_overflow(cfg, n_chars, n_times)
+                # #846: the SAME call site Stage 6 uses — content + system prompt, shaped by kind
+                verdict = PKG6._overflow_for(cfg, {**se, "n_chars": n_chars, "n_times": n_times})
                 need = MF.estimate_output_tokens(n_times)
-                ceil = MF.council_ceiling(cfg, MF.estimate_prompt_tokens(n_chars))
+                tot, nimg = MF.rep_prompt_size(n_chars, PKG6.system_prompt_chars(cfg),
+                                               se.get("kind") or "text")
+                ceil = MF.council_ceiling(cfg, MF.estimate_prompt_tokens(tot, nimg))
                 row = dict(did=did, rec_key=rec["rec_key"], file=se.get("file"), kind=se.get("kind"),
                            council=cid, n_chars=n_chars, n_times=n_times, need=need, ceiling=ceil)
                 if verdict is True:

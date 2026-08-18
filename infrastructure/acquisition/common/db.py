@@ -51,7 +51,16 @@ def is_canonical_target() -> bool:
     allowed to regenerate a git-tracked precious backup. Reads the resolved URL rather than the env
     vars directly, so the canonical identity is defined exactly once (here) and a new override path
     can't quietly bypass it."""
-    return governance_url().rstrip("/").rsplit("/", 1)[-1] == CANONICAL_DB_NAME
+    return _db_name(governance_url()) == CANONICAL_DB_NAME
+
+
+def _db_name(url: str) -> str:
+    """The database name in a Postgres URL, PARSED — not string-split. #844: `rsplit('/')` kept a
+    query string in the compared token, so the documented Supabase/cloud form
+    `postgresql://…/governance?sslmode=require` read as NON-canonical and every precious export
+    silently quarantined — the git-backed twins would have frozen with no error."""
+    from urllib.parse import urlsplit
+    return urlsplit(url).path.strip("/").rsplit("/", 1)[-1]
 
 
 def _local_url() -> str:

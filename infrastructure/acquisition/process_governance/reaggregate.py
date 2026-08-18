@@ -63,6 +63,16 @@ def _rebuild_rep(rep: dict, ctx: dict = None) -> dict:
         rebuilt["council_degraded"] = degraded
     else:
         rebuilt.pop("council_degraded", None)
+    # #845 (#822): `degraded_kind` is a PROJECTION of (council_degraded, overflow) and is always
+    # recomputed here through the same one fold the live paths use — never inherited from the
+    # receipt, where a pre-#822 record has none and a post-#822 one may be stale.
+    # `overflow` itself is deliberately NOT re-derived. It is the receipt's own dispatch-time
+    # testimony ("at that moment, against that council, we judged it would not fit"), and the
+    # replay has no honest way to recompute it: a pre-#822 receipt carries no n_times/n_chars for
+    # the rep, and re-judging against a since-retuned registry would overwrite what WAS decided
+    # with what would be decided now — the retroactive relabelling REQ-175 P7 exists to forbid.
+    # A receipt without the key stays without it (un-assessable, counted as such by the rollup).
+    S7R._stamp_degraded_kind(rebuilt)
     return rebuilt
 
 
@@ -103,9 +113,14 @@ def reaggregate_receipt(receipt_path: str, *, dry_run: bool = False) -> dict:
     pd = {**old, "reps": reps, "accepted": accepted, "unresolved": unresolved,
           "n_judged": sum(1 for r in reps if r["judged"]),
           "bands": AGG.district_bands_from_facts(accepted),
-          # cost_usd MUST be 0 on the new extraction row (REQ-051 double-count); the true spend
-          # stays on the original row + in the carried call records. Token counts likewise.
-          "telemetry": {"calls": 0, "judge_calls": 0, "errors": 0, "prompt_tokens": 0,
+          # #843: telemetry is DERIVED from the rebuilt reps by the same rollup the live run uses,
+          # so degraded_reps / degraded_kinds / overflow_unassessable ride into degraded_json and a
+          # replayed degraded receipt cannot read clean at gate@7 (the "clean zero" #822 forbids,
+          # and #800's rule that a replay reproduces derived markers). THEN the spend/token fields
+          # are zeroed: cost_usd MUST be 0 on the new extraction row (REQ-051 double-count) — the
+          # true spend stays on the original row + in the carried call records.
+          "telemetry": {**S7R._rollup_tel(reps),
+                        "calls": 0, "judge_calls": 0, "errors": 0, "prompt_tokens": 0,
                         "completion_tokens": 0, "cost_usd": 0.0},
           "reaggregated_from": src.name}
 
@@ -113,6 +128,11 @@ def reaggregate_receipt(receipt_path: str, *, dry_run: bool = False) -> dict:
            "was": {"accepted": len(old.get("accepted") or []),
                    "unresolved": len(old.get("unresolved") or [])},
            "now": {"accepted": len(accepted), "unresolved": len(unresolved)},
+           # #843: the degraded rollup this replay WILL persist — visible on a dry run too, so an
+           # operator previewing a replay sees that its zeros are (or are not) structural.
+           "degraded": {"n": pd["telemetry"]["degraded_reps"],
+                        "kinds": pd["telemetry"]["degraded_kinds"],
+                        "unassessable": pd["telemetry"]["overflow_unassessable"]},
            "persisted": False}
     if dry_run:
         return out

@@ -10,11 +10,31 @@ the release decision and the app-layer wiring live in `process_governance` (the 
 must not import stage5). `councils` = the loaded registry (id -> config); `cost_model` = the loaded rates.
 """
 
-from infrastructure.acquisition.stage6_handoff import routing, cost
+from infrastructure.acquisition.stage6_handoff import routing, cost, prompts as P6
 from infrastructure.acquisition.common import model_families as MF
 from infrastructure.acquisition.common.timeutil import utcnow as _now
 
 
+
+
+def system_prompt_chars(council_cfg: dict) -> int:
+    """The LARGEST system prompt any member of this council will send — the overhead the overflow
+    estimate must carry (#846). Per-model prompt overrides exist (`prompts.<model>`), so take the
+    max across members: the estimate is conservative by design (it errs toward "overflows"), and
+    the weakest-member ceiling it feeds is a min, so the pessimistic prompt is the consistent
+    choice. Stage 7 sends exactly one of these; `_est_prompt_tokens` measures the real one, and
+    the two agree by construction for the member that carries the max."""
+    ids = {P6.select_prompt_id(council_cfg, m) for m in MF.council_members(council_cfg)}
+    return max((len(P6.SYSTEM_PROMPTS.get(i) or "") for i in ids), default=0)
+
+
+def _overflow_for(council_cfg: dict, se: dict) -> "bool | None":
+    """The dispatch-time overflow verdict for one send entry against its routed council. Feeds the
+    shared estimator the SAME inputs the paid call will carry — content + system prompt, shaped by
+    kind — not content chars alone (#846)."""
+    return MF.rep_overflow(council_cfg, se.get("n_chars"), se.get("n_times"),
+                           kind=se.get("kind") or "text",
+                           system_chars=system_prompt_chars(council_cfg))
 
 
 def assemble_record(rec: dict, councils: dict, cost_model: dict, overrides: dict = None) -> dict:
@@ -66,8 +86,7 @@ def assemble_record(rec: dict, councils: dict, cost_model: dict, overrides: dict
         # n_times, or a member is uncatalogued). None must never be read as False downstream — the
         # vision tier has no countable times, so "fits" there would be a claim we cannot support.
         cid = r["councils"][0] if r["councils"] else None
-        rep["overflow"] = (MF.rep_overflow(councils[cid], se.get("n_chars"), se.get("n_times"))
-                           if cid in councils else None)
+        rep["overflow"] = (_overflow_for(councils[cid], se) if cid in councils else None)
         out["reps"].append(rep)
     return out
 

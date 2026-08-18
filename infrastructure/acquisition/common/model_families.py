@@ -157,11 +157,25 @@ def size_max_tokens(n_times: "int | None") -> int:
 
 
 def estimate_prompt_tokens(n_chars: "int | None", n_images: int = 0) -> int:
-    """Conservative prompt-size estimate: chars/3 (real English runs ~3.5-4 chars/token, so this
-    OVERestimates) plus a flat per-image constant. A None `n_chars` counts 0 CHARS — callers that
-    care about un-assessability must check `n_times`, which is the signal that actually goes
-    missing on a binary rep."""
+    """Conservative prompt-size estimate: TOTAL prompt chars/3 (real English runs ~3.5-4
+    chars/token, so this OVERestimates) plus a flat per-image constant. `n_chars` is EVERY text
+    char that will be in the request — the system prompt included, not the rep content alone
+    (#846: the content-only form was 400-1,000 tokens optimistic against mistral-small's 32,768
+    context, enough to say "fits" for a rep the live call then clamps or refuses). A None `n_chars`
+    counts 0 CHARS — callers that care about un-assessability must check `n_times`, which is the
+    signal that actually goes missing on a binary rep."""
     return math.ceil((n_chars or 0) / _EST_CHARS_PER_TOKEN) + int(n_images) * IMAGE_PART_EST_TOKENS
+
+
+def rep_prompt_size(content_chars: "int | None", system_chars: int, kind: str) -> tuple:
+    """(total text chars, image parts) of the request a rep WILL become — the one construction of
+    the estimator's inputs, shared by Stage 6 (which knows the rep only as a signal row) and Stage
+    7 (which measures the assembled body and must agree). A text rep sends its content inline as
+    chars; an image rep sends ONE image part and its content contributes no chars — the base64
+    length is not tokens (#805). System prompt chars ride on both."""
+    if kind == "image":
+        return int(system_chars or 0), 1
+    return int(system_chars or 0) + int(content_chars or 0), 0
 
 
 def council_members(council_cfg: dict) -> list:
@@ -187,8 +201,12 @@ def council_ceiling(council_cfg: dict, est_prompt_tokens: int) -> "int | None":
 
 
 def rep_overflow(council_cfg: dict, n_chars: "int | None", n_times: "int | None",
-                 n_images: int = 0) -> "bool | None":
+                 kind: str = "text", system_chars: int = 0) -> "bool | None":
     """Does this rep's estimated output exceed its assigned council's ceiling?
+
+    `n_chars` is the rep's CONTENT size; `system_chars` is the system prompt the caller will send
+    with it (#846 — the caller supplies it because the prompt registry lives in Stage 6, which the
+    base layer may not import). `kind` selects the request shape via `rep_prompt_size`.
 
     TRI-STATE, and the third state is the point (#822):
       True  — overflows: the council's weakest member cannot emit what this rep needs.
@@ -203,7 +221,8 @@ def rep_overflow(council_cfg: dict, n_chars: "int | None", n_times: "int | None"
     est = estimate_output_tokens(n_times)
     if est is None:
         return None
-    ceiling = council_ceiling(council_cfg, estimate_prompt_tokens(n_chars, n_images))
+    total_chars, n_images = rep_prompt_size(n_chars, system_chars, kind)
+    ceiling = council_ceiling(council_cfg, estimate_prompt_tokens(total_chars, n_images))
     if ceiling is None:
         return None
     return est > ceiling
@@ -248,6 +267,28 @@ DEGRADED_PRECEDENCE = (DEGRADED_OVERFLOW, DEGRADED_REFUSED, DEGRADED_LOOPED, DEG
 # claim about dispatch that those receipts never made, about reps that may well fit fine. The
 # default belongs to the fail-honest argument below, not to whatever happens to sort first.
 DEGRADED_DEFAULT = DEGRADED_REFUSED
+
+
+def rep_degraded_kinds(rep: dict) -> set:
+    """EVERY degradation kind a rep carries, from BOTH sources: the per-call `council_degraded`
+    marker (REFUSED/LOOPED/TRUNCATED — facts about calls that were made) and the pre-flight
+    `overflow` verdict (a fact about the dispatch decision). The ONE projection every consumer
+    reads — the live success path, the live failure path, the #716 replay, telemetry, and
+    `detect_requests` (#843/#845/#847/#848: four sites each folding the two sources by hand was
+    the implemented-twice-drifts class one layer up; two of them disagreed at review).
+    An overflow verdict of None (un-assessable) contributes nothing: it is not a kind, it is the
+    absence of an assessment, and the caller counts it separately.
+
+    A `council_degraded` marker PRESENT but carrying no `kinds` (a receipt written between #709
+    and #793) is still a degradation — the marker's presence is the fact, the kinds a refinement —
+    and it contributes DEGRADED_DEFAULT (#798: never vacuously worded as a truncation)."""
+    marker = (rep or {}).get("council_degraded")
+    kinds = set((marker or {}).get("kinds", {}).values())
+    if marker and not kinds:
+        kinds.add(DEGRADED_DEFAULT)
+    if (rep or {}).get("overflow") is True:
+        kinds.add(DEGRADED_OVERFLOW)
+    return kinds
 
 
 def strongest_kind(kinds) -> str:
