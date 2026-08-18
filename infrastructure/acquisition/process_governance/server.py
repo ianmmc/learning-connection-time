@@ -1109,7 +1109,14 @@ def _slice_fallback(district_dir: str, rec_hash: str, filename: str):
     """A page slice (harvest_slice.txt, timebearing_slice.txt) that isn't in the legacy capture dir
     may live in the NEW derived-artifact location (issue #58 moved writes there; wave 1D added the
     resolver). Look the record up by (district_dir, hash) to get the ids resolve_slice needs.
-    None if unresolvable — or if `filename` isn't a slice at all, which resolve_slice decides."""
+    None if unresolvable — or if `filename` isn't a slice at all.
+
+    #836: the not-a-slice answer is decided BEFORE opening a governance-DB session. Without this
+    every 404 under /files/ — a stale raster link, a typo'd URL, a probe — paid a DB round trip
+    (and, with the DB slow or unreachable, blocked a worker on the connect) just to be told "no".
+    Membership is a dict lookup; the DB is only consulted for a filename that IS a slice."""
+    if filename not in BS.SLICE_SOURCE_BY_FILE:
+        return None
     try:
         with gdb.session_scope() as con:
             row = con.execute(text(

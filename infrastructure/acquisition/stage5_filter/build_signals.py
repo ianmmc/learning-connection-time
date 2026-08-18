@@ -523,7 +523,21 @@ PDF_FALLBACK_BUDGET_S = 600
 PDF_TEXTS_FALLBACKS = Counter()
 
 
-def pdf_page_texts(pdf: Path) -> list:
+
+class PageTexts(list):
+    """The list `pdf_page_texts` returns, plus ONE flag: `complete` — did the scan reach every
+    page? A plain list to every existing caller (15 tests, 2 measurement scripts, the ingest); the
+    one consumer that must not scope over a truncated prefix (`time_bearing_pages`'s lossless
+    claim, #839) reads `.complete`. Kept as a subclass rather than a tuple return so the contract
+    change costs no caller anything and there is no second `pdfinfo` to compute it."""
+    __slots__ = ("complete",)
+
+    def __init__(self, texts=(), *, complete: bool = True):
+        super().__init__(texts)
+        self.complete = complete
+
+
+def pdf_page_texts(pdf: Path) -> "PageTexts":
     """Per-page text for the WHOLE document — `out[N-1]` is page N. ONE `pdftotext -layout` call,
     split on the form feed pdftotext emits between pages (measured identical to the per-page
     `-f/-l` extraction, and ~3x faster on a 154-page doc: one fork instead of N).
@@ -565,7 +579,7 @@ def pdf_page_texts(pdf: Path) -> list:
         if parts and (n is None or len(parts) == n):
             if n is None:
                 PDF_TEXTS_FALLBACKS["count_unknown_trusted_split"] += 1
-            return parts
+            return PageTexts(parts, complete=True)
         PDF_TEXTS_FALLBACKS["count_disagrees" if n is not None else "empty_split"] += 1
     elif out is not None:
         PDF_TEXTS_FALLBACKS["whole_doc_nonzero_rc" if rc else "whole_doc_empty"] += 1
@@ -577,8 +591,14 @@ def pdf_page_texts(pdf: Path) -> list:
         if time.monotonic() - started > PDF_FALLBACK_BUDGET_S:
             PDF_TEXTS_FALLBACKS["fallback_budget_exhausted"] += 1
             break
-        pages.append(pdf_page_text(pdf, p))
-    return pages
+        # #835: ONE element shape leaves this function. pdf_page_text keeps the trailing form feed
+        # pdftotext emits per page; the split path above consumed it as the separator. Strip it
+        # here so BOTH paths return bare page text and `page_text_from` (the single place that
+        # restores it) cannot double it — which it did on this path: "text\f\f".
+        pages.append(pdf_page_text(pdf, p).removesuffix("\f"))
+    # #839: a fallback that stopped short (budget) has silently dropped the document's tail. Say
+    # so on the result rather than let a prefix masquerade as the whole document downstream.
+    return PageTexts(pages, complete=(len(pages) >= n))
 
 
 # One home for the school-identity key (REQ-117; PR #247 review): this module carried its own
@@ -825,9 +845,12 @@ def page_text_from(page_texts: list, page: int) -> str:
     """One page's text in the EXACT form `pdf_page_text` returns it — including the trailing form
     feed pdftotext emits per page.
 
-    `pdf_page_texts` splits ON those form feeds, so re-adding one is what keeps a slice cut from
-    the cached texts byte-identical to a slice cut by re-extracting. Verified across every harvest
-    page in the corpus: `pdf_page_text(pdf, p) == pdf_page_texts(pdf)[p-1] + "\\f"`, 185/185.
+    `pdf_page_texts` returns BARE page text on both of its paths (#835 — the split path consumes
+    the form feed as its separator; the fallback strips it), so this is the ONE place the per-page
+    form feed is restored, and a slice cut from the cached texts is byte-identical to a slice cut
+    by re-extracting. Verified across every harvest page in the corpus on the split path
+    (`pdf_page_text(pdf, p) == pdf_page_texts(pdf)[p-1] + "\\f"`, 185/185) and by test on the
+    fallback path, which used to double it.
     Without this, all 131 existing harvest slices would silently change by one character per page
     on the next re-ingest — a cosmetic diff, but one that breaks the byte-identity guarantee the
     handbook path is held to. Out-of-range page ⇒ "" (the caller decides whether to re-extract)."""
@@ -848,7 +871,8 @@ def page_time_signals(page_texts: list) -> list:
             for i, t in enumerate(page_texts, 1)]
 
 
-def time_bearing_pages(pages: list, *, keep_first: bool = True, keep_neighbors: bool = True) -> list:
+def time_bearing_pages(pages: list, *, keep_first: bool = True, keep_neighbors: bool = True,
+                       complete: bool = True) -> list:
     """#821 — the ABSOLUTE page floor: the pages that could plausibly carry schedule or
     instructional-time content. Keep page N iff it has a clock time, OR declares instructional
     minutes, OR is the first page, OR neighbours a time-bearing page.
@@ -869,10 +893,12 @@ def time_bearing_pages(pages: list, *, keep_first: bool = True, keep_neighbors: 
                    150 records: 86 had a school name appearing only on a zero-time page.
 
     Returns [] — meaning "no scoping, send the whole thing" — when there is nothing to scope
-    (<=1 page), nothing qualifies, or EVERY page qualifies (a slice identical to the document is
-    pure duplication). The keep_* switches exist so the corpus sweep can measure each term's cost
-    rather than assume it."""
-    if not pages or len(pages) <= 1:
+    (<=1 page), nothing qualifies, EVERY page qualifies (a slice identical to the document is
+    pure duplication), or the scan that produced `pages` was INCOMPLETE (#839: `complete=False`
+    means unscanned tail pages are absent from `pages`, so "every page with a time is kept" would
+    be a claim about a prefix, not the document — decline, send whole). The keep_* switches exist
+    so the corpus sweep can measure each term's cost rather than assume it."""
+    if not pages or len(pages) <= 1 or not complete:
         return []
     nums = {p["page"] for p in pages}
     bearing = {p["page"] for p in pages if (p.get("n_times") or 0) > 0}
@@ -1059,7 +1085,7 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
         "harvest_pages": harvest_schedule_pages(pages),
         # #821: computed UNCONDITIONALLY, like harvest_pages — so a corpus sweep can replay the
         # floor from the DB alone, without re-extracting every PDF.
-        "timebearing_pages": time_bearing_pages(pages),
+        "timebearing_pages": time_bearing_pages(pages, complete=getattr(page_texts, "complete", True)),
         "dechromed": dechromed,   # REQ-091: KEYWORD signals computed over MAIN (chrome removed)?
         # ---- V2 (REQ-113) ----
         "footer_hours": footer, "header_hours": header,
@@ -1349,6 +1375,7 @@ TIMEBEARING_SLICE_FILE = "timebearing_slice.txt"
 SLICE_FILE_BY_SOURCE = {HARVEST_SLICE_SOURCE: HARVEST_SLICE_FILE,
                         TIMEBEARING_SLICE_SOURCE: TIMEBEARING_SLICE_FILE}
 SLICE_SOURCES = frozenset(SLICE_FILE_BY_SOURCE)
+SLICE_SOURCE_BY_FILE = {f: s for s, f in SLICE_FILE_BY_SOURCE.items()}   # #836: the cheap inverse
 # DERIVED artifact home (issue #58): slices are ingest OUTPUT, so they live under data/acquisition/
 # (regenerable), never under data/raw/ (write-once Stage-3 captures — Critical Rule 5). Pre-#58
 # ingests wrote harvest_slice.txt next to the raw capture; resolve_slice() keeps those
@@ -1379,7 +1406,7 @@ def resolve_slice(district_id: str, district_dir: str, rec_key: str, filename: s
     inside the raw capture dir. Returns None when `filename` is not a slice at all, or when no slice
     exists — so a caller needs no membership test of its own, which is the point: the four sites
     that used to compare against HARVEST_SLICE_FILE by hand now all ask this one function."""
-    source = next((s for s, f in SLICE_FILE_BY_SOURCE.items() if f == filename), None)
+    source = SLICE_SOURCE_BY_FILE.get(filename)      # #836: O(1), and the ONE membership test
     if source is None:
         return None
     new = slice_path(district_id, rec_key, source)
@@ -1425,6 +1452,42 @@ def labeled_pages_of(facets_json_str) -> list:
         return [int(p) for p in pages if int(p) > 0]
     except (ValueError, TypeError, json.JSONDecodeError):
         return []
+
+
+def select_slice(signals: dict, facets) -> "tuple[str, list] | None":
+    """THE ONE page-slice decision (#834): which slice kind — if any — this record gets, and over
+    which pages. `(source, pages)`, or None for "no scoping; send the document whole".
+
+    Ingest materializes exactly what this returns; `best_send` sends a slice rep ONLY if its source
+    matches what this returns. Both sides call this function, so they structurally cannot disagree
+    — which they did when each carried its own hand-written predicate: ingest cut a floor slice for
+    35 live handbooks whose peak-relative harvest found nothing, and best_send's separate
+    `handbookish` guard then hid every one of them (a 1,017-page handbook sent whole while a
+    lossless 19-page slice sat unreachable); and 8 human-labelled records got a harvest slice
+    best_send would not send AND were denied the floor because the harvest branch had already
+    fired. The implemented-twice-drifts class (#798/#810), a third time — in the very PR that
+    named it.
+
+    Precedence, deliberately: a HUMAN page range beats everything (the human looked — #109); a
+    handbook whose peak-relative harvest found pages takes the harvest slice; otherwise the
+    absolute floor. A handbook whose harvest found NOTHING is not "unscoped" — it is exactly the
+    document the floor exists for."""
+    facets = facets or {}
+    if isinstance(facets, str):
+        try:
+            facets = json.loads(facets) or {}
+        except (ValueError, TypeError):
+            facets = {}
+    human = labeled_pages_of(facets)
+    if human:
+        return HARVEST_SLICE_SOURCE, human
+    harvest = signals.get("harvest_pages") or []
+    if signals.get("is_handbook") and harvest:
+        return HARVEST_SLICE_SOURCE, harvest
+    floor = signals.get("timebearing_pages") or []
+    if floor:
+        return TIMEBEARING_SLICE_SOURCE, floor
+    return None
 
 
 def build_slice(page_nums: list, page_text_fn, source: str = HARVEST_SLICE_SOURCE):
@@ -1566,14 +1629,11 @@ def ingest_district(sess, ddir: Path, *, splits: set, batches: dict, nces: dict)
             sess.execute(INSERT_REP, _rep(rec_key, t["source"], t.get("text_file"), "text",
                                           t.get("n_chars", 0), t.get("n_times", 0),
                                           int(bool(t.get("usable")))))
-        # Q2.1: for a handbook (or any record carrying harvest_pages), materialize just those high-signal
-        # pages as a small `harvest_slice.txt` text rep — so Stage 6 dispatches the slice, not the whole PDF.
-        # #109: the HUMAN-labeled page range (facets_json._pages_list — the label rows are precious and
-        # survive re-ingest, so they're queryable right here) outranks the AUTO harvest_pages, and its
-        # presence alone qualifies the record for a slice even when the auto is_handbook classifier
-        # missed it (the buried_handbook case is exactly a doc the auto path misread).
-        human_hp = labeled_pages_of(district_facets.get(rec_key))
-        hp = human_hp or sig.get("harvest_pages") or []
+        # Q2.1: materialize a page SLICE as a small standalone text rep, so Stage 6 dispatches the
+        # slice, not the whole PDF. WHICH slice — human range (#109; the label rows are precious and
+        # survive re-ingest, so they're queryable right here) > handbook harvest > absolute floor
+        # (#821) — is decided by select_slice(), the ONE predicate best_send also calls (#834), so
+        # what is cut here and what may be sent there cannot disagree.
         pdf_name = files.get("pdf") or (files.get("bin")
                    if str(files.get("bin", "")).lower().endswith(".pdf") else None)
         # #833: same exists() guard compute_signals applies. A capture that NAMES a PDF absent from
@@ -1591,20 +1651,14 @@ def ingest_district(sess, ddir: Path, *, splits: set, batches: dict, nces: dict)
         def page_text_of(p, _pt=page_texts, _pdf=pdf):
             return page_text_from(_pt, p) if 0 < p <= len(_pt) else (pdf_page_text(_pdf, p) if _pdf else "")
 
-        slice_spec = None
-        if hp and (human_hp or sig.get("is_handbook")):
-            slice_spec = (hp, HARVEST_SLICE_SOURCE)
-        elif sig.get("timebearing_pages"):
-            # #821 the ABSOLUTE floor, and deliberately an `elif`: mutual exclusion is what makes
-            # "a handbook record behaves byte-identically" STRUCTURAL rather than argued — a
-            # handbook never carries a timebearing_slice, so the new best_send branch is inert for it.
-            slice_spec = (sig["timebearing_pages"], TIMEBEARING_SLICE_SOURCE)
-        if slice_spec and pdf:                    # pdf is already None when absent (#833)
-            built = build_slice(slice_spec[0], page_text_of, slice_spec[1])
+        chosen = select_slice(sig, district_facets.get(rec_key))
+        if chosen and pdf:                        # pdf is already None when absent (#833)
+            source, page_nums = chosen
+            built = build_slice(page_nums, page_text_of, source)
             if built:
                 slice_text, rep_kwargs = built
                 # write to the DERIVED-artifact home, never into the raw capture dir (issue #58)
-                sp = slice_path(did, rec_key, slice_spec[1])
+                sp = slice_path(did, rec_key, source)
                 sp.parent.mkdir(parents=True, exist_ok=True)
                 sp.write_text(slice_text)
                 sess.execute(INSERT_REP, _rep(rec_key, **rep_kwargs))

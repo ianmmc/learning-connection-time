@@ -22,7 +22,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from sqlalchemy import text
+from sqlalchemy import bindparam, text
 
 from infrastructure.acquisition.common import benchmark as BM
 from infrastructure.acquisition.common import budget as BUD
@@ -1134,8 +1134,11 @@ def _district_request_inputs(session, result: dict, ca_cache: dict = None):
         for fn, kind, nt in session.execute(
                 text("SELECT filename, file_kind, n_times FROM representation WHERE rec_key = :k "
                      "AND usable = 1 AND file_kind IN ('text', 'image') "
-                     "AND source NOT LIKE 'segment:%'"),
-                {"k": rec_key}).all():
+                     "AND source NOT LIKE 'segment:%' "
+                     # #837: a page slice is a strict subset of another rep — never a swap candidate
+                     "AND source NOT IN :slice_sources"
+                     ).bindparams(bindparam("slice_sources", expanding=True)),
+                {"k": rec_key, "slice_sources": sorted(BS.SLICE_SOURCES)}).all():
             if fn not in sent_files:
                 alts.setdefault(rec_key, []).append({"file": fn, "kind": kind, "n_times": nt})
     # District-WIDE band coverage across ALL extractions (this run's facts are already flushed on

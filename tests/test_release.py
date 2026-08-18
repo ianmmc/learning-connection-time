@@ -115,6 +115,99 @@ def test_best_send_vision_outranks_the_floor_slice():
     assert R.best_send(reps, sig, {}) == [{"file": "page.png", "kind": "image"}]
 
 
+def test_best_send_sends_the_floor_slice_on_a_handbook_with_no_harvest_peak():
+    # #834 case 1 (35 live records) — MUST FAIL against the old `not handbookish` guard. A handbook
+    # whose peak-relative harvest found nothing has the floor as its ONLY scoping; ingest cut it,
+    # and best_send hid it (0904830:71acfa3404: 1,017 pages sent whole, a 19-page slice dead).
+    reps = [_tb_rep(n_times=12, n_chars=50_721),
+            _text_rep("pdftotext.txt", n_times=12, n_chars=2_860_753),
+            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
+    sig = {"is_handbook": True, "harvest_pages": [], "timebearing_pages": list(range(1, 20))}
+    assert R.best_send(reps, sig, {}) == [
+        {"file": BS.TIMEBEARING_SLICE_FILE, "kind": "text", "pages": list(range(1, 20))}]
+
+
+def test_best_send_honours_a_bare_human_page_range_without_buried_handbook():
+    # #834 case 2 (8 live records) — MUST FAIL today. A reviewer typed a page range but did not tick
+    # buried_handbook. Ingest cut a harvest slice from that range; the old send gate demanded
+    # buried_handbook == "yes" and refused it — and the floor was denied too because the harvest
+    # branch had fired. ONE predicate: the human looked, the harvest slice is what gets sent.
+    reps = [_text_rep("harvest_slice.txt", n_times=9, n_chars=1_500, source="harvest_slice"),
+            _text_rep("pdftotext.txt", n_times=9, n_chars=40_000),
+            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
+    sig = {"is_handbook": False, "harvest_pages": [], "timebearing_pages": [1, 4]}
+    facets = {"_pages_list": [4]}                       # NO buried_handbook key at all
+    assert R.best_send(reps, sig, facets) == [{"file": "harvest_slice.txt", "kind": "text", "pages": [4]}]
+
+
+def test_best_send_and_ingest_agree_on_every_slice_shape():
+    # The #834 property, asserted directly: for every combination of the inputs that drive the
+    # decision, the kind best_send is willing to SEND equals the kind select_slice says to CUT.
+    import itertools
+    for is_hb, harvest, floor, human in itertools.product(
+            (True, False), ([], [4]), ([], [1, 4]), ({}, {"_pages_list": [4]})):
+        sig = {"is_handbook": is_hb, "harvest_pages": harvest, "timebearing_pages": floor}
+        chosen = BS.select_slice(sig, human)
+        # give best_send BOTH slice reps, generously sized so only the gate decides
+        reps = [_text_rep("harvest_slice.txt", n_times=9, n_chars=100, source="harvest_slice"),
+                _tb_rep(n_times=9, n_chars=100),
+                _text_rep("pdftotext.txt", n_times=9, n_chars=100_000),
+                {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
+        sent = R.best_send(reps, sig, human)[0]["file"]
+        if chosen is None:
+            assert sent == "pdftotext.txt", (sig, human, sent)
+        else:
+            assert sent == BS.SLICE_FILE_BY_SOURCE[chosen[0]], (sig, human, chosen, sent)
+
+
+def test_best_send_floor_slice_must_be_smaller_than_its_own_parent():
+    # #838: on an HTML capture the densest text can be a DIFFERENT extraction from the pdftotext
+    # the slice was cut from. 3800038:df6bcfc4b7 — a 1,786-char slice of a 1,783-char pdftotext,
+    # "saving" 40% against a 2,985-char page.txt. Not smaller than the document it was cut FROM is
+    # not scoping; it must not win.
+    reps = [_tb_rep(n_times=6, n_chars=1_786),
+            _text_rep("pdftotext.txt", n_times=5, n_chars=1_783),
+            _text_rep("page.txt", n_times=6, n_chars=2_985, source="txt"),
+            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
+    sig = {"is_handbook": False, "timebearing_pages": [1, 2]}
+    assert R.best_send(reps, sig, {}) == [{"file": "page.txt", "kind": "text"}]
+    # ...and a genuinely smaller slice still wins on the same shape
+    reps[0] = _tb_rep(n_times=6, n_chars=900)
+    assert R.best_send(reps, sig, {})[0]["file"] == BS.TIMEBEARING_SLICE_FILE
+
+
+def test_gate5_console_shows_the_floor_scoping_decision():
+    """#840 — the UI-visibility rule: under the manual-gate posture the reviewer must SEE that
+    page-scoping is happening, which pages survive, and why. The floor now shapes ~700 live sends
+    and the per-page card was blind to it (it knew only the harvest ★). Static-source assertions
+    on app.js, the same convention as test_684's console checks; the markers must be data-driven
+    from the stored signals so they cannot drift from what was actually cut."""
+    from pathlib import Path
+    js = (Path(__file__).resolve().parent.parent
+          / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    assert "s.timebearing_pages" in js, "the card must read the floor signal"
+    assert "◆" in js and "★" in js, "two selectors, two DISTINCT markers"
+    assert 'data-scoping="${harvestGoverns ? "harvest" : (floorGoverns ? "floor" : "none")}"' in js, \
+        "the table must name which selector governs the send (a DOM hook for Playwright)"
+    assert "time-bearing floor" in js, "the meta line must name the floor when it applies"
+    assert 'p.instr ? " · instr"' in js, "an instructional-declaration page must be marked"
+    # precedence mirrors select_slice: harvest only when is_handbook AND harvest_pages
+    assert "const harvestGoverns = !!(s.is_handbook && harvest.size);" in js
+
+
+def test_alternates_never_offer_a_slice_as_a_swap_candidate():
+    # #837: a slice is a strict SUBSET of another rep of the same record — retrying it after the
+    # full text failed is the 7->6 ladder run downward. Both slice kinds excluded, chrome still is.
+    reps = [_text_rep("pdftotext.txt", n_times=9),
+            _text_rep("harvest_slice.txt", n_times=9, source="harvest_slice"),
+            _tb_rep(n_times=9, n_chars=100),
+            _text_rep("page.header.txt", n_times=2, source="segment:header"),
+            {"source": "raster", "filename": "raster_p1.png", "file_kind": "image"}]
+    got = {a["file"] for a in R.alternates(reps, exclude={"pdftotext.txt"})}
+    assert got == {"raster_p1.png"}
+    assert BS.SLICE_SOURCES <= R.NON_SWAPPABLE_SOURCES and R.CHROME_SOURCES <= R.NON_SWAPPABLE_SOURCES
+
+
 @pytest.mark.parametrize("extra", [False, True])
 def test_best_send_handbook_records_are_byte_identical(extra):
     """P3: this widens scoping to records that had none — it must not re-route an existing one.

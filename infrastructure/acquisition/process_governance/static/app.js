@@ -430,14 +430,33 @@ async function renderCenter(d) {
   });
   if (emptyTexts.length) html += `<div class="chip">${emptyTexts.length} below-bar/empty text rep(s) not shown</div>`;
 
-  // Per-page n_times (handbook-harvest signal) if a multi-page PDF.
+  // Per-page time counts if a multi-page PDF — and WHICH page-scoping selector governs the send.
+  // Two selectors, two markers (#840): ★ = the handbook HARVEST (peak-relative standout pages,
+  // Q2.1); ◆ = the absolute time-bearing FLOOR (#821 — every page with a time / an instructional
+  // declaration / page 1 / a neighbour). Under the manual-gate posture the reviewer must SEE that
+  // scoping is happening, which pages survive, and why — the floor now shapes ~700 live sends and
+  // this card was blind to it. Marker sets are data-driven from the stored signals so they cannot
+  // drift from what was actually cut; the meta line mirrors select_slice()'s precedence
+  // (harvest when is_handbook+harvest_pages, else floor).
   if (s.pages && s.pages.length > 1) {
     const harvest = new Set(s.harvest_pages || []);
-    const rows = s.pages.map((p) => `<tr><td>${harvest.has(p.page) ? "★ " : ""}p${p.page}</td><td class="${harvest.has(p.page) ? "hot" : (p.n_times >= 8 ? "hot" : "")}">${p.n_times} times</td></tr>`).join("");
-    const meta = s.harvest_pages && s.harvest_pages.length
-      ? `${s.is_handbook ? "handbook · " : ""}harvest p${s.harvest_pages.join(", p")} → council (not the whole doc)`
-      : (s.is_handbook ? "handbook — no schedule page stood out" : "high-count pages are likely the schedule page");
-    html += card("Per-page time counts (handbook harvest)", meta, `<table class="pages-table">${rows}</table>`);
+    const floor = new Set(s.timebearing_pages || []);
+    const harvestGoverns = !!(s.is_handbook && harvest.size);
+    const floorGoverns = !harvestGoverns && floor.size > 0;
+    const mark = (p) => (harvest.has(p) ? "★ " : "") + (floor.has(p) ? "◆ " : "");
+    const rows = s.pages.map((p) => `<tr><td data-page="${p.page}">${mark(p.page)}p${p.page}</td><td class="${(harvest.has(p.page) || floor.has(p.page)) ? "hot" : (p.n_times >= 8 ? "hot" : "")}">${p.n_times} times${p.instr ? " · instr" : ""}</td></tr>`).join("");
+    let meta;
+    if (harvestGoverns) {
+      meta = `handbook · ★ harvest p${s.harvest_pages.join(", p")} → council (not the whole doc)`;
+    } else if (floorGoverns) {
+      meta = `◆ time-bearing floor: ${floor.size} of ${s.pages.length} pages → council (${s.is_handbook ? "handbook, no harvest peak — " : ""}the rest carry no clock time)`;
+    } else {
+      meta = s.is_handbook ? "handbook — no schedule page stood out; sent whole"
+           : (s.pages.length ? "no scoping — every page carries a time, or none does; sent whole" : "");
+    }
+    html += card("Per-page time counts (page scoping)", meta,
+      `<table class="pages-table" data-scoping="${harvestGoverns ? "harvest" : (floorGoverns ? "floor" : "none")}">${rows}</table>
+       <div class="chip">★ harvest (handbook peak) · ◆ time-bearing floor</div>`);
   }
 
   // VISUAL LAST — for confirming structure / catching an image-only target (→ needs vision).
