@@ -11,6 +11,7 @@ Keyed by the FULL OpenRouter model id (`google/gemini-2.5-flash-lite`). Unified 
 `aggregate.py` whose `family()` silently did nothing for the full ids the live path actually passes,
 so cross-family counting only worked by the accident that distinct ids are distinct strings.
 """
+import math
 
 # Family buckets, keyed by FULL OpenRouter model id. The provider prefix is usually the family
 # (two Google Geminis are one family); an uncatalogued id falls back to its (alias-normalized) prefix.
@@ -91,6 +92,123 @@ def usable_output(model_id: str, est_prompt_tokens: int) -> "int | None":
         cap = min(cap, w["max_out"])
     return cap
 
+
+# ── Output/prompt sizing (#822) ───────────────────────────────────────────────────────────────
+# These moved here from `stage7_extract/openrouter.py`, which still re-exports every name so its
+# callers are unchanged. The move is forced by the layering contract, not taste: stages 1-8 are
+# INDEPENDENT of each other, so Stage 6 (which must decide at dispatch whether a council can serve a
+# rep) may not import Stage 7. `common` is the one layer both may read — the same reason FAMILY
+# lives here. Keeping a second copy in Stage 6 is the implemented-twice-drifts class (#798/#810/
+# #799/#816, and #834's two slice predicates); one copy is the only real lock.
+#
+# Output-token model (EXTRACTION_TOKEN_SIZING_2026-07-06.md, 840 real calls): reply length is
+# roster-bound at ~47 completion tokens/school (flat, no verbosity noise) and each school
+# contributes ~2 clock times, so schools ≈ n_times/2 and output ≈ schools × 47.
+_TOKENS_PER_SCHOOL = 47
+_TIMES_PER_SCHOOL = 2
+_SIZING_HEADROOM = 1.5            # grade-band splitting (a K-12 campus emits >1 row/school) + long names
+# chars-per-token divisor for the prompt ESTIMATE — deliberately low (overestimates tokens) so a
+# clamp errs toward a smaller max_tokens, never toward a provider 400.
+_EST_CHARS_PER_TOKEN = 3
+# #805: an image part carries NO text but is real prompt-side context at the provider (tiled at
+# ~hundreds-to-low-thousands of tokens each). A crude constant beats the zero it replaced — zero
+# made the clamp and the pre-flight refusal INERT for the whole vision tier.
+IMAGE_PART_EST_TOKENS = 1600
+# The FLOOR (small reps, ~86% of traffic): every roster we've seen fits 16k, so a small rep is never
+# sized below this. The CEILING is the largest max_tokens any call may request.
+DEFAULT_MAX_TOKENS = 16000
+MAX_TOKENS_CEILING = 32000
+# Below this much usable output the call is refused pre-flight at zero spend (#714).
+MIN_USEFUL_OUTPUT = 1024
+
+
+def estimate_output_tokens(n_times: "int | None") -> "int | None":
+    """The rep's UNCLAMPED completion-token NEED. `None` when `n_times` is None — un-assessable,
+    which is emphatically not zero (see `rep_overflow`).
+
+    Deliberately NOT clamped, unlike `size_max_tokens`. The two answer different questions ("how
+    much would this rep need?" vs "how much may we ask for?") and #822's review found that
+    conflating them makes the image council's ceiling unreachable: the clamp tops out at 32,000
+    while that council's ceiling is 32,768, so an image overflow could never be detected and the
+    issue's "0 records exceed the image council" would have been true by construction rather than
+    by measurement. A need estimate that cannot exceed the thing it is compared against is not a
+    measurement."""
+    if n_times is None:
+        return None
+    if not n_times:
+        return 0
+    return math.ceil(n_times / _TIMES_PER_SCHOOL * _TOKENS_PER_SCHOOL * _SIZING_HEADROOM)
+
+
+def size_max_tokens(n_times: "int | None") -> int:
+    """What a call may REQUEST as `max_tokens`: the raw need clamped to [floor, ceiling] (#180).
+    A big roster is sized right on the FIRST call instead of truncating then paying the prompt again
+    on the #169 retry; a small rep stays at the 16k floor (never sized DOWN, so nothing that fit
+    before can newly truncate). `n_times` None/0 (image/scan reps whose times aren't text-countable)
+    → the floor, where the #169 retry is the backstop.
+
+    NB `max_tokens` is only a ceiling — OpenRouter bills ACTUAL completion tokens, so sizing higher
+    costs nothing unless the model uses the room (the tail we WANT); the saving is the eliminated
+    duplicate PROMPT charge of the retry."""
+    est = estimate_output_tokens(n_times)
+    if not est:
+        return DEFAULT_MAX_TOKENS
+    return max(DEFAULT_MAX_TOKENS, min(est, MAX_TOKENS_CEILING))
+
+
+def estimate_prompt_tokens(n_chars: "int | None", n_images: int = 0) -> int:
+    """Conservative prompt-size estimate: chars/3 (real English runs ~3.5-4 chars/token, so this
+    OVERestimates) plus a flat per-image constant. A None `n_chars` counts 0 CHARS — callers that
+    care about un-assessability must check `n_times`, which is the signal that actually goes
+    missing on a binary rep."""
+    return math.ceil((n_chars or 0) / _EST_CHARS_PER_TOKEN) + int(n_images) * IMAGE_PART_EST_TOKENS
+
+
+def council_members(council_cfg: dict) -> list:
+    """A council's three serving models: both voters plus the judge. The judge counts — a call the
+    judge cannot serve is a call the COUNCIL cannot serve, even though `council_degraded` only ever
+    *marks* voters (REQ-056 shape: 2 cross-family voters → a third-family judge)."""
+    return list((council_cfg or {}).get("voters") or []) + \
+        ([(council_cfg or {}).get("judge")] if (council_cfg or {}).get("judge") else [])
+
+
+def council_ceiling(council_cfg: dict, est_prompt_tokens: int) -> "int | None":
+    """The most completion tokens this COUNCIL can serve: the weakest member's `usable_output` at
+    the same prompt estimate (#822 P2). `None` if the council has no members, or if ANY member is
+    uncatalogued — an unmeasured model's ceiling is unknown, and treating unknown as infinite is
+    how a structurally impossible call records a clean zero."""
+    members = council_members(council_cfg)
+    if not members:
+        return None
+    caps = [usable_output(m, est_prompt_tokens) for m in members]
+    if any(c is None for c in caps):
+        return None
+    return min(caps)
+
+
+def rep_overflow(council_cfg: dict, n_chars: "int | None", n_times: "int | None",
+                 n_images: int = 0) -> "bool | None":
+    """Does this rep's estimated output exceed its assigned council's ceiling?
+
+    TRI-STATE, and the third state is the point (#822):
+      True  — overflows: the council's weakest member cannot emit what this rep needs.
+      False — fits.
+      None  — UN-ASSESSABLE: no `n_times` (every binary/image rep — `representation.n_times` is
+              NULL for them), or a council member outside the catalog.
+
+    `None` must never be folded into `False` by a caller. Image reps carry no countable times, so
+    scoring them "fits" would report the vision tier as clean when it was merely unmeasured — and
+    the vision tier is exactly where the higher-ceiling remedy routing (#823) lives, so a False
+    there would bias the very population epic #80 is meant to choose among."""
+    est = estimate_output_tokens(n_times)
+    if est is None:
+        return None
+    ceiling = council_ceiling(council_cfg, estimate_prompt_tokens(n_chars, n_images))
+    if ceiling is None:
+        return None
+    return est > ceiling
+
+
 # The two ways a model's window can make a rep's read structurally incomplete (#709/#793). They live
 # HERE, in the base layer, because both the producer (process_governance.stage7_run.council_degraded,
 # which classifies) and the consumer (stage7_extract.requests, which words the remedy) need the same
@@ -99,6 +217,10 @@ def usable_output(model_id: str, est_prompt_tokens: int) -> "int | None":
 DEGRADED_REFUSED = "context_refused"     # the voter never answered — its window rejected the request
 DEGRADED_TRUNCATED = "window_truncated"  # the voter answered PARTIALLY — some rows are missing
 DEGRADED_LOOPED = "degenerate_repetition"  # #812: the voter answered with ONE row over and over
+# #822: the rep's ESTIMATED output exceeds the assigned council's ceiling (its weakest member's
+# `usable_output`). Unlike the three above — each a fact about a call that was actually made — this
+# is knowable PRE-FLIGHT, from content size + council membership alone, before a cent is spent.
+DEGRADED_OVERFLOW = "output_overflow"
 
 # #810: the precedence ("a refusal outranks a truncation — no answer at all is the stronger
 # statement about the council") is ONE rule in ONE place, next to the constants it orders. Both
@@ -112,21 +234,35 @@ DEGRADED_LOOPED = "degenerate_repetition"  # #812: the voter answered with ONE r
 # 5 of the corpus's 6 loops truncated; New Haven 0626910's looped with no truncation signal at all
 # (ok=True, finish_reason=None) and read as a clean 420-fact extraction until this detector existed
 # — a loop needs no ceiling to be a loop.
-DEGRADED_PRECEDENCE = (DEGRADED_REFUSED, DEGRADED_LOOPED, DEGRADED_TRUNCATED)   # strongest first
+
+# #822 puts OVERFLOW at the head: it is the CAUSE the other three are symptoms of. A council that
+# structurally cannot emit the rep's output will then refuse, or truncate, or loop — reporting the
+# symptom would point a human at the model's behavior when the dispatch decision is what was wrong.
+# Same causal-strength logic that slotted LOOPED ahead of TRUNCATED (#812).
+DEGRADED_PRECEDENCE = (DEGRADED_OVERFLOW, DEGRADED_REFUSED, DEGRADED_LOOPED, DEGRADED_TRUNCATED)
+
+# The fallback for an absent/empty/unknown `kinds`, pinned to a NAMED kind rather than to
+# DEGRADED_PRECEDENCE[0]. It used to be the head of the tuple, which silently coupled a
+# CLASSIFICATION default to an ORDERING decision: #822's reorder would have retroactively relabelled
+# every #709–#793-era receipt (and every hand-built marker) as an `output_overflow` — a pre-flight
+# claim about dispatch that those receipts never made, about reps that may well fit fine. The
+# default belongs to the fail-honest argument below, not to whatever happens to sort first.
+DEGRADED_DEFAULT = DEGRADED_REFUSED
 
 
 def strongest_kind(kinds) -> str:
     """The strongest degradation kind present in `kinds` (an iterable of kind strings, or a
     {model: kind} dict whose values are read). A marker with an absent/empty `kinds` — receipts
-    written between #709 and #793, or a hand-built marker — defaults to the STRONGEST
+    written between #709 and #793, or a hand-built marker — defaults to DEGRADED_DEFAULT
     (`context_refused`): under-claiming a refusal as a truncation invites 'that was the whole
     roster', the exact misdirection #793 exists to prevent. An unknown kind string also defaults
-    strongest, for the same fail-honest reason."""
+    that way, for the same fail-honest reason."""
     vals = set(kinds.values() if isinstance(kinds, dict) else (kinds or ()))
     for k in DEGRADED_PRECEDENCE:
         if k in vals:
             return k
-    return DEGRADED_PRECEDENCE[0]
+    return DEGRADED_DEFAULT
+
 
 # Provider-prefix aliases for the fallback: OpenRouter's prefix is sometimes NOT the family bucket we
 # catalog under ("mistralai/..." models are family "mistral"). Without this a catalogued Mistral

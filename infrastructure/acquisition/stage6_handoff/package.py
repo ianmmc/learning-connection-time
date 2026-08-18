@@ -11,6 +11,7 @@ must not import stage5). `councils` = the loaded registry (id -> config); `cost_
 """
 
 from infrastructure.acquisition.stage6_handoff import routing, cost
+from infrastructure.acquisition.common import model_families as MF
 from infrastructure.acquisition.common.timeutil import utcnow as _now
 
 
@@ -59,6 +60,14 @@ def assemble_record(rec: dict, councils: dict, cost_model: dict, overrides: dict
         for _f in ("n_times", "n_chars"):
             if se.get(_f) is not None:
                 rep[_f] = se[_f]
+        # #822: can the council we just routed to actually EMIT this rep's estimated output? Known
+        # here, pre-flight, from size + membership — before a cent is spent. TRI-STATE, and always
+        # present: True overflows, False fits, None un-assessable (a binary/image rep carries no
+        # n_times, or a member is uncatalogued). None must never be read as False downstream — the
+        # vision tier has no countable times, so "fits" there would be a claim we cannot support.
+        cid = r["councils"][0] if r["councils"] else None
+        rep["overflow"] = (MF.rep_overflow(councils[cid], se.get("n_chars"), se.get("n_times"))
+                           if cid in councils else None)
         out["reps"].append(rep)
     return out
 

@@ -154,6 +154,36 @@
       ${keeperLine}</div>`;
   }
 
+  // #822: the run's degradation rollup. Before this, a rep the council could not structurally
+  // serve completed the run with 0 accepted / 0 unresolved and looked like an ordinary empty
+  // district — the reviewer had no way to tell "nothing was there" from "we could never have read
+  // it". `unassessable` is surfaced separately and never folded into the degraded count: it means
+  // the check could not run (a binary rep has no countable clock times), not that the rep was fine.
+  const DEGRADED_LABEL = {
+    output_overflow: "estimated output exceeded the council's ceiling",
+    context_refused: "a voter's window refused the request",
+    degenerate_repetition: "a voter looped on one row",
+    window_truncated: "a voter's reply was cut short",
+  };
+
+  function degradedBanner(d) {
+    if (!d || (!d.n && !d.unassessable)) return "";
+    const kinds = Object.entries(d.kinds || {})
+      .map(([k, n]) => `<span class="s7-chip">${esc(DEGRADED_LABEL[k] || k)} × ${n}</span>`).join("");
+    const unass = d.unassessable
+      ? `<div data-feat="degraded-unassessable">${d.unassessable} rep${d.unassessable === 1 ? "" : "s"}
+           could not be assessed for output overflow (no countable clock times — binary/image).
+           <b>Unmeasured, not clean.</b></div>`
+      : "";
+    const head = d.n
+      ? `⚠ ${d.n} rep${d.n === 1 ? "" : "s"} degraded — this run's zeros are not necessarily empty documents`
+      : `⚠ Output overflow could not be assessed for part of this run`;
+    return `<div class="s7-contam" data-feat="degraded-banner" data-degraded="${d.n || 0}" role="alert">
+      <div class="s7-contam-head">${head}</div>
+      ${kinds ? `<div class="s7-contam-schools">${kinds}</div>` : ""}
+      ${unass}</div>`;
+  }
+
   function renderDetail(x) {
     const e = x.extraction, reqs = x.requests || [];
     const pending = reqs.filter((r) => r.status === "pending").length;
@@ -177,6 +207,7 @@
         <h3>${esc(e.district_id)}</h3>
         <div class="muted">${acc.length} accepted · ${unres.length} unresolved · ${usd(e.cost_usd)} · ${e.n_reps} rep${e.n_reps === 1 ? "" : "s"}${e.n_reps_skipped ? ` · <span class="s7-skip" data-feat="mode-stability-skip">${e.n_reps_skipped} rep${e.n_reps_skipped === 1 ? "" : "s"} skipped — mode stable (#120)</span>` : ""} · run ${esc(e.created_at)}</div>
       </div>
+      ${degradedBanner(x.degraded)}
       ${contaminationBanner(x.contamination)}
       <h4>Band rollup <span class="muted">(computed — Stage 8 owns the authoritative value)</span></h4>
       ${bandTable(x.bands || {})}

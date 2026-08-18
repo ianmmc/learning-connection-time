@@ -26,41 +26,39 @@ from __future__ import annotations
 
 import functools
 import json
-import math
 import os
 import time
 from dataclasses import dataclass
 from typing import Optional
 
 from infrastructure.acquisition.common import paths
-from infrastructure.acquisition.common.model_families import usable_output
+from infrastructure.acquisition.common.model_families import (  # noqa: F401  (re-exports)
+    # #822: the output/prompt sizing model moved to `common` so Stage 6 can reach it at DISPATCH
+    # (stages 1-8 may not import each other; `common` is the shared base). Re-exported here under
+    # the same names so every existing caller — stage7_run.py, four test modules — is unchanged.
+    # These are IMPORTS, not copies: there is one implementation, so drift is not expressible.
+    DEFAULT_MAX_TOKENS,
+    IMAGE_PART_EST_TOKENS,
+    MAX_TOKENS_CEILING,
+    MIN_USEFUL_OUTPUT,
+    _EST_CHARS_PER_TOKEN,
+    estimate_prompt_tokens,
+    size_max_tokens,
+    usable_output,
+)
 
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 DEFAULT_TIMEOUT = 90               # with stream=True this bounds connect/read GAPS, not total duration
-# The FLOOR (small reps, ~86% of traffic): every roster we've seen fits 16k, so a small rep is never
-# sized below this. 2000 once silently beheaded big multi-school replies (Appoquinimink's 19 schools
-# ran 827 out-tokens; Cleveland's flier carries 93) — the salvage parser keeps the head and the tail
-# schools vanish with no error, so `finish_reason == "length"` (captured) is the tripwire.
-DEFAULT_MAX_TOKENS = 16000
-# The hard CEILING — inside all six council models' completion windows. ONE constant shared by two
-# mechanisms so they can never disagree (#187):
-#   • #180 pre-sizing: `size_max_tokens(n_times)` clamps UP to here, so a big roster is sized right on
+# DEFAULT_MAX_TOKENS (the floor) / MAX_TOKENS_CEILING (the hard ceiling) / the output-token model
+# are imported from `common.model_families` above (#822). MAX_TOKENS_CEILING remains ONE constant
+# shared by two mechanisms so they can never disagree (#187):
+#   • #180 pre-sizing: `size_max_tokens(n_times)` clamps UP to it, so a big roster is sized right on
 #     the FIRST call (no truncate-then-retry double prompt-charge);
-#   • #169 retry: a truncated reply is re-run ONCE at here to recover the dropped tail — but only when
-#     the call was BELOW here. A call already sent AT the ceiling that still truncates gets no retry
+#   • #169 retry: a truncated reply is re-run ONCE at it to recover the dropped tail — but only when
+#     the call was BELOW it. A call already sent AT the ceiling that still truncates gets no retry
 #     (nowhere higher to go within the model windows — >680 schools, never observed in 840 calls);
 #     `finish_reason == "length"` persists so the incompleteness stays visible.
-MAX_TOKENS_CEILING = 32000
-# Output-token model (docs/technical-notes/.../EXTRACTION_TOKEN_SIZING_2026-07-06.md, 840 real calls):
-# reply length is roster-bound, ~47 completion tokens/school (flat, no verbosity noise); each school
-# contributes ~2 clock times (start+end). So schools ≈ n_times/2 and output ≈ schools × 47.
-# NB: stage6_handoff/cost.py carries a SECOND output-per-school encoding (per-model fitted
-# `output_tokens_per_school`, and its `_n_schools` proxies n_times 1:1, not /2). It's dead today
-# (#192 — n_times never reaches handoff reps); when #192 revives it, unify with these constants so
-# the gate@6 cost preview and this runtime sizing can't disagree about the same rep.
-_TOKENS_PER_SCHOOL = 47
-_TIMES_PER_SCHOOL = 2
-_SIZING_HEADROOM = 1.5             # grade-band splitting (a K-12 campus emits >1 row/school) + long names
+
 DEFAULT_TEMPERATURE = 0.1
 BILLING_AUTH_STATUS = {401, 402}   # key/balance — every later call fails identically → halt
 # #714 (REQ-174): per-model window accounting. The 2026-08-16 OpenRouter fetch falsified the
@@ -70,21 +68,12 @@ BILLING_AUTH_STATUS = {401, 402}   # key/balance — every later call fails iden
 # to `usable_output(model, est_prompt)`; when even that leaves less than MIN_USEFUL_OUTPUT the
 # call is REFUSED pre-flight at zero spend (error_kind='context') — the spend-conservative
 # direction, and the honest one: a doomed call recorded as a clean zero was #709's silent
-# single-family degradation.
-MIN_USEFUL_OUTPUT = 1024
-# chars-per-token divisor for the pre-flight prompt ESTIMATE — deliberately low (overestimates
-# tokens) so the clamp errs toward smaller max_tokens, never toward a provider 400.
-_EST_CHARS_PER_TOKEN = 3
+# single-family degradation. MIN_USEFUL_OUTPUT and the chars-per-token divisor are imported above.
+
 # Provider 400 messages that mean the CONTEXT WINDOW was exceeded (structural, not transient):
 # OpenRouter/Mistral: "This endpoint's maximum context length is 32768 tokens. However, you
 # requested ...". Matched case-insensitively on stable substrings, not exact text.
 CONTEXT_ERROR_MARKERS = ("maximum context length", "context length", "context window")
-# #805: an image part carries NO text but is real prompt-side context at the provider (tiled at
-# ~hundreds-to-low-thousands of tokens per image). A crude constant beats the zero it replaced —
-# zero made the clamp and pre-flight refusal INERT for the whole vision tier, failing silently the
-# day a narrow-window vision model joins the catalog. Conservative-high, matching the estimator's
-# deliberate overestimation bias.
-IMAGE_PART_EST_TOKENS = 1600
 
 
 def classify_error(status: "int | None", message: str) -> str:
@@ -99,6 +88,7 @@ def classify_error(status: "int | None", message: str) -> str:
     return ("context" if any(mk in (message or "").lower() for mk in CONTEXT_ERROR_MARKERS)
             else "transient")
 
+
 # App attribution (optional per the docs; identifies the app on openrouter.ai rankings/activity).
 ATTRIBUTION_HEADERS = {
     "HTTP-Referer": "https://github.com/ianmmc/learning-connection-time",
@@ -106,13 +96,10 @@ ATTRIBUTION_HEADERS = {
 }
 
 
-def _est_prompt_tokens(request_body: dict) -> int:
-    """Conservative prompt-size estimate for the pre-flight window clamp (#714): total message
-    content chars / 3 (real English runs ~3.5-4 chars/token, so this OVERestimates — the clamp
-    errs small, never toward a 400). An image part (#805) counts IMAGE_PART_EST_TOKENS — images are
-    real prompt-side context at the provider (tiled), and counting them zero made the clamp inert
-    for the whole vision tier. The base64 length itself is NOT the estimate (base64 chars are not
-    tokens); a flat conservative constant keeps the overestimation bias."""
+def _body_content_size(request_body: dict) -> tuple:
+    """(text chars, image-part count) across an assembled request body's messages. The base64 length
+    of an image is NOT counted as chars (base64 chars are not tokens) — each image contributes the
+    flat IMAGE_PART_EST_TOKENS instead, via `estimate_prompt_tokens`."""
     total = 0
     images = 0
     for m in request_body.get("messages") or []:
@@ -127,24 +114,16 @@ def _est_prompt_tokens(request_body: dict) -> int:
                     total += len(part["text"])
                 elif part.get("type") == "image_url" or "image_url" in part:
                     images += 1
-    return math.ceil(total / _EST_CHARS_PER_TOKEN) + images * IMAGE_PART_EST_TOKENS
+    return total, images
 
 
-def size_max_tokens(n_times: Optional[int]) -> int:
-    """Pre-size a call's `max_tokens` from the rep's clock-time count (#180): output ≈ schools × 47
-    and schools ≈ n_times / 2, so a big roster is sized right on the FIRST call instead of truncating
-    then paying the prompt again on the #169 retry. Clamped to [floor, ceiling] — a small rep stays at
-    the 16k floor (never sized DOWN, so nothing that fit before can newly truncate). `n_times` None/0
-    (image/scan reps whose times aren't text-countable, or a rep with no times) → the floor, where the
-    #169 retry is the backstop for the residual we genuinely can't predict.
-
-    NB: `max_tokens` is only a ceiling — OpenRouter bills ACTUAL completion tokens, so sizing higher
-    costs nothing unless the model uses the room (the tail we WANT); the saving is the eliminated
-    duplicate PROMPT charge of the retry."""
-    if not n_times:
-        return DEFAULT_MAX_TOKENS
-    est = math.ceil(n_times / _TIMES_PER_SCHOOL * _TOKENS_PER_SCHOOL * _SIZING_HEADROOM)
-    return max(DEFAULT_MAX_TOKENS, min(est, MAX_TOKENS_CEILING))
+def _est_prompt_tokens(request_body: dict) -> int:
+    """Conservative prompt-size estimate for the pre-flight window clamp (#714), measured off an
+    ASSEMBLED request body. Delegates the arithmetic to `common.model_families.estimate_prompt_tokens`
+    — the same function Stage 6 calls at dispatch from `n_chars`/`n_images` (#822), so the two
+    lifecycle points cannot drift; only the way the inputs are obtained differs."""
+    total, images = _body_content_size(request_body)
+    return estimate_prompt_tokens(total, images)
 
 
 class BillingAuthError(RuntimeError):

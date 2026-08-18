@@ -161,6 +161,9 @@ total_usd  # unused variable (infrastructure/acquisition/stage6_handoff/models.p
 cost_provenance  # unused variable (infrastructure/acquisition/stage6_handoff/models.py:31)
 council_ids  # unused variable (infrastructure/acquisition/stage6_handoff/models.py:42)
 n_reps_skipped  # unused variable (infrastructure/acquisition/stage7_extract/models.py:47)
+degraded_json  # unused variable (stage7_extract/models.py) — #822 ORM column; written as a
+               # kwarg in stage7_run.persist_run_session and read by name in server.py's
+               # raw gate@7 SELECT, neither of which vulture sees as an attribute use.
 n_calls  # unused variable (infrastructure/acquisition/stage7_extract/models.py:49)
 n_judge_calls  # unused variable (infrastructure/acquisition/stage7_extract/models.py:50)
 n_errors  # unused variable (infrastructure/acquisition/stage7_extract/models.py:51)

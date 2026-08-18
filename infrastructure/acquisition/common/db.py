@@ -34,9 +34,30 @@ def governance_url() -> str:
     """Resolve the governance database URL (its own config namespace, never the LCT DB's)."""
     if os.getenv("GOVERNANCE_DATABASE_URL"):
         return os.environ["GOVERNANCE_DATABASE_URL"]
+    return _local_url()
+
+
+# The ONE name that owns the git-tracked precious JSON twins. A process pointed anywhere else — a
+# `TEMPLATE governance` clone for scratch verification, an empty probe DB — must never regenerate
+# them: `district_status.export_status` and its siblings rebuild each file WHOLESALE from the
+# connected DB's event log, so exporting from a 0-district scratch DB overwrites 175 districts of
+# tracked state with `{}`. That is data loss, not a stale event. (#822; the #178 guard covered only
+# the pytest cause of the same churn.)
+CANONICAL_DB_NAME = "governance"
+
+
+def is_canonical_target() -> bool:
+    """True when this process is connected to the canonical governance DB — the only connection
+    allowed to regenerate a git-tracked precious backup. Reads the resolved URL rather than the env
+    vars directly, so the canonical identity is defined exactly once (here) and a new override path
+    can't quietly bypass it."""
+    return governance_url().rstrip("/").rsplit("/", 1)[-1] == CANONICAL_DB_NAME
+
+
+def _local_url() -> str:
     host = os.getenv("GOVERNANCE_DB_HOST", "localhost")
     port = os.getenv("GOVERNANCE_DB_PORT", "5432")
-    name = os.getenv("GOVERNANCE_DB_NAME", "governance")
+    name = os.getenv("GOVERNANCE_DB_NAME", CANONICAL_DB_NAME)
     user = os.getenv("GOVERNANCE_DB_USER", "governance_user")
     password = os.getenv("GOVERNANCE_DB_PASSWORD", "governance_pw")
     auth = f"{user}:{password}" if password else user
@@ -113,6 +134,10 @@ _PRECIOUS_ALTERS = [
     "ALTER TABLE batch ADD COLUMN IF NOT EXISTS redo_attempted boolean",
     # #120: reps left unsent by the mode-stability early-exit (detail lives in the disk receipt).
     "ALTER TABLE extraction ADD COLUMN IF NOT EXISTS n_reps_skipped integer NOT NULL DEFAULT 0",
+    # #822: the degradation rollup ({"n":…, "kinds":{…}, "unassessable":…}); '{}' on an
+    # undegraded run. Pairs with Extraction.degraded_json's server_default — the DDL must be
+    # declared twice, identically, or a fresh create_all() DB diverges from a migrated one (#641).
+    "ALTER TABLE extraction ADD COLUMN IF NOT EXISTS degraded_json text NOT NULL DEFAULT '{}'",
     # STAGE8 §2a.6: per-fact council evidence (verbatim quote / locus / stated minutes) from the v2
     # extraction prompt. Additive, NULL for pre-v2 rows (going-forward only, no backfill).
     "ALTER TABLE school_fact ADD COLUMN IF NOT EXISTS evidence_json text",

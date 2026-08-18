@@ -86,18 +86,39 @@ _quarantine_noted: set = set()
 
 
 def guard_tracked_backup(out: Path) -> Path:
-    """The write target for a precious-backup export: `out` itself normally, but under pytest
-    (PYTEST_CURRENT_TEST is set for the whole test process, inherited by its threads/subprocesses)
-    a tracked backup is redirected to a quarantine dir under the system tmp. Explicit non-tracked
-    paths (tests that pass their own tmp `out=`) pass through untouched."""
-    if out not in TRACKED_BACKUPS or "PYTEST_CURRENT_TEST" not in os.environ:
+    """The write target for a precious-backup export: `out` itself normally, else a quarantine dir
+    under the system tmp. Explicit non-tracked paths (tests that pass their own tmp `out=`) pass
+    through untouched.
+
+    TWO causes of the same harm — a tracked twin regenerated from state that is not the real world:
+      * under pytest (PYTEST_CURRENT_TEST is set for the whole test process, inherited by its
+        threads/subprocesses) — issue #178;
+      * connected to a NON-CANONICAL governance DB (#822) — a `TEMPLATE governance` clone used for
+        scratch console verification, or an empty probe DB. Cloning the DB does NOT isolate these
+        files: they live on disk, and every exporter rebuilds them WHOLESALE from the connected
+        DB's log. A scratch server on an empty DB would blank 175 districts of tracked state.
+        Found the hard way — a #822 verification run wrote a `draft_add_district` event for a
+        district into `district_status.json` while pointed at a clone.
+    Redirecting (rather than raising) keeps scratch verification working end-to-end, which is the
+    behavior that makes the guard something people leave on."""
+    if out not in TRACKED_BACKUPS:
+        return out
+    reason = None
+    if "PYTEST_CURRENT_TEST" in os.environ:
+        reason = "test run (#178)"
+    else:
+        from infrastructure.acquisition.common import db as _db   # local: db must not import paths
+        if not _db.is_canonical_target():
+            reason = (f"NON-CANONICAL governance DB "
+                      f"'{_db.governance_url().rstrip('/').rsplit('/', 1)[-1]}' (#822)")
+    if reason is None:
         return out
     import tempfile
     q = Path(tempfile.gettempdir()) / "lct-test-quarantine" / out.name
     q.parent.mkdir(parents=True, exist_ok=True)
     if out.name not in _quarantine_noted:      # note once per file per process, not per write
         _quarantine_noted.add(out.name)
-        print(f"[paths] test run — {out.name} export quarantined to {q} (issue #178)", flush=True)
+        print(f"[paths] {reason} — {out.name} export quarantined to {q}", flush=True)
     return q
 
 

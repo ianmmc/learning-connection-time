@@ -370,6 +370,10 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
             deg = council_degraded(calls)
             if deg:
                 failed["council_degraded"] = deg
+            # #822: same folding as the success path. A rep that threw may ALSO have been
+            # structurally un-servable; recording only the exception would hide the reason.
+            if deg:
+                failed["degraded_kind"] = MF.strongest_kind(deg.get("kinds", {}))
             pd["reps"].append(failed)
             pd["n_reps"] += 1
             print(f"  [rep {i}/{n_total}] {did} {str(rg.get('file', ''))[:28]:28s} "
@@ -390,6 +394,17 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
         degraded = council_degraded(calls)
         if degraded:
             rep_out["council_degraded"] = degraded       # #709: receipt-visible, ≠ barren
+        # #822: overflow is a fact about the DISPATCH decision, not about any call that was made,
+        # so it stands beside `council_degraded` rather than inside it. `degraded_kind` is the ONE
+        # field a consumer reads to ask "how was this rep degraded, worst-first" — folded through
+        # `strongest_kind`, never by re-expressing the precedence here (#810).
+        overflow = _content_overflow(cfg, kind, content)
+        rep_out["overflow"] = overflow                   # tri-state; None = un-assessable
+        _kinds = set((degraded or {}).get("kinds", {}).values())
+        if overflow is True:
+            _kinds.add(MF.DEGRADED_OVERFLOW)
+        if _kinds:
+            rep_out["degraded_kind"] = MF.strongest_kind(_kinds)
         pd["reps"].append(rep_out)
         pd["accepted"].extend(accepted)
         pd["unresolved"].extend(unresolved)
@@ -455,6 +470,20 @@ def _content_n_times(kind: str, content) -> "int | None":
     about to send, so #180 sizing needs no handoff plumbing (n_times isn't carried through freeze).
     Image reps (content is a data/URL) can't be counted → None → the 16k floor + the #169 retry."""
     return len(BS.time_positions(content)) if kind == "text" and isinstance(content, str) else None
+
+
+def _content_overflow(cfg: dict, kind: str, content) -> "bool | None":
+    """#822 — does what we are ABOUT TO SEND exceed this council's ceiling? Tri-state; `None` is
+    un-assessable (an image rep has no countable times), never False.
+
+    Recomputed from the RESOLVED CONTENT rather than read back off the frozen rep, so this is a real
+    second observation of the same property and not a tautology: Stage 6 measured the DB's
+    `representation` row at dispatch, Stage 7 measures the bytes actually in hand. The shared
+    function they both call lives in `common.model_families` (P4), so the two can disagree only if
+    the content genuinely differs from what was signalled — which is itself worth knowing."""
+    n_times = _content_n_times(kind, content)
+    n_chars = len(content) if isinstance(content, str) else None
+    return MF.rep_overflow(cfg, n_chars, n_times)
 
 
 def _call(model: str, prompt_id: str, kind: str, content) -> "OR.CallResult":
@@ -565,11 +594,22 @@ def _rollup_tel(reps: list) -> dict:
     """Sum per-call telemetry across a set of reps (per-district or global)."""
     t = {"calls": 0, "judge_calls": 0, "errors": 0, "rep_errors": 0, "truncated": 0,
          "truncation_retries": 0, "degraded_reps": 0, "truncated_caps": [], "looped": 0,
-         "prompt_tokens": 0, "completion_tokens": 0, "cost_usd": 0.0}
+         "prompt_tokens": 0, "completion_tokens": 0, "cost_usd": 0.0,
+         # #822: the per-kind split behind `degraded_reps`, plus the tri-state's third arm. An
+         # un-assessable rep is NOT a clean one — counting it as such is how the vision tier
+         # reported clean while being unmeasured — so it gets its own line, never a fold into zero.
+         "degraded_kinds": {}, "overflow_reps": 0, "overflow_unassessable": 0}
     caps = set()
     for rep in reps:
-        if rep.get("council_degraded"):   # #709: structurally un-votable, ≠ zero-yield
-            t["degraded_reps"] += 1
+        if rep.get("council_degraded") or rep.get("degraded_kind"):
+            t["degraded_reps"] += 1       # #709: structurally un-votable, ≠ zero-yield
+        if rep.get("degraded_kind"):
+            k = rep["degraded_kind"]
+            t["degraded_kinds"][k] = t["degraded_kinds"].get(k, 0) + 1
+        if rep.get("overflow") is True:
+            t["overflow_reps"] += 1
+        elif rep.get("overflow") is None and "overflow" in rep:
+            t["overflow_unassessable"] += 1
         if rep.get("error"):        # a rep that couldn't be read/processed at all (#173) — no calls
             t["errors"] += 1
             t["rep_errors"] += 1
@@ -977,6 +1017,13 @@ def persist_run_session(s, results: dict, *, created_by: str = "auto:stage7",
             prompt_tokens=tel.get("prompt_tokens", 0),
             completion_tokens=tel.get("completion_tokens", 0), cost_usd=tel.get("cost_usd", 0.0),
             n_accepted=len(pd["accepted"]), n_unresolved=len(pd["unresolved"]),
+            # #822: always written, so a degraded run can never be read as a clean zero. `{}` is the
+            # honest empty — an absent key would be indistinguishable from a pre-#822 row.
+            degraded_json=json.dumps({
+                "n": tel.get("degraded_reps", 0),
+                "kinds": tel.get("degraded_kinds", {}),
+                "unassessable": tel.get("overflow_unassessable", 0),
+            } if (tel.get("degraded_reps") or tel.get("overflow_unassessable")) else {}),
             receipt_path=receipt_path)
         s.add(ex)
         s.flush()   # assign extraction_id
