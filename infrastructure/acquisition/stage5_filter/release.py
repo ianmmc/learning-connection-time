@@ -218,9 +218,14 @@ def alternates(reps: list, exclude: set) -> list:
             continue
         if (r.get("source") or "") in NON_SWAPPABLE_SOURCES:   # chrome + slices (#837)
             continue
-        fk = r.get("file_kind")
-        if fk == "text" and not r.get("usable"):
+        # #856: `usable` gates EVERY kind, as it does in the other two collectors (stage7_run's
+        # SQL `usable = 1`, stage7_execute.live_alternates). This site used to check it for text
+        # only — latent (ingest hardcodes usable=1 for pdf/image today) but the very asymmetry
+        # #841 unified the source rule to remove, and an ingest that ever marks a corrupt raster
+        # unusable would have re-opened the three-way disagreement here.
+        if not r.get("usable"):
             continue
+        fk = r.get("file_kind")
         if fk not in ("text", "image", "pdf"):
             continue
         out.append({"file": fn, "kind": fk})
@@ -234,6 +239,38 @@ def alternates(reps: list, exclude: set) -> list:
 # reversible, preserves a district whose ONLY evidence is old (Brashear's 2012-13 Timetracker). Applies
 # to the AUTO path only — an explicit human target label is the override.
 _VALIDITY_FLOOR_START = SY.start_year(SY.SPED_BASELINE_YEAR)   # 2017
+
+
+# #674: the human's HOLD override — the converse of #241's send override. The floor gave a reviewer
+# a way to force-SEND a below-floor record ("preserve a district whose ONLY evidence is old") but no
+# way to force-HOLD one, and the two standing rules composed into a guarantee: the labeling doctrine
+# REQUIRES a correctly-shaped 2014-15 schedule to be target-labeled (withholding the label teaches
+# the detector the shape is not a target), and a target label is an unconditional send. So following
+# the labeling rule correctly guaranteed out-of-window material reached paid extraction. TAOS
+# `3500127` shipped two such reps in a frozen production dispatch.
+#
+# A FACET, deliberately, not a label: `primary_label` carries SHAPE and must stay uncorrupted as
+# training signal, while this is a FITNESS-FOR-USE judgment about the instance. The two axes are
+# orthogonal and `decide()` already receives both. Semantics are HOLD, never reject (#241's posture):
+# reversible, and the record + its shape label survive intact and countable.
+OUT_OF_WINDOW_FACET = "out_of_window"
+
+
+def human_held_out_of_window(facets) -> bool:
+    """True iff a human marked this record out of the approved temporal window at gate@5 (#674).
+    Checked BEFORE the target-label branch in `decide`, because it exists precisely to override it."""
+    return (facets or {}).get(OUT_OF_WINDOW_FACET) == "yes"
+
+
+# The SQL twin of `human_held_out_of_window`, defined ONCE next to it (like CANONICAL_RECORD_WHERE)
+# so the gate@6 candidate counts (server.handoff_candidates) mirror decide()'s first branch from one
+# spelling — the query used to hand-copy this expression five times (#855). `l` = the LEFT-JOINed
+# label row. GUARDED (#857): `::jsonb` on malformed text raises and would fail the whole aggregate
+# query, not one row; `pg_input_is_valid` (PG16) reads such a row as NOT held, the same "survive a
+# bad shape" posture as the Python-side `harness.parse_facets` (#199). NULL facets → NULL → ''.
+OUT_OF_WINDOW_WHERE = (
+    "COALESCE(CASE WHEN pg_input_is_valid(l.facets_json, 'jsonb') "
+    f"THEN l.facets_json::jsonb->>'{OUT_OF_WINDOW_FACET}' END, '') = 'yes'")
 
 
 def pre_validity_floor(content_school_year) -> bool:
@@ -255,6 +292,13 @@ def decide(rec: dict) -> dict:
     sig = rec.get("signals") or {}
     facets = rec.get("facets") or {}
     reps = rec.get("reps", [])
+    # #674: an explicit human out-of-window judgment HOLDS the record even when it is target-labeled
+    # — the only override that was missing. Deliberately FIRST: the whole defect was that the target
+    # branch below returns unconditionally, so any check placed after it is unreachable for exactly
+    # the population this protects. No automatic recency veto is introduced anywhere (#241 measured
+    # that actively harmful: it removed 1 false-send while vetoing 17 real targets).
+    if human_held_out_of_window(facets):
+        return {"decision": "hold", "reason": "human:out-of-window", "send": [], "alternates": []}
     if label in TARGET_LABELS:
         send = best_send(reps, sig, facets)
         reason = f"target-label:{label}" + ("" if send else ";no-usable-rep")

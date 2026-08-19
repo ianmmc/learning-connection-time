@@ -365,9 +365,51 @@ def test_live_alternates_excludes_sent_unusable_and_binaries():
     ]}
     got = EX.live_alternates(rec, sent_files={"harvest_slice.txt"})
     files = {a["file"] for a in got}
-    assert files == {"pdftotext.txt", "raster_p-01.png"}   # sent/pdf/segment/unusable all excluded
-    # feeding the live set to pick_alternate -> the full text wins over the raster
+    # #841 CHANGED THIS ASSERTION DELIBERATELY, on measurement, not to make a fix pass:
+    # segment:main is now ADMITTED (it was this site's private wider rule that excluded it, while
+    # release.alternates always admitted it). Over the live corpus it is the UNIQUELY best
+    # alternate on 27 records and dominated by another allowed rep on only 4 — excluding it was
+    # losing real retries. Chrome (header/footer/nav) and slices stay excluded.
+    assert files == {"pdftotext.txt", "page.main.txt", "raster_p-01.png"}
+    # ...and admitting it does not disturb the ladder: the fuller text still wins on n_times.
     assert EX.pick_alternate(got)["file"] == "pdftotext.txt"
+
+
+def test_841_the_three_alternate_collectors_agree_on_every_segment_kind():
+    """#841: one rule, one home. `release.alternates`, `stage7_run`'s SQL and
+    `live_alternates` each used to spell their own segment exclusion and disagreed on
+    `segment:main`. The SQL is exercised in the govdb suite; here the two pure collectors are
+    asserted to agree on a rep set containing every `segment:*` kind, and to agree with the set
+    that the SQL binds."""
+    from infrastructure.acquisition.stage5_filter import release as REL
+    reps = [
+        {"source": "segment:main", "filename": "page.main.txt", "file_kind": "text", "n_times": 5, "usable": 1},
+        {"source": "segment:header", "filename": "page.header.txt", "file_kind": "text", "n_times": 1, "usable": 1},
+        {"source": "segment:footer", "filename": "page.footer.txt", "file_kind": "text", "n_times": 1, "usable": 1},
+        {"source": "segment:nav", "filename": "page.nav.txt", "file_kind": "text", "n_times": 1, "usable": 1},
+        {"source": "harvest_slice", "filename": "harvest_slice.txt", "file_kind": "text", "n_times": 9, "usable": 1},
+        {"source": "capture:text", "filename": "pdftotext.txt", "file_kind": "text", "n_times": 86, "usable": 1},
+        # #856: a NON-text rep marked unusable — release.alternates used to gate `usable` on text
+        # only, so it would have offered this raster while live_alternates and the SQL refused it.
+        {"source": "raster", "filename": "raster_p-1.png", "file_kind": "image", "n_times": None, "usable": 0},
+        {"source": "raster", "filename": "raster_p-2.png", "file_kind": "image", "n_times": None, "usable": 1},
+    ]
+    rel = {a["file"] for a in REL.alternates(reps, exclude=set())}
+    live = {a["file"] for a in EX.live_alternates({"reps": reps}, sent_files=set())}
+    assert rel == live == {"page.main.txt", "pdftotext.txt", "raster_p-2.png"}
+    # the SQL binds the SAME set (its predicate is `source NOT IN :nonswap`)
+    assert "segment:main" not in REL.NON_SWAPPABLE_SOURCES
+    for chrome in ("segment:header", "segment:footer", "segment:nav"):
+        assert chrome in REL.NON_SWAPPABLE_SOURCES
+    # ...and the SQL collector binds that same shared set rather than a pattern of its own.
+    # Asserted on the BINDING, not by grepping the source (a source-grep also matches the comment
+    # that explains the change — a check that passes for the wrong reason).
+    import inspect
+    from infrastructure.acquisition.process_governance import stage7_run as S7R
+    sql_src = inspect.getsource(S7R)
+    assert 'bindparam("nonswap", expanding=True)' in sql_src
+    assert '"nonswap": sorted(REL.NON_SWAPPABLE_SOURCES)' in sql_src
+    assert "source NOT LIKE 'segment:%'" not in sql_src.replace("`", "")  # the old predicate, gone
 
 
 def test_build_alternate_input_synthesizes_send_and_image_override():

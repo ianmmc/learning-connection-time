@@ -59,6 +59,16 @@ DEFAULT_TIMEOUT = 90               # with stream=True this bounds connect/read G
 #     (nowhere higher to go within the model windows — >680 schools, never observed in 840 calls);
 #     `finish_reason == "length"` persists so the incompleteness stays visible.
 
+# #711: a TRANSIENT provider error (429 rate-limit, 5xx, timeout) says nothing about the document —
+# the same rep would very likely succeed seconds later. Left unretried it scored the rep zero-yield
+# and consumed a rung of the finite 7->6 alternate ladder, so escalation ordering (cheap text ->
+# expensive vision) was partly driven by provider weather rather than evidence. Bounded, because the
+# budget governor must not be exposed to an unbounded loop; measured corpus population: 4 calls.
+# It shares the #169 truncation-retry's accumulator (`_accumulate`, #859) — the two mechanisms
+# decide differently WHEN to retry, but fold an attempt's spend/lineage the same ONE way.
+TRANSIENT_RETRIES = 2                # attempts AFTER the first (so at most 3 total)
+TRANSIENT_BACKOFF_S = (1.0, 3.0)     # per-attempt sleep; tests monkeypatch to ()
+
 DEFAULT_TEMPERATURE = 0.1
 BILLING_AUTH_STATUS = {401, 402}   # key/balance — every later call fails identically → halt
 # #714 (REQ-174): per-model window accounting. The 2026-08-16 OpenRouter fetch falsified the
@@ -147,6 +157,10 @@ class CallResult:
     finish_reason: Optional[str] = None  # 'stop' | 'length' (TRUNCATED) | 'error' | ...
     generation_id: Optional[str] = None  # OpenRouter gen-... id (chunk.id) — the handle for
     #                                      GET /api/v1/generation (fallback cost/stats + support)
+    transient_retries: int = 0           # #711: how many times this call was re-attempted after a
+    #                                      TRANSIENT provider error (429/5xx/timeout). A silent
+    #                                      retry is its own auditability problem, so it rides the
+    #                                      record and the telemetry rollup.
     truncation_retried: bool = False     # #169: this call was re-run once at MAX_TOKENS_CEILING
     #                                      after a first truncated reply (recovery attempt; the tail)
     max_tokens_sent: int = 0             # #801: the max_tokens the FINAL attempt actually sent
@@ -223,6 +237,25 @@ def _sum_cost(a: Optional[float], b: Optional[float]) -> Optional[float]:
     if a is None and b is None:
         return None
     return (a or 0.0) + (b or 0.0)
+
+
+def _accumulate(prior: "CallResult", latest: "CallResult") -> "CallResult":
+    """Fold a PRIOR attempt's spend and retry lineage into the attempt that follows it, returning
+    `latest`. ONE accumulator for both retry mechanisms — the #711 transient loop and the #169
+    truncation retry (#859): each used to hand-write the same four-field sum, and the two copies
+    drifted — the #169 copy never named `transient_retries`, so a call that survived provider
+    weather and THEN recovered its truncated tail reported `transient_retries=0` (#851). Summed:
+    tokens/cost/latency — every attempt was a real billed call and the REQ-051 governor must see
+    true spend (#182). Carried: `transient_retries` (a count of what happened, not of which attempt
+    won) and `truncation_retried`. NOT folded here: `max_tokens_sent` (a `max`, not a sum — #801)
+    and the choice of WHICH attempt's content survives; those stay with each mechanism."""
+    latest.prompt_tokens = (prior.prompt_tokens or 0) + (latest.prompt_tokens or 0)
+    latest.completion_tokens = (prior.completion_tokens or 0) + (latest.completion_tokens or 0)
+    latest.cost_usd = _sum_cost(prior.cost_usd, latest.cost_usd)
+    latest.latency_ms = prior.latency_ms + latest.latency_ms
+    latest.transient_retries = prior.transient_retries + latest.transient_retries
+    latest.truncation_retried = prior.truncation_retried or latest.truncation_retried
+    return latest
 
 
 def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DEFAULT_TIMEOUT,
@@ -315,6 +348,23 @@ def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DE
         return CallResult(ok=True, **common)
 
     res = _stream_once(max_tokens)
+    # #711: bounded retry on a TRANSIENT error before the rep is judged. Deliberately NOT applied to
+    # 'context' (structural — the identical request fails identically, #709) or 'other'. A retry that
+    # succeeds returns the good result carrying the attempt count; one that exhausts returns the LAST
+    # failure, still error_kind='transient', which is what lets the caller resolve the rep as
+    # not-attempted rather than zero-yield.
+    attempt = 0
+    while (not res.ok and res.error_kind == "transient" and attempt < TRANSIENT_RETRIES):
+        backoff = TRANSIENT_BACKOFF_S[attempt] if attempt < len(TRANSIENT_BACKOFF_S) else 0
+        if backoff:
+            time.sleep(backoff)
+        attempt += 1
+        retried = _stream_once(max_tokens)
+        # cost/tokens accumulate across attempts: a 429 bills nothing, but a 5xx mid-stream may have
+        # billed a partial, and the REQ-051 governor must see true spend (the #182 rule). This
+        # attempt IS one transient retry; `_accumulate` carries the running count forward.
+        retried.transient_retries = 1
+        res = _accumulate(res, retried)
     # #169: a truncated reply silently drops the tail schools — retry ONCE at the ceiling to recover
     # them. Keep the retry's CONTENT when it SUCCEEDED (fully recovered, or at least a longer head — a
     # still-truncated reply is ok=True with finish_reason "length", so the ⚠ flag persists); a retry
@@ -329,12 +379,11 @@ def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DE
     if not (res.truncated and max_tokens < retry_ceiling):
         return res
     retry = _stream_once(retry_ceiling)
-    keep = retry if retry.ok else res                 # recovered tail vs. salvaged head
+    # recovered tail vs. salvaged head — the OTHER attempt's spend and retry lineage fold into
+    # whichever survives (#851: `keep = retry` is a fresh CallResult, and the transient count the
+    # #711 loop had put on `res` used to be dropped right here).
+    keep = _accumulate(res, retry) if retry.ok else _accumulate(retry, res)
     keep.truncation_retried = True
-    keep.prompt_tokens = (res.prompt_tokens or 0) + (retry.prompt_tokens or 0)
-    keep.completion_tokens = (res.completion_tokens or 0) + (retry.completion_tokens or 0)
-    keep.cost_usd = _sum_cost(res.cost_usd, retry.cost_usd)
-    keep.latency_ms = res.latency_ms + retry.latency_ms
     # #801: the ceiling worth reporting is the highest actually attempted (the retry's), whichever
     # attempt's content survived — "still truncated at N" must name the N that was really sent.
     keep.max_tokens_sent = max(res.max_tokens_sent, retry.max_tokens_sent)

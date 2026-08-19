@@ -136,48 +136,62 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-08-18): page scoping is redesigned around an ABSOLUTE floor, both PRs are
-MERGED, and the live DB is re-ingested against merged `main`.** **#828** — the per-page signal was
-silently truncated at 60 pages (Memphis `00f553bcfc` read 3 times; it has 838, on pp.89-91; 10
-records were suppressed by `lf_no_times` purely because their times lived past the cap). Cap
-removed, one `pdftotext` call split on form feed, a guard test so it cannot return. **#829** — the
-absolute time-bearing page floor (#821): keep a page iff it carries a clock time, or an
-instructional-minutes declaration, or is page 1, or neighbours a time-bearing page. Lossless on the
-time signal by construction (0/30,848); drops 43% of pages; **16.0% fewer characters dispatched
-corpus-wide, 88% on the 166 records it re-routes**. It replaces #796's proposal (widen the
-peak-relative harvest), which measured as losing **26.3% of the corpus's times** — 45% on Memphis —
-and was closed `not planned`. Two review rounds absorbed before merge (#830-#840, 11 findings, all
-real, all fixed). Re-ingest post-merge (8m18s — **not the ~2.5 min this file used to say**; whole
-documents are scanned now): recall floor 0.9947 ≥ 0.98, tiers unchanged, precious state verified
-row-for-row, 727 `timebearing_slice` + 150 `harvest_slice` reps live.
+**Current status (2026-08-19): #822 is MERGED (PR #842, `390fdf4`); FIVE more queued issues are in
+review as PR #850** (`fix/queue-826-841-710-711-673-674`, 5 commits — the fifth, `214e318`, absorbed
+the 10-finding review round #851-#860: 8 fixed, #852 pinned as NOT a bug (no ladder starts when
+`roster_unique` resolves, so nothing needs stopping), #860 declined; #861 filed for the
+`n_benchmark_only` two-formulas naming found by #854's new test). #842 shipped output-overflow
+monitoring + REQ-175/176 and absorbed a 7-finding review round (#843-#849). PR #850 carries **#826** (roster hits match a
+normalized DOCUMENT; the district-name collision guarded), **#841** (`segment:main` ADMITTED at all
+three 7→6 collectors, one rule, and segment reps finally get `n_times`), **#710/#711** (a ladder rung
+must be spent on evidence: bounded transient retry + the nameless-yield stop), and **#673/#674** (the
+gate@5 vintage surface + the `out_of_window` HOLD facet).
 
-**Where the output-ceiling work went (Ian was right that it was open):** #714's chunking half was
-never built — its "or minimally, mark degraded" clause let it close. Measured against the REAL
-council ceilings (the weakest of voter/voter/judge): the text council (16,384) leaves **4 records
-with no fitting rep**; **0 records exceed the image council's** 32,768; a 4× text council is
-constructible from the approved roster. That is an experiment set, not a scripted rule → **epic #80
-children #823 (higher-ceiling routing) / #824 (a model that partitions) / #825 (overflow as
-follow-up routing)**, behind **#822** (fail-loud overflow monitoring, the tripwire that says which
-experiment matters).
+**ONE THING still gates PR #850's merge (item 1 is resolved):**
+1. ~~#826's P1~~ **RESOLVED 2026-08-19: Ian re-specified P1 to the measured 23 / 22 / 29** (issue
+   body + the measurement script's `PINNED` updated; the script's VERDICT is 3/3). The filed 27/42/36
+   came from a baseline the code never had (roster raw vs raw text). NB the honest pre-fix baseline
+   was already 22/22/29 — the fix moves these three by +1/0/0; its corpus effect is the script's R4.
+2. **A post-merge re-ingest is REQUIRED**, for two independent reasons: #826's true tier delta (P5),
+   and #841's segment `n_times` — until it runs, `segment:main` is admitted but ranks LAST (behind
+   the vision escalation) because `rank_alternates` files n_times 0/None text in its bottom tier.
+   Never re-ingest the live DB from a branch (the #822 pattern): merge first, then re-ingest.
 
-**Next (RESUME HERE — 2026-08-18):**
-1. **#822 — output-overflow monitoring.** A rep whose estimated output exceeds its assigned
-   council's ceiling (weakest member's `usable_output`, never a global constant) must be a
-   first-class degraded kind next to `DEGRADED_REFUSED/TRUNCATED/LOOPED` in
-   `common/model_families.py`, surfaced at gate@6/7, and can never record as a clean zero. One
-   shared estimate helper — not a second copy of `openrouter.py`'s sizing (the drift class).
-   Acceptance: the 4 no-fitting-rep records are flagged today; a rep that fits is not.
-2. **#826 — `roster_school_names_hit` via `norm_school`** (Memphis 0→27, Broward 3→42, Orange 1→36),
-   with the district-name collision guarded. Also carries #795's P4: Northwestern
-   `1730540:bcd9c539fb` is a 320-student, 3-school district whose 886-page policy book now reads
-   3,211 clock times — a scope error, better solved by not sending it than by any capacity work.
-3. **#841 — the three 7→6 alternates collectors disagree on `segment:main`** (release admits it,
-   both Stage-7 sites exclude all `segment:*`). Settle by MEASUREMENT (how often an unsent
-   `segment:main` carries `n_times` ≥ the sent full text, and whether any gained facts on retry),
-   then one rule in `release.NON_SWAPPABLE_SOURCES`, all three collectors reading it.
-4. **Then** Tranche C steps 3-4 (#708/#685/#672 · #710/#711) → Tranche D's gate@5 pair (#673/#674)
-   → the Stage 2-4 console triple (#669/#670/#671, settle #671 first) → #723.
-5. **Ian's call, not a session task:** routing Broward/Cleveland/Essex's send-backs and resuming the
+**Next (RESUME HERE — 2026-08-19):**
+1. **PR #850 review** is with Ian (a separate session). Nothing else should touch those files.
+2. **#672 — the 5→1 widened rung dilutes geo derivation and discards on-domain URLs** (Wyandanch
+   `3631800`: 109 raw URLs found then thrown away, 5 of them on the district's own confirmed
+   `wyandanch.k12.ny.us`; `found_all` → `manual_flag_all` for a mechanical reason). **The most
+   tractable of the three left** — criteria 2 and 3 are deterministic (a district with a confirmed
+   domain of record must not lose on-domain results to a failed derivation; `manual_flag` from
+   DERIVATION FAILURE must be distinguishable from `manual_flag` from NO RESULTS). Criterion 1's
+   falsifier replays `batch_00034`→`batch_00035` tallies, which are in the DB. Untouched — I did not
+   want to open a third subsystem unattended.
+3. **#708 — OCR name-mangling ships as fidelity-clean. BLOCKED on data, not design.** The issue's
+   proposed Stage-5 roster-match rate is CONFOUNDED: Lewiston's mangled rep scores **1/6, not 0**,
+   and a single-school page legitimately names one school, so the rate cannot separate "OCR
+   destroyed the names" from "this page is about one school". The unconfounded signal is the
+   Stage-7 rate over EXTRACTED names — but only **29 of 84** OCR rep-extractions carry
+   `identity_json`, so P3's corpus-wide flip measurement cannot be computed. Two things worth
+   knowing before resuming: the mangled names DO exist (`arwell`/`sonnors`/`vicmahon`/`vlontello`/
+   `seiger`, ext 7679+9183, all `unresolved`, so they never became facts), and **Lewiston was
+   already solved by the VISION rep** (ext 77, `original.png`, 7 accepted) — the rung the issue
+   argues should come first. Either widen `identity_json` coverage first, or re-scope P3.
+4. **#685 — Stage 3 captures only the ACTIVE tab panel** (Cedar Rapids loses 54 of 110 times).
+   **BLOCKED on Ian's design calls**, which the issue explicitly reserves ("decide deliberately,
+   don't inherit by accident"): (a) what is stored — raw `page.content()` vs revealed-panel text as
+   a `tabpanel:hidden` text rep vs the hidden panels' `outerHTML`; (b) whether `usable`/`n_times`
+   are computed for it (presumably yes, so `best_send` can rank it); (c) whether v1 covers
+   `<details>`/accordions/`aria-hidden` carousels or explicitly defers. The trigger is settled and
+   cheap (`panels.length > 1 && hidden.length > 0`, optionally requiring a time-shaped string in the
+   hidden panel). The 54→110 verification needs the live page; a local HTML fixture + the existing
+   `node --test` harness can carry the unit half. NB the naive reveal recovered NOTHING — the vendor
+   open-state class and `max-height` are load-bearing.
+5. **Then** the Stage 2-4 console triple (#669/#670/#671, settle #671 first) → #723.
+6. **REQ ledger follow-up:** PR #850's five issues have no `REQUIREMENTS.yaml` entries yet —
+   deliberately deferred while #826's acceptance is disputed (recording contested state is worse
+   than recording none). Add them on merge, once P1 is re-specified.
+7. **Ian's call, not a session task:** routing Broward/Cleveland/Essex's send-backs and resuming the
    5→1 composer on West Ada/Lincoln/Baldwin — live pipeline spend, stays console-driven. The epic
    #80 experiments (#823-#825) also spend real money and are Ian's to schedule.
 Ian drives the console; prepare and verify, don't execute stage runs (Stage 9 CLI, the #716 replay,
@@ -185,33 +199,41 @@ and the **read-only measurement scripts** are the verification exceptions). *Fal
 any district needs a hand-edit or a re-adjudicated gate@8 call, the mechanism is wrong — fix the
 pipeline, not the district.*
 
-**Standing method note (now on its NINTH instance): measure the thing before fixing it.** An issue's
-proposed fix has been overturned by measurement nine times (#691, #684, #719, #755, #706's severity
-ranking, #721, #794, **#796, #795**). Corollaries: **a fix can remove a failure's VISIBILITY instead
-of the failure** (#792); **a marker without a consequence is decoration** (#793); and, new this
-session, **re-run the measurement after the fix it motivated** — the design measurement that said
-"Memphis keeps 60/60 pages, the floor can't help" was itself computed over the truncated signal (at
-154 pages it keeps 101; the conclusion held, the stated reason was wrong). Before calling a fix done,
-ask what would now be *observable* if it were wrong.
+**Standing method note (now on its TWELFTH instance): measure the thing before fixing it.** An
+issue's proposed fix has been overturned by measurement twelve times (#691, #684, #719, #755, #706's
+severity ranking, #721, #794, #796, #795, **#822's image-council premise, #826, #841**). The last
+three are the sharpest yet because two of them were *unfalsifiable as posed*: #822's "0 records
+exceed the image council" was true by construction (the clamp tops out below that council's
+ceiling), and #841's "how often does `segment:main` carry more times" could not be answered from the
+DB at all (`n_times` is NULL for all 11,349 segment reps, and `nt or 0` reads every one as zero).
+#841 then REVERSED the issue's leaning: main is the uniquely best alternate on 27 records and
+dominated on 4. Corollaries: **a fix can remove a failure's VISIBILITY instead of the failure**
+(#792); **a marker without a consequence is decoration** (#793); **re-run the measurement after the
+fix it motivated**; and, new this session, **before calling a divergence a bug, check whether it is
+INTENTIONAL** — the #841 audit's first pass reported 3,532 collector "disagreements" that were all
+one deliberate difference (`release.alternates` admits `pdf` for a HUMAN at gate@6;
+`live_alternates` excludes it because an automated retry would send raw bytes to a text council).
+Compare the dimension the rule is about, not whole outputs.
 
-**The implemented-twice-drifts class (FIVE instances across two sessions — it recurred in the PR
-whose commit message named it):** #798/#810/#799/#816 last session; this session, "which slice does
-this record get" was a hand-written predicate in ingest and another in `best_send`, disagreeing on
-**43 live records** (35 handbooks with a floor slice cut then hidden; 8 human-labelled records
-refused by one gate and starved by the other, #834). The P3 byte-identity test only locked the case
-where the two copies happened to agree. Countermeasure, applied at its smallest scale:
-`select_slice()` in the base layer, ingest cuts what it returns, `best_send` sends only a match —
-mutual exclusion as a property of the RETURN TYPE, not of branch order in two files. **A test that
-locks agreement proves nothing about where two copies diverge; the only lock is having one copy.**
+**The implemented-twice-drifts class (SEVEN instances across three sessions):** #798/#810/#799/#816;
+then #834's two slice predicates disagreeing on 43 live records; then this session's two —
+#843/#845/#847/#848 were ONE root (the "how is this rep degraded" fold hand-written at FOUR sites,
+two of which disagreed: an overflow-only rep counted degraded in telemetry and barren in `explain`),
+and #841's three alternate collectors spelling three segment rules. The countermeasure is always the
+same and always structural: ONE function in the base layer (`MF.rep_degraded_kinds`,
+`MF.rep_prompt_size`, `SM.roster_match_keys`, `release.NON_SWAPPABLE_SOURCES`), not a test that locks
+two copies into agreement. **#846 sharpened it further: an identity assertion locks the FUNCTION, not
+its INPUTS** — two call sites can drift by feeding the same function different things (dispatch was
+omitting the system prompt, ~1,000 tokens), so the input construction must be one function too, and
+P4 is asserted at the CALL SITES.
 
-**The standing lesson (now on its FOURTH shape): a measurement that cannot fail.** §10.11, then the
-fix round's own findings, then a merged fix un-run against the live DB (§13.1) — and this session
-**Pass B re-run after the re-ingest printed `VERDICT: PASS` with 0 changed / 0% saved**: its baseline
-read the live DB, which already held the reps the change had written, so it compared the post-state
-with itself, and B6's safety block (inside `if changed`) never ran — every safety number was 0
-because nothing was measured. Fixed with an idempotent baseline and `NOTHING MEASURED` instead of
-`PASS` on an empty sweep. **A verdict that cannot fail is not a verdict; make the script say so.**
-For precious-state migrations, "merged" is not "landed": verify against the live system.
+**The standing lesson (now on its SIXTH shape): a measurement that cannot fail.** §10.11 · the fix
+round's own findings · a merged fix un-run against the live DB (§13.1) · Pass B comparing the
+post-state with itself · #822's clamped estimate that could never exceed the image ceiling · #841's
+NULL-coerced segment times. Countermeasure now standard in every measurement script: an explicit
+`NOTHING MEASURED` verdict instead of a green zero on an empty sweep — it earned its keep twice this
+session (the #826 sweep caught a wrong district-dir path assumption that had scanned 0 records).
+**A verdict that cannot fail is not a verdict; make the script say so.**
 
 **Schema invariant (bit us on PR #641):** a `_PRECIOUS_ALTERS` column's DDL must be declared TWICE,
 identically — a SQLAlchemy `default=` never reaches the DDL, so a fresh `create_all()` DB diverges
@@ -219,11 +241,21 @@ from a migrated one and fails raw `text()` INSERTs **on CI only**. Always pair w
 Enforced DB-free by `tests/test_precious_alters_parity.py`. **Verify a new precious column against a
 THROWAWAY governance DB — the local migrated one tests the path that isn't broken.**
 
-**Outstanding:** Playwright-verify the gate@6 + gate@1 console changes, #647's Stage 2/3/4 status/Run
+**Cloning the governance DB does NOT isolate the git-tracked JSON twins (REQ-176).** They are files
+on disk and every exporter rebuilds them WHOLESALE from the connected DB's log, so a scratch console
+on a clone writes its throwaway drafts into `district_status.json` (this happened during #822's
+verification) and a scratch server on an EMPTY governance DB would blank all twelve — measured, the
+tracked status file holds 175 districts and an empty-DB export produces 0. `guard_tracked_backup`
+now quarantines under EITHER cause (pytest, or a non-canonical DB) with a one-time note.
+**Seeing that quarantine line while running against a clone is the guard working.**
+**Outstanding:** Playwright-verify the gate@6 + gate@1 console changes (incl. #853's third `benchmark-only held` badge arm — seed a clone with an `out_of_window` gt:// label), #647's Stage 2/3/4 status/Run
 control, AND **#840's new gate@5 page-scoping card** (★ harvest / ◆ floor markers, `data-scoping=`
 DOM hook — static-source-pinned only so far); #667's gate@8/#662's gate@5 badges, #684's staff-day
 surfacing and the three gate@8 arrows ARE verified — rerunnable verifiers
-`infrastructure/scraper/verify_684_console.mjs` and `verify_682_console.mjs` (the pattern to extend).
+`infrastructure/scraper/verify_684_console.mjs`, `verify_682_console.mjs`, and
+`verify_822_console.mjs` (#822's gate@6 overflow badge + gate@7 degraded banner, 15/15 — it also
+documents the clone-and-seed runbook, since the gate@7 banner reads a STORED column and every live
+row is `{}` until a post-#822 Stage-7 run happens). The pattern to extend.
 **Deferred by design (epic #128):** #642 (content-derived document vintage) and #643 (the Stage-3
 render-facts probe; rides #623's Node seam). **Retired, do not do:** Phase 2e's retroactive
 `dispatch_type='benchmark'` tagging — arm 2 derives it. Banked routing: #112 → epic #128. Parked:
@@ -234,10 +266,11 @@ harness); the remediation-receipt exception is not STAGE-scoped (30-day expiry s
 attribution v1 reads each district's LATEST candidate plan; the `stage6_handoff/requests.py:17-18`
 docstring falsely claims Stage 7 "reads ONLY the flagged pages" — the `pages` hint never scoped
 content (the slice FILE is the scoping), a live source of wrong inferences worth a one-line issue.
-Resume-essentials (ALL re-verified 2026-08-18 on this checkpoint, post-merge, on `main`): `pip
+Resume-essentials (ALL re-verified 2026-08-19 on this checkpoint, on the PR-#850 branch; on `main`
+the pytest counts are 16 lower — the delta is #850's new tests): `pip
 install -e .` → Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh
 clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect
-**2371** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **396** pass, Postgres up) +
+**2416** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **396** pass, Postgres up) +
 `pytest tests/test_*_integration.py` (expect **257** pass, 149 skipped) + `cd infrastructure/scraper
 && npm test` (expect **91**) + `flake8 . --count --select=E9,F63,F7,F82` (expect **0** — this is CI's
 blocking lint; the vulture whitelist is `per-file-ignores`'d for F821, main had been red on it since
@@ -265,8 +298,15 @@ send-back routing: `python3 -m infrastructure.acquisition.process_governance.sta
 <did> --route 8->1|8->6|unrouted} [--dry-run]` (#689); re-review audit: `python3 -m
 infrastructure.acquisition.stage8_aggregate.rereview [<did> …]` (#713); sign-off preview: `python3
 -m infrastructure.scripts.analyze.per_grade_lct_sample`. **Measurement scripts (rerunnable,
-read-only, import the LIVE functions):**
-`docs/technical-notes/production-quality-control-research/2026-08-17-{per-page-uncap,timebearing-floor}-measure.py`.
+read-only, import the LIVE functions)** — all under
+`docs/technical-notes/production-quality-control-research/`:
+`2026-08-17-{per-page-uncap,timebearing-floor}-measure.py` ·
+`2026-08-18-output-overflow-measure.py` (#822 P5) ·
+`2026-08-18-roster-hit-measure.py` (#826 — reports today / +normalization / +guard as THREE columns,
+because the two halves move the number in opposite directions and a combined figure hides both) ·
+`2026-08-18-segment-main-alternate-measure.py` (#841 — scans segment text FROM DISK, since the DB
+cannot answer while segment `n_times` is NULL; re-run it after the post-merge re-ingest and its S1
+section should report 0 NULL).
 Full detail: `docs/PROJECT_HISTORY.md` (2026-08-17/18 entry), `STAGE1-9_*_DESIGN.md`,
 `PIPELINE_GOVERNANCE_AND_STATE.md`, `docs/REQUIREMENTS.yaml`.
 

@@ -375,6 +375,13 @@
             unsendable = c.n_production_sendable > 0
               ? `<span class="badge badge-warn" data-feat="benchmark-only" title="${c.n_benchmark_only} target(s) are gt:// curation artifacts — unsendable to production — but ${c.n_production_sendable} held real record(s) await a gate@5 label. Label those first; discovery is not the blocker.">0 sendable now · ${c.n_production_sendable} held — label at gate@5</span>`
               : `<span class="badge badge-red" data-feat="benchmark-only" title="All ${c.n_benchmark_only} of this district's targets are gt:// curation artifacts — unsendable to production, and nothing held could reach it either. It needs discovery, not dispatch.">0 sendable · ${c.n_benchmark_only} benchmark-only</span>`;
+          } else if (!(c.n_send > 0) && c.n_hold_gt > 0 && !(c.n_production_sendable > 0)) {
+            // #853: nothing sends and everything HELD is a gt:// artifact (e.g. the human marked
+            // the district's only targets out-of-window at gate@5, #674, which moves them from
+            // n_send into n_hold). Without this arm the badge above — gated on n_send > 0 —
+            // went dark the moment the human did that, and the district was reachable only via
+            // the wordless "has held" filter. Same conclusion as the red arm: discovery.
+            unsendable = `<span class="badge badge-red" data-feat="benchmark-only" data-held-gt="${c.n_hold_gt}" title="All ${c.n_hold_gt} of this district's records are gt:// curation artifacts, currently HELD (out-of-window or awaiting a label) — production could never receive them, and nothing else is held. It needs discovery, not dispatch.">0 sendable · ${c.n_hold_gt} benchmark-only held</span>`;
           }
           return `<label class="add-item">
               <input type="checkbox" value="${esc(c.district_id)}"/>

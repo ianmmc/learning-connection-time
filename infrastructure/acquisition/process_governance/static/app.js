@@ -36,6 +36,21 @@ const LOCATION = [
   ["buried_handbook", "Buried in a long doc (handbook)", "is_handbook"],
   ["needs_vision", "Visible in image/PDF but missing from ALL text — needs vision", "visual_text_gap"],
 ];
+// AXIS 4 (#673/#674): FITNESS FOR USE, not shape and not location. The labeling doctrine requires a
+// correctly-shaped schedule to be target-labeled even when its vintage makes it unusable — so the
+// human needs a way to say "right shape, wrong instance" that does NOT corrupt the shape label.
+// Ticking this HOLDS the record from release even though it is target-labeled (release.decide's
+// first branch). HOLD, never reject: reversible, and the label survives as training signal.
+// Mirrors release.pre_validity_floor / the server's `:floor` bind — the #241 pre-2017-18 CRDC
+// baseline. UNKNOWN vintage (null) is NOT below the floor: that is #642's gap (vintage is derived
+// from URL/filename strings and never opens the document), and treating unknown as old would
+// re-introduce the veto #241 measured harmful. It is surfaced as "unknown" instead, which is the
+// state a human most needs to see.
+const VALIDITY_FLOOR = "2017-18";
+const belowFloor = (cy) => !!cy && String(cy) < VALIDITY_FLOOR;
+const VINTAGE = [
+  ["out_of_window", "Out of the approved year window — hold from release (keeps the shape label)"],
+];
 const FACET_WHERE = ["", "main body", "footer", "header", "table", "image/PDF", "feed post", "multiple"];
 const DEFS = {
   school_start_end_list: "A single school's start/end shown as a labeled item/range (e.g. a footer “Hours: 8:30–3:30”), not a sentence and not a period table.",
@@ -58,6 +73,7 @@ const DEFS = {
   other_schedule: "Times/schedule for something other than the regular full school day: early dismissal, late start / delay, remote/virtual, inclement (snow/fog), minimum/half day, exam day, summer school/ESY, or special events (open house, registration, back-to-school).",
   // location (Axis 3)
   buried_handbook: "The target is present but inside a long multi-topic document (e.g. a handbook) — record the page(s).",
+  out_of_window: "The schedule's shape is right but the INSTANCE is outside the approved temporal window (REQ-026), so it must not feed a band mode. Ticking this HOLDS the record from release even though it is target-labeled — the override the #241 validity floor never had. Withholding the target label is NOT the way to express this: that teaches the detector the shape is not a target, when the shape was right and only the instance was unusable.",
   needs_vision: "You can see the target in the image/PDF, but NO text extractor captured it — needs vision at Stage 6/7.",
 };
 const TIER_DEF = {
@@ -899,6 +915,13 @@ function renderPanel(d) {
     <span class="k">real table present</span><span class="v">${s.has_table ? "yes" : "no"}</span>
     <span class="k">period-table hits</span><span class="v">${s.period_hits}</span>
     <span class="k">roster school names hit</span><span class="v">${s.roster_school_names_hit}</span>
+    <span class="k" title="${DEFS.out_of_window}">content school year (#673)</span><span class="v" data-feat="vintage-readout">${
+      d.content_school_year
+        ? (belowFloor(d.content_school_year)
+            ? `<b class="warn">${d.content_school_year}</b> — BELOW the ${VALIDITY_FLOOR} validity floor`
+            : d.content_school_year)
+        : `<span class="muted">unknown</span> — derived from the URL/filename only; the document is never opened (#642), so an old page with a year-free URL reads as acceptable vintage`
+    }</span>
     <span class="k" title="${DEFS.office_building_hours}">staff duty-day times (#684)</span><span class="v">${
       (s.staff_duty_times || 0) > 0
         ? `${s.staff_duty_times} governed by report/remain clauses, vs ${s.student_ref_times || 0} near student language`
@@ -921,6 +944,10 @@ function renderPanel(d) {
       <input type="checkbox" name="facet" value="${id}" ${savedFacets[id] === "yes" ? "checked" : ""}/>
       <span>${t}</span>${flagged ? `<em class="det-hint" title="a signal/detector flagged this — confirm or ignore">flagged</em>` : ""}</label>`;
   const locChecks = LOCATION.map(([id, t, sigKey]) => check(id, t, !!(d.signals || {})[sigKey])).join("");
+  // #673 Arm 2. Hinted by the derived vintage when it is BELOW the #241 validity floor — a hint the
+  // human confirms or ignores, never an auto-tick (no automatic recency veto: #241 measured that
+  // actively harmful — it removed 1 false-send while vetoing 17 real targets).
+  const vintChecks = VINTAGE.map(([id, t]) => check(id, t, belowFloor(d.content_school_year))).join("");
   const whereSel = `<select id="facetWhere" class="facet-where">${
     FACET_WHERE.map((w) => `<option value="${w}" ${savedFacets._where === w ? "selected" : ""}>${w || "where? (optional)"}</option>`).join("")}</select>`;
   const pageInput = `<input id="facetPage" class="facet-page" type="text" placeholder="pages, e.g. 4, 7-9" value="${savedFacets._pages || ""}"/>`;
@@ -942,6 +969,8 @@ function renderPanel(d) {
         ${locChecks}
         <div class="facet-extra">${whereSel}${pageInput}</div>
       </div>
+      <div class="axis-label">Fitness for use — vintage (#673/#674)</div>
+      <div data-feat="vintage-facets">${vintChecks}</div>
       ${radios(TERMINAL)}
       <div class="axis-label">Confounding signals present — check all that apply</div>${confChecks}
       <div class="axis-label">Note (optional)</div>
@@ -1109,7 +1138,8 @@ function buildGlossary() {
     <h4>Target shapes (Axis 1)</h4>${dl(TARGET)}
     <h4>Terminals</h4>${dl(TERMINAL)}
     <h4>Confounding signals (Axis 2)</h4>${dl(CONFOUNDERS)}
-    <h4>Where / how (Axis 3)</h4>${dl(LOCATION)}`;
+    <h4>Where / how (Axis 3)</h4>${dl(LOCATION)}
+    <h4>Fitness for use (Axis 4)</h4>${dl(VINTAGE)}`;
 }
 
 $("#glossaryBtn").onclick = () => $("#glossary").classList.remove("hidden");

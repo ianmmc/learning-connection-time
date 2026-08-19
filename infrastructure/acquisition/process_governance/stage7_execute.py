@@ -950,12 +950,12 @@ def live_alternates(rec: dict, sent_files: set) -> list:
         if fn in sent_files or not rp.get("usable"):
             continue
         src = rp.get("source") or ""
-        # #837: a page SLICE is a strict subset of another rep of this record — never a swap
-        # candidate (see release.NON_SWAPPABLE_SOURCES for the reasoning). NB this site keeps its
-        # own, WIDER segment rule (all `segment:*`, incl. main) — release.alternates admits
-        # segment:main; that pre-existing three-way disagreement is real but is not #837's to
-        # settle silently, so only the slice exclusion is added here.
-        if src.startswith("segment:") or src in REL.NON_SWAPPABLE_SOURCES:
+        # #841: the ONE rule — chrome + slices (release.NON_SWAPPABLE_SOURCES). This site used to
+        # carry a WIDER private rule (`startswith("segment:")`, excluding segment:main too), which
+        # is the three-way disagreement #841 settled by measurement: segment:main is the uniquely
+        # best alternate on 27 corpus records and dominated on only 4, so it is ADMITTED here as it
+        # always was in release.alternates.
+        if src in REL.NON_SWAPPABLE_SOURCES:
             continue
         if kind == "text" or CONTENT.is_image_kind(kind):
             out.append({"file": fn, "kind": kind, "n_times": rp.get("n_times")})
@@ -1009,19 +1009,9 @@ def _sent_files_by_rec(session, district_id: str) -> dict:
     the human-readable reason) — a dispatch that sent two reps of one record, only one of which the
     request names via `sent_file`, must not leave the other re-offerable next round.
     Routes match stage7_run._district_request_inputs (#231): 7->6 AND 7->3 — a file recorded only on a
-    RECAPTURE request is just as sent/failed as one on an alternate-rep request."""
-    out: dict = {}
-    for target, pj in session.execute(text(
-            "SELECT target, params_json FROM extraction_request "
-            "WHERE district_id = :d AND route IN (:r6, :r3)"),
-            {"d": district_id, "r6": RQ.ROUTE_ALT_REP, "r3": RQ.ROUTE_RECAPTURE}).all():
-        p = json.loads(pj or "{}")
-        files = set(p.get("sent_files") or [])
-        if p.get("sent_file"):
-            files.add(p["sent_file"])
-        if files:
-            out.setdefault(target, set()).update(files)
-    return out
+    RECAPTURE request is just as sent/failed as one on an alternate-rep request. ONE reader for both
+    (stage7_run.sent_files_by_target, #858) — this used to be a second copy of the same loop."""
+    return R7RUN.sent_files_by_target(session, district_id)
 
 
 def build_alternate_bundle_input(meta: dict, selections: list) -> tuple:

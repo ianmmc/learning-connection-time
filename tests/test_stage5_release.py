@@ -70,6 +70,24 @@ def test_stage6_js_distinguishes_needs_labeling_from_needs_discovery_762():
     assert "needs discovery" not in label_arm.split("?")[-1]
 
 
+def test_stage6_js_badges_a_district_whose_every_held_record_is_gt_853():
+    """#853 (PR #850 review): the unsendable badge was gated on n_send > 0, so a district whose
+    only targets are gt:// and were marked out-of-window at gate@5 (#674 moves them into n_hold)
+    lost the badge the moment the human acted — reachable only via the wordless "has held" filter.
+    A third arm reads `n_hold_gt` (now exposed by the candidates SQL) for the n_send == 0 case."""
+    from pathlib import Path
+    js = (Path(__file__).resolve().parents[1] / "infrastructure/acquisition/process_governance"
+          / "static/stage6.js").read_text()
+    assert "n_hold_gt" in js                                 # the signal has a UI consumer
+    assert 'data-held-gt=' in js                             # the arm's DOM hook
+    assert "benchmark-only held" in js
+    arm = js[js.index("data-held-gt="):js.index("data-held-gt=") + 400]
+    assert "needs discovery, not dispatch" in arm            # same conclusion as the red arm
+    # gated on the n_send == 0 shape, not on n_send > 0 like the two arms above it
+    gate = js[js.index("data-held-gt=") - 900:js.index("data-held-gt=")]
+    assert "!(c.n_send > 0) && c.n_hold_gt > 0" in gate
+
+
 import pytest as _pytest  # noqa: E402
 
 

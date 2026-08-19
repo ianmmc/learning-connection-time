@@ -35,6 +35,7 @@ from infrastructure.acquisition.common import receipts as RCPT
 from infrastructure.acquisition.common import school_sampling as SS
 from infrastructure.acquisition.common import timeutil as TU
 from infrastructure.acquisition.stage5_filter import build_signals as BS
+from infrastructure.acquisition.stage5_filter import release as REL
 from infrastructure.acquisition.stage6_handoff import cost as COST6
 from infrastructure.acquisition.stage6_handoff import package as PKG6
 from infrastructure.acquisition.stage6_handoff import councils as C6
@@ -401,6 +402,11 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
         # so it stands beside `council_degraded` rather than inside it. `degraded_kind` is the ONE
         # field a consumer reads to ask "how was this rep degraded, worst-first" — folded through
         # `strongest_kind`, never by re-expressing the precedence here (#810).
+        # #710: facts read, none attributable. Recorded on the rep so `detect_requests` can stop the
+        # alternate-rep ladder instead of buying another rung against a document-level defect.
+        _all_facts = [fa for c in calls for fa in (c.get("facts") or [])]
+        if PARSE.nameless_yield(_all_facts):
+            rep_out["nameless_yield"] = True
         rep_out["overflow"] = _content_overflow(cfg, kind, content)   # tri-state; None = un-assessable
         _stamp_degraded_kind(rep_out)
         pd["reps"].append(rep_out)
@@ -517,6 +523,9 @@ def _call_record(model: str, role: str, res, facts: list) -> dict:
             "completion_tokens": res.completion_tokens, "cost_usd": res.cost_usd,
             "latency_ms": res.latency_ms, "finish_reason": res.finish_reason,
             "generation_id": res.generation_id, "truncation_retried": res.truncation_retried,
+            # #711: a silent retry is its own auditability problem — the count rides the record so
+            # the receipt shows a rung that survived provider weather rather than evidence.
+            **({"transient_retries": res.transient_retries} if res.transient_retries else {}),
             "max_tokens_sent": res.max_tokens_sent}
 
 
@@ -610,7 +619,10 @@ def _rollup_tel(reps: list) -> dict:
          # #822: the per-kind split behind `degraded_reps`, plus the tri-state's third arm. An
          # un-assessable rep is NOT a clean one — counting it as such is how the vision tier
          # reported clean while being unmeasured — so it gets its own line, never a fold into zero.
-         "degraded_kinds": {}, "overflow_reps": 0, "overflow_unassessable": 0}
+         "degraded_kinds": {}, "overflow_reps": 0, "overflow_unassessable": 0,
+         # #711: attempts that survived a transient provider error, and #710: reps whose facts were
+         # ALL nameless (a document-level defect no other representation can fix).
+         "transient_retries": 0, "nameless_yield_reps": 0}
     caps = set()
     for rep in reps:
         if rep.get("council_degraded") or rep.get("degraded_kind"):
@@ -618,6 +630,8 @@ def _rollup_tel(reps: list) -> dict:
         if rep.get("degraded_kind"):
             k = rep["degraded_kind"]
             t["degraded_kinds"][k] = t["degraded_kinds"].get(k, 0) + 1
+        if rep.get("nameless_yield"):
+            t["nameless_yield_reps"] += 1
         if rep.get("overflow") is True:
             t["overflow_reps"] += 1
         elif rep.get("overflow") is None and "overflow" in rep:
@@ -628,6 +642,7 @@ def _rollup_tel(reps: list) -> dict:
         for c in rep["calls"]:
             if c.get("truncation_retried"):
                 t["truncation_retries"] += 1
+            t["transient_retries"] += c.get("transient_retries") or 0
             t["calls"] += 1
             # .get: the live path (_call_record) always writes these, but the #716 replay now
             # derives its rollup from STORED call records (#843), and a receipt need not carry
@@ -1146,6 +1161,53 @@ def _slot_gaps_for_district(session, district_id: str, sbb: dict, ca_cache: dict
         return None
 
 
+def request_params_by_target(session, district_id: str, *, routes=None,
+                             altitude: str = None) -> list:
+    """[(target, params)] over the district's persisted `extraction_request` rows — the ONE reader
+    of `params_json` (#858). Three call sites used to hand-roll the same SELECT + json.loads loop
+    with three different error postures (two would raise on a malformed row, one skipped it), the
+    implemented-twice-drifts class. Posture, decided once: a malformed `params_json` is skipped as
+    `{}` — it is not evidence of anything (a prior nameless round, a sent file), and one bad row
+    must not take a whole district's request lineage down. Optional filters: `routes` (an iterable
+    of ROUTE_* values) and `altitude`."""
+    where, binds = ["district_id = :d"], {"d": district_id}
+    if routes:
+        where.append("route IN :routes")
+        binds["routes"] = sorted(routes)
+    if altitude:
+        where.append("altitude = :alt")
+        binds["alt"] = altitude
+    q = text(f"SELECT target, params_json FROM extraction_request WHERE {' AND '.join(where)}")
+    if routes:
+        q = q.bindparams(bindparam("routes", expanding=True))
+    out = []
+    for tgt, pj in session.execute(q, binds).all():
+        try:
+            p = json.loads(pj or "{}") or {}
+        except (TypeError, ValueError):
+            p = {}
+        out.append((tgt, p if isinstance(p, dict) else {}))
+    return out
+
+
+def sent_files_by_target(session, district_id: str) -> dict:
+    """{target: {files}} — every file a persisted 7->6 / 7->3 request records as SENT for the
+    record (#231: emission itself proves the send, so status is irrelevant). Reads BOTH
+    `sent_files` (the full set one dispatch sent) and the legacy single `sent_file`. ONE home
+    (#858) for the two readers: `_district_request_inputs` (so a new round never re-offers a
+    known-barren rep) and stage7_execute's compose gate (a failed-and-requested rep is never
+    re-dispatched, not even in a later round for a sibling request)."""
+    out: dict = {}
+    for tgt, p in request_params_by_target(session, district_id,
+                                           routes=(RQ.ROUTE_ALT_REP, RQ.ROUTE_RECAPTURE)):
+        files = set(p.get("sent_files") or [])
+        if p.get("sent_file"):
+            files.add(p["sent_file"])
+        if files:
+            out.setdefault(tgt, set()).update(files)
+    return out
+
+
 def _district_request_inputs(session, result: dict, ca_cache: dict = None):
     """The DB-derived inputs the pure detector (`requests.detect_requests`) needs for one district:
     claimed bands + the band's schools (`district_target`), the alternate reps per sent record
@@ -1166,14 +1228,8 @@ def _district_request_inputs(session, result: dict, ca_cache: dict = None):
     # Without this, round 2's detect re-offers round 1's failed rep and the bounded retry budget
     # circles known-barren reps instead of reaching the untried ones (live #122: Union Hill #3624
     # re-asked for round-1's tesseract_raster.txt, Brownsville #3622 for page.txt).
-    for tgt, pj in session.execute(
-            text("SELECT target, params_json FROM extraction_request "
-                 "WHERE district_id = :d AND route IN (:r6, :r3)"),
-            {"d": did, "r6": RQ.ROUTE_ALT_REP, "r3": RQ.ROUTE_RECAPTURE}).all():
-        p = json.loads(pj or "{}")
-        hist = p.get("sent_files") or ([p["sent_file"]] if p.get("sent_file") else [])
-        if hist:
-            sent.setdefault(tgt, set()).update(hist)
+    for tgt, hist in sent_files_by_target(session, did).items():
+        sent.setdefault(tgt, set()).update(hist)
     row = session.execute(text("SELECT lea_claimed_bands_json, schools_by_band_json, nces_by_level_json "
                                "FROM district_target WHERE district_id = :d"), {"d": did}).fetchone()
     claimed = json.loads(row[0]) if row and row[0] else []
@@ -1196,11 +1252,14 @@ def _district_request_inputs(session, result: dict, ca_cache: dict = None):
         for fn, kind, nt in session.execute(
                 text("SELECT filename, file_kind, n_times FROM representation WHERE rec_key = :k "
                      "AND usable = 1 AND file_kind IN ('text', 'image') "
-                     "AND source NOT LIKE 'segment:%' "
-                     # #837: a page slice is a strict subset of another rep — never a swap candidate
-                     "AND source NOT IN :slice_sources"
-                     ).bindparams(bindparam("slice_sources", expanding=True)),
-                {"k": rec_key, "slice_sources": sorted(BS.SLICE_SOURCES)}).all():
+                     # #841: ONE rule — release.NON_SWAPPABLE_SOURCES (chrome + slices), the same
+                     # set release.alternates and stage7_execute.live_alternates read. It replaces
+                     # BOTH this site's old `NOT LIKE 'segment:%'` (which also excluded
+                     # segment:main, admitted by release) and the separate slice clause, which was
+                     # a subset of it. Three collectors, three spellings, is the drift class.
+                     "AND (source IS NULL OR source NOT IN :nonswap)"
+                     ).bindparams(bindparam("nonswap", expanding=True)),
+                {"k": rec_key, "nonswap": sorted(REL.NON_SWAPPABLE_SOURCES)}).all():
             if fn not in sent_files:
                 alts.setdefault(rec_key, []).append({"file": fn, "kind": kind, "n_times": nt})
     # District-WIDE band coverage across ALL extractions (this run's facts are already flushed on
@@ -1228,10 +1287,19 @@ def detect_and_persist_requests(session, result: dict, handoff_hash: str,
     dedup, bounds how many rounds may fire). Returns the count newly persisted."""
     claimed, band_schools, alts, covered, real_bands, slot_gaps = \
         _district_request_inputs(session, result, ca_cache=ca_cache)
+    # #710: which of this district's records ALREADY produced a nameless-yield round? The history
+    # lives in the persisted request chain — the first nameless round tags its 7->6 with
+    # `params.nameless_yield`, so its presence on any prior request for the record IS the second
+    # occurrence. Read here (the app layer owns DB access) and passed into the pure detector.
+    # PARSED, not LIKE-matched: `params_json` is Text, and a SQL LIKE against serialized JSON breaks
+    # on any whitespace/ordering change in the writer — a predicate that silently stops matching is
+    # how a ladder-stop quietly turns back into a money burner. Through the ONE reader (#858).
+    prior_nameless = {tgt for tgt, p in request_params_by_target(
+        session, result.get("district_id"), altitude="representation") if p.get("nameless_yield")}
     explain: dict = {}
     reqs = RQ.detect_requests(result, claimed_bands=claimed, alternates_by_rec=alts,
                               band_schools=band_schools, covered_bands=covered, real_bands=real_bands,
-                              slot_gaps=slot_gaps, explain=explain)
+                              slot_gaps=slot_gaps, prior_nameless=prior_nameless, explain=explain)
     # Detect-time suppression is NON-emission (nothing persists; re-detection re-emits if coverage
     # regresses) — log it so a barren rep with no request next to it is explicable from the run log.
     # #807: every counter detect_requests writes MUST have a print path — the comment justifying
@@ -1240,12 +1308,18 @@ def detect_and_persist_requests(session, result: dict, handoff_hash: str,
     # the council could not (fully) read the document, never that the document was empty.
     if any(explain.get(k) for k in ("suppressed_barren_reps", "phantom_bands",
                                     "suppressed_degraded_reps", "suppressed_truncated_reps",
-                                    "suppressed_looped_reps")):
+                                    "suppressed_looped_reps", "suppressed_nameless_reps")):
         did = result.get("district_id")
         bits = []
         if explain.get("suppressed_barren_reps"):
             bits.append(f"{explain['suppressed_barren_reps']} barren-rep remedy(ies) suppressed — "
                         f"no fillable band gap remains")
+        if explain.get("suppressed_nameless_reps"):
+            bits.append(f"{explain['suppressed_nameless_reps']} NAMELESS-YIELD rep(s) — real "
+                        f"schedules read but not one names a school, on a SECOND representation: "
+                        f"the ladder is STOPPED (#710). No other rep of this document can supply a "
+                        f"name the document does not contain; this record needs a human to identify "
+                        f"the school")
         if explain.get("suppressed_degraded_reps"):
             bits.append(f"{explain['suppressed_degraded_reps']} COUNCIL-DEGRADED rep remedy(ies) "
                         f"suppressed — no fillable gap, but a voter's window refused these reps "

@@ -274,7 +274,10 @@ DETECTOR_FACET = {
     "lf_transport": {"transportation"},
 }
 # Axis-3 (location) + not-a-confounder keys carried in facets_json — excluded from the confounder set.
-_NON_CONFOUNDER_FACETS = {"buried_handbook", "needs_vision"}
+# #674's out_of_window joins these: it is a FITNESS-FOR-USE judgment about the instance, not a
+# shape confounder a detector could learn from. Counting it as one would teach the loop that an
+# out-of-window document has a non-target SHAPE — the exact corruption the facet exists to avoid.
+_NON_CONFOUNDER_FACETS = {"buried_handbook", "needs_vision", "out_of_window"}
 
 
 def parse_facets(facets_json):
