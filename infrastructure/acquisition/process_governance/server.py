@@ -2067,6 +2067,9 @@ def handoff_candidates():
                        COALESCE(t.n_send, 0) AS n_send, COALESCE(t.n_verified, 0) AS n_verified,
                        COALESCE(t.n_hold, 0) AS n_hold,
                        COALESCE(t.n_benchmark_only, 0) AS n_benchmark_only,
+                       -- #853: exposed so the picker can badge a district whose every held record
+                       -- is a gt:// artifact (e.g. all its targets marked out-of-window at gate@5)
+                       COALESCE(t.n_hold_gt, 0) AS n_hold_gt,
                        COALESCE(t.n_send, 0) - COALESCE(t.n_benchmark_only, 0)
                            AS n_send_production,
                        COALESCE(t.n_send, 0) + COALESCE(t.n_hold, 0)
@@ -2077,25 +2080,21 @@ def handoff_candidates():
                        {IS_BENCHMARK_SQL.format(alias='d')} AS is_benchmark
                 FROM district d
                 LEFT JOIN (
-                    SELECT r.district_id,
-                      -- #674: a human out-of-window judgment HOLDS the record even when it is
-                      -- target-labeled. MIRRORS release.decide()'s first branch — this SQL and
-                      -- decide() are two expressions of one rule and a review already caught them
-                      -- drifting once, so they change together or the badge lies about what a
-                      -- dispatch would actually send.
-                      COUNT(*) FILTER (WHERE NOT (COALESCE(l.facets_json::jsonb->>'out_of_window', '') = 'yes')
-                                          AND (l.primary_label = ANY(:targets)
-                                               OR (l.primary_label IS NULL AND r.tier = 'A'
-                                                   AND NOT (COALESCE(r.signals_json::jsonb->>'content_school_year',
-                                                                     '9999-99') < :floor)))) AS n_send,
-                      COUNT(*) FILTER (WHERE l.primary_label = ANY(:targets)
-                                          AND NOT (COALESCE(l.facets_json::jsonb->>'out_of_window', '') = 'yes')) AS n_verified,
-                      COUNT(*) FILTER (WHERE COALESCE(l.facets_json::jsonb->>'out_of_window', '') = 'yes'
-                                          OR (l.primary_label IS NULL
-                                              AND (r.tier IN ('B', 'C')
-                                                   OR (r.tier = 'A'
-                                                       AND COALESCE(r.signals_json::jsonb->>'content_school_year',
-                                                                    '9999-99') < :floor)))) AS n_hold,
+                    -- Per-record RELEASE FACTS, each computed ONCE (#855) in this inner projection
+                    -- and only REFERENCED by the five FILTERs below — the query used to hand-copy
+                    -- the out-of-window expression five times and the floor test four. They mirror
+                    -- release.decide(): `oow` (#674, its FIRST branch — a human out-of-window
+                    -- judgment HOLDS the record even when target-labeled; the SQL spelling lives
+                    -- in release.OUT_OF_WINDOW_WHERE beside its Python twin, and is GUARDED
+                    -- against malformed facets_json, #857), `is_target`, and the #241 pre-2017-18
+                    -- validity floor. This SQL and decide() are two expressions of one rule and a
+                    -- review already caught them drifting once (#755), so they change together or
+                    -- the badge lies about what a dispatch would actually send — pinned by the
+                    -- govdb tests in tests/test_stage6_handoff_api.py (#854).
+                    SELECT f.district_id,
+                      COUNT(*) FILTER (WHERE f.sendable) AS n_send,
+                      COUNT(*) FILTER (WHERE f.is_target AND NOT f.oow) AS n_verified,
+                      COUNT(*) FILTER (WHERE f.held) AS n_hold,
                       -- #718: how many of n_send are `gt://` curation artifacts, which the Stage-9
                       -- wall guarantees production can NEVER receive. Without this split an
                       -- unsendable target counts as a dispatchable one, so a district whose ONLY
@@ -2112,22 +2111,29 @@ def handoff_candidates():
                       -- otherwise an out-of-window gt:// record is subtracted from a bucket it no
                       -- longer sits in and `n_production_sendable` drifts (the #755 hazard: one
                       -- name, two formulas).
-                      COUNT(*) FILTER (WHERE NOT (COALESCE(l.facets_json::jsonb->>'out_of_window', '') = 'yes')
-                                         AND (l.primary_label = ANY(:targets)
-                                              OR (l.primary_label IS NULL AND r.tier = 'A'
-                                                  AND NOT (COALESCE(r.signals_json::jsonb->>'content_school_year',
-                                                                    '9999-99') < :floor)))
-                                         AND r.url LIKE :gt) AS n_benchmark_only,
-                      COUNT(*) FILTER (WHERE (COALESCE(l.facets_json::jsonb->>'out_of_window', '') = 'yes'
-                                              OR (l.primary_label IS NULL
-                                                  AND (r.tier IN ('B', 'C')
-                                                       OR (r.tier = 'A'
-                                                           AND COALESCE(r.signals_json::jsonb->>'content_school_year',
-                                                                        '9999-99') < :floor))))
-                                         AND r.url LIKE :gt) AS n_hold_gt
-                    FROM record r LEFT JOIN label l ON l.rec_key = r.rec_key
-                    WHERE {REL.CANONICAL_RECORD_WHERE}
-                    GROUP BY r.district_id
+                      COUNT(*) FILTER (WHERE f.sendable AND f.is_gt) AS n_benchmark_only,
+                      COUNT(*) FILTER (WHERE f.held AND f.is_gt) AS n_hold_gt
+                    FROM (
+                      SELECT x.district_id, x.is_gt, x.oow, x.is_target,
+                             -- decide(): oow → hold; target → send; unlabeled A → send unless
+                             -- below the floor (→ hold); unlabeled B/C → hold.
+                             (NOT x.oow AND (x.is_target OR (x.unlabeled AND x.tier = 'A'
+                                                             AND NOT x.below_floor))) AS sendable,
+                             (x.oow OR (x.unlabeled AND (x.tier IN ('B', 'C')
+                                                         OR (x.tier = 'A' AND x.below_floor)))) AS held
+                      FROM (
+                        SELECT r.district_id, r.tier,
+                               (r.url LIKE :gt) AS is_gt,
+                               ({REL.OUT_OF_WINDOW_WHERE}) AS oow,
+                               COALESCE(l.primary_label = ANY(:targets), false) AS is_target,
+                               (l.primary_label IS NULL) AS unlabeled,
+                               (COALESCE(r.signals_json::jsonb->>'content_school_year', '9999-99')
+                                  < :floor) AS below_floor
+                        FROM record r LEFT JOIN label l ON l.rec_key = r.rec_key
+                        WHERE {REL.CANONICAL_RECORD_WHERE}
+                      ) x
+                    ) f
+                    GROUP BY f.district_id
                 ) t ON t.district_id = d.district_id
                 LEFT JOIN (
                     SELECT district_id, COUNT(*) AS n_dispatched, MAX(created_at) AS last_dispatched_at

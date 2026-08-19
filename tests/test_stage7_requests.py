@@ -485,6 +485,31 @@ def test_710_nameless_yield_gets_one_more_rung_then_stops(monkeypatch):
     assert explain["suppressed_nameless_reps"] == 1
 
 
+def test_852_a_nameless_rep_that_roster_unique_RESOLVED_starts_no_ladder_at_all():
+    """#852 (PR #850 review) asked why the ladder-stop is unreachable when the nameless facts
+    were accepted via `roster_unique` (#707: a one-school band resolves the degenerate group onto
+    the district's one school). It is unreachable because there is NO LADDER: the record has
+    accepted facts, so it never enters the zero-yield gate and no 7->6 is raised in the first
+    place — nothing to stop. Folding `nameless_yield` into `incomplete` (the proposed fix) would
+    do the OPPOSITE of #710: spend a rung on a record that resolved correctly, against a document
+    a different rep cannot improve. Pinned: no request, first OR second occurrence, and the read
+    stays visible on the rep for the telemetry rollup."""
+    rep = {"rec_key": "D1:x", "file": "bell.txt", "nameless_yield": True, "calls": [],
+           "accepted": [{"band": "high", "school": "little rock central high",
+                         "identity": {"rule": "roster_unique"}}],
+           "unresolved": []}
+    alts = {"D1:x": [{"file": "pdftotext.txt", "kind": "text", "n_times": 34},
+                     {"file": "raster_p-1.png", "kind": "image"}]}
+    acc = [{"band": "high", "school": "little rock central high"}]
+    for prior in (set(), {"D1:x"}):
+        explain = {}
+        reqs = RQ.detect_requests(_result(reps=[rep], accepted=acc), claimed_bands=["high"],
+                                  alternates_by_rec=alts, prior_nameless=prior, explain=explain)
+        assert [r for r in reqs if r["altitude"] == "representation"] == []
+        assert explain["suppressed_nameless_reps"] == 0     # not "stopped" — never started
+    assert rep["nameless_yield"] is True                     # the observation about the DOCUMENT stands
+
+
 def test_710_partial_namelessness_is_untouched():
     """20 corpus rounds are PARTIALLY nameless (a hub listing five schools plus one unattributed
     table). That is a normal read and must not trip the stop."""

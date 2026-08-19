@@ -389,10 +389,14 @@ def test_841_the_three_alternate_collectors_agree_on_every_segment_kind():
         {"source": "segment:nav", "filename": "page.nav.txt", "file_kind": "text", "n_times": 1, "usable": 1},
         {"source": "harvest_slice", "filename": "harvest_slice.txt", "file_kind": "text", "n_times": 9, "usable": 1},
         {"source": "capture:text", "filename": "pdftotext.txt", "file_kind": "text", "n_times": 86, "usable": 1},
+        # #856: a NON-text rep marked unusable — release.alternates used to gate `usable` on text
+        # only, so it would have offered this raster while live_alternates and the SQL refused it.
+        {"source": "raster", "filename": "raster_p-1.png", "file_kind": "image", "n_times": None, "usable": 0},
+        {"source": "raster", "filename": "raster_p-2.png", "file_kind": "image", "n_times": None, "usable": 1},
     ]
     rel = {a["file"] for a in REL.alternates(reps, exclude=set())}
     live = {a["file"] for a in EX.live_alternates({"reps": reps}, sent_files=set())}
-    assert rel == live == {"page.main.txt", "pdftotext.txt"}
+    assert rel == live == {"page.main.txt", "pdftotext.txt", "raster_p-2.png"}
     # the SQL binds the SAME set (its predicate is `source NOT IN :nonswap`)
     assert "segment:main" not in REL.NON_SWAPPABLE_SOURCES
     for chrome in ("segment:header", "segment:footer", "segment:nav"):

@@ -218,9 +218,14 @@ def alternates(reps: list, exclude: set) -> list:
             continue
         if (r.get("source") or "") in NON_SWAPPABLE_SOURCES:   # chrome + slices (#837)
             continue
-        fk = r.get("file_kind")
-        if fk == "text" and not r.get("usable"):
+        # #856: `usable` gates EVERY kind, as it does in the other two collectors (stage7_run's
+        # SQL `usable = 1`, stage7_execute.live_alternates). This site used to check it for text
+        # only — latent (ingest hardcodes usable=1 for pdf/image today) but the very asymmetry
+        # #841 unified the source rule to remove, and an ingest that ever marks a corrupt raster
+        # unusable would have re-opened the three-way disagreement here.
+        if not r.get("usable"):
             continue
+        fk = r.get("file_kind")
         if fk not in ("text", "image", "pdf"):
             continue
         out.append({"file": fn, "kind": fk})
@@ -255,6 +260,17 @@ def human_held_out_of_window(facets) -> bool:
     """True iff a human marked this record out of the approved temporal window at gate@5 (#674).
     Checked BEFORE the target-label branch in `decide`, because it exists precisely to override it."""
     return (facets or {}).get(OUT_OF_WINDOW_FACET) == "yes"
+
+
+# The SQL twin of `human_held_out_of_window`, defined ONCE next to it (like CANONICAL_RECORD_WHERE)
+# so the gate@6 candidate counts (server.handoff_candidates) mirror decide()'s first branch from one
+# spelling — the query used to hand-copy this expression five times (#855). `l` = the LEFT-JOINed
+# label row. GUARDED (#857): `::jsonb` on malformed text raises and would fail the whole aggregate
+# query, not one row; `pg_input_is_valid` (PG16) reads such a row as NOT held, the same "survive a
+# bad shape" posture as the Python-side `harness.parse_facets` (#199). NULL facets → NULL → ''.
+OUT_OF_WINDOW_WHERE = (
+    "COALESCE(CASE WHEN pg_input_is_valid(l.facets_json, 'jsonb') "
+    f"THEN l.facets_json::jsonb->>'{OUT_OF_WINDOW_FACET}' END, '') = 'yes'")
 
 
 def pre_validity_floor(content_school_year) -> bool:

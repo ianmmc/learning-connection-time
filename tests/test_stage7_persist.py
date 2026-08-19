@@ -315,6 +315,43 @@ def test_sent_files_by_rec_includes_recapture_route_history(gov_session):
     assert EX._sent_files_by_rec(s, "ZZTEST34") == {rk: {"a.txt"}}
 
 
+def test_858_the_one_params_json_reader_serves_all_three_sites_and_skips_a_malformed_row(gov_session):
+    """#858 (PR #850 review): three hand-rolled `SELECT target, params_json` loops (sent-files on
+    the detect side, sent-files on the compose side, #710's prior-nameless) with three error
+    postures — two raised on a malformed row. ONE reader now, ONE posture: a malformed row is
+    skipped as {} (it is evidence of nothing), never raised. Seeds a good 7->6, a good 7->3, a
+    nameless-tagged 7->6, and a MALFORMED row on the same district, and asserts every reader
+    answers — identically where they read the same thing."""
+    from infrastructure.acquisition.process_governance import stage7_execute as EX
+    gdb.init_precious_schema()
+    s = gov_session
+    did, rk, rk2 = "ZZTEST858", "ZZTEST858:r1", "ZZTEST858:r2"
+    ins = text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+               "target, params_json, reason, status, created_at) VALUES "
+               "(:d, 'h', :alt, :rt, :t, :p, 'r', 'executed', 't1')")
+    s.execute(ins, {"d": did, "alt": "representation", "rt": R7.RQ.ROUTE_ALT_REP, "t": rk,
+                    "p": json.dumps({"sent_file": "a.txt", "sent_files": ["a.txt", "b.txt"]})})
+    s.execute(ins, {"d": did, "alt": "url", "rt": R7.RQ.ROUTE_RECAPTURE, "t": rk,
+                    "p": json.dumps({"sent_file": "c.txt"})})
+    s.execute(ins, {"d": did, "alt": "representation", "rt": R7.RQ.ROUTE_ALT_REP, "t": rk2,
+                    "p": json.dumps({"sent_file": "n.txt", "nameless_yield": True})})
+    s.execute(ins, {"d": did, "alt": "representation", "rt": R7.RQ.ROUTE_ALT_REP, "t": rk2,
+                    "p": "{not json"})                                        # the malformed row
+    # the compose-side and detect-side sent-file readers are the SAME function now
+    assert EX._sent_files_by_rec(s, did) == R7.sent_files_by_target(s, did) \
+        == {rk: {"a.txt", "b.txt", "c.txt"}, rk2: {"n.txt"}}
+    # the prior-nameless reader (altitude filter) sees the tag and survives the malformed sibling
+    rows = R7.request_params_by_target(s, did, altitude="representation")
+    assert {t for t, p in rows if p.get("nameless_yield")} == {rk2}
+    assert len(rows) == 3 and ({} in [p for _, p in rows])                    # skipped as {}, not raised
+    # route filter is a real filter
+    assert {t for t, _ in R7.request_params_by_target(s, did, routes=[R7.RQ.ROUTE_RECAPTURE])} == {rk}
+    # and no other spelling of the loop survives at the three sites
+    import inspect
+    for fn in (R7._district_request_inputs, R7.detect_and_persist_requests, EX._sent_files_by_rec):
+        assert "SELECT target, params_json" not in inspect.getsource(fn), fn.__name__
+
+
 def test_list_view_sql_matches_merge_fact_runs(gov_session):
     """PR #221 review: the gate@7 list view's cumulative-count SQL (CUMULATIVE_FACT_COUNTS_SQL) and
     AGG.merge_fact_runs are two expressions of ONE rule — 'a pair counts unresolved only if NO run

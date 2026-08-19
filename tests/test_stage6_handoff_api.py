@@ -99,6 +99,102 @@ def test_candidates_badge_holds_pre_2017_tier_a_via_the_241_floor(gov_session, m
     gov_session.rollback()
 
 
+def _seed_release_district(gov_session, did, records):
+    """Seed one district + records (+ optional label rows) in the caller's rolled-back txn.
+    `records` = [(hash, url, tier, label_or_None, facets_or_None)]; every record gets one usable
+    text rep so decide()'s best_send has something to send."""
+    import json as _json
+    from sqlalchemy import text as _text
+    from infrastructure.acquisition.stage5_filter import build_signals as BS
+    ddir = f"{did.lower()}_dir"
+    gov_session.execute(_text(
+        "INSERT INTO district (district_id, name, district_dir, labeled_topology, nces_school_count, "
+        "n_records) VALUES (:d, 'T', :dd, 'per_school', 3, :n)"), {"d": did, "dd": ddir, "n": len(records)})
+    for h, url, tier, label, facets in records:
+        rk = f"{did}:{h}"
+        gov_session.execute(BS.INSERT_RECORD, {
+            "rec_key": rk, "district_id": did, "district_dir": ddir, "url": url,
+            "hash": h, "kind": "html", "final_url": None, "content_hash": h, "duplicate_of": None,
+            "tier": tier, "sort_score": 50.0, "category_hypothesis": "school_bell_table",
+            "signals_json": _json.dumps({"n_times": 4, "content_school_year": "2025-26"}),
+            "intended_schools_json": "[]", "candidate_tools_json": "[]", "is_emergent": 0})
+        gov_session.execute(BS.INSERT_REP, BS._rep(rk, "capture:text", "page.txt", "text", 900, 4, 1))
+        if label is not None or facets is not None:
+            gov_session.execute(_text(
+                "INSERT INTO label (rec_key, primary_label, facets_json, status) "
+                "VALUES (:rk, :pl, :fj, 'labeled')"),
+                {"rk": rk, "pl": label,
+                 "fj": facets if isinstance(facets, str) or facets is None else _json.dumps(facets)})
+
+
+def _candidates_row(gov_session, monkeypatch, did):
+    @contextlib.contextmanager
+    def _scope():
+        yield gov_session                      # same (uncommitted) txn, so the endpoint sees the seed
+    monkeypatch.setattr(SRV.gdb, "session_scope", _scope)
+    return {r["district_id"]: r for r in SRV.handoff_candidates()}[did]
+
+
+@pytest.mark.govdb
+@pytest.mark.integration
+def test_candidates_mirror_decide_on_the_out_of_window_hold_674_854(gov_session, monkeypatch):
+    """#854 (PR #850 review): the #674 out-of-window HOLD is spelled twice — release.decide() and
+    the candidates SQL — and the #755 live-DB pin could not see this branch (0 out_of_window rows
+    exist in the live DB, so it passed green whether or not the two agreed). Seeds every shape the
+    rule touches and asserts the SQL's counts equal what decide()/production_sendability compute
+    over the SAME rows via the real loader — the #241 floor test's template."""
+    from infrastructure.acquisition.stage5_filter import release as REL
+    did = "CAND674"
+    _seed_release_district(gov_session, did, [
+        ("t_oow",  "http://x/t_oow",  "A", "school_bell_table", {"out_of_window": "yes"}),  # target, HELD
+        ("t_ok",   "http://x/t_ok",   "A", "school_bell_table", {"out_of_window": "no"}),   # target, sends
+        ("t_bare", "http://x/t_bare", "A", "school_bell_table", None),                      # target, sends
+        ("gt_oow", "gt://c/gt_oow",   "A", "school_bell_table", {"out_of_window": "yes"}),  # gt, HELD (n_hold_gt)
+        ("gt_ok",  "gt://c/gt_ok",    "A", "school_bell_table", None),                      # gt, sends (bench-only)
+        ("u_oow",  "http://x/u_oow",  "A", None,                {"out_of_window": "yes"}),  # unlabeled A, oow FIRST
+        ("u_a",    "http://x/u_a",    "A", None,                None),                      # unlabeled A auto-sends
+        ("u_b",    "http://x/u_b",    "B", None,                None),                      # unlabeled B holds
+    ])
+    row = _candidates_row(gov_session, monkeypatch, did)
+    # the Python side, over the same rows through the real loader
+    recs = REL.load_district_records(gov_session, did)
+    dec = {r["rec_key"].split(":")[1]: REL.decide(r)["decision"] for r in recs}
+    assert dec == {"t_oow": "hold", "t_ok": "send", "t_bare": "send", "gt_oow": "hold",
+                   "gt_ok": "send", "u_oow": "hold", "u_a": "send", "u_b": "hold"}
+    py = REL.production_sendability(recs)
+    assert row["n_send"] == py["n_send"] == 4
+    assert row["n_hold"] == py["n_hold"] == 4
+    assert row["n_production_sendable"] == py["n_production_sendable"] == 6
+    # ONE name, TWO formulas (found writing this test; tracked as its own issue): the SQL's
+    # `n_benchmark_only` is the gt:// share of the SEND bucket and `n_hold_gt` the hold half,
+    # while release.production_sendability's `n_benchmark_only` spans send+hold. The relation
+    # that must hold is pinned here so neither can drift silently.
+    assert row["n_benchmark_only"] == 1                # gt_ok (send bucket)
+    assert row["n_hold_gt"] == 1                       # gt_oow — the #853 badge's input
+    assert py["n_benchmark_only"] == row["n_benchmark_only"] + row["n_hold_gt"] == 2
+    assert row["n_verified"] == 3                      # target-labeled AND not held: t_ok, t_bare, gt_ok
+    assert row["n_send_production"] == 3               # send minus its gt://
+    gov_session.rollback()
+
+
+@pytest.mark.govdb
+@pytest.mark.integration
+def test_candidates_survive_a_malformed_facets_json_row_857(gov_session, monkeypatch):
+    """#857: `::jsonb` on malformed text RAISES in Postgres, and it would fail the whole gate@6
+    aggregate — every district's counts — not one row. The guarded expression reads such a row as
+    NOT held (the Python twin `harness.parse_facets` survives the same shape, #199), so the query
+    answers and the record still counts by its label."""
+    did = "CAND857"
+    _seed_release_district(gov_session, did, [
+        ("bad",  "http://x/bad",  "A", "school_bell_table", "not json at all"),   # malformed
+        ("brace", "http://x/brace", "A", "school_bell_table", "{"),               # the regex-guard trap
+        ("good", "http://x/good", "A", "school_bell_table", {"out_of_window": "yes"}),
+    ])
+    row = _candidates_row(gov_session, monkeypatch, did)     # MUST NOT raise
+    assert row["n_send"] == 2 and row["n_hold"] == 1
+    gov_session.rollback()
+
+
 @pytest.mark.integration
 def test_candidates_n_extracted_counts_benchmark_run_kind_too(gov_session, monkeypatch):
     """#662 review: n_extracted must NOT be scoped to run_kind='production'. It answers "has

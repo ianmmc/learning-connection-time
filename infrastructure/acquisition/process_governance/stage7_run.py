@@ -1161,6 +1161,53 @@ def _slot_gaps_for_district(session, district_id: str, sbb: dict, ca_cache: dict
         return None
 
 
+def request_params_by_target(session, district_id: str, *, routes=None,
+                             altitude: str = None) -> list:
+    """[(target, params)] over the district's persisted `extraction_request` rows — the ONE reader
+    of `params_json` (#858). Three call sites used to hand-roll the same SELECT + json.loads loop
+    with three different error postures (two would raise on a malformed row, one skipped it), the
+    implemented-twice-drifts class. Posture, decided once: a malformed `params_json` is skipped as
+    `{}` — it is not evidence of anything (a prior nameless round, a sent file), and one bad row
+    must not take a whole district's request lineage down. Optional filters: `routes` (an iterable
+    of ROUTE_* values) and `altitude`."""
+    where, binds = ["district_id = :d"], {"d": district_id}
+    if routes:
+        where.append("route IN :routes")
+        binds["routes"] = sorted(routes)
+    if altitude:
+        where.append("altitude = :alt")
+        binds["alt"] = altitude
+    q = text(f"SELECT target, params_json FROM extraction_request WHERE {' AND '.join(where)}")
+    if routes:
+        q = q.bindparams(bindparam("routes", expanding=True))
+    out = []
+    for tgt, pj in session.execute(q, binds).all():
+        try:
+            p = json.loads(pj or "{}") or {}
+        except (TypeError, ValueError):
+            p = {}
+        out.append((tgt, p if isinstance(p, dict) else {}))
+    return out
+
+
+def sent_files_by_target(session, district_id: str) -> dict:
+    """{target: {files}} — every file a persisted 7->6 / 7->3 request records as SENT for the
+    record (#231: emission itself proves the send, so status is irrelevant). Reads BOTH
+    `sent_files` (the full set one dispatch sent) and the legacy single `sent_file`. ONE home
+    (#858) for the two readers: `_district_request_inputs` (so a new round never re-offers a
+    known-barren rep) and stage7_execute's compose gate (a failed-and-requested rep is never
+    re-dispatched, not even in a later round for a sibling request)."""
+    out: dict = {}
+    for tgt, p in request_params_by_target(session, district_id,
+                                           routes=(RQ.ROUTE_ALT_REP, RQ.ROUTE_RECAPTURE)):
+        files = set(p.get("sent_files") or [])
+        if p.get("sent_file"):
+            files.add(p["sent_file"])
+        if files:
+            out.setdefault(tgt, set()).update(files)
+    return out
+
+
 def _district_request_inputs(session, result: dict, ca_cache: dict = None):
     """The DB-derived inputs the pure detector (`requests.detect_requests`) needs for one district:
     claimed bands + the band's schools (`district_target`), the alternate reps per sent record
@@ -1181,14 +1228,8 @@ def _district_request_inputs(session, result: dict, ca_cache: dict = None):
     # Without this, round 2's detect re-offers round 1's failed rep and the bounded retry budget
     # circles known-barren reps instead of reaching the untried ones (live #122: Union Hill #3624
     # re-asked for round-1's tesseract_raster.txt, Brownsville #3622 for page.txt).
-    for tgt, pj in session.execute(
-            text("SELECT target, params_json FROM extraction_request "
-                 "WHERE district_id = :d AND route IN (:r6, :r3)"),
-            {"d": did, "r6": RQ.ROUTE_ALT_REP, "r3": RQ.ROUTE_RECAPTURE}).all():
-        p = json.loads(pj or "{}")
-        hist = p.get("sent_files") or ([p["sent_file"]] if p.get("sent_file") else [])
-        if hist:
-            sent.setdefault(tgt, set()).update(hist)
+    for tgt, hist in sent_files_by_target(session, did).items():
+        sent.setdefault(tgt, set()).update(hist)
     row = session.execute(text("SELECT lea_claimed_bands_json, schools_by_band_json, nces_by_level_json "
                                "FROM district_target WHERE district_id = :d"), {"d": did}).fetchone()
     claimed = json.loads(row[0]) if row and row[0] else []
@@ -1252,17 +1293,9 @@ def detect_and_persist_requests(session, result: dict, handoff_hash: str,
     # occurrence. Read here (the app layer owns DB access) and passed into the pure detector.
     # PARSED, not LIKE-matched: `params_json` is Text, and a SQL LIKE against serialized JSON breaks
     # on any whitespace/ordering change in the writer — a predicate that silently stops matching is
-    # how a ladder-stop quietly turns back into a money burner.
-    prior_nameless = set()
-    for _tgt, _pj in session.execute(text(
-            "SELECT target, params_json FROM extraction_request "
-            "WHERE district_id = :d AND altitude = 'representation'"),
-            {"d": result.get("district_id")}).all():
-        try:
-            if (json.loads(_pj or "{}") or {}).get("nameless_yield"):
-                prior_nameless.add(_tgt)
-        except (TypeError, ValueError):
-            continue        # a malformed params_json is not evidence of a prior nameless round
+    # how a ladder-stop quietly turns back into a money burner. Through the ONE reader (#858).
+    prior_nameless = {tgt for tgt, p in request_params_by_target(
+        session, result.get("district_id"), altitude="representation") if p.get("nameless_yield")}
     explain: dict = {}
     reqs = RQ.detect_requests(result, claimed_bands=claimed, alternates_by_rec=alts,
                               band_schools=band_schools, covered_bands=covered, real_bands=real_bands,

@@ -37,7 +37,7 @@ def test_best_send_picks_densest_usable_text():
 
 def test_best_send_image_when_visual_text_gap():
     reps = [_text_rep("a.txt", n_times=3),
-            {"source": "capture:png", "filename": "page.png", "file_kind": "image"}]
+            {"source": "capture:png", "filename": "page.png", "file_kind": "image", "usable": 1}]
     assert R.best_send(reps, {"visual_text_gap": True}, {}) == [{"file": "page.png", "kind": "image"}]
 
 
@@ -45,7 +45,7 @@ def test_best_send_image_when_human_facets_needs_vision():
     # v2.1 (REQ-114 Axis 3): the human's needs_vision facet routes to the image rep — this replaced
     # the v2.0 target_image_only flag (flags_json is a retired, inert archive).
     reps = [_text_rep("a.txt", n_times=9),
-            {"source": "raster", "filename": "raster_p1.png", "file_kind": "image"}]
+            {"source": "raster", "filename": "raster_p1.png", "file_kind": "image", "usable": 1}]
     assert R.best_send(reps, {}, {"needs_vision": "yes"}) == [{"file": "raster_p1.png", "kind": "image"}]
     # tri-state: only an explicit "yes" routes; "no"/"unsure"/absent do not
     assert R.best_send(reps, {}, {"needs_vision": "no"}) == [{"file": "a.txt", "kind": "text"}]
@@ -56,7 +56,7 @@ def test_best_send_handbook_prefers_the_materialized_slice():
     # and the slice is never chosen as a plain "densest text" for a non-handbook.
     reps = [_text_rep("harvest_slice.txt", n_times=30, n_chars=900, source="harvest_slice"),
             _text_rep("a.txt", n_times=4),
-            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
+            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf", "usable": 1}]
     sig = {"is_handbook": True, "harvest_pages": [4, 9]}
     assert R.best_send(reps, sig, {}) == [{"file": "harvest_slice.txt", "kind": "text", "pages": [4, 9]}]
 
@@ -72,7 +72,7 @@ def test_best_send_sends_the_floor_slice_for_a_non_handbook_multipage_pdf():
     # whole 90k-char text was sent. Same yield, 90% fewer characters.
     reps = [_tb_rep(n_times=80, n_chars=9_000),
             _text_rep("pdftotext.txt", n_times=80, n_chars=90_000),
-            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
+            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf", "usable": 1}]
     sig = {"is_handbook": False, "harvest_pages": [], "timebearing_pages": [1, 12, 13]}
     assert R.best_send(reps, sig, {}) == [
         {"file": BS.TIMEBEARING_SLICE_FILE, "kind": "text", "pages": [1, 12, 13]}]
@@ -110,7 +110,7 @@ def test_best_send_vision_outranks_the_floor_slice():
     # worst — vision is the right answer and must win.
     reps = [_tb_rep(n_times=3, n_chars=200),
             _text_rep("a.txt", n_times=3, n_chars=9_000),
-            {"source": "capture:png", "filename": "page.png", "file_kind": "image"}]
+            {"source": "capture:png", "filename": "page.png", "file_kind": "image", "usable": 1}]
     sig = {"is_handbook": False, "timebearing_pages": [1], "visual_text_gap": True}
     assert R.best_send(reps, sig, {}) == [{"file": "page.png", "kind": "image"}]
 
@@ -121,7 +121,7 @@ def test_best_send_sends_the_floor_slice_on_a_handbook_with_no_harvest_peak():
     # and best_send hid it (0904830:71acfa3404: 1,017 pages sent whole, a 19-page slice dead).
     reps = [_tb_rep(n_times=12, n_chars=50_721),
             _text_rep("pdftotext.txt", n_times=12, n_chars=2_860_753),
-            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
+            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf", "usable": 1}]
     sig = {"is_handbook": True, "harvest_pages": [], "timebearing_pages": list(range(1, 20))}
     assert R.best_send(reps, sig, {}) == [
         {"file": BS.TIMEBEARING_SLICE_FILE, "kind": "text", "pages": list(range(1, 20))}]
@@ -134,7 +134,7 @@ def test_best_send_honours_a_bare_human_page_range_without_buried_handbook():
     # branch had fired. ONE predicate: the human looked, the harvest slice is what gets sent.
     reps = [_text_rep("harvest_slice.txt", n_times=9, n_chars=1_500, source="harvest_slice"),
             _text_rep("pdftotext.txt", n_times=9, n_chars=40_000),
-            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
+            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf", "usable": 1}]
     sig = {"is_handbook": False, "harvest_pages": [], "timebearing_pages": [1, 4]}
     facets = {"_pages_list": [4]}                       # NO buried_handbook key at all
     assert R.best_send(reps, sig, facets) == [{"file": "harvest_slice.txt", "kind": "text", "pages": [4]}]
@@ -152,7 +152,7 @@ def test_best_send_and_ingest_agree_on_every_slice_shape():
         reps = [_text_rep("harvest_slice.txt", n_times=9, n_chars=100, source="harvest_slice"),
                 _tb_rep(n_times=9, n_chars=100),
                 _text_rep("pdftotext.txt", n_times=9, n_chars=100_000),
-                {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
+                {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf", "usable": 1}]
         sent = R.best_send(reps, sig, human)[0]["file"]
         if chosen is None:
             assert sent == "pdftotext.txt", (sig, human, sent)
@@ -168,7 +168,7 @@ def test_best_send_floor_slice_must_be_smaller_than_its_own_parent():
     reps = [_tb_rep(n_times=6, n_chars=1_786),
             _text_rep("pdftotext.txt", n_times=5, n_chars=1_783),
             _text_rep("page.txt", n_times=6, n_chars=2_985, source="txt"),
-            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
+            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf", "usable": 1}]
     sig = {"is_handbook": False, "timebearing_pages": [1, 2]}
     assert R.best_send(reps, sig, {}) == [{"file": "page.txt", "kind": "text"}]
     # ...and a genuinely smaller slice still wins on the same shape
@@ -202,7 +202,7 @@ def test_alternates_never_offer_a_slice_as_a_swap_candidate():
             _text_rep("harvest_slice.txt", n_times=9, source="harvest_slice"),
             _tb_rep(n_times=9, n_chars=100),
             _text_rep("page.header.txt", n_times=2, source="segment:header"),
-            {"source": "raster", "filename": "raster_p1.png", "file_kind": "image"}]
+            {"source": "raster", "filename": "raster_p1.png", "file_kind": "image", "usable": 1}]
     got = {a["file"] for a in R.alternates(reps, exclude={"pdftotext.txt"})}
     assert got == {"raster_p1.png"}
     assert BS.SLICE_SOURCES <= R.NON_SWAPPABLE_SOURCES and R.CHROME_SOURCES <= R.NON_SWAPPABLE_SOURCES
@@ -220,28 +220,28 @@ def test_best_send_handbook_records_are_byte_identical(extra):
     # slice preferred
     reps = maybe([_text_rep("harvest_slice.txt", n_times=30, n_chars=900, source="harvest_slice"),
                   _text_rep("a.txt", n_times=4),
-                  {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}])
+                  {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf", "usable": 1}])
     sig = {"is_handbook": True, "harvest_pages": [4, 9], "timebearing_pages": [1, 2]}
     assert R.best_send(reps, sig, {}) == [
         {"file": "harvest_slice.txt", "kind": "text", "pages": [4, 9]}]
 
     # pdf+pages fallback when no slice was materialized
     reps = maybe([_text_rep("a.txt", n_times=4),
-                  {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}])
+                  {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf", "usable": 1}])
     sig = {"is_handbook": True, "harvest_pages": [2, 3], "timebearing_pages": [1, 2]}
     assert R.best_send(reps, sig, {}) == [{"file": "page.pdf", "kind": "pdf", "pages": [2, 3]}]
 
     # #230: a denser general text rep beats the slice
     reps = maybe([_text_rep("harvest_slice.txt", n_times=26, source="harvest_slice"),
                   _text_rep("pdftotext.txt", n_times=90),
-                  {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}])
+                  {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf", "usable": 1}])
     sig = {"is_handbook": True, "harvest_pages": [12], "timebearing_pages": [1, 2]}
     assert R.best_send(reps, sig, {}) == [{"file": "pdftotext.txt", "kind": "text"}]
 
 
 def test_best_send_handbook_falls_back_to_pdf_when_no_slice():
     reps = [_text_rep("a.txt", n_times=4),
-            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
+            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf", "usable": 1}]
     sig = {"is_handbook": True, "harvest_pages": [2, 3]}
     assert R.best_send(reps, sig, {}) == [{"file": "page.pdf", "kind": "pdf", "pages": [2, 3]}]
 
@@ -254,7 +254,7 @@ def test_best_send_handbook_slice_loses_to_a_denser_general_text_rep():
     # pdf+pages fallback intercepting the fall-through and sending the whole PDF instead.
     reps = [_text_rep("harvest_slice.txt", n_times=26, source="harvest_slice"),
             _text_rep("pdftotext.txt", n_times=90),
-            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
+            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf", "usable": 1}]
     sig = {"is_handbook": True, "harvest_pages": [12]}
     assert R.best_send(reps, sig, {}) == [{"file": "pdftotext.txt", "kind": "text"}]
 
@@ -376,15 +376,17 @@ def test_decide_unlabeled_tier_a_with_no_usable_rep_rejects():
 def test_alternates_excludes_winner_and_lists_other_usable():
     reps = [_text_rep("winner.txt", n_times=9), _text_rep("other.txt", n_times=2),
             _text_rep("garbled.txt", usable=0),  # unusable text excluded
-            {"source": "capture:png", "filename": "page.png", "file_kind": "image"}]
+            {"source": "capture:png", "filename": "page.png", "file_kind": "image", "usable": 1},
+            # #856: `usable` gates EVERY kind, not text only (live rows always carry the column)
+            {"source": "raster", "filename": "bad_p1.png", "file_kind": "image", "usable": 0}]
     alts = R.alternates(reps, exclude={"winner.txt"})
     files = {a["file"] for a in alts}
-    assert files == {"other.txt", "page.png"}          # winner + unusable excluded; image kept
+    assert files == {"other.txt", "page.png"}          # winner + BOTH unusables excluded; image kept
 
 
 def test_decide_target_carries_alternates_not_the_winner():
     reps = [_text_rep("winner.txt", n_times=9), _text_rep("alt.txt", n_times=3),
-            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
+            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf", "usable": 1}]
     d = R.decide(_rec(label="school_bell_table", reps=reps))
     assert d["send"] == [{"file": "winner.txt", "kind": "text"}]
     alt_files = {a["file"] for a in d["alternates"]}
@@ -500,7 +502,7 @@ def test_human_pages_list_outranks_auto_harvest_pages():
 def test_human_pages_qualify_a_doc_the_auto_classifier_missed():
     # buried_handbook + a human range on a record with is_handbook=False (the auto miss): the
     # PDF+pages fallback must engage exactly as it would for an auto-classified handbook.
-    reps = [{"source": "capture:pdf", "filename": "doc.pdf", "file_kind": "pdf"}]
+    reps = [{"source": "capture:pdf", "filename": "doc.pdf", "file_kind": "pdf", "usable": 1}]
     facets = {"buried_handbook": "yes", "_pages_list": [16, 17]}
     assert R.best_send(reps, {}, facets) == [{"file": "doc.pdf", "kind": "pdf", "pages": [16, 17]}]
 

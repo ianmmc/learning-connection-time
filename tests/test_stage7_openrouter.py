@@ -190,3 +190,65 @@ def test_content_n_times_counts_text_reps_only(monkeypatch):
     assert n and n >= 2                                          # counted real clock times
     assert R7._content_n_times("image", "data:image/png;base64,AAAA") is None
     assert R7._content_n_times("text", None) is None            # defensive: non-str content
+
+
+# ===================== PR #850 review round (#851/#859): the two retry mechanisms chained =====================
+def _recovered_batch():
+    return [_Chunk([_Choice('{"schedules":[{"school_name":"A"},{"school_name":"B"}]}',
+                            finish_reason="stop")]),
+            _Chunk([], usage=_Usage(500, 900, 0.001))]
+
+
+def test_851_transient_retry_count_survives_a_successful_truncation_retry(monkeypatch):
+    """#851: attempt 1 is a transient timeout; the #711 retry succeeds but TRUNCATED; the #169
+    retry then recovers the tail. `keep = retry` is a fresh CallResult, and the transient count
+    the #711 loop had put on the truncated attempt used to be dropped in the field-copy block —
+    a call that survived provider weather reported `transient_retries=0`. Every attempt's spend
+    still sums (#182), and the retry's max_tokens is what is reported (#801)."""
+    import openai
+    import httpx
+    timeout = openai.APITimeoutError(request=httpx.Request("POST", "https://openrouter.ai/x"))
+    calls = _patch_sequence(monkeypatch, [timeout, _truncated_batch(), _recovered_batch()])
+    res = OR.call(BODY)
+    assert len(calls) == 3                                   # timeout → truncated → recovered
+    assert res.ok and not res.truncated
+    assert '"school_name":"B"' in res.content                # the recovered tail is what survives
+    assert res.transient_retries == 1                        # MUST FAIL pre-fix: read 0
+    assert res.truncation_retried is True
+    assert res.prompt_tokens == 1000 and res.completion_tokens == 16900   # 500+16000 + 500+900
+    assert res.cost_usd == pytest.approx(0.007)
+    assert res.max_tokens_sent == OR.MAX_TOKENS_CEILING
+
+
+def test_851_transient_retry_count_survives_a_FAILED_truncation_retry(monkeypatch):
+    """The other branch (`keep = res`) always kept the count; pinned so the accumulator cannot
+    regress it while fixing the first."""
+    import openai
+    import httpx
+    timeout = openai.APITimeoutError(request=httpx.Request("POST", "https://openrouter.ai/x"))
+    calls = _patch_sequence(monkeypatch, [timeout, _truncated_batch(), timeout])
+    res = OR.call(BODY)
+    assert len(calls) == 3
+    assert res.truncated and res.truncation_retried is True
+    assert res.transient_retries == 1
+    assert res.cost_usd == pytest.approx(0.006)              # only the truncated attempt was billed
+
+
+def test_859_both_retry_mechanisms_fold_through_the_one_accumulator():
+    """#859: `_accumulate` is the ONE fold. Sums spend/latency, carries the retry lineage, and
+    deliberately does NOT touch max_tokens_sent (a max, #801) or choose the surviving content."""
+    a = OR.CallResult(model="m", ok=False, prompt_tokens=10, completion_tokens=5, cost_usd=None,
+                      latency_ms=100, transient_retries=2, max_tokens_sent=16000)
+    b = OR.CallResult(model="m", ok=True, prompt_tokens=20, completion_tokens=7, cost_usd=0.002,
+                      latency_ms=50, max_tokens_sent=32000, content="kept")
+    out = OR._accumulate(a, b)
+    assert out is b and out.content == "kept"
+    assert (out.prompt_tokens, out.completion_tokens, out.latency_ms) == (30, 12, 150)
+    assert out.cost_usd == pytest.approx(0.002)              # None + billed = billed (#182)
+    assert out.transient_retries == 2                        # carried, not reset
+    assert out.max_tokens_sent == 32000                      # untouched — each mechanism's own call
+    # both call sites use it (asserted on the source, holding the accumulator to ONE spelling)
+    import inspect
+    src = inspect.getsource(OR.call)
+    assert src.count("_accumulate(") == 3                    # transient loop + the two #169 branches
+    assert "res.prompt_tokens or 0) + (retry" not in src     # the hand-written sum is gone

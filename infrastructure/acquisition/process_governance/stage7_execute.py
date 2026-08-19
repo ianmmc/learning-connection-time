@@ -1009,19 +1009,9 @@ def _sent_files_by_rec(session, district_id: str) -> dict:
     the human-readable reason) — a dispatch that sent two reps of one record, only one of which the
     request names via `sent_file`, must not leave the other re-offerable next round.
     Routes match stage7_run._district_request_inputs (#231): 7->6 AND 7->3 — a file recorded only on a
-    RECAPTURE request is just as sent/failed as one on an alternate-rep request."""
-    out: dict = {}
-    for target, pj in session.execute(text(
-            "SELECT target, params_json FROM extraction_request "
-            "WHERE district_id = :d AND route IN (:r6, :r3)"),
-            {"d": district_id, "r6": RQ.ROUTE_ALT_REP, "r3": RQ.ROUTE_RECAPTURE}).all():
-        p = json.loads(pj or "{}")
-        files = set(p.get("sent_files") or [])
-        if p.get("sent_file"):
-            files.add(p["sent_file"])
-        if files:
-            out.setdefault(target, set()).update(files)
-    return out
+    RECAPTURE request is just as sent/failed as one on an alternate-rep request. ONE reader for both
+    (stage7_run.sent_files_by_target, #858) — this used to be a second copy of the same loop."""
+    return R7RUN.sent_files_by_target(session, district_id)
 
 
 def build_alternate_bundle_input(meta: dict, selections: list) -> tuple:

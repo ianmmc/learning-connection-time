@@ -64,7 +64,8 @@ DEFAULT_TIMEOUT = 90               # with stream=True this bounds connect/read G
 # and consumed a rung of the finite 7->6 alternate ladder, so escalation ordering (cheap text ->
 # expensive vision) was partly driven by provider weather rather than evidence. Bounded, because the
 # budget governor must not be exposed to an unbounded loop; measured corpus population: 4 calls.
-# This GENERALIZES the #169 truncation-retry surface below rather than adding a second mechanism.
+# It shares the #169 truncation-retry's accumulator (`_accumulate`, #859) — the two mechanisms
+# decide differently WHEN to retry, but fold an attempt's spend/lineage the same ONE way.
 TRANSIENT_RETRIES = 2                # attempts AFTER the first (so at most 3 total)
 TRANSIENT_BACKOFF_S = (1.0, 3.0)     # per-attempt sleep; tests monkeypatch to ()
 
@@ -238,6 +239,25 @@ def _sum_cost(a: Optional[float], b: Optional[float]) -> Optional[float]:
     return (a or 0.0) + (b or 0.0)
 
 
+def _accumulate(prior: "CallResult", latest: "CallResult") -> "CallResult":
+    """Fold a PRIOR attempt's spend and retry lineage into the attempt that follows it, returning
+    `latest`. ONE accumulator for both retry mechanisms — the #711 transient loop and the #169
+    truncation retry (#859): each used to hand-write the same four-field sum, and the two copies
+    drifted — the #169 copy never named `transient_retries`, so a call that survived provider
+    weather and THEN recovered its truncated tail reported `transient_retries=0` (#851). Summed:
+    tokens/cost/latency — every attempt was a real billed call and the REQ-051 governor must see
+    true spend (#182). Carried: `transient_retries` (a count of what happened, not of which attempt
+    won) and `truncation_retried`. NOT folded here: `max_tokens_sent` (a `max`, not a sum — #801)
+    and the choice of WHICH attempt's content survives; those stay with each mechanism."""
+    latest.prompt_tokens = (prior.prompt_tokens or 0) + (latest.prompt_tokens or 0)
+    latest.completion_tokens = (prior.completion_tokens or 0) + (latest.completion_tokens or 0)
+    latest.cost_usd = _sum_cost(prior.cost_usd, latest.cost_usd)
+    latest.latency_ms = prior.latency_ms + latest.latency_ms
+    latest.transient_retries = prior.transient_retries + latest.transient_retries
+    latest.truncation_retried = prior.truncation_retried or latest.truncation_retried
+    return latest
+
+
 def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DEFAULT_TIMEOUT,
          max_tokens: int = DEFAULT_MAX_TOKENS, temperature: float = DEFAULT_TEMPERATURE) -> CallResult:
     """Execute one OpenRouter chat completion over an SSE STREAM. `request_body` is a
@@ -341,13 +361,10 @@ def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DE
         attempt += 1
         retried = _stream_once(max_tokens)
         # cost/tokens accumulate across attempts: a 429 bills nothing, but a 5xx mid-stream may have
-        # billed a partial, and the REQ-051 governor must see true spend (the #182 rule).
-        retried.prompt_tokens = (res.prompt_tokens or 0) + (retried.prompt_tokens or 0)
-        retried.completion_tokens = (res.completion_tokens or 0) + (retried.completion_tokens or 0)
-        retried.cost_usd = _sum_cost(res.cost_usd, retried.cost_usd)
-        retried.latency_ms = res.latency_ms + retried.latency_ms
-        res = retried
-        res.transient_retries = attempt
+        # billed a partial, and the REQ-051 governor must see true spend (the #182 rule). This
+        # attempt IS one transient retry; `_accumulate` carries the running count forward.
+        retried.transient_retries = 1
+        res = _accumulate(res, retried)
     # #169: a truncated reply silently drops the tail schools — retry ONCE at the ceiling to recover
     # them. Keep the retry's CONTENT when it SUCCEEDED (fully recovered, or at least a longer head — a
     # still-truncated reply is ok=True with finish_reason "length", so the ⚠ flag persists); a retry
@@ -362,12 +379,11 @@ def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DE
     if not (res.truncated and max_tokens < retry_ceiling):
         return res
     retry = _stream_once(retry_ceiling)
-    keep = retry if retry.ok else res                 # recovered tail vs. salvaged head
+    # recovered tail vs. salvaged head — the OTHER attempt's spend and retry lineage fold into
+    # whichever survives (#851: `keep = retry` is a fresh CallResult, and the transient count the
+    # #711 loop had put on `res` used to be dropped right here).
+    keep = _accumulate(res, retry) if retry.ok else _accumulate(retry, res)
     keep.truncation_retried = True
-    keep.prompt_tokens = (res.prompt_tokens or 0) + (retry.prompt_tokens or 0)
-    keep.completion_tokens = (res.completion_tokens or 0) + (retry.completion_tokens or 0)
-    keep.cost_usd = _sum_cost(res.cost_usd, retry.cost_usd)
-    keep.latency_ms = res.latency_ms + retry.latency_ms
     # #801: the ceiling worth reporting is the highest actually attempted (the retry's), whichever
     # attempt's content survived — "still truncated at N" must name the N that was really sent.
     keep.max_tokens_sent = max(res.max_tokens_sent, retry.max_tokens_sent)
