@@ -163,9 +163,13 @@ fact — no snapshot had been taken. That is what the receipts are for; the DB a
 answered P5.
 
 **Next (RESUME HERE — 2026-08-19):**
-1. **#862 (chrome in `best_send`'s pool)** — Ian's call to apply; the fix is one line +
-   a DB-free test + re-running the before/after in the issue (4 chrome picks revert, 5 main
-   picks stand). **#861** (the `n_benchmark_only` rename) is pure hygiene, any time.
+1. **PR #865 (#862, chrome never the first send)** is open for review — one line + a test that
+   fails pre-fix; measured after: 0 chrome picks, the 5 `page.main.txt` picks stand. Ian approved
+   the reasoning 2026-08-19 and **epic #864** (DOM handling refactor / Stage 5 rep model) now
+   parents #643/#685/#862/**#863** (the two `innerText` reads disagree on 104 records — `page.txt`
+   at DOM-ready+2.5s, segments at end-of-capture; 17 where page.txt has 0 times and main has them).
+   The epic is NOT scheduled (#642 first, land on the #623 seam); it exists so interim fixes don't
+   paint away from the shape. **#861** (the `n_benchmark_only` rename) is pure hygiene, any time.
 2. **#672 — the 5→1 widened rung dilutes geo derivation and discards on-domain URLs** (Wyandanch
    `3631800`: 109 raw URLs found then thrown away, 5 of them on the district's own confirmed
    `wyandanch.k12.ny.us`; `found_all` → `manual_flag_all` for a mechanical reason). **The most
@@ -264,7 +268,7 @@ surfacing and the three gate@8 arrows ARE verified — rerunnable verifiers
 documents the clone-and-seed runbook, since the gate@7 banner reads a STORED column and every live
 row is `{}` until a post-#822 Stage-7 run happens). The pattern to extend.
 **Deferred by design (epic #128):** #642 (content-derived document vintage) and #643 (the Stage-3
-render-facts probe; rides #623's Node seam). **Retired, do not do:** Phase 2e's retroactive
+render-facts probe; rides #623's Node seam — now ALSO the spine of epic #864). **Retired, do not do:** Phase 2e's retroactive
 `dispatch_type='benchmark'` tagging — arm 2 derives it. Banked routing: #112 → epic #128. Parked:
 #475/#476, #103 (+#110); the SEA integration follow-up (~9 states) is an opt-in backlog item — ask
 Ian before filing. Documented-in-code deferrals: `_satisfied_bands_now` batching; the #522 guardrail's
