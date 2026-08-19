@@ -136,29 +136,36 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-08-19): #822 is MERGED (PR #842, `390fdf4`); FIVE more queued issues are in
-review as PR #850** (`fix/queue-826-841-710-711-673-674`, 5 commits — the fifth, `214e318`, absorbed
-the 10-finding review round #851-#860: 8 fixed, #852 pinned as NOT a bug (no ladder starts when
-`roster_unique` resolves, so nothing needs stopping), #860 declined; #861 filed for the
-`n_benchmark_only` two-formulas naming found by #854's new test). #842 shipped output-overflow
-monitoring + REQ-175/176 and absorbed a 7-finding review round (#843-#849). PR #850 carries **#826** (roster hits match a
-normalized DOCUMENT; the district-name collision guarded), **#841** (`segment:main` ADMITTED at all
-three 7→6 collectors, one rule, and segment reps finally get `n_times`), **#710/#711** (a ladder rung
-must be spent on evidence: bounded transient retry + the nameless-yield stop), and **#673/#674** (the
-gate@5 vintage surface + the `out_of_window` HOLD facet).
+**Current status (2026-08-19): PR #850 is MERGED (`e270099`) and the live governance DB was
+RE-INGESTED from `main` the same day** (`--assert-floor`; recall floor held 0.9947 ≥ 0.98; 116
+districts / 3,561 records / 2,614 labels preserved / 873 to send). Closed: **#826** (P1 re-specified
+by Ian to the measured 23/22/29; P5 from the datetime-stamped Stage-5 receipts — 3 tier changes, all
+traced to `roster_school_names_hit` reaching exactly 2, the hub threshold; 0 decision changes),
+**#841** (segment `n_times`: 0 NULL of 11,349), **#710/#711**, **#674**; **#673 stays open** for its
+Playwright render falsifier. The 10-finding review round #851-#860 was absorbed in `214e318` (8
+fixed, #852 pinned as NOT a bug, #860 declined). Before that, #822 merged as PR #842 (output-overflow
+monitoring + REQ-175/176).
 
-**ONE THING still gates PR #850's merge (item 1 is resolved):**
-1. ~~#826's P1~~ **RESOLVED 2026-08-19: Ian re-specified P1 to the measured 23 / 22 / 29** (issue
-   body + the measurement script's `PINNED` updated; the script's VERDICT is 3/3). The filed 27/42/36
-   came from a baseline the code never had (roster raw vs raw text). NB the honest pre-fix baseline
-   was already 22/22/29 — the fix moves these three by +1/0/0; its corpus effect is the script's R4.
-2. **A post-merge re-ingest is REQUIRED**, for two independent reasons: #826's true tier delta (P5),
-   and #841's segment `n_times` — until it runs, `segment:main` is admitted but ranks LAST (behind
-   the vision escalation) because `rank_alternates` files n_times 0/None text in its bottom tier.
-   Never re-ingest the live DB from a branch (the #822 pattern): merge first, then re-ingest.
+**The re-ingest's own finding (measured two independent ways, which agree):** `best_send` changed on
+61/3,561 records, **0 release-decision changes**, and **5 send-decided records now send
+`page.main.txt`** — every one ≥ clock times vs the old pick, and on three of them Tier-1 `page.txt`
+had **0** times while the DOM-main segment had 26–88. **#841's premise "main is a strict subset of
+page.txt" is false in practice**; the finding landed on the primary send, not only on alternates.
+Side effect filed as **#862**: `best_send`'s densest-text pool never referenced `CHROME_SOURCES` —
+4 reject/hold records now pick `page.nav/footer.txt` (one already did, by n_chars tie-break). One-line
+fix, but it changes a dispatch decision, so it is surfaced, not applied. **#861** filed:
+`n_benchmark_only` is one name for two formulas (release: send+hold gt; SQL: send-only + `n_hold_gt`)
+— relation pinned by test, rename pending.
+
+**Method note from this round:** the datetime-stamped per-district Stage-5 receipts
+(`stage5_filter.<ts>.py-<h8>.json`, REQ-164) made a true before/after tier diff possible AFTER the
+fact — no snapshot had been taken. That is what the receipts are for; the DB alone could not have
+answered P5.
 
 **Next (RESUME HERE — 2026-08-19):**
-1. **PR #850 review** is with Ian (a separate session). Nothing else should touch those files.
+1. **#862 (chrome in `best_send`'s pool)** — Ian's call to apply; the fix is one line +
+   a DB-free test + re-running the before/after in the issue (4 chrome picks revert, 5 main
+   picks stand). **#861** (the `n_benchmark_only` rename) is pure hygiene, any time.
 2. **#672 — the 5→1 widened rung dilutes geo derivation and discards on-domain URLs** (Wyandanch
    `3631800`: 109 raw URLs found then thrown away, 5 of them on the district's own confirmed
    `wyandanch.k12.ny.us`; `found_all` → `manual_flag_all` for a mechanical reason). **The most
@@ -188,9 +195,9 @@ gate@5 vintage surface + the `out_of_window` HOLD facet).
    `node --test` harness can carry the unit half. NB the naive reveal recovered NOTHING — the vendor
    open-state class and `max-height` are load-bearing.
 5. **Then** the Stage 2-4 console triple (#669/#670/#671, settle #671 first) → #723.
-6. **REQ ledger follow-up:** PR #850's five issues have no `REQUIREMENTS.yaml` entries yet —
-   deliberately deferred while #826's acceptance is disputed (recording contested state is worse
-   than recording none). Add them on merge, once P1 is re-specified.
+6. **REQ ledger follow-up (unblocked):** PR #850's issues (#826/#841/#710/#711/#673/#674) still
+   have no `REQUIREMENTS.yaml` entries — #826's P1 is now settled (23/22/29), so add REQ-177+
+   citing the tests + measurement scripts named on each closed issue.
 7. **Ian's call, not a session task:** routing Broward/Cleveland/Essex's send-backs and resuming the
    5→1 composer on West Ada/Lincoln/Baldwin — live pipeline spend, stays console-driven. The epic
    #80 experiments (#823-#825) also spend real money and are Ian's to schedule.
