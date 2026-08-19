@@ -137,9 +137,11 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 (`GETTING_STARTED.md` §1a).
 
 **Current status (2026-08-19): #822 is MERGED (PR #842, `390fdf4`); FIVE more queued issues are in
-review as PR #850** (`fix/queue-826-841-710-711-673-674`, 4 commits, 18 files, six CI checks green).
-#842 shipped output-overflow monitoring + REQ-175/176 and absorbed a 7-finding review round
-(#843-#849, all real, all fixed, all closed). PR #850 carries **#826** (roster hits match a
+review as PR #850** (`fix/queue-826-841-710-711-673-674`, 5 commits — the fifth, `214e318`, absorbed
+the 10-finding review round #851-#860: 8 fixed, #852 pinned as NOT a bug (no ladder starts when
+`roster_unique` resolves, so nothing needs stopping), #860 declined; #861 filed for the
+`n_benchmark_only` two-formulas naming found by #854's new test). #842 shipped output-overflow
+monitoring + REQ-175/176 and absorbed a 7-finding review round (#843-#849). PR #850 carries **#826** (roster hits match a
 normalized DOCUMENT; the district-name collision guarded), **#841** (`segment:main` ADMITTED at all
 three 7→6 collectors, one rule, and segment reps finally get `n_times`), **#710/#711** (a ladder rung
 must be spent on evidence: bounded transient retry + the nameless-yield stop), and **#673/#674** (the
@@ -247,7 +249,7 @@ verification) and a scratch server on an EMPTY governance DB would blank all twe
 tracked status file holds 175 districts and an empty-DB export produces 0. `guard_tracked_backup`
 now quarantines under EITHER cause (pytest, or a non-canonical DB) with a one-time note.
 **Seeing that quarantine line while running against a clone is the guard working.**
-**Outstanding:** Playwright-verify the gate@6 + gate@1 console changes, #647's Stage 2/3/4 status/Run
+**Outstanding:** Playwright-verify the gate@6 + gate@1 console changes (incl. #853's third `benchmark-only held` badge arm — seed a clone with an `out_of_window` gt:// label), #647's Stage 2/3/4 status/Run
 control, AND **#840's new gate@5 page-scoping card** (★ harvest / ◆ floor markers, `data-scoping=`
 DOM hook — static-source-pinned only so far); #667's gate@8/#662's gate@5 badges, #684's staff-day
 surfacing and the three gate@8 arrows ARE verified — rerunnable verifiers
