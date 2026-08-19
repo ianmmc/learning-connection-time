@@ -195,6 +195,23 @@ def test_gate5_console_shows_the_floor_scoping_decision():
     assert "const harvestGoverns = !!(s.is_handbook && harvest.size);" in js
 
 
+def test_862_chrome_is_never_the_first_send_but_main_may_be():
+    """#862: best_send's densest-text pool never referenced CHROME_SOURCES — chrome stayed out only
+    while its n_times was NULL (#841 scored it; 4 live records then picked page.nav/footer.txt).
+    A footer with the most clock times must NOT be chosen; the full page (chrome included) still
+    carries that evidence and IS chosen. segment:main is deliberately still eligible: measured
+    (#863), it is the fullest read on 5 send-decided records."""
+    reps = [_text_rep("page.txt", n_times=5),
+            _text_rep("page.footer.txt", n_times=20, source="segment:footer"),   # mis-segmented chrome
+            _text_rep("page.nav.txt", n_times=9, source="segment:nav"),
+            _text_rep("page.header.txt", n_times=9, source="segment:header")]
+    assert R.best_send(reps, {}, {}) == [{"file": "page.txt", "kind": "text"}]
+    reps.append(_text_rep("page.main.txt", n_times=88, source="segment:main"))
+    assert R.best_send(reps, {}, {}) == [{"file": "page.main.txt", "kind": "text"}]
+    # ONE set: the send pool and the 7->6 retry set exclude the same chrome
+    assert R.CHROME_SOURCES <= R.NON_SWAPPABLE_SOURCES
+
+
 def test_alternates_never_offer_a_slice_as_a_swap_candidate():
     # #837: a slice is a strict SUBSET of another rep of the same record — retrying it after the
     # full text failed is the 7->6 ladder run downward. Both slice kinds excluded, chrome still is.

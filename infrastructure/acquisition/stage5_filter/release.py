@@ -123,8 +123,15 @@ def best_send(reps: list, signals: dict, facets: dict) -> list:
     # Reads BS.SLICE_SOURCES rather than naming one source: with a second slice kind (#821) an
     # `!= "harvest_slice"` test would let the timebearing slice into the pool, where it would become
     # its own `best_text` and the yield guard below would degenerate into comparing it with itself.
+    # #862: nor is a CHROME segment (header/footer/nav) — screened out on purpose at Stage 3
+    # (REQ-091) and barred as a 7->6 retry by NON_SWAPPABLE_SOURCES; it was kept out of THIS pool
+    # only by the accident that its n_times was NULL until #841 scored it (4 live records then
+    # picked page.nav/footer.txt). The footer's evidence is not lost: page.txt, chrome included,
+    # stays in the pool. segment:main stays IN — measured, it is the fullest read on 5 send-decided
+    # records (#863: the segments are read later than page.txt).
     usable_text = [r for r in reps if r.get("file_kind") == "text" and r.get("usable") and r.get("filename")
-                   and r.get("source") not in BS.SLICE_SOURCES]
+                   and r.get("source") not in BS.SLICE_SOURCES
+                   and r.get("source") not in CHROME_SOURCES]
     images = [r for r in reps if r.get("file_kind") == "image" and r.get("filename")]
     pdfs = [r for r in reps if r.get("file_kind") == "pdf" and r.get("filename")]
     # WHICH slice this record gets is decided ONCE, by select_slice (#834) — the same call ingest
