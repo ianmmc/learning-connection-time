@@ -147,12 +147,11 @@ three 7→6 collectors, one rule, and segment reps finally get `n_times`), **#71
 must be spent on evidence: bounded transient retry + the nameless-yield stop), and **#673/#674** (the
 gate@5 vintage surface + the `out_of_window` HOLD facet).
 
-**TWO THINGS GATE PR #850's merge:**
-1. **#826's P1 is not achievable as written — Ian to re-spec.** The issue reports Memphis 0→27,
-   Broward 3→42, Orange 1→36. Measured live: **22 / 22 / 29**. The roster side has ALWAYS gone
-   through `norm_school` (`build_signals.py:1545`), so "hits today" cannot be what the code does;
-   it matches RAW school names against raw text (Memphis's "27" IS that raw-name figure), and the
-   before/after columns came from two different bases. The mechanism is real and fixed either way.
+**ONE THING still gates PR #850's merge (item 1 is resolved):**
+1. ~~#826's P1~~ **RESOLVED 2026-08-19: Ian re-specified P1 to the measured 23 / 22 / 29** (issue
+   body + the measurement script's `PINNED` updated; the script's VERDICT is 3/3). The filed 27/42/36
+   came from a baseline the code never had (roster raw vs raw text). NB the honest pre-fix baseline
+   was already 22/22/29 — the fix moves these three by +1/0/0; its corpus effect is the script's R4.
 2. **A post-merge re-ingest is REQUIRED**, for two independent reasons: #826's true tier delta (P5),
    and #841's segment `n_times` — until it runs, `segment:main` is admitted but ranks LAST (behind
    the vision escalation) because `rank_alternates` files n_times 0/None text in its bottom tier.

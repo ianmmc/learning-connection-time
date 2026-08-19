@@ -36,7 +36,13 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--limit", type=int, default=0)
 args = ap.parse_args()
 
-PINNED = {"4700148": 27, "1200180": 42, "1201440": 36}
+# The issue's filed targets were 27/42/36 — NOT reproducible: its "hits today" column matched RAW
+# school names against raw text, a computation the code has never performed (the roster side always
+# went through norm_school), so its before/after came from two different bases. Ian re-specified P1
+# on 2026-08-19 to the counts measured under the LIVE functions. The filed figures stay here as
+# FILED so a re-run can still show how far off the original premise was.
+FILED = {"4700148": 27, "1200180": 42, "1201440": 36}
+PINNED = {"4700148": 23, "1200180": 22, "1201440": 29}      # P1 as re-specified (Ian, 2026-08-19)
 
 
 def hits_today(roster_norm, all_text):
@@ -146,9 +152,9 @@ for did, want in PINNED.items():
         print(f"    {did}: NOT IN CORPUS  <-- cannot verify")
         continue
     b, m, a, rsize = per_district[did]
-    mark = "" if a == want else f"   <-- issue predicted {want}, MEASURED {a}"
+    mark = "" if a == want else f"   <-- P1 target {want}, MEASURED {a}"
     print(f"    {did} {str(dmeta.get(did))[:26]:<26} roster={rsize:>4}  today={b:>3}"
-          f"  +norm={m:>3}  shipped={a:>3}{mark}")
+          f"  +norm={m:>3}  shipped={a:>3}  (filed {FILED[did]}){mark}")
 
 print("\nR3  district-name collision (a roster entry normalizing to the district's own name)")
 print(f"    districts affected: {len(collisions)}")
@@ -191,7 +197,9 @@ elif monotone_violations:
 else:
     hit = [d for d in PINNED if d in per_district and per_district[d][2] == PINNED[d]]
     print(f"VERDICT: mechanism CONFIRMED (R1). {len(hit)}/{len(PINNED)} pinned districts reach the")
-    print("         issue's predicted count — see R2. Reconciliation (2026-08-18): the issue's")
-    print("         'hits today' column matches RAW school names vs raw text, a computation the code")
-    print("         has never performed; its before/after columns came from two different bases.")
-    print("         P1 as written is NOT achievable and needs re-specification against these numbers.")
+    print("         P1 target — see R2. Reconciliation (2026-08-18): the issue's 'hits today' column")
+    print("         matched RAW school names vs raw text, a computation the code has never performed;")
+    print("         its before/after came from two different bases, so the filed 27/42/36 were not")
+    print("         achievable. P1 was RE-SPECIFIED to the measured 23/22/29 (Ian, 2026-08-19).")
+    if len(hit) != len(PINNED):
+        print("         <-- BLOCKER: a pinned district no longer reaches its re-specified target.")
