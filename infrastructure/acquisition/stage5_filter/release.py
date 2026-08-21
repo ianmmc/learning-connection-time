@@ -111,6 +111,46 @@ def prefer_timebearing_slice(slice_rep: dict, best_text: dict, reps: list = None
     return saved >= min_saving_frac
 
 
+def sendable_text_reps(reps: list) -> list:
+    """The record's text reps eligible to BE the send — the "densest text" pool `best_send` ranks.
+
+    ONE definition (#866), so the pool and the 7->6 swap set cannot drift: both are
+    `NON_SWAPPABLE_SOURCES`. Spelling the exclusion inline made `best_send` a FOURTH site with a
+    private copy of that set, and the drift it invites is concrete — a source added straight to
+    the union (#685's hidden-panel rep, a future `segment:aside`) would be barred from every 7->6
+    retry while staying eligible as the FIRST send, which is the exact shape #862 was filed to
+    close. Exported because the measurement scripts replay this pool too (#869).
+
+    Excluded, and why the two exclusions are the same rule seen twice:
+      • page SLICES — a slice is a strict SUBSET of another rep of the same record, so ranking it
+        as a general "densest text" candidate runs the ladder downward. With a second slice kind
+        (#821) an `!= "harvest_slice"` test would let the timebearing slice in, where it would
+        become its own `best_text` and the yield guard below would compare it with itself.
+      • CHROME segments (header/footer/nav) — the de-chrome quarantine. REQ-091 does not screen
+        chrome OUT (it keeps header/footer precisely because real school hours sometimes sit
+        there); it screens them SEPARATELY, so they inform the keyword/category/roster SIGNALS
+        while `page.txt` — the whole body, chrome included — is what a council reads. Sending an
+        isolated nav menu is not that design; it is a nav menu. `usable` is NOT a real bar here:
+        ingest hardcodes `usable=1` for every segment (build_signals.py) while page.txt/pdftotext
+        carry Stage 4's >=120-char test, so chrome can be a thin page's only "usable" text
+        (measured: 1 canonical record; it takes the image branch first, because `visual_text_gap`
+        is by construction true when every real text rep is sub-usable — #868).
+
+    RESIDUAL GAP, measured — do not restate the tidier claim this comment used to make. "The
+    footer's evidence survives in page.txt" is FALSE on 5 live records: page.txt is read at
+    DOM-ready+2.5s and the segments at end-of-capture, so a late-rendered footer holds clock times
+    page.txt never saw (0103390:fb71b7cc63 — footer 12, page.txt 0). Chrome is barred from
+    `alternates()` too, so no automated path reaches those times. All 5 are reject-decided today
+    (0 dispatch affected) and the cause is the read-timing split, #863 — fix that and the claim
+    becomes true rather than convenient. Watched by
+    docs/technical-notes/production-quality-control-research/2026-08-19-chrome-first-send-measure.py,
+    whose C3 must never report a SEND-decided record.
+    """
+    return [r for r in reps
+            if r.get("file_kind") == "text" and r.get("usable") and r.get("filename")
+            and r.get("source") not in NON_SWAPPABLE_SOURCES]
+
+
 def best_send(reps: list, signals: dict, facets: dict) -> list:
     """The ONE best representation for the council to read (governance §4). reps: the record's
     representation rows ({source, filename, file_kind, n_chars, n_times, usable}). Returns a list
@@ -119,19 +159,7 @@ def best_send(reps: list, signals: dict, facets: dict) -> list:
     else the densest text."""
     facets = facets or {}
     signals = signals or {}
-    # a page SLICE is a purpose-built scoped rep — never a general "densest text" candidate.
-    # Reads BS.SLICE_SOURCES rather than naming one source: with a second slice kind (#821) an
-    # `!= "harvest_slice"` test would let the timebearing slice into the pool, where it would become
-    # its own `best_text` and the yield guard below would degenerate into comparing it with itself.
-    # #862: nor is a CHROME segment (header/footer/nav) — screened out on purpose at Stage 3
-    # (REQ-091) and barred as a 7->6 retry by NON_SWAPPABLE_SOURCES; it was kept out of THIS pool
-    # only by the accident that its n_times was NULL until #841 scored it (4 live records then
-    # picked page.nav/footer.txt). The footer's evidence is not lost: page.txt, chrome included,
-    # stays in the pool. segment:main stays IN — measured, it is the fullest read on 5 send-decided
-    # records (#863: the segments are read later than page.txt).
-    usable_text = [r for r in reps if r.get("file_kind") == "text" and r.get("usable") and r.get("filename")
-                   and r.get("source") not in BS.SLICE_SOURCES
-                   and r.get("source") not in CHROME_SOURCES]
+    usable_text = sendable_text_reps(reps)
     images = [r for r in reps if r.get("file_kind") == "image" and r.get("filename")]
     pdfs = [r for r in reps if r.get("file_kind") == "pdf" and r.get("filename")]
     # WHICH slice this record gets is decided ONCE, by select_slice (#834) — the same call ingest
@@ -211,6 +239,11 @@ CHROME_SOURCES = {"segment:header", "segment:footer", "segment:nav"}
 # ("partial-text -> FULLER text -> vision", rank_alternates), and a slice with high n_times used to
 # outrank the vision escalation. Measured live: 126 unsent slices carried n_times >= the sent full
 # text; 2 were already the top-ranked alternate.
+# TWO roles, deliberately ONE set (#862/#866): a source in here is neither a 7->6 swap candidate
+# NOR eligible to be the first send (`sendable_text_reps`). They were separate rules until #862 —
+# chrome was barred from the retry ladder but reachable as the first send, and only the accident
+# that segment n_times was NULL kept it from winning. If the two roles ever need to diverge, SPLIT
+# the constant rather than re-spelling one of them at a call site.
 NON_SWAPPABLE_SOURCES = frozenset(CHROME_SOURCES) | BS.SLICE_SOURCES
 
 

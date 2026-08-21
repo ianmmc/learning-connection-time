@@ -2497,7 +2497,7 @@ requirements:
       - filtered.json is a regenerable projection of the governance DB (content = f(labels, signals, config)); NO AI in the descent
       - Per district, every CANONICAL record (non-duplicate; cluster rep or singleton) appears with decision (send|reject) + reason — a traceable, self-explaining artifact, not just the send subset
       - Release rule — a TARGET-labeled record sends; a labeled non-target rejects; unlabeled records fall to a recall-biased auto-filter (reject only tier D / no-rep) as a documented fallback
-      - One best representation per sent record — densest usable text by default; the image on visual_text_gap / human target_image_only; the PDF + harvest_pages for handbooks
+      - "One best representation per sent record — densest usable text by default, over the SENDABLE pool only (release.sendable_text_reps: excludes chrome header/footer/nav and page slices, i.e. release.NON_SWAPPABLE_SOURCES — #837/#862); the image on visual_text_gap / human target_image_only; the PDF + harvest_pages for handbooks"
       - Each sent record also carries its ALTERNATE candidate representations (the other usable reps) so Stage 6 / gate@6 can swap the representation (added 2026-06-27)
       - Each filtered.json carries per-district (config,labels,data) fingerprints (staleness), labeled topology, NCES denominator, completeness counts, a coarse cost estimate, and the honest gross_bell_to_bell label
       - EVENT-DRIVEN, no manual trigger — generated on the first scoring pass (build_signals ingest), refreshed on label/split events (server) and on re-ingest after new discovery; generate() is the single shared code path

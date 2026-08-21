@@ -249,7 +249,14 @@ def district_release_input(session, district_id: str, verified_only: bool = Fals
             sendables.append({"rec_key": rec["rec_key"], "label": rec.get("label"),
                               "url": rec.get("url"),
                               "year": _content_start_year(sig),
-                              "n_times": max((r.get("n_times") or 0) for r in rec.get("reps") or [{}]),
+                              # #869: the SENDABLE pool's density, not every rep's. `max` over all
+                              # reps let a footer/nav count (scored since #841) decide which Edlio
+                              # sibling wins the family — while best_send refuses to ever send that
+                              # footer. Same pool the send uses, so the tie-break ranks records by
+                              # evidence a dispatch could actually read. (0 live districts change.)
+                              "n_times": max((r.get("n_times") or 0)
+                                             for r in (REL.sendable_text_reps(rec.get("reps") or [])
+                                                       or [{}])),
                               # #691 yield floor input — the in-window count from the record's signals
                               "nitw": int(sig.get("n_times_in_window") or 0),
                               "wd_strong": any(d.get("name") == "lf_nonstandard_day"

@@ -121,8 +121,10 @@ for i, (rk, did, ddir, sig) in enumerate(pop):
         continue
 
     after = R.best_send(reps + [dict(kw)], dict(sig, timebearing_pages=tb_pages), fdict)
-    usable_text = [r for r in reps if r["file_kind"] == "text" and r["usable"] and r["filename"]
-                   and r["source"] not in BS.SLICE_SOURCES]
+    # #869: the LIVE pool, imported — not re-derived. This site hand-copied the predicate with only
+    # SLICE_SOURCES excluded, so after #862 it admitted chrome while best_send did not, and `bt`
+    # (the saving denominator) could be a footer the real send would never pick.
+    usable_text = R.sendable_text_reps(reps)
     bt = max(usable_text, key=lambda r: ((r["n_times"] or 0), (r["n_chars"] or 0)), default=None)
     sent_before += (bt or {}).get("n_chars") or 0
 

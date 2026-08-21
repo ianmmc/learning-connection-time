@@ -208,8 +208,42 @@ def test_862_chrome_is_never_the_first_send_but_main_may_be():
     assert R.best_send(reps, {}, {}) == [{"file": "page.txt", "kind": "text"}]
     reps.append(_text_rep("page.main.txt", n_times=88, source="segment:main"))
     assert R.best_send(reps, {}, {}) == [{"file": "page.main.txt", "kind": "text"}]
-    # ONE set: the send pool and the 7->6 retry set exclude the same chrome
-    assert R.CHROME_SOURCES <= R.NON_SWAPPABLE_SOURCES
+
+
+def test_866_no_non_swappable_source_can_ever_be_the_first_send():
+    """#866: the pool and the 7->6 swap set are ONE set, pinned BEHAVIOURALLY. The first draft
+    asserted `CHROME_SOURCES <= NON_SWAPPABLE_SOURCES`, which is true by construction (the
+    definition IS that union) and never touches best_send — a verdict that cannot fail. This
+    loops the real set through the real function, so a source added straight to the union
+    (#685's hidden-panel rep, a future segment:aside) is locked out of the FIRST SEND too, which
+    is the drift #862 exists to close."""
+    assert R.NON_SWAPPABLE_SOURCES                       # the sweep is not vacuous
+    for src in sorted(R.NON_SWAPPABLE_SOURCES):
+        reps = [_text_rep("page.txt", n_times=1),
+                _text_rep("x.txt", n_times=99, source=src)]   # far denser, still ineligible
+        assert R.best_send(reps, {}, {}) == [{"file": "page.txt", "kind": "text"}], src
+    # ...and the pool helper is what best_send actually reads (one definition, not two)
+    for src in sorted(R.NON_SWAPPABLE_SOURCES):
+        assert R.sendable_text_reps([_text_rep("x.txt", n_times=99, source=src)]) == [], src
+
+
+def test_868_chrome_is_not_a_usable_text_rep_of_last_resort():
+    """#868: segments are ingested `usable=1` unconditionally while page.txt carries Stage 4's
+    >=120-char bar, so chrome can be a record's only "usable" text. Post-#862 that pool is empty
+    and best_send falls to the image branch. Pinned as INTENDED: chrome is the de-chrome
+    quarantine, not a text rep of last resort, and a page whose every real text rep is sub-usable
+    is by construction `visual_text_gap` (build_signals: has_visual and max_chars < USABLE_MIN),
+    which routes to vision one branch EARLIER anyway. Measured live: 1 canonical record has a
+    chrome-only usable pool; 0 reach this fallback."""
+    reps = [_text_rep("page.txt", n_times=0, n_chars=27, usable=0),      # below Stage 4's bar
+            _text_rep("page.header.txt", n_times=0, n_chars=618, source="segment:header"),
+            {"source": "capture:png", "filename": "page.png", "file_kind": "image", "usable": 1}]
+    assert R.sendable_text_reps(reps) == []
+    assert R.best_send(reps, {}, {}) == [{"file": "page.png", "kind": "image"}]
+    # the real-world route: such a record is visual_text_gap, so it never depends on the fallback
+    assert R.best_send(reps, {"visual_text_gap": True}, {}) == [{"file": "page.png", "kind": "image"}]
+    # with no binary rep at all the record honestly reports no usable rep rather than sending chrome
+    assert R.best_send(reps[:2], {}, {}) == []
 
 
 def test_alternates_never_offer_a_slice_as_a_swap_candidate():
