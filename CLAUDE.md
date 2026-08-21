@@ -136,40 +136,42 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-08-19): PR #850 is MERGED (`e270099`) and the live governance DB was
-RE-INGESTED from `main` the same day** (`--assert-floor`; recall floor held 0.9947 ≥ 0.98; 116
-districts / 3,561 records / 2,614 labels preserved / 873 to send). Closed: **#826** (P1 re-specified
-by Ian to the measured 23/22/29; P5 from the datetime-stamped Stage-5 receipts — 3 tier changes, all
-traced to `roster_school_names_hit` reaching exactly 2, the hub threshold; 0 decision changes),
-**#841** (segment `n_times`: 0 NULL of 11,349), **#710/#711**, **#674**; **#673 stays open** for its
-Playwright render falsifier. The 10-finding review round #851-#860 was absorbed in `214e318` (8
-fixed, #852 pinned as NOT a bug, #860 declined). Before that, #822 merged as PR #842 (output-overflow
-monitoring + REQ-175/176).
+**Current status (2026-08-19): PRs #850 and #865 are both MERGED (`e270099`, `d3e449e`) and the
+live governance DB was RE-INGESTED from `main`** (`--assert-floor`; recall floor 0.9947 ≥ 0.98; 116
+districts / 3,561 records / 2,614 labels preserved / 873 to send). Closed this round: **#826** (P1
+re-specified by Ian to the measured 23/22/29), **#841** (segment `n_times`: 0 NULL of 11,349),
+**#710/#711**, **#674**, **#862**; **#673 stays open** for its Playwright render falsifier. Two
+review rounds absorbed: #851-#860 (`214e318`) and #866-#870 (`ba61457`) — 13 of 15 findings real and
+fixed; #852/#860/#868 closed as NOT bugs, each pinned by a test so the reasoning can't be re-litigated.
 
-**The re-ingest's own finding (measured two independent ways, which agree):** `best_send` changed on
-61/3,561 records, **0 release-decision changes**, and **5 send-decided records now send
-`page.main.txt`** — every one ≥ clock times vs the old pick, and on three of them Tier-1 `page.txt`
-had **0** times while the DOM-main segment had 26–88. **#841's premise "main is a strict subset of
-page.txt" is false in practice**; the finding landed on the primary send, not only on alternates.
-Side effect filed as **#862**: `best_send`'s densest-text pool never referenced `CHROME_SOURCES` —
-4 reject/hold records now pick `page.nav/footer.txt` (one already did, by n_chars tie-break). One-line
-fix, but it changes a dispatch decision, so it is surfaced, not applied. **#861** filed:
-`n_benchmark_only` is one name for two formulas (release: send+hold gt; SQL: send-only + `n_hold_gt`)
-— relation pinned by test, rename pending.
+**The architectural finding of this round — epic #864 (NOT scheduled).** The re-ingest, not
+reasoning, produced it: with segments finally scored, `best_send` changed on 61/3,561 records and
+**5 send-decided records now send `page.main.txt`**, three of them where Tier-1 `page.txt` holds
+**0** clock times and DOM-main holds 26–88. `main` is `body.innerText` minus landmarks and `page.txt`
+is `body.innerText`, so main is a subset *by construction* — but only if read at the same instant,
+and it is not (`page.txt` at DOM-ready+2.5s, segments at end-of-capture). The two reads disagree on
+**104** records; on **17**, page.txt has 0 times and main has them. That one sentence — *Stage 3
+flattens a live, time-varying, JS-stateful DOM into snapshots at arbitrary moments, and Stage 5 then
+re-derives from filenames the relations Stage 3 knew and discarded* — is what **#643/#685/#862/#863**
+share, and it is now epic **#864**. Shape: Stage 3 records the rendered DOM ONCE at end-of-render
+(#643's sidecar + visibility + landmark membership); `page.txt`/`main`/chrome/hidden-panel become
+*derivations*. Sequencing unchanged: **#642 first, land on the #623 seam**. The epic exists so
+interim fixes stop painting away from it.
 
-**Method note from this round:** the datetime-stamped per-district Stage-5 receipts
-(`stage5_filter.<ts>.py-<h8>.json`, REQ-164) made a true before/after tier diff possible AFTER the
-fact — no snapshot had been taken. That is what the receipts are for; the DB alone could not have
-answered P5.
+**De-chrome's origin, now on the record (two fixes in a row misstated it):** REQ-091 does NOT screen
+chrome out. It screens chrome **separately** — additive `page.main/header/footer/nav.txt` beside an
+untouched `page.txt` — and **keeps header/footer precisely because real school hours sometimes live
+there**. Chrome informs the keyword/category/roster SIGNALS; `page.txt`, chrome included, is what a
+council reads. So "never send an isolated nav menu" (#862) is consistent with REQ-091; "chrome is
+screened out" is not.
 
 **Next (RESUME HERE — 2026-08-19):**
-1. **PR #865 (#862, chrome never the first send)** is open for review — one line + a test that
-   fails pre-fix; measured after: 0 chrome picks, the 5 `page.main.txt` picks stand. Ian approved
-   the reasoning 2026-08-19 and **epic #864** (DOM handling refactor / Stage 5 rep model) now
-   parents #643/#685/#862/**#863** (the two `innerText` reads disagree on 104 records — `page.txt`
-   at DOM-ready+2.5s, segments at end-of-capture; 17 where page.txt has 0 times and main has them).
-   The epic is NOT scheduled (#642 first, land on the #623 seam); it exists so interim fixes don't
-   paint away from the shape. **#861** (the `n_benchmark_only` rename) is pure hygiene, any time.
+1. **#863 — the two `innerText` reads disagree (104 records).** Promoted by #867: #862's rule is
+   right, but the property that makes it SAFE — "everything in the footer is also in page.txt" — is
+   false until the read-timing split is closed. Interim mitigations named on the issue (read
+   `page.txt` when the segments are read, or stamp the read phase); the fidelity flags (#518,
+   `detectChallenge`) read the EARLY text, so check them for regression. Node change +
+   a re-measurement, not a one-liner. **#861** (the `n_benchmark_only` rename) is pure hygiene.
 2. **#672 — the 5→1 widened rung dilutes geo derivation and discards on-domain URLs** (Wyandanch
    `3631800`: 109 raw URLs found then thrown away, 5 of them on the district's own confirmed
    `wyandanch.k12.ny.us`; `found_all` → `manual_flag_all` for a mechanical reason). **The most
@@ -199,9 +201,10 @@ answered P5.
    `node --test` harness can carry the unit half. NB the naive reveal recovered NOTHING — the vendor
    open-state class and `max-height` are load-bearing.
 5. **Then** the Stage 2-4 console triple (#669/#670/#671, settle #671 first) → #723.
-6. **REQ ledger follow-up (unblocked):** PR #850's issues (#826/#841/#710/#711/#673/#674) still
-   have no `REQUIREMENTS.yaml` entries — #826's P1 is now settled (23/22/29), so add REQ-177+
-   citing the tests + measurement scripts named on each closed issue.
+6. **REQ ledger follow-up (unblocked, now larger):** #826/#841/#710/#711/#673/#674 **and** #862
+   (+ the #866-#870 round) have no `REQUIREMENTS.yaml` entries — #826's P1 is settled (23/22/29), so
+   add REQ-177+ citing the tests + measurement scripts named on each closed issue. REQ-094's AC was
+   already corrected in `ba61457` ("densest usable text OVER THE SENDABLE POOL").
 7. **Ian's call, not a session task:** routing Broward/Cleveland/Essex's send-backs and resuming the
    5→1 composer on West Ada/Lincoln/Baldwin — live pipeline spend, stays console-driven. The epic
    #80 experiments (#823-#825) also spend real money and are Ian's to schedule.
@@ -210,9 +213,14 @@ and the **read-only measurement scripts** are the verification exceptions). *Fal
 any district needs a hand-edit or a re-adjudicated gate@8 call, the mechanism is wrong — fix the
 pipeline, not the district.*
 
-**Standing method note (now on its TWELFTH instance): measure the thing before fixing it.** An
-issue's proposed fix has been overturned by measurement twelve times (#691, #684, #719, #755, #706's
-severity ranking, #721, #794, #796, #795, **#822's image-council premise, #826, #841**). The last
+**Standing method note (now on its FOURTEENTH instance): measure the thing before fixing it.** An
+issue's proposed fix has been overturned by measurement fourteen times (#691, #684, #719, #755,
+#706's severity ranking, #721, #794, #796, #795, #822's image-council premise, #826, #841, **#852,
+#868**). The last two are review findings whose mechanism was real in the source and unreachable in
+practice — #852's ladder-stop (no ladder starts when `roster_unique` resolves) and #868's degenerate
+send (`visual_text_gap` is true BY CONSTRUCTION when every real text rep is sub-usable, so the image
+branch fires a step earlier). Both are closed as not-bugs WITH pins, because "we checked" is not
+durable and the next reader will re-derive the same plausible worry. The last
 three are the sharpest yet because two of them were *unfalsifiable as posed*: #822's "0 records
 exceed the image council" was true by construction (the clamp tops out below that council's
 ceiling), and #841's "how often does `segment:main` carry more times" could not be answered from the
@@ -226,7 +234,13 @@ one deliberate difference (`release.alternates` admits `pdf` for a HUMAN at gate
 `live_alternates` excludes it because an automated retry would send raw bytes to a text council).
 Compare the dimension the rule is about, not whole outputs.
 
-**The implemented-twice-drifts class (SEVEN instances across three sessions):** #798/#810/#799/#816;
+**The implemented-twice-drifts class (NINE instances across four sessions; the newest two are
+#866 — `best_send` spelling `NON_SWAPPABLE_SOURCES` a FOURTH way, `not in SLICE and not in CHROME`
+being provably that same union — and #869, three more sites computing their own chrome-inclusive
+"densest": the gate@6 sibling tie-break, a measurement script's hand-copied pool, and the gate@5
+"densest" badge that named a rep `best_send` refuses to send. The fix is the usual one, ONE exported
+predicate, `release.sendable_text_reps`; the new wrinkle is that a CLIENT mirror counts as a call
+site, so app.js's chrome set is pinned member-for-member against the Python one.) Earlier:** #798/#810/#799/#816;
 then #834's two slice predicates disagreeing on 43 live records; then this session's two —
 #843/#845/#847/#848 were ONE root (the "how is this rep degraded" fold hand-written at FOUR sites,
 two of which disagreed: an overflow-only rep counted degraded in telemetry and barren in `explain`),
@@ -238,7 +252,24 @@ its INPUTS** — two call sites can drift by feeding the same function different
 omitting the system prompt, ~1,000 tokens), so the input construction must be one function too, and
 P4 is asserted at the CALL SITES.
 
-**The standing lesson (now on its SIXTH shape): a measurement that cannot fail.** §10.11 · the fix
+**NEW (2026-08-19) — a correct fix can ship with a WRONG RATIONALE, and the rationale is what the
+next reader inherits.** PR #865's one line was right and stayed; its justification was wrong twice
+and a review caught both. It sized the change at **4** records when a full `best_send` replay
+measures **244** (the 4 counted only what #841's scoring newly flipped, missing ~240 that had won on
+the `n_chars` tie-break since REQ-091 — invisible because all 244 are REJECT-decided and a reject
+never serializes its send). And it offered the reassurance "the footer's evidence is not lost —
+page.txt, chrome included, stays in the pool", **false on 5 live records** (`0103390:fb71b7cc63`:
+footer 12 clock times, its own page.txt 0). Corollaries now standing: **a fix's measured blast
+radius is part of the fix** — commit the rerunnable script, never the recollection (that is what
+#870 asked for and why `2026-08-19-chrome-first-send-measure.py` exists); and **a reassuring
+sentence in a comment is a claim — measure it or delete it**, because the tidy version is the one
+that survives into the next design.
+
+**The standing lesson (now on its SEVENTH shape): a measurement that cannot fail.** The newest is
+a TEST, not a sweep: #866's `assert CHROME_SOURCES <= NON_SWAPPABLE_SOURCES` — true by construction
+(the definition IS that union), and it never touched the function it claimed to guard. Replaced by a
+loop over the real set through the real `best_send`, verified to fail on 3 arms against the pre-fix
+pool. **An identity assertion about CONSTANTS proves nothing about BEHAVIOUR.** Earlier shapes: §10.11 · the fix
 round's own findings · a merged fix un-run against the live DB (§13.1) · Pass B comparing the
 post-state with itself · #822's clamped estimate that could never exceed the image ceiling · #841's
 NULL-coerced segment times. Countermeasure now standard in every measurement script: an explicit
@@ -259,7 +290,7 @@ verification) and a scratch server on an EMPTY governance DB would blank all twe
 tracked status file holds 175 districts and an empty-DB export produces 0. `guard_tracked_backup`
 now quarantines under EITHER cause (pytest, or a non-canonical DB) with a one-time note.
 **Seeing that quarantine line while running against a clone is the guard working.**
-**Outstanding:** Playwright-verify the gate@6 + gate@1 console changes (incl. #853's third `benchmark-only held` badge arm — seed a clone with an `out_of_window` gt:// label), #647's Stage 2/3/4 status/Run
+**Outstanding:** Playwright-verify the gate@6 + gate@1 console changes (incl. #853's third `benchmark-only held` badge arm — seed a clone with an `out_of_window` gt:// label), **#869's gate@5 "densest" badge** (it now excludes chrome, so a footer with unique times must read `adder`, not `densest` — `0103390:fb71b7cc63` is the record, footer 12 times vs page.txt 0; source-pinned only so far), #647's Stage 2/3/4 status/Run
 control, AND **#840's new gate@5 page-scoping card** (★ harvest / ◆ floor markers, `data-scoping=`
 DOM hook — static-source-pinned only so far); #667's gate@8/#662's gate@5 badges, #684's staff-day
 surfacing and the three gate@8 arrows ARE verified — rerunnable verifiers
@@ -277,11 +308,11 @@ harness); the remediation-receipt exception is not STAGE-scoped (30-day expiry s
 attribution v1 reads each district's LATEST candidate plan; the `stage6_handoff/requests.py:17-18`
 docstring falsely claims Stage 7 "reads ONLY the flagged pages" — the `pages` hint never scoped
 content (the slice FILE is the scoping), a live source of wrong inferences worth a one-line issue.
-Resume-essentials (ALL re-verified 2026-08-19 on this checkpoint, on the PR-#850 branch; on `main`
-the pytest counts are 16 lower — the delta is #850's new tests): `pip
+Resume-essentials (ALL re-verified 2026-08-19 on this checkpoint, on `main` at `d3e449e` — both
+PRs merged, so these are the plain post-merge numbers): `pip
 install -e .` → Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh
 clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect
-**2416** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **396** pass, Postgres up) +
+**2425** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **399** pass, Postgres up) +
 `pytest tests/test_*_integration.py` (expect **257** pass, 149 skipped) + `cd infrastructure/scraper
 && npm test` (expect **91**) + `flake8 . --count --select=E9,F63,F7,F82` (expect **0** — this is CI's
 blocking lint; the vulture whitelist is `per-file-ignores`'d for F821, main had been red on it since
@@ -315,6 +346,9 @@ read-only, import the LIVE functions)** — all under
 `2026-08-18-output-overflow-measure.py` (#822 P5) ·
 `2026-08-18-roster-hit-measure.py` (#826 — reports today / +normalization / +guard as THREE columns,
 because the two halves move the number in opposite directions and a combined figure hides both) ·
+`2026-08-19-chrome-first-send-measure.py` (#862/#870 — C1 the invariant, C2 the 244-record
+population replayed BOTH ways, C3 the 5 records whose clock times live ONLY in chrome (must never be
+send-decided — that arm is #863's watchdog), C4 #868's guarded fallback) ·
 `2026-08-18-segment-main-alternate-measure.py` (#841 — scans segment text FROM DISK, since the DB
 cannot answer while segment `n_times` is NULL; re-run it after the post-merge re-ingest and its S1
 section should report 0 NULL).

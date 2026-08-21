@@ -1934,3 +1934,68 @@ Authority: PRs #828/#829 (merged 2026-08-18); issues #796/#795 closed on measure
 filed, #830-#840 the review rounds (closed), #841 the surfaced segment:main disagreement (open);
 measurements in `docs/technical-notes/production-quality-control-research/2026-08-17-*` (rerunnable,
 read-only, live functions never re-implemented).
+
+### 2026-08-18/19 — Five queued issues land, the live DB is re-ingested, and the re-ingest finds the thing four open issues had in common
+
+Two PRs (#850, #865) closed nine issues and absorbed two review rounds (#851-#860 and #866-#870,
+fifteen findings, thirteen real). The durable content is one architectural recognition and one
+lesson about rationale as opposed to code.
+
+**A correct fix can ship with a wrong rationale, and the rationale is what the next reader
+inherits.** PR #865 was a one-line change — chrome segments (header/footer/nav) may never be the
+FIRST send, only ever a signal input. The line was right and stayed. Its justification was wrong
+twice, and the review caught both. It said the change affected **4** records; a full replay of
+`best_send` over the 3,221 canonical records measures **244** — the "4" counted only the records
+where #841's new `n_times` scoring flipped the pick, missing the ~240 where chrome had been winning
+the pool's `n_chars` tie-break since REQ-091 (239 of the 244 carry *zero* clock times). All 244 are
+reject-decided, which is exactly why nobody had seen it: a reject never serializes its send. The
+comment also offered the reassurance that "the footer's evidence is not lost — page.txt, chrome
+included, stays in the pool," which is **false on 5 live records**: `0103390:fb71b7cc63`'s footer
+carries 12 clock times its own `page.txt` has none of. The corollary now standing: **a fix's
+measured blast radius is part of the fix**; ship the rerunnable script, not the recollection
+(#870 — `2026-08-19-chrome-first-send-measure.py`, whose C3 fails if a send-decided record ever
+depends on chrome-only evidence).
+
+**Stage 3 flattens a live, time-varying, JS-stateful DOM into text snapshots taken at arbitrary
+moments — and Stage 5 then re-derives, from filenames, relations Stage 3 knew and discarded.** That
+sentence is what #643, #685, #862 and #863 turned out to share, and it became **epic #864**. The
+evidence arrived from the re-ingest rather than from reasoning: with segments finally scored,
+`best_send` changed on 61 of 3,561 records and **5 send-decided records now send `page.main.txt`** —
+on three of them Tier-1 `page.txt` holds **0** clock times while the DOM-main segment holds 26-88.
+`page.main.txt` is `body.innerText` minus landmarks and `page.txt` is `body.innerText`, so main is a
+subset **by construction** — but only if the two are read at the same instant, and they are not
+(`page.txt` at DOM-ready+2.5s, segments at end-of-capture). Corpus-wide the two reads disagree on
+**104** records; on **17**, `page.txt` has zero times and main has them (#863). #841's stated premise
+("main is a strict subset of page.txt") was false in practice, and the same timing split is why
+#862's tidy claim about footers was false. The epic's shape: Stage 3 records the rendered DOM **once**
+at end-of-render as generic render facts (#643's sidecar, widened with visibility and landmark
+membership), and `page.txt` / `main` / chrome / hidden-panel views become *derivations* Stage 4/5
+compute, replay and re-cut without a browser. **Not scheduled** — #642 first, and it must land on
+#623's Node seam — but filed so the interim fixes stop painting away from it.
+
+**De-chrome's origin, recovered and put on the record**, because two fixes in a row misstated it:
+REQ-091 does **not** screen chrome out. Batch_00001's gate@5 review found a global footer's
+"Building Hours" injecting a fake start/end pair and a school-switcher nav inflating
+`roster_school_names_hit` into a false `hub`; the answer was *segment, don't strip* — additive files
+beside an untouched `page.txt`, with header/footer **kept precisely because real school hours
+sometimes live there**. Chrome informs the keyword/category/roster signals; `page.txt`, chrome
+included, is what a council reads. So "never send an isolated nav menu" is consistent with REQ-091,
+while "chrome is screened out" is not — and the difference is what makes #862's residual gap legible
+instead of self-contradictory.
+
+**#826's acceptance criteria were re-specified against measurement, by Ian, rather than met.** The
+issue's headline (Memphis 0→27, Broward 3→42, Orange 1→36) was not reproducible: the roster side had
+always gone through `norm_school`, so "hits today" described a computation the code has never
+performed, and the before/after columns came from two different bases. Measured under the shipped
+functions: **23 / 22 / 29**, now the pinned P1. The defect was real — the *document* side was
+un-normalized, an asymmetry, not an absence — and its corpus effect is +267 record-hits from
+normalization, then 53 single-school districts zeroed by the district-name collision guard. Its P5
+tier delta (3 changes, all traced to `roster_school_names_hit` reaching exactly 2, the hub threshold;
+0 decision changes) was only answerable **after the fact** because the datetime-stamped per-district
+Stage-5 receipts (REQ-164) preserved the prior state. No snapshot had been taken; the receipts are
+what made a true before/after possible.
+
+Authority: PRs #850/#865 (merged 2026-08-19); #826/#841/#710/#711/#674/#862 closed, #673 left open
+for its render falsifier; #851-#860 and #866-#870 the review rounds (closed; #852/#860/#868 closed
+as not-a-bug with pins); #861/#863 filed and open; epic #864 filed, unscheduled. Live governance DB
+re-ingested from `main` the same day (`--assert-floor`, recall floor 0.9947 ≥ 0.98).
