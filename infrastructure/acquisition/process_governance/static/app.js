@@ -405,6 +405,10 @@ async function selectRecord(recKey, li) {
   renderPanel(DATA);
 }
 
+// The de-chrome quarantine (release.CHROME_SOURCES) — mirrored client-side so the evidence pane's
+// "densest" badge names a rep dispatch could actually send (#869). segment:main is NOT chrome.
+const CHROME_SOURCES = new Set(["segment:header", "segment:footer", "segment:nav"]);
+
 async function renderCenter(d) {
   const myRecKey = CURRENT;   // snapshot: guards against a stale continuation overwriting a newer selection
   const c = $("#center");
@@ -569,7 +573,15 @@ function annotateUniqueTimes(c, bodies, ordered) {
   const timeSets = {};
   ordered.forEach((r) => { timeSets[r.filename] = inWindowTimes(bodies[r.filename] || ""); });
   let best = null, bestN = -1;
-  ordered.forEach((r) => { const n = timeSets[r.filename].size; if (n > bestN) { bestN = n; best = r.filename; } });
+  // #869: "densest" names the rep the council would actually READ, so it is chosen over the
+  // SENDABLE pool only — release.sendable_text_reps excludes chrome (#862) and slices. Badging a
+  // footer "densest" told the reviewer their evidence was the record's best text while best_send
+  // structurally refuses to send it; under the manual-gate posture this pane must not disagree
+  // with the send rule. Chrome still SHOWS (REQ-114 puts footer/header first — the common "Hours:"
+  // spot) and, when it holds times nothing else does, now reads "adder", which is the honest and
+  // more useful signal: evidence present that the send would miss.
+  ordered.filter((r) => !CHROME_SOURCES.has(r.source))
+    .forEach((r) => { const n = timeSets[r.filename].size; if (n > bestN) { bestN = n; best = r.filename; } });
   return ordered.map((r) => {
     const el = c.querySelector(`.rep-uniq[data-uniq="${CSS.escape(r.filename)}"]`);
     const mine = timeSets[r.filename], bestSet = timeSets[best] || new Set();

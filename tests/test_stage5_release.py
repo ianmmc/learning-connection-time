@@ -88,6 +88,26 @@ def test_stage6_js_badges_a_district_whose_every_held_record_is_gt_853():
     assert "!(c.n_send > 0) && c.n_hold_gt > 0" in gate
 
 
+def test_869_gate5_densest_badge_excludes_chrome_and_mirrors_the_python_set():
+    """#869: the evidence pane badged "densest" over ALL text reps, chrome included, so a footer
+    could be named the record's best text while best_send structurally refuses to send it — the
+    gate@5 pane disagreeing with the send rule, under a posture that asks the human to trust it.
+    The client mirrors release.CHROME_SOURCES; pinned member-for-member because a mirrored
+    constant is the drift pair this codebase keeps re-learning."""
+    import re
+    from pathlib import Path as _P
+    from infrastructure.acquisition.stage5_filter import release as REL
+    js = (_P(__file__).resolve().parents[1] / "infrastructure/acquisition/process_governance"
+          / "static/app.js").read_text()
+    m = re.search(r"const CHROME_SOURCES = new Set\(\[([^\]]*)\]\)", js)
+    assert m, "app.js lost the CHROME_SOURCES mirror"
+    assert set(re.findall(r'"([^"]+)"', m.group(1))) == set(REL.CHROME_SOURCES)
+    # and the badge computation actually applies it (not just declares it)
+    assert "ordered.filter((r) => !CHROME_SOURCES.has(r.source))" in js
+    # segment:main must NOT be excluded — it is a legitimate send (#841)
+    assert "segment:main" not in m.group(1)
+
+
 import pytest as _pytest  # noqa: E402
 
 
