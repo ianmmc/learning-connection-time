@@ -33,6 +33,8 @@ from sqlalchemy import text
 from infrastructure.acquisition.common import discovered_domain as DDOM
 from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.common.db import session_scope
+from infrastructure.acquisition.common.discover import host_of
+from infrastructure.acquisition.stage2_discover import discover_stage2 as D2
 from infrastructure.acquisition.stage1_queue import batch_store as BSTORE
 from infrastructure.acquisition.stage1_queue import queue_batch as Q1
 
@@ -51,13 +53,20 @@ def verdict(name, n_scanned, lines, unit="districts"):
         print(f"  {ln}")
 
 
+def _on_domain(host, dom):
+    """The same predicate `gate()` uses for its `on-domain` verdict — host IS the domain, or is a
+    true dot-boundary subdomain of it."""
+    return bool(host) and (host == dom or host.endswith("." + dom))
+
+
 def kept_count(receipt):
-    """Candidates the rung actually KEPT — the number that matters, not raw results found."""
-    n = 0
-    for sch in receipt.get("schools", []):
-        n += sum(1 for g in sch.get("wave1_gated", []) if g.get("kept"))
-        n += sum(1 for g in sch.get("wave2_gated", []) if g.get("kept"))
-    return n
+    """Candidates the rung actually KEPT — the number that matters, not raw results found.
+
+    #880: delegates to the PRODUCTION predicate (`D2.kept_in`) rather than re-spelling the
+    wave1/wave2 summation. A script committed to be the rerunnable before-state for that exact
+    function must not be able to drift from it — the implemented-twice class REQ-182 codifies.
+    """
+    return sum(D2.kept_in(sch) for sch in receipt.get("schools", []))
 
 
 def raw_count(receipt):
@@ -273,8 +282,11 @@ for r in regressions:
     dom = (domains.get(did, ("", None))[0] or "").lower()
     planned = {(c.get("url") or "").rstrip("/").lower() for c in plan}
     raw = [u for sch in later.get("schools", []) for u in sch.get("wave1_raw_urls", [])]
-    on_dom = {u for u in raw if dom and (u.split("/")[2].lower().endswith(dom)
-                                         if len(u.split("/")) > 2 else False)}
+    # #879: the CANONICAL dot-boundary test (common/discover.py::gate's on-domain arm), not a bare
+    # endswith — `evilwyandanch.k12.ny.us`.endswith(`wyandanch.k12.ny.us`) is True and would inflate
+    # the very figure this script exists to establish. host_of() also strips port/userinfo, which
+    # url.split("/")[2] does not.
+    on_dom = {u for u in raw if dom and _on_domain(host_of(u), dom)}
     lost = sorted(u for u in on_dom if u.rstrip("/").lower() not in planned)
     lines.append(f"  {did} {str(r['name'])[:26]:<26} {r['to']}: raw {len(raw)} "
                  f"({len(set(raw))} distinct) | on-domain {len(on_dom)} | "

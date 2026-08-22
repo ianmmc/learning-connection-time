@@ -202,6 +202,55 @@ for rk in SPECIMENS:
                  f"decision={decisions.get(rk, '?')} send={sorted(sends.get(rk) or [])}")
 verdict("C4 — the specimens named on #863", n_found, lines)
 
+# ---- C5: #873's watchdog — the login_wall clause the late read could weaken -------------------
+# fidelityFlags' login_wall arm is `hasPassword && text < SUBSTANTIAL_TEXT_CHARS`. Since #863 the
+# `text` half is the LATE read, so a password-gated page whose chrome renders late could cross the
+# threshold and escape the flag. Measured 0 at the time of the fix; this section is the watchdog
+# that says so on every run, because "we checked once" is not durable.
+#
+# The proxy for the late read is main+chrome (seg.full's content), NOT main alone — main EXCLUDES
+# chrome, and chrome growth is exactly the scenario. Using main alone was this script author's
+# first attempt and it measures the wrong thing.
+SUBSTANTIAL_TEXT_CHARS = 600
+LATE_SOURCES = ("segment:main", "segment:header", "segment:footer", "segment:nav")
+
+with session_scope() as s:
+    fps = s.execute(text("SELECT district_id, hash, fingerprint_json FROM capture "
+                         "WHERE kind = 'html'")).fetchall()
+    sized = collections.defaultdict(dict)
+    for rk, src, nc in s.execute(text(
+            "SELECT rec_key, source, n_chars FROM representation "
+            "WHERE source IN ('txt', 'segment:main', 'segment:header', 'segment:footer', "
+            "'segment:nav')")).fetchall():
+        sized[rk][src] = nc or 0
+
+pw_rows = []
+for did, h, fj in fps:
+    fp = json.loads(fj) if isinstance(fj, str) else (fj or {})
+    if not fp.get("has_password"):
+        continue
+    rk = f"{did}:{h}"
+    early = sized.get(rk, {}).get(PAGE_TXT_SOURCE)
+    if early is None:
+        continue
+    pw_rows.append((rk, early, sum(sized[rk].get(k, 0) for k in LATE_SOURCES)))
+
+short = [r for r in pw_rows if r[1] < SUBSTANTIAL_TEXT_CHARS]
+flips = [r for r in short if r[2] >= SUBSTANTIAL_TEXT_CHARS]
+lines = [f"html captures with has_password: {len(pw_rows)}",
+         f"  ... early page.txt < {SUBSTANTIAL_TEXT_CHARS} chars: {len(short)}",
+         f"  ... whose late (main+chrome) read reaches the threshold: {len(flips)}",
+         "",
+         f"#873 verdict: {'CLEAR — no login_wall flag can be lost to the late read' if not flips else 'ACTION — the population is no longer zero, see below'}"]
+for rk, e, l in short:
+    lines.append(f"    {rk}  early={e:>6}  late(main+chrome)={l:>7}"
+                 + ("   <-- FLIPS, login_wall would be lost" if l >= SUBSTANTIAL_TEXT_CHARS else ""))
+if flips:
+    lines.append("")
+    lines.append("Revisit fidelityFlags: evaluate the length clause against min(early, late) and")
+    lines.append("persist the early length so runRecomputeFidelity can still reproduce the verdict.")
+verdict("C5 — #873 watchdog: can the late read cost us a login_wall flag?", len(pw_rows), lines)
+
 nonempty = re.compile(r"\S")   # TIME_RE / nonempty imported to pin the live regex, not a copy
 assert TIME_RE and nonempty, "live TIME_RE must be importable — this script never re-spells it"
 print("\ndone — read-only, nothing written.")

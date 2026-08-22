@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  classifyFetchKind, driveFormatOutcome, withTimeout, segmentBuckets,
+  classifyFetchKind, driveFormatOutcome, withTimeout, segmentBuckets, resolvePersistedText,
 } from './capture_discovery.mjs';
 
 // ----------------------------- classifyFetchKind: fetch-branch dispatch -----------------------------
@@ -102,4 +102,62 @@ test('segmentBuckets leaves an unclassifiable selector out of every named segmen
   // Still removed from main by segmentChrome (removeSel covers ALL landmarks) -- just unattributed.
   const b = segmentBuckets(['.some-widget']);
   assert.deepEqual(b, { header: [], footer: [], nav: [] });
+});
+
+// ------------- #874/#875: which read ends up in page.txt, and what gets recorded -------------
+// Both findings came from PR #872's review. The inline branching they landed on is now one pure
+// function, so every branch is testable without a browser.
+test('#874: a FAILED late read (seg === null) keeps the early text and records why', () => {
+  const r = resolvePersistedText({ seg: null, lateOtherText: '\niframe words', earlyText: '\nearly words' });
+  assert.equal(r.phase, 'early');
+  assert.equal(r.text, '\nearly words');
+  assert.equal(r.lateRead, 'failed', '"no error recorded anywhere" was the substance of #874');
+});
+
+test('#874: an EMPTY main frame is not a failure -- the late read still wins, carrying the iframes', () => {
+  // The exact regression #874 named: `if (seg && seg.full)` treated full==='' as failure and
+  // discarded lateOther.text, which HAD been read successfully, reverting page.txt to the early
+  // read and reproducing #863 on the pages most likely to trigger it.
+  const r = resolvePersistedText({
+    seg: { full: '', main: '', header: '', footer: '', nav: '' },
+    lateOtherText: '\nBell schedule 8:05 AM lives in an iframe',
+    earlyText: '\nshort early text',
+  });
+  assert.equal(r.phase, 'final', 'an empty main frame must not discard a good iframe read');
+  assert.match(r.text, /8:05 AM/);
+  assert.equal(r.lateRead, undefined, 'the normal path records no fallback reason');
+});
+
+test('#874: a page that went BLANK under us keeps the content we already had', () => {
+  const r = resolvePersistedText({
+    seg: { full: '', main: '' }, lateOtherText: '', earlyText: '\nreal content we already captured',
+  });
+  assert.equal(r.phase, 'early', 'overwriting real text with nothing is a loss, not a fix');
+  assert.equal(r.lateRead, 'empty');
+});
+
+test('#874: when BOTH reads are empty the late read is still the truthful one', () => {
+  const r = resolvePersistedText({ seg: { full: '', main: '' }, lateOtherText: '', earlyText: '   ' });
+  assert.equal(r.phase, 'final', 'nothing to preserve, so do not claim the early read');
+});
+
+test('#874: the normal post-863 path -- late main plus the non-main frames', () => {
+  const r = resolvePersistedText({
+    seg: { full: 'MAIN 8:05 AM', main: 'MAIN 8:05 AM' },
+    lateOtherText: '\nFRAME 3:10 PM', earlyText: '\nstale',
+  });
+  assert.equal(r.phase, 'final');
+  assert.equal(r.text, '\nMAIN 8:05 AM\nFRAME 3:10 PM');
+});
+
+test('#875: a segment WRITE failure does not invalidate the segment READ', () => {
+  // The review called `segmented:false` + `text_phase:'final'` an inconsistent receipt. It is not:
+  // the two fields describe different facts -- whether the segment FILES reached disk, and which
+  // read is in page.txt. A good read is still a good read when an unrelated ENOSPC/EACCES stops
+  // the write, and discarding it would forfeit the whole point of #863. Pinned so the pair is not
+  // re-litigated as a contradiction.
+  const seg = { full: 'MAIN 8:05 AM', main: 'MAIN 8:05 AM' };
+  const r = resolvePersistedText({ seg, lateOtherText: '', earlyText: '\nstale' });
+  assert.equal(r.phase, 'final',
+    'text_phase is decided by the READ; the write outcome is carried separately by `segmented`');
 });

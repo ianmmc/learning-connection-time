@@ -291,12 +291,19 @@ aside: it is #871 seen from this angle (§2g).
   mechanism #719 did *not* fix — a rung that derives a host followed by a widened rung that dilutes the
   same host below threshold. Counting all 10 as #672's would overstate it ~4x.
 
-**Corpus-wide cost, and it is not small: 164 on-domain URLs are in no capture plan** (Cedar Rapids 51 ·
-New Haven CT 29 · Little Rock 26 · Washoe 26 · New Haven Unified 23 · Wyandanch 3 · Union Hill 3 ·
+**Corpus-wide cost, and it is not small: 160 on-domain URLs are in no capture plan** (Cedar Rapids 51 ·
+New Haven CT 29 · Washoe 26 · New Haven Unified 23 · Little Rock 22 · Wyandanch 3 · Union Hill 3 ·
 Sweetwater 3), including `cleveland.crschools.us/families-resources/handbook`,
 `alicesmith.washoeschools.net/our-school/bell-schedule` and `rsjh.sweetwater1.org/handbooks`. These are
 #719-era losses; #719 stops the recurrence but does not recover the URLs. Re-running those districts on
 the `domain+widened` rung they now route to is the recovery path (a gate@1 action, Ian's call).
+
+*Corrected 2026-08-21 (#879, PR #872 review): this figure first read 164. The measurement's
+on-domain test was a bare `endswith`, which counted `nlrsd.org` — NORTH Little Rock, a different
+district — as on-domain for Little Rock's `lrsd.org`, 11 raw hits and 4 of the lost. The script now
+imports the canonical dot-boundary predicate `gate()` uses. The corollary the repo already carries
+applies to measurement code too: a script that is the evidentiary basis for a design decision has
+to be held to the standard of the thing it is measuring.*
 
 **Resolution (2026-08-21).** *Criterion 1* — a rung that keeps fewer candidates than its predecessor now
 records it: `discover_stage2.rung_regression()` writes a `rung_regression` block into `discovery.json`

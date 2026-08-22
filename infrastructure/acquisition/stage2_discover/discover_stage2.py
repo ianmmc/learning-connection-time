@@ -19,6 +19,7 @@ Usage:
   discover_stage2.py finish    <batch.json> <district_id> <wave1_result.json>
 """
 import argparse
+import collections
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -453,23 +454,41 @@ def rung_regression(prior_schools: list, new_schools: list) -> dict | None:
     made here."""
     if not prior_schools or not new_schools:
         return None
-    prior_by = {s.get("school_id"): s for s in prior_schools if s.get("school_id")}
-    requeried = [s for s in new_schools if s.get("school_id") in prior_by]
+    # #878: a dict comprehension keyed on school_id would silently keep only the LAST entry if the
+    # prior doc carried the same school twice (a stale aside, a roster correction that reused an
+    # ID), producing a wrong kept_before and an unauditable verdict. AGGREGATE instead of
+    # overwriting — the honest answer to "what did the prior rung keep for this school" is the sum
+    # across its entries — and SURFACE the anomaly in the receipt. Deliberately not a raise: this
+    # is a reporting function called mid-batch, and halting a live capture run over a duplicate in
+    # a historical manifest would trade a cosmetic problem for a real one. Auditability is served
+    # by recording it (commandment #1), not by crashing.
+    prior_kept, dupes = {}, collections.Counter()
+    for s in prior_schools:
+        sid = s.get("school_id")
+        if not sid:
+            continue
+        dupes[sid] += 1
+        prior_kept[sid] = prior_kept.get(sid, 0) + kept_in(s)
+    requeried = [s for s in new_schools if s.get("school_id") in prior_kept]
     if not requeried:
         return None
-    before = sum(kept_in(prior_by[s["school_id"]]) for s in requeried)
+    before = sum(prior_kept[s["school_id"]] for s in requeried)
     after = sum(kept_in(s) for s in requeried)
     if after >= before:
         return None
-    return {
+    out = {
         "kept_before": before,
         "kept_after": after,
         "n_schools_compared": len(requeried),
         # The schools this rung took from "had candidates" to "has none" -- the ones that flip to
         # manual_flag purely because the escalation ran.
         "schools_zeroed": sorted(s["school_id"] for s in requeried
-                                 if kept_in(prior_by[s["school_id"]]) > 0 and kept_in(s) == 0),
+                                 if prior_kept[s["school_id"]] > 0 and kept_in(s) == 0),
     }
+    duplicated = sorted(sid for sid, n in dupes.items() if n > 1)
+    if duplicated:
+        out["duplicate_prior_school_ids"] = duplicated
+    return out
 
 
 def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool = False,
@@ -500,15 +519,18 @@ def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool 
     # BEFORE the rename-aside below, so a regression is detectable on every re-run of a district --
     # a domain-scoped rung can lose keepers too (measured: `0101920` batch_00013 -> batch_00026,
     # 322 -> 309, no geo derivation involved at all).
-    prior_schools_for_compare = _prior_doc(d, disc_path, "discovery").get("schools", [])
+    # #877: ONE read. This used to parse the same discovery.json twice on every merge — once here
+    # and once inside the `if merge:` block — which on a large district means re-parsing the full
+    # per-school audit trail (every school's raw URL list) for nothing.
+    prior_disc = _prior_doc(d, disc_path, "discovery")
+    prior_schools_for_compare = prior_disc.get("schools", [])
 
     old_schools, old_candidates, old_geo = [], [], None
     if merge:
-        # Each prior doc is read independently (live file, else newest aside) -- gating BOTH
-        # on disc_path.exists() lost the union when a crashed attempt left an orphaned
+        # The candidates doc is still read independently (live file, else newest aside) -- gating
+        # BOTH on disc_path.exists() lost the union when a crashed attempt left an orphaned
         # candidates.json with no discovery.json (review finding on #265; see _prior_doc).
-        prior_disc = _prior_doc(d, disc_path, "discovery")
-        old_schools = prior_disc.get("schools", [])
+        old_schools = prior_schools_for_compare
         old_geo = prior_disc.get("geo_discovery")   # #164 review: carry the derivation receipt forward
         old_candidates = _prior_doc(d, cand_path, "candidates").get("candidates", [])
 

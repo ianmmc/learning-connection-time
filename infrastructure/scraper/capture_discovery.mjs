@@ -366,7 +366,34 @@ export async function segmentChrome(page, landmarks) {
     if (removeSel) { try { document.querySelectorAll(removeSel).forEach((el) => el.remove()); } catch { /* ignore */ } }
     const main = (document.body && document.body.innerText ? document.body.innerText : '').trim();
     return { full, main, header, footer, nav };
-  }, { removeSel, buckets }).catch(() => ({ full: '', main: '', header: '', footer: '', nav: '' }));
+    // #874: the catch returns NULL, not an all-empty object. A page whose body is legitimately
+    // empty at the late instant and an evaluate that REJECTED (destroyed execution context after
+    // the screenshot/pdf, SPA route remount) are different facts, and the old all-empty object
+    // made them indistinguishable — so the caller's truthiness test on `full` discarded a
+    // successful late read, silently reverting page.txt to the early one and reproducing #863 on
+    // exactly the pages most likely to trigger it. `null` = the read did not happen;
+    // `{full: '', ...}` = the read happened and the page really was empty.
+  }, { removeSel, buckets }).catch(() => null);
+}
+
+// WHICH read ends up in page.txt, decided in ONE pure place (#874/#875). Inline branching here
+// was where both review findings landed, so the decision is a function with a name and a test
+// rather than three conditions spread through captureInto.
+//
+//   seg === null            the late read did NOT happen (evaluate rejected / timed out) -> early
+//   late text is non-empty  the normal post-#863 path                                    -> final
+//   late text empty, early  the page went blank under us (navigation, SPA remount): keep the
+//     had content           content we have. Overwriting real text with nothing is a loss,
+//                           not a fix.                                                   -> early
+//   both empty              nothing to preserve; the late read is still the truthful one -> final
+//
+// `lateRead` records WHY we fell back, because "no error recorded anywhere" was the substance of
+// #874. It is absent on the normal path.
+export function resolvePersistedText({ seg, lateOtherText = '', earlyText = '' }) {
+  if (!seg) return { text: earlyText, phase: 'early', lateRead: 'failed' };
+  const lateText = `\n${seg.full || ''}${lateOtherText}`;
+  if (lateText.trim() || !earlyText.trim()) return { text: lateText, phase: 'final' };
+  return { text: earlyText, phase: 'early', lateRead: 'empty' };
 }
 
 // The ONE frame-scoped visible-text read (#518 scoped `text` and `hasPassword` together so a
@@ -654,18 +681,11 @@ async function htmlFingerprintFor(ctx, url) {
     const rawHtml = response ? await response.text().catch(() => '') : '';
     await page.waitForTimeout(2500);
     await dismissModals(page);
-    let rendered = '';
-    let hasPassword = false;
-    for (const fr of page.frames()) {
-      try {
-        const r = await fr.evaluate(() => ({
-          text: document.body ? document.body.innerText : '',
-          hasPassword: !!document.querySelector('input[type="password"]'),
-        }));
-        rendered += `\n${r.text || ''}`;
-        hasPassword = hasPassword || r.hasPassword;
-      } catch { /* cross-origin frame */ }
-    }
+    // #876: the SAME shared frame read as the mainline capture. This was a hand-spelled third copy
+    // of the loop, which is precisely the drift `readFrameText` was extracted to prevent — a
+    // future change to frame-read behaviour applied to the two mainline call sites would silently
+    // have skipped this backfill path (REQ-182: one exported predicate, and a copy is a call site).
+    const { text: rendered, hasPassword } = await readFrameText(page);
     const dom = await domFingerprint(page);
     const jsDependent = strippedLen(rawHtml) < 200 && rendered.trim().length >= SUBSTANTIAL_TEXT_CHARS;
     return buildHtmlFingerprint({ finalHost: hostOf(page.url()), headers: response ? response.headers() : {}, dom, jsDependent, hasPassword });
@@ -961,9 +981,19 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
           // drop text that page.txt has always carried.
           const lateOther = await readFrameText(page, { skipMainFrame: true });
           // DOM segmentation (REQ-091): de-chrome the page for Stage 5 signals (additive; page.txt kept).
+          // #875: a segment READ that succeeded and a segment WRITE that failed are different
+          // facts, and both are recorded. `segmented` describes whether the segment FILES are on
+          // disk; `text_phase` describes which read is in page.txt. A write failure (ENOSPC/EACCES)
+          // after a good read leaves `segmented:false` with `text_phase:'final'` — that pair is
+          // ACCURATE, not inconsistent: the late read really is what page.txt holds, and throwing
+          // away a good read because an unrelated write failed would forfeit the whole point of
+          // #863. Pinned by test so this is not re-litigated as a contradiction.
           let seg = null;
-          try { seg = await segmentWithTimeout(page); writeSegments(recDir, seg); rec.segmented = true; }
-          catch { rec.segmented = false; }
+          try {
+            seg = await segmentWithTimeout(page);
+            if (seg) { writeSegments(recDir, seg); rec.segmented = true; }
+            else { rec.segmented = false; }
+          } catch { rec.segmented = false; }
           // #863: page.txt is re-persisted from the LATE read -- `seg.full` (the main frame, read
           // one statement before the chrome removal that produces `main`) plus the non-main frames
           // read just above. Same frame scope as before, later instant. This is what makes
@@ -972,13 +1002,12 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
           // a legacy split-read one without guessing from filenames (#864's larger point; this is
           // the one-field down payment, not the sidecar). Segmentation failing/timing out leaves
           // the early text in place and says so.
-          let text = earlyText;
-          rec.text_phase = 'early';
-          if (seg && seg.full) {
-            text = `\n${seg.full}${lateOther.text}`;
-            writeFileSync(path.join(recDir, 'page.txt'), text);
-            rec.text_phase = 'final';
-          }
+          const resolved = resolvePersistedText(
+            { seg, lateOtherText: lateOther.text, earlyText });
+          const text = resolved.text;
+          rec.text_phase = resolved.phase;
+          if (resolved.lateRead) rec.late_read = resolved.lateRead;
+          if (resolved.phase === 'final') writeFileSync(path.join(recDir, 'page.txt'), text);
           rec.text_times = (text.match(TIME) || []).length;
           // Capture-fidelity flags (#518): login wall / soft-404 classification over persisted
           // facts (url/final_url, page text, hasPassword -- all frame-scoped identically to `text`,
@@ -989,6 +1018,21 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
           // runRecomputeFidelity re-derives them by reading page.txt off disk -- so leaving this on
           // the early text would make the live and recompute paths disagree on every record whose
           // page changed between the reads. Same detector, same inputs, one answer.
+          //
+          // #873 (review of PR #872) asked for the opposite: `hasPassword` is read EARLY and `text`
+          // is now LATE, so a login wall whose chrome renders late could cross
+          // SUBSTANTIAL_TEXT_CHARS and escape the `login_wall` flag. The mechanism is real, but
+          // note what it is NOT -- reading hasPassword late as well would produce the IDENTICAL
+          // outcome, because the clause that misses is the LENGTH test, not the password test. So
+          // "same instant" is not the fix; using the shorter read would be, and that is what breaks
+          // live/recompute agreement, since recompute only ever sees page.txt.
+          // MEASURED over the live corpus before deciding: 11 html captures carry
+          // has_password, 7 have an early page.txt under 600 chars, and 0 of those reach 600 by
+          // the late read (they sit at ~110-150 chars -- genuine walls with almost no content).
+          // Population zero, so no change. The rerunnable watchdog is section C5 of
+          // 2026-08-21-read-timing-split-measure.py; if it ever reports a non-zero population,
+          // revisit with the min(early, late) rule and persist the early length so recompute can
+          // still reproduce it.
           const flags = fidelityFlags({ url, finalUrl: rec.final_url, text, hasPassword });
           if (flags.length) rec.fidelity = flags;
           rec.ok = true;

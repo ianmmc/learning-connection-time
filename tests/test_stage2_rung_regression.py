@@ -184,3 +184,43 @@ def test_a_geo_refusal_and_a_regression_are_both_reported(_isolated, inmem_regis
     note = [e.get("note") or "" for e in inmem_registry.get("_events", [])
             if e.get("district_id") == "3631800"][-1]
     assert "geo_derivation_failed" in note and "rung_regression" in note, note
+
+
+# ------------------------------------------------------------------ review findings (PR #872)
+def test_878_duplicate_prior_school_ids_are_aggregated_and_surfaced():
+    """#878: a dict comprehension keyed on school_id kept only the LAST entry, so a prior doc
+    carrying the same school twice produced a wrong kept_before and an unauditable verdict.
+
+    Aggregating is the honest answer to "what did the prior rung keep for this school", and the
+    anomaly is RECORDED rather than raised — this runs mid-batch, and halting a live capture over
+    a duplicate in a historical manifest would trade a cosmetic problem for a real one.
+    """
+    prior = [_school("s1", kept=3), _school("s1", kept=4), _school("s2", kept=2)]
+    new = [_school("s1", kept=1), _school("s2", kept=2)]
+    reg = D2.rung_regression(prior, new)
+    assert reg is not None
+    # last-write-wins would have read s1's prior as 4, not 7 -> kept_before 6, not 9
+    assert reg["kept_before"] == 9, "both s1 entries must count, not just the one that sorts last"
+    assert reg["kept_after"] == 3
+    assert reg["duplicate_prior_school_ids"] == ["s1"], "the anomaly must be visible in the receipt"
+
+
+def test_878_the_clean_case_records_no_duplicate_key():
+    reg = D2.rung_regression([_school("s1", kept=4)], [_school("s1", kept=1)])
+    assert "duplicate_prior_school_ids" not in reg, "no anomaly, no noise in the receipt"
+
+
+def test_877_the_prior_document_is_read_once(_isolated, monkeypatch):
+    """#877: write_discovery parsed the same discovery.json twice on every merge — once for the
+    rung comparison and again inside the merge branch."""
+    D2.write_discovery(_district(), _roster_with(kept=5, raw=20), "batch_00034")
+    calls = []
+    real = D2._prior_doc
+
+    def counting(d, live, stem):
+        calls.append(stem)
+        return real(d, live, stem)
+
+    monkeypatch.setattr(D2, "_prior_doc", counting)
+    D2.write_discovery(_district(), _roster_with(kept=2, raw=30), "batch_00035", merge=True)
+    assert calls.count("discovery") == 1, f"discovery.json parsed {calls.count('discovery')}x: {calls}"

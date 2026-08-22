@@ -4927,8 +4927,11 @@ requirements:
       domain') was CLOSED by #719 before this shipped — measurement, not reasoning, established that.
       Its criterion 2 was re-scoped rather than implemented (Ian, 2026-08-21): vacuous at the routing
       layer post-#719, and the residue buys 3 URLs on the one district exhibiting the mechanism.
-      Corpus-wide the geo rungs left 164 on-domain URLs in no capture plan, recoverable by re-running
-      those districts on the domain+widened rung they now route to (a gate@1 action)."
+      Corpus-wide the geo rungs left 160 on-domain URLs in no capture plan, recoverable by re-running
+      those districts on the domain+widened rung they now route to (a gate@1 action). That figure was
+      164 until #879 (PR #872 review) found the measurement's on-domain test was a bare endswith,
+      counting nlrsd.org (NORTH Little Rock) as on-domain for lrsd.org; it now imports the canonical
+      dot-boundary predicate."
   - id: REQ-181
     github_issue: "#710, #711"
     description: "The alternate-representation ladder spends rungs only on defects a different representation could actually fix."
