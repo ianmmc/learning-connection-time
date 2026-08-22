@@ -145,9 +145,10 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 Three commits: the Stage-3 single-instant DOM read (#863), Stage-2 rung-regression recording
 (#672), and a `REQUIREMENTS.yaml` audit that gave the ledger its own fitness function. Review
 round #873-#880 absorbed in the same PR — six fixed, #873/#875 closed as not-bugs with pins.
-**PR #881 is OPEN** (one-line `deepseek-v3.2` catalog refresh, caught by #809's network canary).
-The live governance DB is UNCHANGED since the 2026-08-19 re-ingest (116 districts / 3,561
-records / 2,614 labels); nothing this round altered scoring, so no re-ingest is owed.
+PRs #881 (`deepseek-v3.2` catalog refresh, caught by #809's network canary) and #882 (checkpoint)
+also merged; **#861 closed** — one name, one formula. The live governance DB is UNCHANGED since the
+2026-08-19 re-ingest (116 districts / 3,561 records / 2,614 labels); nothing this round altered
+scoring, so no re-ingest is owed, and the full baseline is GREEN (see resume-essentials).
 
 **#863's corpus property clears only on RE-CAPTURE.** `page.txt` and the segments are now one
 read, so `page.main.txt <= page.txt` holds by construction — but only for records captured after
@@ -165,34 +166,29 @@ is 18 tests and will fail the build on a phantom REQ id, a stale `last_updated`,
 citation, or an invented status. REQ-177–184 added; #674 amends REQ-044 rather than duplicating it.
 
 **Next (RESUME HERE — 2026-08-22):**
-1. **#881 needs merging** (or closing) — it is a one-line factual catalog sync that restores the
-   documented `pytest tests/test_*_integration.py` baseline to **257**. Until it lands, that
-   command is RED on `main` with "MODEL_WINDOWS has drifted".
-2. **#861 — the `n_benchmark_only` rename.** Pure hygiene, genuinely small, longest-standing item
-   on this list.
-3. **The Stage 2-4 console triple (#669/#670/#671) → #723.** The largest UNBLOCKED chunk. Settle
+1. **The Stage 2-4 console triple (#669/#670/#671) → #723.** The largest UNBLOCKED chunk. Settle
    **#671 first** — it is a design question ("what should a stage's status badge mean during a
    re-run?"), and #669/#670 are its consequences. Prepare the options against the live console;
    do not guess the semantics.
-4. **#708 — OCR name-mangling. BLOCKED ON DATA, not design.** The issue's proposed Stage-5
+2. **#708 — OCR name-mangling. BLOCKED ON DATA, not design.** The issue's proposed Stage-5
    roster-match rate is confounded (Lewiston's mangled rep scores 1/6, not 0, and a single-school
    page legitimately names one school). The unconfounded signal is the Stage-7 rate over EXTRACTED
    names, but only **29 of 84** OCR rep-extractions carry `identity_json`. Widen that coverage
    first or re-scope P3. NB Lewiston was already solved by the VISION rep (ext 77, 7 accepted).
-5. **#685 — Stage 3 captures only the ACTIVE tab panel** (Cedar Rapids loses 54 of 110 times).
+3. **#685 — Stage 3 captures only the ACTIVE tab panel** (Cedar Rapids loses 54 of 110 times).
    **BLOCKED on Ian's design calls**, which the issue reserves: (a) what is stored — raw
    `page.content()` vs a `tabpanel:hidden` text rep vs the hidden panels' `outerHTML`; (b) whether
    `usable`/`n_times` are computed for it; (c) whether v1 covers `<details>`/accordions or defers.
    Trigger is settled and cheap. NB the naive reveal recovered NOTHING — the vendor open-state
    class and `max-height` are load-bearing.
-6. **#871 — geo's unbuilt second job. BLOCKED on Ian's design calls** (filed this round, REQ-184
+4. **#871 — geo's unbuilt second job. BLOCKED on Ian's design calls** (filed this round, REQ-184
    `proposed`). Geo carries two jobs and only one is built: disambiguate a common school name
    (built) and REACH off-domain PDFs/Docs on a CDN or Drive (intended, never built). The gate
    refuses off-domain documents in BOTH branches, and `drive.google.com` is in `CMS_HOSTS` yet
    unreachable because `cms-slug` needs the district slug in the URL and a Drive URL is an opaque
    file ID. **Not a revert of #719** — sequencing: the gate must be able to KEEP such a document
    before routing anyone into that round is worth anything.
-7. **Ian's call, not a session task:** re-running Cedar Rapids / New Haven CT / Washoe / New Haven
+5. **Ian's call, not a session task:** re-running Cedar Rapids / New Haven CT / Washoe / New Haven
    Unified / Little Rock on the `domain+widened` rung they now route to, to recover the **160**
    on-domain URLs the #719-era geo rungs left in no capture plan (incl. literal bell-schedule and
    handbook pages); routing Broward/Cleveland/Essex's send-backs; resuming the 5→1 composer on
@@ -315,11 +311,11 @@ harness); the remediation-receipt exception is not STAGE-scoped (30-day expiry s
 attribution v1 reads each district's LATEST candidate plan; the `stage6_handoff/requests.py:17-18`
 docstring falsely claims Stage 7 "reads ONLY the flagged pages" — the `pages` hint never scoped
 content (the slice FILE is the scoping), a live source of wrong inferences worth a one-line issue.
-Resume-essentials (ALL re-verified 2026-08-22 on this checkpoint, on `main` at `3847775` plus the
-open PR #881 — `pytest tests/test_*_integration.py` is 256/1-FAILED without #881, 257 with it): `pip
+Resume-essentials (ALL re-verified 2026-08-22 on `main` post-#881/#882 — the baseline is fully
+GREEN; no known-red command): `pip
 install -e .` → Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh
 clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect
-**2456** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **399** pass, Postgres up) +
+**2457** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **399** pass, Postgres up) +
 `pytest tests/test_*_integration.py` (expect **257** pass, 149 skipped) + `cd infrastructure/scraper
 && npm test` (expect **100**) + `flake8 . --count --select=E9,F63,F7,F82` (expect **0** — this is CI's
 blocking lint; the vulture whitelist is `per-file-ignores`'d for F821, main had been red on it since

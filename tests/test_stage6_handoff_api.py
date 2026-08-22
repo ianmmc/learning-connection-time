@@ -165,13 +165,14 @@ def test_candidates_mirror_decide_on_the_out_of_window_hold_674_854(gov_session,
     assert row["n_send"] == py["n_send"] == 4
     assert row["n_hold"] == py["n_hold"] == 4
     assert row["n_production_sendable"] == py["n_production_sendable"] == 6
-    # ONE name, TWO formulas (found writing this test; tracked as its own issue): the SQL's
-    # `n_benchmark_only` is the gt:// share of the SEND bucket and `n_hold_gt` the hold half,
-    # while release.production_sendability's `n_benchmark_only` spans send+hold. The relation
-    # that must hold is pinned here so neither can drift silently.
-    assert row["n_benchmark_only"] == 1                # gt_ok (send bucket)
-    assert row["n_hold_gt"] == 1                       # gt_oow — the #853 badge's input
-    assert py["n_benchmark_only"] == row["n_benchmark_only"] + row["n_hold_gt"] == 2
+    # #861 CLOSED: one name, ONE formula. The SQL and production_sendability now use the SAME
+    # decomposition -- `n_benchmark_only` is the gt:// share of the SEND bucket, `n_hold_gt` the
+    # hold half -- so this is a straight field-for-field equality instead of the old
+    # `py.n_benchmark_only == sql.n_benchmark_only + sql.n_hold_gt` relation, which was the shape
+    # that let one name mean two things. A caller wanting ALL gt:// adds them, in the open.
+    assert row["n_benchmark_only"] == py["n_benchmark_only"] == 1   # gt_ok (send bucket)
+    assert row["n_hold_gt"] == py["n_hold_gt"] == 1                 # gt_oow — the #853 badge's input
+    assert py["n_benchmark_only"] + py["n_hold_gt"] == 2            # every gt:// record, explicitly
     assert row["n_verified"] == 3                      # target-labeled AND not held: t_ok, t_bare, gt_ok
     assert row["n_send_production"] == 3               # send minus its gt://
     gov_session.rollback()

@@ -57,10 +57,14 @@ def zero_yield_reason(session, district_id: str) -> str | None:
     # only route in is discovery, and the only door to discovery is this composer).
     sd = REL.production_sendability(recs)
     if sd["n_production_sendable"]:
+        # #861: this message is about EVERY gt:// record the district holds, sent or held, so it
+        # sums the two buckets explicitly. It used to read a single `n_benchmark_only` that silently
+        # spanned both — right answer, misleading name. The sum is now visible at the call site.
+        n_gt = sd["n_benchmark_only"] + sd["n_hold_gt"]
         return (f"{sd['n_production_sendable']} production-sendable/held Stage-5 record(s) — not "
                 "zero-yield (a hold awaiting a label blocks escalation, spend-conservatively)"
-                + (f"; {sd['n_benchmark_only']} further gt:// record(s) are benchmark-only and were "
-                   "not counted" if sd["n_benchmark_only"] else ""))
+                + (f"; {n_gt} further gt:// record(s) are benchmark-only and were "
+                   "not counted" if n_gt else ""))
     # #575 review: one query with conditional aggregation instead of 3 sequential round trips —
     # priority order (retry > fidelity > security_block) is preserved in the Python checks below,
     # only the I/O is combined.

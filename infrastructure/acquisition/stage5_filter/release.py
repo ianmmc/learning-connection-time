@@ -373,7 +373,18 @@ def decide(rec: dict) -> dict:
 def production_sendability(records: list) -> dict:
     """#718 — split a district's records by what production can ACTUALLY receive:
 
-        {n_send, n_hold, n_benchmark_only, n_production_sendable, benchmark_only: [rec_key, ...]}
+        {n_send, n_hold, n_benchmark_only, n_hold_gt, n_production_sendable,
+         benchmark_only: [rec_key, ...]}
+
+    #861: `n_benchmark_only` is the gt:// share of the **send** bucket and `n_hold_gt` the **hold**
+    half — the SAME decomposition, under the same two names, as `server.handoff_candidates()`'s SQL.
+    It used to lump both into `n_benchmark_only` while the SQL split them, so one name carried two
+    formulas (the #755 shape). Both were internally consistent with their own consumer and
+    `n_production_sendable` agreed on both sides, so nothing was wrong — but a reader would assume
+    the two numbers meant the same thing, and they did not. A caller that wants ALL gt:// records
+    adds the two (`stage5_followup` does); nobody has to know which bucket a name secretly spans.
+    `benchmark_only` (the rec_key list) deliberately still spans send+hold — it is the "which
+    records" answer, and splitting it would just push the union onto every caller.
 
     `decide()` is deliberately untouched: a `gt://` curation artifact legitimately decides `send` —
     for a BENCHMARK dispatch. What was missing is the production question, and everywhere readiness
@@ -384,15 +395,15 @@ def production_sendability(records: list) -> dict:
 
     The dispatch-time walls (#618/#644 freeze guard) held throughout, so nothing wrong ever shipped —
     this is an ACCOUNTING defect, and the number an operator needs is `n_production_sendable`."""
-    out = {"n_send": 0, "n_hold": 0, "n_benchmark_only": 0, "n_production_sendable": 0,
-           "benchmark_only": []}
+    out = {"n_send": 0, "n_hold": 0, "n_benchmark_only": 0, "n_hold_gt": 0,
+           "n_production_sendable": 0, "benchmark_only": []}
     for rec in records or []:
         d = decide(rec)["decision"]
         if d not in ("send", "hold"):
             continue
         out["n_send" if d == "send" else "n_hold"] += 1
         if BM.is_benchmark_url(rec.get("url")):
-            out["n_benchmark_only"] += 1
+            out["n_benchmark_only" if d == "send" else "n_hold_gt"] += 1
             out["benchmark_only"].append(rec.get("rec_key"))
         else:
             out["n_production_sendable"] += 1
