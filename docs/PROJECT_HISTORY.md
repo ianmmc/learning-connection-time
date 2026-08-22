@@ -1999,3 +1999,73 @@ Authority: PRs #850/#865 (merged 2026-08-19); #826/#841/#710/#711/#674/#862 clos
 for its render falsifier; #851-#860 and #866-#870 the review rounds (closed; #852/#860/#868 closed
 as not-a-bug with pins); #861/#863 filed and open; epic #864 filed, unscheduled. Live governance DB
 re-ingested from `main` the same day (`--assert-floor`, recall floor 0.9947 ≥ 0.98).
+
+### 2026-08-21/22 — Two issues land and the fifteenth measurement overturns the issue that asked for the work; then the spec ledger gets its own fitness function
+
+**#863 — Stage 3 now records the rendered DOM at one instant.** `page.txt` was read at
+`domcontentloaded`+2.5s and the de-chrome segments at end of capture, after the screenshot and
+`page.pdf()`. Since `page.main.txt` is `body.innerText` minus landmarks and `page.txt` is
+`body.innerText`, main is a subset **by construction — only if the two are read together**, and they
+were not. Measured over 3,095 records: 104 where main had MORE chars, 46 with more clock times, and
+17 where `page.txt` held **zero** clock times and main held some. `segmentChrome` now returns `full`,
+read in the same `page.evaluate` one statement before the chrome removal. Four things deliberately did
+NOT move — `detectChallenge` (a WAF interstitial must abort before spend), `js_dependent` (a
+fingerprint input; a changed basis re-hashes every record), the non-main frame read (an `<iframe>`
+inside a `<footer>` dies with the removal), and `fidelityFlags`, which moved ONTO the persisted text so
+the live and `recompute-fidelity` paths cannot disagree. First landed piece of **epic #864**.
+
+**#672 — the issue's headline mechanism had already been fixed, and only measurement showed it.**
+Filed 2026-07-27 against a composer that "composes escalations as geo-scoped unconditionally"; #719
+(merged 2026-08-14) had made geo unrepresentable for a district with a usable domain. Live predicates
+put all ten geo-laddered districts on `domain+widened` and Wyandanch's ladder at **not exhausted** —
+the opposite of the issue's terminal-state claim. Two further claims failed: "109 URLs thrown away"
+overstates the district-level harm ~36× (candidates.json unions across rungs, so the real figure is 3,
+and the district holds 18 candidates → 18 captures → 18 records → 18 labels), and 8 of the 10 regressed
+rung pairs are #719's own evidence set. What remained was criterion 1, now shipped: a rung that keeps
+fewer candidates than its predecessor writes a `rung_regression` receipt block and a durable
+`state_event` note. **Criterion 2 was re-scoped, not implemented** (Ian): vacuous at the routing layer
+post-#719, and the residue — gating against a prior rung's *unconfirmed* derived host — buys 3 URLs.
+Ian's ruling on the underlying policy: **adopting a domain no human has confirmed is a cost the
+ramp-up model accepts**, so it is not a blocker, merely not worth its own change.
+
+**#871 — writing an intent down revealed it was never built.** Ian clarified that escalating a district
+that HAS a domain but insufficient signal into geo is deliberate, to reach PDFs/Word docs on a CDN or
+Google Drive. That intent was recorded nowhere, which is why #719 reasonably read geo as
+domain-discovery-only. The gate refuses off-domain documents in BOTH branches, and
+`drive.google.com` — which IS in `CMS_HOSTS` — is unreachable anyway because the `cms-slug` arm needs
+the district slug in the URL and a Drive URL is an opaque file ID. Not a revert of #719, which removed a
+guaranteed no-op: the gate must be able to keep an off-domain document before routing anyone into that
+round is worth anything. Sequencing, not reversal.
+
+**The spec ledger got its own fitness function.** An audit found `REQUIREMENTS.yaml` structurally sound
+where it counted — clean ID sequence, no duplicate keys, 528 of 528 test references resolving — and
+semantically adrift everywhere else. `REQ-257` was a **phantom** cited in the ledger *and* in
+`server.py` (the real one is REQ-133, whose `github_issue` is `#257` — an issue number written as a REQ
+id). Sixteen requirements claimed `status: tested` while naming no test, which decomposed into four
+different problems, not one. Status collapsed to five: `implemented` had drifted to mean nothing (all
+eight holders had passing tests), and `approved`/`in_progress` had crept back past the 2026-07-16
+normalization. `type:` — which already carried the principle/spec distinction and was already applied
+correctly to the four commandments — was **documented**, having been written down nowhere, which nearly
+caused a redundant second `kind:` axis to be added to solve a problem it already solved. REQ-177–184
+added; #674 **amends** REQ-044 rather than getting its own entry.
+
+Requirements were deliberately **not merged**: only 6 test symbols are shared across 184 REQs and every
+pair is legitimately distinct. The consolidation was of the *checking* — six hand-run audits became one
+fitness function (2 tests → 18), all nine invariants verified to fail under mutation, including the two
+forms a naive checker gets wrong (an inherited test and a glob).
+
+**Three lessons this round, all about evidence rather than code.** First, the **fifteenth** instance of
+an issue's premise being overturned by measurement — and the first where the overturning fix (#719) had
+landed *between* filing and work, so only replaying the live predicates could reveal it. Second, **a
+measurement script that is the evidentiary basis for a design decision has to be held to the standard
+of the thing it measures**: #879 found the geo script's on-domain test was a bare `endswith`, counting
+`nlrsd.org` — NORTH Little Rock, a different district — as on-domain for Little Rock's `lrsd.org`; the
+corpus figure is **160, not the 164** published in three places, all corrected. Third, the ledger audit
+**reproduced #808's own duplicate-key bug while fixing the ledger** (an insert beside an existing
+`tests: []` shadowed the real citations), which is the strongest available argument for keeping such
+rules executable rather than in a header comment.
+
+Authority: PR #872 (merged `3847775`, 2026-08-22) closing #863/#672; review round #873-#880 (six fixed,
+#873/#875 closed as not-bugs with pins and a committed watchdog); #871 filed and open; PR #881 open for
+the `deepseek-v3.2` catalog refresh that #809's network canary caught. Measurement scripts:
+`2026-08-21-read-timing-split-measure.py`, `2026-08-21-geo-ladder-regression-measure.py`.

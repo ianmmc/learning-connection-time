@@ -157,7 +157,8 @@ structure that identifies a footer is gone. **Segment, don't strip:** `segmentCh
 `innerText` of structural landmarks (`<header>`/`<footer>`/`<nav>` + ARIA equivalents — the landmark set
 is **config-as-data**: `DE_CHROME_LANDMARKS` = `loadConfigValues('de_chrome_landmarks')`, threaded as the
 `landmarks` param, so it widens by config edit not code) as separate **additive** representations
-(`page.main/header/footer/nav.txt`) alongside the untouched full `page.txt`.
+(`page.main/header/footer/nav.txt`) alongside the full `page.txt` — which is now written from the **same
+read** (§2d-1), not from an earlier one.
 Header/footer are kept because real *school hours* sometimes live there, not only confounding building
 hours. `backfill-segments` applies it to already-captured data. Measured: category-guess 0.43→0.60,
 topology 0.6→0.8 — a strong win (detail in `STAGE5_FILTER_DESIGN.md`). Stage 5's V2 scoring
@@ -169,6 +170,48 @@ wrapper. Before this, both called `segmentChrome` directly and unwrapped: a `pag
 native Playwright deadline, so a wedged page could hang a capture worker indefinitely (in the backfill
 path, this also risked losing the whole run's manifest writes, since those only happen after every
 worker resolves).
+
+### 2d-1. ONE read: `page.txt` and the segments are the same instant (#863, REQ-177)
+
+Until 2026-08-21 `page.txt` was read at `domcontentloaded`+2.5s and the segments at **end of capture**,
+after the full-page screenshot and `page.pdf()`. `page.main.txt` is `body.innerText` minus landmarks and
+`page.txt` is `body.innerText`, so main is a subset **by construction — only if read at the same instant**,
+and it was not. Measured over 3,095 records carrying both: **104** where main had MORE chars than
+page.txt, **46** with more clock times, and **17** where page.txt held **zero** clock times and main held
+some. Lazily-hydrating widgets (Finalsite tab/accordion panels) are the population.
+
+`segmentChrome` now returns `full` — `body.innerText` read in the **same `page.evaluate`**, one statement
+before the chrome removal that produces `main` — and `page.txt` is re-persisted from `full` plus the
+non-main frames. The subset relation is constructive, not coincidental.
+
+Four deliberate non-changes, each load-bearing:
+- **`detectChallenge` stays on the early read** — a WAF interstitial must abort before a screenshot/PDF is
+  spent on it (one-attempt, Critical Rule 3).
+- **`js_dependent` stays on the early read** — it is a FINGERPRINT input, and the basis must stay
+  backward-compatible or every record re-hashes and forces a mass re-review.
+- **Non-main frames are read BEFORE segmentation** — an `<iframe>` nested in a `<footer>`/`<nav>` is
+  detached by the removal and its frame dies; reading them after would silently drop text `page.txt` has
+  always carried.
+- **`fidelityFlags` moved ONTO the persisted text** — their contract is "derived only from persisted facts
+  (url/final_url, page.txt, has_password)" and `recompute-fidelity` re-derives from disk, so leaving them
+  on the early text would make live and recompute disagree on exactly the changed records. (#873 argued
+  the reverse — that mixing an early `hasPassword` with late text can lose a `login_wall`. Real mechanism,
+  measured population **zero**, and note the operative cause is the LENGTH clause, not the instant mixing:
+  reading `hasPassword` late too yields the identical verdict. Watchdog: C5 of
+  `2026-08-21-read-timing-split-measure.py`.)
+
+`page.txt` is written from the early read FIRST and overwritten only on success, so no failure path loses
+the file. **`text_phase`** (`final`|`early`) records which read is on disk — a Stage-3 receipt field, not a
+DB column (ingest reads a fixed key list). `resolvePersistedText()` is the one pure place that decides,
+and it distinguishes a late read that FAILED (`segmentChrome` returns `null`) from one that legitimately
+came back EMPTY (`{full:'', …}`) — conflating those was #874, which discarded a good iframe read and
+reproduced #863. `segmented:false` with `text_phase:'final'` is a valid pair, not a contradiction (#875):
+the fields describe whether the segment FILES reached disk and which read is in `page.txt`.
+
+**The corpus-wide property only clears on RE-CAPTURE** — legacy records keep their split reads, and the
+measurement script reports `NOTHING MEASURED` for the post-fix population until re-captured records exist,
+rather than a permanent false FAIL. First landed piece of **epic #864**; #643's render-facts sidecar is the
+full form.
 
 ### 2e. Emergent dedup includes redirect targets (fable review issue #44)
 `noteFinalUrl()` adds a captured page's `stripFragment(final_url)` to the `seen` set right after capture —
