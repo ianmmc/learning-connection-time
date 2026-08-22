@@ -2858,7 +2858,7 @@ def aggregate_withheld():
 
     Deliberately NOT a second wall: `aggregate_district_detail` has no provenance guard, so an ID
     from here opens normally and the human can strike the stale evidence at gate@8 (`band_exclusion`,
-    REQ-257 — applied BEFORE the mode, so an excluded school is not a source of the band's value and
+    REQ-133 — applied BEFORE the mode, so an excluded school is not a source of the band's value and
     no longer refuses the write on its behalf). This endpoint is the route to that, nothing more."""
     with gdb.session_scope() as con:
         rows = con.execute(text(
