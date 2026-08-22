@@ -15,9 +15,11 @@ def test_production_sendability_splits_gt_artifacts_from_real_targets():
             rec("d:2", "gt://gt_curation_x/0100270_Baldwin/b.pdf"),
             rec("d:3", "https://www.bcbe.org/bell")]
     sd = REL.production_sendability(recs)
-    assert sd["n_send"] == 3 and sd["n_benchmark_only"] == 2
+    # #861: both gt:// records DECIDE send, so both land in n_benchmark_only and n_hold_gt is 0 —
+    # the same decomposition the candidates SQL uses, under the same two names.
+    assert sd["n_send"] == 3 and sd["n_benchmark_only"] == 2 and sd["n_hold_gt"] == 0
     assert sd["n_production_sendable"] == 1
-    assert sd["benchmark_only"] == ["d:1", "d:2"]
+    assert sd["benchmark_only"] == ["d:1", "d:2"]   # the rec_key list still spans send+hold
 
 
 def test_a_district_whose_every_target_is_gt_reads_zero_sendable():
@@ -34,8 +36,8 @@ def test_rejects_are_not_counted_either_way():
     from infrastructure.acquisition.stage5_filter import release as REL
     sd = REL.production_sendability([{"rec_key": "d:1", "url": "https://x/y", "label": None,
                                       "tier": "D", "signals": {}, "facets": {}, "reps": []}])
-    assert sd == {"n_send": 0, "n_hold": 0, "n_benchmark_only": 0, "n_production_sendable": 0,
-                  "benchmark_only": []}
+    assert sd == {"n_send": 0, "n_hold": 0, "n_benchmark_only": 0, "n_hold_gt": 0,
+                  "n_production_sendable": 0, "benchmark_only": []}
 
 
 def test_the_gt_predicate_has_one_home():
@@ -126,3 +128,32 @@ def test_the_sql_and_python_sendability_formulas_agree_755(gov_session):
         py = REL.production_sendability(REL.load_district_records(gov_session, r["district_id"]))
         assert py["n_production_sendable"] == r["n_production_sendable"], r["district_id"]
         assert r["n_send_production"] == r["n_send"] - r["n_benchmark_only"]
+
+
+def test_861_a_held_gt_record_lands_in_n_hold_gt_not_n_benchmark_only():
+    """#861: `n_benchmark_only` is the gt:// share of the SEND bucket; `n_hold_gt` is the hold
+    half — the same decomposition, under the same names, as the candidates SQL.
+
+    This case did not exist in the DB-free fixtures: every gt:// record in them DECIDES send, so
+    the pre-#861 lumped counter and the split one agreed and the unit suite could not tell them
+    apart (only the govdb parity test could). A held gt:// record is what separates them.
+    """
+    from infrastructure.acquisition.stage5_filter import release as REL
+    rec = lambda k, url, facets: {                                          # noqa: E731
+        "rec_key": k, "url": url, "label": "school_bell_table", "tier": "A",
+        "signals": {}, "facets": facets,
+        "reps": [{"file_kind": "text", "usable": True, "filename": f"{k}.txt", "n_chars": 900,
+                  "n_times": 9}]}
+    recs = [
+        rec("d:1", "gt://c/send.pdf", {}),                          # gt, decides send
+        rec("d:2", "gt://c/held.pdf", {"out_of_window": "yes"}),    # gt, HELD (#674)
+        rec("d:3", "https://www.bcbe.org/bell", {}),                # real, send
+    ]
+    sd = REL.production_sendability(recs)
+    assert sd["n_send"] == 2 and sd["n_hold"] == 1
+    assert sd["n_benchmark_only"] == 1, "only the SENT gt:// record belongs to this name"
+    assert sd["n_hold_gt"] == 1, "the held gt:// record has its own name, matching the SQL"
+    assert sd["n_production_sendable"] == 1
+    # The rec_key list deliberately still spans both — it answers "which records", and splitting
+    # it would push the union onto every caller.
+    assert sd["benchmark_only"] == ["d:1", "d:2"]
