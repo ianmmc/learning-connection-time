@@ -62,13 +62,20 @@ def is_vision_capable(model_id: str) -> bool:
 # snapshot needs a DETECTOR for the staleness it accepts (the premise above went stale silently
 # once already) — `tests/test_model_windows_integration.py` re-fetches nightly/locally and fails
 # with "refresh the catalog" on any value drift. Bump MODEL_WINDOWS_FETCHED with every refresh.
-MODEL_WINDOWS_FETCHED = "2026-08-16"
+MODEL_WINDOWS_FETCHED = "2026-08-22"
 MODEL_WINDOWS = {
     "google/gemini-2.5-flash": {"context": 1_048_576, "max_out": 65_535},
     "google/gemini-2.5-flash-lite": {"context": 1_048_576, "max_out": 65_535},
     "mistralai/mistral-small-24b-instruct-2501": {"context": 32_768, "max_out": 16_384},
     "mistralai/mistral-large-2512": {"context": 262_144, "max_out": None},
-    "deepseek/deepseek-v3.2": {"context": 163_840, "max_out": 65_536},
+    # 2026-08-22 refresh: max_out 65_536 -> 163_840, now EQUAL to its context — DeepSeek
+    # dropped the separate completion cap. Recorded as the provider states it (163_840),
+    # not as None: `None` means "declares no cap", and this declares one that happens to
+    # be non-binding. Effect on sizing is one-directional and safe — the clamp
+    # min(context - prompt - margin, max_out) now always binds on the context term, so a
+    # long extraction truncates less. No spend increase: output is billed per token
+    # EMITTED, not per max_tokens requested; a truncated extraction is the wasteful case.
+    "deepseek/deepseek-v3.2": {"context": 163_840, "max_out": 163_840},
     "qwen/qwen3-235b-a22b-2507": {"context": 262_144, "max_out": 16_384},
     "qwen/qwen3-vl-235b-a22b-instruct": {"context": 262_144, "max_out": 32_768},
 }
