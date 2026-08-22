@@ -15,7 +15,7 @@ import path from 'path';
 import { chromium } from 'playwright';
 import {
   dismissModals, findEmergentLinks, readAnchors, domFingerprint, segmentChrome,
-  withTimeout, noteFileResult, DE_CHROME_LANDMARKS,
+  withTimeout, noteFileResult, DE_CHROME_LANDMARKS, readFrameText,
 } from './capture_discovery.mjs';
 
 // Serve one HTML string for every request this page makes (main doc + any subresource), so the test
@@ -170,5 +170,88 @@ test('segmentChrome honors a WIDENED landmarks list -- new chrome leaves main AN
     assert.match(seg.footer, /WIDEFOOTER/, 'the widened selector is attributed to the footer segment');
     assert.doesNotMatch(seg.main, /WIDEFOOTER/, 'and stripped from main');
     assert.match(seg.main, /UNIQUEBODY/);
+  });
+});
+
+// ----------------------------- #863: the read-timing split -----------------------------
+// page.txt used to be read at domcontentloaded+2.5s and the DOM segments at end-of-capture. On a
+// lazily-rendering page the later read sees content the earlier one never did, so `page.main.txt`
+// -- nominally `page.txt` minus chrome -- could be a strict SUPERSET of it. Measured on the live
+// corpus (2026-08-21-read-timing-split-measure.py): 104 records where main has MORE chars than
+// page.txt, 17 of them with 0 clock times in page.txt and >0 in main. These tests pin the fix:
+// `full` is read in the SAME evaluate as `main`, one statement before the chrome removal.
+
+// A page whose bell table arrives AFTER first render -- the shape the corpus actually failed on
+// (Finalsite tab/accordion widgets that hydrate late). LATEBELL is absent at load, present later.
+const LAZY_FIXTURE = `<!doctype html><html><body>
+  <header>District Home Banner CHROMEHEAD</header>
+  <main id="m">Bell Schedule</main>
+  <footer>Copyright 2026 Example USD CHROMEFOOT</footer>
+  <script>
+    setTimeout(function () {
+      var d = document.createElement('div');
+      d.textContent = 'LATEBELL First bell 8:05 AM dismissal 3:10 PM';
+      document.getElementById('m').appendChild(d);
+    }, 400);
+  </script></body></html>`;
+
+test('#863: segmentChrome.full is read PRE-removal, so main is a subset of it by construction', async (t) => {
+  await withPage(t, async (page) => {
+    await loadFixture(page, `<!doctype html><html><body>
+      <header>District Home Banner CHROMEHEAD</header>
+      <main>First bell 8:05 AM UNIQUEBODY</main>
+      <footer>Copyright 2026 CHROMEFOOT</footer></body></html>`);
+    const seg = await segmentChrome(page, DE_CHROME_LANDMARKS);
+    // full carries the chrome (it is the whole visible body); main does not.
+    assert.match(seg.full, /CHROMEHEAD/, 'full is the WHOLE body, chrome included -- that is page.txt');
+    assert.match(seg.full, /CHROMEFOOT/);
+    assert.match(seg.full, /UNIQUEBODY/);
+    assert.doesNotMatch(seg.main, /CHROMEHEAD/);
+    assert.ok(seg.main.length <= seg.full.length,
+      'main <= full: the acceptance property of #863, and it holds BY CONSTRUCTION here because '
+      + 'both reads happen in one evaluate with only the removal between them');
+    // Every non-empty line of main must exist in full. A length comparison alone would pass for
+    // two unrelated strings of the right sizes -- the repo's "a measurement that cannot fail" rule.
+    for (const line of seg.main.split('\n').map((l) => l.trim()).filter(Boolean)) {
+      assert.ok(seg.full.includes(line), `main line absent from full: ${line}`);
+    }
+  });
+});
+
+test('#863: content that renders LATE is missed by the early read and captured by the late one', async (t) => {
+  await withPage(t, async (page) => {
+    await loadFixture(page, LAZY_FIXTURE);
+    // The early read: exactly what captureInto does before the screenshot/pdf.
+    const early = await readFrameText(page);
+    assert.doesNotMatch(early.text, /LATEBELL/,
+      'precondition: the bell table has not rendered yet -- if this fires, the fixture stopped '
+      + 'being lazy and the rest of the test proves nothing');
+    assert.equal((early.text.match(/\d{1,2}:\d{2}/g) || []).length, 0,
+      'and the early read therefore holds ZERO clock times -- the 17-record case from the corpus');
+
+    await page.waitForTimeout(700);        // stand in for the screenshot + page.pdf() interval
+    const seg = await segmentChrome(page, DE_CHROME_LANDMARKS);
+
+    assert.match(seg.full, /LATEBELL/, 'the late read -- what page.txt now persists -- has it');
+    assert.match(seg.main, /LATEBELL/);
+    assert.ok(seg.full.length >= seg.main.length, 'and main is still a subset of what page.txt holds');
+    // The defect, stated as the thing that must NOT be true again: main must never carry clock
+    // times that the persisted page.txt lacks.
+    const timesIn = (s) => (s.match(/\d{1,2}:\d{2}/g) || []).length;
+    assert.ok(timesIn(seg.full) >= timesIn(seg.main),
+      'page.txt must never hold fewer clock times than page.main.txt -- that inversion IS #863');
+    assert.ok(timesIn(seg.full) > 0, 'and the late read recovered the times the early read missed');
+  });
+});
+
+test('#863: readFrameText(skipMainFrame) drops the main frame so the late read cannot double-count it', async (t) => {
+  await withPage(t, async (page) => {
+    await loadFixture(page, `<!doctype html><html><body>MAINFRAMEONLY</body></html>`);
+    const all = await readFrameText(page);
+    const others = await readFrameText(page, { skipMainFrame: true });
+    assert.match(all.text, /MAINFRAMEONLY/);
+    assert.doesNotMatch(others.text, /MAINFRAMEONLY/,
+      'the main frame is excluded -- captureInto takes it from segmentChrome.full instead, which '
+      + 'is what makes the subset relation constructive rather than coincidental');
   });
 });
