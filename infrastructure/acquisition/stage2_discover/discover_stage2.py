@@ -19,6 +19,7 @@ Usage:
   discover_stage2.py finish    <batch.json> <district_id> <wave1_result.json>
 """
 import argparse
+import collections
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -425,6 +426,71 @@ def _prior_doc(d: Path, live: Path, stem: str) -> dict:
     return {}
 
 
+def kept_in(school_entry: dict) -> int:
+    """Candidates one school entry actually KEPT this round (both waves). The number that matters
+    downstream -- raw results found are not a capture plan, gated keeps are."""
+    return (sum(1 for g in school_entry.get("wave1_gated", []) or [] if g.get("kept"))
+            + sum(1 for g in school_entry.get("wave2_gated", []) or [] if g.get("kept")))
+
+
+def rung_regression(prior_schools: list, new_schools: list) -> dict | None:
+    """#672 criterion 1: did THIS escalation rung keep FEWER candidates than the rung before it?
+
+    Returns a receipt block when it did, else None. Escalation is assumed monotonic in recall and
+    is not: the widened vocabulary multiplies total results, which is a DENOMINATOR increase for
+    the share-based geo derivation, so a rung meant as a second chance can dilute a host the prior
+    rung successfully derived and fail closed with nothing (Wyandanch `3631800`, batch_00034 ->
+    batch_00035: 10 kept -> 0, raw 36 -> 109, share 0.400 -> 0.179 -- measured in
+    production-quality-control-research/2026-08-21-geo-ladder-regression-measure.py).
+
+    Scoped to the schools this rung actually RE-QUERIED. A follow-up merge unions the prior round
+    into the doc, so comparing whole documents could never regress -- the union is >= the prior by
+    construction, which is exactly the kind of comparison-with-itself that cannot fail (the repo's
+    Pass-B lesson). Comparing the re-queried subset is the question the criterion is about.
+
+    Detection ONLY -- this records that the rung did worse, it does not change what the rung kept.
+    Whether a diluted rung should fall back to the previous rung's derived host is a scoping-policy
+    decision (it would gate on an UNCONFIRMED discovered_domain proposal) and is deliberately not
+    made here."""
+    if not prior_schools or not new_schools:
+        return None
+    # #878: a dict comprehension keyed on school_id would silently keep only the LAST entry if the
+    # prior doc carried the same school twice (a stale aside, a roster correction that reused an
+    # ID), producing a wrong kept_before and an unauditable verdict. AGGREGATE instead of
+    # overwriting — the honest answer to "what did the prior rung keep for this school" is the sum
+    # across its entries — and SURFACE the anomaly in the receipt. Deliberately not a raise: this
+    # is a reporting function called mid-batch, and halting a live capture run over a duplicate in
+    # a historical manifest would trade a cosmetic problem for a real one. Auditability is served
+    # by recording it (commandment #1), not by crashing.
+    prior_kept, dupes = {}, collections.Counter()
+    for s in prior_schools:
+        sid = s.get("school_id")
+        if not sid:
+            continue
+        dupes[sid] += 1
+        prior_kept[sid] = prior_kept.get(sid, 0) + kept_in(s)
+    requeried = [s for s in new_schools if s.get("school_id") in prior_kept]
+    if not requeried:
+        return None
+    before = sum(prior_kept[s["school_id"]] for s in requeried)
+    after = sum(kept_in(s) for s in requeried)
+    if after >= before:
+        return None
+    out = {
+        "kept_before": before,
+        "kept_after": after,
+        "n_schools_compared": len(requeried),
+        # The schools this rung took from "had candidates" to "has none" -- the ones that flip to
+        # manual_flag purely because the escalation ran.
+        "schools_zeroed": sorted(s["school_id"] for s in requeried
+                                 if prior_kept[s["school_id"]] > 0 and kept_in(s) == 0),
+    }
+    duplicated = sorted(sid for sid, n in dupes.items() if n > 1)
+    if duplicated:
+        out["duplicate_prior_school_ids"] = duplicated
+    return out
+
+
 def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool = False,
                     geo_receipt: dict | None = None, docs_out: dict | None = None) -> Path:
     """Write discovery.json (full per-school audit trail) + candidates.json (flattened,
@@ -449,13 +515,22 @@ def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool 
     d.mkdir(parents=True, exist_ok=True)
     disc_path, cand_path = d / "discovery.json", d / "candidates.json"
 
+    # #672 criterion 1: the prior rung's schools, read UNCONDITIONALLY (not only on a merge) and
+    # BEFORE the rename-aside below, so a regression is detectable on every re-run of a district --
+    # a domain-scoped rung can lose keepers too (measured: `0101920` batch_00013 -> batch_00026,
+    # 322 -> 309, no geo derivation involved at all).
+    # #877: ONE read. This used to parse the same discovery.json twice on every merge — once here
+    # and once inside the `if merge:` block — which on a large district means re-parsing the full
+    # per-school audit trail (every school's raw URL list) for nothing.
+    prior_disc = _prior_doc(d, disc_path, "discovery")
+    prior_schools_for_compare = prior_disc.get("schools", [])
+
     old_schools, old_candidates, old_geo = [], [], None
     if merge:
-        # Each prior doc is read independently (live file, else newest aside) -- gating BOTH
-        # on disc_path.exists() lost the union when a crashed attempt left an orphaned
+        # The candidates doc is still read independently (live file, else newest aside) -- gating
+        # BOTH on disc_path.exists() lost the union when a crashed attempt left an orphaned
         # candidates.json with no discovery.json (review finding on #265; see _prior_doc).
-        prior_disc = _prior_doc(d, disc_path, "discovery")
-        old_schools = prior_disc.get("schools", [])
+        old_schools = prior_schools_for_compare
         old_geo = prior_disc.get("geo_discovery")   # #164 review: carry the derivation receipt forward
         old_candidates = _prior_doc(d, cand_path, "candidates").get("candidates", [])
 
@@ -502,6 +577,12 @@ def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool 
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "schools": schools,
     }
+    # #672 criterion 1: an escalation that performed WORSE than the rung before it must not be
+    # silently indistinguishable from one that simply found nothing. Compared against THIS rung's
+    # own new entries (not the merged union) for the reason rung_regression documents.
+    regression = rung_regression(prior_schools_for_compare, new_schools)
+    if regression is not None:
+        discovery_doc["rung_regression"] = regression
     if geo_receipt is not None:
         # #164: the geo run's derivation receipt — the full host tally + thresholds + outcome,
         # and (when derived) the discovered_domain PROPOSAL awaiting human confirmation.
@@ -569,6 +650,19 @@ def finish_district(district: dict, roster: list, batch_id: str, registry: dict,
     if district.get("_geo_refused"):
         notes = (f"geo_derivation_failed: {district['_geo_refused']} provider result(s) refused "
                  "no-scoping-domain (#229/#719) — see discovery.json geo_discovery")
+    # #672 criterion 1: the regression must be DURABLE and visible, for the same reason #734 made
+    # the derivation failure durable — the job log dies with the process and the outcome string
+    # alone cannot say "this rung did worse than the last one". Note that most of these do NOT
+    # reach manual_flag_all: the measured corpus lost keepers on found_all -> found_partial
+    # transitions, which read as ordinary progress. Appended, never substituted: a rung can be
+    # both geo-refused and a regression (Wyandanch was).
+    reg = (docs.get("discovery") or {}).get("rung_regression")
+    if reg:
+        note = (f"rung_regression: kept {reg['kept_before']} -> {reg['kept_after']} over "
+                f"{reg['n_schools_compared']} re-queried school(s) (#672)")
+        if reg["schools_zeroed"]:
+            note += f"; {len(reg['schools_zeroed'])} school(s) lost every candidate"
+        notes = f"{notes}; {note}" if notes else note
     DS.record_stage(
         registry, district["district_id"], district["name"], district["state"],
         stage=2, stage_name="discover", outcome=outcome, batch_id=batch_id, notes=notes,

@@ -265,16 +265,112 @@ production district, Wyandanch UFSD NY (`3631800`, issue #672, filed 2026-07-28)
 produced 25 gate-eligible results with the district's own domain at exactly 0.400 share — derivation
 succeeded, 10 candidates kept; the widened rung produced 95 gate-eligible results (3.8x more) but the same
 domain's share dropped to 0.179 as the wider vocabulary pulled in far more noise than signal — derivation
-failed (`below threshold`), and because `gate_urls` fail-closes on a blank/undetermined domain, **all 109
-raw URLs from the widened round were discarded**, including 5 genuine on-domain hits plus 2 subdomain
-hits the standard rung had already found and used successfully. The widened round's top host by raw count
+failed (`below threshold`), and because `gate_urls` fail-closes on a blank/undetermined domain, every raw
+URL from the widened round was refused. The widened round's top host by raw count
 was `core-docs.s3.us-east-1.amazonaws.com` (a school-CMS vendor's document bucket, 16 hits across all 4
 schools), outranking the district's own domain — S3 buckets are deliberately excluded from `cms_hosts`
-(policy, not a bug), so that host could never have derived regardless of share; noted here as a pattern
-that can dominate a widened tally, not a proposed change. Net effect: Wyandanch's ladder terminated at
-`manual_flag` after both geo rungs exhausted, which may be an **artifact of the escalation mechanism**
-rather than genuine evidence the district publishes no bell-schedule information. Not yet fixed — tracked
-as #672 (epic #128); this doc will be updated when a resolution ships.
+(policy, not a bug), so that host could never have derived regardless of share. That pattern is not an
+aside: it is #871 seen from this angle (§2g).
+
+**2026-08-21 — #672 re-measured, and three of its claims did not survive**
+(`production-quality-control-research/2026-08-21-geo-ladder-regression-measure.py`, rerunnable):
+
+- **"All 109 raw URLs were discarded" overstates the harm ~36x.** `candidates.json` is a UNION across
+  rungs (`write_discovery` merges), so a refusing rung cannot un-plan what an earlier rung found. Of
+  Wyandanch's 109 raw hits (94 distinct, 15 distinct on-domain), **12 were already in the capture plan
+  and 3 were not**. The district holds 18 candidates → 18 captures → 18 records → 18 labels: it was
+  fully captured, processed, and human-labeled. Quote the *not-in-any-capture-plan* column as the harm,
+  never the raw count.
+- **"Wyandanch's ladder terminated" is false as of #719.** Live predicates today return
+  `usable_scoping_domains → ('wyandanch.k12.ny.us','nces')` and `ladder_exhausted → False`; the composer
+  routes it to `domain+widened`. The district is not stuck.
+- **The regression is general, not a Wyandanch curiosity, but must be classified before it is totalled.**
+  10 of 56 consecutive rung pairs kept fewer candidates than their predecessor: **8** are #719's own
+  evidence set (a geo rung composed for a domain-having district — no longer composable), **1** is
+  `0101920` `batch_00013→00026` (322→309, domain-scoped, no derivation involved at all), and **1** is the
+  mechanism #719 did *not* fix — a rung that derives a host followed by a widened rung that dilutes the
+  same host below threshold. Counting all 10 as #672's would overstate it ~4x.
+
+**Corpus-wide cost, and it is not small: 160 on-domain URLs are in no capture plan** (Cedar Rapids 51 ·
+New Haven CT 29 · Washoe 26 · New Haven Unified 23 · Little Rock 22 · Wyandanch 3 · Union Hill 3 ·
+Sweetwater 3), including `cleveland.crschools.us/families-resources/handbook`,
+`alicesmith.washoeschools.net/our-school/bell-schedule` and `rsjh.sweetwater1.org/handbooks`. These are
+#719-era losses; #719 stops the recurrence but does not recover the URLs. Re-running those districts on
+the `domain+widened` rung they now route to is the recovery path (a gate@1 action, Ian's call).
+
+*Corrected 2026-08-21 (#879, PR #872 review): this figure first read 164. The measurement's
+on-domain test was a bare `endswith`, which counted `nlrsd.org` — NORTH Little Rock, a different
+district — as on-domain for Little Rock's `lrsd.org`, 11 raw hits and 4 of the lost. The script now
+imports the canonical dot-boundary predicate `gate()` uses. The corollary the repo already carries
+applies to measurement code too: a script that is the evidentiary basis for a design decision has
+to be held to the standard of the thing it is measuring.*
+
+**Resolution (2026-08-21).** *Criterion 1* — a rung that keeps fewer candidates than its predecessor now
+records it: `discover_stage2.rung_regression()` writes a `rung_regression` block into `discovery.json`
+and appends a durable `state_event` note beside #734's derivation-failure trace. Scoped to the schools
+the rung RE-QUERIED, because a follow-up merge unions the prior round in and a whole-document comparison
+could never regress — that would be a measurement that cannot fail. Detection only: it records that the
+rung did worse, it does not change what the rung kept. *Criterion 3* was already delivered by #734 (the
+cause note) and is pinned by `tests/test_stage2_headless.py`; note it has fired **zero** times on real
+data because it postdates every geo run to date. *Criterion 2* is **re-scoped, not implemented** — see
+below. Tests: `tests/test_stage2_rung_regression.py`.
+
+**Criterion 2 re-scoped (Ian, 2026-08-21).** As written — "a district with a confirmed domain of record
+does not lose on-domain results to a failed geo derivation" — it is vacuous at the routing layer since
+#719: such a district never enters geo. The only non-vacuous residue was whether a later geo rung should
+gate against the previous rung's DERIVED-but-unconfirmed host. **Ian's call: adopting a domain no human
+has confirmed is a cost the ramp-up model accepts** (CLAUDE.md's high-supervision-first posture eases
+gates toward auto as reliability is proven; a derived host is produced by the same deterministic rule a
+human would be confirming). It is therefore not a blocker — but it buys 3 URLs on the one district that
+exhibits the mechanism, so it is not worth implementing on its own. The real harm that rung did was to
+the STATUS layer, and that is what a fix should target: the district's last stage-2 event reads
+`manual_flag_all`, and `candidates.json`'s top-level `domain` is blanked to `''` (the field Stage 3/4
+status views read), on a district with 18 labeled records.
+
+### 2g. Geo escalation means TWO things, and only one of them is built (#871, open)
+
+**The intent, on the record (Ian, 2026-08-21).** Escalating a district that HAS a known domain but
+INSUFFICIENT schedule signal into a geo-constrained search is *deliberate*, and the reason is **reach**,
+not name disambiguation: bell schedules are frequently PDFs or Word documents parked on a CDN or a Google
+Drive, **off the district's own domain**. A geo-anchored query is how those get found. This intent had
+never been written down, which is the root cause of everything below — §2c/§2f described geo purely as
+the domain-DISCOVERY path for domain-less districts, and #719 reasonably read it that way.
+
+So `discovery_scope: "geo"` currently carries two unrelated jobs:
+
+1. **Disambiguate** a common school name nationally for a district with no usable domain (the Millard
+   class) — *built, and the only one the code serves.*
+2. **Reach off-domain documents** for a district that has a domain but little on-domain signal —
+   *intended, never built.*
+
+**The gap.** `gate_urls` / `gate` have exactly two outcomes in a geo run and neither keeps an off-domain
+document: derivation fails → every URL refused `no-scoping-domain` (#229 fail-closed); derivation
+succeeds → only `on-domain` + `cms-slug` kept, so a CDN or Drive URL is refused `off-district`. The
+`cms-slug` branch looks like the escape hatch and is not — it requires the district slug to appear
+literally in the URL, and a real Drive URL is an opaque file ID. Measured against the live gate:
+
+```
+(False, 'off-district')  https://drive.google.com/file/d/1AbC_xyz/view
+(True,  'cms-slug')      https://drive.google.com/wyandanch/bell.pdf
+```
+
+`drive.google.com` and `docs.google.com` are IN `CMS_HOSTS` and are still unreachable: the whitelist
+admits the host, the slug rule then rejects every URL that host actually serves. Generic CDNs and S3 are
+excluded from `CMS_HOSTS` outright (deliberate policy, never a general host/CDN) — which is why
+Wyandanch's `core-docs.s3…` top host in §2f could never have helped.
+
+**Interaction with #719 — do NOT read this as a revert.** #719 made geo unrepresentable for a
+domain-having district, i.e. exactly the population job 2 is about. That was correct *given the gate as
+it stands*: such a round refuses 100% of results and spends SERP budget for nothing (70 schools / 6
+batches / 0 resolved). The capability is now blocked twice — routing will not compose it, and the gate
+would refuse it if it did. Restoring job 2 means making a geo round able to KEEP an off-domain document
+first; only then is routing a domain-having district into it worth anything. Sequencing, not reversal.
+
+Tracked as **#871** (epic #128), which carries the open design questions: admit document-SHAPED
+off-domain URLs (`.pdf`/`.doc`/`.docx`) on a geo-anchored query; give `cms-slug` a second satisfier for
+opaque document hosts; or split job 2 into its own scope (`discovery_scope: "asset"`) rather than
+overloading `geo`. Whether that re-opens the #227 national-contamination class is the question to settle
+first — #227 was about keeping whole unscoped SITES, and this is narrower.
 
 **Seed-URL injection (dormant, #161):** `write_discovery()` also injects any `seed_urls` present on the
 district entry straight into `candidates.json` (tool `seed_7to3`, deduped by normalized URL against

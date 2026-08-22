@@ -1,18 +1,43 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-07-16T00:00:00Z"
+last_updated: "2026-08-21T00:00:00Z"
 
-# STATUS VOCABULARY — normalized 2026-07-16 (Ian). These SIX values are the whole set; do not invent
-# more (the pre-normalization file carried ad-hoc `in-progress` / `not_started` / `draft` one-offs, and
-# `in-progress` was exactly where two stale statuses hid).
+# STATUS VOCABULARY — normalized 2026-07-16, narrowed to FIVE 2026-08-21 (Ian). These are the whole
+# set; do not invent more. The pre-normalization file carried ad-hoc `in-progress` / `not_started` /
+# `draft` one-offs, and `in-progress` was exactly where two stale statuses hid — then `approved` and
+# `in_progress` crept back in anyway (REQ-153, REQ-169), which is why this is now ENFORCED by
+# tests/test_requirements_yaml_hygiene.py rather than asked for in a comment.
 #   proposed   — written down, not yet agreed
-#   accepted   — agreed, not yet built (or built in part: use notes to say which part)
-#   implemented— built, tests not yet written/passing  (transitional; prefer moving straight to tested)
-#   tested     — built AND its cited tests pass. A `tested` claim should be CITEABLE: fill `tests:`.
+#   accepted   — agreed; not yet built, or built in part (say which part in notes). A partly-built
+#                REQ may already carry `tests:` for the part that exists — that is normal, and it is
+#                why the hygiene rule is ONE-directional (see below).
+#   tested     — built AND its cited evidence passes.
 #   superseded — replaced by another REQ. MUST carry `superseded_by: [REQ-xxx]` — a forwarding address.
 #   retired    — the need went away; NO successor exists. MUST carry `retired_reason:`.
 #                (Distinct from superseded on purpose: superseded means "go read that one instead",
 #                 retired means "this whole idea is gone" — e.g. the Crawlee/Ollama scraper-service era.)
+# RETIRED VALUE: `implemented` (was "built, tests not yet written"). It had drifted to mean nothing —
+# all 8 holders had passing tests and simply never had their status bumped. Merged into `tested`.
+#
+# THE EVIDENCE RULE, and it points ONE WAY:
+#   status: tested  =>  the REQ carries `tests:` or `enforced_by:`.
+#   The CONVERSE IS NOT REQUIRED. Carrying tests does not force `tested` — REQ-169 is mid-build on an
+#   open epic (#617, 5 of 8 sub-issues open) and legitimately has tests for the finished half. A
+#   two-way rule would have mislabelled it as done, which is the failure this rule exists to prevent.
+#   `type: principle` is exempt: a commandment is not falsifiable by a unit test (see below).
+#
+# TYPE VOCABULARY — the ALTITUDE axis (documented 2026-08-21; it had existed and been used correctly
+# since REQ-165 but was never written down, so a later reader could not tell a governing principle
+# from a storage detail without reading both, and nearly added a redundant second axis to fix it):
+#   principle     — a governing commandment. Not falsifiable by a unit test; carries `enforced_by`
+#                   pointing at the REQs and suites that realize it. Exempt from the evidence rule.
+#   architectural — a structural invariant about how the system is put together.
+#   constraint    — a hard limit or prohibition (never use COVID-era data; one-attempt WAF rule).
+#   process       — how the humans and the pipeline work together.
+#   functional / non-functional — ordinary behavioural specs and their quality attributes.
+#
+# DELEGATION: a design-umbrella REQ whose children carry the tests uses `enforced_by: [REQ-xxx, ...]`
+# — the same key the commandments already use. Do NOT invent a parallel `satisfied_by`.
 # Cross-refs: use the `github_issue:` KEY, not prose in `notes:` — a mechanical sweep can only see the key.
 
 requirements:
@@ -92,7 +117,8 @@ requirements:
     description: Enrich districts with bell schedule data
     type: functional
     priority: must
-    status: tested
+    status: superseded
+    superseded_by: ["REQ-055", "REQ-054", "REQ-056"]
     acceptance_criteria:
       - Fetches bell schedules from district websites
       - Parses start/end times to calculate instructional minutes
@@ -1061,6 +1087,7 @@ requirements:
       - Tolerates HTTP-to-HTTPS certificate mismatches (ignoreHTTPSErrors) and browser-launch errors without aborting the district
       - Honors the ONE-attempt rule on Cloudflare/WAF/Akamai blocks (Rule 3) and records blocked districts in enrichment_attempts
       - Bounded by per-district effort caps (REQ-051) and degrades to statutory fallback when nothing is found (REQ-049)
+    enforced_by: ["REQ-058", "REQ-068", "REQ-069", "REQ-070", "REQ-071", "REQ-072"]
     created: "2026-06-13T00:00:00Z"
     updated: "2026-06-13T00:00:00Z"
     notes: "Replaces the abandoned Crawlee URL-glob crawl. Probe 2026-06-13 found glob targeting
@@ -1072,7 +1099,7 @@ requirements:
       headless `claude -p` (REQ-104) — see PIPELINE_GOVERNANCE_AND_STATE.md."
 
   - id: REQ-044
-    github_issue: "#107 / #241 — school-year currency (validity floor + prefer-recent dispatch)"
+    github_issue: "#107 / #241 — school-year currency (validity floor + prefer-recent dispatch); #674 — the human-judgment override"
     description: Read each record's content school year and apply recency as a HOLD/ranking (never a veto) before extraction
     type: functional
     priority: must
@@ -1083,8 +1110,12 @@ requirements:
       - "#241 validity floor: pre-2017-18 content (breaks REQ-026's blend window against the CRDC 2017-18 baseline) is HELD for review on the auto path (suppress-to-review, reversible), NOT rejected — an explicit human target label overrides"
       - "#107 prefer-recent (Stage-6 dispatch): among send-eligible siblings covering the same school, the most recent is dispatched and the stale ones HELD (available for a cheap 7->6 re-dispatch); ZERO recall cost by construction"
       - Records the decision + reason for audit
+      - "#674: an explicit human out-of-window judgment HOLDS the record even when it is target-labeled. The check runs FIRST in release.decide() — deliberately, because the target-label branch returns unconditionally, so any check placed after it is unreachable for exactly the population this protects. This adds no automatic veto anywhere: #241 measured that actively harmful (removes 1 false-send while vetoing 17 real targets)"
+    tests:
+      - "tests/test_release.py::test_stale_pre_2017_tier_a_is_held_by_validity_floor"
+      - "tests/test_release.py::test_human_target_label_overrides_the_stale_floor"
     created: "2026-06-13T00:00:00Z"
-    updated: "2026-07-16T00:00:00Z"
+    updated: "2026-08-21T00:00:00Z"
     notes: "Probe showed time-pattern signals are dominated by false positives; the relevance half is the
       V2 combiner (REQ-113). RECENCY RE-SCOPED 2026-07-16 (measured — STAGE5_FILTER_DESIGN §3a obs. 6):
       the original 'reject/flag COVID-era and stale' VETO framing is REFUTED — at the acceptable-bell floor
@@ -1108,6 +1139,7 @@ requirements:
       - Persists the raw captured bytes (PDF/image/rendered HTML/screenshot), not only the source URL, because URLs rot and sources change
       - Stores capture method and timestamp alongside the artifact
       - A capture failure for one candidate is recorded and falls through to the next candidate or to fallback (REQ-049)
+    enforced_by: ["REQ-073", "REQ-074", "REQ-075", "REQ-076", "REQ-077", "REQ-086"]
     created: "2026-06-13T00:00:00Z"
     updated: "2026-06-26T00:00:00Z"
     notes: "IMPLEMENTED_BY (status bumped accepted→tested 2026-06-26): Stage 3 Capture, REQ-073/074/075/076/077/086
@@ -1142,6 +1174,7 @@ requirements:
       - Classifies into elementary/middle/high with a documented rule for spanning configs (K-8, 6-12, K-12)
       - A schedule that cannot be confidently assigned a band is flagged, not silently mis-binned
       - Band assignment is recorded with the per-school observation
+    enforced_by: ["REQ-066", "REQ-032"]
     created: "2026-06-13T00:00:00Z"
     updated: "2026-06-26T00:00:00Z"
     notes: "IMPLEMENTED_BY (status bumped accepted→tested 2026-06-26): REQ-066 (LEVEL-primary band
@@ -1234,6 +1267,7 @@ requirements:
       - Sample size and selection rule defined as a function of district size and grade span (ties to REQ-043 discovery and REQ-042 aggregation)
       - District-band value is the MODE of sampled schools (REQ-042) with the distribution captured
       - Known limitation documented in METHODOLOGY - schedules are obtained only from schools that publish them, which may bias the sample
+    enforced_by: ["REQ-063", "REQ-064", "REQ-065"]
     created: "2026-06-13T00:00:00Z"
     updated: "2026-06-26T00:00:00Z"
     notes: "IMPLEMENTED_BY (status bumped accepted→tested 2026-06-26): queue-time sampling = REQ-063 (enrollment-quartile
@@ -1946,7 +1980,9 @@ requirements:
       - Disk-ahead-of-registry (processed.json exists, registry hasn't caught up) reconciles the registry UP silently - never re-processed, never halted
       - "NEW check, finer-grained than any prior stage: for every ok:true record in captures.json, every filename in its files map must actually exist in that record's captures/<hash>/ directory - a mismatch halts the entire run at the same severity as registry-ahead-of-disk, since captures.json claiming a file exists when it doesn't signals a structural break (partial write, manual deletion, a Stage 3 bug), not a normal content failure"
       - "ok:false records (files: {} by design - capture_failed, needs_oauth_reauth) are exempt from the file-existence check, not flagged as inconsistent"
-    tests: []
+    tests:
+      - "tests/test_stage4_headless.py::TestConsistencyBlastRadius"
+      - "tests/test_acquisition_stages.py::TestReconcile"
     created: "2026-06-23T00:00:00Z"
     updated: "2026-06-23T00:00:00Z"
     notes: "Built 2026-06-23; blast-radius tiered 2026-07-02 (fable review issue #78) - a structural
@@ -2033,7 +2069,7 @@ requirements:
 
   - id: REQ-084
     description: "Stage 4 excludes heavy ML-model document tools (Docling, EasyOCR, PaddleOCR) by deliberate, closed architectural decision - any input needing that level of understanding escalates to the paid Stage 7 vision council, not a slow local model"
-    type: functional
+    type: principle
     priority: must
     status: tested
     acceptance_criteria:
@@ -2375,6 +2411,9 @@ requirements:
       - All imports updated to package paths; the full test suite stays green (no behavior change)
       - Tool baseline wired - import-linter + grimp (Python architecture contracts), vulture (dead code), dependency-cruiser (the .mjs capture layer)
       - import-linter contracts encode the architecture - stage layering (1..9), forbidden (no stage imports the production LCT/DB internals), independence among stages, common as a base layer
+    tests:
+      - "tests/test_arch_manifest.py"
+    enforced_by: ["tests/test_arch_manifest.py", "lint-imports (pyproject.toml contracts, CI lint job)"]
     created: "2026-06-26T00:00:00Z"
     updated: "2026-06-26T00:00:00Z"
     notes: "First step of the governance build sequence (PIPELINE_GOVERNANCE_AND_STATE.md §9 step 1 + §10).
@@ -2401,6 +2440,9 @@ requirements:
       - Cross-stage cache — ingests all stages' artifacts (discovery/candidates/captures/processed/batch), not just Stage 5
       - Existing data migrated in (or cache rebuilt + precious JSON backups re-imported); Stage-5 tests stay green
       - Cloud-ready via the existing DATABASE_URL path
+    tests:
+      - "tests/test_stage5_cross_stage_cache.py"
+      - "tests/conftest.py::gov_session"
     created: "2026-06-26T00:00:00Z"
     updated: "2026-06-26T00:00:00Z"
     notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE.md §1a/§9 (step 2). Supersedes the SQLite decision in
@@ -2549,6 +2591,10 @@ requirements:
       - Completion grain is district x band (elem/middle/high) — a district is satisfied when every claimed band has confident minutes; schools are instrumental (query raw material + sampling units), not the unit of completion
       - Directions from gate@7/gate@8 route back to Stage 1 (the follow-up batch_*.json is created there, reviewable at gate@1) — 7/8 never mint a batch straight to discovery
       - Only re-routing EXISTING representations bypasses Stage 1 (7->6 re-extract via a different council config; 8->6 add an existing-rep URL to a new dispatch)
+    tests:
+      - "tests/test_stage1_batch_store.py::TestFollowupRounds"
+      - "tests/test_closing_argument.py::test_unsatisfied_bands_and_coverage_gaps"
+      - "tests/test_closing_argument.py::test_no_flag_when_all_claimed_bands_satisfied"
     created: "2026-06-27T00:00:00Z"
     updated: "2026-07-13T00:00:00Z"
     notes: "Decided 2026-06-27 (governance §11d, flow diagram). BUILT (verified against live code 2026-07-13
@@ -2645,6 +2691,9 @@ requirements:
       - Wave 2 = Claude WebSearch (headless claude -p, 75s timeout) on the genuine residual only (a different index, speculative); degrades to manual_flag, never halts
       - Search providers sit behind one contract — given a school, return candidate URLs as JSON — so providers can be added/reordered/swapped without touching gating/flatten/dedup (this layer is what made the bake-off swap cheap)
       - The existing deterministic gating / flatten / dedup / atomic-write / registry path is unchanged; runnable headless from the console (background job), no chat required
+    tests:
+      - "tests/test_discover_api.py"
+      - "tests/test_stage2_headless.py"
     created: "2026-06-27T00:00:00Z"
     updated: "2026-07-01T00:00:00Z"
     notes: "Authority: STAGE2_DISCOVER_DESIGN.md §7. Acceptance criteria rewritten 2026-07-01 (fable
@@ -2676,6 +2725,10 @@ requirements:
       - capture_discovery.mjs has a `district <ROOT> <DISTRICT_DIR>` mode so a run is batch-scoped (never re-captures the rest of RAW_DIR)
       - Stage 2 console status reads the discovery_school cache, self-healing (ingesting discovery.json) for districts discovered before the cache hook existed
       - The batch is resolved from the DB working store (not the on-disk receipt) by the console endpoints
+    tests:
+      - "tests/test_cache_ingest.py"
+      - "tests/test_stage3_headless.py"
+      - "tests/test_capture_api.py"
     created: "2026-06-28T00:00:00Z"
     updated: "2026-06-28T00:00:00Z"
     notes: "Tests: test_cache_ingest.py (UPSERT idempotency + err + emergent/failure queryability),
@@ -2703,6 +2756,10 @@ requirements:
       - build_signals exposes ingest_batch(district_ids) (never-dropped CREATE-IF-NOT-EXISTS + per-district DELETE+INSERT) beside the full ingest(); prior batches untouched
       - On a Stage-4 run that resolves the whole batch the app layer (not stage4_process) runs ingest_batch + records a stage=5 'ingested' state_event per district; best-effort (never fails the durable Stage-4 job)
       - Stage 4 system binaries (poppler/tesseract/ghostscript) documented in GETTING_STARTED; unused img2table removed
+    tests:
+      - "tests/test_stage4_headless.py"
+      - "tests/test_process_api.py"
+      - "tests/test_stage5_incremental_ingest.py"
     created: "2026-06-29T00:00:00Z"
     updated: "2026-06-29T00:00:00Z"
     notes: "Tests: test_stage4_headless.py (in-process run_batch), test_process_api.py (status/run/trigger),
@@ -2738,6 +2795,9 @@ requirements:
       - GET /api/stage5/districts groups by district facets, filters by record facets (district stays visible) + hide_resolved, sorts (attention/name/enrollment/schools/recent/first_seen) asc|desc, paginated — all SQL on stored columns
       - Follow-up flags (FollowupFlag, precious + JSON-backed) floor a district/record's attention; saved views (SavedView) CRUD; the left pane re-fetches on view-show (window.loadStage5)
       - SQLite review.db vestige removed (paths.REVIEW_DB gone); the attention weights live in config/stage5_attention.json (frontier-tunable)
+    tests:
+      - "tests/test_stage5_attention.py"
+      - "tests/test_stage5_facets_api.py"
     created: "2026-06-29T00:00:00Z"
     updated: "2026-06-29T00:00:00Z"
     notes: "Tests: test_stage5_attention.py (band model + district rollup + recompute via gov_session TEMP
@@ -2812,6 +2872,9 @@ requirements:
       - handbook page range accepts print-dialog syntax ('4, 7-9') and stores both the raw string and the parsed list [4,7,8,9]
       - migrate_label_v21 maps every v2.0 label into the v2.1 vocabulary (targets renamed; non-targets -> target_absent + confounder facet); 128 targets preserved; unit-tested
       - UI self-verified with Playwright before shipping (per the standing 'don't ship visuals blind' lesson)
+    tests:
+      - "tests/test_stage5_scoring.py"
+      - "tests/test_stage5_facets_api.py"
     created: "2026-07-01T00:00:00Z"
     updated: "2026-07-01T00:00:00Z"
     notes: "Design: STAGE5_FILTER_DESIGN.md §4 (three-axis). Tests: test_stage5_scoring.py (migration),
@@ -3816,7 +3879,7 @@ requirements:
     description: "The pipeline profiles, learns, and differentiates every CMS it encounters: each CMS observed in captures gets a fingerprint signature (URL-shape and/or DOM markers) in the Stage-3 cms_hint vocabulary, so downstream stages can group, score, and dispatch by CMS template rather than rediscovering each vendor's quirks district by district."
     type: process
     priority: should
-    status: approved
+    status: tested
     acceptance_criteria:
       - "When a capture's CMS is recognizable (URL module shapes like Edlio's /apps/bell_schedules/ + /apps/pages/index.jsp?uREC_ID=, vendor asset hosts, DOM markers) but cms_hint is empty, that is a vocabulary GAP to fill, not noise to ignore — the #540 discovery (52 Edlio records, 4 districts, all cms_hint-empty) is the motivating case"
       - "Vocabulary additions are propose-with-evidence, human-approved (the CMS_HOSTS discipline): school-district CMS vendors only, never general hosts/CDNs; each addition names the observed signature and the districts it was seen on"
@@ -3847,7 +3910,7 @@ requirements:
       never written as original.* and never rendered (#415)."
     type: functional
     priority: should
-    status: implemented
+    status: tested
     acceptance_criteria:
       - "Flag, never drop: a fidelity-flagged record still captures, processes, and ingests normally"
       - "Flags are derived ONLY from persisted facts (url/final_url, page.txt head, fingerprint.has_password), so `recompute-fidelity` re-derives them after a regex tuning without re-capture — the recompute-cms-hint discipline"
@@ -3885,7 +3948,7 @@ requirements:
       CLI / retry_partial() (console-drivable)."
     type: functional
     priority: should
-    status: implemented
+    status: tested
     acceptance_criteria:
       - "Retryable = err starts with not_attempted/not_recovered AND the URL is still in the capture plan (fragment-stripped parity); the predicate is mirrored in both languages (isRetryableErr / RETRYABLE_ERR_PREFIXES)"
       - "One-attempt errs are NEVER re-attempted by a retry (security_block stays visited-once; CLAUDE.md Critical Rule 3 holds)"
@@ -3908,7 +3971,7 @@ requirements:
       the journal is best-effort at write time and superseded (deleted) once captures.json lands."
     type: functional
     priority: should
-    status: implemented
+    status: tested
     acceptance_criteria:
       - "A journal write failure never fails a capture task; captures.json remains the authority"
       - "A crash-leftover journal is renamed aside (never clobbered); the live journal is deleted only after the manifest write lands"
@@ -3938,7 +4001,7 @@ requirements:
       ever-approved batch history, scope-pure round counting."
     type: functional
     priority: should
-    status: implemented
+    status: tested
     acceptance_criteria:
       - "Scope-pure batches: discovery_scope is a single batch-level field; benchmark is never geo"
       - "ONE query vocabulary, two scoping renderings (site: vs geo tokens) — no second vocabulary knob (REQ-089 anti-drift)"
@@ -3991,7 +4054,7 @@ requirements:
       discovered-domain source badge)."
     type: functional
     priority: should
-    status: implemented
+    status: tested
     acceptance_criteria:
       - "Policy set is event-logged (trigger 'human (console)') and refreshes the git twin post-commit"
       - "The create dialog offers geo only when the policy allows it (the server 409 remains the law)"
@@ -4029,7 +4092,7 @@ requirements:
       for the 5->1 geo escalation (the domain was fine — the WAF said no; manual triage only)."
     type: functional
     priority: must
-    status: implemented
+    status: tested
     acceptance_criteria:
       - "The Millard batch_00021 interstitial text is detected (the motivating 81/83-recorded-as-ok incident)"
       - "cf-mitigated: challenge alone suffices; cloudflare CDN presence (cf-ray/server) alone never trips"
@@ -4070,7 +4133,7 @@ requirements:
       panels on the Stage 2 and Stage 4 console views."
     type: functional
     priority: should
-    status: implemented
+    status: tested
     acceptance_criteria:
       - "Attribution is district_ids-scopable (tests never perturb the corpus card; per-batch views possible)"
       - "A record with no candidate plan row attributes to its capture source — emergent yield is measured, not lost"
@@ -4106,7 +4169,7 @@ requirements:
       stored, so a token-list tuning applies retroactively to every already-built batch."
     type: functional
     priority: should
-    status: implemented
+    status: tested
     acceptance_criteria:
       - "A school name containing a facility token (juvenile, detention, correctional, corrections, …) gets review_flags: ['facility_name'] in its batch_store school dict; a normal name gets no review_flags key at all"
       - "The flag is advisory only — the school is still sampled and included normally, review_flags is an attention cue for the human gate@1 reviewer, never a hard exclude"
@@ -4371,7 +4434,7 @@ requirements:
       history."
     type: architectural
     priority: must
-    status: in_progress
+    status: accepted
     acceptance_criteria:
       - "GRAIN: no guard deciding LCT-write eligibility keys on 'has this district ever been in a batch_type=benchmark batch'. batch_district rows are never deleted, so that question is permanently yes and permanently refuses correct, freshly-sourced minutes (the defect epic #617 exists to retire)"
       - "MOBILITY (the acceptance test, Ian 2026-07-25): a district moves between harnesses in BOTH directions — (1) benchmark batch -> follow-up batch, (2) first-run/follow-up batch -> benchmark batch, (3) benchmark dispatch -> production dispatch, (4) production dispatch -> benchmark dispatch. One named regression test per direction"
@@ -4382,7 +4445,7 @@ requirements:
       - "The frozen handoff RECORDS its own dispatch_type: 'was this dispatch benchmark?' is answerable from the receipt alone, never only from a DB row that could be lost or disagree"
       - "REDO-ELIGIBILITY IS DECLARED (batch.redo_attempted), not derived from batch_type. An absent value falls back to the historical batch_type=='follow-up' rule so no pre-existing batch changes behavior. Deriving it would let one Stage-2 run on batch_00000 merge fresh SERP candidates into the 27 curated districts' FROZEN gt:// candidate sets (REQ-059's corpus is fixed)"
       - "The Stage-9 write guard has TWO arms, neither redundant: the stamped handoff.dispatch_type (which cannot see a production dispatch that pulled in a stale benchmark representation) and provenance DERIVED from the representations behind the facts (which cannot see a Council Lab A/B composed entirely of production representations) — MET 2026-07-26 (#619). GRAIN CORRECTION: the derived arm reads the FROZEN APPROVED RECEIPT's write-bearing schools (bands[*].schools[*].rec_key / fact_id), which is FACT grain, not the (handoff x district) grain earlier specified — school_fact.rec_key exists and is 100% populated (2782/2782), so fact->representation IS traversable. Reading the receipt also avoids a fail-OPEN hole: _load_handoff_by_hash returns None for a pruned handoff file, which would have answered not-benchmark for exactly the districts whose receipts went missing"
-      - "The write guard refuses on ANY benchmark-provenance evidence rather than dropping the tainted fact (one injected representation taints the band value it feeds, and dropping it would silently change an approved number). The auditable way to satisfy it is a human striking the stale evidence at gate@8 (band_exclusion, REQ-257): an excluded school is applied BEFORE the mode, so it is not a source of the band's value and does not refuse the write on its behalf. A school carrying NEITHER identifier is a human-added fact — no capture, so no provenance to check, and it must not be read as 'unknown' and refused"
+      - "The write guard refuses on ANY benchmark-provenance evidence rather than dropping the tainted fact (one injected representation taints the band value it feeds, and dropping it would silently change an approved number). The auditable way to satisfy it is a human striking the stale evidence at gate@8 (band_exclusion, REQ-133): an excluded school is applied BEFORE the mode, so it is not a source of the band's value and does not refuse the write on its behalf. A school carrying NEITHER identifier is a human-added fact — no capture, so no provenance to check, and it must not be read as 'unknown' and refused"
       - "The gate@8 REVIEW QUEUE is provenance-scoped by the same definition (IS_BENCHMARK_PROVENANCE_SQL), and must land WITH the Stage-9 wall rather than after it: gate@8 is the only door to a Stage-9 write, so re-keying the write alone leaves the fix unreachable and the mobility property vacuous — MET 2026-07-26"
       - "The mode-stability early-exit's full-census exemption (REQ-151) is a property of THE RUN, read off the frozen handoff (run_kind, gt_data, dispatch_type), never of a district's batch membership — membership would make all 27 re-run districts pay a full-census extraction on every future production run, forever — MET 2026-07-26 (#619), inverting two pre-#619 pins"
       - "An operator can COMPOSE a targeted batch (follow-up or benchmark) over a named district list, via API and console — build_batch's eligible_pool drops every district at furthest_stage>=3, so without this neither mobility property 1 nor 2 is expressible at all"
@@ -4784,3 +4847,171 @@ requirements:
         FAIL against the pre-#822 guard body and pass after)"
       - "tests/test_precious_backup_guard.py::TestCanonicalDbNameParsing844 (P6)"
     depends_on: [REQ-175]
+  - id: REQ-177
+    github_issue: "#863 (epic #864)"
+    description: "Stage 3 records the rendered DOM at ONE instant. page.txt and the de-chrome segments (page.main/header/footer/nav.txt) are derivations of a single read, so page.main.txt is a SUBSET of page.txt by construction rather than by an assumption about when each was taken."
+    type: architectural
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "The main-frame text persisted as page.txt is read in the SAME page.evaluate as the segments, one statement before the chrome removal that produces `main` — not in a separate round-trip that a lazily-rendering page can change underneath"
+      - "Non-main frames are read BEFORE segmentation: an <iframe> nested inside a <footer>/<nav> landmark is detached by the chrome removal, so reading the frames afterwards would silently drop text page.txt has always carried"
+      - "page.main.txt char count <= page.txt char count on every newly captured HTML record; page.txt must never hold FEWER clock times than page.main.txt (that inversion IS the defect)"
+      - "The early read is still taken and is still what detectChallenge (#578, one-attempt Rule 3) and the js_dependent fingerprint input consume — a challenge interstitial must abort before a screenshot/PDF is spent on it, and the fingerprint BASIS must stay backward-compatible (a changed basis re-hashes every record and forces a mass re-review)"
+      - "fidelityFlags (#518) are computed over the text that was actually PERSISTED, because their own contract is 'derived only from persisted facts (page.txt)' and recompute-fidelity re-derives them by reading page.txt off disk — the live and recompute paths must not disagree"
+      - "page.txt is written from the early read FIRST and overwritten by the late read only on success, so no failure path can leave a capture without the file"
+      - "text_phase (final|early) records which read is on disk, so a post-fix capture is distinguishable from a legacy split-read one without inferring it from filenames"
+    tests:
+      - "infrastructure/scraper/capture_browser.test.mjs"
+      - "docs/technical-notes/production-quality-control-research/2026-08-21-read-timing-split-measure.py"
+    created: "2026-08-21T00:00:00Z"
+    updated: "2026-08-21T00:00:00Z"
+    notes: "Measured before fixing: 104 records where main had MORE chars than page.txt, 46 with more
+      clock times, and 17 where page.txt held ZERO clock times and main held some. Root cause was a
+      timing split — page.txt at domcontentloaded+2.5s, segments at end-of-capture after the
+      screenshot and page.pdf(). The corpus-wide property only clears on RE-CAPTURE; the measurement
+      script reports NOTHING MEASURED until post-fix captures exist, rather than a false FAIL.
+      This is the first landed piece of epic #864 (Stage 3 flattens a live, time-varying, JS-stateful
+      DOM into snapshots at arbitrary moments); #643's render-facts sidecar is the full form."
+  - id: REQ-178
+    github_issue: "#841"
+    description: "Every text representation is SCORED (n_chars, n_times, usable) and eligible for the 7->6 alternate pool on the same terms; a representation family is never silently excluded by one of several hand-written collectors."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "segment:* representations carry a non-NULL n_times after ingest — a NULL coerced by `nt or 0` reads every segment as timeless and makes the question unanswerable from the DB"
+      - "The alternate collectors agree on which sources are admissible; a difference between them is either removed or is DELIBERATE and documented at the point of difference (release.alternates admits `pdf` for a HUMAN at gate@6; live_alternates excludes it because an automated retry would send raw bytes to a text council)"
+    tests:
+      - "docs/technical-notes/production-quality-control-research/2026-08-18-segment-main-alternate-measure.py"
+      - "tests/test_release.py"
+    created: "2026-08-21T00:00:00Z"
+    updated: "2026-08-21T00:00:00Z"
+    notes: "The measurement REVERSED the issue's leaning: segment:main is the uniquely best alternate
+      on 27 records and dominated on 4. It also could not be answered from the DB at all until the
+      re-ingest, because n_times was NULL for all 11,349 segment reps — the measurement script reads
+      segment text from disk for exactly that reason."
+  - id: REQ-179
+    github_issue: "#826"
+    description: "Roster matching normalizes school names through the ONE shared normalizer before comparison, so a variant spelling is not counted as a miss."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "roster_school_names_hit compares normalized forms (SM.roster_match_keys), not raw strings"
+      - "The measured effect is reported as SEPARATE columns for normalization and for the guard, because the two halves move the number in OPPOSITE directions and a combined figure hides both"
+    tests:
+      - "docs/technical-notes/production-quality-control-research/2026-08-18-roster-hit-measure.py"
+    created: "2026-08-21T00:00:00Z"
+    updated: "2026-08-21T00:00:00Z"
+    notes: "Ian re-specified P1 to the measured 23/22/29 after the issue's original figures (Memphis
+      0->27, Broward 3->42, Orange 1->36) proved to be counting something else."
+  - id: REQ-180
+    github_issue: "#672 (also #719, #734)"
+    description: "A Stage-2 outcome records its CAUSE. An escalation rung that keeps fewer candidates than the rung before it, and a geo run whose derivation failed with provider hits in hand, each leave a durable trace — neither may wear an ordinary manual_flag's clothes."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "A rung that keeps fewer candidates than its predecessor writes a `rung_regression` block into discovery.json and appends a durable state_event note"
+      - "The comparison is scoped to the schools the rung actually RE-QUERIED: a follow-up merge unions the prior round into the document, so a whole-document comparison could never regress — it would be a comparison of the post-state with itself"
+      - "A geo run whose derivation failed records the refused-hit count durably (the #734 trace), and the two notes are APPENDED, never substituted — a rung can be both"
+      - "Detection only: recording that a rung did worse must not change what the rung kept"
+    tests:
+      - "tests/test_stage2_rung_regression.py"
+      - "tests/test_stage2_headless.py::TestRunBatch::test_geo_derivation_failure_surfaces_loudly"
+      - "docs/technical-notes/production-quality-control-research/2026-08-21-geo-ladder-regression-measure.py"
+    created: "2026-08-21T00:00:00Z"
+    updated: "2026-08-21T00:00:00Z"
+    notes: "#672's headline mechanism ('geo scope is forced onto districts that already have a
+      domain') was CLOSED by #719 before this shipped — measurement, not reasoning, established that.
+      Its criterion 2 was re-scoped rather than implemented (Ian, 2026-08-21): vacuous at the routing
+      layer post-#719, and the residue buys 3 URLs on the one district exhibiting the mechanism.
+      Corpus-wide the geo rungs left 160 on-domain URLs in no capture plan, recoverable by re-running
+      those districts on the domain+widened rung they now route to (a gate@1 action). That figure was
+      164 until #879 (PR #872 review) found the measurement's on-domain test was a bare endswith,
+      counting nlrsd.org (NORTH Little Rock) as on-domain for lrsd.org; it now imports the canonical
+      dot-boundary predicate."
+  - id: REQ-181
+    github_issue: "#710, #711"
+    description: "The alternate-representation ladder spends rungs only on defects a different representation could actually fix."
+    type: constraint
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "A document that never names its school is not retried across representations — no representation can add a name the source does not contain"
+      - "A transient provider error (429) is not recorded as a clean zero-yield and does not consume a ladder rung; it is retried or degraded, never counted as evidence about the document"
+    tests:
+      - "tests/test_stage7_requests.py"
+      - "tests/test_stage6_requests.py"
+    created: "2026-08-21T00:00:00Z"
+    updated: "2026-08-21T00:00:00Z"
+    notes: "Both are the same shape: a rung is a COST, so it must be spent only where it can buy
+      something. Related to REQ-174's truncated/degraded/barren split, which decides which bucket a
+      failed read falls into."
+  - id: REQ-182
+    github_issue: "#798, #799, #810, #816, #834, #841, #843-#848, #866, #869"
+    description: "PIPELINE-WIDE INVARIANT — ONE EXPORTED PREDICATE PER RULE. A rule that more than one call site needs is defined ONCE in the base layer and imported; it is never re-spelled at a second site, and a client-side mirror counts as a call site."
+    type: architectural
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "When two sites need the same rule, the fix is one exported function in the base layer (MF.rep_degraded_kinds, MF.rep_prompt_size, SM.roster_match_keys, release.NON_SWAPPABLE_SOURCES, release.sendable_text_reps) — NOT a test that locks two copies into agreement"
+      - "An identity assertion locks the FUNCTION, not its INPUTS: two call sites can drift by feeding the same function different things, so the input construction must be one function too, and equality is asserted AT THE CALL SITES (#846)"
+      - "An assertion about CONSTANTS proves nothing about BEHAVIOUR: `assert CHROME_SOURCES <= NON_SWAPPABLE_SOURCES` is true by construction and never touches the function it claims to guard (#866). Guards must exercise the real function over the real set"
+      - "A JavaScript mirror of a Python rule is pinned member-for-member against the Python one (#869)"
+    tests:
+      - "tests/test_cms_host_parity.py"
+      - "tests/test_arch_manifest.py"
+      - "docs/technical-notes/production-quality-control-research/2026-08-19-chrome-first-send-measure.py"
+    created: "2026-08-21T00:00:00Z"
+    updated: "2026-08-21T00:00:00Z"
+    notes: "Recorded as its own requirement because this class has recurred NINE times across four
+      sessions and the countermeasure is always the same and always structural. Writing it down is
+      what stops the tenth instance being re-derived from scratch. Instances: #798/#810/#799/#816;
+      #834's two slice predicates disagreeing on 43 live records; #843/#845/#847/#848 (one root — the
+      'how is this rep degraded' fold hand-written at FOUR sites, two of which disagreed); #841's
+      three alternate collectors; #866's fourth spelling of NON_SWAPPABLE_SOURCES; #869's three
+      chrome-inclusive 'densest' computations including a client mirror."
+  - id: REQ-183
+    github_issue: "#870"
+    description: "PROCESS — a fix's measured blast radius is part of the fix, committed as a rerunnable read-only script that imports the LIVE functions, never as a number recollected in a PR body."
+    type: process
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "The script imports the production functions and replays them over the real corpus; it does not re-implement the rule it is measuring"
+      - "Every section emits an explicit NOTHING MEASURED verdict instead of a green zero on an empty sweep — an empty sweep and a clean sweep are not the same result"
+      - "A path or corpus assumption that could scan nothing fails LOUD rather than reporting a confident zero"
+      - "The measurement is RE-RUN after the fix it motivated"
+    tests:
+      - "docs/technical-notes/production-quality-control-research/2026-08-19-chrome-first-send-measure.py"
+      - "docs/technical-notes/production-quality-control-research/2026-08-21-read-timing-split-measure.py"
+      - "docs/technical-notes/production-quality-control-research/2026-08-21-geo-ladder-regression-measure.py"
+    created: "2026-08-21T00:00:00Z"
+    updated: "2026-08-21T00:00:00Z"
+    notes: "PR #865 is the motivating case: a correct one-line fix shipped with a justification that
+      was wrong TWICE — it sized the change at 4 records when a full best_send replay measures 244,
+      and it offered a reassurance ('page.txt, chrome included, stays in the pool') that is false on
+      5 live records. A correct fix can ship with a WRONG RATIONALE, and the rationale is what the
+      next reader inherits."
+  - id: REQ-184
+    github_issue: "#871 (epic #128)"
+    description: "Geo-scoped discovery carries TWO jobs — disambiguate a common school name for a domain-less district, and REACH off-domain documents (PDFs/Word docs on a CDN or Google Drive) for a district that has a domain but insufficient on-domain signal. Only the first is built."
+    type: functional
+    priority: should
+    status: proposed
+    acceptance_criteria:
+      - "A geo round can keep at least one off-domain DOCUMENT result. Must fail against the code as of 2026-08-21 — the gate has no branch returning True for an opaque Drive file URL"
+      - "The #227 protection still holds: an unscoped, non-document, off-domain SITE is still refused"
+      - "STAGE2_DISCOVER_DESIGN.md records the intent, so a later reader cannot re-derive geo as domain-discovery-only (this issue's root cause)"
+    created: "2026-08-21T00:00:00Z"
+    updated: "2026-08-21T00:00:00Z"
+    notes: "Ian, 2026-08-21 — the intent had never been written down, which is why #719 reasonably
+      read geo as domain-discovery-only and made it unrepresentable for domain-having districts.
+      Measured: the gate refuses off-domain documents in BOTH branches (derivation fails ->
+      no-scoping-domain; derivation succeeds -> off-district). drive.google.com and docs.google.com
+      are IN CMS_HOSTS and still unreachable, because the cms-slug branch requires the district slug
+      in the URL and a real Drive URL is an opaque file ID. NOT a revert of #719, which removed a
+      guaranteed no-op: the gate must be able to KEEP an off-domain document before routing anyone
+      into that round is worth anything. Sequencing, not reversal."

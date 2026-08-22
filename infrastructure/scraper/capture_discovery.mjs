@@ -354,10 +354,70 @@ export async function segmentChrome(page, landmarks) {
     const header = grab(buckets.header.join(','));
     const footer = grab(buckets.footer.join(','));
     const nav = grab(buckets.nav.join(','));
+    // #863: `full` is body.innerText read in THIS SAME evaluate, one statement before the chrome
+    // removal -- so `main` is a subset of `full` BY CONSTRUCTION, not by an assumption about when
+    // the two reads happened. It is what captureInto persists as page.txt (main-frame half). The
+    // defect it closes: page.txt used to be read at domcontentloaded+2.5s and the segments at
+    // end-of-capture, so on a lazily-rendering page (Finalsite tab/accordion widgets) `main` could
+    // be a strict SUPERSET of the file it is nominally a subset of -- measured on 104 records, 17
+    // of them with 0 clock times in page.txt and >0 in main. NOT a DOM mutation before the read
+    // (#685's constraint): only an extra read of the tree we were already standing in.
+    const full = (document.body && document.body.innerText ? document.body.innerText : '').trim();
     if (removeSel) { try { document.querySelectorAll(removeSel).forEach((el) => el.remove()); } catch { /* ignore */ } }
     const main = (document.body && document.body.innerText ? document.body.innerText : '').trim();
-    return { main, header, footer, nav };
-  }, { removeSel, buckets }).catch(() => ({ main: '', header: '', footer: '', nav: '' }));
+    return { full, main, header, footer, nav };
+    // #874: the catch returns NULL, not an all-empty object. A page whose body is legitimately
+    // empty at the late instant and an evaluate that REJECTED (destroyed execution context after
+    // the screenshot/pdf, SPA route remount) are different facts, and the old all-empty object
+    // made them indistinguishable — so the caller's truthiness test on `full` discarded a
+    // successful late read, silently reverting page.txt to the early one and reproducing #863 on
+    // exactly the pages most likely to trigger it. `null` = the read did not happen;
+    // `{full: '', ...}` = the read happened and the page really was empty.
+  }, { removeSel, buckets }).catch(() => null);
+}
+
+// WHICH read ends up in page.txt, decided in ONE pure place (#874/#875). Inline branching here
+// was where both review findings landed, so the decision is a function with a name and a test
+// rather than three conditions spread through captureInto.
+//
+//   seg === null            the late read did NOT happen (evaluate rejected / timed out) -> early
+//   late text is non-empty  the normal post-#863 path                                    -> final
+//   late text empty, early  the page went blank under us (navigation, SPA remount): keep the
+//     had content           content we have. Overwriting real text with nothing is a loss,
+//                           not a fix.                                                   -> early
+//   both empty              nothing to preserve; the late read is still the truthful one -> final
+//
+// `lateRead` records WHY we fell back, because "no error recorded anywhere" was the substance of
+// #874. It is absent on the normal path.
+export function resolvePersistedText({ seg, lateOtherText = '', earlyText = '' }) {
+  if (!seg) return { text: earlyText, phase: 'early', lateRead: 'failed' };
+  const lateText = `\n${seg.full || ''}${lateOtherText}`;
+  if (lateText.trim() || !earlyText.trim()) return { text: lateText, phase: 'final' };
+  return { text: earlyText, phase: 'early', lateRead: 'empty' };
+}
+
+// The ONE frame-scoped visible-text read (#518 scoped `text` and `hasPassword` together so a
+// login widget in a same-origin iframe can't hide from the fidelity flags; #863 needs the SAME
+// read shape a second time, late). Exported and shared rather than re-spelled at the second call
+// site -- the repo's implemented-twice-drifts class is what a hand-copied frame loop becomes.
+// `skipMainFrame` exists because the late read takes the main frame from segmentChrome's `full`
+// instead (same evaluate as `main`, hence the by-construction subset relation).
+export async function readFrameText(page, { skipMainFrame = false } = {}) {
+  let text = '';
+  let hasPassword = false;
+  const mainFrame = page.mainFrame ? page.mainFrame() : null;
+  for (const fr of page.frames()) {
+    if (skipMainFrame && mainFrame && fr === mainFrame) continue;
+    try {
+      const r = await fr.evaluate(() => ({
+        text: document.body ? document.body.innerText : '',
+        hasPassword: !!document.querySelector('input[type="password"]'),
+      }));
+      text += `\n${r.text || ''}`;
+      hasPassword = hasPassword || r.hasPassword;
+    } catch { /* cross-origin frame */ }
+  }
+  return { text, hasPassword };
 }
 
 // The ONE segmentChrome invocation shape (#375): page.evaluate gets no deadline from Playwright,
@@ -621,18 +681,11 @@ async function htmlFingerprintFor(ctx, url) {
     const rawHtml = response ? await response.text().catch(() => '') : '';
     await page.waitForTimeout(2500);
     await dismissModals(page);
-    let rendered = '';
-    let hasPassword = false;
-    for (const fr of page.frames()) {
-      try {
-        const r = await fr.evaluate(() => ({
-          text: document.body ? document.body.innerText : '',
-          hasPassword: !!document.querySelector('input[type="password"]'),
-        }));
-        rendered += `\n${r.text || ''}`;
-        hasPassword = hasPassword || r.hasPassword;
-      } catch { /* cross-origin frame */ }
-    }
+    // #876: the SAME shared frame read as the mainline capture. This was a hand-spelled third copy
+    // of the loop, which is precisely the drift `readFrameText` was extracted to prevent — a
+    // future change to frame-read behaviour applied to the two mainline call sites would silently
+    // have skipped this backfill path (REQ-182: one exported predicate, and a copy is a call site).
+    const { text: rendered, hasPassword } = await readFrameText(page);
     const dom = await domFingerprint(page);
     const jsDependent = strippedLen(rawHtml) < 200 && rendered.trim().length >= SUBSTANTIAL_TEXT_CHARS;
     return buildHtmlFingerprint({ finalHost: hostOf(page.url()), headers: response ? response.headers() : {}, dom, jsDependent, hasPassword });
@@ -851,22 +904,19 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
           // main-frame-only and would miss an iframe-embedded SSO/login widget -- a login wall
           // whose password field lives in a same-origin iframe, common on portal-gated CMS
           // homepages, must not be scoped more narrowly than the text fidelityFlags reads it against).
-          let text = '';
-          let hasPassword = false;
-          for (const fr of page.frames()) {
-            try {
-              const r = await fr.evaluate(() => ({
-                text: document.body ? document.body.innerText : '',
-                hasPassword: !!document.querySelector('input[type="password"]'),
-              }));
-              text += `\n${r.text || ''}`;
-              hasPassword = hasPassword || r.hasPassword;
-            } catch { /* cross-origin frame */ }
-          }
+          // #863: this EARLY read stays exactly where it was, because two consumers need it here
+          // and only here -- detectChallenge (a challenge interstitial must abort the capture
+          // BEFORE we spend a screenshot/pdf on it, one-attempt Rule 3) and `hasPassword`/
+          // `jsDependent`, whose values feed the fingerprint basis (backward-compatibility rule:
+          // changing what a fingerprint is derived from forces a mass re-review). What #863 moves
+          // is only what gets PERSISTED as page.txt -- see the late re-read after segmentation.
+          const early = await readFrameText(page);
+          const earlyText = early.text;
+          const hasPassword = early.hasPassword;
           // #578: a rendered CHALLENGE interstitial is a security block, not content -- record the
           // err, save NOTHING as ok, scan no anchors (one-attempt, Rule 3). Checked over the same
           // frame-scoped text the fidelity flags read, plus the goto response's headers.
-          const challenge = detectChallenge(response ? response.headers() : {}, text);
+          const challenge = detectChallenge(response ? response.headers() : {}, earlyText);
           if (challenge) {
             rec.err = `security_block (${challenge})`;
             if (response) rec.fetch_status = response.status();
@@ -877,7 +927,11 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
             });
             return;
           }
-          writeFileSync(path.join(recDir, 'page.txt'), text);
+          // Written from the EARLY read first so page.txt exists no matter what fails downstream
+          // (screenshot, pdf, domFingerprint, segmentation). The late re-read below overwrites it
+          // when segmentation succeeds; if anything throws in between, the capture still has the
+          // file it has always had. Strictly additive safety -- never a path where page.txt is lost.
+          writeFileSync(path.join(recDir, 'page.txt'), earlyText);
           rec.files.txt = 'page.txt'; // only after the write succeeded (a throw lands in processTask's catch)
           // #18: files.png only on a SUCCESSFUL screenshot -- mirroring the pdf pattern below.
           // The old unconditional `rec.files.png = 'page.png'` after a swallowed .catch()
@@ -904,7 +958,6 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
             .catch((e) => noteFileResult(rec, 'pdf', 'page.pdf', e));
 
           rec.kind = 'html';
-          rec.text_times = (text.match(TIME) || []).length;
 
           // Hosting/CMS fingerprint -- gathered from the goto Response (headers we used to
           // discard) + a single DOM evaluate + a JS-dependency proxy (served-HTML text near
@@ -914,18 +967,74 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
             finalHost: hostOf(rec.final_url),
             headers: response ? response.headers() : {},
             dom,
-            jsDependent: strippedLen(rawHtml) < 200 && text.trim().length >= SUBSTANTIAL_TEXT_CHARS,
+            // #863 deliberately does NOT move this to the late read: js_dependent is a FINGERPRINT
+            // input, and the fingerprint basis must stay backward-compatible (a changed basis
+            // re-hashes every record and forces a mass re-review). The early read is also the
+            // semantically right one here -- "was the served HTML empty and the RENDERED text
+            // substantial" is answered fine by the first rendered read.
+            jsDependent: strippedLen(rawHtml) < 200 && earlyText.trim().length >= SUBSTANTIAL_TEXT_CHARS,
             hasPassword,
           });
+          // #863: read the NON-MAIN frames now, BEFORE segmentation removes chrome from the live
+          // DOM. Order matters -- an <iframe> nested inside a <footer>/<nav> landmark is detached
+          // by that removal and its frame dies, so reading the iframes afterwards would silently
+          // drop text that page.txt has always carried.
+          const lateOther = await readFrameText(page, { skipMainFrame: true });
+          // DOM segmentation (REQ-091): de-chrome the page for Stage 5 signals (additive; page.txt kept).
+          // #875: a segment READ that succeeded and a segment WRITE that failed are different
+          // facts, and both are recorded. `segmented` describes whether the segment FILES are on
+          // disk; `text_phase` describes which read is in page.txt. A write failure (ENOSPC/EACCES)
+          // after a good read leaves `segmented:false` with `text_phase:'final'` — that pair is
+          // ACCURATE, not inconsistent: the late read really is what page.txt holds, and throwing
+          // away a good read because an unrelated write failed would forfeit the whole point of
+          // #863. Pinned by test so this is not re-litigated as a contradiction.
+          let seg = null;
+          try {
+            seg = await segmentWithTimeout(page);
+            if (seg) { writeSegments(recDir, seg); rec.segmented = true; }
+            else { rec.segmented = false; }
+          } catch { rec.segmented = false; }
+          // #863: page.txt is re-persisted from the LATE read -- `seg.full` (the main frame, read
+          // one statement before the chrome removal that produces `main`) plus the non-main frames
+          // read just above. Same frame scope as before, later instant. This is what makes
+          // `page.main.txt <= page.txt` true by construction instead of by coincidence.
+          // `text_phase` records WHICH read is on disk, so Stage 5 can tell a post-fix capture from
+          // a legacy split-read one without guessing from filenames (#864's larger point; this is
+          // the one-field down payment, not the sidecar). Segmentation failing/timing out leaves
+          // the early text in place and says so.
+          const resolved = resolvePersistedText(
+            { seg, lateOtherText: lateOther.text, earlyText });
+          const text = resolved.text;
+          rec.text_phase = resolved.phase;
+          if (resolved.lateRead) rec.late_read = resolved.lateRead;
+          if (resolved.phase === 'final') writeFileSync(path.join(recDir, 'page.txt'), text);
+          rec.text_times = (text.match(TIME) || []).length;
           // Capture-fidelity flags (#518): login wall / soft-404 classification over persisted
           // facts (url/final_url, page text, hasPassword -- all frame-scoped identically to `text`,
           // gathered together above). Flag, never drop -- the record still processes; downstream
           // sees "suspect". Re-derivable via recompute-fidelity.
+          // #863: computed over the text that was actually PERSISTED. The flags' own contract is
+          // "derived ONLY from persisted facts (url/final_url, page.txt, has_password)", and
+          // runRecomputeFidelity re-derives them by reading page.txt off disk -- so leaving this on
+          // the early text would make the live and recompute paths disagree on every record whose
+          // page changed between the reads. Same detector, same inputs, one answer.
+          //
+          // #873 (review of PR #872) asked for the opposite: `hasPassword` is read EARLY and `text`
+          // is now LATE, so a login wall whose chrome renders late could cross
+          // SUBSTANTIAL_TEXT_CHARS and escape the `login_wall` flag. The mechanism is real, but
+          // note what it is NOT -- reading hasPassword late as well would produce the IDENTICAL
+          // outcome, because the clause that misses is the LENGTH test, not the password test. So
+          // "same instant" is not the fix; using the shorter read would be, and that is what breaks
+          // live/recompute agreement, since recompute only ever sees page.txt.
+          // MEASURED over the live corpus before deciding: 11 html captures carry
+          // has_password, 7 have an early page.txt under 600 chars, and 0 of those reach 600 by
+          // the late read (they sit at ~110-150 chars -- genuine walls with almost no content).
+          // Population zero, so no change. The rerunnable watchdog is section C5 of
+          // 2026-08-21-read-timing-split-measure.py; if it ever reports a non-zero population,
+          // revisit with the min(early, late) rule and persist the early length so recompute can
+          // still reproduce it.
           const flags = fidelityFlags({ url, finalUrl: rec.final_url, text, hasPassword });
           if (flags.length) rec.fidelity = flags;
-          // DOM segmentation (REQ-091): de-chrome the page for Stage 5 signals (additive; page.txt kept).
-          try { writeSegments(recDir, await segmentWithTimeout(page)); rec.segmented = true; }
-          catch { rec.segmented = false; }
           rec.ok = true;
 
           // --- Emergent candidates: exactly one hop, never recursive. An emergent
