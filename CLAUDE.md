@@ -108,8 +108,13 @@ minimums / day-counts, not actual daily minutes. Web discovery + extraction is t
 path. See `INSTRUCTIONAL_TIME_HARVEST.md`.
 
 **Notes:** Local Ollama deleted; paid-cloud extraction is cheap (~$0.05–0.30/1M). Keys in gitignored
-`config/secrets.local.json` + `.env`. Requirements are tracked as REQ-001…151 in `docs/REQUIREMENTS.yaml`
-(some numbers superseded/retired — see that file's own status column, not a list here).
+`config/secrets.local.json` + `.env`. Requirements are tracked as REQ-001…184 in `docs/REQUIREMENTS.yaml`
+(some superseded/retired — read that file's own status column, never a list here). **The ledger is
+ENFORCED** by `tests/test_requirements_yaml_hygiene.py` (18 checks): five statuses only, `type:` is the
+altitude axis (`principle` exempt from the evidence rule), delegation is `enforced_by:`, `tested` must
+cite a resolvable test, no phantom REQ ids in the ledger OR in `infrastructure/`, and `last_updated`
+must not lag the newest entry. Adding a REQ: spec/invariant only — a review finding AMENDS the REQ it
+belongs to rather than getting its own.
 
 ---
 
@@ -136,87 +141,76 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-08-19): PRs #850 and #865 are both MERGED (`e270099`, `d3e449e`) and the
-live governance DB was RE-INGESTED from `main`** (`--assert-floor`; recall floor 0.9947 ≥ 0.98; 116
-districts / 3,561 records / 2,614 labels preserved / 873 to send). Closed this round: **#826** (P1
-re-specified by Ian to the measured 23/22/29), **#841** (segment `n_times`: 0 NULL of 11,349),
-**#710/#711**, **#674**, **#862**; **#673 stays open** for its Playwright render falsifier. Two
-review rounds absorbed: #851-#860 (`214e318`) and #866-#870 (`ba61457`) — 13 of 15 findings real and
-fixed; #852/#860/#868 closed as NOT bugs, each pinned by a test so the reasoning can't be re-litigated.
+**Current status (2026-08-22): PR #872 is MERGED (`3847775`) — #863 and #672 both closed.**
+Three commits: the Stage-3 single-instant DOM read (#863), Stage-2 rung-regression recording
+(#672), and a `REQUIREMENTS.yaml` audit that gave the ledger its own fitness function. Review
+round #873-#880 absorbed in the same PR — six fixed, #873/#875 closed as not-bugs with pins.
+**PR #881 is OPEN** (one-line `deepseek-v3.2` catalog refresh, caught by #809's network canary).
+The live governance DB is UNCHANGED since the 2026-08-19 re-ingest (116 districts / 3,561
+records / 2,614 labels); nothing this round altered scoring, so no re-ingest is owed.
 
-**The architectural finding of this round — epic #864 (NOT scheduled).** The re-ingest, not
-reasoning, produced it: with segments finally scored, `best_send` changed on 61/3,561 records and
-**5 send-decided records now send `page.main.txt`**, three of them where Tier-1 `page.txt` holds
-**0** clock times and DOM-main holds 26–88. `main` is `body.innerText` minus landmarks and `page.txt`
-is `body.innerText`, so main is a subset *by construction* — but only if read at the same instant,
-and it is not (`page.txt` at DOM-ready+2.5s, segments at end-of-capture). The two reads disagree on
-**104** records; on **17**, page.txt has 0 times and main has them. That one sentence — *Stage 3
-flattens a live, time-varying, JS-stateful DOM into snapshots at arbitrary moments, and Stage 5 then
-re-derives from filenames the relations Stage 3 knew and discarded* — is what **#643/#685/#862/#863**
-share, and it is now epic **#864**. Shape: Stage 3 records the rendered DOM ONCE at end-of-render
-(#643's sidecar + visibility + landmark membership); `page.txt`/`main`/chrome/hidden-panel become
-*derivations*. Sequencing unchanged: **#642 first, land on the #623 seam**. The epic exists so
-interim fixes stop painting away from it.
+**#863's corpus property clears only on RE-CAPTURE.** `page.txt` and the segments are now one
+read, so `page.main.txt <= page.txt` holds by construction — but only for records captured after
+the fix. `text_phase` (`final`|`early`) marks them; it lives in the Stage-3 receipt, not the DB.
+The measurement reports `NOTHING MEASURED` for the post-fix population until re-captures exist,
+which is the honest state, not a failure.
 
-**De-chrome's origin, now on the record (two fixes in a row misstated it):** REQ-091 does NOT screen
-chrome out. It screens chrome **separately** — additive `page.main/header/footer/nav.txt` beside an
-untouched `page.txt` — and **keeps header/footer precisely because real school hours sometimes live
-there**. Chrome informs the keyword/category/roster SIGNALS; `page.txt`, chrome included, is what a
-council reads. So "never send an isolated nav menu" (#862) is consistent with REQ-091; "chrome is
-screened out" is not.
+**The spec ledger is now enforced, and its vocabulary changed.** Five statuses
+(`proposed`/`accepted`/`tested`/`superseded`/`retired` — `implemented`, `approved` and
+`in_progress` are gone), `type:` is the documented altitude axis (`principle` is exempt from the
+evidence rule), and delegation uses `enforced_by:` — never invent `satisfied_by`. The evidence
+rule is **one-directional**: `tested` implies evidence, evidence does NOT imply `tested` (REQ-169
+is mid-build on open epic #617 and legitimately carries tests). `tests/test_requirements_yaml_hygiene.py`
+is 18 tests and will fail the build on a phantom REQ id, a stale `last_updated`, an orphaned test
+citation, or an invented status. REQ-177–184 added; #674 amends REQ-044 rather than duplicating it.
 
-**Next (RESUME HERE — 2026-08-19):**
-1. **#863 — the two `innerText` reads disagree (104 records).** Promoted by #867: #862's rule is
-   right, but the property that makes it SAFE — "everything in the footer is also in page.txt" — is
-   false until the read-timing split is closed. Interim mitigations named on the issue (read
-   `page.txt` when the segments are read, or stamp the read phase); the fidelity flags (#518,
-   `detectChallenge`) read the EARLY text, so check them for regression. Node change +
-   a re-measurement, not a one-liner. **#861** (the `n_benchmark_only` rename) is pure hygiene.
-2. **#672 — the 5→1 widened rung dilutes geo derivation and discards on-domain URLs** (Wyandanch
-   `3631800`: 109 raw URLs found then thrown away, 5 of them on the district's own confirmed
-   `wyandanch.k12.ny.us`; `found_all` → `manual_flag_all` for a mechanical reason). **The most
-   tractable of the three left** — criteria 2 and 3 are deterministic (a district with a confirmed
-   domain of record must not lose on-domain results to a failed derivation; `manual_flag` from
-   DERIVATION FAILURE must be distinguishable from `manual_flag` from NO RESULTS). Criterion 1's
-   falsifier replays `batch_00034`→`batch_00035` tallies, which are in the DB. Untouched — I did not
-   want to open a third subsystem unattended.
-3. **#708 — OCR name-mangling ships as fidelity-clean. BLOCKED on data, not design.** The issue's
-   proposed Stage-5 roster-match rate is CONFOUNDED: Lewiston's mangled rep scores **1/6, not 0**,
-   and a single-school page legitimately names one school, so the rate cannot separate "OCR
-   destroyed the names" from "this page is about one school". The unconfounded signal is the
-   Stage-7 rate over EXTRACTED names — but only **29 of 84** OCR rep-extractions carry
-   `identity_json`, so P3's corpus-wide flip measurement cannot be computed. Two things worth
-   knowing before resuming: the mangled names DO exist (`arwell`/`sonnors`/`vicmahon`/`vlontello`/
-   `seiger`, ext 7679+9183, all `unresolved`, so they never became facts), and **Lewiston was
-   already solved by the VISION rep** (ext 77, `original.png`, 7 accepted) — the rung the issue
-   argues should come first. Either widen `identity_json` coverage first, or re-scope P3.
-4. **#685 — Stage 3 captures only the ACTIVE tab panel** (Cedar Rapids loses 54 of 110 times).
-   **BLOCKED on Ian's design calls**, which the issue explicitly reserves ("decide deliberately,
-   don't inherit by accident"): (a) what is stored — raw `page.content()` vs revealed-panel text as
-   a `tabpanel:hidden` text rep vs the hidden panels' `outerHTML`; (b) whether `usable`/`n_times`
-   are computed for it (presumably yes, so `best_send` can rank it); (c) whether v1 covers
-   `<details>`/accordions/`aria-hidden` carousels or explicitly defers. The trigger is settled and
-   cheap (`panels.length > 1 && hidden.length > 0`, optionally requiring a time-shaped string in the
-   hidden panel). The 54→110 verification needs the live page; a local HTML fixture + the existing
-   `node --test` harness can carry the unit half. NB the naive reveal recovered NOTHING — the vendor
-   open-state class and `max-height` are load-bearing.
-5. **Then** the Stage 2-4 console triple (#669/#670/#671, settle #671 first) → #723.
-6. **REQ ledger follow-up (unblocked, now larger):** #826/#841/#710/#711/#673/#674 **and** #862
-   (+ the #866-#870 round) have no `REQUIREMENTS.yaml` entries — #826's P1 is settled (23/22/29), so
-   add REQ-177+ citing the tests + measurement scripts named on each closed issue. REQ-094's AC was
-   already corrected in `ba61457` ("densest usable text OVER THE SENDABLE POOL").
-7. **Ian's call, not a session task:** routing Broward/Cleveland/Essex's send-backs and resuming the
-   5→1 composer on West Ada/Lincoln/Baldwin — live pipeline spend, stays console-driven. The epic
-   #80 experiments (#823-#825) also spend real money and are Ian's to schedule.
+**Next (RESUME HERE — 2026-08-22):**
+1. **#881 needs merging** (or closing) — it is a one-line factual catalog sync that restores the
+   documented `pytest tests/test_*_integration.py` baseline to **257**. Until it lands, that
+   command is RED on `main` with "MODEL_WINDOWS has drifted".
+2. **#861 — the `n_benchmark_only` rename.** Pure hygiene, genuinely small, longest-standing item
+   on this list.
+3. **The Stage 2-4 console triple (#669/#670/#671) → #723.** The largest UNBLOCKED chunk. Settle
+   **#671 first** — it is a design question ("what should a stage's status badge mean during a
+   re-run?"), and #669/#670 are its consequences. Prepare the options against the live console;
+   do not guess the semantics.
+4. **#708 — OCR name-mangling. BLOCKED ON DATA, not design.** The issue's proposed Stage-5
+   roster-match rate is confounded (Lewiston's mangled rep scores 1/6, not 0, and a single-school
+   page legitimately names one school). The unconfounded signal is the Stage-7 rate over EXTRACTED
+   names, but only **29 of 84** OCR rep-extractions carry `identity_json`. Widen that coverage
+   first or re-scope P3. NB Lewiston was already solved by the VISION rep (ext 77, 7 accepted).
+5. **#685 — Stage 3 captures only the ACTIVE tab panel** (Cedar Rapids loses 54 of 110 times).
+   **BLOCKED on Ian's design calls**, which the issue reserves: (a) what is stored — raw
+   `page.content()` vs a `tabpanel:hidden` text rep vs the hidden panels' `outerHTML`; (b) whether
+   `usable`/`n_times` are computed for it; (c) whether v1 covers `<details>`/accordions or defers.
+   Trigger is settled and cheap. NB the naive reveal recovered NOTHING — the vendor open-state
+   class and `max-height` are load-bearing.
+6. **#871 — geo's unbuilt second job. BLOCKED on Ian's design calls** (filed this round, REQ-184
+   `proposed`). Geo carries two jobs and only one is built: disambiguate a common school name
+   (built) and REACH off-domain PDFs/Docs on a CDN or Drive (intended, never built). The gate
+   refuses off-domain documents in BOTH branches, and `drive.google.com` is in `CMS_HOSTS` yet
+   unreachable because `cms-slug` needs the district slug in the URL and a Drive URL is an opaque
+   file ID. **Not a revert of #719** — sequencing: the gate must be able to KEEP such a document
+   before routing anyone into that round is worth anything.
+7. **Ian's call, not a session task:** re-running Cedar Rapids / New Haven CT / Washoe / New Haven
+   Unified / Little Rock on the `domain+widened` rung they now route to, to recover the **160**
+   on-domain URLs the #719-era geo rungs left in no capture plan (incl. literal bell-schedule and
+   handbook pages); routing Broward/Cleveland/Essex's send-backs; resuming the 5→1 composer on
+   West Ada/Lincoln/Baldwin. All live spend, console-driven. Epic #80's experiments (#823-#825) too.
 Ian drives the console; prepare and verify, don't execute stage runs (Stage 9 CLI, the #716 replay,
 and the **read-only measurement scripts** are the verification exceptions). *Falsifier unchanged: if
 any district needs a hand-edit or a re-adjudicated gate@8 call, the mechanism is wrong — fix the
 pipeline, not the district.*
 
-**Standing method note (now on its FOURTEENTH instance): measure the thing before fixing it.** An
+
+**Standing method note (now on its FIFTEENTH instance): measure the thing before fixing it.** An
 issue's proposed fix has been overturned by measurement fourteen times (#691, #684, #719, #755,
-#706's severity ranking, #721, #794, #796, #795, #822's image-council premise, #826, #841, **#852,
-#868**). The last two are review findings whose mechanism was real in the source and unreachable in
+#706's severity ranking, #721, #794, #796, #795, #822's image-council premise, #826, #841, #852,
+#868, **#672**). **#672 is a new SHAPE of the lesson: the fix that overturned it (#719) had landed
+BETWEEN the issue being filed and the work starting**, so nothing in the issue text was wrong when
+written — only replaying the LIVE predicates could show that its headline mechanism, its severity
+("109 URLs thrown away" is 3 once you notice candidates.json unions across rungs) and its terminal-
+state claim had all expired. Re-read an issue's premises against today's code before implementing it. The last two are review findings whose mechanism was real in the source and unreachable in
 practice — #852's ladder-stop (no ladder starts when `roster_unique` resolves) and #868's degenerate
 send (`visual_text_gap` is true BY CONSTRUCTION when every real text rep is sub-usable, so the image
 branch fires a step earlier). Both are closed as not-bugs WITH pins, because "we checked" is not
@@ -234,7 +228,11 @@ one deliberate difference (`release.alternates` admits `pdf` for a HUMAN at gate
 `live_alternates` excludes it because an automated retry would send raw bytes to a text council).
 Compare the dimension the rule is about, not whole outputs.
 
-**The implemented-twice-drifts class (NINE instances across four sessions; the newest two are
+**The implemented-twice-drifts class (ELEVEN instances across five sessions; the newest two are
+#876 — `htmlFingerprintFor` still hand-spelling the frame loop that the SAME PR had just extracted
+into `readFrameText`, i.e. a copy left behind by the extraction itself — and #880, a measurement
+script re-implementing the `kept_in()` it was committed to validate. Both were caught by review, not
+by me, in the very PR that added REQ-182 ("ONE EXPORTED PREDICATE PER RULE") to the ledger. Earlier:
 #866 — `best_send` spelling `NON_SWAPPABLE_SOURCES` a FOURTH way, `not in SLICE and not in CHROME`
 being provably that same union — and #869, three more sites computing their own chrome-inclusive
 "densest": the gate@6 sibling tie-break, a measurement script's hand-copied pool, and the gate@5
@@ -265,7 +263,16 @@ radius is part of the fix** — commit the rerunnable script, never the recollec
 sentence in a comment is a claim — measure it or delete it**, because the tidy version is the one
 that survives into the next design.
 
-**The standing lesson (now on its SEVENTH shape): a measurement that cannot fail.** The newest is
+**A measurement script is EVIDENCE and is held to the standard of what it measures (#879, new).**
+The geo script's on-domain test was a bare `endswith`, so `nlrsd.org` — NORTH Little Rock, a
+different district — counted as on-domain for Little Rock's `lrsd.org`. The published corpus figure
+was **164; it is 160**, corrected in the PR body, `STAGE2_DISCOVER_DESIGN.md` §2f and REQ-180. Import
+the production predicate; never approximate it for convenience. Corollary from the same round: when
+choosing a PROXY for something you cannot measure directly, check the proxy has the property you are
+testing for — #873's first pass used `segment:main` as the late-read proxy, but main EXCLUDES chrome
+and chrome growth was the entire scenario.
+
+**The standing lesson (now on its EIGHTH shape): a measurement that cannot fail.** The newest is
 a TEST, not a sweep: #866's `assert CHROME_SOURCES <= NON_SWAPPABLE_SOURCES` — true by construction
 (the definition IS that union), and it never touched the function it claimed to guard. Replaced by a
 loop over the real set through the real `best_send`, verified to fail on 3 arms against the pre-fix
@@ -308,13 +315,13 @@ harness); the remediation-receipt exception is not STAGE-scoped (30-day expiry s
 attribution v1 reads each district's LATEST candidate plan; the `stage6_handoff/requests.py:17-18`
 docstring falsely claims Stage 7 "reads ONLY the flagged pages" — the `pages` hint never scoped
 content (the slice FILE is the scoping), a live source of wrong inferences worth a one-line issue.
-Resume-essentials (ALL re-verified 2026-08-19 on this checkpoint, on `main` at `d3e449e` — both
-PRs merged, so these are the plain post-merge numbers): `pip
+Resume-essentials (ALL re-verified 2026-08-22 on this checkpoint, on `main` at `3847775` plus the
+open PR #881 — `pytest tests/test_*_integration.py` is 256/1-FAILED without #881, 257 with it): `pip
 install -e .` → Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh
 clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect
-**2425** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **399** pass, Postgres up) +
+**2456** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **399** pass, Postgres up) +
 `pytest tests/test_*_integration.py` (expect **257** pass, 149 skipped) + `cd infrastructure/scraper
-&& npm test` (expect **91**) + `flake8 . --count --select=E9,F63,F7,F82` (expect **0** — this is CI's
+&& npm test` (expect **100**) + `flake8 . --count --select=E9,F63,F7,F82` (expect **0** — this is CI's
 blocking lint; the vulture whitelist is `per-file-ignores`'d for F821, main had been red on it since
 ebcc1a1). NB `pytest -m integration` also carries a NETWORK test (`test_model_windows_integration.py`,
 #809) that re-fetches OpenRouter and fails with "refresh the catalog" if `MODEL_WINDOWS` has drifted
@@ -349,6 +356,12 @@ because the two halves move the number in opposite directions and a combined fig
 `2026-08-19-chrome-first-send-measure.py` (#862/#870 — C1 the invariant, C2 the 244-record
 population replayed BOTH ways, C3 the 5 records whose clock times live ONLY in chrome (must never be
 send-decided — that arm is #863's watchdog), C4 #868's guarded fallback) ·
+`2026-08-21-read-timing-split-measure.py` (#863 — C1 the before-table 104/46/329/2720/17, C2 the
+acceptance property split old/new by `text_phase`, C3 the 17 zero-early records, C5 **#873's
+login_wall watchdog**, currently CLEAR at population 0) ·
+`2026-08-21-geo-ladder-regression-measure.py` (#672 — C1 the live re-route, C2 the 10 regressed rung
+pairs CLASSIFIED by mechanism, C5 the plan-aware cost: quote the NOT-in-any-capture-plan column,
+never the raw count) ·
 `2026-08-18-segment-main-alternate-measure.py` (#841 — scans segment text FROM DISK, since the DB
 cannot answer while segment `n_times` is NULL; re-run it after the post-merge re-ingest and its S1
 section should report 0 NULL).
