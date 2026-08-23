@@ -46,6 +46,7 @@ from infrastructure.acquisition.stage3_capture import headless as H3
 from infrastructure.acquisition.stage4_process import headless as H4
 
 NOTHING = "NOTHING MEASURED"
+C4_TRIALS = 7
 
 # (label, the _batch_progress key, the stage_name for completed_by_batch, the rollup getter)
 STAGES = [
@@ -128,20 +129,18 @@ def main() -> None:
     print("  which is exactly when the badge is the operator's only completeness signal.")
 
     # ------------------------------------------------------------------ C3 sizing the fix
+    # #896: C1 already paid the expensive status_for_batch call for every batch x stage and stored
+    # every DISAGREEING pair in `rows` — which is exactly the population C3 sizes. Iterate that,
+    # never re-render. (The first draft re-called fn(b) per pair, doubling the script's most
+    # expensive work to recompute numbers it already held.)
     print("\n## C3 — would keying on completed_by_batch instead of the stamp close them?")
+    bmap = {b["batch_id"]: b for b in batches}
+    nm_by_label = {label: nm for label, _key, nm, _fn in STAGES}
     closed, still = [], []
-    for b in batches:
-        p = prog.get(b["batch_id"]) or {}
-        ids = [d["district_id"] for d in b["districts"]]
-        for label, key, nm, fn in STAGES:
-            try:
-                right = fn(b).get("done", 0)
-            except Exception:
-                continue
-            if p.get(key, 0) == right:
-                continue
-            cbb = len(DS.completed_by_batch(b["batch_id"], nm, ids))
-            (closed if cbb == right else still).append((b["batch_id"], label, cbb, right))
+    for bid, label, _left, right in rows:
+        ids = [d["district_id"] for d in bmap[bid]["districts"]]
+        cbb = len(DS.completed_by_batch(bid, nm_by_label[label], ids))
+        (closed if cbb == right else still).append((bid, label, cbb, right))
     tot = len(closed) + len(still)
     if not tot:
         print(f"  {NOTHING} — no disagreements to size (see C1).")
@@ -155,25 +154,42 @@ def main() -> None:
         print("  not to a second copy of the disk check in the left pane.")
 
     # ------------------------------------------------------------------ C4 the perf constraint
-    print("\n## C4 — why the left pane must stay ONE grouped query")
-    with gdb.session_scope() as s:
-        t = time.perf_counter()
-        BSTORE._batch_progress(s)
-        grouped = (time.perf_counter() - t) * 1000
-    t = time.perf_counter()
-    for b in batches:
-        ids = [d["district_id"] for d in b["districts"]]
-        for _label, _key, nm, _fn in STAGES:
-            DS.completed_by_batch(b["batch_id"], nm, ids)
-    per_batch = (time.perf_counter() - t) * 1000
+    # #899: one unrepeated perf_counter delta on a sub-20ms operation is jitter, not a measurement
+    # — median of TRIALS with a discarded warm-up, so the printed ratio is stable across runs.
+    print("\n## C4 — why the left pane must stay ONE grouped query (median of "
+          f"{C4_TRIALS} trials, warm-up discarded)")
+
+    def _median_ms(fn, trials=None):
+        fn()                                            # warm-up, discarded
+        ts = []
+        for _ in range(trials or C4_TRIALS):
+            t0 = time.perf_counter()
+            fn()
+            ts.append((time.perf_counter() - t0) * 1000)
+        ts.sort()
+        return ts[len(ts) // 2]
+
+    def _grouped():
+        with gdb.session_scope() as s:
+            BSTORE._batch_progress(s)
+
+    def _naive():
+        for b in batches:
+            ids = [d["district_id"] for d in b["districts"]]
+            for _label, _key, nm, _fn in STAGES:
+                DS.completed_by_batch(b["batch_id"], nm, ids)
+
+    grouped = _median_ms(_grouped)
+    per_batch = _median_ms(_naive, trials=3)            # ~400ms each; 3 trials bounds the wait
     n_calls = len(batches) * len(STAGES)
     print(f"  current _batch_progress, ONE grouped query : {grouped:7.1f} ms")
     print(f"  naive per-batch completed_by_batch ({n_calls:3d} calls): {per_batch:7.0f} ms"
           f"   ({per_batch / max(grouped, 0.001):.0f}x)")
-    print(f"  per call: {per_batch / max(n_calls, 1):.1f} ms — higher than the 1.5-2.0ms a single")
-    print("  call measures in a tight loop (#886), because each call opens its OWN session and")
-    print("  each batch/stage is a fresh parameter set. Quote THIS number, not that one: the")
-    print("  relevant unit is the whole left-pane render, not one warm repeated query.")
+    print(f"  per call: {per_batch / max(n_calls, 1):.1f} ms warm. NB the single-sample draft of")
+    print("  this section reported 11-17ms grouped / ~400ms naive — mostly COLD-CACHE noise, which")
+    print("  is #899's point: the warmed medians are far lower AND the ratio is far larger, so the")
+    print("  conclusion (the left pane must stay one grouped query) only strengthens. The relevant")
+    print("  unit is the whole left-pane render, never one warm repeated query (#886's 1.5-2.0ms).")
 
     # ------------------------------------------------------------------ C5 the blind guard
     print("\n## C5 — does the one-home fitness guard catch this drift?")
@@ -189,7 +205,10 @@ def main() -> None:
         print(f"  {NOTHING} — no 'batch-scoped stage done-ness' rule found; it may have been "
               "renamed. Do not read this as a pass.")
         return
-    bp = Path("infrastructure/acquisition/stage1_queue/batch_store.py")
+    # #893: repo-root-anchored, never CWD-relative — the imports succeed from any directory (the
+    # package is pip-installed), so a bare literal would crash only HERE, deep into the run.
+    bp = (Path(__file__).resolve().parents[3]
+          / "infrastructure/acquisition/stage1_queue/batch_store.py")
     hit = bool(rule["forbid"].search(bp.read_text()))
     print(f"  rule home   : {Path(rule['home']).name}")
     print(f"  forbid regex: {rule['forbid'].pattern}")
