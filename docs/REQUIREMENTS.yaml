@@ -5062,3 +5062,60 @@ requirements:
       outcome must fall in the window the dispatch owns. #886 (merge Stage 4's two predicate calls)
       measured and declined at the call site — 1.5-2.0ms of a ~43ms render, and merging would give
       the one-home predicate a polymorphic return."
+
+  - id: REQ-186
+    github_issue: "#717 (epic #92)"
+    description: "DISPATCH INVARIANT — gate@6 composition subtracts reps a prior PRODUCTION run
+      already bought. A rep is already-extracted iff it was SENT in a prior production handoff that
+      ran, UNLESS that run errored AND the rep left no fact behind. Defined once in
+      extraction_delta.already_extracted_reps; the dispatch-layer sibling of REQ-172's capture delta."
+    type: architectural
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "Re-dispatching a district does not re-buy reps production already extracted. Falsifier:
+        compose a district whose sendables were all extracted in a prior run — today they price and
+        send as new; after, they compose to an empty send set. Four live specimens in batch_00043
+        (Little Rock, New Haven Unified, Washoe, Sweetwater); 18 of the batch's 34 sendable reps
+        (53%) are already bought"
+      - "The grain is (rec_key, file), never the district: a 7->6 alternate-rep re-dispatch
+        (REQ-118) and #473 recover-band re-dispatch the DISTRICT on purpose with a different rep.
+        Scoring at district grain would book that deliberate design as waste"
+      - "A school_fact row is per-rep PROOF that THAT rep was read and outranks the run-level error
+        flag. The simpler 'subtract reps from runs with no errors' rule was MEASURED AND REJECTED:
+        extraction.n_errors is per (district, handoff), so one errored rep re-admits its whole run
+        (district 3904378: 7 reps -> 0), needlessly re-buying 32 reps across 11 districts that
+        demonstrably succeeded. The shipped rule re-admits exactly the 8 genuine retries corpus-wide"
+      - "HOLD, never drop — the held rep stays visible at gate@6 with reason
+        `already-extracted:prior-production-run`, so a district composing zero sends is legible
+        rather than silently absent (the #679/#691 discipline)"
+      - "Runs LAST, after every ranking pass. The ranking passes elect a winner among candidates; an
+        early delta would remove a candidate from that contest and compose a WORSE send rather than
+        a cheaper one. It may change the price, never the choice — the opposite ordering from #679,
+        whose ineligibility is structural rather than historical"
+      - "An explicit `redo=True` re-admits everything (REQ-170 declared-redo posture) and is stamped
+        on the package, so preview and freeze agree (#659). It is a draft-level MODE, not a
+        per-district exception: per-district re-extraction already has two reason-bearing homes
+        (REQ-118, #473) and a third spelling would be the implemented-twice-drifts class"
+      - "Never applies to a benchmark dispatch, which exists to re-extract the same reps under
+        different councils"
+      - "The gate@6 cost preview separates NEW spend from RE-EXTRACTION spend, priced through the
+        same assembler as the send set, and the two reconstruct the redo total exactly"
+    tests:
+      - "tests/test_stage6_already_extracted_delta.py"
+      - "docs/technical-notes/production-quality-control-research/2026-08-23-already-extracted-delta-measure.py"
+    created: "2026-08-23T00:00:00Z"
+    updated: "2026-08-23T00:00:00Z"
+    notes: "Measurement overturned the obvious fix for the seventeenth time — and this round the
+      overturned proposal was the implementer's own first draft, not the issue's. It also corrected
+      the RESUME framing, which read the risk off handoff COUNTS (Little Rock 4, Cedar Rapids 3):
+      measured per rep, Little Rock is 100% duplicate and Cedar Rapids only 25%, because the count
+      cannot distinguish a deliberate alternate-rep re-dispatch from a re-buy. Corpus to date: 15
+      districts re-bought 45 reps for a prorated $0.038 — trivial in absolute terms and the reason
+      the issue is sev:minor, but the mechanism is systematic and this is a commandment-3 surface.
+      Two traps the measurement had to handle: #716 replay rows carry run_kind='production' with
+      n_calls=0/$0 (they prove extraction but bought nothing), and per-rep cost does not exist
+      anywhere, so the dollar figure is prorated attribution and a FLOOR, never a fleet forecast.
+      Deliberately NOT in scope: what to do with an already-approved district's new facts (#713's
+      charter). Per-rep partial subtraction is defensive — all 755 sent records in every frozen
+      receipt carry exactly one rep."

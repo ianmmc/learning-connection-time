@@ -186,9 +186,19 @@
       html += `<div class="q-locked" data-feat="s6-benchmark-reps">⚠ ${bmReps.length} representation(s) carry benchmark provenance and will BLOCK this freeze: ${items}. Deselect those records, or tick “benchmark dispatch” to run this as a Council Lab A/B on purpose.</div>`;
     }
     const blocks = pkg.districts.map((d) => renderDistrictBlock(d, draft));
+    // #717: the preview separates what this dispatch will BUY from what the already-extracted delta
+    // AVOIDED. Both numbers come from the server (priced through the same assembler as the send
+    // set) — the client never re-prices. Rendered only when the delta actually held something, so
+    // an ordinary first dispatch reads exactly as it did before.
+    const rx = pkg.cost.reextraction || { n_reps: 0, usd: 0 };
+    const rxLine = rx.n_reps
+      ? `<p data-feat="s6-reextraction-avoided" class="muted">+ <b>${rx.n_reps}</b> representation(s)
+           already extracted — <b>${usd(rx.usd)}</b> of re-extraction avoided by the #717 delta.</p>`
+      : "";
     html += `<div class="s6-summary">
         <p><b>${pkg.cost.n_reps}</b> representation(s) across <b>${pkg.districts.length}</b> district(s) ·
            estimated <b>${usd(pkg.cost.total_usd)}</b> <span class="badge badge-neutral">${esc(pkg.cost.provenance)}</span></p>
+        ${rxLine}
       </div>${blocks.join("") || `<div class="empty">No districts in this draft yet — "+ Add district" above.</div>`}`;
     det.innerHTML = html;
     wireDraftDetail(v.draft_id, draft);
@@ -220,6 +230,27 @@
         </div>`);
       heldRows.push(...hubHeld.map((r) => `<div class="s6-rep muted" data-feat="s6-hub-held">
           <span class="badge badge-warn" title="held by hub-priority narrowing — a labeled sibling at ≥2× the hub's in-window times would send instead (#691 yield floor)">hub-priority held</span>
+          ${r.label ? `<span class="s6-kind">${esc(r.label)}</span>` : ""}
+          <code title="${esc(r.rec_key)}">${esc(r.url || r.rec_key)}</code>
+        </div>`));
+    }
+    // #717: records held because a prior PRODUCTION run already bought the rep. Same display rule
+    // as the two blocks above — server-computed reason, badged, never hidden. This block is what
+    // makes a district composing ZERO sends legible: without it the district renders a bare "no
+    // send-eligible records" and the reviewer cannot tell "nothing found" from "already have it".
+    // Measured on batch_00043: four districts (Little Rock, New Haven Unified, Washoe, Sweetwater)
+    // compose to zero sends purely because everything they offer was extracted in a prior run.
+    const doneHeld = d.records.filter((r) => r.reason === "already-extracted:prior-production-run");
+    if (doneHeld.length) {
+      heldRows.push(`<div class="s6-rep muted" data-feat="s6-already-extracted-summary">
+          <span class="badge badge-neutral">already extracted</span>
+          <b>${doneHeld.length}</b> record(s) held — a prior production run already bought these
+          reps; re-sending re-buys the council for nothing (REQ-160: earliest wins, so the duplicate
+          result cannot change the facts). A deliberate re-extraction posts <code>redo: true</code>
+          to /api/handoff/preview + /dispatch; per-district redo is the 7&rarr;6 back-edge.
+        </div>`);
+      heldRows.push(...doneHeld.map((r) => `<div class="s6-rep muted" data-feat="s6-already-extracted">
+          <span class="badge badge-neutral" title="sent in a prior production handoff that ran; re-sending would re-buy the same council (#717)">already extracted</span>
           ${r.label ? `<span class="s6-kind">${esc(r.label)}</span>` : ""}
           <code title="${esc(r.rec_key)}">${esc(r.url || r.rec_key)}</code>
         </div>`));

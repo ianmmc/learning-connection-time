@@ -20,7 +20,7 @@ from infrastructure.acquisition.common.benchmark import effective_dispatch_type
 from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.common.timeutil import utcnow as _now
 
-DEFAULT_ROOT = paths.ACQUISITION / "handoffs"
+DEFAULT_ROOT = paths.HANDOFFS_DIR   # ONE spelling — base-layer readers (#717) use paths directly
 
 
 

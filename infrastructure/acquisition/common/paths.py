@@ -30,6 +30,10 @@ ACQUISITION = DATA_ROOT / "acquisition"
 QUEUE_DIR = ACQUISITION / "queue"                       # Stage 1 batch_*.json
 STATUS_DIR = ACQUISITION / "status"
 STATUS_FILE = STATUS_DIR / "district_status.json"       # cross-stage registry
+HANDOFFS_DIR = ACQUISITION / "handoffs"                 # immutable Stage-6 dispatch receipts
+                                                        # (stage6_handoff.handoff.DEFAULT_ROOT is
+                                                        # this; base-layer readers use it directly
+                                                        # rather than importing a stage package)
 
 # Derived per-record harvest slices (Stage-5 ingest output; regenerable). Deliberately under
 # acquisition/, NOT under raw/ — data/raw is write-once Stage-3 output (Critical Rule 5; issue #58).

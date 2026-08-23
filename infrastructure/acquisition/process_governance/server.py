@@ -2164,9 +2164,13 @@ async def handoff_preview(payload: dict):
     # preview must build under the SAME type the dispatch will — otherwise the identity token can
     # never match and every benchmark dispatch 409s as "stale".
     dispatch_type = BM.effective_dispatch_type(payload)
+    # #717: `redo` changes WHICH reps compose, so the preview must build under the same flag the
+    # dispatch will — the identical reason dispatch_type is threaded here, and the same failure if
+    # it is not (the identity token could never match and every redo would 409 as "stale").
+    redo = bool(payload.get("redo"))
     with gdb.session_scope() as con:
         pkg = H6.build_handoff_package(con, ids, overrides=overrides, verified_only=verified_only,
-                                       dispatch_type=dispatch_type)
+                                       dispatch_type=dispatch_type, redo=redo)
     # The staleness token (issue #37): dispatch rebuilds the package from the live DB, so what the
     # human approved on screen can drift (a label edit, a re-ingest) between preview and freeze. The
     # console echoes this back as `expected_identity`; dispatch 409s on mismatch.
@@ -2183,6 +2187,7 @@ async def handoff_dispatch(payload: dict):
     overrides = payload.get("overrides") or {}
     verified_only = bool(payload.get("verified_only"))
     dispatch_type = BM.effective_dispatch_type(payload)   # #618
+    redo = bool(payload.get("redo"))                       # #717 declared-redo (see /preview)
     expected_identity = payload.get("expected_identity")   # optional (issue #37) — the console always
     if not ids:                                            # sends it; a bare CLI/test POST still works
         raise HTTPException(400, "no districts selected")
@@ -2196,14 +2201,14 @@ async def handoff_dispatch(payload: dict):
             if expected_identity:
                 bundle = H6.release_bundle(con, ids, overrides=overrides,
                                            verified_only=verified_only,
-                                           dispatch_type=dispatch_type)
+                                           dispatch_type=dispatch_type, redo=redo)
                 if HND6.package_identity(bundle.package) != expected_identity:
                     raise HTTPException(409, "release changed since preview — the package that would "
                                              "be frozen no longer matches what was reviewed; "
                                              "re-preview before dispatching")
             doc, path = H6.dispatch_handoff(con, ids, created_by=actor, overrides=overrides,
                                             verified_only=verified_only, dispatch_type=dispatch_type,
-                                            bundle=bundle)
+                                            bundle=bundle, redo=redo)
     except FileExistsError:
         raise HTTPException(409, "an identical handoff was just dispatched (same content within the "
                                  "same second) — the prior one stands; retry in a moment if intended")
