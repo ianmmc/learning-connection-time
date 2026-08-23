@@ -143,9 +143,11 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 
 **Current status (2026-08-23): PRs #884/#889/#891/#900 all MERGED — #671, #673 closed; #888/#890
 filed and open (measurement committed, fix not yet written); #887 filed (design, deferred to Ian).
-`batch_00043` (the #620 recovery batch) is Stage 4 IN PROGRESS: 4/7 done, 3 running (PID live,
-~1h36m elapsed at last check — Washoe/Wyandanch/Sweetwater). The baseline is fully GREEN (see
-resume-essentials); nothing this round altered scoring, so no re-ingest is owed.**
+`batch_00043` (the #620 recovery batch) has COMPLETED Stage 4 — all 7 districts through Stage 5
+ingest (`filter/ingested`, 2026-08-23T08:19Z), campaign state committed (5b2c52e). **#717 is BUILT
+and pushed on `fix/717-already-extracted-delta` (3 commits, suites green, Playwright 17/17) — PR
+deliberately NOT opened**, held so it lands together with #901 (below). The baseline is fully GREEN
+(see resume-essentials); nothing this round altered scoring, so no re-ingest is owed.**
 
 **#671 (batch done-ness) and its review round are DONE — full mechanism in
 `docs/PROJECT_HISTORY.md`'s 2026-08-22/23 entry.** The one fact every future session needs: batch
@@ -193,10 +195,28 @@ citation, or an invented status. REQ-177–185 added; #674 amends REQ-044 rather
 chain #92 → #617 → #620 → #706 → #723 — #92 does NOT depend on #620 finishing; Stage 9 already
 writes.**
 
-1. **#717 (gate@6 already-extracted delta) BEFORE `batch_00043` reaches gate@6.** All six
-   remaining districts carry prior extractions (Little Rock 4 handoffs, Cedar Rapids 3) — without
-   the delta, re-dispatch re-buys full councils on reps already extracted. The one open issue
-   where ORDERING against the live campaign costs real money; land it before this batch's Stage 6.
+1. **#717 (gate@6 already-extracted delta) is BUILT — PR held for #901.** Branch
+   `fix/717-already-extracted-delta`, REQ-186, `verify_717_console.mjs` 17/17. Measured
+   (`2026-08-23-already-extracted-delta-measure.py`): `batch_00043` is 53% duplicate — 18 of 34
+   sendable reps already bought, and FOUR districts (Little Rock, New Haven Unified, Washoe,
+   Sweetwater) compose to ZERO new work. **This corrected the framing this list used to carry:**
+   risk was read off handoff COUNTS ("Little Rock 4, Cedar Rapids 3"); measured per REP Little Rock
+   is 100% duplicate and Cedar Rapids only 25%, because a count cannot distinguish a deliberate
+   7->6 alternate-rep re-dispatch (REQ-118) from a re-buy. Grain is `(rec_key, file)`, never the
+   district. **Still land it before `batch_00043` reaches gate@6** — that ordering is what makes it
+   worth money. **Open the PR only with #901**, so #717 does not ship a 21st undeclared
+   manifest edge (the paired item below).
+   - **PAIRED WITH #901 — arch-manifest declares receipt PRODUCERS only (sub-issue of #723).**
+     The declaration half of #723's own enforcement criterion, which already names
+     `arch-manifest.json`. Measured: **20 undeclared cross-boundary consumer edges** across
+     `discovery/candidates/captures/processed.json` (incl. `common/batch_guard.py` +
+     `common/cache_ingest.py` — the base layer reading stage artifacts, invisible to `lint-imports`
+     because it is a path glob, not an import), and the immutable `handoff_<hash>_<ts>.json`
+     declared NOWHERE despite 11 modules referencing it. #717 is the live instance: it added such
+     an edge with no manifest field to update and every gate still green. **Trap:** the retrofit
+     must ENUMERATE the 20 existing edges or explicitly grandfather them — a green suite over an
+     unenumerated baseline is a measurement that cannot fail.
+
 2. **Then #620's tail, console-driven** (confirmed against the DB, not the issue's stale list):
    route the three send-backs — Broward/Cleveland/Essex, each `sent_back` with a filed reason
    citing #691/#693/#674, all since fixed; Orange County's re-capture (`timed_out`, the #670
@@ -209,8 +229,17 @@ writes.**
    - **#640 + #625**, then **#617 closes** when #620's 27th district is written.
    - **#708 un-blocks itself** — the campaign's fresh extractions are precisely what widens the
      thin `identity_json` coverage (29/84) it's waiting on. Check it AFTER, don't force it before.
-   - **#723 stays its own track** — sequence #623 → #622 as capacity allows. Sweetener: #622 is
-     also the durable fix for #888's residue and #670's ordinary-batch case.
+   - **#723 stays its own track and still does NOT gate #92** — but it is no longer "as capacity
+     allows": it now has LIVE consumers, not theoretical ones. Sequence #623 → #622 → #645 → #624,
+     plus #901 (re-homed here 2026-08-23). **#645 is the one to watch** — the frozen handoff's
+     per-record payload lives only on disk, and #717 made it a SECOND active reader and the first in
+     the SPEND path (`extraction_delta` at gate@6 decides what gets BOUGHT; `closing_argument` at
+     gate@8 only decides what a human sees). Verified there is no gov_db home for the sent-rep set
+     today (`extraction` is per (district,handoff); `handoff` has `n_reps` but no rep list;
+     `school_fact` cannot see a clean-but-empty rep; `extraction_request` is 7->6 only), so the
+     receipt read is currently the ONLY way to answer it — a data-model gap, not a shortcut. When
+     #645 lands, `already_extracted_reps` switches to the DB in ONE call site (REQ-182).
+     Sweetener: #622 is also the durable fix for #888's residue and #670's ordinary-batch case.
 4. **#887 — in-flight vs stranded badge, design, epic #96.** #671 collapsed three states (never
    dispatched / in-flight / stranded-by-a-dead-run) into one `queued` badge; 8 live districts were
    caught mid-strand with no console signal. No new data needed (the `dispatched` event + job
