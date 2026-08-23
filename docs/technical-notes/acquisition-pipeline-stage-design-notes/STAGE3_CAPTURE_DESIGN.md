@@ -297,10 +297,14 @@ that district's own `finish_district` overwrote its `captures.json`/cache slice,
 median, 38m15s longest.
 
 The conjunct is now **`DS.completed_by_batch`** — dispatched by this batch **and a stage OUTCOME
-(`stage IS NOT NULL`) after that dispatch** — the one home for the rule, so the same correction reached
-Stage 2 and Stage 4's identical `stale-disk ∧ …` views in the same edit. Keyed on event ORDER rather
-than the completion event's `batch_id`, because completion events are only stamped from #647 onward
-(stage-3: 28 of 147 rows) and keying on the stamp would declare 18 historical follow-up batches un-run.
+(`stage IS NOT NULL`) landing in the window that dispatch owns** (after it, before the next dispatch of
+the same district+stage) — the one home for the rule, so the same correction reached Stage 2 and Stage
+4's identical `stale-disk ∧ …` views in the same edit. Keyed on event ORDER rather than the completion
+event's `batch_id`, because completion events are only stamped from #647 onward (stage-3: 64 of 183
+outcomes, 35.0%) and keying on the stamp would declare 18 historical follow-up batches un-run — measured
+at 36 genuine completions withdrawn, which is why #885's proposed one-line `batch_id` filter was
+rejected. The **window** half supplies what order alone cannot: `event_id` is a global serial, so
+without it a LATER batch's outcome finishes an EARLIER batch, and the trigger is remediation itself.
 Non-`done` districts take the zeroed row defaults, so the stale metrics stopped rendering as current
 with no second change.
 

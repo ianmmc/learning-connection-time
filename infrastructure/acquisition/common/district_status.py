@@ -220,6 +220,20 @@ def completed_by_batch(batch_id: str, stage_name: str, ids: list) -> set:
     stage outcome is `batch_00000`'s benchmark injection three weeks BEFORE `batch_00031` dispatched
     it).
 
+    THE OUTCOME MUST BELONG TO THIS DISPATCH, NOT MERELY FOLLOW IT (#885). "After this batch's
+    dispatch" alone is satisfied by a LATER batch's completion, because `event_id` is a global
+    serial. That reintroduces #671 one level up — dispatch-ownership checked, completion-ownership
+    not — and the trigger is the remediation path itself: re-run one of the 7 stuck districts under
+    a new batch and the OLD batch's console page (clickable indefinitely) would flip back to `done`
+    and show the NEW batch's metrics. So the outcome must also land BEFORE the next dispatch of the
+    same district+stage — the window this dispatch owns, closed by whatever superseded it.
+
+    Why not simply `AND e.batch_id = :b`, as the issue proposed: only 22.4% of `process` outcomes
+    and 35.0% of `capture` outcomes carry a batch_id at all (they were stamped from #647 onward),
+    so that filter WITHDRAWS 36 GENUINE COMPLETIONS across the redo batches — the precise regression
+    the event-order design exists to avoid. Measured both ways before choosing; the window rule
+    agrees with the pre-#885 predicate on all 159 live done-districts while still closing the hole.
+
     Strictly contained in the old predicate: asserted across all 43 batches x 3 stages on the live
     corpus, this set is never a superset of `dispatched_by_batch`'s, so the change can only ever
     withdraw a false `done` — never assert a new one. Rerunnable:
@@ -231,13 +245,22 @@ def completed_by_batch(batch_id: str, stage_name: str, ids: list) -> set:
                         FROM state_event
                        WHERE stage_name = :nm AND event_type = 'dispatched'
                          AND batch_id = :b AND district_id = ANY(:ids)
-                       GROUP BY district_id)
-                    SELECT disp.district_id FROM disp
+                       GROUP BY district_id),
+                    owned AS (
+                      SELECT disp.district_id, disp.dispatch_id,
+                             (SELECT MIN(n.event_id) FROM state_event n
+                               WHERE n.district_id = disp.district_id
+                                 AND n.stage_name = :nm AND n.event_type = 'dispatched'
+                                 AND n.event_id > disp.dispatch_id) AS superseded_at
+                        FROM disp)
+                    SELECT owned.district_id FROM owned
                      WHERE EXISTS (SELECT 1 FROM state_event e
-                                    WHERE e.district_id = disp.district_id
+                                    WHERE e.district_id = owned.district_id
                                       AND e.stage_name = :nm
                                       AND e.stage IS NOT NULL
-                                      AND e.event_id > disp.dispatch_id)"""),
+                                      AND e.event_id > owned.dispatch_id
+                                      AND (owned.superseded_at IS NULL
+                                           OR e.event_id < owned.superseded_at))"""),
             {"nm": stage_name, "b": batch_id, "ids": ids or [""]})}
 
 

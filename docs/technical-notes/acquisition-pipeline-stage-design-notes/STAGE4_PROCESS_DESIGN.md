@@ -282,10 +282,24 @@ timeouts). What landed (code is authoritative — this records the shape + the d
   processable districts processed.", the false `done` also removed the means of correcting it — the same
   view-owns-the-button failure #647 fixed at the dispatch end, recurring at the completion end.
 
-  Both conjuncts now use **`DS.completed_by_batch`** (dispatched by this batch AND a stage OUTCOME after
-  that dispatch). All 7 read `todo` again with the Run control restored. `captured` is scoped by the same
-  helper because it is this stage's UPSTREAM GATE — a district whose re-capture was dispatched but never
-  finished must read `awaiting_capture`, not `todo`. Rerunnable evidence:
+  Both conjuncts now use **`DS.completed_by_batch`** (dispatched by this batch AND a stage OUTCOME in the
+  window that dispatch owns). All 7 read `todo` again with the Run control restored. `captured` is scoped
+  by the same helper because it is this stage's UPSTREAM GATE — a district whose re-capture was dispatched
+  but never finished must read `awaiting_capture`, not `todo`.
+
+  **#885 — the window half, and why remediating these 7 was the trigger.** The first cut asked only for an
+  outcome AFTER the dispatch. `event_id` is a global serial, so a LATER batch's outcome satisfied that for
+  an earlier batch too: re-run `2500587` under a new batch and `batch_00024`'s page — clickable
+  indefinitely — flips back to `done` displaying the NEW batch's doc counts. #671 one level up, with the
+  fix for it as the trigger. The review's proposed `AND e.batch_id = :b` was measured and rejected (it
+  withdraws 36 genuine completions; only 22.4% of `process` outcomes carry a batch_id). Latent in the
+  corpus today, so its coverage is CONSTRUCTED:
+  `tests/test_stage4_headless.py::test_885_a_later_batchs_completion_does_not_finish_an_earlier_batch`.
+
+  **#886 — merging Stage 4's two predicate calls: measured and declined.** 1.5ms at 9 districts, 2.0ms at
+  all 175, against a ~43ms status render. Merging would give the one-home predicate a per-stage return
+  type and couple two genuinely different questions (upstream gate vs. own done-ness). Pinned at the call
+  site so the next reader does not re-derive it. Rerunnable evidence:
   `docs/technical-notes/production-quality-control-research/2026-08-22-batch-done-predicate-measure.py`
   (C1 the strictly-withdrawing invariant, C2 this population, C4 the drain watchdog).
 - **`server.py`** — `GET /api/process/{batch_id}` (status) + `POST /api/process/{batch_id}/run`

@@ -21,6 +21,9 @@ for a stage OUTCOME (`stage IS NOT NULL`) landing AFTER that dispatch.
       the records the choice moves. (Shipped: it does NOT — a batch that errored did not finish.)
   C4  watchdog: districts dispatched with no outcome since. C2's population should drain as these
       are re-run; a NEW entry here is a run that died without writing a failure event.
+  C5  #885's cross-batch hole: an outcome must belong to the window THIS dispatch owns, not merely
+      follow it. Currently LATENT — the trigger is remediating C2's population — so C5 also names
+      the pending triggers. Latent is not absent.
 
 Usage:  python3 docs/technical-notes/production-quality-control-research/2026-08-22-batch-done-predicate-measure.py
 """
@@ -67,6 +70,46 @@ def _outcome_counts_failed(batch_id: str, stage_name: str, ids: list) -> set:
                      WHERE EXISTS (SELECT 1 FROM state_event e
                                     WHERE e.district_id = disp.district_id AND e.stage_name = :nm
                                       AND e.event_type <> 'dispatched'
+                                      AND e.event_id > disp.dispatch_id)"""),
+            {"nm": stage_name, "b": batch_id, "ids": ids or [""]})}
+
+
+def _order_only_after_dispatch(batch_id: str, stage_name: str, ids: list) -> set:
+    """The PRE-#885 shipped rule: an outcome merely AFTER this batch's dispatch, from any batch.
+
+    Not a production predicate — the baseline C5 measures against. `event_id` is a global serial, so
+    a later batch's outcome satisfies this for an earlier batch too."""
+    with gdb.session_scope() as con:
+        return {r[0] for r in con.execute(
+            text("""WITH disp AS (
+                      SELECT district_id, MAX(event_id) AS dispatch_id FROM state_event
+                       WHERE stage_name = :nm AND event_type = 'dispatched'
+                         AND batch_id = :b AND district_id = ANY(:ids)
+                       GROUP BY district_id)
+                    SELECT disp.district_id FROM disp
+                     WHERE EXISTS (SELECT 1 FROM state_event e
+                                    WHERE e.district_id = disp.district_id AND e.stage_name = :nm
+                                      AND e.stage IS NOT NULL
+                                      AND e.event_id > disp.dispatch_id)"""),
+            {"nm": stage_name, "b": batch_id, "ids": ids or [""]})}
+
+
+def _batch_id_filtered(batch_id: str, stage_name: str, ids: list) -> set:
+    """#885's PROPOSED fix — outcome after dispatch AND `e.batch_id = :b`. REJECTED, kept to show why.
+
+    Only 22.4% of `process` outcomes and 35.0% of `capture` outcomes carry a batch_id at all (they
+    have been stamped only since #647), so this withdraws genuine historical completions wholesale."""
+    with gdb.session_scope() as con:
+        return {r[0] for r in con.execute(
+            text("""WITH disp AS (
+                      SELECT district_id, MAX(event_id) AS dispatch_id FROM state_event
+                       WHERE stage_name = :nm AND event_type = 'dispatched'
+                         AND batch_id = :b AND district_id = ANY(:ids)
+                       GROUP BY district_id)
+                    SELECT disp.district_id FROM disp
+                     WHERE EXISTS (SELECT 1 FROM state_event e
+                                    WHERE e.district_id = disp.district_id AND e.stage_name = :nm
+                                      AND e.stage IS NOT NULL AND e.batch_id = :b
                                       AND e.event_id > disp.dispatch_id)"""),
             {"nm": stage_name, "b": batch_id, "ids": ids or [""]})}
 
@@ -204,6 +247,59 @@ def main() -> None:
             {"st": list(STAGES)}).scalar()
     print(f"  {tot} dispatch(es) awaiting an outcome."
           + ("  (matches C2 — nothing has been re-run yet)" if tot == len(rows) else ""))
+
+    # ---------------------------------------------------------------- C5 the cross-batch hole
+    print("\n## C5 — #885: does an outcome belong to the window this dispatch OWNS?")
+    stale_cross = []
+    for b in batches:
+        ids = [d["district_id"] for d in b["districts"]]
+        for st in STAGES:
+            order_only = _order_only_after_dispatch(b["batch_id"], st, ids)
+            owned = DS.completed_by_batch(b["batch_id"], st, ids)
+            assert not (owned - order_only), f"owned superset of order-only at {b['batch_id']}/{st}"
+            for did in sorted(order_only - owned):
+                stale_cross.append((b["batch_id"], st, did))
+    if stale_cross:
+        print(f"  {len(stale_cross)} district/stage rows where a LATER batch's outcome would")
+        print("  otherwise have finished an EARLIER batch (the shipped rule refuses them):\n")
+        for bid, st, did in stale_cross:
+            print(f"    {bid:<14}{st:<9}{did}")
+    else:
+        print(f"  {NOTHING} — 0 cross-batch rows in the corpus today. This is LATENT, NOT ABSENT:")
+        print("  the hole opens the moment a stuck district is re-dispatched under a NEW batch,")
+        print("  which is exactly C2's remediation path. Pending triggers (re-running any of these")
+        print("  would, pre-#885, have flipped the named older batch back to a false `done`):")
+        if not rows:
+            print("    (none — C2 is empty, so there is nothing to trigger it)")
+        for r in rows:
+            print(f"    re-running {r[2]} ({r[1]}) would corrupt {r[0]}")
+        print("  Constructed coverage lives in the suite, since the corpus cannot show it:")
+        print("  tests/test_stage4_headless.py::"
+              "test_885_a_later_batchs_completion_does_not_finish_an_earlier_batch")
+
+    # ---------------------------------------------------------------- C6 the rejected fix
+    print("\n## C6 — why #885's PROPOSED fix (`AND e.batch_id = :b`) was rejected")
+    lost = []
+    for b in batches:
+        ids = [d["district_id"] for d in b["districts"]]
+        for st in STAGES:
+            owned = DS.completed_by_batch(b["batch_id"], st, ids)
+            for did in sorted(owned - _batch_id_filtered(b["batch_id"], st, ids)):
+                lost.append((b["batch_id"], st, did))
+    if not lost:
+        print(f"  {NOTHING} — the batch_id filter withdraws nothing in this corpus, so the two")
+        print("  rules cannot be told apart here. (Was 36 at the time of the decision; if this")
+        print("  has genuinely gone to zero, every outcome is now stamped and the filter would")
+        print("  be safe — re-open the choice rather than assuming this printout is a pass.)")
+    else:
+        by_stage: dict = {}
+        for r in lost:
+            by_stage[r[1]] = by_stage.get(r[1], 0) + 1
+        print(f"  It withdraws {len(lost)} GENUINE completions the shipped rule keeps: {by_stage}.")
+        print("  These are historical outcomes stamped before #647, whose batch_id is NULL — the")
+        print("  regression the event-order design exists to avoid. Sample:")
+        for bid, st, did in lost[:6]:
+            print(f"    {bid:<14}{st:<9}{did}")
 
 
 if __name__ == "__main__":

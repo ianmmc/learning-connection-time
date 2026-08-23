@@ -161,6 +161,14 @@ def status_for_batch(batch: dict) -> dict:
     # `done` also removed the means of correcting it. They now read `todo` and are runnable again.
     captured = {did for did, dk in ondisk.items() if (dk["dir"] / "captures.json").exists()}
     processed = {did for did, dk in ondisk.items() if (dk["dir"] / "processed.json").exists()}
+    #
+    # #886 asked for these two calls to be merged into one query. MEASURED AND DECLINED: one call
+    # is 1.5ms at 9 districts and 2.0ms at all 175 (the window subquery scales flat), against a
+    # ~43ms full status render — the second call is ~3% of the request. Merging costs more than it
+    # saves: `completed_by_batch` would have to return per-stage sets, so the ONE home for the rule
+    # (REQ-182) grows a polymorphic return or a second entry point, and the two calls answer
+    # genuinely different questions — the UPSTREAM GATE vs. this stage's own done-ness — which
+    # merging would couple. Re-open if the render itself becomes slow; the predicate is not why.
     if BT.redoes_attempted(batch):
         captured &= DS.completed_by_batch(batch["batch_id"], "capture", ids)
         processed &= DS.completed_by_batch(batch["batch_id"], "process", ids)

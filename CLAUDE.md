@@ -165,6 +165,19 @@ that dispatch), keyed on event ORDER so the pre-#647 unstamped era still reads c
 strictly withdrawing: over 43 batches × 3 stages the corrected set is never a superset. Retires
 #670's *precedence* half for redo batches as a side effect (`1201440` now reads `timed_out`).
 
+**Review round #885/#886 absorbed into PR #884 — and #885 is the measure-first lesson AGAIN, on a
+review finding.** #885's MECHANISM was real and sev:critical: the first predicate asked only for an
+outcome AFTER this batch's dispatch, and `event_id` is a global serial, so a LATER batch's outcome
+finished an EARLIER batch — #671 one level up, whose TRIGGER is the remediation of #671's own 7 stuck
+districts. But its PROPOSED FIX (`AND e.batch_id = :b`) was wrong and measurably so: only 22.4% of
+`process` outcomes carry a batch_id, so that filter withdraws **36 genuine completions**. Shipped
+instead: the outcome must land in the WINDOW the dispatch owns (after it, before the next dispatch of
+the same district+stage) — agrees with the pre-#885 rule on all 159 live done-districts AND closes
+the hole. **Latent is not absent:** the corpus shows 0 cross-batch rows because remediation has not
+run, so coverage is CONSTRUCTED in the suite and C5 names the 8 pending triggers. #886 (merge Stage
+4's two predicate calls) measured and DECLINED — 1.5-2.0ms of a ~43ms render, and it would give the
+one-home predicate a polymorphic return; pinned at the call site.
+
 **#863's corpus property clears only on RE-CAPTURE.** `page.txt` and the segments are now one
 read, so `page.main.txt <= page.txt` holds by construction — but only for records captured after
 the fix. `text_phase` (`final`|`early`) marks them; it lives in the Stage-3 receipt, not the DB.
@@ -345,7 +358,7 @@ Resume-essentials (ALL re-verified 2026-08-22 on `main` post-#881/#882 — the b
 GREEN; no known-red command): `pip
 install -e .` → Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh
 clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect
-**2457** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **399** pass, Postgres up) +
+**2457** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **400** pass, Postgres up) +
 `pytest tests/test_*_integration.py` (expect **257** pass, 149 skipped) + `cd infrastructure/scraper
 && npm test` (expect **100**) + `flake8 . --count --select=E9,F63,F7,F82` (expect **0** — this is CI's
 blocking lint; the vulture whitelist is `per-file-ignores`'d for F821, main had been red on it since

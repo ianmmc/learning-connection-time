@@ -242,9 +242,15 @@ stage-done marker with no per-run receipt to disambiguate — exactly the invers
 truth → gov_db-is-truth, disk-as-corroborating-receipt) #622/#623 perform.
 
 **#671 CLOSED the acute half without waiting for that inversion (2026-08-22).** The scoping conjunct is
-now `DS.completed_by_batch` — this batch dispatched it **and a stage OUTCOME (`stage IS NOT NULL`) landed
-after that dispatch** — keyed on event ORDER, not the completion event's `batch_id`, so it is correct in
-the pre-#647 unstamped era too. Two findings made this cheaper than the issue assumed. First, the window
+now `DS.completed_by_batch` — this batch dispatched it, **and a stage OUTCOME (`stage IS NOT NULL`) landed
+in the window that dispatch owns** (after it, and before the next dispatch of the same district+stage).
+Keyed on event ORDER, not the completion event's `batch_id`, so it is correct in the pre-#647 unstamped
+era too — only 22.4% of `process` outcomes carry a `batch_id`, and a stamp-keyed filter withdraws 36
+genuine completions (#885, measured; the review's proposed one-line fix was rejected on that evidence).
+The **window** half is what makes ownership, not merely order, the test: `event_id` is a global serial,
+so "after this dispatch" alone is satisfied by a LATER batch's outcome — and the trigger for that is the
+remediation path itself, re-running a stuck district under a new batch. Latent in the corpus, so its
+coverage is constructed in the suite rather than measured. Two findings made this cheaper than the issue assumed. First, the window
 is **not only transient**: 7 districts (`batch_00024/26/27/29`) had been dispatched to Stage 4 on
 2026-07-22, never completed, and had read `done` off a prior run's `processed.json` for **32 days** — and
 since `retriable == todo + failed == 0` hides the console's Run control, *the false `done` suppressed its
