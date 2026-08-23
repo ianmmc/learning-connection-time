@@ -48,6 +48,11 @@ _GRANDFATHERED = {
     # NOT import the modules it polices (importing would prove nothing about their text, and the
     # policed set includes test files). Same shape as test_arch_manifest.py.
     "test_one_home_fitness.py",
+    # test_673_vintage_surface.py pins static/app.js SOURCE (no JS harness exists — the standing
+    # documented deferral): the client's vintage read must come from the signals dict, never a
+    # phantom payload-root field. Nothing production-Python to import; the render half lives in
+    # infrastructure/scraper/verify_673_console.mjs (live-server Playwright, not CI-runnable).
+    "test_673_vintage_surface.py",
     # test_state_catalog.py validates docs/state-integrations/state_data_catalog.yaml
     # (the SEA-campaign source-of-truth written by probe/acquire agents) — pure-YAML
     # fitness function, no production Python involved

@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-08-23T05:29:33Z",
+  "last_updated": "2026-08-23T06:23:31Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -362,10 +362,10 @@
       "name": "Jefferson County",
       "state": "AL",
       "furthest_stage": 7,
-      "stage_name": "capture",
-      "outcome": "captured_partial",
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00026",
       "history": [
         {
           "stage": 1,
@@ -503,6 +503,18 @@
           "at": "2026-08-23T05:04:13Z",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-08-23T05:35:07Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-23T05:35:29Z"
         }
       ],
       "notes": "4 not_attempted (capture deadline reached)"
@@ -726,10 +738,10 @@
       "name": "Tuscaloosa County",
       "state": "AL",
       "furthest_stage": 7,
-      "stage_name": "capture",
-      "outcome": "captured_all",
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00027",
       "history": [
         {
           "stage": 1,
@@ -867,6 +879,18 @@
           "at": "2026-08-23T05:04:17Z",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_partial",
+          "at": "2026-08-23T05:52:19Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-23T05:52:32Z"
         }
       ],
       "notes": "gate@1 auto-approved (follow-up autoflow) batch_00027"
@@ -1963,8 +1987,8 @@
       "name": "LITTLE ROCK SCHOOL DISTRICT",
       "state": "AR",
       "furthest_stage": 7,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "stage_name": "capture",
+      "outcome": "captured_partial",
       "topology": null,
       "batch_id": "batch_00043",
       "history": [
@@ -2218,9 +2242,46 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-08-23T05:13:29Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-23T06:00:07Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-23T06:00:27Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-23T06:09:44Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-23T06:13:48Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_partial",
+          "at": "2026-08-23T06:15:53Z"
         }
       ],
-      "notes": "3004896917ca"
+      "notes": "1 needs_oauth_reauth"
     },
     "0512660": {
       "name": "SPRINGDALE SCHOOL DISTRICT",
@@ -3469,8 +3530,8 @@
       "name": "New Haven Unified",
       "state": "CA",
       "furthest_stage": 7,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "stage_name": "capture",
+      "outcome": "captured_partial",
       "topology": null,
       "batch_id": "batch_00043",
       "history": [
@@ -3702,9 +3763,46 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-08-23T05:13:29Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-23T06:00:07Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-23T06:00:27Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-23T06:07:37Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-23T06:13:48Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_partial",
+          "at": "2026-08-23T06:16:17Z"
         }
       ],
-      "notes": "0e1bf02c3ea6"
+      "notes": "1 needs_oauth_reauth"
     },
     "0634320": {
       "name": "San Diego Unified",
@@ -4438,8 +4536,8 @@
       "name": "New Haven School District",
       "state": "CT",
       "furthest_stage": 7,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "stage_name": "capture",
+      "outcome": "captured_all",
       "topology": null,
       "batch_id": "batch_00043",
       "history": [
@@ -4677,9 +4775,46 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-08-23T05:13:29Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-23T06:00:07Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-23T06:00:27Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-23T06:03:38Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-23T06:13:48Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-08-23T06:18:17Z"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "gate@1 approved batch_00043"
     },
     "0904830": {
       "name": "Waterbury School District",
@@ -6000,10 +6135,10 @@
       "name": "Northwestern CUSD 2",
       "state": "IL",
       "furthest_stage": 9,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00029",
       "history": [
         {
           "stage": 1,
@@ -6213,6 +6348,18 @@
           "at": "2026-08-23T05:04:22Z",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_partial",
+          "at": "2026-08-23T05:42:07Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-23T05:42:23Z"
         }
       ],
       "notes": "74456449e8db"
@@ -6734,8 +6881,8 @@
       "name": "Cedar Rapids Comm School District",
       "state": "IA",
       "furthest_stage": 7,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "stage_name": "capture",
+      "outcome": "captured_all",
       "topology": null,
       "batch_id": "batch_00043",
       "history": [
@@ -6970,9 +7117,46 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-08-23T05:13:29Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-23T06:00:07Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-23T06:00:27Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-23T06:01:59Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-23T06:13:48Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-08-23T06:20:02Z"
         }
       ],
-      "notes": "gate@1 approved batch_00042"
+      "notes": "gate@1 approved batch_00043"
     },
     "1915840": {
       "name": "Knoxville Comm School District",
@@ -10116,8 +10300,8 @@
       "name": "Washoe County",
       "state": "NV",
       "furthest_stage": 7,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "stage_name": "capture",
+      "outcome": "captured_all",
       "topology": null,
       "batch_id": "batch_00043",
       "history": [
@@ -10367,9 +10551,46 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-08-23T05:13:29Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-23T06:00:07Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-23T06:00:27Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-23T06:06:44Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-23T06:13:48Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-08-23T06:23:07Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "gate@1 approved batch_00043"
     },
     "3300030": {
       "name": "North Country Charter Academy",
@@ -12418,8 +12639,8 @@
       "name": "WYANDANCH UNION FREE SCHOOL DISTRICT",
       "state": "NY",
       "furthest_stage": 5,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "stage_name": "capture",
+      "outcome": "captured_all",
       "topology": null,
       "batch_id": "batch_00043",
       "history": [
@@ -12617,9 +12838,46 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-08-23T05:13:29Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-23T06:00:07Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-23T06:00:27Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-23T06:09:59Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-23T06:13:48Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-08-23T06:23:22Z"
         }
       ],
-      "notes": "gate@1 approved batch_00035"
+      "notes": "gate@1 approved batch_00043"
     },
     "3700106": {
       "name": "Success Institute Charter School",
@@ -14635,8 +14893,8 @@
       "name": "Redbank Valley SD",
       "state": "PA",
       "furthest_stage": 7,
-      "stage_name": "capture",
-      "outcome": "captured_all",
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00025",
       "history": [
@@ -14885,6 +15143,18 @@
           "at": "2026-08-23T05:04:09Z",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_partial",
+          "at": "2026-08-23T05:37:40Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-23T05:38:26Z"
         }
       ],
       "notes": "gate@1 abandoned batch_00022: Re-ran in batch_00025"
@@ -15875,10 +16145,10 @@
       "name": "UNION HILL ISD",
       "state": "TX",
       "furthest_stage": 7,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
-      "batch_id": "batch_00043",
+      "batch_id": "batch_00025",
       "history": [
         {
           "stage": 1,
@@ -16164,9 +16434,30 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-08-23T05:13:29Z"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-08-23T05:38:15Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-23T05:38:26Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-23T05:38:53Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
         }
       ],
-      "notes": "27b64cab58a9"
+      "notes": "reject district 4843560"
     },
     "4900025": {
       "name": "North Star Academy",
@@ -17613,8 +17904,8 @@
       "name": "Sweetwater County School District #1",
       "state": "WY",
       "furthest_stage": 7,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "stage_name": "capture",
+      "outcome": "captured_all",
       "topology": null,
       "batch_id": "batch_00043",
       "history": [
@@ -17858,9 +18149,46 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-08-23T05:13:29Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-23T06:00:07Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-23T06:00:27Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-23T06:10:58Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-23T06:13:48Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-08-23T06:23:31Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "gate@1 approved batch_00043"
     },
     "5900038": {
       "name": "Circle of Life Academy",
