@@ -141,42 +141,38 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-08-22): PRs #872/#881/#882/#883 all MERGED (`9c9bde3`) — #863, #672, #861
-closed. #671 is IN FLIGHT on `fix/671-batch-done-predicate`.** #872 carried the Stage-3
-single-instant DOM read (#863), Stage-2 rung-regression recording (#672), and a `REQUIREMENTS.yaml`
-audit that gave the ledger its own fitness function; review round #873-#880 was absorbed into the
-same PR — six fixed, #873/#875 closed as not-bugs with pins. Then #881 (`deepseek-v3.2` catalog
-refresh, caught by #809's network canary), #882 (checkpoint), #883 (#861 — one name, one formula).
-The live governance DB is UNCHANGED since the 2026-08-19 re-ingest (116 districts / 3,561 records /
-2,614 labels); nothing has altered scoring, so no re-ingest is owed, and the baseline is GREEN.
+**Current status (2026-08-23): PRs #884/#889/#891/#900 all MERGED — #671, #673 closed; #888/#890
+filed and open (measurement committed, fix not yet written); #887 filed (design, deferred to Ian).
+`batch_00043` (the #620 recovery batch) is Stage 4 IN PROGRESS: 4/7 done, 3 running (PID live,
+~1h36m elapsed at last check — Washoe/Wyandanch/Sweetwater). The baseline is fully GREEN (see
+resume-essentials); nothing this round altered scoring, so no re-ingest is owed.**
 
-**#671 was filed as a design question and is a WRONG PREDICATE — the SIXTEENTH instance of
-measure-first, and a new shape of it.** Batch-scoped done-ness was `stale disk artifact ∧ this
-batch DISPATCHED it`, and dispatch is stamped for the whole todo list up front, so a redo district
-holding a prior artifact read `done` from t=0. The issue measured that as a ≤38-minute transient
-window and asked what the badge should *say*. Both premises were incomplete: **the window is not
-transient** (7 districts dispatched to Stage 4 on 2026-07-22 had read `done` off a prior run for
-**32 days**), and **no design decision was needed** — non-`done` districts already take the zeroed
-row defaults, so one predicate change also stops the stale metrics rendering as current. The new
-shape: because `stage4.js` hides the Run control at `todo + failed == 0`, **the false `done`
-suppressed its own fix** — the console asserted completion and simultaneously removed the means of
-correcting it. Fix is `DS.completed_by_batch` (dispatched by this batch AND a stage OUTCOME after
-that dispatch), keyed on event ORDER so the pre-#647 unstamped era still reads correctly. Measured
-strictly withdrawing: over 43 batches × 3 stages the corrected set is never a superset. Retires
-#670's *precedence* half for redo batches as a side effect (`1201440` now reads `timed_out`).
+**#671 (batch done-ness) and its review round are DONE — full mechanism in
+`docs/PROJECT_HISTORY.md`'s 2026-08-22/23 entry.** The one fact every future session needs: batch
+done-ness is `DS.completed_by_batch(batch_id, stage_name, ids)` — dispatched by this batch AND a
+stage outcome INSIDE THE WINDOW that dispatch owns (before the next dispatch of the same
+district+stage). This is the ONE home for the rule (REQ-182); never re-key done-ness off
+`dispatched_by_batch` (retired) or a bare `batch_id = :b` filter (measured to withdraw 36 genuine
+completions — most historical outcomes predate the stamp).
 
-**Review round #885/#886 absorbed into PR #884 — and #885 is the measure-first lesson AGAIN, on a
-review finding.** #885's MECHANISM was real and sev:critical: the first predicate asked only for an
-outcome AFTER this batch's dispatch, and `event_id` is a global serial, so a LATER batch's outcome
-finished an EARLIER batch — #671 one level up, whose TRIGGER is the remediation of #671's own 7 stuck
-districts. But its PROPOSED FIX (`AND e.batch_id = :b`) was wrong and measurably so: only 22.4% of
-`process` outcomes carry a batch_id, so that filter withdraws **36 genuine completions**. Shipped
-instead: the outcome must land in the WINDOW the dispatch owns (after it, before the next dispatch of
-the same district+stage) — agrees with the pre-#885 rule on all 159 live done-districts AND closes
-the hole. **Latent is not absent:** the corpus shows 0 cross-batch rows because remediation has not
-run, so coverage is CONSTRUCTED in the suite and C5 names the 8 pending triggers. #886 (merge Stage
-4's two predicate calls) measured and DECLINED — 1.5-2.0ms of a ~43ms render, and it would give the
-one-home predicate a polymorphic return; pinned at the call site.
+**#673 (gate@5 vintage surface) is DONE.** The client reads vintage from `s.content_school_year` —
+bound ONCE in `renderPanel` as `const vintage = ...` — never a second inline spelling; the pin test
+enforces exactly one occurrence. `verify_673_console.mjs` is the house-pattern render check, 12/12
+PASS on the real TAOS records.
+
+**#888 (left-pane vs stage-view disagreement) is OPEN — measured, not yet fixed.** The left-pane
+badge (`batch_store._batch_progress`) and the stage-view header (`status_for_batch`) answer "is this
+batch done" from two different queries; the left pane under-reports because it depends on the same
+unreliable `batch_id` stamp #885 measured. Rerun
+`2026-08-23-leftpane-vs-stageview-measure.py` before touching it — the corpus moves under this
+script every time a batch completes (31 disagreements at filing, 27 the next day).
+
+**#890 (Stage-4 tool timing) is OPEN, epic #128.** No Stage-4 tool has ever been timed anywhere —
+not the DB, not the receipt, not the state_event log — so `2026-08-23-tool-redundancy-measure.py`'s
+verdicts are REDUNDANCY, never speedup. It found `camelot_hybrid`/`camelot_stream` contribute almost
+nothing unique (dropping both costs 0.21% of clock times), but `tesseract_raster` — the most
+valuable tool measured (22% of its own yield is unique) — is also likely the most expensive, so the
+redundant tools may already be the cheap ones. Don't act on the redundancy finding without #890.
 
 **#863's corpus property clears only on RE-CAPTURE.** `page.txt` and the segments are now one
 read, so `page.main.txt <= page.txt` holds by construction — but only for records captured after
@@ -193,55 +189,66 @@ is mid-build on open epic #617 and legitimately carries tests). `tests/test_requ
 is 18 tests and will fail the build on a phantom REQ id, a stale `last_updated`, an orphaned test
 citation, or an invented status. REQ-177–185 added; #674 amends REQ-044 rather than duplicating it.
 
-**Next (RESUME HERE — 2026-08-22):**
-1. **The Stage 2-4 console triple → #723. #671's PREDICATE is done (PR open); what remains is
-   #669 + #670's residue, and one cosmetic call.**
-   - **#669 is now the largest unblocked piece.** Arm 1a (the confirm dialog asserting the
-     OPPOSITE of what redo does) is trivial and lands alone — NB it is in BOTH `stage3.js:160`
-     and `stage4.js:159`; the issue only names stage3. Arm 1b (cumulative counts in the
-     run-summary position) and Arm 2 (no fresh-vs-carried signal EXISTS to scope) ride #623/#640.
-   - **#670's residue:** ORDINARY batches still let artifact-existence outrank a failure event
-     (#671 only scoped redo batches), and the *completeness* question — was a timed-out capture
-     truncated? — is unanswerable without #623's intended-vs-achieved receipt counts.
-   - **The one cosmetic call left from #671, Ian's:** a dispatched-but-unfinished district now
-     reads `todo`, which is honest and keeps the Run control correctly suppressed mid-run
-     (`canRun` already gates on `!running`). Whether it deserves a visually distinct `in-flight`
-     badge is a look-at-the-console decision, deliberately NOT guessed. Cheap either way.
-2. **#708 — OCR name-mangling. BLOCKED ON DATA, not design.** The issue's proposed Stage-5
-   roster-match rate is confounded (Lewiston's mangled rep scores 1/6, not 0, and a single-school
-   page legitimately names one school). The unconfounded signal is the Stage-7 rate over EXTRACTED
-   names, but only **29 of 84** OCR rep-extractions carry `identity_json`. Widen that coverage
-   first or re-scope P3. NB Lewiston was already solved by the VISION rep (ext 77, 7 accepted).
-3. **#685 — Stage 3 captures only the ACTIVE tab panel** (Cedar Rapids loses 54 of 110 times).
-   **BLOCKED on Ian's design calls**, which the issue reserves: (a) what is stored — raw
-   `page.content()` vs a `tabpanel:hidden` text rep vs the hidden panels' `outerHTML`; (b) whether
-   `usable`/`n_times` are computed for it; (c) whether v1 covers `<details>`/accordions or defers.
-   Trigger is settled and cheap. NB the naive reveal recovered NOTHING — the vendor open-state
-   class and `max-height` are load-bearing.
-4. **#871 — geo's unbuilt second job. BLOCKED on Ian's design calls** (filed this round, REQ-184
-   `proposed`). Geo carries two jobs and only one is built: disambiguate a common school name
-   (built) and REACH off-domain PDFs/Docs on a CDN or Drive (intended, never built). The gate
-   refuses off-domain documents in BOTH branches, and `drive.google.com` is in `CMS_HOSTS` yet
-   unreachable because `cms-slug` needs the district slug in the URL and a Drive URL is an opaque
-   file ID. **Not a revert of #719** — sequencing: the gate must be able to KEEP such a document
-   before routing anyone into that round is worth anything.
-5. **Ian's call, not a session task:** re-running Cedar Rapids / New Haven CT / Washoe / New Haven
-   Unified / Little Rock on the `domain+widened` rung they now route to, to recover the **160**
-   on-domain URLs the #719-era geo rungs left in no capture plan (incl. literal bell-schedule and
-   handbook pages); routing Broward/Cleveland/Essex's send-backs; resuming the 5→1 composer on
-   West Ada/Lincoln/Baldwin. All live spend, console-driven. Epic #80's experiments (#823-#825) too.
+**Next (RESUME HERE — 2026-08-23). The path to closing epic #92, worked out this session from the
+chain #92 → #617 → #620 → #706 → #723 — #92 does NOT depend on #620 finishing; Stage 9 already
+writes.**
+
+1. **#717 (gate@6 already-extracted delta) BEFORE `batch_00043` reaches gate@6.** All six
+   remaining districts carry prior extractions (Little Rock 4 handoffs, Cedar Rapids 3) — without
+   the delta, re-dispatch re-buys full councils on reps already extracted. The one open issue
+   where ORDERING against the live campaign costs real money; land it before this batch's Stage 6.
+2. **Then #620's tail, console-driven** (confirmed against the DB, not the issue's stale list):
+   route the three send-backs — Broward/Cleveland/Essex, each `sent_back` with a filed reason
+   citing #691/#693/#674, all since fixed; Orange County's re-capture (`timed_out`, the #670
+   specimen, `batch_00031`); the 5→1 composer for West Ada/Lincoln/Baldwin, plus Lewiston and
+   Mobile. All existing paths, no new code.
+3. **Then close in this order:**
+   - **#614** (Stage-9 console view) — with ~15 more writes incoming from steps 1-2, it earns its
+     keep NOW rather than as cleanup. **#92 closes here**: build proven by 12+ production writes
+     (growing), observability landed.
+   - **#640 + #625**, then **#617 closes** when #620's 27th district is written.
+   - **#708 un-blocks itself** — the campaign's fresh extractions are precisely what widens the
+     thin `identity_json` coverage (29/84) it's waiting on. Check it AFTER, don't force it before.
+   - **#723 stays its own track** — sequence #623 → #622 as capacity allows. Sweetener: #622 is
+     also the durable fix for #888's residue and #670's ordinary-batch case.
+4. **#887 — in-flight vs stranded badge, design, epic #96.** #671 collapsed three states (never
+   dispatched / in-flight / stranded-by-a-dead-run) into one `queued` badge; 8 live districts were
+   caught mid-strand with no console signal. No new data needed (the `dispatched` event + job
+   state already exist); the call is which states deserve a distinct badge. Ian's, at the console.
+5. **#888 — left-pane badge fix, epic #96.** Measured, not implemented: keying
+   `_batch_progress` on `completed_by_batch` closes 23 of 31 (now 27, corpus-dependent —
+   re-measure first); the residue is no-link districts and the disk conjunct, both #622's job, not
+   a second copy of the disk check in the left pane.
+6. **#890 — Stage-4 timing instrumentation, epic #128.** Small seam: every tool attempt already
+   funnels through `process_record`'s `add()` closure; time the call, pass `elapsed_ms` through.
+   Prerequisite before acting on the #890/#891 tool-redundancy finding (camelot's two flavors are
+   redundant on unique-clock-time, but cost is unmeasured and `tesseract_raster` — the most
+   valuable tool — is also likely the most expensive).
+7. **#685 — Stage 3 captures only the ACTIVE tab panel** (Cedar Rapids loses 54 of 110 times).
+   BLOCKED on Ian's design calls (what is stored, whether `usable`/`n_times` are computed, v1
+   scope). NB the naive reveal recovered NOTHING — the vendor open-state class and `max-height`
+   are load-bearing.
+8. **#871 — geo's unbuilt second job.** BLOCKED on Ian's design calls (REQ-184 `proposed`). Not a
+   revert of #719 — sequencing: the gate must be able to KEEP an off-domain document before
+   routing anyone into that round is worth anything.
+9. **Ian's call, not a session task, live spend:** Epic #80's experiments (#823-#825); any further
+   Council Lab work now has six fresh GT-district extractions from `batch_00043` to work against.
 Ian drives the console; prepare and verify, don't execute stage runs (Stage 9 CLI, the #716 replay,
 and the **read-only measurement scripts** are the verification exceptions). *Falsifier unchanged: if
 any district needs a hand-edit or a re-adjudicated gate@8 call, the mechanism is wrong — fix the
 pipeline, not the district.*
 
 
-**Standing method note (now on its SIXTEENTH instance): measure the thing before fixing it.** An
-issue's proposed fix has been overturned by measurement fifteen times (#691, #684, #719, #755,
-#706's severity ranking, #721, #794, #796, #795, #822's image-council premise, #826, #841, #852,
-#868, #672, **#671**). **#671 is the newest SHAPE: an issue can be filed as a DESIGN question when
-its substance is a wrong predicate** — #671 asked "what should a stage's status badge mean during a
-re-run?" and offered a four-option menu, but the badge only ever said `done` because the rule behind
+**Standing method note (now on its SEVENTEENTH instance): measure the thing before fixing it.** An
+issue's — or REVIEW FINDING'S, new this round — proposed fix has been overturned by measurement
+sixteen times (#691, #684, #719, #755, #706's severity ranking, #721, #794, #796, #795, #822's
+image-council premise, #826, #841, #852, #868, #672, #671, **#885**). #885's mechanism was real
+(sev:critical); its proposed one-line fix (`AND e.batch_id = :b`) was measured to withdraw 36
+genuine completions and was replaced with a window rule instead. Full detail:
+`docs/PROJECT_HISTORY.md`'s 2026-08-22/23 entry. **#671 is the earlier newest SHAPE: an issue can be
+filed as a DESIGN question when its substance is a wrong predicate** — #671 asked "what should a
+stage's status badge mean during a re-run?" and offered a four-option menu, but the badge only ever
+said `done` because the rule behind
 it was false; correcting the rule answered three of the four acceptance criteria and left one
 cosmetic choice. It also broke the issue's own severity framing twice: the "up to 38 min" transient
 is really 32 DAYS on 7 live districts, and the false `done` HID ITS OWN FIX by driving the Run
@@ -311,8 +318,15 @@ choosing a PROXY for something you cannot measure directly, check the proxy has 
 testing for — #873's first pass used `segment:main` as the late-read proxy, but main EXCLUDES chrome
 and chrome growth was the entire scenario.
 
-**The standing lesson (now on its EIGHTH shape): a measurement that cannot fail.** The newest is
-a TEST, not a sweep: #866's `assert CHROME_SOURCES <= NON_SWAPPABLE_SOURCES` — true by construction
+**The standing lesson (now on its NINTH shape): a measurement that cannot fail.** The newest is a
+SYNTHESIS RULE, not a sweep or a test: the 2026-08-23 tool-redundancy pass's first-draft verdict
+required a tool to be redundant on containment (≥0.90) as well as unique-clock-times and
+sole-usability — a bar NO tool clears, since none is a literal text subset of another (containment
+peaks at 0.55 mean) — so it printed KEEP for all five tools and hid the actual finding. Rewritten to
+score on the axis that decides the question (unique clock times) and measure the COMBINED drop
+rather than sum per-tool numbers. Detail: `docs/PROJECT_HISTORY.md`'s 2026-08-22/23 entry,
+`2026-08-23-tool-redundancy-measure.py` C5. Earlier newest: a TEST, not a sweep: #866's
+`assert CHROME_SOURCES <= NON_SWAPPABLE_SOURCES` — true by construction
 (the definition IS that union), and it never touched the function it claimed to guard. Replaced by a
 loop over the real set through the real `best_send`, verified to fail on 3 arms against the pre-fix
 pool. **An identity assertion about CONSTANTS proves nothing about BEHAVIOUR.** Earlier shapes: §10.11 · the fix
@@ -339,11 +353,13 @@ now quarantines under EITHER cause (pytest, or a non-canonical DB) with a one-ti
 **Outstanding:** Playwright-verify the gate@6 + gate@1 console changes (incl. #853's third `benchmark-only held` badge arm — seed a clone with an `out_of_window` gt:// label), **#869's gate@5 "densest" badge** (it now excludes chrome, so a footer with unique times must read `adder`, not `densest` — `0103390:fb71b7cc63` is the record, footer 12 times vs page.txt 0; source-pinned only so far), #647's Stage 2/3/4 status/Run
 control, AND **#840's new gate@5 page-scoping card** (★ harvest / ◆ floor markers, `data-scoping=`
 DOM hook — static-source-pinned only so far); #667's gate@8/#662's gate@5 badges, #684's staff-day
-surfacing and the three gate@8 arrows ARE verified — rerunnable verifiers
-`infrastructure/scraper/verify_684_console.mjs`, `verify_682_console.mjs`, and
+surfacing, the three gate@8 arrows, and **#673's gate@5 vintage surface** ARE verified — rerunnable
+verifiers `infrastructure/scraper/verify_684_console.mjs`, `verify_682_console.mjs`,
 `verify_822_console.mjs` (#822's gate@6 overflow badge + gate@7 degraded banner, 15/15 — it also
 documents the clone-and-seed runbook, since the gate@7 banner reads a STORED column and every live
-row is `{}` until a post-#822 Stage-7 run happens). The pattern to extend.
+row is `{}` until a post-#822 Stage-7 run happens), and **`verify_673_console.mjs`** (12/12 PASS on
+the real TAOS records; its own first run caught a live bug — see the 2026-08-22/23 history entry).
+The pattern to extend, next to #887/#888.
 **Deferred by design (epic #128):** #642 (content-derived document vintage) and #643 (the Stage-3
 render-facts probe; rides #623's Node seam — now ALSO the spine of epic #864). **Retired, do not do:** Phase 2e's retroactive
 `dispatch_type='benchmark'` tagging — arm 2 derives it. Banked routing: #112 → epic #128. Parked:
@@ -354,11 +370,11 @@ harness); the remediation-receipt exception is not STAGE-scoped (30-day expiry s
 attribution v1 reads each district's LATEST candidate plan; the `stage6_handoff/requests.py:17-18`
 docstring falsely claims Stage 7 "reads ONLY the flagged pages" — the `pages` hint never scoped
 content (the slice FILE is the scoping), a live source of wrong inferences worth a one-line issue.
-Resume-essentials (ALL re-verified 2026-08-22 on `main` post-#881/#882 — the baseline is fully
-GREEN; no known-red command): `pip
+Resume-essentials (ALL re-verified 2026-08-23 on `main` post-#884/#889/#891/#900 — the baseline is
+fully GREEN; no known-red command): `pip
 install -e .` → Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh
 clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect
-**2457** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **400** pass, Postgres up) +
+**2460** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **400** pass, Postgres up) +
 `pytest tests/test_*_integration.py` (expect **257** pass, 149 skipped) + `cd infrastructure/scraper
 && npm test` (expect **100**) + `flake8 . --count --select=E9,F63,F7,F82` (expect **0** — this is CI's
 blocking lint; the vulture whitelist is `per-file-ignores`'d for F821, main had been red on it since
@@ -401,9 +417,16 @@ login_wall watchdog**, currently CLEAR at population 0) ·
 `2026-08-21-geo-ladder-regression-measure.py` (#672 — C1 the live re-route, C2 the 10 regressed rung
 pairs CLASSIFIED by mechanism, C5 the plan-aware cost: quote the NOT-in-any-capture-plan column,
 never the raw count) ·
-`2026-08-22-batch-done-predicate-measure.py` (#671 — C1 the strictly-withdrawing invariant over
-43 batches x 3 stages, C2 the 8 false-`done` rows with the AGE of each stale outcome, C3 the #670
-boundary (`failed` does not count as finishing), C4 the drain watchdog) ·
+`2026-08-22-batch-done-predicate-measure.py` (#671/#885 — C1 the strictly-withdrawing invariant, C2
+the false-`done` rows with the AGE of each stale outcome, C3 the #670 boundary, C4 the drain
+watchdog, C5 #885's cross-batch window check — must stay at 0 rows; C6 why the `batch_id` filter
+was rejected) ·
+`2026-08-23-leftpane-vs-stageview-measure.py` (#888 — C1 the disagreement table, C2 `batch_id`
+coverage, C3 fix sizing with the residue enumerated, C4 the perf constraint median-of-N, C5 the
+one-home guard's blind spot vs `_batch_progress`'s spelling) ·
+`2026-08-23-tool-redundancy-measure.py` (#890/#891 — C1-C2 inventory + containment, C2 unique
+clock times per tool, C3 sole-usable rescues, C4 text containment, C5 the KEEP/CANDIDATE synthesis
++ the COMBINED drop measured rather than summed) ·
 `2026-08-18-segment-main-alternate-measure.py` (#841 — scans segment text FROM DISK, since the DB
 cannot answer while segment `n_times` is NULL; re-run it after the post-merge re-ingest and its S1
 section should report 0 NULL).

@@ -2069,3 +2069,108 @@ Authority: PR #872 (merged `3847775`, 2026-08-22) closing #863/#672; review roun
 #873/#875 closed as not-bugs with pins and a committed watchdog); #871 filed and open; PR #881 open for
 the `deepseek-v3.2` catalog refresh that #809's network canary caught. Measurement scripts:
 `2026-08-21-read-timing-split-measure.py`, `2026-08-21-geo-ladder-regression-measure.py`.
+
+### 2026-08-22/23 — #671 is a wrong predicate, not a design question; its own fix's console test finds a second bug; and an epic chain gets a plan
+
+**#671 was filed as "what should a stage's status badge mean during a re-run?" and closed as a wrong
+predicate.** Batch-scoped done-ness was `stale disk artifact ∧ this batch DISPATCHED it`; every stage
+stamps `dispatched` for the whole todo list up front, so a redo district holding a prior artifact read
+`done` from t=0. The issue framed this as a ≤38-minute transient and asked for a badge design. Both
+premises were incomplete: the window is not transient (7 Stage-4 districts read `done` off a prior run
+for **32 days**, because `stage4.js` hides the Run control at `retriable == 0` — **the false `done`
+suppressed its own fix**), and no design decision was needed, since non-`done` districts already take
+the zeroed row defaults. Fix: `DS.completed_by_batch` — dispatched by this batch AND a stage outcome —
+keyed on event order, measured strictly withdrawing over 43 batches × 3 stages. Retired #670's
+precedence half for redo batches as a side effect. PR #884.
+
+**Review on #884 found #885 (sev:critical) — real mechanism, wrong proposed fix, the SAME lesson one
+level up.** `event_id` is a global serial, so "an outcome after this batch's dispatch" was also
+satisfied by a LATER batch's outcome — and the trigger is #671's own remediation path: re-running one
+of the 7 stuck districts would have flipped its old batch back to a false `done`. The issue's proposed
+fix (`AND e.batch_id = :b`) was measured and rejected: only 22.4% of `process` outcomes carry a
+`batch_id`, so it withdraws **36 genuine completions**. Shipped instead: the outcome must fall inside
+the window the dispatch owns (before the *next* dispatch of the same district+stage) — agrees with the
+pre-#885 rule on all 159 live done-districts and closes the hole. Latent in the corpus at merge time
+(0 cross-batch rows), so coverage was constructed rather than measured. #886 (merge two predicate
+calls) was measured and declined — 1.5-2.0ms of a ~43ms render.
+
+**Ian tested the merged #671 fix live and found a SECOND, unrelated bug — #888.** The left-pane batch
+chip and the stage-view header answer "is this batch done" from two different queries:
+`batch_store._batch_progress` (keyed on the same unreliable `batch_id` stamp #885 had just measured at
+22-35% coverage) versus `status_for_batch`'s disk-plus-`completed_by_batch` rollup. A comment at
+`stage4.js:90` claimed they were "the SAME badge" — same renderer, different source. Measured on
+`9c9bde3` (pre-#671) vs `83c9c38` (post): **34 disagreements before, 31 after** — #671 fixed 5 and
+introduced 2 (both on `batch_00031`, where the header got MORE correct and the left pane failed to
+follow), leaving 29 untouched, including every batch in Ian's recording. Direction is the mirror of
+#671: a false INCOMPLETE, not a false COMPLETE. Filed as #888 rather than reopening #671 — different
+code path, opposite direction, #671's own criteria and tests stand. Sizing (`completed_by_batch`
+closes 23 of 31; the rest are no-link districts and the disk conjunct, both #622's job) recommended as
+a fix but not implemented — the measurement script is the deliverable, committed on its own branch.
+
+**#673 shipped in PR #850 and was left open for one unrun render check — which caught a live bug on
+first execution.** The client read a top-level `content_school_year` off `/api/record`; no such field
+exists — the vintage lives inside the signals dict. The read was always `undefined`, so EVERY record,
+including the 2014-15 TAOS handbook that motivated the issue, rendered "unknown" with no floor warning
+and no facet hint, for the four weeks the issue sat open citing a server-side line that was actually the
+label-save calibration path, not the record GET. One-line fix (`s.content_school_year`); the render
+check (`verify_673_console.mjs`, the house Playwright pattern) went 4/8 → 12/12. PR #889.
+
+**Review on #889 found five more, all real, one (#895) confirmed but implemented one step past the
+ask.** The finding was "no shared accessor, REQ-182 pattern" — the fix binds the field ONCE
+(`const vintage = ...`) and the pin test asserts **exactly one** spelling of the path exists in the
+file, which is stronger than an accessor (an accessor would still tolerate a stray inline read beside
+it). #897 unified 6 test files' hand-spelled `app.js` path into one `conftest.py` fixture, derived from
+the package location rather than a repo-relative literal. #892/#894 hardened the verifier's own
+FALSIFY mode (a git failure now reports a FAIL line instead of a raw stack; `FALSIFY=0` no longer
+silently enables the mode it's meant to disable). #898 (fixed-wait vs polling) landed for the new
+script only — the three older `verify_*_console.mjs` scripts keep their timing, since their headers
+record "last run N/N PASS" as a historical fact that a silent rewrite would falsify.
+
+**The #888 measurement script's own review (#893/#896/#899) reversed one of its printed numbers.** C4
+timed the left-pane query vs a naive per-batch loop with ONE unrepeated sample and reported an 11-17ms
+vs ~400ms, 36× comparison — mostly cold-cache noise. Median-of-7 with a discarded warm-up: **1.7ms vs
+147ms, 85×**. Lower absolutes, larger ratio — the conclusion (keep the grouped query) strengthened, but
+the printed numbers were wrong and the trailing sentence explaining them was self-contradicting against
+its own script's output. #893 fixed a CWD-relative path that crashed the script's last section outside
+the repo root; #896 removed a redundant recomputation of work an earlier section had already done. PR
+#900 (the branch had been pushed without a PR — the review swept it anyway).
+
+**A tool-redundancy question got a value-side answer, and the synthesis rule that answered it wrong
+was caught before shipping.** Asked whether Stage 4's five PDF harvesters (pdftotext, pdfplumber,
+camelot × 2 flavors, tesseract) are redundant, measured on unique clock-time contribution across 3,242
+paired records: no tool is a literal text subset of another (containment peaks at 0.55 mean), but
+`camelot_hybrid` (12 unique times, 2 records) and `camelot_stream` (19, 11) contribute almost nothing a
+sibling tool doesn't already find — while `tesseract_raster` (4,229 unique, 22% of its own yield) and
+`pdftotext` (576) clearly earn their place. The first-draft synthesis rule required redundancy on
+containment too (≥0.90), a bar nothing clears, so it printed KEEP for all five and hid the finding —
+the "measurement that cannot fail" lesson, in a synthesis rule this time. Rewritten to score on the
+deciding axis and measure the COMBINED drop rather than sum per-tool numbers (two candidates can each
+look redundant only because the other is present): dropping both camelots costs 44 times (0.21%) across
+19 records (0.59%), zero true rescues. Explicitly NOT a speedup ranking — Stage 4 has no per-tool timing
+anywhere, filed as #890 (epic #128) — and `tesseract_raster`, the most valuable tool measured, is also
+likely the most expensive, so the redundant tools may already be the cheap ones. PR #891.
+
+**The epic chain #92→#617→#620→#706→#723 got a plan instead of staying an open question.** #92's
+build is done (#93/94/95, the auto-write and both sendback/rereview arrows all closed, 12 production
+`bell_schedules` writes prove it) — its remaining scope is #614 (console view) and #673 (closed above).
+#617/#620's substance is one 27-district campaign: 12 written, 6 now mid-flight in a manually-composed
+follow-up batch (`batch_00043`, `domain+widened` scope — verified against the production composer that
+these six route there, NOT to geo, because they all carry a usable domain), 9 with distinct known next
+actions (3 sendbacks with reasons already fixed, 1 recapture, the rest via the 5→1 composer). #706's
+open items (#708, #717) sequence around the same campaign. #723 stays its own track, orthogonal to #92.
+
+**Union Hill ISD, considered and rejected as Council Lab (#80) material — twice, on different
+grounds.** First for the wrong reason (a "false" ladder-exhaustion cost, corrected once `included` was
+checked); then, after Ian excluded it from `batch_00043` on the correct reason (0 `slot_assignment`
+rows — it's stuck at gate@8 adjudication, not acquisition, so spending its last domain round wouldn't
+address the actual blocker), a THIRD check disqualified it from the Lab specifically: its
+OCR-vs-text gap (75 times vs 4) looked like a clean specimen until measured against the benchmark
+corpus, where 75 GT records already show a starker version of the same shape (up to 430 vs 0). No
+unique contribution, and Union Hill isn't a GT district anyway — nothing to score against.
+
+Authority: PR #884 (merged, #671/#885/#886), PR #889 (merged, #673 + review round #892/#894/#895/#897/
+#898), PR #900 (merged, #888's measurement + review round #893/#896/#899), PR #891 (merged, #890's
+value-side measurement). Filed and open: #887 (design: in-flight vs stranded badge, epic #96), #888
+(left-pane/stage-view disagreement, epic #96), #890 (Stage-4 tool timing, epic #128). Measurement
+scripts: `2026-08-22-batch-done-predicate-measure.py`, `2026-08-23-leftpane-vs-stageview-measure.py`,
+`2026-08-23-tool-redundancy-measure.py`. Verifier: `infrastructure/scraper/verify_673_console.mjs`.
