@@ -255,13 +255,21 @@
           <code title="${esc(r.rec_key)}">${esc(r.url || r.rec_key)}</code>
         </div>`));
     }
+    // #717: a district the delta emptied has NOT "found nothing" — it has everything already. The
+    // generic empty note would assert the opposite of the held rows printed directly beneath it,
+    // which is worse than silence: the reviewer reads a contradiction and has to work out which
+    // half is true. Four live districts hit this on batch_00043.
+    const emptyNote = doneHeld.length
+      ? `<div class="s6-rep muted" data-feat="s6-all-already-extracted">every send-eligible rep here
+           was already extracted by a prior production run — nothing new to buy</div>`
+      : `<div class="s6-rep muted">no send-eligible records</div>`;
     const remove = editable
       ? `<button class="s6-remove" data-did="${esc(d.district_id)}" title="remove this district from the draft">✕</button>` : "";
     const head = `${esc(d.name || d.district_id)}${d.state ? ` · ${esc(d.state)}` : ""}
         <span class="muted">${esc(d.district_id)} · ${esc(d.topology || "?")} · ${d.n_send_reps} rep(s) · ${usd(d.est_usd)}</span>`;
     return `<div class="s6-dist" data-did="${esc(d.district_id)}">
         <h4>${head} ${remove}</h4>
-        ${reps.length ? reps.join("") : `<div class="s6-rep muted">no send-eligible records</div>`}
+        ${reps.length ? reps.join("") : emptyNote}
         ${heldRows.join("")}
       </div>`;
   }

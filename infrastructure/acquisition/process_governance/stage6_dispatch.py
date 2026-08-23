@@ -372,7 +372,8 @@ def district_release_input(session, district_id: str, verified_only: bool = Fals
 
 
 def build_handoff_package(session, district_ids, councils=None, cost_model=None, overrides=None,
-                          verified_only=False, dispatch_type=BM.DISPATCH_PRODUCTION) -> dict:
+                          verified_only=False, dispatch_type=BM.DISPATCH_PRODUCTION,
+                          redo=False) -> dict:
     """Assemble the in-memory handoff package for `district_ids` from the DB release decision.
     Pure stage6 logic does the routing/pricing; this layer only supplies the data. `overrides` =
     gate@6 per-rep council overrides ({"<rec_key>::<file>": council_id}). `verified_only` = gate@6
@@ -383,7 +384,7 @@ def build_handoff_package(session, district_ids, councils=None, cost_model=None,
     and fix it, rather than the console failing to render the draft at all."""
     return release_bundle(session, district_ids, councils=councils, cost_model=cost_model,
                           overrides=overrides, verified_only=verified_only,
-                          dispatch_type=dispatch_type).package
+                          dispatch_type=dispatch_type, redo=redo).package
 
 
 class ReleaseBundle(NamedTuple):
