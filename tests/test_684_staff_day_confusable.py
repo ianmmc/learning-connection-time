@@ -268,14 +268,13 @@ def test_the_staff_day_predicate_has_exactly_one_home():
     assert src.count("staff_day_owned(sig)") >= 2   # the definition's callers: lf_staff_day + lf_heading_hours
 
 
-def test_console_ports_the_staff_duty_regexes_verbatim():
+def test_console_ports_the_staff_duty_regexes_verbatim(app_js):
     """#521 no-drift: the heat-strip paints staff-duty evidence, so its regexes are verbatim ports of
     the Python. Unlike #683's `$`-anchored guard, the SUBJECT regex is unanchored — so the JS lookback
     must be CODEPOINT-exact, not merely wide enough."""
     import re
     from pathlib import Path
-    js = (Path(__file__).resolve().parent.parent
-          / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    js = app_js
     m_duty = re.search(r"const DN_STAFF_DUTY = /(.+)/gi;", js)
     m_subj = re.search(r"const DN_STAFF_SUBJ = /(.+)/i;", js)
     assert m_duty and m_subj, "DN_STAFF_DUTY/DN_STAFF_SUBJ must be present in this exact shape"
@@ -294,14 +293,13 @@ def test_console_ports_the_staff_duty_regexes_verbatim():
     assert "dnStaffDutyOffsets" in js
 
 
-def test_console_surfaces_the_staff_day_confusable_to_the_labeler():
+def test_console_surfaces_the_staff_day_confusable_to_the_labeler(app_js):
     """UI-visibility requirement (the standing rule for console rework): the staff-day shape must be
     reachable at gate@5 — the coarse office/building-hours checkbox is hinted by BOTH detectors and its
     tooltip names the employee-handbook shape, so a human can record the disagreement the tuning loop
     consumes."""
     from pathlib import Path
-    js = (Path(__file__).resolve().parent.parent
-          / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    js = app_js
     assert '["lf_office_hours", "lf_staff_day"]' in js, \
         "office_building_hours must be hinted by both detectors"
     assert "Array.isArray(det)" in js, "the multi-detector hint must actually be applied"

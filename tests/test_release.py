@@ -176,15 +176,14 @@ def test_best_send_floor_slice_must_be_smaller_than_its_own_parent():
     assert R.best_send(reps, sig, {})[0]["file"] == BS.TIMEBEARING_SLICE_FILE
 
 
-def test_gate5_console_shows_the_floor_scoping_decision():
+def test_gate5_console_shows_the_floor_scoping_decision(app_js):
     """#840 — the UI-visibility rule: under the manual-gate posture the reviewer must SEE that
     page-scoping is happening, which pages survive, and why. The floor now shapes ~700 live sends
     and the per-page card was blind to it (it knew only the harvest ★). Static-source assertions
     on app.js, the same convention as test_684's console checks; the markers must be data-driven
     from the stored signals so they cannot drift from what was actually cut."""
     from pathlib import Path
-    js = (Path(__file__).resolve().parent.parent
-          / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    js = app_js
     assert "s.timebearing_pages" in js, "the card must read the floor signal"
     assert "◆" in js and "★" in js, "two selectors, two DISTINCT markers"
     assert 'data-scoping="${harvestGoverns ? "harvest" : (floorGoverns ? "floor" : "none")}"' in js, \
