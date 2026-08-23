@@ -568,6 +568,14 @@
     "updated_at": "2026-07-11T06:59:26Z"
   },
   {
+    "rec_key": "0101920:9cad058f34",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{\"office_building_hours\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-23T08:19:07Z"
+  },
+  {
     "rec_key": "0101920:a194efcc5b",
     "primary_label": "target_absent",
     "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
@@ -16400,12 +16408,28 @@
     "updated_at": "2026-06-25T00:39:36Z"
   },
   {
+    "rec_key": "3805460:a105168dc1",
+    "primary_label": "explicit_instructional_time",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-23T08:15:48Z"
+  },
+  {
     "rec_key": "3805460:a294b71351",
     "primary_label": "explicit_instructional_time",
     "facets_json": "{}",
     "note": "See also: www.dunseith.k12.nd.us/page/2025-2026-school-year-calendar. Check note there for information about the gold nugget explicit instructional minute buried in here.",
     "status": "labeled",
     "updated_at": "2026-06-25T00:33:03Z"
+  },
+  {
+    "rec_key": "3805460:b5c5f866fc",
+    "primary_label": "target_absent",
+    "facets_json": "{\"news_feed\": \"yes\", \"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-23T08:14:49Z"
   },
   {
     "rec_key": "3805460:b657f56ee8",
@@ -16960,6 +16984,14 @@
     "updated_at": "2026-07-11T06:25:25Z"
   },
   {
+    "rec_key": "3904705:3d8064747e",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"office_building_hours\": \"yes\", \"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-23T08:17:16Z"
+  },
+  {
     "rec_key": "3904705:4a9a1a060a",
     "primary_label": "target_absent",
     "facets_json": "{}",
@@ -17046,6 +17078,22 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-11T06:25:08Z"
+  },
+  {
+    "rec_key": "3904705:e76bbea83d",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"office_building_hours\": \"yes\", \"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-23T08:16:56Z"
+  },
+  {
+    "rec_key": "3904705:edc4292f62",
+    "primary_label": "target_absent",
+    "facets_json": "{\"board\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-23T08:17:28Z"
   },
   {
     "rec_key": "3904817:06f89d548e",

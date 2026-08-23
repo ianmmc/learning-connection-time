@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-08-23T06:23:31Z",
+  "last_updated": "2026-08-23T08:19:07Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -1987,8 +1987,8 @@
       "name": "LITTLE ROCK SCHOOL DISTRICT",
       "state": "AR",
       "furthest_stage": 7,
-      "stage_name": "capture",
-      "outcome": "captured_partial",
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00043",
       "history": [
@@ -2279,6 +2279,26 @@
           "stage_name": "capture",
           "outcome": "captured_partial",
           "at": "2026-08-23T06:15:53Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-23T06:28:50Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-08-23T06:59:11Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-23T08:19:07Z"
         }
       ],
       "notes": "1 needs_oauth_reauth"
@@ -3530,8 +3550,8 @@
       "name": "New Haven Unified",
       "state": "CA",
       "furthest_stage": 7,
-      "stage_name": "capture",
-      "outcome": "captured_partial",
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00043",
       "history": [
@@ -3800,6 +3820,26 @@
           "stage_name": "capture",
           "outcome": "captured_partial",
           "at": "2026-08-23T06:16:17Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-23T06:28:50Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-08-23T07:05:15Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-23T08:19:07Z"
         }
       ],
       "notes": "1 needs_oauth_reauth"
@@ -4536,8 +4576,8 @@
       "name": "New Haven School District",
       "state": "CT",
       "furthest_stage": 7,
-      "stage_name": "capture",
-      "outcome": "captured_all",
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00043",
       "history": [
@@ -4812,6 +4852,26 @@
           "stage_name": "capture",
           "outcome": "captured_all",
           "at": "2026-08-23T06:18:17Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-23T06:28:50Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_partial",
+          "at": "2026-08-23T07:34:37Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-23T08:19:07Z"
         }
       ],
       "notes": "gate@1 approved batch_00043"
@@ -6881,8 +6941,8 @@
       "name": "Cedar Rapids Comm School District",
       "state": "IA",
       "furthest_stage": 7,
-      "stage_name": "capture",
-      "outcome": "captured_all",
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00043",
       "history": [
@@ -7154,6 +7214,26 @@
           "stage_name": "capture",
           "outcome": "captured_all",
           "at": "2026-08-23T06:20:02Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-23T06:28:50Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-08-23T07:43:35Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-23T08:19:07Z"
         }
       ],
       "notes": "gate@1 approved batch_00043"
@@ -10300,8 +10380,8 @@
       "name": "Washoe County",
       "state": "NV",
       "furthest_stage": 7,
-      "stage_name": "capture",
-      "outcome": "captured_all",
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00043",
       "history": [
@@ -10588,6 +10668,26 @@
           "stage_name": "capture",
           "outcome": "captured_all",
           "at": "2026-08-23T06:23:07Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-23T06:28:50Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_partial",
+          "at": "2026-08-23T08:10:36Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-23T08:19:07Z"
         }
       ],
       "notes": "gate@1 approved batch_00043"
@@ -12639,8 +12739,8 @@
       "name": "WYANDANCH UNION FREE SCHOOL DISTRICT",
       "state": "NY",
       "furthest_stage": 5,
-      "stage_name": "capture",
-      "outcome": "captured_all",
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00043",
       "history": [
@@ -12875,6 +12975,26 @@
           "stage_name": "capture",
           "outcome": "captured_all",
           "at": "2026-08-23T06:23:22Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-23T06:28:50Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-08-23T08:12:44Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-23T08:19:07Z"
         }
       ],
       "notes": "gate@1 approved batch_00043"
@@ -17904,8 +18024,8 @@
       "name": "Sweetwater County School District #1",
       "state": "WY",
       "furthest_stage": 7,
-      "stage_name": "capture",
-      "outcome": "captured_all",
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00043",
       "history": [
@@ -18186,6 +18306,26 @@
           "stage_name": "capture",
           "outcome": "captured_all",
           "at": "2026-08-23T06:23:31Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-23T06:28:50Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-08-23T08:18:06Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-23T08:19:07Z"
         }
       ],
       "notes": "gate@1 approved batch_00043"
