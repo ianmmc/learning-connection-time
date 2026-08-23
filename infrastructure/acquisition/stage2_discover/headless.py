@@ -359,10 +359,16 @@ def status_for_batch(batch: dict) -> list:
     because it owns the button.
 
     So when the batch declares a redo, done-ness is asked of THIS BATCH, through the SAME shared
-    helper Stages 3 and 4 call — `DS.dispatched_by_batch`, intersected with the disk artifact. That
+    helper Stages 3 and 4 call — `DS.completed_by_batch`, intersected with the disk artifact. That
     is the gov_db working store answering a question file-existence cannot: the district-vs-batch
     grain distinction epic #617 keeps running into, and the same done-marker inversion #622
     generalizes. Ordinary batches keep the disk rule byte-for-byte.
+
+    #671: that helper used to ask only whether this batch had DISPATCHED the district. Since every
+    stage stamps `dispatched` for the whole todo list up front, a redo district holding a prior
+    run's artifact satisfied both conjuncts from t=0 of the run and rendered `done`, with the prior
+    run's Wave-1/Wave-2 figures, for the entire time its own work was still running. It now asks
+    for a stage OUTCOME after that dispatch. See the helper for the measured blast radius.
 
     #655: this was a hand-rolled twin ("any stage=2 event carrying this batch_id"), on the reasoning
     that Stage 2's completion events have always been stamped. They have not, quite — 12 of 147
@@ -375,7 +381,7 @@ def status_for_batch(batch: dict) -> list:
     ddirs = {d["district_id"]: D2.lea_dir(d["district_id"], d["name"]) for d in batch["districts"]}
     discovered = {did for did in ids if (ddirs[did] / "discovery.json").exists()}
     if BT.redoes_attempted(batch):
-        discovered &= DS.dispatched_by_batch(batch["batch_id"], "discover", ids)
+        discovered &= DS.completed_by_batch(batch["batch_id"], "discover", ids)
     done_ids = [did for did in ids if did in discovered]
 
     with gdb.session_scope() as con:

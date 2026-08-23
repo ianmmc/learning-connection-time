@@ -232,17 +232,34 @@ referenced inside `process_governance/` again.
 | **JSON RECEIPTS — always-stamped audit receipts (REQ-164)** | `stage5_filter` / `stage6_dispatch` / `stage7_extract` / `stage8_aggregate` / `stage9_incorporate`, each written `<basename>.<fs_stamp>.<writer>-<h8>.json` via the ONE shared `common/receipts.py::write_receipt` | **disk** | regenerable; a basename is a decl NOT a full filename (always datetime-stamped, first run included — no fixed-'latest' name); NEVER read as input by an active-pipeline stage; naming convention is `stage<N>_<stage_name>` (unified 2026-07-23) so a filesystem/name sort groups a district's receipts in pipeline order; a benchmark-provenance receipt gets `_benchmark` appended to the basename. **BUILT for Stages 5-9 only** — Stages 2-4 stay on the fixed-name row above |
 
 **#622/#623 is not a hygiene nicety — it is a measured operator-facing correctness gap (2026-07-27/28
-finding, #620 campaign).** Because Stages 2-4 done-ness is `stale-disk-artifact ∧ dispatched_by_batch`
-and a batch stamps `dispatched` for every district up front, a district holding a **prior** artifact
-reads "done" — with the *previous* run's metrics beside it — from t=0 of a fresh redo, not just after a
-race. Measured false-done windows on `batch_00030`: 45s shortest, ~22min median, **38min15s longest**
-(#671). The same root cause produced #669 (cumulative counts shown as this-run counts) and #670 (a
-genuine capture timeout masked as a clean `done`). All three trace to disk-artifact-existence doubling
-as the stage-done marker with no per-run receipt to disambiguate — exactly the inversion (disk-existence-
-is-truth → gov_db-is-truth, disk-as-corroborating-receipt) #622/#623 perform. They were deferred as
-insurance in the original epic plan; the mechanism has since been run end-to-end and found wanting, so
-the argument inverts: this is no longer insurance, it is interest, and it now precedes further redo-batch
-work in the sequencing plan rather than following it.
+finding, #620 campaign).** Stages 2-4 done-ness was `stale-disk-artifact ∧ dispatched_by_batch`, and a
+batch stamps `dispatched` for every district up front, so a district holding a **prior** artifact read
+"done" — with the *previous* run's metrics beside it — from t=0 of a fresh redo, not just after a race.
+Measured false-done windows on `batch_00030`: 45s shortest, ~22min median, **38min15s longest** (#671).
+The same root cause produced #669 (cumulative counts shown as this-run counts) and #670 (a genuine
+capture timeout masked as a clean `done`). All three trace to disk-artifact-existence doubling as the
+stage-done marker with no per-run receipt to disambiguate — exactly the inversion (disk-existence-is-
+truth → gov_db-is-truth, disk-as-corroborating-receipt) #622/#623 perform.
+
+**#671 CLOSED the acute half without waiting for that inversion (2026-08-22).** The scoping conjunct is
+now `DS.completed_by_batch` — this batch dispatched it **and a stage OUTCOME (`stage IS NOT NULL`) landed
+after that dispatch** — keyed on event ORDER, not the completion event's `batch_id`, so it is correct in
+the pre-#647 unstamped era too. Two findings made this cheaper than the issue assumed. First, the window
+is **not only transient**: 7 districts (`batch_00024/26/27/29`) had been dispatched to Stage 4 on
+2026-07-22, never completed, and had read `done` off a prior run's `processed.json` for **32 days** — and
+since `retriable == todo + failed == 0` hides the console's Run control, *the false `done` suppressed its
+own fix*. Second, correcting the predicate needs no new data: non-`done` districts already take the zeroed
+row defaults, so the stale metrics stop rendering as current with no second change. Measured strictly
+withdrawing — over all 43 batches × 3 stages the corrected set is never a superset, so it can only ever
+retract a false `done`, never assert one (`2026-08-22-batch-done-predicate-measure.py`, C1).
+
+**What #622/#623 still owe.** ORDINARY (non-redo) batches keep the byte-for-byte disk rule, so
+artifact-existence is still the stage-done marker there; #669's cumulative-vs-run-scoped counts are
+untouched; and #670's *completeness* question (was a timed-out capture truncated?) needs the per-run
+receipt's intended-vs-achieved counts, which only #623 can supply. #671 retired #670's *precedence* half
+for redo batches as a side effect — a `failed` event deliberately does not count as finishing, so a late
+timeout's populated `captures.json` no longer outranks it. The deferral argument still inverts: this is
+no longer insurance, it is interest, and it precedes further redo-batch work in the sequencing plan.
 
 **Precious vs regenerable is the load-bearing line — not DB vs disk.** The DB holds precious things (labels,
 lifecycle state, batches, flags) *and* the regenerable working store (signals + the cross-stage data

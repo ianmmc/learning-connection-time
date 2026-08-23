@@ -190,20 +190,54 @@ def remediation_receipt(district_id: str):
     return newest
 
 
-def dispatched_by_batch(batch_id: str, stage_name: str, ids: list) -> set:
-    """Districts THIS batch actually handed to `stage_name` — the `dispatched` state_event, which has
-    carried `batch_id` since long before completion events did (#647).
+def completed_by_batch(batch_id: str, stage_name: str, ids: list) -> set:
+    """Districts THIS batch actually FINISHED at `stage_name`: it dispatched them, AND a stage
+    outcome landed afterwards. The one home for batch-scoped stage done-ness (#647/#655/#671).
 
-    Why this and not the completion event's own `batch_id`: completion events are only stamped from
-    #647 onward (stage-3 carried it on 28 of 147 rows, stage-4 on 0 of 128), so keying done-ness on
-    the stamp alone would declare every historical follow-up batch un-run — 18 of them — and invite a
-    re-run of work already paid for. Intersecting the DISK artifact with "this batch dispatched it"
-    is true in both eras: a batch that never dispatched a district cannot have completed it, and one
-    that did dispatch it and left an artifact did."""
+    #671 — WHY THE DISPATCH ALONE IS NOT ENOUGH. This replaces `dispatched_by_batch`, whose
+    docstring closed on the claim that made it a bug: *"a batch ... that did dispatch it and left
+    an artifact did [complete it]"*. False. The artifact can predate the dispatch by weeks, and
+    every stage stamps `dispatched` for the WHOLE todo list up front (stage2 headless ~L472, stage3
+    ~L300, stage4 ~L305) rather than per district as work reaches it. So from t=0 of a redo run,
+    any district holding a prior run's artifact satisfied both conjuncts at once and rendered
+    `done` — with the PRIOR run's metrics — until its own work happened to finish. Measured on the
+    live corpus before the fix: 8 districts read `done` for work that never happened, 7 of them for
+    over a month (a Stage-4 redo dispatched 2026-07-22 that never completed), and because
+    `retriable == todo + failed == 0` hides the console's Run control, they could not be re-run
+    from the console at all. The false `done` also SUPPRESSED THE FIX for itself.
+
+    Why event ORDER, not the completion event's own `batch_id`: completion events are only stamped
+    from #647 onward (stage-3 carried it on 28 of 147 rows, stage-4 on 0 of 128), so keying on the
+    stamp would declare every historical follow-up batch un-run — 18 of them — and invite a re-run
+    of work already paid for. `event_id > the dispatch's` is correct in BOTH eras.
+
+    What counts as an outcome: `stage IS NOT NULL`. `record_stage` sets `stage` for every real
+    stage progression and leaves it NULL for exactly `dispatched` and `failed` — verified against
+    the live log, where those two are the ONLY stage-NULL event types at these three stages.
+    `failed` deliberately does not count: a batch that errored did not finish the district. That
+    also retires the certain half of #670 — a late capture timeout that leaves a populated
+    captures.json no longer outranks its own failure event (Orange County FL `1201440`, whose only
+    stage outcome is `batch_00000`'s benchmark injection three weeks BEFORE `batch_00031` dispatched
+    it).
+
+    Strictly contained in the old predicate: asserted across all 43 batches x 3 stages on the live
+    corpus, this set is never a superset of `dispatched_by_batch`'s, so the change can only ever
+    withdraw a false `done` — never assert a new one. Rerunnable:
+    `docs/technical-notes/production-quality-control-research/2026-08-22-batch-done-predicate-measure.py`."""
     with gdb.session_scope() as con:
         return {r[0] for r in con.execute(
-            text("SELECT DISTINCT district_id FROM state_event WHERE stage_name = :nm "
-                 "AND event_type = 'dispatched' AND batch_id = :b AND district_id = ANY(:ids)"),
+            text("""WITH disp AS (
+                      SELECT district_id, MAX(event_id) AS dispatch_id
+                        FROM state_event
+                       WHERE stage_name = :nm AND event_type = 'dispatched'
+                         AND batch_id = :b AND district_id = ANY(:ids)
+                       GROUP BY district_id)
+                    SELECT disp.district_id FROM disp
+                     WHERE EXISTS (SELECT 1 FROM state_event e
+                                    WHERE e.district_id = disp.district_id
+                                      AND e.stage_name = :nm
+                                      AND e.stage IS NOT NULL
+                                      AND e.event_id > disp.dispatch_id)"""),
             {"nm": stage_name, "b": batch_id, "ids": ids or [""]})}
 
 

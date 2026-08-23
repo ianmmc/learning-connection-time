@@ -265,14 +265,29 @@ timeouts). What landed (code is authoritative — this records the shape + the d
   shown reflect whatever the cache currently holds for that district, not necessarily what the batch being
   viewed just produced. Moot on an ordinary batch (one run per district); on a redo batch, stale until this
   run's own completion overwrites that district's cache slice (see the next caveat).
-  **Caveat (#671, open, epic #96):** `run_batch` stamps the `process` `dispatched` state_event for every
-  district in `todo` up front, before the sequential per-district loop runs — the same pattern as Stage 3
-  (`stage3_capture/headless.py::_dispatch_and_finish`). The redo branch here (`processed &=
-  DS.dispatched_by_batch(batch["batch_id"], "process", ids)`, line ~158) answers "did this batch dispatch
-  this district," not "has this run's own processed.json actually landed" — so a district holding a prior
-  run's `processed.json` reads `done`-with-stale-metrics until this run's own `finish_district` overwrites
-  it. Measured false-done windows on the campaign (Stage 2/3/4 combined): 45s shortest, ~22min median,
-  38m15s longest.
+  **#671 (FIXED 2026-08-22) — this stage carried the entire measured footprint.** `run_batch` stamps the
+  `process` `dispatched` state_event for every district in `todo` up front, before the sequential
+  per-district loop runs (same pattern as `stage3_capture/headless.py::_dispatch_and_finish`). The redo
+  branch was `processed &= DS.dispatched_by_batch(...)`, which answers "did this batch dispatch this
+  district," not "has this run's own `processed.json` landed" — so a district holding a prior run's
+  artifact read `done`-with-stale-metrics until this run's `finish_district` overwrote it. Measured
+  false-done windows on the campaign (Stage 2/3/4 combined): 45s shortest, ~22min median, 38m15s longest.
+
+  **But the window was not only transient, and Stage 4 is where that showed.** 7 districts —
+  `batch_00024` (`2500587`/`2507080`/`3805460`/`3904705`), `batch_00026` (`0101920`), `batch_00027`
+  (`0103390`), `batch_00029` (`1730540`) — were dispatched to Stage 4 on **2026-07-22**, never completed,
+  and had been rendering `done` off a prior run's `processed.json` for **32 days** (`3805460`'s displayed
+  `processed_all` was stamped 2026-06-24). No `failed` event either: the runs died without unwinding. And
+  because `stage4.js` computes `retriable = todo + failed` and at 0 *replaces* the Run control with "All
+  processable districts processed.", the false `done` also removed the means of correcting it — the same
+  view-owns-the-button failure #647 fixed at the dispatch end, recurring at the completion end.
+
+  Both conjuncts now use **`DS.completed_by_batch`** (dispatched by this batch AND a stage OUTCOME after
+  that dispatch). All 7 read `todo` again with the Run control restored. `captured` is scoped by the same
+  helper because it is this stage's UPSTREAM GATE — a district whose re-capture was dispatched but never
+  finished must read `awaiting_capture`, not `todo`. Rerunnable evidence:
+  `docs/technical-notes/production-quality-control-research/2026-08-22-batch-done-predicate-measure.py`
+  (C1 the strictly-withdrawing invariant, C2 this population, C4 the drain watchdog).
 - **`server.py`** — `GET /api/process/{batch_id}` (status) + `POST /api/process/{batch_id}/run`
   (background job, `_PROCESS_JOBS`); the batch is resolved from the **DB working store** via the shared
   **`_batch_from_db`** (renamed from `_capture_batch_from_db`; now used by capture + process).

@@ -272,26 +272,45 @@ terminal at Stage 2.
 retriable). The rollup adds `resolved = done + flagged`; a batch's Stage 3 is complete when
 `resolved == total`.
 
-**Caveat (#670, open, epic #96): a late-timing-out district can render as clean `done` with its failure
-masked.** The `failed_caps` check (the latest `capture` state_event) is consulted only inside the
-`if did not in captured:` branch — i.e. only when no `captures.json` exists on disk yet. A district whose
-Node subprocess captured everything (a fully-populated `captures.json` on disk) and *then* hit the
-Python-side subprocess-timeout backstop (§3's `CAPTURE_TIMEOUT_S`) has both a `TimeoutExpired` state_event
-AND a complete manifest — and disk-artifact-existence is checked first, so it renders as ordinary `done`
-with no failure indicator at all. Measured live on the #620 campaign: Orange County FL (`1201440`) recorded
-`TimeoutExpired` while holding 119/119 successfully-captured records; the console showed it as done.
+**Caveat (#670, open, epic #96): on an ORDINARY batch a late-timing-out district still renders as clean
+`done` with its failure masked.** The `failed_caps` check (the latest `capture` state_event) is consulted
+only inside the `if did not in captured:` branch. A district whose Node subprocess captured everything (a
+fully-populated `captures.json` on disk) and *then* hit the Python-side subprocess-timeout backstop (§3's
+`CAPTURE_TIMEOUT_S`) has both a `TimeoutExpired` state_event AND a complete manifest — and for an ordinary
+batch `captured` is pure disk existence, so artifact-existence wins and no failure indicator appears.
+Measured live on the #620 campaign: Orange County FL (`1201440`) recorded `TimeoutExpired` while holding
+119/119 successfully-captured records; the console showed it as done. **#671 fixed this for REDO batches**
+(see below — a stale artifact no longer confers doneness, and `failed` does not count as finishing, so
+`1201440` now reads `timed_out`); the ordinary-batch residue and the separate *completeness* question —
+whether those 119 records are the whole set or a truncated prefix, unanswerable without #623's
+intended-vs-achieved receipt counts — remain #670's own scope.
 
-**Caveat (#671, open, epic #96): on a redo batch, every district holding a prior artifact reads `done` —
+**#671 (FIXED 2026-08-22): on a redo batch, every district holding a prior artifact used to read `done` —
 with the PRIOR run's metrics — for most or all of the current run's duration.** `_dispatch_and_finish`
 stamps the `dispatched` state_event for **every district in `todo`, up front, before the per-district
-capture loop starts** (§3's dispatch loop above). `status_for_batch`'s redo branch (`captured &=
-DS.dispatched_by_batch(...)`, added by #647 to fix the TODO/DONE gate — that fix is correct and unrelated
-to this defect) can only ask "did this batch dispatch this district," not "has this run's own capture for
-this district actually landed" — so from the moment dispatch is stamped until that district's own
-`finish_district` overwrites its `captures.json`/cache slice, the console shows it as `done` using
-stale, pre-redo data. Measured false-done windows on the campaign: 45s shortest, ~22min median, 38m15s
-longest. Same `stale-disk ∧ dispatched_by_batch` conjunction pattern recurs identically in Stage 2's and
-Stage 4's `headless.py` status views.
+capture loop starts** (§3's dispatch loop above). The redo branch was `captured &=
+DS.dispatched_by_batch(...)` (added by #647 to fix the TODO/DONE gate — that fix was correct, and this
+defect was in the *rule it scoped with*, not in the scoping). It could only ask "did this batch dispatch
+this district," not "has this run's own capture landed" — so from the moment dispatch was stamped until
+that district's own `finish_district` overwrote its `captures.json`/cache slice, the console showed
+`done` over stale, pre-redo data. Measured false-done windows on the campaign: 45s shortest, ~22min
+median, 38m15s longest.
+
+The conjunct is now **`DS.completed_by_batch`** — dispatched by this batch **and a stage OUTCOME
+(`stage IS NOT NULL`) after that dispatch** — the one home for the rule, so the same correction reached
+Stage 2 and Stage 4's identical `stale-disk ∧ …` views in the same edit. Keyed on event ORDER rather
+than the completion event's `batch_id`, because completion events are only stamped from #647 onward
+(stage-3: 28 of 147 rows) and keying on the stamp would declare 18 historical follow-up batches un-run.
+Non-`done` districts take the zeroed row defaults, so the stale metrics stopped rendering as current
+with no second change.
+
+**This also retired #670's precedence half here.** `failed` deliberately does NOT count as finishing, so
+Orange County FL (`1201440`) — `TimeoutExpired` while holding 119/119 records, whose only stage outcome
+is `batch_00000`'s benchmark injection from three weeks before `batch_00031` dispatched it — now reaches
+the failure branch and reads `timed_out` instead of a clean `done`. Still open in #670: ORDINARY batches
+(where `captured` remains pure disk existence), and whether a truncated capture is *detectable* at all,
+which needs #623's intended-vs-achieved receipt counts. Rerunnable evidence:
+`docs/technical-notes/production-quality-control-research/2026-08-22-batch-done-predicate-measure.py`.
 
 **Shared labels + left-pane progress:** `static/outcomes.js` (`outcomeBadge`, `progressBadge`) — the same
 elements Stage 2/4 use. Honest counts: no-link districts report separately, never folded into the

@@ -152,11 +152,18 @@ def status_for_batch(batch: dict) -> dict:
     # still owes the district), so leaving it on disk state would tell a redo district it is ready to
     # process while its re-capture has not happened — reading `todo` when the honest answer is
     # `awaiting_capture`. As at Stage 3, one variable feeds both the loop and `done_ids`.
+    #
+    # #671: the helper asks for a stage OUTCOME after this batch's dispatch, not merely the dispatch.
+    # THIS STAGE CARRIED THE WHOLE MEASURED FOOTPRINT — 7 districts across batch_00024/26/27/29 were
+    # dispatched to Stage 4 on 2026-07-22, never completed, and had been rendering `done` with a prior
+    # run's doc counts ever since (`3805460`'s dated 2026-06-24). With `todo == failed == 0`,
+    # stage4.js:87 replaces the Run control with "All processable districts processed." — so the false
+    # `done` also removed the means of correcting it. They now read `todo` and are runnable again.
     captured = {did for did, dk in ondisk.items() if (dk["dir"] / "captures.json").exists()}
     processed = {did for did, dk in ondisk.items() if (dk["dir"] / "processed.json").exists()}
     if BT.redoes_attempted(batch):
-        captured &= DS.dispatched_by_batch(batch["batch_id"], "capture", ids)
-        processed &= DS.dispatched_by_batch(batch["batch_id"], "process", ids)
+        captured &= DS.completed_by_batch(batch["batch_id"], "capture", ids)
+        processed &= DS.completed_by_batch(batch["batch_id"], "process", ids)
     done_ids = [d["district_id"] for d in batch["districts"] if d["district_id"] in processed]
 
     # Process FAILURES (a tool/IO crash) leave NO processed.json and write a `failed` process event with

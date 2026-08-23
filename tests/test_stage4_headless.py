@@ -274,17 +274,38 @@ def test_647_a_redo_batch_awaits_this_batchs_capture_before_processing(gov_sessi
     # nothing dispatched by THIS batch: gated on its own capture, not "todo", not "done"
     assert H4.status_for_batch(batch)["districts"][0]["status"] == "awaiting_capture"
 
-    # this batch captured it -> now genuinely todo for processing
+    # #671: this batch DISPATCHED the capture but has not finished it — the upstream gate is still
+    # owed, so the honest answer stays `awaiting_capture`, not `todo`.
     gov_session.execute(text(
         "INSERT INTO state_event (district_id, stage_name, event_type, batch_id, created_at, actor) "
         "VALUES (:d, 'capture', 'dispatched', :b, 'now', 'zz')"), {"d": did, "b": "batch_zz647d"})
     gov_session.flush()
+    assert H4.status_for_batch(batch)["districts"][0]["status"] == "awaiting_capture"
+
+    # this batch CAPTURED it -> now genuinely todo for processing
+    gov_session.execute(text(
+        "INSERT INTO state_event (district_id, stage_name, event_type, stage, batch_id, "
+        "created_at, actor) VALUES (:d, 'capture', 'captured_all', 3, :b, 'now', 'zz')"),
+        {"d": did, "b": "batch_zz647d"})
+    gov_session.flush()
     assert H4.status_for_batch(batch)["districts"][0]["status"] == "todo"
 
-    # …and once it has processed it too, done
+    # #671: dispatching the PROCESS does not finish it either — this is the exact state the 7 live
+    # districts (batch_00024/26/27/29, dispatched 2026-07-22) have been stuck in, reading `done`
+    # off a prior run's processed.json for over a month.
     gov_session.execute(text(
         "INSERT INTO state_event (district_id, stage_name, event_type, batch_id, created_at, actor) "
         "VALUES (:d, 'process', 'dispatched', :b, 'now', 'zz')"), {"d": did, "b": "batch_zz647d"})
+    gov_session.flush()
+    stuck = H4.status_for_batch(batch)["districts"][0]
+    assert stuck["status"] == "todo"
+    assert stuck["n_docs"] == 0               # not the prior run's doc counts
+
+    # …and once a process OUTCOME lands, done
+    gov_session.execute(text(
+        "INSERT INTO state_event (district_id, stage_name, event_type, stage, batch_id, "
+        "created_at, actor) VALUES (:d, 'process', 'processed_all', 4, :b, 'now', 'zz')"),
+        {"d": did, "b": "batch_zz647d"})
     gov_session.flush()
     assert H4.status_for_batch(batch)["districts"][0]["status"] == "done"
 
