@@ -119,13 +119,13 @@ def test_detector_weights_endpoint_mirrors_the_ssot(client):
     assert w["proximity_pair"]["polarity"] == 1 and w["board"]["polarity"] == -1   # both directions present
 
 
-def test_relevance_density_nav_present_in_console():
+def test_relevance_density_nav_present_in_console(app_js):
     """UI-visibility regression (#521): a long rep must get relevance-density navigation — a heat-strip +
     ranked bookmarks + text anchors, driven by the SERVER weight SSOT (no hardcoded weights in JS) with
     click-to-scroll. Guards the feature (and its no-second-weight-set discipline) from silently vanishing."""
     from pathlib import Path
     repo = Path(__file__).resolve().parent.parent
-    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    js = app_js
     css = (repo / "infrastructure/acquisition/process_governance/static/app.css").read_text()
     assert "function renderDensityNav" in js and "if (t.length > DENSITY_MIN_CHARS) renderDensityNav" in js, \
         "a long rep must route to the density nav"
@@ -137,22 +137,22 @@ def test_relevance_density_nav_present_in_console():
     assert ".dn-strip" in css and ".bm-anchor" in css, "the density-nav styles must exist"
 
 
-def test_relevance_density_nav_is_keyboard_accessible():
+def test_relevance_density_nav_is_keyboard_accessible(app_js):
     """#521 follow-up: the heat-strip is the primary click-to-jump surface; a keyboard-only reviewer must
     be able to reach and operate it too (the bookmark chips already do, via real <button> elements)."""
     from pathlib import Path
     repo = Path(__file__).resolve().parent.parent
-    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    js = app_js
     assert 'tabindex="0"' in js and 'role="slider"' in js, "the heat-strip must be focusable and announce its role"
     assert "strip.onkeydown" in js, "the heat-strip must respond to keyboard input, not just clicks"
 
 
-def test_dn_esc_escapes_quotes():
+def test_dn_esc_escapes_quotes(app_js):
     """Security regression: dnEsc's output fills an HTML attribute (title="...") via innerHTML — it must
     escape " (and ') or a quote in scraped document text breaks out of the attribute."""
     from pathlib import Path
     repo = Path(__file__).resolve().parent.parent
-    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    js = app_js
     import re
     m = re.search(r"const dnEsc = \(s\) => s\.replace\((/\[[^\]]*\]/g)", js)
     assert m, "dnEsc's escape regex must be present and easy to locate"
@@ -160,13 +160,13 @@ def test_dn_esc_escapes_quotes():
     assert '"' in charclass or "&quot;" in js.split("dnEsc")[0], "dnEsc must escape the double-quote character"
 
 
-def test_content_adaptive_defaults_present_in_console():
+def test_content_adaptive_defaults_present_in_console(app_js):
     """UI-visibility regression (#522): the center pane's DEFAULT view must be the evidence the machine
     used — classification-driven open states, rasters demoted to one collapsed gallery, the source PDF as
     the default visual, and the full raw set one click away (show-all). Guards each from silently vanishing."""
     from pathlib import Path
     repo = Path(__file__).resolve().parent.parent
-    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    js = app_js
     css = (repo / "infrastructure/acquisition/process_governance/static/app.css").read_text()
     assert "function applyEvidenceDefaults" in js and "applyEvidenceDefaults(c, annotateUniqueTimes(" in js, \
         "the classification must DRIVE the defaults, not just decorate them"
@@ -185,7 +185,7 @@ def test_content_adaptive_defaults_present_in_console():
     assert ".evidence-pointer" in css and ".raster-gallery" in css, "the #522 styles must exist"
 
 
-def test_evidence_guardrail_pointer_present_in_console():
+def test_evidence_guardrail_pointer_present_in_console(app_js):
     """#522 guardrail regression: whenever a rep carrying evidence ends up collapsed by default, the console
     MUST surface a pointer that names it and click-opens it. Scope = the client-checkable detector surface:
     in-window clock times PLUS instructional-minutes/period phrasing (`other`) — a rep the scorer's strongest
@@ -193,7 +193,7 @@ def test_evidence_guardrail_pointer_present_in_console():
     the open rules (including a closed densest) so a rules change can't silently regress it."""
     from pathlib import Path
     repo = Path(__file__).resolve().parent.parent
-    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    js = app_js
     assert "evidence-pointer" in js and "ev-jump" in js, "the pointer strip + jump chips must exist"
     assert "evidence in collapsed rep(s)" in js, "the pointer must say what it is"
     assert "const hidden = classes.filter(" in js, \
@@ -206,14 +206,14 @@ def test_evidence_guardrail_pointer_present_in_console():
         "filename-interpolated selectors must be CSS-escaped (an odd filename must not throw and kill the guardrail)"
 
 
-def test_density_bookmarks_carry_pdf_page_and_steer_viewer():
+def test_density_bookmarks_carry_pdf_page_and_steer_viewer(app_js):
     """#522 composition with #521: pdftotext output keeps \\f page separators, so a char-offset bookmark
     maps deterministically to a source-PDF page — chips must carry p.N and steer the embedded viewer.
     Pins the FULL steering expression: the fragment-strip (src.split("#")[0]) keeps repeated clicks
     idempotent, and steering must abstain unless exactly one PDF iframe exists (never steer the wrong doc)."""
     from pathlib import Path
     repo = Path(__file__).resolve().parent.parent
-    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    js = app_js
     assert 'text.indexOf("\\f")' in js and "const pageOf = (off)" in js, "the \\f page map must exist"
     assert "data-page" in js, "bookmark chips must carry the page"
     assert 'views[0].src = views[0].src.split("#")[0] + "#page=" + c.dataset.page' in js, \
@@ -222,7 +222,7 @@ def test_density_bookmarks_carry_pdf_page_and_steer_viewer():
         "steering must abstain when the single-PDF-per-record invariant doesn't hold"
 
 
-def test_density_nav_js_constants_match_build_signals_python():
+def test_density_nav_js_constants_match_build_signals_python(app_js):
     """No-drift guard (#521): DN_PROXIMITY/DN_WIN_LO/DN_WIN_HI in app.js are hand-mirrored copies of
     build_signals.py's PROXIMITY_CHARS/WINDOW_LO/WINDOW_HI — nothing else ties them together, so pin the
     literal values here. If build_signals.py's constants change, this fails instead of the heat-strip
@@ -230,7 +230,7 @@ def test_density_nav_js_constants_match_build_signals_python():
     from pathlib import Path
     from infrastructure.acquisition.stage5_filter import build_signals as BS
     repo = Path(__file__).resolve().parent.parent
-    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    js = app_js
     import re
     m = re.search(r"const DN_PROXIMITY = (\d+), DN_WIN_LO = (\d+), DN_WIN_HI = (\d+)", js)
     assert m, "DN_PROXIMITY/DN_WIN_LO/DN_WIN_HI declaration must be present and in this exact shape"
@@ -238,7 +238,7 @@ def test_density_nav_js_constants_match_build_signals_python():
     assert (int(m.group(2)), int(m.group(3))) == (BS.WINDOW_LO, BS.WINDOW_HI)
 
 
-def test_density_nav_js_regexes_match_build_signals_python():
+def test_density_nav_js_regexes_match_build_signals_python(app_js):
     """No-drift guard (#521): DN_INSTRUCTIONAL/DN_PERIOD in app.js are verbatim ports of build_signals.py's
     INSTRUCTIONAL_RE/PERIOD_RE (JS can't import a Python module). Pin the pattern strings so a future edit
     to either Python regex — this one has already been revised once, per build_signals.py's own comment —
@@ -246,7 +246,7 @@ def test_density_nav_js_regexes_match_build_signals_python():
     from pathlib import Path
     from infrastructure.acquisition.stage5_filter import build_signals as BS
     repo = Path(__file__).resolve().parent.parent
-    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    js = app_js
     import re
     m_instr = re.search(r"const DN_INSTRUCTIONAL = /(.+)/gi;", js)
     m_period = re.search(r"const DN_PERIOD = /(.+)/gi;", js)
@@ -265,7 +265,7 @@ def test_density_nav_js_regexes_match_build_signals_python():
     assert "while ((m = DN_INSTRUCTIONAL.exec(text))) push(" not in js
 
 
-def test_non_regular_day_confounder_checkbox_present_in_console():
+def test_non_regular_day_confounder_checkbox_present_in_console(app_js):
     """UI-visibility regression (#537): the ONE coarse "Non-Regular-Day Schedule" Axis-2 checkbox must
     exist, keyed `other_schedule` (continuity with the v2.0→v2.1 migration rows + harness.DETECTOR_FACET's
     lf_nonstandard_day mapping — reusing the key is what un-freezes that detector's facet denominator),
@@ -274,7 +274,7 @@ def test_non_regular_day_confounder_checkbox_present_in_console():
     or fragmenting back into per-cause checkboxes."""
     from pathlib import Path
     repo = Path(__file__).resolve().parent.parent
-    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    js = app_js
     assert '["other_schedule", "Non-Regular-Day Schedule", "lf_nonstandard_day"]' in js, \
         "the coarse other_schedule confounder checkbox must be in CONFOUNDERS, hinted by lf_nonstandard_day"
     assert "other_schedule: \"Times/schedule for something other than the regular full school day" in js, \
@@ -481,13 +481,13 @@ def test_reset_bad_scope_is_400(client):
     assert client.post("/api/reset-labels", json={"scope": "bogus", "target_id": "x"}).status_code == 400
 
 
-def test_reset_labels_button_present_in_console():
+def test_reset_labels_button_present_in_console(app_js):
     """UI-visibility regression (memory: catalog must-be-visible console features + guard them). The
     reset affordance must exist at BOTH the per-record and per-district sites, wired to the endpoint —
     so it can't silently disappear in a future refactor."""
     from pathlib import Path
     repo = Path(__file__).resolve().parent.parent   # the test_arch_manifest.py cwd-proof convention
-    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    js = app_js
     assert "dist-resetbtn" in js, "district-level Reset labels button missing"
     assert "resetLabelBtn" in js, "per-record Reset label button missing"
     assert "async function resetLabels" in js and "/api/reset-labels" in js
@@ -583,12 +583,12 @@ def test_lane_focus_respects_active_record_filters(client):
     assert body2["total_districts"] == 0                            # no record is both target_absent AND unlabeled
 
 
-def test_fp_fn_lanes_and_search_present_in_console():
+def test_fp_fn_lanes_and_search_present_in_console(app_js):
     """UI-visibility regression (#516): the FP/FN lane controls + rec_key search + their wiring must exist,
     and the right pane must be reordered so the Label controls precede the provenance + Signals reference."""
     from pathlib import Path
     repo = Path(__file__).resolve().parent.parent
-    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    js = app_js
     assert 'data-lane="${v}"' in js, "lane button template missing"
     assert '"fp", "FP' in js and '"fn", "FN' in js, "FP/FN lane options missing"
     assert "VIEW.lane = b.dataset.lane" in js, "lane click handler missing"
@@ -616,7 +616,7 @@ def test_progress_counts_never_report_labeled_over_total(gov_session):
     assert counts["labeled"] <= counts["total"]
 
 
-def test_density_nav_nonstandard_regex_matches_build_signals_python():
+def test_density_nav_nonstandard_regex_matches_build_signals_python(app_js):
     """No-drift guard (PR #538 review): DN_NONSTANDARD in app.js is a verbatim port of
     build_signals.NONSTANDARD_TERM_RE so the heat-strip can show the wrong-day evidence that can demote
     a lone table to review (#537 follow-on). Pin the pattern strings, same as DN_INSTRUCTIONAL/DN_PERIOD."""
@@ -624,7 +624,7 @@ def test_density_nav_nonstandard_regex_matches_build_signals_python():
     from infrastructure.acquisition.stage5_filter import build_signals as BS
     from infrastructure.acquisition.stage5_filter import detectors as DET
     repo = Path(__file__).resolve().parent.parent
-    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    js = app_js
     import re
     m = re.search(r"const DN_NONSTANDARD = /(.+)/gi;", js)
     assert m, "DN_NONSTANDARD declaration must be present and in this exact shape"

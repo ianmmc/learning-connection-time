@@ -85,11 +85,11 @@ def test_verdict_is_advisory_never_mutating(tmp_path):
     assert sorted(p.name for p in Path(tmp_path).iterdir()) == before   # pure read
 
 
-def test_console_badge_is_wired():
+def test_console_badge_is_wired(app_js):
     """UI-visibility pin (the memory rule): the badge markup + the /api/progress drift key must exist
     in source, so the advisory surface can't silently disappear."""
     repo = Path(__file__).resolve().parent.parent
-    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    js = app_js
     assert 'dataset.feat = "drift-badge"' in js and "retune recommended" in js
     css = (repo / "infrastructure/acquisition/process_governance/static/app.css").read_text()
     assert ".drift-badge" in css

@@ -918,6 +918,10 @@ function renderPanel(d) {
   const s = d.signals, lab = d.label || {};
   const kw = (arr) => arr && arr.length ? arr.join(", ") : "—";
   const neg = s.negative_kw || {};
+  // #673/#895: the record's vintage, bound ONCE — the one spelling of the field path in this file.
+  // #850's bug was exactly a wrong spelling of this path (a phantom payload-root read that was
+  // always undefined), so every consumer below uses this binding, never the path itself.
+  const vintage = s.content_school_year;
   const sig = `<div class="sig-grid">
     <span class="k">tier</span><span class="v">${d.tier}</span>
     <span class="k">times (total / in-window)</span><span class="v">${s.n_times} / ${s.n_times_in_window}</span>
@@ -928,10 +932,10 @@ function renderPanel(d) {
     <span class="k">period-table hits</span><span class="v">${s.period_hits}</span>
     <span class="k">roster school names hit</span><span class="v">${s.roster_school_names_hit}</span>
     <span class="k" title="${DEFS.out_of_window}">content school year (#673)</span><span class="v" data-feat="vintage-readout">${
-      s.content_school_year
-        ? (belowFloor(s.content_school_year)
-            ? `<b class="warn">${s.content_school_year}</b> — BELOW the ${VALIDITY_FLOOR} validity floor`
-            : s.content_school_year)
+      vintage
+        ? (belowFloor(vintage)
+            ? `<b class="warn">${vintage}</b> — BELOW the ${VALIDITY_FLOOR} validity floor`
+            : vintage)
         : `<span class="muted">unknown</span> — derived from the URL/filename only; the document is never opened (#642), so an old page with a year-free URL reads as acceptable vintage`
     }</span>
     <span class="k" title="${DEFS.office_building_hours}">staff duty-day times (#684)</span><span class="v">${
@@ -965,7 +969,7 @@ function renderPanel(d) {
   // every record — the 2014-15 TAOS handbook included — rendered "unknown". Caught by the first
   // run of verify_673_console.mjs, the render check #673 was left open for. Pinned DB-free by
   // tests/test_673_vintage_surface.py (which forbids the payload-root spelling outright).
-  const vintChecks = VINTAGE.map(([id, t]) => check(id, t, belowFloor(s.content_school_year))).join("");
+  const vintChecks = VINTAGE.map(([id, t]) => check(id, t, belowFloor(vintage))).join("");
   const whereSel = `<select id="facetWhere" class="facet-where">${
     FACET_WHERE.map((w) => `<option value="${w}" ${savedFacets._where === w ? "selected" : ""}>${w || "where? (optional)"}</option>`).join("")}</select>`;
   const pageInput = `<input id="facetPage" class="facet-page" type="text" placeholder="pages, e.g. 4, 7-9" value="${savedFacets._pages || ""}"/>`;

@@ -353,3 +353,20 @@ def _reset_openrouter_client_cache():
     except Exception:
         pass
     yield
+
+
+# ---------------------------------------------------------------------------- #897: the console client
+# The ONE construction of the gate@5 client's source path, shared by every source-pin test (the
+# expression was hand-spelled in 5 test files / 10+ sites before this). Derived from the PACKAGE
+# location — test_gate1_api.py's idiom — so a repo-layout move cannot silently break it the way a
+# repo-relative literal would.
+def _app_js_path():
+    from pathlib import Path
+    from infrastructure.acquisition import process_governance as _PG
+    return Path(_PG.__file__).parent / "static" / "app.js"
+
+
+@pytest.fixture(scope="session")
+def app_js() -> str:
+    """The gate@5 console client source, read once per session for source-pin tests."""
+    return _app_js_path().read_text()

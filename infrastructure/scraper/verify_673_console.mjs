@@ -32,7 +32,8 @@
 //   4. no client console errors while rendering either record.
 //
 // FALSIFIER (issue box 1: "this must fail against today's client" — 'today' = pre-#850): run with
-// FALSIFY=1 to assert the pre-#850 client (git e270099^) LACKS both data-feat hooks this script keys
+// FALSIFY=1 (exactly "1" — #894: a bare truthiness check made FALSIFY=0 ENABLE the mode it reads
+// as disabling) to assert the pre-#850 client (git e270099^) LACKS both data-feat hooks this script keys
 // on — i.e. every DOM assertion above is unsatisfiable against that client. Source-level rather than
 // a live serve of the old client, so the falsification never swaps files under the human's :8005
 // server, which serves the same static dir from disk.
@@ -45,14 +46,22 @@ const out = [];
 const ok = (name, cond, detail = "") =>
   out.push(`${cond ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`);
 
-if (process.env.FALSIFY) {
+if (process.env.FALSIFY === "1") {
   // Pre-#850 client from git — the DOM hooks must be ABSENT, so checks 1-3 cannot pass against it.
-  const old = execFileSync("git",
-    ["show", "e270099^:infrastructure/acquisition/process_governance/static/app.js"],
-    { cwd: "..", encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
-  ok("pre-#850 client lacks vintage-readout hook", !old.includes("vintage-readout"));
-  ok("pre-#850 client lacks vintage-facets hook", !old.includes("vintage-facets"));
-  ok("pre-#850 client never mentions content_school_year", !old.includes("content_school_year"));
+  // #892: a git failure (outside a working tree, shallow clone missing e270099) must land as a
+  // FAIL line in this script's own accounting, never as a raw uncaught stack trace.
+  let old = null, gitErr = "";
+  try {
+    old = execFileSync("git",
+      ["show", "e270099^:infrastructure/acquisition/process_governance/static/app.js"],
+      { cwd: "..", encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
+  } catch (e) {
+    gitErr = String(e.stderr || e.message || e).split("\n")[0];
+  }
+  ok("pre-#850 client readable from git", old !== null, gitErr);
+  ok("pre-#850 client lacks vintage-readout hook", !!old && !old.includes("vintage-readout"));
+  ok("pre-#850 client lacks vintage-facets hook", !!old && !old.includes("vintage-facets"));
+  ok("pre-#850 client never mentions content_school_year", !!old && !old.includes("content_school_year"));
   console.log(out.join("\n"));
   process.exit(out.some((l) => l.startsWith("FAIL")) ? 1 : 0);
 }
@@ -67,14 +76,24 @@ async function openRecord(rec) {
   // search by DISTRICT id, not the record hash — a hash query filters the list to one row, which
   // would hide the sibling records check 2 needs (first-run bug of this very script)
   await p.goto(`${BASE}/?q=${encodeURIComponent(rec.split(":")[0])}`, { waitUntil: "networkidle" });
-  await p.waitForTimeout(1500);
+  // #898: poll for the state, never sleep a fixed interval — a fixed wait is slow on a fast run
+  // and a false FAIL on a slow one. (The older verify_*_console.mjs scripts keep their fixed
+  // waits: their headers record "last run N/N PASS" under that timing, and rewriting them
+  // without re-running would falsify the record.)
+  try {
+    await p.waitForSelector(`.rec-row[data-rec-key="${rec}"]`, { timeout: 15000 });
+  } catch {
+    return { ok: false, rows: await p.evaluate(() => document.querySelectorAll(".rec-row").length) };
+  }
   const clicked = await p.evaluate(async (r) => {
     const li = document.querySelector(`.rec-row[data-rec-key="${r}"]`);
     if (!li) return { ok: false, rows: document.querySelectorAll(".rec-row").length };
     await selectRecord(r, li);
     return { ok: true };
   }, rec);
-  await p.waitForTimeout(2000);
+  try {
+    await p.waitForSelector('[data-feat="vintage-readout"]', { timeout: 15000 });
+  } catch { /* readVintage() reports found:false as its own FAIL line */ }
   return clicked;
 }
 
