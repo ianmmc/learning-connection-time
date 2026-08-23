@@ -136,17 +136,31 @@ def status_for_batch(batch: dict) -> dict:
     # ONE variable feeds BOTH the per-district status loop below and `done_ids`. They are the same
     # question and must never be able to disagree: the first draft of this fix re-keyed only
     # `done_ids` and the loop kept reading the disk set, so the status did not move at all.
+    #
+    # #671: the scoping helper asks for a stage OUTCOME after this batch's dispatch, not merely the
+    # dispatch. Dispatch is stamped for the whole todo list up front, so the dispatch-only rule read
+    # `done` — with the PRIOR run's capture counts — from t=0 of a redo until the district's own work
+    # finished. Because non-`done` districts take the zeroed row defaults below, correcting the
+    # predicate also stops the stale metrics rendering as current; there is no second fix for that.
     captured = {did for did, dk in ondisk.items() if (dk["dir"] / "captures.json").exists()}
     if BT.redoes_attempted(batch):
-        captured &= DS.dispatched_by_batch(batch["batch_id"], "capture", ids)
+        captured &= DS.completed_by_batch(batch["batch_id"], "capture", ids)
     # `done` = discovered, HAD links, and captured. (No-link districts never capture -> manual_flag_all.)
     done_ids = [d["district_id"] for d in batch["districts"]
                 if d["district_id"] in captured and cand_n.get(d["district_id"], 0) > 0]
 
-    # Capture FAILURES (timeout / Node crash) leave NO captures.json and write a `failed` capture event
-    # with no stage number -- so without this they read as `todo`, indistinguishable from "not attempted"
-    # (the Brookwood bug: the failure showed only in the run log). Surface the latest capture event per
-    # district; if it's `failed` and there's no captures.json, the district is `failed`, not `todo`.
+    # Capture FAILURES (timeout / Node crash) write a `failed` capture event with no stage number --
+    # so without this they read as `todo`, indistinguishable from "not attempted" (the Brookwood bug:
+    # the failure showed only in the run log). Surface the latest capture event per district; if it's
+    # `failed` and the district is not `captured`, it is `failed`, not `todo`.
+    #
+    # This comment used to assert that a failure "leaves NO captures.json". #670 disproved it: a LATE
+    # timeout kills the subprocess after it has already written one (Orange County FL `1201440`, 119
+    # ok=true records + a TimeoutExpired event), and artifact-existence then outranked the failure so
+    # the district rendered a clean `done`. #671's predicate retires that for REDO batches — the stale
+    # captures.json no longer confers doneness, so such a district now reaches this branch and reads
+    # `timed_out`. NOT yet fixed for ordinary batches, where `captured` is still pure disk existence;
+    # that residue is #670's own remaining scope, along with detecting truncation at all (#623).
     failed_caps: dict = {}
     with gdb.session_scope() as con:
         CI.ensure_cache_schema(con)

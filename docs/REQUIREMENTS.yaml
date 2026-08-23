@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-08-21T00:00:00Z"
+last_updated: "2026-08-22T00:00:00Z"
 
 # STATUS VOCABULARY — normalized 2026-07-16, narrowed to FIVE 2026-08-21 (Ian). These are the whole
 # set; do not invent more. The pre-normalization file carried ad-hoc `in-progress` / `not_started` /
@@ -5015,3 +5015,45 @@ requirements:
       in the URL and a real Drive URL is an opaque file ID. NOT a revert of #719, which removed a
       guaranteed no-op: the gate must be able to KEEP an off-domain document before routing anyone
       into that round is worth anything. Sequencing, not reversal."
+  - id: REQ-185
+    github_issue: "#671 (epic #96)"
+    description: "CONSOLE INVARIANT — a status surface never asserts completion from evidence that predates the work it is describing. Batch-scoped stage done-ness is 'this batch dispatched it AND a stage OUTCOME landed after that dispatch', defined once in DS.completed_by_batch."
+    type: architectural
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "A district dispatched by this batch but not yet finished under it never renders as `done`, and never displays a prior run's metrics as current. Falsifier: seed a prior-run artifact + a dispatch event with no completion and assert the status is not `done` — this must fail against the pre-#671 predicate (verified: all three stage tests report `done` where `todo` is expected)"
+      - "The rule keys on event ORDER, not the completion event's batch_id: completion events are only stamped from #647 onward, so a stamp-keyed rule would declare 18 historical follow-up batches un-run (measured: an `e.batch_id = :b` filter withdraws 36 genuine completions)"
+      - "The outcome must belong to the WINDOW THIS DISPATCH OWNS — after it and before the next dispatch of the same district+stage — not merely follow it (#885). event_id is a global serial, so order alone lets a LATER batch's completion finish an EARLIER batch, and the trigger is the remediation path itself. Latent in the corpus (0 rows), so coverage is CONSTRUCTED in the suite"
+      - "The corrected set is never a SUPERSET of the dispatch-only set — the change can only withdraw a false `done`, never assert one (measured: 43 batches x 3 stages, 0 violations)"
+      - "A `failed` event does NOT count as finishing: a batch that errored did not finish the district"
+      - "ONE home (REQ-182): all four call sites — stage2/stage3 done-ness, stage4 done-ness AND its upstream capture gate — import the same predicate"
+    tests:
+      - "tests/test_stage2_headless.py::test_620_a_redo_batch_reports_todo_until_it_has_run"
+      - "tests/test_stage3_headless.py::test_647_a_redo_batch_reports_todo_until_this_batch_has_captured"
+      - "tests/test_stage4_headless.py::test_647_a_redo_batch_awaits_this_batchs_capture_before_processing"
+      - "tests/test_stage4_headless.py::test_885_a_later_batchs_completion_does_not_finish_an_earlier_batch"
+      - "tests/test_one_home_fitness.py"
+      - "docs/technical-notes/production-quality-control-research/2026-08-22-batch-done-predicate-measure.py"
+    created: "2026-08-22T00:00:00Z"
+    updated: "2026-08-22T00:00:00Z"
+    notes: "Filed as a DESIGN question ('what should a badge say during a re-run?') and resolved as a
+      wrong predicate — the design menu was downstream of a rule that was simply false. Two findings
+      collapsed the cost. (1) The defect was not only the transient 38-minute window the issue
+      measured: 7 districts had been dispatched to Stage 4 on 2026-07-22, never completed, and read
+      `done` off a prior run for 32 days — and since stage4.js hides the Run control at
+      `todo + failed == 0`, the false `done` SUPPRESSED ITS OWN FIX. (2) No new data was needed:
+      non-`done` districts already take the zeroed row defaults, so correcting the predicate also
+      stopped the stale metrics rendering as current, satisfying two acceptance criteria with one
+      change. Retired the precedence half of #670 as a side effect (Orange County FL 1201440 now
+      reads `timed_out`). Left open deliberately: ORDINARY batches keep the disk rule, #669's
+      cumulative-vs-run-scoped counts, and #670's completeness question (needs #623).
+      #885 (PR #884 review) then found the rule was right about ORDER and silent about OWNERSHIP:
+      because event_id is a global serial, a LATER batch's outcome also satisfied an earlier
+      batch's check, so remediating one of the 7 stuck districts would have flipped its old batch
+      back to a false `done` showing the NEW batch's numbers. Real mechanism, but the issue's
+      PROPOSED fix (`AND e.batch_id = :b`) was measured and rejected — it withdraws 36 genuine
+      completions, since only 22.4% of process outcomes carry a batch_id. Shipped instead: the
+      outcome must fall in the window the dispatch owns. #886 (merge Stage 4's two predicate calls)
+      measured and declined at the call site — 1.5-2.0ms of a ~43ms render, and merging would give
+      the one-home predicate a polymorphic return."

@@ -321,10 +321,21 @@ def test_647_a_redo_batch_reports_todo_until_this_batch_has_captured(gov_session
     rows = H3.status_for_batch(batch)["districts"]
     assert rows[0]["status"] == "todo"          # was "done" — the button-hiding bug
 
-    # once THIS batch has dispatched it (and the artifact is on disk), it reads done
+    # #671: dispatched-but-not-finished is NOT done, even with the prior run's captures.json on
+    # disk. This is the in-flight state of every redo district from t=0 of the run.
     gov_session.execute(text(
         "INSERT INTO state_event (district_id, stage_name, event_type, batch_id, created_at, actor) "
         "VALUES (:d, 'capture', 'dispatched', :b, 'now', 'zz')"),
+        {"d": did, "b": "batch_zz647"})
+    gov_session.flush()
+    inflight = H3.status_for_batch(batch)["districts"][0]
+    assert inflight["status"] == "todo"
+    assert inflight["n_captures"] == 0        # and the prior run's counts are not shown as current
+
+    # once a stage OUTCOME lands after that dispatch, it reads done
+    gov_session.execute(text(
+        "INSERT INTO state_event (district_id, stage_name, event_type, stage, batch_id, "
+        "created_at, actor) VALUES (:d, 'capture', 'captured_all', 3, :b, 'now', 'zz')"),
         {"d": did, "b": "batch_zz647"})
     gov_session.flush()
     assert H3.status_for_batch(batch)["districts"][0]["status"] == "done"

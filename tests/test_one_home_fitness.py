@@ -113,9 +113,11 @@ IS_BENCHMARK_SQL = """EXISTS (SELECT 1 FROM batch_district bd JOIN batch b ON b.
         "home": ACQ / "common" / "district_status.py",
         "scope": sorted(ACQ.rglob("*.py")),
         "forbid": re.compile(r"FROM state_event\b.{0,200}?batch_id\s*=\s*:", re.S | re.I),
-        "why": "#647/#655 — Stage 2 hand-rolled a twin of dispatched_by_batch while Stages 3 and 4 "
-               "shared it. Three near-simultaneous fixes, one shared helper used twice and one "
-               "private copy. Home: dispatched_by_batch",
+        "why": "#647/#655 — Stage 2 hand-rolled a twin of the helper while Stages 3 and 4 shared it. "
+               "Three near-simultaneous fixes, one shared helper used twice and one private copy. "
+               "#671 then corrected the rule itself (a stage OUTCOME after this batch's dispatch, "
+               "not the dispatch alone) at all four call sites at once — which is the whole point "
+               "of it having one home. Home: completed_by_batch",
         "removed": {
             "stage2_discover.headless.status_for_batch": '''
             done_ids = [r[0] for r in con.execute(

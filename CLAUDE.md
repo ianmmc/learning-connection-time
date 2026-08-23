@@ -141,14 +141,42 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-08-22): PR #872 is MERGED (`3847775`) — #863 and #672 both closed.**
-Three commits: the Stage-3 single-instant DOM read (#863), Stage-2 rung-regression recording
-(#672), and a `REQUIREMENTS.yaml` audit that gave the ledger its own fitness function. Review
-round #873-#880 absorbed in the same PR — six fixed, #873/#875 closed as not-bugs with pins.
-PRs #881 (`deepseek-v3.2` catalog refresh, caught by #809's network canary) and #882 (checkpoint)
-also merged; **#861 closed** — one name, one formula. The live governance DB is UNCHANGED since the
-2026-08-19 re-ingest (116 districts / 3,561 records / 2,614 labels); nothing this round altered
-scoring, so no re-ingest is owed, and the full baseline is GREEN (see resume-essentials).
+**Current status (2026-08-22): PRs #872/#881/#882/#883 all MERGED (`9c9bde3`) — #863, #672, #861
+closed. #671 is IN FLIGHT on `fix/671-batch-done-predicate`.** #872 carried the Stage-3
+single-instant DOM read (#863), Stage-2 rung-regression recording (#672), and a `REQUIREMENTS.yaml`
+audit that gave the ledger its own fitness function; review round #873-#880 was absorbed into the
+same PR — six fixed, #873/#875 closed as not-bugs with pins. Then #881 (`deepseek-v3.2` catalog
+refresh, caught by #809's network canary), #882 (checkpoint), #883 (#861 — one name, one formula).
+The live governance DB is UNCHANGED since the 2026-08-19 re-ingest (116 districts / 3,561 records /
+2,614 labels); nothing has altered scoring, so no re-ingest is owed, and the baseline is GREEN.
+
+**#671 was filed as a design question and is a WRONG PREDICATE — the SIXTEENTH instance of
+measure-first, and a new shape of it.** Batch-scoped done-ness was `stale disk artifact ∧ this
+batch DISPATCHED it`, and dispatch is stamped for the whole todo list up front, so a redo district
+holding a prior artifact read `done` from t=0. The issue measured that as a ≤38-minute transient
+window and asked what the badge should *say*. Both premises were incomplete: **the window is not
+transient** (7 districts dispatched to Stage 4 on 2026-07-22 had read `done` off a prior run for
+**32 days**), and **no design decision was needed** — non-`done` districts already take the zeroed
+row defaults, so one predicate change also stops the stale metrics rendering as current. The new
+shape: because `stage4.js` hides the Run control at `todo + failed == 0`, **the false `done`
+suppressed its own fix** — the console asserted completion and simultaneously removed the means of
+correcting it. Fix is `DS.completed_by_batch` (dispatched by this batch AND a stage OUTCOME after
+that dispatch), keyed on event ORDER so the pre-#647 unstamped era still reads correctly. Measured
+strictly withdrawing: over 43 batches × 3 stages the corrected set is never a superset. Retires
+#670's *precedence* half for redo batches as a side effect (`1201440` now reads `timed_out`).
+
+**Review round #885/#886 absorbed into PR #884 — and #885 is the measure-first lesson AGAIN, on a
+review finding.** #885's MECHANISM was real and sev:critical: the first predicate asked only for an
+outcome AFTER this batch's dispatch, and `event_id` is a global serial, so a LATER batch's outcome
+finished an EARLIER batch — #671 one level up, whose TRIGGER is the remediation of #671's own 7 stuck
+districts. But its PROPOSED FIX (`AND e.batch_id = :b`) was wrong and measurably so: only 22.4% of
+`process` outcomes carry a batch_id, so that filter withdraws **36 genuine completions**. Shipped
+instead: the outcome must land in the WINDOW the dispatch owns (after it, before the next dispatch of
+the same district+stage) — agrees with the pre-#885 rule on all 159 live done-districts AND closes
+the hole. **Latent is not absent:** the corpus shows 0 cross-batch rows because remediation has not
+run, so coverage is CONSTRUCTED in the suite and C5 names the 8 pending triggers. #886 (merge Stage
+4's two predicate calls) measured and DECLINED — 1.5-2.0ms of a ~43ms render, and it would give the
+one-home predicate a polymorphic return; pinned at the call site.
 
 **#863's corpus property clears only on RE-CAPTURE.** `page.txt` and the segments are now one
 read, so `page.main.txt <= page.txt` holds by construction — but only for records captured after
@@ -163,13 +191,22 @@ evidence rule), and delegation uses `enforced_by:` — never invent `satisfied_b
 rule is **one-directional**: `tested` implies evidence, evidence does NOT imply `tested` (REQ-169
 is mid-build on open epic #617 and legitimately carries tests). `tests/test_requirements_yaml_hygiene.py`
 is 18 tests and will fail the build on a phantom REQ id, a stale `last_updated`, an orphaned test
-citation, or an invented status. REQ-177–184 added; #674 amends REQ-044 rather than duplicating it.
+citation, or an invented status. REQ-177–185 added; #674 amends REQ-044 rather than duplicating it.
 
 **Next (RESUME HERE — 2026-08-22):**
-1. **The Stage 2-4 console triple (#669/#670/#671) → #723.** The largest UNBLOCKED chunk. Settle
-   **#671 first** — it is a design question ("what should a stage's status badge mean during a
-   re-run?"), and #669/#670 are its consequences. Prepare the options against the live console;
-   do not guess the semantics.
+1. **The Stage 2-4 console triple → #723. #671's PREDICATE is done (PR open); what remains is
+   #669 + #670's residue, and one cosmetic call.**
+   - **#669 is now the largest unblocked piece.** Arm 1a (the confirm dialog asserting the
+     OPPOSITE of what redo does) is trivial and lands alone — NB it is in BOTH `stage3.js:160`
+     and `stage4.js:159`; the issue only names stage3. Arm 1b (cumulative counts in the
+     run-summary position) and Arm 2 (no fresh-vs-carried signal EXISTS to scope) ride #623/#640.
+   - **#670's residue:** ORDINARY batches still let artifact-existence outrank a failure event
+     (#671 only scoped redo batches), and the *completeness* question — was a timed-out capture
+     truncated? — is unanswerable without #623's intended-vs-achieved receipt counts.
+   - **The one cosmetic call left from #671, Ian's:** a dispatched-but-unfinished district now
+     reads `todo`, which is honest and keeps the Run control correctly suppressed mid-run
+     (`canRun` already gates on `!running`). Whether it deserves a visually distinct `in-flight`
+     badge is a look-at-the-console decision, deliberately NOT guessed. Cheap either way.
 2. **#708 — OCR name-mangling. BLOCKED ON DATA, not design.** The issue's proposed Stage-5
    roster-match rate is confounded (Lewiston's mangled rep scores 1/6, not 0, and a single-school
    page legitimately names one school). The unconfounded signal is the Stage-7 rate over EXTRACTED
@@ -199,10 +236,16 @@ any district needs a hand-edit or a re-adjudicated gate@8 call, the mechanism is
 pipeline, not the district.*
 
 
-**Standing method note (now on its FIFTEENTH instance): measure the thing before fixing it.** An
-issue's proposed fix has been overturned by measurement fourteen times (#691, #684, #719, #755,
+**Standing method note (now on its SIXTEENTH instance): measure the thing before fixing it.** An
+issue's proposed fix has been overturned by measurement fifteen times (#691, #684, #719, #755,
 #706's severity ranking, #721, #794, #796, #795, #822's image-council premise, #826, #841, #852,
-#868, **#672**). **#672 is a new SHAPE of the lesson: the fix that overturned it (#719) had landed
+#868, #672, **#671**). **#671 is the newest SHAPE: an issue can be filed as a DESIGN question when
+its substance is a wrong predicate** — #671 asked "what should a stage's status badge mean during a
+re-run?" and offered a four-option menu, but the badge only ever said `done` because the rule behind
+it was false; correcting the rule answered three of the four acceptance criteria and left one
+cosmetic choice. It also broke the issue's own severity framing twice: the "up to 38 min" transient
+is really 32 DAYS on 7 live districts, and the false `done` HID ITS OWN FIX by driving the Run
+control's `retriable == 0` branch. #672 was an earlier new shape: the fix that overturned it (#719) had landed
 BETWEEN the issue being filed and the work starting**, so nothing in the issue text was wrong when
 written — only replaying the LIVE predicates could show that its headline mechanism, its severity
 ("109 URLs thrown away" is 3 once you notice candidates.json unions across rungs) and its terminal-
@@ -315,7 +358,7 @@ Resume-essentials (ALL re-verified 2026-08-22 on `main` post-#881/#882 — the b
 GREEN; no known-red command): `pip
 install -e .` → Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh
 clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect
-**2457** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **399** pass, Postgres up) +
+**2457** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **400** pass, Postgres up) +
 `pytest tests/test_*_integration.py` (expect **257** pass, 149 skipped) + `cd infrastructure/scraper
 && npm test` (expect **100**) + `flake8 . --count --select=E9,F63,F7,F82` (expect **0** — this is CI's
 blocking lint; the vulture whitelist is `per-file-ignores`'d for F821, main had been red on it since
@@ -358,6 +401,9 @@ login_wall watchdog**, currently CLEAR at population 0) ·
 `2026-08-21-geo-ladder-regression-measure.py` (#672 — C1 the live re-route, C2 the 10 regressed rung
 pairs CLASSIFIED by mechanism, C5 the plan-aware cost: quote the NOT-in-any-capture-plan column,
 never the raw count) ·
+`2026-08-22-batch-done-predicate-measure.py` (#671 — C1 the strictly-withdrawing invariant over
+43 batches x 3 stages, C2 the 8 false-`done` rows with the AGE of each stale outcome, C3 the #670
+boundary (`failed` does not count as finishing), C4 the drain watchdog) ·
 `2026-08-18-segment-main-alternate-measure.py` (#841 — scans segment text FROM DISK, since the DB
 cannot answer while segment `n_times` is NULL; re-run it after the post-merge re-ingest and its S1
 section should report 0 NULL).

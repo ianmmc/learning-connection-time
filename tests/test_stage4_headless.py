@@ -274,19 +274,113 @@ def test_647_a_redo_batch_awaits_this_batchs_capture_before_processing(gov_sessi
     # nothing dispatched by THIS batch: gated on its own capture, not "todo", not "done"
     assert H4.status_for_batch(batch)["districts"][0]["status"] == "awaiting_capture"
 
-    # this batch captured it -> now genuinely todo for processing
+    # #671: this batch DISPATCHED the capture but has not finished it — the upstream gate is still
+    # owed, so the honest answer stays `awaiting_capture`, not `todo`.
     gov_session.execute(text(
         "INSERT INTO state_event (district_id, stage_name, event_type, batch_id, created_at, actor) "
         "VALUES (:d, 'capture', 'dispatched', :b, 'now', 'zz')"), {"d": did, "b": "batch_zz647d"})
     gov_session.flush()
+    assert H4.status_for_batch(batch)["districts"][0]["status"] == "awaiting_capture"
+
+    # this batch CAPTURED it -> now genuinely todo for processing
+    gov_session.execute(text(
+        "INSERT INTO state_event (district_id, stage_name, event_type, stage, batch_id, "
+        "created_at, actor) VALUES (:d, 'capture', 'captured_all', 3, :b, 'now', 'zz')"),
+        {"d": did, "b": "batch_zz647d"})
+    gov_session.flush()
     assert H4.status_for_batch(batch)["districts"][0]["status"] == "todo"
 
-    # …and once it has processed it too, done
+    # #671: dispatching the PROCESS does not finish it either — this is the exact state the 7 live
+    # districts (batch_00024/26/27/29, dispatched 2026-07-22) have been stuck in, reading `done`
+    # off a prior run's processed.json for over a month.
     gov_session.execute(text(
         "INSERT INTO state_event (district_id, stage_name, event_type, batch_id, created_at, actor) "
         "VALUES (:d, 'process', 'dispatched', :b, 'now', 'zz')"), {"d": did, "b": "batch_zz647d"})
     gov_session.flush()
+    stuck = H4.status_for_batch(batch)["districts"][0]
+    assert stuck["status"] == "todo"
+    assert stuck["n_docs"] == 0               # not the prior run's doc counts
+
+    # …and once a process OUTCOME lands, done
+    gov_session.execute(text(
+        "INSERT INTO state_event (district_id, stage_name, event_type, stage, batch_id, "
+        "created_at, actor) VALUES (:d, 'process', 'processed_all', 4, :b, 'now', 'zz')"),
+        {"d": did, "b": "batch_zz647d"})
+    gov_session.flush()
     assert H4.status_for_batch(batch)["districts"][0]["status"] == "done"
+
+
+@pytest.mark.govdb
+def test_885_a_later_batchs_completion_does_not_finish_an_earlier_batch(
+        gov_session, monkeypatch, tmp_path):
+    """#885 — completion-ownership, not merely completion-ORDER.
+
+    `event_id` is a global serial, so "an outcome after THIS batch's dispatch" is also satisfied by
+    a LATER batch's outcome. That reintroduces #671 one level up, and the trigger is the remediation
+    path itself: re-run one of the 7 stuck districts under a new batch and the OLD batch's console
+    page — clickable indefinitely — flips back to `done` showing the NEW batch's numbers.
+
+    CONSTRUCTED, because the corpus cannot yet exhibit it: the 7 stuck districts have not been
+    re-run, so the live measurement withdraws 0 rows. Latent is not absent, and a change justified
+    by a future case must build that case.
+
+    NB the issue's proposed fix (`AND e.batch_id = :b` on the completion) is rejected here: only
+    22.4% of `process` outcomes carry a batch_id, so it withdraws 36 genuine completions across the
+    redo batches. The rule is the WINDOW this dispatch owns — after it, and before whatever
+    superseded it."""
+    import contextlib
+    from sqlalchemy import text
+    from infrastructure.acquisition.common import db as gdb
+    from infrastructure.acquisition.common import district_status as DS
+    from infrastructure.acquisition.stage4_process import headless as H4
+    gdb.init_precious_schema()
+    monkeypatch.setattr(DS.gdb, "session_scope", lambda: contextlib.nullcontext(gov_session))
+
+    did = "ZZ885"
+    ddir = tmp_path / "ZZ885_Redo"
+    ddir.mkdir(parents=True)
+    (ddir / "captures.json").write_text("[]")
+    (ddir / "processed.json").write_text("[]")
+    (ddir / "candidates.json").write_text('{"candidates": [{"url": "http://z/a"}]}')
+    (ddir / "discovery.json").write_text(
+        '{"district_id": "ZZ885", "name": "Redo885", "state": "ZZ", "domain": "z.org"}')
+    monkeypatch.setattr(H4, "RAW_DIR", tmp_path)
+    monkeypatch.setattr(H4, "stage2_complete", lambda root: [
+        {"district_id": did, "name": "Redo885", "state": "ZZ", "domain": "z.org", "dir": ddir}])
+
+    def batch(bid):
+        return {"batch_id": bid, "batch_type": "follow-up", "redo_attempted": True,
+                "districts": [{"district_id": did, "name": "Redo885", "state": "ZZ",
+                               "domain": "z.org"}]}
+
+    def ev(stage_name, event_type, bid, stage=None):
+        gov_session.execute(text(
+            "INSERT INTO state_event (district_id, stage_name, event_type, stage, batch_id, "
+            "created_at, actor) VALUES (:d, :nm, :et, :st, :b, 'now', 'zz')"),
+            {"d": did, "nm": stage_name, "et": event_type, "st": stage, "b": bid})
+        gov_session.flush()
+
+    # Batch A: capture completes, process is dispatched — then the run dies. No `failed` event,
+    # exactly like the 7 live districts (batch_00024/26/27/29, dispatched 2026-07-22).
+    ev("capture", "dispatched", "batch_zzA")
+    ev("capture", "captured_all", "batch_zzA", stage=3)
+    ev("process", "dispatched", "batch_zzA")
+    assert H4.status_for_batch(batch("batch_zzA"))["districts"][0]["status"] == "todo"
+
+    # Batch B: the remediation. Re-dispatches and genuinely finishes the district.
+    ev("capture", "dispatched", "batch_zzB")
+    ev("capture", "captured_all", "batch_zzB", stage=3)
+    ev("process", "dispatched", "batch_zzB")
+    ev("process", "processed_all", "batch_zzB", stage=4)
+
+    # B finished it, so B is done…
+    assert H4.status_for_batch(batch("batch_zzB"))["districts"][0]["status"] == "done"
+
+    # …and A is STILL not, because B's outcome is outside the window A's dispatch owns. Pre-#885
+    # this read `done` and rendered B's doc counts as A's.
+    stale = H4.status_for_batch(batch("batch_zzA"))["districts"][0]
+    assert stale["status"] == "todo"
+    assert stale["n_docs"] == 0
 
 
 def test_647_stage4_finish_district_stamps_the_batch(monkeypatch, tmp_path):

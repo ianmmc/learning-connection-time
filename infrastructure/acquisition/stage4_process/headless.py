@@ -152,11 +152,26 @@ def status_for_batch(batch: dict) -> dict:
     # still owes the district), so leaving it on disk state would tell a redo district it is ready to
     # process while its re-capture has not happened — reading `todo` when the honest answer is
     # `awaiting_capture`. As at Stage 3, one variable feeds both the loop and `done_ids`.
+    #
+    # #671: the helper asks for a stage OUTCOME after this batch's dispatch, not merely the dispatch.
+    # THIS STAGE CARRIED THE WHOLE MEASURED FOOTPRINT — 7 districts across batch_00024/26/27/29 were
+    # dispatched to Stage 4 on 2026-07-22, never completed, and had been rendering `done` with a prior
+    # run's doc counts ever since (`3805460`'s dated 2026-06-24). With `todo == failed == 0`,
+    # stage4.js:87 replaces the Run control with "All processable districts processed." — so the false
+    # `done` also removed the means of correcting it. They now read `todo` and are runnable again.
     captured = {did for did, dk in ondisk.items() if (dk["dir"] / "captures.json").exists()}
     processed = {did for did, dk in ondisk.items() if (dk["dir"] / "processed.json").exists()}
+    #
+    # #886 asked for these two calls to be merged into one query. MEASURED AND DECLINED: one call
+    # is 1.5ms at 9 districts and 2.0ms at all 175 (the window subquery scales flat), against a
+    # ~43ms full status render — the second call is ~3% of the request. Merging costs more than it
+    # saves: `completed_by_batch` would have to return per-stage sets, so the ONE home for the rule
+    # (REQ-182) grows a polymorphic return or a second entry point, and the two calls answer
+    # genuinely different questions — the UPSTREAM GATE vs. this stage's own done-ness — which
+    # merging would couple. Re-open if the render itself becomes slow; the predicate is not why.
     if BT.redoes_attempted(batch):
-        captured &= DS.dispatched_by_batch(batch["batch_id"], "capture", ids)
-        processed &= DS.dispatched_by_batch(batch["batch_id"], "process", ids)
+        captured &= DS.completed_by_batch(batch["batch_id"], "capture", ids)
+        processed &= DS.completed_by_batch(batch["batch_id"], "process", ids)
     done_ids = [d["district_id"] for d in batch["districts"] if d["district_id"] in processed]
 
     # Process FAILURES (a tool/IO crash) leave NO processed.json and write a `failed` process event with
