@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-08-22T00:00:00Z"
+last_updated: "2026-08-24T00:00:00Z"
 
 # STATUS VOCABULARY — normalized 2026-07-16, narrowed to FIVE 2026-08-21 (Ian). These are the whole
 # set; do not invent more. The pre-normalization file carried ad-hoc `in-progress` / `not_started` /
@@ -3995,8 +3995,13 @@ requirements:
       domain with the source recorded per district. First-run geo composition is gated by the
       4-position discovery_scope_policy (domain_only -> geo_for_blank -> geo_interleaved -> geo_all),
       an append-only audited event store with a one-step pool-drained auto-advance. The 5->1 and
-      7->1 escalation ladders (PR 3b, re-keyed by #719) escalate by DIAGNOSIS: geo is only for
-      districts with NO usable scoping domain (the Millard class); a domain-having district
+      7->1 escalation ladders (PR 3b, re-keyed by #719) escalate by DIAGNOSIS: AS BUILT, geo
+      routing is confined to districts with NO usable scoping domain (the Millard class) — a
+      confinement of the CURRENT BUILD, NOT a property of geo itself. REQ-184 records geo's
+      SECOND, unbuilt job (reaching off-domain documents for a district that HAS a domain), and
+      this clause must never be read as making that unrepresentable: re-deriving 'geo means
+      domain-discovery only' from this sentence is precisely the failure #871 exists to prevent,
+      and it has already happened once from this wording. A domain-having district
       escalates by widened vocabulary within its own domain — ladder position derived from
       ever-approved batch history, scope-pure round counting."
     type: functional
@@ -4017,7 +4022,7 @@ requirements:
       - tests/test_escalation_ladders.py
       - tests/test_queue_create_scope.py
     created: "2026-07-19T00:00:00Z"
-    updated: "2026-07-20T00:00:00Z"
+    updated: "2026-08-24T00:00:00Z"
     notes: "Full agreed design: issue #164's AGREED DESIGN comment (2026-07-19, Ian-approved after
       the planning debate — three escalation paths, the reversed 5->1/7->1 ladders, the toggle
       unification with interleave-as-mechanism). Millard 3173740 = the acceptance case; the live
