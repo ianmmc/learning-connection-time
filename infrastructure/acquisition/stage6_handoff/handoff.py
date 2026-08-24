@@ -20,7 +20,7 @@ from infrastructure.acquisition.common.benchmark import effective_dispatch_type
 from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.common.timeutil import utcnow as _now
 
-DEFAULT_ROOT = paths.ACQUISITION / "handoffs"
+DEFAULT_ROOT = paths.HANDOFFS_DIR   # ONE spelling — base-layer readers (#717) use paths directly
 
 
 
@@ -65,9 +65,16 @@ def _identity(package: dict, used_councils: dict, fingerprints: dict) -> dict:
     # LCT write. Because package_identity() reuses this function, the gate@6 preview->freeze staleness
     # check (issue #37) covers a type flip for free: a draft previewed as production and frozen as
     # benchmark computes a different identity and 409s instead of silently substituting.
+    # `redo` (#717/#905) rides for the same reason again: it changes WHICH reps compose (the
+    # already-extracted delta is skipped), so a declared redo is a different artifact from a default
+    # dispatch — and the frozen receipt must record that the redo was DECLARED, so a later audit of
+    # "why was this district re-bought?" is answerable from the artifact alone
+    # (derive-provenance-from-receipts). Including it here also makes the #37 preview→freeze
+    # staleness gate cover a redo flip for free, exactly as it covers a dispatch_type flip.
     return {"districts": dist, "councils": used_councils, "fingerprints": fingerprints,
             "verified_only": bool(package.get("verified_only", False)),
-            "dispatch_type": effective_dispatch_type(package)}
+            "dispatch_type": effective_dispatch_type(package),
+            "redo": bool(package.get("redo", False))}
 
 
 def package_identity(package: dict) -> str:
@@ -95,6 +102,9 @@ def freeze(package: dict, councils: dict, fingerprints: dict, created_by: str = 
         # "was this dispatch benchmark?" must be answerable from the receipt alone, never only from a
         # DB row that could be lost or disagree (the derive-provenance-from-receipts convention).
         "dispatch_type": effective_dispatch_type(package),
+        # #717/#905: whether this dispatch was a DECLARED redo (already-extracted delta skipped) —
+        # self-describing for the same reason dispatch_type is: the artifact alone must answer it.
+        "redo": bool(package.get("redo", False)),
         "fingerprints": fingerprints, "councils": used,
         "cost": package.get("cost"), "districts": package.get("districts", []),
     }

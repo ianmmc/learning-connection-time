@@ -38,6 +38,7 @@ from infrastructure.acquisition.common import budget as BUD
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import discovered_domain as DDOM
 from infrastructure.acquisition.common import district_status as DS
+from infrastructure.acquisition.common import extraction_delta as XD
 from infrastructure.acquisition.common import school_sampling as SS
 from infrastructure.acquisition.process_governance import stage6_dispatch as H6
 from infrastructure.acquisition.process_governance import stage7_run as R7RUN
@@ -1064,6 +1065,14 @@ def _bundle_alternate(s, district_id: str, actor: str, root) -> dict:
     # #148: load ONLY the approved requests' target records (a handful), not the whole district.
     recs_by_key = {r["rec_key"]: r for r in REL.load_records_by_key(s, [req["target"] for req in reqs])}
     sent_by_rec = _sent_files_by_rec(s, district_id)
+    # #904: a rep an unrelated PRODUCTION run already bought is just as un-re-offerable as a
+    # failed-and-requested one — a directive raised before that run has no visibility into it via
+    # the request rows above, and re-buying it is spend REQ-160 guarantees cannot change anything.
+    # Merged through THE one predicate (#717/REQ-182), never a second spelling of the delta. If this
+    # empties a record's alternates, "no dispatchable alternate left" is the honest outcome: the
+    # fact the directive wanted already exists.
+    for rk, fn in XD.already_extracted_reps(s, district_id):
+        sent_by_rec.setdefault(rk, set()).add(fn)
 
     selections, swept, skipped = [], [], []
     for req in reqs:

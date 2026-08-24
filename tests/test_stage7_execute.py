@@ -1202,3 +1202,55 @@ def test_the_preview_carries_the_same_dead_set_the_real_run_resolves():
     gate = src.index("if not dry_run:", src.index("# #720:"))
     resolve = src.index("_reject_dead_76(s, dead_76)")
     assert compute < gate and aged < gate < resolve
+
+
+@govdb
+def test_bundle_never_rebuys_a_rep_a_production_run_already_extracted(gov_session, monkeypatch):
+    """#904: the 7->6 bundler's sent-set reads only extraction_request rows (7->6/7->3), so it had
+    no visibility into a rep an UNRELATED later production redispatch already extracted — it would
+    rank that rep as "new" and re-buy a council read that already produced a fact. The delta is
+    merged through THE one predicate (#717/REQ-182, `extraction_delta.already_extracted_reps`),
+    never a second spelling. Here r1's full text was bought by such a run: r1 must fall through to
+    its raster, while r2 (untouched) still picks the text."""
+    gdb.init_precious_schema()
+    s = gov_session
+    for tgt, sent in (("ZZ904:r1", "harvest_slice.txt"), ("ZZ904:r2", "harvest_slice.txt")):
+        s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                       "target, band, params_json, reason, status, created_at) VALUES ('ZZ904', 'hz', "
+                       "'representation', '7->6', :t, NULL, :p, 'r', 'approved', :ts)"),
+                  {"t": tgt, "p": json.dumps({"sent_file": sent}), "ts": _M7.utcnow()})
+    s.flush()
+
+    def _recs(sess, keys):
+        return [{"rec_key": f"ZZ904:{r}", "url": f"http://{r}", "signals": {}, "intended_schools": [],
+                 "reps": [{"source": "capture:text", "filename": "pdftotext.txt", "file_kind": "text",
+                           "n_chars": 9, "n_times": 80, "usable": 1},
+                          {"source": "raster", "filename": "raster_p-1.png", "file_kind": "image",
+                           "n_chars": None, "n_times": None, "usable": 1}]} for r in ("r1", "r2")]
+    monkeypatch.setattr(EX.REL, "load_district", lambda sess, d: {"district_id": d, "district_dir": "dd",
+                                                                  "name": "Z", "state": "AK"})
+    monkeypatch.setattr(EX.REL, "load_records_by_key", _recs)
+    monkeypatch.setattr(EX.REL, "district_fingerprints", lambda sess, d: {"config": "c", "labels": "l", "data": "x"})
+    monkeypatch.setattr(EX.C6, "load_configs", lambda: {"image": {"voters": ["v"], "judge": "j", "prompts": {"default": "p"}}})
+    monkeypatch.setattr(EX.COST6, "load_cost_model", lambda: {"provenance": "t", "assumptions": {}, "models": {}})
+    # the unrelated production run's purchase, via the ONE predicate the merge must go through
+    monkeypatch.setattr(EX.XD, "already_extracted_reps",
+                        lambda sess, d, **kw: {("ZZ904:r1", "pdftotext.txt")})
+    captured = {}
+    def _assemble(di, c, cm, ov):
+        (m, records), = di
+        captured["files"] = [r["send"][0]["file"] for r in records]
+        return {"districts": [{"district_id": "ZZ904"}],
+                "cost": {"total_usd": 0.01, "n_reps": len(records), "provenance": "t"}, "generated_at": "t"}
+    monkeypatch.setattr(EX.PKG6, "assemble_package", _assemble)
+    monkeypatch.setattr(EX.HND, "freeze", lambda pkg, c, fp, created_by: {"handoff_hash": "B904",
+                        "created_at": "t", "created_by": created_by, "districts": pkg["districts"],
+                        "cost": pkg["cost"], "councils": c})
+    monkeypatch.setattr(EX.HND, "handoff_filename", lambda doc: "handoff_B904_t.json")
+    monkeypatch.setattr(EX.HND, "write", lambda doc, root=None: None)
+    monkeypatch.setattr(EX.H6, "record_dispatch", lambda sess, doc, path, actor, metas: "hid")
+
+    out = EX.compose_alternate_bundle("ZZ904", actor="zz", session=s)
+    assert out["ok"] and out["n_bundled"] == 2
+    # r1's text is already bought -> falls to the raster; r2's text is genuinely new -> still sends
+    assert captured["files"] == ["raster_p-1.png", "pdftotext.txt"]

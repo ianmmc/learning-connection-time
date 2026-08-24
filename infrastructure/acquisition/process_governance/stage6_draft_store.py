@@ -153,6 +153,26 @@ def set_verified_only(sess, draft_id: str, verified_only: bool) -> None:
     sess.flush()
 
 
+def draft_redo(d: DispatchDraft) -> bool:
+    """Whether this draft is a DECLARED redo (#717/REQ-170) — stored in `meta_json`, the column
+    draft_models reserved for exactly this kind of per-draft setting (no schema migration, no
+    _PRECIOUS_ALTERS parity risk). Absent => False: every pre-#903 draft composes exactly as it
+    did before the field existed."""
+    return bool((d.meta_json or {}).get("redo"))
+
+
+def set_redo(sess, draft_id: str, redo: bool) -> None:
+    """#903: the gate@6 human's declared-redo opt-in for THIS draft — without it, the console draft
+    workflow (and the #689 gate@8 8->6 send-back route, which seeds a draft) could never reach
+    #717's `redo=True`: a cleanly-extracted district sent back for re-extraction would compose to
+    zero new sends with no control to override it, and the only escape was a raw API POST that
+    bypasses the draft's audit trail. Mirrors `set_verified_only`'s contract (locked draft, caller
+    commits). meta_json is REASSIGNED, not mutated — a mutated JSON column doesn't flush."""
+    d = _locked_draft(sess, draft_id)
+    d.meta_json = {**(d.meta_json or {}), "redo": bool(redo)}
+    sess.flush()
+
+
 def set_dispatch_type(sess, draft_id: str, dispatch_type: str) -> None:
     """The gate@6 human's explicit dispatch-type choice (#618) — the Council Lab opt-in that lets a
     production-rep draft run as a benchmark A/B. Validated, so a typo raises here rather than minting
@@ -192,9 +212,10 @@ def to_view(sess, draft_id: str) -> dict:
     overrides = _merged_overrides([r for r in all_rows if r.included])
     package = H6.build_handoff_package(sess, included_ids, overrides=overrides,
                                        verified_only=d.verified_only,
-                                       dispatch_type=d.dispatch_type) if included_ids else \
+                                       dispatch_type=d.dispatch_type,
+                                       redo=draft_redo(d)) if included_ids else \
         {"districts": [], "cost": {"total_usd": 0.0, "n_reps": 0, "provenance": "unknown"},
-         "verified_only": d.verified_only, "dispatch_type": d.dispatch_type}
+         "verified_only": d.verified_only, "dispatch_type": d.dispatch_type, "redo": draft_redo(d)}
     # build_handoff_package SILENTLY drops a district whose release input is gone (removed from the
     # signals store after it was added to the draft) — unlike freeze-time dispatch_handoff, which
     # tracks `skipped`. Surface the gap here so the console can warn instead of showing two
@@ -207,7 +228,7 @@ def to_view(sess, draft_id: str) -> dict:
     benchmark_reps = H6.benchmark_reps_in_package(sess, package)
     return {
         "draft_id": d.draft_id, "status": d.status, "verified_only": d.verified_only,
-        "dispatch_type": d.dispatch_type,
+        "dispatch_type": d.dispatch_type, "redo": draft_redo(d),
         "created_at": d.created_at, "created_by": d.created_by,
         "dispatched_at": d.dispatched_at, "dispatched_by": d.dispatched_by,
         "handoff_hash": d.handoff_hash,
@@ -310,13 +331,14 @@ def freeze_draft(sess, draft_id: str, actor: str, expected_identity: str | None 
     bundle = None
     if expected_identity:
         bundle = H6.release_bundle(sess, included_ids, overrides=overrides,
-                                   verified_only=d.verified_only, dispatch_type=d.dispatch_type)
+                                   verified_only=d.verified_only, dispatch_type=d.dispatch_type,
+                                   redo=draft_redo(d))
         if HND.package_identity(bundle.package) != expected_identity:
             raise ValueError("release changed since you last opened this draft — "
                              "reload before freezing")
     doc, path = H6.dispatch_handoff(sess, included_ids, created_by=actor, overrides=overrides,
                                     verified_only=d.verified_only, dispatch_type=d.dispatch_type,
-                                    bundle=bundle)
+                                    bundle=bundle, redo=draft_redo(d))
     d.status = "dispatched"
     d.dispatched_at = utcnow()
     d.dispatched_by = actor

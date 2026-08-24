@@ -13,6 +13,7 @@ from typing import NamedTuple
 from infrastructure.acquisition.common import benchmark as BM
 from infrastructure.acquisition.common import calibration as CAL
 from infrastructure.acquisition.common import district_status as DS
+from infrastructure.acquisition.common import extraction_delta as XD
 from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.common import receipts as RCPT
 from infrastructure.acquisition.process_governance import gate_calibration as GCAL
@@ -103,6 +104,16 @@ INELIGIBLE_PRODUCTION_REASON = "benchmark-rep:ineligible-for-production"
 # INELIGIBLE_PRODUCTION_REASON — the console keys its held-row display on this server-computed
 # spelling; the two are pinned together by test_stage6_dispatch_bridge's console-visibility test.
 HUB_PRIORITY_REASON_PREFIX = "hub-priority:first-dispatch-narrowed-to:"
+
+# #717: the already-extracted delta's hold reason. Same client/server discipline as the two above —
+# the console keys its held-row display on this server-computed spelling, pinned by
+# test_stage6_already_extracted_delta.
+ALREADY_EXTRACTED_REASON = "already-extracted:prior-production-run"
+
+# Transient key carrying the reps the #717 delta removed from a record, so `release_bundle` can
+# price the AVOIDED spend through the same assembler. Underscore-prefixed and stripped by
+# `assemble_record` — it must never reach the frozen artifact.
+ALREADY_EXTRACTED_KEY = "_already_extracted_send"
 
 # #691 (Rule B, measured 2026-07-29): the hub-priority YIELD FLOOR multiple. A LABELED sibling whose
 # `n_times_in_window` is >= this multiple of the winner's is NOT held — the hub label's
@@ -209,7 +220,7 @@ def _sibling_variant_holds(sendables: list) -> dict:
 
 
 def district_release_input(session, district_id: str, verified_only: bool = False,
-                           dispatch_type: str = BM.DISPATCH_PRODUCTION):
+                           dispatch_type: str = BM.DISPATCH_PRODUCTION, redo: bool = False):
     """Read one district's release decision from the DB, shaped for stage6 assembly:
     `(district_meta, [records])`. Returns None if the district isn't present.
 
@@ -217,6 +228,16 @@ def district_release_input(session, district_id: str, verified_only: bool = Fals
     speculative unlabeled tier-A auto-sends (`reason == auto:tier-A`) are downgraded to `hold` — not
     silently dropped — so they stay traceable and can be labeled later. Stage-5's `filtered.json` is
     unaffected: this is a dispatch-time choice, not a change to the release rule.
+
+    `redo` (#717 declared-redo opt-in): by DEFAULT a rep a prior production run already bought is
+    held (reason `already-extracted`) rather than re-sent — the delta Stage 3 has had for capture
+    since REQ-172. `redo=True` re-admits them for a deliberate re-extraction (a changed council, a
+    distrusted value). It is a MODE, declared once for the whole draft and stamped on the receipt,
+    not a per-district exception: per-district re-extraction already has two purpose-built,
+    reason-bearing homes — the 7->6 alternate-rep bundle (REQ-118) and gate@8 recover-band (#473) —
+    and a third spelling here is exactly the implemented-twice-drifts class this codebase keeps
+    paying for. Compose a narrower draft (drafts are built district-by-district) to redo one
+    district. Never applies to a benchmark dispatch, which exists to re-extract by design.
 
     `dispatch_type` (#679): while `production`, a benchmark-provenance rep (capture source
     'benchmark_gt') is structurally incapable of being frozen — `assert_dispatch_type_allowed`
@@ -310,11 +331,49 @@ def district_release_input(session, district_id: str, verified_only: bool = Fals
         if rd is not None and rd["decision"] == "send":
             rd["decision"], rd["send"] = "hold", []
             rd["reason"] = f"{HUB_PRIORITY_REASON_PREFIX}{hub_winner}"
+    # #717 already-extracted delta (dispatch-time): a rep a prior PRODUCTION run already bought is
+    # HELD, not re-sent — REQ-160 guarantees the duplicate result cannot even change anything
+    # (earliest wins), so the re-purchase is spend with zero informational gain. `redo=True` is the
+    # declared-redo opt-in (REQ-170 posture) and skips this pass entirely.
+    #
+    # LAST, deliberately — after prefer-recent / sibling-variant / hub-priority. Those passes RANK
+    # candidates against each other; if the delta ran first it would remove a rep from the pool that
+    # hub-priority was about to elect, and the district could compose a WORSE send instead of a
+    # cheaper one. Running last means the delta only ever subtracts from a set already chosen, so it
+    # can change the price but never the choice. (Same ordering lesson as #679, from the opposite
+    # side: THAT pass must run FIRST because ineligibility is structural — the rep can never be
+    # frozen — whereas already-extracted is a property of the rep's HISTORY, not its eligibility.)
+    #
+    # Held per REP, not per record: a record can carry one rep already bought and another never sent
+    # (a text rep extracted last week beside a raster nobody has read). Only a record left with no
+    # sendable rep at all becomes a `hold`.
+    if not redo and dispatch_type != BM.DISPATCH_BENCHMARK:
+        done = XD.already_extracted_reps(session, district_id)
+        if done:
+            for rd in records:
+                if rd["decision"] != "send":
+                    continue
+                keep, dropped = [], []
+                for rp in (rd["send"] or []):
+                    (dropped if (rd["rec_key"], rp.get("file")) in done else keep).append(rp)
+                if not dropped:
+                    continue
+                # The reps the delta removed, kept on the record so the cost preview can price
+                # what was AVOIDED through the same assembler the send set uses (never a second
+                # cost spelling). `assemble_record` rebuilds a clean dict, so this never reaches
+                # the frozen artifact.
+                rd[ALREADY_EXTRACTED_KEY] = dropped
+                if keep:
+                    rd["send"] = keep       # partially bought: send only the unread reps
+                else:
+                    rd["decision"], rd["send"] = "hold", []
+                    rd["reason"] = ALREADY_EXTRACTED_REASON
     return district, records
 
 
 def build_handoff_package(session, district_ids, councils=None, cost_model=None, overrides=None,
-                          verified_only=False, dispatch_type=BM.DISPATCH_PRODUCTION) -> dict:
+                          verified_only=False, dispatch_type=BM.DISPATCH_PRODUCTION,
+                          redo=False) -> dict:
     """Assemble the in-memory handoff package for `district_ids` from the DB release decision.
     Pure stage6 logic does the routing/pricing; this layer only supplies the data. `overrides` =
     gate@6 per-rep council overrides ({"<rec_key>::<file>": council_id}). `verified_only` = gate@6
@@ -325,7 +384,7 @@ def build_handoff_package(session, district_ids, councils=None, cost_model=None,
     and fix it, rather than the console failing to render the draft at all."""
     return release_bundle(session, district_ids, councils=councils, cost_model=cost_model,
                           overrides=overrides, verified_only=verified_only,
-                          dispatch_type=dispatch_type).package
+                          dispatch_type=dispatch_type, redo=redo).package
 
 
 class ReleaseBundle(NamedTuple):
@@ -346,20 +405,26 @@ class ReleaseBundle(NamedTuple):
 
 
 def release_bundle(session, district_ids, *, councils=None, cost_model=None, overrides=None,
-                   verified_only=False, dispatch_type=BM.DISPATCH_PRODUCTION) -> ReleaseBundle:
+                   verified_only=False, dispatch_type=BM.DISPATCH_PRODUCTION,
+                   redo=False) -> ReleaseBundle:
     """Assemble a release ONCE — the single home for "read the DB decision and price it".
 
     `dispatch_type` is validated but NOT forced (the #618 provenance guard runs at freeze), so a
     preview can still be BUILT and displayed for a draft that currently cannot be frozen. That is what
     lets the human see the offending reps and deselect them, rather than the console failing to render
-    the draft at all."""
+    the draft at all.
+
+    `redo` (#717) rides through to `district_release_input` and is stamped on the package, so the
+    PREVIEW the human signs off and the FROZEN artifact agree about whether the already-extracted
+    delta applied — the same preview/freeze-parity discipline `verified_only` and `dispatch_type`
+    already follow (#659)."""
     councils = councils or C6.load_configs()
     cost_model = cost_model or COST6.load_cost_model()
     BM.validate_dispatch_type(dispatch_type)
     districts, metas, skipped = [], {}, []
     for did in district_ids:
         di = district_release_input(session, did, verified_only=verified_only,
-                                    dispatch_type=dispatch_type)
+                                    dispatch_type=dispatch_type, redo=redo)
         if not di:
             skipped.append(did)      # unknown district — dropped from the package (surfaced by callers)
             continue
@@ -368,7 +433,41 @@ def release_bundle(session, district_ids, *, councils=None, cost_model=None, ove
     package = PKG6.assemble_package(districts, councils, cost_model, overrides)
     package["verified_only"] = bool(verified_only)
     package["dispatch_type"] = dispatch_type
+    package["redo"] = bool(redo)
+    package["cost"]["reextraction"] = _price_avoided(districts, councils, cost_model, overrides)
+    # #912: a PARTIALLY-held record keeps decision "send", so the held-row blocks (keyed on the hold
+    # reason) never show its dropped sibling rep — the reviewer would see a normal-looking send row
+    # with no sign a rep was subtracted. Sidecar map {rec_key: [files]} for the console to badge
+    # per-record; preview-only (assemble_record strips the transient key, so the frozen artifact
+    # never carries it — same as the reextraction cost line). Dormant on today's corpus (every live
+    # sent record carries exactly one rep) but load-bearing the moment one carries two.
+    package["already_extracted_partial"] = {
+        rd["rec_key"]: [rp.get("file") for rp in rd[ALREADY_EXTRACTED_KEY]]
+        for _meta, recs in districts for rd in recs
+        if rd.get(ALREADY_EXTRACTED_KEY) and rd.get("decision") == "send"}
     return ReleaseBundle(package, metas, skipped)
+
+
+def _price_avoided(districts, councils, cost_model, overrides) -> dict:
+    """#717 acceptance: the gate@6 preview must separate NEW spend from RE-EXTRACTION spend.
+
+    With the delta on (the default) the re-extraction reps are HELD, so this is what the delta
+    AVOIDED — priced by re-running the reps it removed through `assemble_package`, the same
+    assembler the send set uses. Pricing them any other way would be a second cost spelling, and
+    the two would drift the first time the cost model changed.
+
+    `{n_reps: 0, usd: 0.0}` when nothing was held — including under `redo=True`, where the delta
+    never ran and every rep is priced as new in `total_usd`."""
+    shadow = []
+    for meta, recs in districts:
+        held = [{**rd, "decision": "send", "send": rd[ALREADY_EXTRACTED_KEY]}
+                for rd in recs if rd.get(ALREADY_EXTRACTED_KEY)]
+        if held:
+            shadow.append((meta, held))
+    if not shadow:
+        return {"n_reps": 0, "usd": 0.0}
+    pkg = PKG6.assemble_package(shadow, councils, cost_model, overrides)
+    return {"n_reps": pkg["cost"]["n_reps"], "usd": pkg["cost"]["total_usd"]}
 
 
 def benchmark_reps_in_package(session, package: dict) -> list:
@@ -482,19 +581,21 @@ def record_dispatch(session, doc: dict, path, actor: str = "human", metas: dict 
 
 def dispatch_handoff(session, district_ids, created_by: str = "human", root=None,
                      councils=None, cost_model=None, overrides=None, verified_only=False,
-                     dispatch_type=BM.DISPATCH_PRODUCTION, bundle=None):
+                     dispatch_type=BM.DISPATCH_PRODUCTION, bundle=None, redo=False):
     """Freeze + record a dispatch (up to — not including — the paid Stage-7 calls): build the package
     from the DB release decision, freeze it, RECORD the index row + state events (atomic on `session`),
     then write the immutable file LAST — so any DB failure rolls back cleanly with no orphaned record,
     and a same-identity collision (FileExistsError) leaves the prior dispatch intact. `verified_only` =
-    gate@6 training-grade mode (labeled targets only), frozen into the doc's identity. Returns (doc, path)."""
+    gate@6 training-grade mode (labeled targets only), frozen into the doc's identity. `redo` (#717)
+    likewise: it changes WHICH reps compose, so it must be frozen into the identity — a dispatch that
+    redoes and a dispatch that does not are different artifacts. Returns (doc, path)."""
     councils = councils or C6.load_configs()
     cost_model = cost_model or COST6.load_cost_model()
     # #659: reuse the caller's assembly when it has one (the staleness gate just built it), so the
     # package whose identity was checked is the package that gets frozen — not an equivalent rebuild.
     b = bundle or release_bundle(session, district_ids, councils=councils, cost_model=cost_model,
                                  overrides=overrides, verified_only=verified_only,
-                                 dispatch_type=dispatch_type)
+                                 dispatch_type=dispatch_type, redo=redo)
     metas, skipped = b.metas, b.skipped
     if not b.package.get("districts"):
         # Refuse to freeze a 0-district handoff (issue #53): an all-unknown (or empty) selection is
