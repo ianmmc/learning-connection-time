@@ -959,7 +959,7 @@ would mostly surface `sys.path` noise; **package first, then the tools light up.
 |---|---|---|
 | **Intra-Python graph + contracts** | `import-linter` (contracts: layers/forbidden/independence) on `grimp` (queryable graph); `vulture` (dead code) | **now** (REQ-098) |
 | **Intra-Node graph + contracts** | `dependency-cruiser` (rule engine + schema-validated JSON; the import-linter analog for `.mjs`/TS) | **now** (REQ-098) |
-| **Cross-boundary edges** (Python→subprocess→Node/CLI · shared `config/*.json` read by both · file-based stage dispatches) | **no tool** → a hand-declared `arch-manifest.json` + **fitness-function tests** (AST scan of `subprocess.*` / config-path reads, asserted against the manifest); `datacontract-cli` for stage-dispatch schema validation | **FIRST INCREMENT BUILT (#124, 2026-07-09):** `arch-manifest.json` (repo root) + `tests/test_arch_manifest.py` — fitness functions asserting (1) every external-process edge (argv-list head, surviving the injectable `_run` seam — `claude`/`node`/`pdftotext`/`pdftoppm`/`pdfinfo`/`tesseract`) is declared, (2) an invariant guard (`assert_runnable`) is reached by every declared entry point (AST-scanned), (3) no client JS compares against a server-authoritative literal (`batch_00000`), (4) a shared client helper (`statusBadge`) is defined once, (5) each stage receipt's producer references its filename, **(6) a receipt loader declared `cli_only` is never referenced outside its CLI (#526, 2026-07-18) — `load_batch_any`'s only current entry, a name-presence scan over `process_governance/` rather than an AST call-graph walk, deliberately: it's a whole-directory negative check with no single function to anchor an AST walk on, and the broader scan is the more conservative choice for that shape.** Each check was proven to FAIL on a deliberate drift then revert. **Still to add:** `config/*.json` schema validation (now largely covered separately — see `shared_config` in the manifest + `tests/test_config_schemas.py`) + `datacontract-cli` on the stage-dispatch artifacts (a bigger, separable piece; the artifacts are declared in the manifest's `file_dispatches` ready for schema refs). |
+| **Cross-boundary edges** (Python→subprocess→Node/CLI · shared `config/*.json` read by both · file-based stage dispatches) | **no tool** → a hand-declared `arch-manifest.json` + **fitness-function tests** (AST scan of `subprocess.*` / config-path reads, asserted against the manifest); `datacontract-cli` for stage-dispatch schema validation | **FIRST INCREMENT BUILT (#124, 2026-07-09):** `arch-manifest.json` (repo root) + `tests/test_arch_manifest.py` — fitness functions asserting (1) every external-process edge (argv-list head, surviving the injectable `_run` seam — `claude`/`node`/`pdftotext`/`pdftoppm`/`pdfinfo`/`tesseract`) is declared, (2) an invariant guard (`assert_runnable`) is reached by every declared entry point (AST-scanned), (3) no client JS compares against a server-authoritative literal (`batch_00000`), (4) a shared client helper (`statusBadge`) is defined once, (5) each stage receipt's producer references its filename, **(6) a receipt loader declared `cli_only` is never referenced outside its CLI (#526, 2026-07-18) — `load_batch_any`'s only current entry, a name-presence scan over `process_governance/` rather than an AST call-graph walk, deliberately: it's a whole-directory negative check with no single function to anchor an AST walk on, and the broader scan is the more conservative choice for that shape.** Each check was proven to FAIL on a deliberate drift then revert. **Still to add:** `config/*.json` schema validation (now largely covered separately — see `shared_config` in the manifest + `tests/test_config_schemas.py`) + `datacontract-cli` on the stage-dispatch artifacts (a bigger, separable piece; the artifacts are declared in the manifest's `file_dispatches` ready for schema refs). **A scope gap found 2026-08-23 (#901, sub-issue of epic #723):** the manifest declares each receipt's PRODUCER only — check (5) above asserts a declared producer references its artifact, but there is no consumer side, so "module X reads artifact Y written by stage Z" is undeclared and unguarded. Measured: 20 undeclared cross-boundary consumer edges across `discovery/candidates/captures/processed.json` (including base-layer reads — `common/batch_guard.py`/`common/cache_ingest.py` — invisible to `lint-imports` because a path/glob read is not an import), and the immutable `handoff_<hash>_<ts>.json` is declared NOWHERE despite 11 modules referencing it. #717 (§0 of `STAGE6_DISPATCH_DESIGN.md`) is the live instance: it added such an edge with no manifest field to update and every gate stayed green. Retrofit must enumerate the 20 existing edges (or explicitly grandfather them) — a green suite over an unenumerated baseline is a measurement that cannot fail. |
 
 **Concrete contracts to encode (import-linter), once packaged:** stage *layering* (1→…→9); *forbidden* —
 no stage imports the production LCT/database layer's internals (enforces the STATE-vs-DATA + DB isolation
@@ -1324,7 +1324,12 @@ the send-back reason riding onto its record) and **8→6** seeds a new gate@6 dr
 automatically — the human picks the route at the gate (or neither), and the choice is recorded as a
 `send_back_routed` state_event keyed on the approval_id, so "sent back and never re-routed" is a query
 (`unrouted_send_backs`) rather than a silence. See the flow diagram in `ACQUISITION_PIPELINE.md`.
-The immutable Stage-6 dispatch freeze is what keeps "what we sent" recoverable across these loops.
+The immutable Stage-6 dispatch freeze is what keeps "what we sent" recoverable across these loops — it is
+also what makes the **already-extracted delta (#717/REQ-186, 2026-08-23/24)** possible: gate@6 dispatch
+composition and the 7→6 alternate-rep bundler both consult the ONE predicate
+(`common/extraction_delta.py::already_extracted_reps`) for "was this rep already bought by a prior
+production run," so a directive raised before a later production run can't re-offer a rep that run
+already bought. Full mechanism (grain, the `redo` opt-in, the review-round hardening): `STAGE6_DISPATCH_DESIGN.md` §0.
 
 **5→1 (BUILT 2026-07-19, #164 PR 3b):** the ZERO-YIELD back-edge — a district that lands at gate@5
 with nothing dispatchable (no send/hold records, no retryable capture errs to route to the #116
@@ -1338,18 +1343,26 @@ auto-flowed. The 7→1 compose has the matching SECOND-LOOP scope split (0 prior
 batch, ≥1 → geo+widened batch, geo already ran → flag): one compose can emit up to two scope-pure
 batches, each directive's `executed_ref` = its district's batch, one transaction.
 
-**The shared exhaustion threshold (#575).** Both composers' "ladder exhausted" branch — 5→1's `≥2 →
-manual flag` and 7→1's `geo already ran → flag` above — now read the SAME function,
-`stage1_queue/batch_store.geo_ladder_exhausted()` (`GEO_LADDER_EXHAUSTED_AT = 2` — ever-approved geo
-rounds, one standard + one widened attempt), not two independently-written inline checks. A #575 review
-found they used to disagree: 7→1 exhausted a district at `geo>=1`, while 5→1 offered a second
-"geo+widened" rung at `geo==1` — so a district sitting at exactly one approved geo round got a different
-verdict depending on which composer reached it first. The threshold was extracted into this one shared
-function precisely so the two composers can't diverge again. Both composers also call the same shared
-auto-flag writer, `process_governance/stage7_execute.py:_flag_escalation_exhausted` (lines 465–485): it
-dedupes on an already-open auto flag (`scope='district'`, `actor='auto:escalation-ladder'`, unresolved) so
-a re-compose never stacks a second marker, and a human resolving the flag re-arms it — a later exhaustion
-is a fresh event worth a fresh flag.
+**The shared exhaustion threshold (#575, rewritten diagnosis-keyed by #719).** Both composers' "ladder
+exhausted" branch — 5→1's `≥2 → manual flag` and 7→1's `geo already ran → flag` above — read the SAME
+function, `stage1_queue/batch_store.ladder_exhausted(rounds_row, *, has_domain)`, not two
+independently-written inline checks. A #575 review found the two composers used to disagree: 7→1
+exhausted a district at `geo>=1`, while 5→1 offered a second "geo+widened" rung at `geo==1` — so a
+district sitting at exactly one approved geo round got a different verdict depending on which composer
+reached it first; the threshold was extracted into this one shared function precisely so the two
+composers can't diverge again. **#719 (2026-08-14) then found the extracted function was still
+round-count-keyed, not diagnosis-keyed:** a domain-having district's geo round is a guaranteed no-op
+(the geo batch blanks the scoping domain, so Stage 2's #229 gate refuses every result — measured 70
+schools / 6 batches / 0 resolved), so counting it against the same ladder as a domain-less district's geo
+round retired the district for a round that could never have worked. `ladder_exhausted` is now split by
+`has_domain` (does `resolve_scoping_domain` yield a usable domain, NCES or confirmed-discovered): a
+domain-having district ladders on `DOMAIN_LADDER_EXHAUSTED_AT = 3` domain rounds, a domain-less district
+on `GEO_LADDER_EXHAUSTED_AT = 2` geo rounds. Full mechanism: `STAGE1_QUEUE_DESIGN.md` §6b. Both
+composers also call the same shared auto-flag writer,
+`process_governance/stage7_execute.py:_flag_escalation_exhausted` (lines 465–485): it dedupes on an
+already-open auto flag (`scope='district'`, `actor='auto:escalation-ladder'`, unresolved) so a re-compose
+never stacks a second marker, and a human resolving the flag re-arms it — a later exhaustion is a fresh
+event worth a fresh flag.
 
 ### 11f. Per-stage console notes
 - **Stage 3** — a thin **health / emergent readout**: emergent URLs, capture failures (WAF/security

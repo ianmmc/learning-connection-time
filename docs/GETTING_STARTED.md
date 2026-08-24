@@ -82,14 +82,16 @@ git config core.hooksPath .githooks
 ```
 
 What **pre-commit** does: (1) sweeps the **precious-state JSON backups** into every commit so they never
-drift behind the governance DB — currently **nine** twins: `labels.json` (the `label` table),
-`cluster_splits.json`, `followup_flags.json`, `district_status.json` (the `state_event` log), and the
-gate@8 human-judgment set (`stage8_approvals.json`, `band_exclusions.json`, `human_added_facts.json`,
-`slot_assignments.json`, `gate_modes.json`). All are written automatically on save/ingest; the hook
-guarantees they reach version control, managed **symmetrically**. (`.githooks/pre-commit` is the source of
-truth for the live list — it grows as precious tables are added.) (2) verifies any enrichment counts
-in staged docs against the DB (Rule #6 — no hallucinated counts). Editing `.githooks/pre-commit` is the
-single source of truth; a stale local `.git/hooks/pre-commit` is ignored once `core.hooksPath` is set.
+drift behind the governance DB — currently **twelve** twins: `labels.json` (the `label` table),
+`district_status.json` (the `state_event` log), `cluster_splits.json`, `followup_flags.json`, the gate@8
+human-judgment set (`gate_modes.json`, `stage8_approvals.json`, `band_exclusions.json`,
+`human_added_facts.json`, `slot_assignments.json`), and the discovered-domain set
+(`discovered_domains.json`, `discovered_domain_decisions.json`, `discovery_policy.json`). All are written
+automatically on save/ingest; the hook guarantees they reach version control, managed **symmetrically**.
+(`.githooks/pre-commit` is the source of truth for the live list — it grows as precious tables are added.)
+(2) verifies any enrichment counts in staged docs against the DB (Rule #6 — no hallucinated counts).
+Editing `.githooks/pre-commit` is the single source of truth; a stale local `.git/hooks/pre-commit` is
+ignored once `core.hooksPath` is set.
 
 The same `core.hooksPath` also activates a tracked **pre-push** hook (#202): before every push it runs the
 CI-equivalent DB-free gates locally — `lint-imports` (the CI `lint` job) + `pytest -m "not integration"`
@@ -129,11 +131,11 @@ details: [DATABASE_SETUP.md → "Two databases"](DATABASE_SETUP.md#two-databases
 ### 3. Run Tests
 
 ```bash
-# Fast, resource-free suite (what CI's first job runs; ~1760 tests as of 2026-07-20 — check
+# Fast, resource-free suite (what CI's first job runs; ~2485 tests as of 2026-08-23 — check
 # CLAUDE.md's resume-essentials for the live count, it grows with every merged PR)
 pytest -q -m "not integration"
 
-# Governance-DB suite (needs Docker Postgres up; CI's second job; ~296 tests as of 2026-07-20, same caveat)
+# Governance-DB suite (needs Docker Postgres up; CI's second job; ~407 tests as of 2026-08-23, same caveat)
 pytest -q -m govdb
 
 # Everything, verbose
@@ -214,7 +216,7 @@ What lives here now is a flat set of Playwright `.mjs` modules (`capture_discove
 ```bash
 cd infrastructure/scraper
 npm install            # playwright is the only dependency
-npm test               # node --test *.test.mjs (~86 tests as of 2026-07-20)
+npm test               # node --test *.test.mjs (100 tests as of 2026-08-23)
 npm run lint:deps      # depcruise over the flat *.mjs (the Node side of the layering check)
 ```
 

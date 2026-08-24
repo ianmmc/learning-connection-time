@@ -98,37 +98,13 @@ staff/enrollment in the DB are currently 100% `nces_ccd`-sourced, not SEA-source
 
 ### SEA Data Files
 
-Located in `data/raw/state/{state}/`:
-
-```
-data/raw/state/
-├── california/
-│   ├── lcff_snapshot_2023_24.csv      # Local Control Funding Formula
-│   ├── sped_counts_2023_24.csv        # Special Education counts
-│   └── frpm_counts_2023_24.csv        # Free/Reduced Price Meals
-├── texas/
-│   └── texas_nces_tea_crosswalk_2018_19.csv
-├── florida/
-│   ├── florida_staff_2024_25.csv
-│   └── florida_enrollment_2024_25.csv
-├── new-york/
-│   ├── ny_staffing_2023_24.xlsx
-│   ├── ny_enrollment_district_2023_24.xlsx
-│   └── ny_enrollment_sped_2023_24.xlsx
-├── illinois/
-│   └── il_report_card_2023_24.xlsx
-├── michigan/
-│   ├── mi_staffing_2023_24.xlsx        # Teacher FTE, SPED staff
-│   ├── Spring_2024_Headcount.xlsx      # Enrollment by grade
-│   └── mi_special_ed_2023_24.xlsx      # IEP counts, SPED %
-├── pennsylvania/
-│   ├── pa_staffing_2024_25.xlsx        # Classroom teachers, professional staff
-│   └── pa_enrollment_2024_25.xlsx      # K-12 enrollment by grade
-└── virginia/
-    ├── fall_membership_statistics.csv  # Enrollment (FT, PT, total)
-    ├── staffing_and_vacancy_report_statistics.csv  # Staff FTE by position type
-    └── dec_1_statistics (Special Education Enrollment).csv  # SPED counts
-```
+Located in `data/raw/state/{state}/`. **Do not trust a hand-copied filename tree here — it drifts** (this
+section used to list exact filenames and several had already gone stale: CA/TX/FL moved into year
+subdirectories and renamed, e.g. CA's `lcff_snapshot_2023_24.csv` is now `2023_24/lcff_2023_24.xlsx`; PA
+and IL also moved into year subdirectories; NY/MI/VA's original names still hold as of this check).
+**Current, maintained inventory per state**: `data/raw/state/{state}/MANIFEST.md` (per-file category,
+granularity, year, format, row count, source, and integration status). **Cross-state source of truth**:
+`docs/state-integrations/state_data_catalog.yaml`.
 
 ---
 
@@ -433,4 +409,4 @@ The `safe_float()` and `safe_int()` functions handle all of these.
 
 ---
 
-**Last Updated**: July 20, 2026
+**Last Updated**: August 24, 2026

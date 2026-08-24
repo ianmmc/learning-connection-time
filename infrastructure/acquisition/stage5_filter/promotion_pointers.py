@@ -20,8 +20,9 @@ Rollback is always available while any fallback remains.
 
 **Ships DORMANT** (the #208/#211 pattern). The pipeline still reads `CONFIG_DIR` directly; nothing loads
 the champion pointer to drive live scoring yet — that wiring (and the console toggle) is gated on the
-unbuilt gate-mode persistence, tracked in the guardrail-activation checklist (#219). This module builds
-the machinery; Step 5's flow composes it with the #212 gate + #213 artifact, still advisory.
+remaining #219 guardrail-activation work (gate-mode persistence itself landed, #104/common/gate_mode.py).
+This module builds the machinery; Step 5's flow composes it with the #212 gate + #213 artifact, still
+advisory.
 
 PURE state-machine + a thin DB/file shell, mirroring the codebase's pure-core-first discipline. Design
 authority: STAGE5_FILTER_DESIGN §5c (to be written); issue #213; FINDINGS-AND-DECISIONS §2.

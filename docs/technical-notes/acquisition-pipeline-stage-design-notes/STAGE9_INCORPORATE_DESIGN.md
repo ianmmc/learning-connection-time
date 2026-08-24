@@ -229,6 +229,18 @@ form a ≤3-consecutive-year set with staff/enrollment, else the whole scope dro
 statutory value is Stage 9's stored value (resolved against its REAL serving band) — never re-derived
 from the canonical band.
 
+**`human_vouched` — a gate@8 determination exempts a band from the REQ-026 window (#626/#636, built
+alongside the incorporation campaign).** `provenance.py::band_human_vouched(band)` is true when any
+INCLUDED school in the band carries a human determination at gate@8 — a `human_override` (incl. a
+note-only approval), an applied times-override, or a hand-added cited fact (`human_added`, #474);
+excluded (struck-through) schools never count. A human sign-off is durable + auditable (a named actor
+took responsibility), so it renders the band's value acceptable past the window on the same footing as
+an in-window schedule (Ian, 2026-07-24). `bell_schedules.human_vouched` is the source of truth (set at
+Stage 9 write time); `district_grade_minutes.human_vouched` is its **projection**, inherited per grade
+from the grade's owning band (`per_grade.py::project`, migration 028). `per_grade_lct.py` excludes a
+human-vouched grade's year from `window_years` entirely before the REQ-026 check runs, so it can never
+by itself force a scope to statutory.
+
 **SPED scope consequence (documented, not a separate override).** The SPED-segmented variants
 (`core_sped` / `teachers_gened` / `instructional_sped`) follow the shared K-12 `minutes` value by the
 standing "base scopes use the K-12-wide value" convention — so an incorporated district's SPED LCT uses

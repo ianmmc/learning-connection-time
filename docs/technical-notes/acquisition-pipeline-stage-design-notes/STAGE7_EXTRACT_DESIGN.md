@@ -99,15 +99,19 @@ consensus, or the request-detection engine — it is entirely about which dispat
 what they contain. Full account: `docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md`
 §10.9–§10.20, §12.5.
 
-**A real, OPEN correctness bug in the request-history union (#333, `sev:major`, re-verified
-2026-07-28):** `stage7_run.py:887` — `hist = p.get("sent_files") or ([p["sent_file"]] if
-p.get("sent_file") else [])` — treats an explicitly-empty `sent_files: []` (meaning "nothing sent this
-round") as falsy and falls back to the legacy singular `sent_file`, which can resurrect a stale
-filename into a request's sent-history and cause the composer to skip a rep it should retry — the
-exact #122/#231 recall-loss class this code exists to prevent. **`stage7_execute.py`'s equivalent
-site (`_sent_files_by_rec`, ~line 815) already unions correctly** (`files = set(p.get("sent_files") or
-[]); if p.get("sent_file"): files.add(...)`) — only the detection-side read in `stage7_run.py` still
-has the falsy-empty-list defect. Not yet fixed; fold into the next Stage-7 touch.
+**CLOSED — the request-history union's falsy-empty-list defect (#333, was `sev:major`), fixed as a
+byproduct of #858's read consolidation.** The old `stage7_run.py:887` — `hist = p.get("sent_files") or
+([p["sent_file"]] if p.get("sent_file") else [])` — treated an explicitly-empty `sent_files: []`
+(meaning "nothing sent this round") as falsy and fell back to the legacy singular `sent_file`, which
+could resurrect a stale filename into a request's sent-history and cause the composer to skip a rep it
+should retry — the exact #122/#231 recall-loss class this code exists to prevent. **#858** (the PR #850
+review round, 2026-08-18) made `stage7_run.request_params_by_target`/`sent_files_by_target` the ONE
+reader of `extraction_request.params_json` — three call sites had each hand-rolled the same
+SELECT+`json.loads` loop with three different error postures; `sent_files_by_target` now correctly
+unions (`files = set(p.get("sent_files") or []); if p.get("sent_file"): files.add(...)`), and
+`stage7_execute._sent_files_by_rec` is now a thin wrapper delegating to it — so detection and execution
+read through the identical function, closing the drift risk permanently rather than just the one
+instance.
 
 **batch_00013's 7→2 follow-up journey ran to completion.** The four-district follow-up (Union Hill ISD,
 Brownsville Ascend, Redbank Valley, Aspen Ridge) that this second shakedown spawned went through Stage 7
@@ -386,7 +390,14 @@ APPROVED directives into real back-edge work. Two mechanisms (§3F):
   **live** representation rows (not the request's stored params, so a pre-#155 request still picks
   correctly) and rank yield-first; `_sent_files_by_rec()` unions every already-failed file across ALL of
   the district's 7→6 history (F4; both the `sent_files` list and the legacy single `sent_file`, #231) so
-  a round never re-offers a rep that already failed. `_run_bundle_or_own`
+  a round never re-offers a rep that already failed. **Since #904 (2026-08-24), the same exclusion set
+  ALSO merges `common/extraction_delta.py::already_extracted_reps`** — THE one predicate (REQ-182/#717)
+  Stage 6's dispatch composition uses to hold reps a prior PRODUCTION run already bought — so a bundle
+  can no longer re-offer a rep as an "alternate" when an UNRELATED later production run has already
+  extracted it (a directive raised before that run has no other way to see it; the fix reuses the base-layer
+  predicate rather than re-deriving it). If this empties a record's alternates, "no dispatchable
+  alternate rep left" is the correct, honest outcome — see `STAGE6_DISPATCH_DESIGN.md` §0's
+  already-extracted-delta row for the full mechanism. `_run_bundle_or_own`
   is the inject-or-own idiom + post-commit best-effort `district_status` export (mirrors `dispatch_handoff`'s
   commit-order lesson, #143). **N+1 fix (#148/4C):** `_bundle_alternate` used to load EVERY district
   record (1 query + a rep-query PER record) just to look up the handful named by the approved 7→6s; it now
@@ -666,8 +677,10 @@ re-routing EXISTING representations bypasses it"):
   record's alternate is chosen **yield-ranked** (`pick_alternate`/`live_alternates`, #155: higher-yield
   text before vision, never image-first), reading the record's **live** representation rows so a request
   persisted before ranking landed still picks correctly, and excluding **every already-failed file across
-  the district's whole 7→6 history** (`_sent_files_by_rec`, F4) so a later round never re-offers a rep
-  that already failed. Builds a NEW immutable Stage-6 dispatch (the prior dispatches untouched — history
+  the district's whole 7→6 history** (`_sent_files_by_rec`, F4) — since #904, also merged with
+  `extraction_delta.already_extracted_reps` so a rep an UNRELATED later production run already bought
+  can't be re-offered either (§0 above) — so a later round never re-offers a rep that already failed
+  or was already bought. Builds a NEW immutable Stage-6 dispatch (the prior dispatches untouched — history
   preserved) and re-enters Stage 7 through the normal extract path. This is the one back-edge that
   bypasses **both** Stage 1 and Stage 5.
 - **`7→2` / `7→3` / `7→1` — via a Stage-1 FOLLOW-UP BATCH** (`stage7_execute.compose_followup_batch` +
@@ -1117,3 +1130,22 @@ PR #511, per-school extraction recovering all three Broward bands) — and the i
   - Full mechanism: §0 above (`detect_and_persist_requests`, `withdraw_satisfied_requests`). REQ-123
     (auto-withdraw). 8 new/hardened tests across `test_stage7_persist.py`/`test_stage7_api.py`/
     `test_release.py`, incl. a production-session-parity test with no test-side flush.
+
+- **2026-08-18 — #333 (the request-history falsy-empty-list defect) closed as a byproduct of #858's
+  read consolidation (PR #850 review round).** `stage7_run.request_params_by_target`/
+  `sent_files_by_target` became the ONE reader of `extraction_request.params_json` — three call sites
+  had each hand-rolled the same SELECT+`json.loads` loop with three different error postures (two would
+  raise on a malformed row, one skipped it) — and the new shared reader unions `sent_files`/`sent_file`
+  correctly, so the old falsy-`[]`-hides-a-nonempty-`sent_file` bug at the detection-side read no
+  longer exists; `stage7_execute._sent_files_by_rec` is now a thin wrapper over the same function. See
+  §0 above (superseding the earlier "OPEN correctness bug" note this doc carried).
+- **2026-08-24 — the 7→6 bundler consults the Stage-6 already-extracted delta (#904, part of the
+  #717/REQ-186 review round).** `_bundle_alternate`'s own F4 exclusion set (`_sent_files_by_rec`, every
+  already-failed file across the district's 7→6 history) had no visibility into a rep an UNRELATED
+  LATER production run had already bought — a directive raised before that run predates the evidence
+  that would have satisfied it. Fixed by merging `common/extraction_delta.py::already_extracted_reps`
+  (THE one predicate, REQ-182 — Stage 6's own dispatch composition already used it, §0/§4 above) into
+  the same exclusion set, rather than re-deriving the rule a second time. If this empties a record's
+  candidate alternates, "no dispatchable alternate rep left" is the correct outcome, not a bug. Full
+  mechanism + the sibling `redo`/console findings from the same review round: `STAGE6_DISPATCH_DESIGN.md`'s
+  2026-08-23/24 decision-log entry.

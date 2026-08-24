@@ -1474,8 +1474,9 @@ def _batch_from_db(batch_id: str) -> dict | None:
 
 # ---------------------------------------------------------------- Stage 2 (Discover) console — REQ-104
 # Stage 2 is UNGATED, so the console surfaces it as STATUS/observability + an orchestration trigger
-# (headless `claude -p` Wave 1, subscription-billed). The run is a background job; its status is the
-# state_event log + the on-disk discovery.json (the filesystem is authoritative), projected here.
+# (the headless SERP cascade — Wave 1 Bright Data/Serper, Wave 2 `claude -p` residual). The run is a
+# background job; its status is the state_event log + the on-disk discovery.json (the filesystem is
+# authoritative), projected here.
 # In-process job board (single-user localhost): batch_id -> live run state. Ephemeral by design —
 # the DURABLE record is the state_event log + discovery.json; this is just the live progress feed.
 _DISCOVER_JOBS: dict = {}
@@ -1624,10 +1625,11 @@ def discover_status(batch_id: str):
 
 @app.post("/api/discover/{batch_id}/run")
 async def discover_run(batch_id: str, payload: dict):
-    """Trigger headless Stage 2 discovery for an approved batch as a BACKGROUND job (12 × `claude -p`
-    WebSearch agents at cap-2 concurrency can't block a request). Guards: batch must be gate@1-approved,
-    and no run already in flight. Live progress streams into _DISCOVER_JOBS; durable truth is the
-    state_event log + discovery.json that run_batch writes."""
+    """Trigger headless Stage 2 discovery for an approved batch as a BACKGROUND job (the sequential
+    per-district SERP cascade — Wave 1 Bright Data/Serper, Wave 2 `claude -p` WebSearch on the
+    residual — can't block a request). Guards: batch must be gate@1-approved, and no run already in
+    flight. Live progress streams into _DISCOVER_JOBS; durable truth is the state_event log +
+    discovery.json that run_batch writes."""
     actor = payload.get("actor", "ian")
     # Resolved at schedule time and captured by the _work closure — safe because a non-draft batch
     # is locked against gate@1 edits (batch_store._require_draft), so an approved batch's roster
@@ -2356,7 +2358,7 @@ async def dispatch_edit(draft_id: str, payload: dict):
     """gate@6 draft edit: add_district | remove_district | restore_district | set_override |
     clear_override | set_verified_only | set_dispatch_type | set_redo. One delegated mutation endpoint, mirrors
     gate@1's `/api/queue/{batch_id}/edit`. Mutates the working store and records a gate@6 draft-edit
-    audit event (district-scoped for district/override ops, draft-scoped for the two draft-wide mode
+    audit event (district-scoped for district/override ops, draft-scoped for the three draft-wide mode
     ops); returns the fresh draft-detail view (always-current pricing)."""
     op = payload.get("op")
     actor = payload.get("actor", "ian")

@@ -23,11 +23,13 @@ prompt registry) and the **judge-replay harness** (`council_lab.py`, the #82 fir
 Stage-7 GT scorer it reuses. The harness has now RUN for real: the Qwen-VL image-judge swap was measured
 end-to-end (§0 "First result") and #82 closed on the evidence. **Not yet built:** the append-only run
 **ledger**, the **cost benchmark** (`cost_benchmark`, §3), clean-data **composition** re-benchmarking
-(§4), and the dedicated **console view** (§6 — sequenced after the ledger + a few experiments). **None of
-this has moved in over a week**: two full epics (#209 Phases 0–2, #200) landed in between with zero
-Council Lab activity — the backlog in §2 is unchanged since 2026-07-04. This is a priority call (the
-request-loop/data-integrity bugs found by the #122 shakedowns took precedence), not a stall; treat §2's
-ranking as still current but not urgent until reprioritized.
+(§4), and the dedicated **console view** (§6 — sequenced after the ledger + a few experiments). **No code has moved since
+2026-07-04**: several epics (#209, #200, #617, and more) landed in between with zero Council Lab code
+activity — the backlog in §2 is unchanged. This is a priority call (the request-loop/data-integrity
+bugs found by the #122 shakedowns, then the #617 benchmark-provenance rework, took precedence), not a
+stall; treat §2's ranking as still current but not urgent until reprioritized. **One exploratory research
+pass has happened since (2026-08-18, docs-only, nothing adopted):** an OpenRouter platform-features
+survey ahead of #80's composition work — see §7 References.
 
 ---
 
@@ -292,7 +294,13 @@ judge not vision-capable — reopened, code fix landed, measurement pending), #8
 
 **References:** `models-and-council-composition/` (`LLM_COUNCIL_RESEARCH_2026-06.md`;
 `models-and-council-composition.md` — the batch_00000 report + §6 backlog; the non-reasoning + compass model
-catalogs); `EXTRACTION_BENCHMARK_FINDINGS.md` (**caveat:** as of this writing it still documents a 3-model
+catalogs; `OPENROUTER_PLATFORM_FEATURES_2026-08-18.md` — an exploratory, docs-only options survey ahead
+of #80's composition work: OpenRouter's Ori Eval (agent-driven, no headless REST surface — not a
+foundation for the ledger), the `/benchmarks`/`/rankings` APIs, `require_parameters` provider-routing
+(would have caught #82's dead image-council judge at request time), and a scan of Vercel AI
+Gateway/Perplexity/LiteLLM/Portkey/Not Diamond/Martian, none of which offers council infrastructure
+(concurrent voters + judge, consensus) or closes a gap worth a second gateway — nothing adopted);
+`EXTRACTION_BENCHMARK_FINDINGS.md` (**caveat:** as of this writing it still documents a 3-model
 non-reasoning council — Gemini Flash + DeepSeek V3.2 + Mistral Small, ~$0.0029/call — and per-call costs
 that predate and are superseded by the current 2-voter+judge cascade template and the
 `council_cost_model.json` bootstrap rates (e.g. `mistral-small-24b-instruct-2501` at $0.00022/call,
@@ -319,3 +327,12 @@ GitHub-tracked (#80 and children above), not requirements-tracked.
 - **2026-07-04 — the judge-replay harness built (#82 first workload).** A judge-only replay over frozen
   receipts — the cheapest possible signal on a judge swap (reuse recorded voter facts; pay only for judge
   calls; score baseline vs candidate to separate resolution from correctness).
+- **2026-08-18 — OpenRouter platform-features options survey (docs-only, nothing adopted).** Ian noticed
+  OpenRouter's new "Ori Eval" agent-driven eval tool; a research pass scanned it plus the `/benchmarks`/
+  `/rankings` APIs, provider-routing controls, and competing unified-LLM gateways for anything worth
+  building on ahead of #80's composition work. Verdict: none closes a capability gap worth adopting today
+  — no headless REST surface for Ori Eval, no council infrastructure (concurrent voters + judge,
+  consensus) in any competing gateway — but `require_parameters` provider-routing is a real, cheap win
+  worth a future spike (would have caught #82's dead image-council judge at REQUEST time instead of via
+  a live 404). Recorded as a candidate-hypotheses doc so the research isn't repeated when #80's children
+  get scoped; see §7 References.

@@ -29,14 +29,19 @@ Settings view (§1a below) — both registered the same way as the other stages 
 
 **Built: gate-decision calibration log (REQ-121 / #210).** `gate_calibration.py` (in `process_governance`,
 not `common/`, since it translates the console's decision vocabulary — a label, a dispatch click, a
-directive approve/reject — into the calibration vocabulary of accept/reject/escalate) builds a record per
-human gate decision; `common/calibration.py`'s `record_calibration`/`build_record` persist it on the SAME
-transaction as the gate's existing write. It's wired at three of the human-review gates: gate@5 label
-(`server.py` imports at lines 30-31, the write at lines 278-285), gate@6 dispatch, and gate@7's terminal
-request review (`server.py` lines 1608-1625). Each record pairs a continuous proxy (e.g. gate@5's combiner
-`sort_score`, gate@7's council agreement ratio `n_accepted/(n_accepted+n_unresolved)`) with what the
-tier/detector's auto recommendation would have been, so the corpus can later show whether that proxy
-predicts the human's decision. This is the data the calibrated per-gate auto thresholds (§1a) will
+directive approve/reject, a closing-argument verdict — into the calibration vocabulary of
+accept/reject/escalate) builds a record per human gate decision via one function per gate
+(`gate5_label_record`/`gate6_dispatch_record`/`gate7_request_record`/`gate8_decision_record`);
+`common/calibration.py`'s `record_calibration`/`build_record` persist it on the SAME transaction as the
+gate's existing write. **It's wired at all FOUR of the human-review gates that write a decision today**
+— gate@5 label (`server.py`'s label-save path), gate@6 dispatch (`stage6_dispatch.py::dispatch_handoff`),
+gate@7's terminal request review (`server.py`'s request-review endpoint), and gate@8's verdict
+(`server.py`'s `aggregate_decision`, wired with the gate@8 build 2026-07-14 — see
+`STAGE8_AGGREGATE_DESIGN.md` §2c.6). Each record pairs a continuous proxy (e.g. gate@5's combiner
+`sort_score`, gate@7's council agreement ratio `n_accepted/(n_accepted+n_unresolved)`, gate@8's minimum
+band coverage) with what the tier/detector's auto recommendation would have been, so the corpus can later
+show whether that proxy predicts the human's decision. This is the data the calibrated per-gate auto
+thresholds (§1a) will
 eventually need to set responsibly — it accrues regardless of whether any gate is auto today.
 
 **Built: gate@7 auto-withdraw — the first narrow auto-behavior (REQ-123 / #233).** Once cumulative

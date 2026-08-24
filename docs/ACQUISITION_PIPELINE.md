@@ -13,19 +13,19 @@
 > **Update this when:** a stage's purpose/IO changes, a new stage is built, or the flow diagram needs a new
 > edge — for implementation detail within an already-mapped stage, update that stage's own design note instead.
 
-**Status update (2026-07-28) — epic #617, campaign phase.** Epic #617 (generalize the benchmark model,
+**Status update (2026-08-24) — epic #617, campaign phase.** Epic #617 (generalize the benchmark model,
 retire the old district-keyed Stage-9 wall) has Phases A/B/D landed on `main`. The **campaign** (#620 —
 re-running `batch_00000`'s 27 curated-GT districts through the normal pipeline so their evidence earns
-honest production provenance) is IN PROGRESS: 25 of 27 districts (the other 2 are domain-less/unreachable,
-tracked separately as #646) have completed Stages 2-4 with strong results (2,124 documents, 97.6% usable,
-80.9% of time-bearing evidence now fresh/production-provenance). The campaign's first production dispatch
-is currently **BLOCKED at `gate@6` by #679** — dispatch-composition rep-selection doesn't know which
-representations are benchmark-provenance, so it can pick an injected representation as "best" and the
-freeze guard then correctly refuses it. The old "wall keyed on district identity, forever" framing is
-retired; the model is now two declared type axes (`batch_type`, `dispatch_type`), each with a structural
-terminus, plus a two-arm fact-grain provenance guard at Stage 9 (see §7/§8 mentions of `run_kind`/
-provenance below). Full detail: `docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md`
-§13; day-to-day resume state: `CLAUDE.md`.
+honest production provenance) is IN PROGRESS: `batch_00043` (7 of the campaign's districts) has cleared
+Stage 4 through Stage 5 ingest; several are through their first production dispatches. The gate@6
+rep-selection provenance gap that had blocked the campaign's first dispatches is CLOSED (#679, see §6
+below) — the old "wall keyed on district identity, forever" framing is retired; the model is two
+declared type axes (`batch_type`, `dispatch_type`), each with a structural terminus, plus a two-arm
+fact-grain provenance guard at Stage 9 (see §7/§8 mentions of `run_kind`/provenance below), and — new
+since — gate@6 also subtracts reps a prior production run already bought (#717/REQ-186, see §6), so a
+re-dispatched campaign district doesn't re-buy council reads production already has. Full detail:
+`docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md` §13;
+day-to-day resume state: `CLAUDE.md`.
 
 **Present state.** The console runs the pipeline live **end to end through `gate@8`**, and Stage 9
 writes the approved per-band minutes into the LCT `bell_schedules` DB, with the LEA-level per-grade
@@ -195,7 +195,7 @@ flowchart TD
         H_REQ["Assemble the OpenRouter requests — STOP before the paid call"]
         H_IN --> H_ROUTE --> H_FREEZE --> H_REQ
     end
-    G6{{"gate@6 — dispatch approval (manual)<br/>console: a persisted, reopenable DRAFT dispatch<br/>-- add/remove districts, per-rep council overrides, verified-only toggle -- then Freeze<br/>send set tier-gated (targets + tier-A; B/C held; handbook harvest_slice)<br/>+ verified-only mode (labeled targets only); + a 'Run extraction' trigger<br/>on a frozen dispatch (the gate@6 approval IS the go-ahead)<br/>+ already-dispatched indicator/filter — re-selecting re-dispatches at cost<br/>+ a receipt-derived origin badge (draft / from-Stage-7 / console, never stored)<br/>+ writes a calibration_event row per district (REQ-121, accept-only)<br/>auto + budget cost-gate deferred"}}
+    G6{{"gate@6 — dispatch approval (manual)<br/>console: a persisted, reopenable DRAFT dispatch<br/>-- add/remove districts, per-rep council overrides, verified-only toggle -- then Freeze<br/>send set tier-gated (targets + tier-A; B/C held; handbook harvest_slice)<br/>+ verified-only mode (labeled targets only); + a 'Run extraction' trigger<br/>on a frozen dispatch (the gate@6 approval IS the go-ahead)<br/>+ ALREADY-EXTRACTED DELTA (#717/REQ-186): a rep a prior production run<br/>already bought is HELD by default, not re-sent; a per-draft 'redo' toggle<br/>re-admits everything, frozen into the handoff identity<br/>+ a receipt-derived origin badge (draft / from-Stage-7 / console, never stored)<br/>+ writes a calibration_event row per district (REQ-121, accept-only)<br/>auto + budget cost-gate deferred"}}
 
     subgraph STAGE7 ["Stage 7 — Extract · council + the request-loop (gate@7)"]
         direction TB
@@ -269,7 +269,7 @@ flowchart TD
 - **Discovery-scope policy (`discovery_scope`: domain vs geo) — #164/#572.** A 4-position state machine (`common/discovery_policy.py`) governs whether a FIRST-RUN batch may be composed geo-scoped (searching by district geography) rather than domain-scoped: `domain_only` (the high-supervision default) → `geo_for_blank` → `geo_interleaved` (a weighted draw) → `geo_all`. `queue_create` composes scope-aware and auto-advances one step when a domain-scoped batch draws nothing while blank-domain districts remain. The 5→1/7→1 escalation ladders (flow diagram above; governance §11e) are deliberately NOT gated by this policy. Full mechanics: governance §11j/§11k.
 - **Cross-stage state** lives in the Postgres `state_event` log (REQ-099); `district_status.json` is its regenerable backup; `already_attempted` = furthest stage ≥ 3.
 
-### 2 · Discovery — a deterministic SERP cascade · deep design: `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE2_DISCOVER_DESIGN.md` §7
+### 2 · Discovery — a deterministic SERP cascade · deep design: `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE2_DISCOVER_DESIGN.md`
 
 **Purpose:** find *a* bell-schedule page per targeted school (a **recall** problem — Capture/Extraction verify; **precision is Stage 5's learning loop**, not Stage 2's). **In:** Stage 1's `batch_NNNNN.json` — read directly, **never** re-deriving band membership from NCES CSV (that would discard every Stage 1 `gate@1` fix). **Out:** per district `discovery.json` (full per-school audit trail) + `candidates.json` (flattened, deduped, capture-ready URL list) under `data/raw/lea-website-captures/<id>_<slug>/`. Code: `common/discover.py` (`brightdata_search`/`serper_search`/`gate`/`domain_of`/`is_scoping_domain`) + `stage2_discover/discover_stage2.py` (`build_roster`, `run_wave1`/`run_wave2(search_fn)`, `gate_urls`/residual/flatten/write) + `stage2_discover/headless.py` (the cascade + `run_batch`) + the console (`/api/discover/*`, `static/stage2.js`). The `stage2-discover` SKILL is **obsolete** (drove the retired agent Wave-1).
 
@@ -375,12 +375,23 @@ hub-priority** (`_hub_priority_holds` — a HUMAN-LABELED district hub narrows t
 itself; every other surviving send holds for the 7→6 back-edge). Each pass is zero-recall-cost by
 construction (a held rep remains available for cheap re-dispatch). Detail: `STAGE6_DISPATCH_DESIGN.md` §3G.
 
-> **Rep-selection is provenance-blind (#679, open, blocking the #617 campaign as of 2026-07-28).**
-> `dispatch_type` and the freeze guard landed and are verified working live, but the earlier
-> best-representation selection step doesn't consult provenance — it can pick a benchmark-injected
-> representation as "best" for a district that also has fresh production evidence, and the freeze guard
-> then correctly refuses the dispatch rather than silently sending it. Fix is the next thing due before
-> #620's campaign districts can proceed past `gate@6`. Detail: the epic #617 findings report §13.
+> **Rep-selection provenance wall — CLOSED (#679).** Best-representation selection now runs a
+> production-eligibility pass FIRST, before every ranking pass: a benchmark-injected representation
+> (`capture source='benchmark_gt'`) is held, never selected as "best," for a production dispatch — the
+> freeze guard (`assert_dispatch_type_allowed`) is now a backstop, not the only defense. REQ-187
+> (backfilled 2026-08-24). Detail: `STAGE6_DISPATCH_DESIGN.md` §0/§3G.
+
+> **Already-extracted delta — gate@6 subtracts what a prior PRODUCTION run already bought (#717,
+> REQ-186, 2026-08-23/24).** A representation sent in a prior production handoff that actually ran is
+> HELD (not re-sent) by default — a `school_fact` row is per-rep proof it was read and outranks the
+> run-level error flag (the measured rule; the naive "no-errors" version was rejected — see REQ-186).
+> Runs LAST in the hold-pass chain (opposite ordering from #679's structural wall, above — it only ever
+> subtracts from an already-elected winner, never removes a candidate from the ranking contest). A
+> declared `redo=True` re-admits everything, reachable from the console DRAFT workflow (`meta_json`
+> + a gate@6 toggle, #903) and frozen into the handoff identity (#905) — the control an 8→6 send-back
+> route (REQ-188) depends on, since a cleanly-extracted sent-back district would otherwise compose to
+> zero new sends. The 7→6 alternate-rep bundler consults the same predicate (#904). Detail:
+> `STAGE6_DISPATCH_DESIGN.md` §0.
 
 **Deferred (own tracks):** the **Council Lab**'s remaining backlog (`cost_benchmark` — measured token rates + live OpenRouter pricing; composition re-benchmark on clean data; tracked: #80/#81 — its first experiment, the judge-replay harness, is already built and measured, see `COUNCIL_LAB_DESIGN.md`); gate@6 **auto** mode (tracked: #104 part b — the per-gate manual/auto Settings toggle itself is built,
 #104 part a; only gate@5 has a control law behind it so far, #211); the cross-config cascade (#110, re-homed
@@ -675,7 +686,8 @@ Two independent extractors disagree on a large share of districts; at <1 hr/week
 | **Stage 5 drift detector: CUSUM+Wilson two-gate over the fingerprinted scorecard series, advisory (REQ-097/#75)** | `infrastructure/acquisition/stage5_filter/drift.py`; design: `STAGE5_FILTER_DESIGN.md` §8/Change log |
 | **Stage 5 `schedule_link_only` detection + retry receipt (#517)** | `infrastructure/acquisition/stage5_filter/{build_signals,link_followup}.py`; design: `STAGE5_FILTER_DESIGN.md` Change log |
 | **Stage 5's zero-yield predicate + the 5→1 geo escalation composer (#164 PR 3b)** | `infrastructure/acquisition/process_governance/stage5_followup.py`; design: `STAGE5_FILTER_DESIGN.md` §7a, `PIPELINE_GOVERNANCE_AND_STATE.md` §11e |
-| **Stage 6 dispatch: routing/cost/immutable handoff/request assembly + gate@6 (REQ-101), incl. the four dispatch-hold passes (#107/#540/REQ-116)** | `infrastructure/acquisition/stage6_handoff/`, `process_governance/stage6_dispatch.py`; design: `STAGE6_DISPATCH_DESIGN.md` §0/§3G |
+| **Stage 6 dispatch: routing/cost/immutable handoff/request assembly + gate@6 (REQ-101), incl. the five dispatch-hold passes (#679/#107/#540/REQ-116/#717)** | `infrastructure/acquisition/stage6_handoff/`, `process_governance/stage6_dispatch.py`; design: `STAGE6_DISPATCH_DESIGN.md` §0/§3G |
+| **Already-extracted delta: THE predicate a prior production run already bought a rep (REQ-186/#717)** | `infrastructure/acquisition/common/extraction_delta.py`; design: `STAGE6_DISPATCH_DESIGN.md` §0 |
 | **gate@6 console: persisted draft dispatch (redesigned 2026-07-13, PR #256)** | `infrastructure/acquisition/stage6_handoff/draft_models.py`, `process_governance/stage6_draft_store.py`, `process_governance/static/stage6.js`; design: `STAGE6_DISPATCH_DESIGN.md` §0b |
 | **Stage 7 extraction: council calls, token sizing, truncation retry, run_kind (REQ-117, REQ-119)** | `infrastructure/acquisition/stage7_extract/{openrouter,models,parse,validate}.py`; design: `STAGE7_EXTRACT_DESIGN.md` §0 |
 | **Stage 7: durable/resumable run + persistence + request-more-evidence detection (REQ-117/118)** | `infrastructure/acquisition/process_governance/stage7_run.py`; design: `STAGE7_EXTRACT_DESIGN.md` §0/§4 |

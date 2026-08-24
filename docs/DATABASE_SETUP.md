@@ -1,6 +1,6 @@
 # PostgreSQL Database Setup Guide
 
-**Last Updated**: July 22, 2026
+**Last Updated**: August 23, 2026
 
 This guide covers the complete setup and usage of the PostgreSQL database for the Learning Connection Time project.
 
@@ -199,9 +199,11 @@ Bell schedule / instructional-minute data. This is the **acquisition pipeline's 
 | end_time | VARCHAR(20) | School end time |
 | lunch_duration | INTEGER | Lunch period in minutes |
 | passing_periods | INTEGER | Passing period time |
+| recess_duration | INTEGER | Recess period in minutes |
 | method | VARCHAR(30) | Collection method (Stage 9: `council_extraction` or `statutory_fallback`) |
 | minutes_basis | VARCHAR(30) | What the minutes measure: `gross_bell_to_bell` \| `statutory` \| NULL (migration 019) |
 | confidence | VARCHAR(10) | Data confidence level (high / medium / low) |
+| human_vouched | BOOLEAN | TRUE when a human vouched for this band at gate@8 (#626/#636, migration 028) — exempts the band's vintage from the REQ-026 blend window; source of truth for `district_grade_minutes.human_vouched` |
 | schools_sampled | JSONB | Array of sampled schools (Stage 9: per-school evidence) |
 | source_urls | JSONB | Array of source URLs |
 | raw_import | JSONB | Stage 9: the `#95` re-verify bundle (facts_fingerprint, approval_id, receipt_band, band_grade_span) |
@@ -223,9 +225,10 @@ to the individual grade (`grade → owning band → minutes`, via the band's liv
 LCT calc can weight per-grade minutes × per-grade enrollment to any staffing scope. One current row per
 (district_id, grade); `grade ∈ 'KG','01'..'12'`. Columns: `instructional_minutes`, `source_band`
 (elementary/middle/high), `method` (`council_extraction`/`statutory_fallback`), `minutes_basis`, `year`,
-`overlap_flag` (NULL, or the tie-rule note when ≥2 bands serve a grade), `provenance` (JSONB). Derived +
-regenerable from `bell_schedules` + the live roster — not a source of truth. FK `districts(nces_id)` ON
-DELETE CASCADE.
+`human_vouched` (BOOLEAN, migration 027 — a projection of `bell_schedules.human_vouched`, the source of
+truth since migration 028/#636), `overlap_flag` (NULL, or the tie-rule note when ≥2 bands serve a grade),
+`provenance` (JSONB). Derived + regenerable from `bell_schedules` + the live roster — not a source of
+truth. FK `districts(nces_id)` ON DELETE CASCADE.
 
 #### **enrollment_by_grade**
 Per-grade enrollment (wide format — one column per grade). One row per (district, source_year).
@@ -499,12 +502,9 @@ with session_scope() as session:
 ### Import Data
 
 ```bash
-# Import all data from JSON files (initial setup)
+# Import all data from JSON files (initial setup). import_all_data.py is the
+# only import entry point today — see infrastructure/database/migrations/.
 python infrastructure/database/migrations/import_all_data.py
-
-# Import specific datasets
-python infrastructure/database/migrations/import_districts.py
-python infrastructure/database/migrations/import_bell_schedules.py
 ```
 
 ### Export Data
@@ -714,6 +714,6 @@ with session_scope() as session:
 
 ---
 
-**Last Updated**: July 22, 2026
+**Last Updated**: August 23, 2026
 **Database Version**: PostgreSQL 16
 **Schema Version**: 2.0 (with materialized views and calculation tracking)

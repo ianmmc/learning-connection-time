@@ -372,33 +372,31 @@ veto.**
     `project-auto-act-when-failure-observable`: a hold is reversible and its failure is visible; a
     hard-reject silently destroys a district's only evidence. Resolves the "hard-reject vs. hold" question
     §3G left open.
-  - **KNOWN DEFECT — the HOLD above only fires on the UNLABELED tier-A auto-send path; a human target
-    label bypasses the floor unconditionally, with no way to stop it (#674, open, epic #92, flagged
-    2026-07-28 — likely the single most consequential open finding of the whole #617/#92 campaign).**
-    `release.py::decide()`'s structure is: `label in TARGET_LABELS` → **send, unconditional, first
-    branch, `pre_validity_floor()` never called**; only the unlabeled `tier == "A"` branch below it
-    checks `pre_validity_floor(csy)` before sending. This composes badly with standing labeling doctrine
-    (Ian, 2026-07-27): **a target label carries SHAPE, never fitness-for-use** — a human who finds a
-    correctly-shaped bell-schedule document that happens to predate the floor is REQUIRED to
-    target-label it (marking it non-target to keep it out would corrupt the shape signal every other
-    label trains on). The "human can override" language above was always meant as a one-way escape hatch
-    — labeling an old document a target to PRESERVE a district whose only evidence is old — but there
-    is no complementary force-**hold** control for "this shape is right, but don't send THIS document."
-    Net effect: correctly following the labeling doctrine on a below-floor document GUARANTEES it reaches
-    paid extraction, with no mechanism to stop it. Live instance: Taos Integrated School of Arts
-    (`3500127`, 2026-07-28) froze a production dispatch with 4 send-reps, 2 of them 2013-14/2014-15
-    handbooks below the floor — both correctly target-labeled per doctrine, both bypassing the floor via
-    this gap. **Any fix must NOT become a blanket recency veto** — obs. 6 above already measured that
-    actively harmful at the more-recent floor (1 false-send removed for 17 real targets vetoed); this
-    needs an explicit, orthogonal per-record force-hold control distinct from the shape label itself,
-    likely riding the existing `facets_json` orthogonal-facet mechanism `decide()` already receives as
-    `facets` but does not consult for this purpose.
-  - **KNOWN GAP — the floor's state is invisible to the reviewer making that call (#673, open, epic #92,
-    flagged 2026-07-28).** `content_school_year` is computed in `build_signals.py` and already projected
-    server-side into the gate@5 record view (`process_governance/server.py`'s record-detail SELECT and
-    response dict), but the console CLIENT never renders it — `grep -rn content_school_year static/`
-    returns zero hits. A reviewer sees neither a record's derived vintage nor whether/why the #241 floor
-    held it, which is exactly the information a force-hold decision (above) would need to be made on.
+  - **CLOSED — #674 shipped 2026-08-18 (commit `6c36176`), together with #673.** The gap above stood as
+    designed: `release.py::decide()`'s target-label branch returned unconditionally, so a below-floor
+    document a human correctly target-labeled (labeling doctrine requires it — withholding the label
+    would corrupt the shape signal) always bypassed `pre_validity_floor()`. The fix is the converse of
+    #241's send-override: a new **orthogonal fitness-for-use FACET**, `out_of_window` (Axis-3-adjacent,
+    not a label — `primary_label` stays uncorrupted training signal), checked FIRST in `decide()` via
+    `human_held_out_of_window(facets)`, before the target-label branch — exactly the position the old
+    code was missing. Ticking it HOLDS the record (never reject — #241's reversibility posture) even
+    though it is target-labeled; the shape label and the record both survive intact and countable.
+    `out_of_window` is added to `harness._NON_CONFOUNDER_FACETS` (with `buried_handbook`/`needs_vision`)
+    so the fitness judgment never corrupts the confounder-detector training signal. No automatic recency
+    veto was added anywhere above #241's own floor — a test (`TestOutOfWindowHold674`) pins that the
+    stale-veto-is-harmful finding above still holds. `gate@6`'s candidate SQL (`handoff_candidates`) was
+    updated in the same commit to apply the identical hold to `n_send`/`n_verified`/`n_hold` AND to the
+    GT-scoped subsets `n_benchmark_only`/`n_hold_gt`, so the two surfaces cannot drift (the #755 hazard).
+    Live instance this closes: Taos Integrated School of Arts (`3500127`) — the reviewer can now tick
+    `out_of_window` on its two below-floor handbooks instead of the send being unstoppable.
+  - **CLOSED — #673 shipped in the same commit.** The console client now renders the derived vintage:
+    `static/app.js`'s `renderPanel` binds `const vintage = s.content_school_year;` **once** (a pin test,
+    `tests/test_673_vintage_surface.py`, forbids a second inline spelling of the field path), shown in
+    the Signals block — marked when below the `#241` floor, and shown honestly as "unknown" (with the
+    reason: vintage derives from the URL/filename only and never opens the document, #642) rather than
+    silently reading as acceptable. A hinted-not-auto-ticked `out_of_window` checkbox sits beside it
+    (Arm 2) so a reviewer can act on the vintage they now see. Verified with
+    `infrastructure/scraper/verify_673_console.mjs` (12/12 PASS on live TAOS records).
 - **Prefer-recent (§3G / #107) is the half that saves money, and it is a RANKING, not a gate.** Among
   siblings ≥ the 2017-18 floor covering the same school/band, dispatch the most recent and **hold** the
   stale sibling (available for a cheap 7→6 re-dispatch if extraction fails). Zero recall cost *by
@@ -1026,6 +1024,91 @@ it consumes Stage 5's machinery; the full description belongs in Stage 2/4's des
 
 ---
 
+## 7b. The send-side unification (2026-08-18/19): ONE page-slice predicate, ONE non-swappable-source
+set, and vintage/fitness-for-use as a facet
+
+Four related fixes landed together (#834-#840, #841, #862/#865-#870, #673/#674), all closing the SAME
+class of bug — a decision spelled independently at more than one call site drifting from itself on live
+data (the "implemented-twice-drifts" class, §3a and CLAUDE.md's running tally). Grouped here because they
+share one lesson and touch the same three files (`build_signals.py`, `release.py`, the Stage-7 dispatch
+sites that read Stage 5's output).
+
+**`select_slice()` — the ONE page-slice decision (#834, `build_signals.py`).** "Which slice — if any —
+does this record get" used to be a hand-written predicate in two places (ingest, which cuts the slice
+file, and `best_send`, which decides whether to send it), and they disagreed on 43 live records: 35
+handbooks whose peak-relative harvest found NOTHING got a **floor slice** cut by ingest that `best_send`'s
+separate `handbookish` guard then hid forever (`0904830:71acfa3404` — 1,017 pages sent whole while a
+lossless 19-page slice sat dead on disk); 8 human-labeled records got a harvest slice `best_send` refused
+to send (it demanded `buried_handbook=="yes"`; ingest did not) and were denied the floor too, because the
+harvest branch had already fired. Fix: `select_slice(signals, facets) -> (source, pages) | None` is now
+the single arbiter both sides call — mutual exclusion becomes a property of the return type, not of branch
+order duplicated in two files. **Precedence:** a human page range (#109 — they looked) beats a handbook's
+peak-relative harvest, which beats the **absolute page floor** (`timebearing_pages` / `TIMEBEARING_SLICE_
+SOURCE`, #821) — a handbook whose harvest found nothing is not "unscoped," it is exactly what the floor is
+for. Two distinct slice kinds, `harvest_slice.txt` and `timebearing_slice.txt` (`build_signals.
+SLICE_FILE_BY_SOURCE`), materialize mutually exclusively per record via the shared `build_slice()` builder.
+A bare human page range (no `buried_handbook` tick) is deliberately honored — matching #109's own
+docstring, widening the harvest send gate slightly. Measured: 19 sends changed (18 = the floor now reaching
+records it should have all along; 1 = a slice correctly declined on the merits); 8 previously-blocked
+human-range records became eligible but each still loses the #230 yield guard on the merits (a thin slice
+must not shadow a denser full read) — outcome unchanged, reason now correct.
+
+**Chrome is barred from being the FIRST send, not just the 7→6 retry pool (#862, #865-#870).**
+`release.sendable_text_reps(reps)` is the ONE definition of the pool `best_send` ranks for "densest text":
+text reps that are `usable`, and whose `source` is **not** in `NON_SWAPPABLE_SOURCES` (`CHROME_SOURCES` —
+`segment:header`/`segment:footer`/`segment:nav` — union `SLICE_SOURCES`). Before #862, chrome segments were
+already barred from the 7→6 swap ladder (`alternates()`) but reachable as the FIRST send in `best_send`,
+and only the accident that `representation.n_times` was hardcoded `None` for every `segment:*` rep kept one
+from winning it (measured: 1 live canonical record would otherwise have sent an isolated nav menu). Both
+roles — "eligible as first send" and "eligible as a 7→6 swap target" — are now driven off the SAME
+`NON_SWAPPABLE_SOURCES` set, closing the drift at its root rather than patching one call site. **Residual
+gap, measured and left open (not this stage's to fix):** page.txt is read at DOM-ready+2.5s while the
+segment reps are captured at end-of-capture, so a late-rendered footer can hold clock times page.txt never
+saw — `0103390:fb71b7cc63` (footer 12 in-window times, page.txt 0) is the standing example. All 5 known
+records with this shape are reject-decided today (zero dispatch impact); the root cause is Stage 3's
+read-timing split (#863, fixed and documented in `STAGE3_CAPTURE_DESIGN.md`), not Stage 5's. Watched by
+`docs/technical-notes/production-quality-control-research/2026-08-19-chrome-first-send-measure.py`, whose
+C3 check must never report a SEND-decided record in this set.
+
+**`segment:main` is ADMITTED as a 7→6 alternate, and segment reps are now scored (#841).** The issue that
+raised this ("main is a strict subset of `page.txt` — retrying a subset that already failed is the ladder
+run downward") turned out to be unanswerable as posed: `representation.n_times` was `None` for all 11,349
+`segment:*` reps (they were written as gate@5-inspectable reps, never dispatch candidates), so the
+naive `nt or 0` measurement was guaranteed to show "main never carries more," not measuring it. Reading the
+segment text from disk instead reversed the issue's own leaning: 1,097 of 3,091 unsent `segment:main` reps
+carry `n_times` ≥ the sent rep's (31 carry strictly more, 21 of those against a PDF-extraction sent rep — a
+different document, so the subset argument doesn't even apply); and `main` is the **uniquely best**
+alternate (nothing else admitted is as good) on 27 records, dominated on 4. Settled: `segment:main` is
+admitted, matching what `release.alternates()` already did; `stage7_run`'s SQL and `stage7_execute.
+live_alternates` were unified onto the same `NON_SWAPPABLE_SOURCES` source rule (each previously spelled
+its own wider `segment:%`/`startswith("segment:")` exclusion, barring `main` too). Because admitting an
+unscored rep would rank it dead-last in `rank_alternates` — behind even the (expensive) vision escalation —
+segment reps now get `n_times` computed at ingest (`time_positions()` over text already read for `n_chars`,
+so the scan is free); this needs a post-merge re-ingest to populate on already-ingested records (the #822
+pattern — never re-ingest the live DB from a feature branch). A companion audit of the three alternate
+collectors (`release.alternates`, `stage7_run`'s SQL, `stage7_execute.live_alternates`) found 3,532
+apparent disagreements on a first pass; all one INTENTIONAL difference (`release.alternates` admits `pdf`
+for a human at gate@6; the two automated-retry collectors exclude it, since an automated retry would send
+raw bytes meant for a text council, #140) — 0 real disagreements once compared on the SOURCE rule rather
+than whole-output equality.
+
+**The gate@5 per-page scoping card now names which selector governs (#840).** Before this arc the card
+only showed the harvest ★ marker. It now also marks ◆ for floor pages and `· instr` for an instructional-
+declaration page, states in its meta line which selector (`harvest` / `floor` / `none`) actually governs
+the send, and carries a `data-scoping=` DOM hook (`harvest`/`floor`/`none`) for Playwright — so a reviewer
+(or a test) can see not just which pages survived scoping but *why*, mirroring the #684 staff-day
+convention of a static-source-pinned card. **Verification status matches CLAUDE.md's own note: static-
+source-pinned only so far** (`tests/test_release.py` asserts the `data-scoping=` template literal is
+present in `app.js`) — not yet Playwright-verified against a live record the way #673/#684/#822 are.
+
+**Fitness-for-use as an orthogonal facet, not a label (#673/#674) — see §3a obs. 6** for the full account:
+a human can now HOLD a correctly-shaped, below-#241-floor document (`out_of_window` facet) without
+mislabeling its shape, and the console now surfaces the derived vintage that decision depends on. Grouped
+here only by shared timing/lesson; the design content lives in §3a since it's a refinement of the
+recency/validity-floor story already told there.
+
+---
+
 ## 8. Status
 
 | piece | status |
@@ -1051,7 +1134,8 @@ it consumes Stage 5's machinery; the full description belongs in Stage 2/4's des
 | **Empty-domain admission guard** (`common/discover.py` `domain_of()`/`is_scoping_domain()`, refuses blank/junk-domain districts at Stage-1 batch build) | **BUILT (#229, 2026-07-11)** — see §4 |
 | **Millard contamination remediation** (`process_governance/remediate_contamination.py`, manifest-first dry-run-by-default cleanup tool) | **BUILT (#227, 2026-07-11)** — see §4 |
 | **Stage-7/8 outcome feedback** (`harness.extract_outcome_calibration` — P(any_accepted) headline + per-tier calibration + detectors-vs-outcome + the two disagreement cells + `unjoined`; fourth `outcome` fingerprint; `extract_outcome_calibration` ledger delta) | **BUILT (#91, 2026-07-14)** — measurement only; see §5 item 2 |
-| **School-year currency** (`infrastructure/utilities/school_year.py::content_school_year` URL/filename signal, incl. month-word dates `December98`→SY 1998-99; the #241 pre-2017-18 **validity floor** in `release.py` — HOLD semantics, floored on the CRDC 2017-18 federal input) | **BUILT (#107/#241/#531, PRs #529/#533, 2026-07-16)** — the money half (prefer-recent ranking) lives in Stage 6 dispatch, see `STAGE6_DISPATCH_DESIGN.md` §3G. **KNOWN DEFECT (#674, open):** the HOLD only fires on the unlabeled tier-A auto-send path — a human target label bypasses the floor unconditionally, no force-hold override exists; see §3a obs. 6. **KNOWN GAP (#673, open):** `content_school_year`/floor state is server-projected but never rendered by the console client |
+| **School-year currency** (`infrastructure/utilities/school_year.py::content_school_year` URL/filename signal, incl. month-word dates `December98`→SY 1998-99; the #241 pre-2017-18 **validity floor** in `release.py` — HOLD semantics, floored on the CRDC 2017-18 federal input) | **BUILT (#107/#241/#531, PRs #529/#533, 2026-07-16)** — the money half (prefer-recent ranking) lives in Stage 6 dispatch, see `STAGE6_DISPATCH_DESIGN.md` §3G. **#674 (force-hold override) BUILT 2026-08-18:** `out_of_window` facet, checked first in `decide()`, converse of the send-override; see §3a obs. 6 and §7b. **#673 (console vintage surface) BUILT 2026-08-18:** `content_school_year` now rendered in the gate@5 client, `verify_673_console.mjs` 12/12 PASS |
+| **Send-side unification** (`build_signals.select_slice` — one page-slice predicate for ingest + `best_send`; `release.NON_SWAPPABLE_SOURCES`/`sendable_text_reps` — chrome barred from the FIRST send, not just the 7→6 pool; `segment:main` admitted + scored as a 7→6 alternate; the gate@5 scoping card's `data-scoping=` selector-governs hook) | **BUILT (#834-#840, #841, #862/#865-#870, 2026-08-18/19)** — see §7b. The scoping card is static-source-pinned only so far, not yet Playwright-verified |
 | **Console error-review lanes** (FP = tier-A ∩ `target_absent` via `release.MONEY_LEAK_WHERE`, the SSOT shared with `decide()`; FN = the fixed-seed reject-audit sample) + `rec_key` search + right-pane reorder | **BUILT (#516, PR #534, 2026-07-16)** — disagreement as the primary product of labeling, surfaced as first-class lanes |
 | **Relevance-density evidence navigation** for long reps (signed detector events on the char axis → smoothed curve → ranked bookmarks + heat-strip; weights served from `detectors.EVENT_WEIGHTS` via `/api/detector-weights` — display-only mirror of the live Vote confidences, pinned by a no-drift test, NOT a combiner weight surface) | **BUILT (#521, PR #535, 2026-07-17)** — replaces the 20k-char display cap; full text renders with peak anchors |
 | **Content-adaptive center-pane defaults** (evidence classification drives `<details>` open states: densest + unique-adders + instructional/period-phrasing carriers open, ⊆-densest collapsed; rasters demoted to one lazy collapsed gallery; source-PDF iframe = default visual; `\f`-page-mapped bookmarks steer the PDF viewer; hidden-evidence pointer strip + show-all toggle) | **BUILT (#522, PR #536, 2026-07-17)** — guardrail scope is the client-checkable surface (in-window times + instructional/period regexes); per-rep keyword/table attribution needs a server payload change (documented in-code as follow-up). **KNOWN DEFECT (#676, open, epic #96):** the default-visual pick (`static/app.js` ~line 445) filters representations by `file_kind === "pdf"`, but an HTML-captured record ALSO produces a `capture:pdf` (print-to-PDF) representation alongside its true `capture:png` screenshot — so for HTML records (~89% of the corpus, 3,160/3,559) the print-rendering is wrongly promoted to the default and mis-captioned "source PDF," while the real screenshot collapses. The correct discriminator is `record.kind` (html/pdf/image/drive_export), not a representation's own `file_kind`; true PDF records (`kind='pdf'`, 345) are unaffected and correctly show their `capture:bin`/`original.pdf` rep |
@@ -1066,6 +1150,24 @@ it consumes Stage 5's machinery; the full description belongs in Stage 2/4's des
 ---
 
 ## Change log
+
+- **2026-08-24 — doc refresh: added §7b and closed out the #673/#674 KNOWN DEFECT/GAP, documenting code
+  that landed 2026-08-18/19 but was missing from this note.** Four related fixes, all the
+  implemented-twice-drifts class recurring again: (1) `build_signals.select_slice()` (#834-#840) unifies
+  ingest's slice-cutting and `best_send`'s slice-sending into one predicate — they disagreed on 43 live
+  records before (a 1,017-page handbook, `0904830:71acfa3404`, sent whole while a lossless 19-page floor
+  slice sat unreachable). (2) `release.sendable_text_reps`/`NON_SWAPPABLE_SOURCES` (#862/#865-#870) bar
+  chrome segments from being the FIRST send, not just the 7→6 retry pool — closing the gap that let an
+  isolated nav menu win the send on a thin page. (3) `segment:main` is now an admitted, scored 7→6
+  alternate (#841) — the issue's own "main is a strict subset" premise was unmeasurable (`n_times` was
+  hardcoded `None` for every segment rep) and, once measured properly, reversed: main is uniquely best on
+  27 records. (4) §3a obs. 6's "#674 open / #673 open" language is now stale — both shipped together in
+  commit `6c36176` (2026-08-18): `out_of_window`, a fitness-for-use FACET checked first in `decide()`,
+  gives a human the force-hold the target-label branch never had; the console now renders the derived
+  vintage (`const vintage = s.content_school_year`, bound once, pin-tested) that decision depends on.
+  Verified via `tests/test_release.py`, `tests/test_stage7_execute.py`
+  (`test_841_the_three_alternate_collectors_agree_on_every_segment_kind`), `tests/test_673_vintage_surface.py`,
+  and `verify_673_console.mjs` (12/12 PASS). No code changed by this pass; documentation-only.
 
 - **2026-07-20 — added §7a, Stage 5's escalation-adjacent surfaces (#164/#518/#578/#118), documenting
   code that landed 2026-07-19/20 but was missing from this note.** `stage5_followup.py`'s

@@ -213,7 +213,7 @@ def test_851_transient_retry_count_survives_a_successful_truncation_retry(monkey
     assert len(calls) == 3                                   # timeout → truncated → recovered
     assert res.ok and not res.truncated
     assert '"school_name":"B"' in res.content                # the recovered tail is what survives
-    assert res.transient_retries == 1                        # MUST FAIL pre-fix: read 0
+    assert res.transient_retries == 1                        # #859: the count survives (was: 0)
     assert res.truncation_retried is True
     assert res.prompt_tokens == 1000 and res.completion_tokens == 16900   # 500+16000 + 500+900
     assert res.cost_usd == pytest.approx(0.007)

@@ -14,8 +14,9 @@ Cross-family agreement (the family buckets) uses the canonical map in
 `common.model_families`, keyed by FULL OpenRouter model id — the ids the live Stage-7 path passes.
 
 `aggregate_band`/`aggregate_district` take already-decided per-school MINUTES rather than times, so
-they predate the REQ-054 split; they survive only as the arithmetic the mode rule is specified in
-(and are exercised as such by `tests/test_schedule_aggregation.py`). New callers want
+they predate the REQ-054 split; `aggregate_district` survives only as the arithmetic the mode rule
+is specified in (exercised by `tests/test_aggregate.py`), while `aggregate_band` itself is still the
+live per-band mode primitive `district_bands_from_facts` calls. New callers want
 `consensus_school_facts` + `district_bands_from_facts`.
 """
 from collections import Counter

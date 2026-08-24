@@ -75,8 +75,8 @@ def differentiated_queries(school: str, state: str) -> list:
     (`common/config/stage2_query_templates.json`) so it's tunable without code and the judge can later
     feed the same seam. Order preserved (config order); templates use only {school} + {state}.
 
-    FOUNDATION ONLY (Chunk 2, epic #163): NOT yet consumed by discovery — the follow-up builder threads
-    these in and Stage-2 discovery consumes them in Chunk 4."""
+    Consumed by `build_roster` below: a school in a `widen_queries` band gets these appended to its
+    `queries` list (#160)."""
     return [tmpl.format(school=school, state=state)
             for tmpl in CFG.values("stage2_query_templates")]
 

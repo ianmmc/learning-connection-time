@@ -84,7 +84,8 @@ def actuate(con, champion, challenger, decision, *, cycle, updated_at=None, conf
       5. staleness: the evaluated champion must still be the live @champion — checked BEFORE any disk
          write, so a rejected promotion leaves no orphaned artifact files behind.
     Returns the new pointer state. DORMANT: writing the pointer is bookkeeping — nothing reads it to drive
-    live scoring yet (that wiring is gated on gate-mode persistence, #219)."""
+    live scoring yet (that wiring is gated on the remaining #219 guardrail-activation work; gate-mode
+    persistence itself landed, #104/common/gate_mode.py)."""
     if not decision.get("promote"):
         raise ValueError("actuate called on a non-promote decision — evaluate must promote first")
     if (decision.get("champion_version") != champion["version"]

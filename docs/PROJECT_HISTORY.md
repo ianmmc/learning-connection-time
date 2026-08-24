@@ -2174,3 +2174,49 @@ value-side measurement). Filed and open: #887 (design: in-flight vs stranded bad
 (left-pane/stage-view disagreement, epic #96), #890 (Stage-4 tool timing, epic #128). Measurement
 scripts: `2026-08-22-batch-done-predicate-measure.py`, `2026-08-23-leftpane-vs-stageview-measure.py`,
 `2026-08-23-tool-redundancy-measure.py`. Verifier: `infrastructure/scraper/verify_673_console.mjs`.
+
+**A full documentation-tower sweep (2026-08-24) treated live code as ground truth across every layer
+— code comments, the 9 stage design notes + governance/overview docs, the top-level pipeline map +
+its Mermaid diagram, METHODOLOGY/DATA_SOURCES/SEA/DATABASE_SETUP/GETTING_STARTED, and
+REQUIREMENTS.yaml's internal consistency — the same class of check that caught REQ-157/184
+contradicting each other on geo's purpose (2026-08-23/24 entry above), run exhaustively instead of
+opportunistically. Executed via a large parallel-agent fan-out (comment sweeps per subsystem,
+design-note refreshes per stage, doc sweeps, a REQUIREMENTS.yaml semantic-conflict audit, a
+governance-doc reconciliation pass run last so it could check against the freshly-updated stage
+notes) — roughly 20 agents including nested delegation, all independently verifying claims against
+code before touching prose, none guessing.**
+
+**Findings, not just cleanup.** The REQ audit found no other REQ-157/184-severity contradiction, but
+did find two load-bearing mechanisms — #679 (the production-dispatch benchmark-provenance wall) and
+#689 (gate@8 send-back routing) — that other REQs (REQ-186 twice) already depended on and cited, yet
+neither had ever been backfilled its own ledger entry; the same never-backfilled-REQ shape REQ-152
+already notes for #237. Fixed by adding REQ-187/REQ-188. Two real, live code defects surfaced and
+were filed rather than silently patched: `calculate_lct_variants.py`'s QA `overall_status` never
+actually consults the `pass_rate` it computes, so a run could report PASS while most districts fail
+calculation (#918); and `verification.py`'s duration cross-check still tolerates a 90-minute
+lunch/passing deduction — the pre-REQ-055 net-minutes assumption, which the standalone plausibility
+band two lines above it had already been corrected to drop (#919). A third defect-shaped finding
+(the QA dashboard's status-vs-threshold documentation, and the fact no code in the repo defines the
+constant names METHODOLOGY.md had been citing) turned out to be pure doc drift once checked against
+code — the corrected doc now states the code's real behavior plainly enough that #918 exists.
+
+**The parallel-agent structure itself surfaced things a single serial pass would have missed.**
+Cross-stage drift only visible from outside any one stage: STAGE1/STAGE3/STAGE4's design notes each
+carried the same stale `redo = batch_type == "follow-up"` description after `BT.redoes_attempted()`
+generalized it (epic #617 Phase 2c) — caught because three different agents, working the same
+pattern independently, each found and fixed their own stage's copy, and the STAGE4 agent's report
+flagged STAGE3's still-stale copy for a sibling agent to pick up. STAGE1's own decision log was still
+describing #671 and #672 as open defects days after both closed — an easy miss for a single linear
+read of a 700-line file, caught because the fan-out's breadth meant nothing got skipped for being
+"probably fine." The governance doc was deliberately run last, once, specifically so it could
+reconcile against all nine freshly-updated stage notes at the same moment rather than against
+whichever were current when it happened to be read.
+
+**Net:** 19 documentation files revised (all 9 stage design notes, the governance doc, the top-level
+pipeline map + Mermaid diagram, 6 other project docs, REQUIREMENTS.yaml with REQ-187/188 added),
+10 source/test files got stale comments corrected (never logic — comment sweeps touched no code
+behavior), 2 GitHub issues filed for genuine defects surfaced along the way (#918, #919), full test
+suite (2485 DB-free / 407 govdb / 100 Node) green throughout, and the #717 already-extracted-delta
+work from the prior session (REQ-186, PR #902 + its #903-#914 review round) is now fully reflected
+in STAGE6_DISPATCH_DESIGN.md, the governance doc, and the top-level pipeline map — it had shipped
+between doc passes and had not yet propagated past its own stage doc.

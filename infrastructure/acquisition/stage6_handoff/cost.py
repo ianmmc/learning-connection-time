@@ -37,11 +37,11 @@ def _n_schools(rep: dict, default: float) -> float:
     """Per-page school count for output-token scaling — explicit `n_schools`, else `n_times` as a proxy.
     When a rep carries NEITHER (e.g. an image with no time count), fall back to `default` (a conservative
     floor from the cost model) rather than 0 — pricing output as pure base would silently under-estimate
-    exactly the image/handbook reps that tend to be largest. The bridge should populate a count; this is
-    the safety floor until it does (only reachable on the measured token path, not the flat bootstrap).
-    NB (#192): today n_times never actually reaches handoff reps, so this scaler always falls to the
-    floor — and it proxies n_times 1:1 where the runtime sizing (`openrouter.size_max_tokens`, #180)
-    uses schools ≈ n_times/2 × 47 tok/school. When #192 fixes the plumbing, unify the two encodings."""
+    exactly the image/handbook reps that tend to be largest. This floor is only reachable on the measured
+    token path (the flat bootstrap doesn't scale at all).
+    NB (#192, fixed): `package.assemble_record` now copies `n_times`/`n_chars` onto the rep, so this
+    scaler is live — but it still proxies n_times 1:1 where the runtime sizing (`openrouter.size_max_tokens`,
+    #180) uses schools ≈ n_times/2 × 47 tok/school. The two encodings remain unreconciled."""
     rep = rep or {}
     v = rep.get("n_schools")
     if v is None:

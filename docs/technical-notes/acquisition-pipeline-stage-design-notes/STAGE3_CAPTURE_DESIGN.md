@@ -87,9 +87,12 @@ skipped and the district is queued to capture fresh instead. The full mechanism,
 window and known cross-stage residual: `PIPELINE_GOVERNANCE_AND_STATE.md` §11l.
 
 `reconcile(districts, registry, *, redo=False)` takes a `redo` flag; `headless.py`'s `run_batch()` passes
-`redo=batch.get("batch_type") == "follow-up"`. When `redo=True`, an existing `captures.json` no longer means
-skip — every district in a follow-up batch is `todo` regardless of on-disk state (issue #174, the
-"deliberate redo"). The registry-ahead-of-disk control failure is unchanged in either mode. The delta
+`redo=BT.redoes_attempted(batch)` (`common/batch_types.py` — reads a DECLARED `redo_attempted` batch
+field first, epic #617 Phase 2c's targeted composers, falling back to the historical
+`batch_type == "follow-up"` rule only when that field is absent). When `redo=True`, an existing
+`captures.json` no longer means skip — every district in a redo batch is `todo` regardless of on-disk
+state (issue #174, the "deliberate redo"). The registry-ahead-of-disk control failure is unchanged in
+either mode. The delta
 capture itself happens on the Node side: `runCapture()` calls `seedFromPriorCaptures()` (capture_discovery
 .mjs) to seed each district's in-memory record set + `seen` set from its prior round's `captures.json`
 before dispatching any new fetches, so a follow-up only re-hits the URL delta (new/changed candidates), not
@@ -387,6 +390,22 @@ for the DOM-touching functions that can't be faked that way.
   `captured_partial` rather than lost work, but the district is still incomplete. The fix belongs at the
   capacity-planning level (raise the deadline for large districts, shard the capture, or accept partial +
   a targeted top-up), not a one-off retry — see §6's newest entry for the full finding.
+- **#685 — `innerText` sees only the ACTIVE tab/accordion panel; sibling panels vanish, not just
+  degrade (open, epic #128, BLOCKED on Ian's design calls).** Cedar Rapids (`1906540:98be08e574`, a
+  Finalsite tab widget) captured 54 of 110 clock times — the two inactive `role="tabpanel"` sections
+  carry `display:none` at runtime (byte-identical raw markup, so no static-HTML fix exists) and every
+  reader in the REQ-091 ladder fails identically (`page.pdf()`/OCR/vision all read the ACTIVE tab's
+  render too). Dangerous because it looks like success: `ok:true`, tier A, a plausible category label,
+  nothing signals two-thirds of the content is missing. A live-Playwright reveal (vendor open-state
+  class + forced `display:block` + `max-height:none` — §2c's `innerText`-vs-`textContent` measurement
+  is the reason a naive display-only reveal recovers **nothing**; the CSS wins otherwise) verified
+  54→110 with the full reveal. **Rejected as the fix:** mutating the DOM before the read makes
+  `page.txt`/`page.png`/`page.pdf` disagree about what the page is. **Proposed instead:** a TRIGGERED
+  additional representation (`role="tabpanel"` count > 1 with ≥1 hidden) — additive, ranked by
+  `best_send` on merit like `harvest_slice` already is — with the stored form (raw `page.content()` vs.
+  revealed-panel text vs. `outerHTML` only) and scope (tabs only vs. `<details>`/accordion/`aria-hidden`
+  too) left as open design questions for Ian. A `page.txt` proxy scan (≥2 distinct band-label lines with
+  no matching times) finds 97 candidate captures corpus-wide, so Cedar Rapids is not isolated.
 
 ---
 

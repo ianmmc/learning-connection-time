@@ -281,9 +281,15 @@ discovery), not the individual district; rejecting districts/schools happens *be
 ---
 
 ## 5. Open decisions
-- **Manual batch construction** (hand-pick untouched NCES districts; APGA story 32) and **follow-up /
-  re-queue batches** (stories 33–35; need the Stage-8 per-band satisfaction signal, not built) — deferred. (tracked: #98)
-  First-run stratified draw + soft edits is what's built.
+- **Manual batch construction** (hand-pick untouched NCES districts as a FIRST-RUN-shaped draw; APGA
+  story 32) — still deferred (tracked: #98). **Follow-up / re-queue batches (stories 33–35) are now
+  BUILT**, not deferred: the gate@1 create dialog's `follow-up` batch type composes a targeted batch
+  over operator-named district IDs (`POST /api/queue/create` → `build_followup_batch`, §2g/§6f), and
+  the Stage-8 per-band satisfaction signal these stories were waiting on shipped as REQ-149/REQ-150
+  (2026-07-15/19, epic #499). What is NOT built is the finer-grained per-school
+  already-submitted-vs-not-yet-submitted PICKER the stories also named — selection instead runs
+  through `build_followup_batch`'s automatic untried/preferred-slot logic (§2g), not an operator UI
+  toggle per school.
 - **gate@1 auto mode** — confidence-escalating auto-approve (governance §11b); manual-only today. Not
   "no auto-anything has been justified" — a narrower carve-out doctrine now exists elsewhere in the gate
   model (gate@7's #233/REQ-123 auto-withdraw: auto-act in the spend-conservative direction only when the
@@ -304,7 +310,9 @@ Created by `gdb.init_precious_schema()`, **never** in the Stage-5 ingest's `REBU
 re-ingest can't wipe a queued/approved batch. Normalized (not a JSON blob) so edits are real row ops and
 the cross-batch queries the user stories need (a district in multiple batches; per-batch yields) fall out.
 - **`batch`** — lifecycle: `batch_id` (PK), `batch_type` (`first-run`|`follow-up`|`benchmark` — §2h;
-  `models.py:30`'s column comment matches), `status`
+  `models.py:30`'s column comment matches), `discovery_scope` (`domain`|`geo`, default `domain` — the
+  #164 second batch axis, orthogonal to `batch_type`: a batch is scope-pure by construction, every
+  district discovered domain-scoped OR geo-scoped, never mixed; benchmark is never geo, §2h/§7), `status`
   (`draft`|`approved`|`abandoned`|`reserving` — `reserving` is the id-reservation placeholder, §6b;
   `abandoned` is a TERMINAL, never-approved-only status, #168, below), `nces_year`, `created_at`/`_by`,
   `approved_at`/`_by` (CURRENT approval — cleared by `reopen_batch`), `first_approved_at`/`_by` (the
@@ -375,11 +383,17 @@ the cross-batch queries the user stories need (a district in multiple batches; p
 
 ### 6d. The console API (`process_governance/server.py`)
 The Stage-5 review app grows into the stage-selectable governance console; gate@1 is one of its surfaces:
-`POST /api/queue/create` (synchronous stratified draw — `build_batch` reads the full NCES corpus + DB,
-~10–20s; the UI shows a progress affordance), `GET /api/queue` (list), `GET /api/queue/{id}` (review),
-`POST /api/queue/{id}/edit` (reject/restore district+school, add_school), `POST .../approve` + `.../reopen`,
-`GET .../district/{did}/candidates` (remaining eligible schools for "add school"). Tests:
-`tests/test_stage1_batch_store.py` (the working store) + `tests/test_gate1_api.py` (the HTTP wiring).
+`POST /api/queue/create` (synchronous stratified draw for `first-run`, ~10–20s with a progress affordance;
+for `follow-up`/`benchmark` it instead routes to `build_followup_batch` over an operator-supplied
+`district_ids` list — the OPERATOR-reachable targeted composer, epic #617 Phase 2c, previously reachable
+only from the 5→1/7→1 escalation back-edges, see §2g), `GET /api/queue` (list), `GET /api/queue/{id}`
+(review), `POST /api/queue/{id}/edit` (reject/restore district+school, add_school), `POST .../approve` +
+`.../reopen` + `.../abandon`, `GET .../district/{did}/candidates` (remaining eligible schools for "add
+school"), `GET .../roster/{district_id}` (REQ-150: the district's LIVE NCES roster spine — every
+in-scope school per band with its live `slot_state`, filled/unfilled/projected against accepted facts;
+a live compute off `stage8_aggregate`'s closing argument, nothing persisted per batch; 404 when CCD
+files are absent). Tests: `tests/test_stage1_batch_store.py` (the working store) + `tests/test_gate1_api.py`
+(the HTTP wiring).
 
 ### 6e. The console frontend (`process_governance/static/`)
 The first stage view, built on the **MMM Design System** (imported via the **DesignSync** tool from the
@@ -390,6 +404,16 @@ surfaced for classification review, the soft edit controls, a loading overlay fo
 ~10–20s create, Approve/Reopen, Abandon); **`app.css`** — gate@1 styles (badges, the selector, the two-pane
 layout, the overlay/spinner). The create path reads NCES CSVs and the LCT DB password via
 `paths.DATA_ROOT` / the repo-root `.env` — CWD-independent regardless of launch directory.
+
+The create dialog offers **three batch types** (`first-run` stratified draw, `follow-up` and
+`benchmark` "targeted" — a comma-separated district-ID field composes over a named list via
+`POST /api/queue/create`, §2g/§6d) alongside the domain/geo scope radios (§7's #164 entries) — a
+redo/merge warning renders for the targeted types. Each district row carries a lazy-expanded
+**roster spine panel** (`data-feat="s1-roster-spine"`, REQ-150): expanding it fetches
+`GET /api/queue/{batch}/roster/{district}` once and renders every in-scope NCES school per band,
+marking `s1-slot-filled`/`s1-slot-unfilled` against the live closing-argument projection and which
+schools are selected in THIS batch — the template-visible-from-the-start view of what a follow-up
+round would still need to pursue.
 
 The lifecycle controls rendered depend on batch state: a **draft** batch shows Approve **and**
 Abandon…; an **approved** batch shows only Re-open (abandon is draft-only — §6c's DURABLE-stamp
@@ -404,12 +428,16 @@ approved, or re-opened. The Abandon button itself prompts for an optional reason
 - Start a new batch of districts — **✅ built** (`create`).
 - gate@1 (was CP-A) review: look at proposed districts + schools — **✅**; reject districts — **✅**; reject
   schools — **✅**; add schools to a district that has more to queue — **✅** (§6c, APGA stories 28–31).
-- Manually construct a batch from hand-picked untouched NCES districts — **DEFERRED** (story 32; a second
-  creation mode beyond the stratified draw — also the home for "add district").
+- Manually construct a batch from hand-picked untouched NCES districts (a FIRST-RUN-shaped draw over a
+  hand-picked list) — **DEFERRED** (story 32; a second creation mode beyond the stratified draw — also
+  the home for "add district").
 - Re-queue districts already in the pipeline (action Stage-5 `none-found`/`insufficient-coverage`); a
-  district can exist in multiple batches with different school sets; select schools already-submitted vs
-  not-yet-submitted to discovery — **DEFERRED** (stories 33–35 = follow-up batches, REQ-109; needs the
-  Stage-8 per-band satisfaction signal).
+  district can exist in multiple batches with different school sets — **✅** (stories 33–35 = follow-up
+  batches, REQ-109/REQ-150; the create dialog's `follow-up` batch type composes a targeted batch over
+  named district IDs, §2g). Select schools already-submitted vs not-yet-submitted to discovery —
+  **PARTIAL**: `build_followup_batch` automatically prefers untried schools / unfilled roster slots
+  (§2g, REQ-150's `preferred_by_did`) and reports its `query_strategy`, but there's no operator-facing
+  per-school submitted/not-submitted picker.
 - Create multiple batches that only advance when approved — **✅** (per-batch `status`, independent approval).
 - All batches capped at ≤ 12 districts — **✅** (§2g).
 
@@ -656,12 +684,20 @@ Tests: tests/test_discovery_policy_console.py.
   self-healing (the district is simply pooled per the snapshot for one compose; the next create
   sees the new state) — no lock taken.
 - **The shared escalation-ladder threshold** — `batch_store.followup_rounds(sess, district_ids)`
-  (`batch_store.py:287-305`) derives each district's ladder position (ever-APPROVED follow-up
-  batches containing it, split by `discovery_scope`) straight from batch history, never a stored
-  counter. `GEO_LADDER_EXHAUSTED_AT = 2` + `geo_ladder_exhausted(rounds_row)`
-  (`batch_store.py:313-320`) is the ONE shared exhaustion check both escalation composers now call,
-  extracted after a #575 review found the 5→1 and 7→1 composers disagreeing on a district sitting
-  at exactly one approved geo round. This is Stage-1-owned code (`batch_store.py` lives in
+  derives each district's ladder position (ever-APPROVED follow-up batches containing it, split by
+  `discovery_scope`) straight from batch history, never a stored counter.
+  `ladder_exhausted(rounds_row, *, has_domain)` is the ONE shared exhaustion check both escalation
+  composers call, extracted after a #575 review found the 5→1 and 7→1 composers disagreeing on a
+  district sitting at exactly one approved geo round. **Rewritten DIAGNOSIS-keyed, not
+  round-count-keyed, by #719 (2026-08-14):** the original single-arg `geo_ladder_exhausted` counted
+  geo rounds for every district; #719 found a domain-having district's geo round is a guaranteed
+  no-op (a geo batch blanks the scoping domain, so Stage 2's #229 gate refuses every result —
+  measured 70 schools / 6 batches / 0 resolved), so charging it against the ladder retired the
+  district for a round that could not have worked. Now split by `has_domain` (the #719 diagnosis —
+  does `resolve_scoping_domain` yield a usable domain, NCES or confirmed-discovered): a
+  domain-having district ladders on `DOMAIN_LADDER_EXHAUSTED_AT = 3` domain rounds (its geo rounds,
+  if any predate #719, don't count against it); a domain-less district ladders on
+  `GEO_LADDER_EXHAUSTED_AT = 2` geo rounds. This is Stage-1-owned code (`batch_store.py` lives in
   `stage1_queue/`) even though the composers that consume it — the 5→1 zero-yield composer and the
   7→1 scope-split — live in `process_governance/`; see governance §11e for how they actually use it.
 
@@ -676,21 +712,21 @@ cleared Stage 2/3/4 with 80.9% fresh (non-injected) time evidence; the remaining
 gap, #646 (domain-less AND already-attempted, unreachable by any Stage-1 composer — see §2h). Full
 detail: `docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md`.
 
-**Known live defect, flagged not fixed (#672, opened 2026-07-28, epic #128):** the 5→1 zero-yield
-escalation ladder (`process_governance/stage5_followup.py::compose_zero_yield`, using
-`batch_store.py`'s shared `geo_ladder_exhausted` above) was measured to sometimes make things WORSE,
-not strictly better, when it widens — on a real district (Wyandanch UFSD NY, `3631800`), the widened
-geo rung tripled result volume and diluted the district's own domain's vote share below the
-geo-derivation threshold, causing total derivation failure and discarding URLs (including on-domain
-hits) a standard rung had already used successfully; the ladder terminated the district at
-`manual_flag`, a mechanically-caused failure rather than necessarily evidence of no published
-schedule. So **the ladder's built-in exhaustion order (standard → widened) is not a proven
-strictly-improving escalation** — treat a `manual_flag` outcome from the widened rung as suspect,
-not conclusive, until #672 lands a fix.
+**#672 (opened 2026-07-28, epic #128) — CLOSED, 2026-08-21.** The 5→1 zero-yield escalation ladder
+(`process_governance/stage5_followup.py::compose_zero_yield`, using `batch_store.py`'s shared
+`geo_ladder_exhausted` above) was measured to sometimes make things WORSE, not strictly better, when
+it widens — on a real district (Wyandanch UFSD NY, `3631800`), the widened geo rung tripled result
+volume and diluted the district's own domain's vote share below the geo-derivation threshold. Fixed
+via `rung_regression` detection (see `STAGE2_DISCOVER_DESIGN.md` §2f for the resolution mechanism);
+Ian deliberately did NOT implement a count-based fallback/floor — the cost of an occasional
+worse-widened rung was accepted under the ramp-up model rather than adding a second heuristic.
 
-**Known console caveat (#671, opened 2026-07-28, epic #96):** the gate@1/2/3/4 status views can show a
-district as prematurely `done`, carrying a PRIOR run's cached numbers, for the entire duration of an
-in-flight re-run (measured windows up to 38 minutes; on one occasion the display showed the OPPOSITE of
-the run's actual outcome). Root cause is a batch-dispatch timing conjunct that goes true at run START,
-not completion — do not trust a console status view as authoritative for a district mid-re-run; verify
-against the DB/`state_event` log instead. Not yet fixed.
+**#671 (opened 2026-07-28, epic #96) — CLOSED, 2026-08-22/23.** The gate@1/2/3/4 status views could
+show a district as prematurely `done`, carrying a PRIOR run's cached numbers, for the entire duration
+of an in-flight re-run (measured windows up to 38 minutes; on one occasion the display showed the
+OPPOSITE of the run's actual outcome). Root cause was a batch-dispatch timing conjunct that went true
+at run START, not completion. Fixed by `DS.completed_by_batch(batch_id, stage_name, ids)` — done-ness
+is now dispatched-by-THIS-batch AND a stage outcome landing INSIDE the window that dispatch owns
+(before the next dispatch of the same district+stage); see `PIPELINE_GOVERNANCE_AND_STATE.md` §"batch
+done-ness" (REQ-182) for the mechanism, which is the ONE home for this rule project-wide, never a bare
+`batch_id = :b` filter (measured to withdraw 36 genuine completions during the fix).

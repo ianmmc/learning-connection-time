@@ -481,7 +481,7 @@ def test_710_nameless_yield_gets_one_more_rung_then_stops(monkeypatch):
     explain = {}
     second = RQ.detect_requests(_result(reps=[rep], accepted=[]), claimed_bands=[],
                                 alternates_by_rec=alts, prior_nameless={"D1:x"}, explain=explain)
-    assert [r["route"] for r in second] == []          # MUST FAIL today: a 7->6 would be raised
+    assert [r["route"] for r in second] == []          # the ladder stops on the 2nd occurrence
     assert explain["suppressed_nameless_reps"] == 1
 
 

@@ -576,14 +576,14 @@ python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2024-25
 cat data/enriched/lct-calculations/lct_qa_report_2024_25_<timestamp>.json | jq
 ```
 
-**Console output** (abbreviated):
+**Console output** (abbreviated — state coverage and districts-processed are JSON-only fields, not
+printed to console):
 ```
 QA DASHBOARD
 Status: PASS · Pass Rate: 99.46%
 Hierarchy Checks: ✓ Secondary < Overall Teachers  ✓ Teachers < Core  ✓ Core < Instructional
                   ✓ Instructional < Support  ✓ Support < All
-Outliers Detected: 20 (5 very low, 15 very high)
-State Coverage: 48 states/territories · Districts Processed: 14,314
+Outliers Detected: 20
 ```
 
 **JSON report** (`data/enriched/lct-calculations/lct_qa_report_<year>_<timestamp>.json`) carries
@@ -591,9 +591,12 @@ State Coverage: 48 states/territories · Districts Processed: 14,314
 `hierarchy_validation` (per-check pass/fail with the compared means), `state_coverage`, `outliers[]`
 (district_id/name/scope/issue/severity), and `overall_status`.
 
-**Interpreting status:** PASS = pass rate ≥95%, all hierarchy checks passing, outliers documented, adequate
-state coverage → proceed. Otherwise (pass rate <95%, any hierarchy failure, unexpected outliers, missing
-major-state data) → investigate before publishing.
+**Interpreting status:** `overall_status` is **PASS iff every hierarchy check passes** — pass rate and
+outlier count are reported alongside for context but do NOT feed `overall_status` in the current code
+(`generate_qa_report`). In practice treat a pass rate well below the historical ~99% range, or any
+unexpected/undocumented outliers, as reasons to investigate before publishing even when the hierarchy
+checks are green — the "always investigate a hierarchy failure" half of this rule is enforced by the
+code; the pass-rate/coverage half is an editorial practice, not a code gate.
 
 **Investigating a flagged outlier:**
 ```python
@@ -612,8 +615,11 @@ Academy 0.4 min, document and consider excluding from equity analysis); Intermed
 LCT from specialized staffing — e.g. Berks County IU 14, 284.6 min — note as special-purpose, not a typical
 district); charter/alternative schools (highly variable ratios, verify data accuracy).
 
-**Thresholds** are constants in `calculate_lct_variants.py` (`LOW_LCT_THRESHOLD = 5`,
-`HIGH_LCT_THRESHOLD = 200`, `MIN_PASS_RATE = 0.95`) — adjust there, not in this doc.
+**Thresholds** are inline literals in `generate_qa_report()` in `calculate_lct_variants.py` — not named
+constants — `< 5` (very-low outlier) and `> 200` (very-high outlier), scoped per staff scope. This QA-dashboard
+outlier check is separate from the `WARN_LCT_LOW`/`WARN_LCT_HIGH` safeguard flags above, which use different
+thresholds (`< 5` and `> 120`, `teachers_only` scope only) and a different purpose (per-record
+`level_lct_notes`, not the aggregate dashboard). Adjust in the script, not in this doc.
 
 **Troubleshooting:**
 - No console output → confirm the script version has `generate_qa_report` (`grep generate_qa_report

@@ -4470,7 +4470,7 @@ requirements:
     depends_on: [REQ-117, REQ-151, REQ-162, REQ-059]
     verification: mixed
     created: "2026-07-25T00:00:00Z"
-    updated: "2026-07-26T00:00:00Z"
+    updated: "2026-08-24T00:00:00Z"
     notes: "Origin: the 27 batch_00000 ground-truth districts could never be written to lct_db, because a
       guard mirrored across five sites keyed on district IDENTITY where the documented rationale was about
       extraction PROVENANCE. Identity was a proxy that held only while a district had exactly one history.
@@ -4482,8 +4482,11 @@ requirements:
       and a third value carrying no behavior invites exactly the string-equality coupling this retired.
       Full evidence + the record of what the planning pass got wrong:
       docs/technical-notes/learning-loop-reports/2026-07-25-epic617-benchmark-model-findings.md;
-      durable architecture: PIPELINE_GOVERNANCE_AND_STATE.md §13. status in_progress — Phases 1/2a/2b/2c
-      landed; #619 (guard re-scoping), #620 (the 27-district re-run) and #640 open."
+      durable architecture: PIPELINE_GOVERNANCE_AND_STATE.md §13. status: accepted (mid-build) — Phases
+      1/2a/2b/2c landed; #619 (guard re-scoping), #620 (the 27-district re-run) and #640 open. ('status
+      in_progress' here previously used the now-retired status value in prose — fixed 2026-08-24 during
+      the REQ-157/184-shape ledger audit; the structured `status:` field above was already the valid
+      `accepted` and was never wrong.)"
 
   - id: REQ-170
     github_issue: "#640 (epic #617)"
@@ -5135,3 +5138,73 @@ requirements:
       Deliberately NOT in scope: what to do with an already-approved district's new facts (#713's
       charter). Per-rep partial subtraction is defensive — all 755 sent records in every frozen
       receipt carry exactly one rep."
+
+  - id: REQ-187
+    github_issue: "#679"
+    description: "PRODUCTION-DISPATCH ELIGIBILITY WALL — a representation carrying benchmark
+      provenance (capture source 'benchmark_gt') is structurally ineligible for a production
+      dispatch's default send set. `benchmark.benchmark_provenance_rec_keys` is the predicate;
+      `stage6_dispatch.district_release_input` applies it. Backfilled from #679 (closed) after
+      the REQUIREMENTS.yaml consistency audit found REQ-186 depends on this wall's ordering
+      guarantee (\"the #679/#691 discipline\") but #679 itself had no REQ — the same
+      never-backfilled-REQ shape REQ-152 already notes for #237."
+    type: architectural
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "Runs FIRST, before every ranking pass (prefer-recent, sibling-variant, hub-priority) —
+        opposite ordering from REQ-186's already-extracted delta, and deliberately so: ineligibility
+        is structural (the rep can NEVER be frozen into a production dispatch), so removing it from
+        the ranking contest before any pass runs is correct; running it last would let a ranking
+        pass elect a winner that is then pulled out from under it, composing zero sends where a
+        legitimate fresh rep existed (the Bangor regression this issue fixed)"
+      - "HOLD, never drop — the ineligible rep stays visible/badged at gate@6
+        (`benchmark-rep:ineligible-for-production`), so a reviewer can see what was excluded and why,
+        never a silently-absent record"
+      - "Skipped entirely for an explicit benchmark dispatch (`dispatch_type='benchmark'`), where
+        gt:// reps are legitimately eligible — the Council Lab's whole purpose"
+      - "Freeze-time backstop: `assert_dispatch_type_allowed` refuses to freeze a production package
+        that still carries a benchmark-provenance rep, naming the offending reps rather than silently
+        coercing the dispatch type — a wrong `dispatch_type` is unrecoverable once frozen (REQ-186's
+        `redo` faces the identical freeze-time-irreversibility argument)"
+    tests:
+      - "tests/test_benchmark_predicate.py"
+      - "tests/test_stage6_dispatch_type.py"
+    created: "2026-08-24T00:00:00Z"
+    updated: "2026-08-24T00:00:00Z"
+    notes: "Backfilled, not newly designed — #679 shipped 2026-07-2x and REQ-186 already cited it
+      twice ('the #679/#691 discipline', 'the opposite ordering from #679') without it having its
+      own ledger entry. See REQ-152's note for #237 as the prior instance of this same gap."
+
+  - id: REQ-188
+    github_issue: "#689 (epic #92)"
+    description: "GATE@8 SEND-BACK ROUTING — the 8->1 (rediscover) / 8->6 (redispatch) back-edges a
+      'sent_back' gate@8 disposition promises are actually wired, not merely documented. `route_send_back`
+      (`stage8_sendback.py`) implements both: 8->1 composes a targeted Stage-1 follow-up batch
+      (gate@1-reviewable) re-targeting only the bands not REQ-149-satisfied; 8->6 seeds a gate@6
+      draft with the district, letting a human pick different representations — no new discovery,
+      since the evidence already exists and the wrong reps were sent. Backfilled from #689 (closed)
+      after the REQUIREMENTS.yaml consistency audit found REQ-186's #903 fix depends on this route
+      (an 8->6 send-back is the reason a declared-redo control must be reachable from the DRAFT
+      workflow) but #689 itself had no REQ."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "Before this shipped, four docstrings and the console itself promised these edges and none
+        fired — a sent-back district blocked Stage 9 and then just sat, with no route back into the
+        pipeline (Broward was the live pin the issue was filed against)"
+      - "8->1 re-targets only UNSATISFIED bands (REQ-149), never re-drawing bands already confirmed —
+        a targeted composer call, not a fresh stratified draw"
+      - "8->6 seeds a draft, not a direct dispatch — the human still reviews and can adjust
+        council/rep selection at gate@6 before freezing, same as any other draft"
+      - "(2026-08-24, cross-ref REQ-186 #903) an 8->6-seeded draft can compose to ZERO new sends by
+        default if the already-extracted delta (REQ-186) holds every rep the prior run bought — the
+        draft's `redo` toggle (added by #903) is the intended escape for exactly this route"
+    tests:
+      - "tests/test_stage8_sendback.py"
+    created: "2026-08-24T00:00:00Z"
+    updated: "2026-08-24T00:00:00Z"
+    notes: "Backfilled, not newly designed — #689 shipped and REQ-186's own #903 acceptance
+      criterion already cites it ('because the #689 gate@8 8->6 send-back route seeds a DRAFT')
+      without it having its own ledger entry."

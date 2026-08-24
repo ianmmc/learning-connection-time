@@ -37,8 +37,9 @@ endpoint block in `process_governance/server.py:2083-2462`. The pure closing-arg
 
 **Endpoints (all live):** `GET /api/aggregate/districts` (the review queue — production-fact districts whose
 gate@7 loop is quiesced, badged with the latest gate@8 disposition via a LATERAL join on
-`stage8_approval`; since epic #617/#660 (2026-07-26) it also SURFACES benchmark-provenance districts
-rather than silently excluding them — see §2 below) · `GET /api/aggregate/district/{id}` (detail: `closing_argument` + `fingerprint` as the
+`stage8_approval`; still EXCLUDES benchmark-provenance districts, unchanged) · `GET /api/aggregate/withheld`
+(#660, 2026-07-26 — the complementary population: the SAME query, provenance-INCLUDED instead of excluded,
+so a walled district is surfaced rather than invisible — see §2 below) · `GET /api/aggregate/district/{id}` (detail: `closing_argument` + `fingerprint` as the
 review token) · `POST /api/aggregate/override` (per-school times override, reason required, validated through
 `gross_from_times`) · `POST /api/aggregate/exclude` (+ `/restore`) · `POST /api/aggregate/human-add`
 (+ `/remove`) · `POST /api/aggregate/slot-assign` (+ `/remove`) · `POST /api/aggregate/recover-band` (#473 —
@@ -329,11 +330,16 @@ now keyed at **fact-provenance grain** via the shared `IS_BENCHMARK_PROVENANCE_S
 the SAME two-arm predicate the Stage-9 wall uses — arm 1: `handoff.dispatch_type='benchmark'`; arm 2:
 the fact's own rep carries `capture.source='benchmark_gt'`. A re-run district whose fresh production
 facts no longer trace to benchmark-provenance evidence now clears the queue instead of being refused
-forever. **The queue also changed from silently EXCLUDING to SURFACING** (#660, 2026-07-26): districts
-still walled by the predicate now appear in the queue (visibly withheld, with their evidence traced to
-its `gt_curation_*.pdf` source) rather than having no route to review at all — this is what makes the
+forever. **The queue also changed from silently EXCLUDING to SURFACING** (#660, 2026-07-26): a district
+still walled by the predicate is no longer invisible — `GET /api/aggregate/districts` still excludes it
+(`AND NOT IS_BENCHMARK_PROVENANCE_SQL`, unchanged), but the complementary `GET /api/aggregate/withheld`
+returns the SAME population the queue excludes (the two are deliberately complementary — a district
+with production facts and a quiesced request loop is in exactly one of them), and `stage8.js` renders it
+as its own **withheld section** appended below the main queue list (two separate fetches, two panels —
+not one merged, badged list) rather than having no route to review at all — this is what makes the
 `band_exclusion` escape hatch (§2b below / #662) reachable for a re-run district that still carries a
-stale injected school. `IS_BENCHMARK_SQL` (plain district-membership) is kept as the gate@6 console
+stale injected school. `aggregate_district_detail` carries no provenance guard, so an id from the
+withheld panel opens normally for the human to act on. `IS_BENCHMARK_SQL` (plain district-membership) is kept as the gate@6 console
 BADGE only ("part of the yardstick corpus" — display, not a gate). This is still consistent with how
 the GT yardstick grows — an approved district's facts become part of the confirmed-fact base, while
 benchmark-provenance facts are already the yardstick and don't re-flow through this gate. Full account:

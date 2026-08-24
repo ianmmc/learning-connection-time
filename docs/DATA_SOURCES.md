@@ -25,7 +25,7 @@ This document catalogs all data sources for the Instructional Minute Metric proj
 - **Scope**: All public schools and districts in the United States
 - **Frequency**: Annual
 - **Lag Time**: Typically 1-2 years behind current school year
-- **Latest Available**: 2022-23 (as of Dec 2025)
+- **Latest Available**: 2024-25 (ingested + LCT-calculated 2026-07; 17,751 districts in `enrollment_by_grade` — see `METHODOLOGY.md` §Data Source Precedence "Available Data Sources")
 
 #### Key Tables
 
@@ -154,7 +154,7 @@ These ratios are applied to LEA-level estimates in a two-step process. See `docs
 - **Scope**: Biennial survey of all public schools
 - **Frequency**: Every 2 years
 - **Lag Time**: 2-3 years
-- **Latest Available**: 2020-21 (as of Dec 2025)
+- **Latest Available**: 2021-22 public-use files, released January 2025 (2020-21 exists but is a COVID-excluded year — see `docs/state-integrations/STATE_DATA_AVAILABILITY_ASSESSMENT.md`; matches `METHODOLOGY.md`'s Available Data Sources table)
 
 #### Key Data Elements
 - Class sizes by subject
@@ -230,9 +230,9 @@ are still 100% `nces_ccd`-sourced. This is a real, tested Layer-2 integration fo
 - **FRPM Counts** - Free/Reduced Price Meals — **integrated**
 
 #### Local Data Files
-- `data/raw/state/california/lcff_snapshot_2023_24.csv`
-- `data/raw/state/california/sped_counts_2023_24.csv`
-- `data/raw/state/california/frpm_counts_2023_24.csv`
+Actual filenames have drifted from what this doc used to hand-list (now year-subdirectoried, e.g.
+`2023_24/lcff_2023_24.xlsx`) — see `data/raw/state/california/MANIFEST.md` for the current, maintained
+inventory (source of truth: `docs/state-integrations/state_data_catalog.yaml`).
 
 #### Crosswalk
 - Uses county-district format: `XX-XXXXX` (e.g., `19-64733` for LA Unified)
@@ -364,8 +364,9 @@ placeholder table, not populated). See `METHODOLOGY.md` §Data Source Precedence
 - School grades and performance
 
 #### Local Data Files
-- `data/raw/state/florida/florida_staff_2024_25.csv`
-- `data/raw/state/florida/florida_enrollment_2024_25.csv`
+Actual filenames have drifted from what this doc used to hand-list (now e.g. `fl_fulltime_staff_2425.xlsx`,
+`2425MembInFLPublicSchools.xlsx`) — see `data/raw/state/florida/MANIFEST.md` for the current, maintained
+inventory (source of truth: `docs/state-integrations/state_data_catalog.yaml`).
 
 #### Crosswalk
 - Uses 2-digit district codes (e.g., `"13"` for Miami-Dade)
@@ -430,10 +431,12 @@ placeholder table, not populated). See `METHODOLOGY.md` §Data Source Precedence
 
 ## Data Dictionary Locations
 
-Detailed field-level documentation for each source:
-- `data-dictionaries/nces-ccd/` - CCD field definitions by year
-- `data-dictionaries/crdc/` - CRDC data dictionary
-- `data-dictionaries/states/[state]/` - State-specific documentation
+Stale — the top-level `data-dictionaries/` tree this section used to describe no longer exists (archived
+2026-06-27 to `docs/archive/data-dictionaries-superseded-20260627/`, and that archive turned out to hold a
+database-schema doc, not per-source field dictionaries). Its would-be successor,
+`data/raw/federal/metadata/data-dictionaries/`, exists but is currently empty. For field-level schema
+today, use `infrastructure/database/models.py` (the schema authority per root `CLAUDE.md`) or the
+originating source's own published data dictionary (NCES CCD, IDEA 618, CRDC — URLs above).
 
 ---
 
@@ -442,7 +445,7 @@ Detailed field-level documentation for each source:
 ### Multi-Part Files
 - Many NCES datasets split across numbered files (`_1`, `_2`, `_3`)
 - Requires concatenation before processing
-- See `infrastructure/scripts/extract/split-large-files.py`
+- See `infrastructure/scripts/extract/split_large_files.py`
 
 ### Schema Changes
 - Field names change year-over-year
@@ -490,7 +493,9 @@ When adding a new state or data source:
 3. Add to `config/data-sources.yaml`
 4. Add instructional time requirements to `config/state-requirements.yaml`
 5. Create download script in `infrastructure/scripts/download/`
-6. Create processor in `src/python/processors/`
+6. Create import script in `infrastructure/database/migrations/import_[state]_data.py` (the `src/python/processors/`
+   path this step used to name no longer exists — see `SEA_INTEGRATION_GUIDE.md` "Adding a New State" for the
+   current pattern, incl. shared helpers in `sea_import_utils.py`)
 7. **Create SEA integration tests**: `tests/test_[state]_integration.py` (see `CLAUDE.md` for template)
 8. Add validation tests
 9. Update documentation

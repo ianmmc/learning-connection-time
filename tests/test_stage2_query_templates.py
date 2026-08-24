@@ -1,6 +1,6 @@
-"""#160 (Chunk 2, epic #163) — the differentiated SERP query-template config foundation.
+"""#160 (epic #163) — the differentiated SERP query-template config, its renderer, and its
+consumption in Stage 2 discovery (`TestFollowUpQueryConsumption` below).
 
-Pins the config-as-data knob + its renderer WITHOUT wiring it into discovery yet (that's Chunk 4).
 Pure-function / config tests — no DB, no network.
 """
 from infrastructure.acquisition.common import config_loader as CFG

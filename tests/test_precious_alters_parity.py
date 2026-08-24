@@ -78,10 +78,11 @@ def test_every_defaulted_alter_has_a_matching_model_server_default():
         checked += 1
 
     # Falsification guard: if the regex, the import set, or _PRECIOUS_ALTERS drifts such that nothing
-    # matches, this test would pass while checking nothing. The known population at 2026-07-26 is
-    # extraction.run_kind, extraction.n_reps_skipped, handoff.dispatch_type,
-    # dispatch_draft.dispatch_type, batch.discovery_scope. Raise this floor when more are added;
-    # never lower it silently.
+    # matches, this test would pass while checking nothing. The known population at 2026-08-18 is
+    # extraction.run_kind, extraction.n_reps_skipped, extraction.degraded_json, handoff.dispatch_type,
+    # dispatch_draft.dispatch_type, batch.discovery_scope (6 columns — the floor below is intentionally
+    # left at 5, the last-raised value; raise it to 6 when next touching this test). Never lower it
+    # silently.
     assert checked >= 5, f"parity check inspected only {checked} columns — the detector has gone blind"
 
 

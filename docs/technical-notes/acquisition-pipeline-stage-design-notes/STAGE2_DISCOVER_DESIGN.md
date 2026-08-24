@@ -14,11 +14,13 @@
 district, `data/raw/lea-website-captures/<id>_<slug>/discovery.json` (audit trail) + `candidates.json`
 (capture-ready URL list). The `stage2-discover` skill (the retired agent-wave orchestrator) is **obsolete**.
 
-**Current status (2026-07-28):** epic #617's three #620 redo batches (`batch_00030/31/32`, 25
+**Current status (2026-08-21):** epic #617's three #620 redo batches (`batch_00030/31/32`, 25
 `batch_00000` districts, `redo_attempted=true`) have completed Stage 2 cleanly — every district landed a
-`found_all` outcome per the reconcile/status machinery, feeding Stage 3. A real defect in the geo
-derivation ladder surfaced on a live production district during this window — **issue #672 (open, epic
-#128)**, not yet fixed: see §2f.
+`found_all` outcome per the reconcile/status machinery, feeding Stage 3. The geo derivation ladder defect
+that surfaced on a live production district during that window — **issue #672, CLOSED** — is resolved:
+detection (`rung_regression`) shipped, its criterion 2 re-scoped as intentionally not implemented; see
+§2f. **Issue #871 (open, epic #128)** is a distinct, later finding — geo escalation's *reach* job (finding
+off-domain PDFs/Docs) was never built, only its *disambiguation* job — see §2g.
 
 **Code:** `common/discover.py` (`brightdata_search`, `serper_search`, `domain_of`, `is_scoping_domain`,
 the gate — the retired `openrouter_search`/`perplexity_search` were deleted 2026-07-06, #87);
@@ -251,7 +253,7 @@ finished:
   same union contract) alongside the newly-discovered candidates its redo added, giving a mixed-provenance
   candidate set rather than the redo silently displacing the frozen GT-sourced entries.
 
-### 2f. Geo derivation is share-based, not count-based — widening is NOT monotonic in recall (#672, open)
+### 2f. Geo derivation is share-based, not count-based — widening is NOT monotonic in recall (#672, closed)
 
 `apply_geo_derivation`/`discover.derive_domain` (§2c, decision log 2026-07-19) requires the winning host
 to clear `DERIVE_MIN_SHARE` (40%) of the RAW result tally **and** `DERIVE_MIN_SCHOOLS` (3) — a
@@ -437,11 +439,18 @@ header during a run.
   §5) — no longer applicable now that Wave 1 is deterministic, but worth remembering if an agent step is
   ever reintroduced.
 - **Geo ladder's widened rung can defeat a share-based derivation the standard rung already held** (#672,
-  open, §2f) — a real production case (Wyandanch UFSD, `3631800`) where widening tripled the raw result
+  CLOSED, §2f) — a real production case (Wyandanch UFSD, `3631800`) where widening tripled the raw result
   count but dropped the winning host's share below `min_share`, discarding candidates the standard rung
-  had already found and used. Open question: whether the fix is a count-based fallback, a per-rung
-  minimum floor, re-gating against the standard rung's derivation before falling back to the widened
-  one's, or something else — not yet decided.
+  had already found and used. Resolved 2026-08-21: detection (`rung_regression`) ships, but re-gating
+  against the standard rung's own derivation was re-scoped as a deliberate non-fix (Ian) — a derived-but-
+  unconfirmed host is a cost the ramp-up model accepts, and the residue only buys 3 URLs on the one
+  district that exhibits the mechanism. Not revisited unless new evidence changes that trade-off.
+- **Geo escalation's off-domain "reach" job is unbuilt** (#871, open, epic #128, §2g) — `discovery_scope:
+  "geo"` was meant to do two things (disambiguate a common school name AND reach off-domain PDFs/Docs on
+  a CDN or Drive) but the gate only ever admits on-domain/CMS-slug URLs, so job 2 has never worked. Open
+  design questions: admit document-shaped off-domain URLs on a geo query, give `cms-slug` a second
+  satisfier for opaque document hosts, or split into a new `discovery_scope: "asset"` — and whether any of
+  those re-open the #227 national-contamination class. Ian's call.
 
 ---
 
