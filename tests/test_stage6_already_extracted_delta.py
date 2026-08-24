@@ -294,3 +294,89 @@ def test_redo_is_stamped_so_preview_and_freeze_agree(monkeypatch):
     flag rides ON the package, so the artifact records whether the delta applied."""
     _patch(monkeypatch, [_rec("d:a")], already=set())
     assert BR.release_bundle(None, ["D717"]).package["redo"] is False
+
+
+# --------------------------------------------------------------------------------------
+# the 2026-08-23 review round (#903-#914) — each test names the finding it closes
+# --------------------------------------------------------------------------------------
+def test_wrong_shaped_valid_json_receipt_degrades_not_raises(tmp_path):
+    """#907: a syntactically-valid receipt of the wrong SHAPE must degrade exactly like an
+    unreadable one (fall back to fact evidence) — never raise through the whole multi-district
+    gate@6 preview. Nothing freeze() writes today produces these shapes; nothing here should
+    trust that."""
+    sess = _FakeSession([("h1", 0, None)], [("D1:a", "p.txt")])
+    for bad in ('{"districts": "x"}',
+                '{"districts": [{"district_id": "D1", "records": "x"}]}',
+                '{"districts": [{"district_id": "D1", "records": [{"decision": "send", "reps": 7}]}]}',
+                '[]'):
+        (tmp_path / "handoff_h1_20260101T000000Z.json").write_text(bad)
+        assert XD.already_extracted_reps(sess, "D1", root=tmp_path) == {("D1:a", "p.txt")}, bad
+
+
+def test_redo_is_part_of_the_frozen_identity_and_receipt():
+    """#905: `dispatch_handoff`'s docstring promises redo is frozen into the identity — a dispatch
+    that redoes and one that does not are different artifacts, and the receipt on disk must answer
+    "was this a declared redo?" by itself (derive-provenance-from-receipts). Before this test the
+    promise was false: two packages differing ONLY in redo hashed identically and the frozen doc
+    never recorded the flag."""
+    from infrastructure.acquisition.stage6_handoff import handoff as HND
+    pkg = {"districts": [], "verified_only": False, "dispatch_type": BM.DISPATCH_PRODUCTION}
+    assert HND.package_identity({**pkg, "redo": False}) != HND.package_identity({**pkg, "redo": True})
+    assert HND.freeze({**pkg, "redo": True}, {}, {})["redo"] is True
+    assert HND.freeze(pkg, {}, {})["redo"] is False           # absent => not a redo, recorded as such
+
+
+def test_partial_record_surfaces_its_dropped_sibling_in_the_package(monkeypatch):
+    """#912: a PARTIALLY-held record keeps decision "send", so the held-reason blocks never show
+    the sibling rep the delta dropped. The package carries a server-computed sidecar
+    {rec_key: [files]} for the console to badge per-record — the client never re-derives it."""
+    monkeypatch.setattr(REL, "decide", lambda rec: {
+        "decision": "send", "reason": "test",
+        "send": [{"file": "bought.txt", "kind": "text"}, {"file": "fresh.txt", "kind": "text"}]})
+    _patch(monkeypatch, [_rec("d:a", files=("bought.txt", "fresh.txt"))],
+           already={("d:a", "bought.txt")})
+    pkg = BR.release_bundle(None, ["D717"]).package
+    assert pkg["already_extracted_partial"] == {"d:a": ["bought.txt"]}
+
+
+def test_fully_held_records_stay_out_of_the_partial_sidecar(monkeypatch):
+    """#912's sidecar is for records that STILL SEND — a fully-held record already renders through
+    the reason-keyed held block, and appearing in both places would double-report it."""
+    _patch(monkeypatch, [_rec("d:a")], already={("d:a", "e.txt")})
+    pkg = BR.release_bundle(None, ["D717"]).package
+    assert pkg["already_extracted_partial"] == {}
+
+
+def test_the_console_renders_the_partial_drop_and_the_redo_toggle():
+    """#912/#903 client pins, same discipline as the held-row pins above: the per-record dropped-
+    sibling note and the draft redo toggle key on server-computed fields (`already_extracted_partial`,
+    the `set_redo` edit op) — a server rename must fail here, not silently blank the console."""
+    from pathlib import Path
+    js = (Path(__file__).resolve().parent.parent
+          / "infrastructure/acquisition/process_governance/static/stage6.js").read_text()
+    assert 'data-feat="s6-partial-already-extracted"' in js
+    assert "already_extracted_partial" in js
+    assert 'data-feat="s6-redo-toggle"' in js
+    assert "set_redo" in js
+
+
+@pytest.mark.govdb
+def test_runs_sql_does_not_fan_out_on_a_same_hash_redispatch(gov_session):
+    """#908: `handoff_hash` is NOT unique in `handoff` (the PK is handoff_id = hash+timestamp; the
+    same content dispatched twice legitimately shares a hash), and `extraction` links by hash only.
+    A bare join fans out — one extraction row matched against both handoff rows doubles
+    SUM(n_errors). Behaviourally inert today (the only consumer is truthy/falsy), but it corrupts
+    the run-grain audit record, so the handoff side is deduped to one row per hash before the join.
+    This is the real-SQL test the fake-session ones above cannot be."""
+    from sqlalchemy import text as _text
+    from infrastructure.acquisition.common import db as gdb
+    from tests import benchmark_seed as BSEED
+    gdb.init_precious_schema()
+    BSEED.seed_handoff(gov_session, "zzh908", handoff_id="handoff_zzh908_t1")
+    BSEED.seed_handoff(gov_session, "zzh908", handoff_id="handoff_zzh908_t2")
+    eid = BSEED.seed_extraction(gov_session, "zzh908", "ZZ908")
+    gov_session.execute(_text("UPDATE extraction SET n_errors = 1 WHERE extraction_id = :e"),
+                        {"e": eid})
+    rows = list(gov_session.execute(XD._RUNS_SQL, {"d": "ZZ908"}))
+    assert len(rows) == 1
+    assert rows[0][1] == 1        # a bare join doubles this across the two same-hash handoff rows

@@ -5101,11 +5101,27 @@ requirements:
         different councils"
       - "The gate@6 cost preview separates NEW spend from RE-EXTRACTION spend, priced through the
         same assembler as the send set, and the two reconstruct the redo total exactly"
+      - "(2026-08-24, #905) `redo` is frozen into the handoff identity AND the receipt doc: a
+        declared redo and a default dispatch are different artifacts, the receipt alone answers
+        'was this a declared redo?', and the #37 preview->freeze staleness gate covers a redo flip
+        exactly as it covers a dispatch_type flip"
+      - "(2026-08-24, #903) the declared-redo MODE is reachable from the console draft workflow —
+        DispatchDraft carries it (meta_json), `set_redo` is a draft-edit op, and the gate@6 toggle
+        drives it — because the #689 gate@8 8->6 send-back route seeds a DRAFT, and without the
+        control a cleanly-extracted sent-back district composed to zero new sends unerasably"
+      - "(2026-08-24, #904) the 7->6 alternate-rep bundler consults THE same predicate before
+        ranking alternates: a rep an unrelated later production run already bought is as
+        un-re-offerable as a failed-and-requested one, and 'no dispatchable alternate left' is the
+        honest outcome when the wanted fact already exists"
+      - "(2026-08-24, #907/#908) the predicate DEGRADES, never raises: a wrong-shaped receipt falls
+        back to fact evidence like an unreadable one; and the handoff side of the runs query is
+        deduped per hash before the join (handoff_hash is not unique — same content dispatched
+        twice shares it), so n_errors is never fanned out"
     tests:
       - "tests/test_stage6_already_extracted_delta.py"
       - "docs/technical-notes/production-quality-control-research/2026-08-23-already-extracted-delta-measure.py"
     created: "2026-08-23T00:00:00Z"
-    updated: "2026-08-23T00:00:00Z"
+    updated: "2026-08-24T00:00:00Z"
     notes: "Measurement overturned the obvious fix for the seventeenth time — and this round the
       overturned proposal was the implementer's own first draft, not the issue's. It also corrected
       the RESUME framing, which read the risk off handoff COUNTS (Little Rock 4, Cedar Rapids 3):

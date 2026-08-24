@@ -435,6 +435,16 @@ def release_bundle(session, district_ids, *, councils=None, cost_model=None, ove
     package["dispatch_type"] = dispatch_type
     package["redo"] = bool(redo)
     package["cost"]["reextraction"] = _price_avoided(districts, councils, cost_model, overrides)
+    # #912: a PARTIALLY-held record keeps decision "send", so the held-row blocks (keyed on the hold
+    # reason) never show its dropped sibling rep — the reviewer would see a normal-looking send row
+    # with no sign a rep was subtracted. Sidecar map {rec_key: [files]} for the console to badge
+    # per-record; preview-only (assemble_record strips the transient key, so the frozen artifact
+    # never carries it — same as the reextraction cost line). Dormant on today's corpus (every live
+    # sent record carries exactly one rep) but load-bearing the moment one carries two.
+    package["already_extracted_partial"] = {
+        rd["rec_key"]: [rp.get("file") for rp in rd[ALREADY_EXTRACTED_KEY]]
+        for _meta, recs in districts for rd in recs
+        if rd.get(ALREADY_EXTRACTED_KEY) and rd.get("decision") == "send"}
     return ReleaseBundle(package, metas, skipped)
 
 

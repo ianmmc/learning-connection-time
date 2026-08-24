@@ -255,3 +255,49 @@ class TestListDispatchRows:
         rows = DS6.list_dispatch_rows(sess)
         by_id = {r["draft_id"]: r for r in rows if r["kind"] == "draft"}
         assert by_id[d1]["status"] == "draft" and by_id[d2]["status"] == "abandoned"
+
+
+class TestRedo:
+    """#903: the draft workflow could never set redo=True — no field, no edit op — so the #689
+    gate@8 8->6 send-back redispatch (which seeds a draft) composed a cleanly-extracted district to
+    zero new sends with no override short of a raw API POST that bypasses the draft's audit trail."""
+
+    def test_a_pre_903_draft_reads_as_not_redo(self, sess):
+        draft_id = DS6.create_draft(sess, actor="ian")
+        assert DS6.to_view(sess, draft_id)["redo"] is False    # absent from meta_json => False
+
+    def test_set_redo_persists_in_meta_json_and_the_view(self, sess):
+        draft_id = DS6.create_draft(sess, actor="ian")
+        DS6.set_redo(sess, draft_id, True)
+        assert sess.get(DispatchDraft, draft_id).meta_json["redo"] is True
+        assert DS6.to_view(sess, draft_id)["redo"] is True
+        DS6.set_redo(sess, draft_id, False)
+        assert DS6.to_view(sess, draft_id)["redo"] is False
+
+    def test_freeze_carries_the_drafts_redo_onto_the_frozen_receipt(self, sess, monkeypatch, tmp_path):
+        """#905's other half: the artifact alone must answer "was this a declared redo?"."""
+        _fake_release(monkeypatch, district_id="0100810")
+        monkeypatch.setattr(H6.HND, "DEFAULT_ROOT", tmp_path)
+        draft_id = DS6.create_draft(sess, actor="ian")
+        DS6.add_district(sess, draft_id, "0100810")
+        DS6.set_redo(sess, draft_id, True)
+        doc = DS6.freeze_draft(sess, draft_id, "ian")
+        assert doc["redo"] is True
+
+    def test_a_redo_flip_between_view_and_freeze_is_stale(self, sess, monkeypatch, tmp_path):
+        """redo is part of the package identity (#905), so the #37 staleness gate covers a flip
+        between what the human previewed and what would freeze — same guarantee dispatch_type has."""
+        _fake_release(monkeypatch, district_id="0100810")
+        monkeypatch.setattr(H6.HND, "DEFAULT_ROOT", tmp_path)
+        draft_id = DS6.create_draft(sess, actor="ian")
+        DS6.add_district(sess, draft_id, "0100810")
+        v = DS6.to_view(sess, draft_id)
+        DS6.set_redo(sess, draft_id, True)
+        with pytest.raises(ValueError, match="changed since"):
+            DS6.freeze_draft(sess, draft_id, "ian", expected_identity=v["preview_identity"])
+
+    def test_set_redo_refuses_on_a_locked_draft(self, sess):
+        draft_id = DS6.create_draft(sess, actor="ian")
+        DS6.abandon_draft(sess, draft_id, "ian")
+        with pytest.raises(DS6.DraftLocked):
+            DS6.set_redo(sess, draft_id, True)

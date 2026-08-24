@@ -2153,13 +2153,26 @@ def handoff_candidates():
         return [dict(r) for r in rows]
 
 
+def _json_bool(payload: dict, key: str) -> bool:
+    """A flag from a JSON payload, as an ACTUAL boolean — absent/None => False, anything that is not
+    a JSON true/false is a 400 (#911). `bool(payload.get(key))` coerced the string "false" to True,
+    inverting caller intent; these endpoints' docstrings explicitly invite non-console callers (curl,
+    a script posting `redo: true`), which is exactly who would hit that."""
+    v = payload.get(key, False)
+    if v is None:
+        return False
+    if not isinstance(v, bool):
+        raise HTTPException(400, f"'{key}' must be a JSON boolean, got {type(v).__name__} {v!r}")
+    return v
+
+
 @app.post("/api/handoff/preview")
 async def handoff_preview(payload: dict):
     """Build the in-memory handoff package for the selected districts (routed + priced) — no persist.
     `overrides` = gate@6 per-rep council overrides ({"<rec_key>::<file>": council_id})."""
     ids = payload.get("district_ids") or []
     overrides = payload.get("overrides") or {}
-    verified_only = bool(payload.get("verified_only"))
+    verified_only = _json_bool(payload, "verified_only")
     # #679: selection is dispatch-type-aware (production excludes benchmark-provenance reps), so the
     # preview must build under the SAME type the dispatch will — otherwise the identity token can
     # never match and every benchmark dispatch 409s as "stale".
@@ -2167,7 +2180,7 @@ async def handoff_preview(payload: dict):
     # #717: `redo` changes WHICH reps compose, so the preview must build under the same flag the
     # dispatch will — the identical reason dispatch_type is threaded here, and the same failure if
     # it is not (the identity token could never match and every redo would 409 as "stale").
-    redo = bool(payload.get("redo"))
+    redo = _json_bool(payload, "redo")
     with gdb.session_scope() as con:
         pkg = H6.build_handoff_package(con, ids, overrides=overrides, verified_only=verified_only,
                                        dispatch_type=dispatch_type, redo=redo)
@@ -2185,9 +2198,9 @@ async def handoff_dispatch(payload: dict):
     ids = payload.get("district_ids") or []
     actor = payload.get("actor", "ian")
     overrides = payload.get("overrides") or {}
-    verified_only = bool(payload.get("verified_only"))
+    verified_only = _json_bool(payload, "verified_only")
     dispatch_type = BM.effective_dispatch_type(payload)   # #618
-    redo = bool(payload.get("redo"))                       # #717 declared-redo (see /preview)
+    redo = _json_bool(payload, "redo")                     # #717 declared-redo (see /preview)
     expected_identity = payload.get("expected_identity")   # optional (issue #37) — the console always
     if not ids:                                            # sends it; a bare CLI/test POST still works
         raise HTTPException(400, "no districts selected")
@@ -2341,7 +2354,7 @@ def dispatch_candidates(draft_id: str):
 @app.post("/api/dispatch/{draft_id}/edit")
 async def dispatch_edit(draft_id: str, payload: dict):
     """gate@6 draft edit: add_district | remove_district | restore_district | set_override |
-    clear_override | set_verified_only | set_dispatch_type. One delegated mutation endpoint, mirrors
+    clear_override | set_verified_only | set_dispatch_type | set_redo. One delegated mutation endpoint, mirrors
     gate@1's `/api/queue/{batch_id}/edit`. Mutates the working store and records a gate@6 draft-edit
     audit event (district-scoped for district/override ops, draft-scoped for the two draft-wide mode
     ops); returns the fresh draft-detail view (always-current pricing)."""
@@ -2382,6 +2395,11 @@ async def dispatch_edit(draft_id: str, payload: dict):
             elif op == "set_verified_only":
                 DSTORE6.set_verified_only(con, draft_id, bool(payload.get("verified_only")))
                 note = f"set verified_only={bool(payload.get('verified_only'))}"
+            elif op == "set_redo":
+                # #903: the declared-redo opt-in (#717/REQ-170) — the draft-workflow control without
+                # which a gate@8 8->6 send-back redispatch composes to zero new sends unerasably.
+                DSTORE6.set_redo(con, draft_id, bool(payload.get("redo")))
+                note = f"set redo={bool(payload.get('redo'))}"
             elif op == "set_dispatch_type":
                 # #618: the Council Lab opt-in. ValueError (bad type) -> 400 below, never a 500.
                 DSTORE6.set_dispatch_type(con, draft_id, payload.get("dispatch_type"))
@@ -2401,7 +2419,7 @@ async def dispatch_edit(draft_id: str, payload: dict):
                     # in the audit note instead of silently recording the bare id as a name.
                     affected = [(did, did, "")]
                     note += " [district not found in signals store]"
-            elif op in ("set_verified_only", "set_dispatch_type"):
+            elif op in ("set_verified_only", "set_dispatch_type", "set_redo"):
                 # Draft-scoped op: record against the draft's included districts (the rows whose
                 # send-set the mode flip actually changes) — mirrors gate@1's batch-level abandon,
                 # which also fans out to per-district events. Empty draft -> nothing to record.

@@ -50,12 +50,21 @@ from infrastructure.acquisition.common import paths
 
 # Production runs for one district, with the per-run error count folded in. A handoff appears here
 # ONLY if it actually ran — a composed-but-never-run draft bought nothing and must not suppress.
+#
+# The handoff side is DEDUPED to one row per hash BEFORE the join (#908): `handoff_hash` is not
+# unique in the `handoff` table (the PK is handoff_id = hash+timestamp — the same content dispatched
+# twice legitimately shares a hash), and `extraction` links by hash only, so a bare join would fan
+# out and multiply SUM(n_errors) by the number of same-hash dispatches. Same-hash rows are identical
+# CONTENT by construction of the identity hash, so any one receipt answers the sent-set question;
+# MAX(path) picks the latest — the same latest-wins rule closing_argument's resolver uses.
 _RUNS_SQL = text("""
-    SELECT e.handoff_hash, SUM(COALESCE(e.n_errors, 0)) AS n_errors, MAX(h.path) AS path
+    SELECT e.handoff_hash, SUM(COALESCE(e.n_errors, 0)) AS n_errors, h.path
       FROM extraction e
-      LEFT JOIN handoff h ON h.handoff_hash = e.handoff_hash
+      LEFT JOIN (SELECT handoff_hash, MAX(path) AS path
+                   FROM handoff GROUP BY handoff_hash) h
+        ON h.handoff_hash = e.handoff_hash
      WHERE e.district_id = :d AND e.run_kind = 'production'
-     GROUP BY e.handoff_hash
+     GROUP BY e.handoff_hash, h.path
 """)
 
 _FACTS_SQL = text("""
@@ -84,21 +93,27 @@ def _sent_reps(path: Path, district_id: str) -> set[tuple[str, str]] | None:
 
     None means UNREADABLE — distinct from an empty set, which means "read fine, sent nothing".
     The caller must not conflate them: an empty set is authoritative (subtract nothing), while
-    None means the sent-set is unknown and only the DB's fact evidence can be trusted."""
+    None means the sent-set is unknown and only the DB's fact evidence can be trusted.
+
+    The WALK is inside the try too (#907): a syntactically-valid receipt of the wrong shape
+    (hand-corrupted, legacy schema — nothing freeze() writes today, but nothing here should trust
+    that) must degrade this one handoff to the fact-evidence fallback, never 500 the whole
+    multi-district gate@6 preview it happens to be part of. That is the module's "degrades, never
+    fails open-ended" promise applied to the parse as well as the I/O."""
     try:
         doc = json.loads(path.read_text())
-    except (OSError, ValueError):
-        return None
-    out = set()
-    for d in doc.get("districts") or []:
-        if d.get("district_id") != district_id:
-            continue
-        for rec in d.get("records") or []:
-            if rec.get("decision") != "send":
+        out = set()
+        for d in doc.get("districts") or []:
+            if d.get("district_id") != district_id:
                 continue
-            for rp in rec.get("reps") or []:
-                out.add((rec.get("rec_key"), rp.get("file")))
-    return out
+            for rec in d.get("records") or []:
+                if rec.get("decision") != "send":
+                    continue
+                for rp in rec.get("reps") or []:
+                    out.add((rec.get("rec_key"), rp.get("file")))
+        return out
+    except Exception:
+        return None
 
 
 def already_extracted_reps(session, district_id: str, *, root=None) -> set[tuple[str, str]]:
@@ -119,7 +134,18 @@ def already_extracted_reps(session, district_id: str, *, root=None) -> set[tuple
     if not runs:
         return set()
     root = Path(root) if root else paths.HANDOFFS_DIR
-    facts = {(rk, sf) for rk, sf in session.execute(_FACTS_SQL, {"d": district_id})}
+
+    # Fact evidence is fetched LAZILY (#910): only the errored-run and unreadable-receipt branches
+    # read it, and the common all-clean district would otherwise pay a school_fact query per
+    # preview render whose result is fetched and discarded.
+    facts: set[tuple[str, str]] | None = None
+
+    def _fact_evidence() -> set[tuple[str, str]]:
+        nonlocal facts
+        if facts is None:
+            facts = {(rk, sf) for rk, sf in session.execute(_FACTS_SQL, {"d": district_id})}
+        return facts
+
     out: set[tuple[str, str]] = set()
     for handoff_hash, n_errors, stored_path in runs:
         path = _receipt_path(handoff_hash, stored_path, root)
@@ -127,9 +153,9 @@ def already_extracted_reps(session, district_id: str, *, root=None) -> set[tuple
         if sent is None:
             # Receipt missing or unreadable: the sent-set is unknown, so fall back to the DB's own
             # per-rep evidence. Costs a little duplicate spend, never strands a district.
-            out |= facts
+            out |= _fact_evidence()
         elif not n_errors:
             out |= sent                      # clean run: everything it sent was read
         else:
-            out |= (sent & facts)            # errored run: only what provably produced a fact
+            out |= (sent & _fact_evidence())  # errored run: only what provably produced a fact
     return out

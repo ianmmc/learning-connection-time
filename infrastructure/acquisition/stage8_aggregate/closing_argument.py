@@ -781,7 +781,7 @@ def fingerprint(ca):
 # (and all the tests) live in build_closing_argument above.
 # --------------------------------------------------------------------------------------------------
 
-_HANDOFF_DIR = paths.ACQUISITION / "handoffs"
+_HANDOFF_DIR = paths.HANDOFFS_DIR   # ONE spelling (#906) — same constant the #717 delta reads
 
 
 def _load_handoff_by_hash(handoff_hash):

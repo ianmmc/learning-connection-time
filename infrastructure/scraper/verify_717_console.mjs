@@ -133,11 +133,25 @@ ok("DOM: the re-extraction split renders in the summary", await rx.count() === 1
 const rxText = await rx.first().innerText();
 ok("DOM: ...naming the rep count and the avoided dollars",
    /\b9\b/.test(rxText) && /\$/.test(rxText), JSON.stringify(rxText.slice(0, 110)));
-ok("DOM: the redo affordance points at the real path (no phantom checkbox)",
+ok("DOM: the redo affordance points at the real path",
    rxText.includes("redo") || (await p.locator('[data-feat="s6-already-extracted-summary"]')
-     .first().innerText()).includes("redo:  true".replace("  ", " ")) ||
-   (await p.locator('[data-feat="s6-already-extracted-summary"]').first().innerText()).includes("redo"),
-   "the UI must not promise a control that does not exist");
+     .first().innerText()).includes("redo"),
+   "the summary must name the control that re-admits the reps");
+
+// #903: the declared-redo toggle — DRIVEN, not just present. Before #903 the draft workflow could
+// never set redo=True (no field, no edit op), so a gate@8 8->6 send-back redispatch composed to
+// zero new sends with no console override. Ticking it must re-admit the held reps live.
+const redoToggle = p.locator('[data-feat="s6-redo-toggle"] input#s6-redo');
+ok("DOM: the #903 redo toggle renders on the draft", await redoToggle.count() === 1);
+await redoToggle.check();
+await p.waitForSelector('[data-feat="s6-redo"]', { timeout: 15000 });
+const emptyReps = await p.locator(`.s6-dist[data-did="${EMPTY_DID}"] .s6-rep-click`).count();
+ok("DOM: ticking redo re-admits the reps (the zero-send district now sends)",
+   emptyReps === 3, `${emptyReps} send rows`);
+ok("DOM: under redo the avoided line is gone (every rep priced as new)",
+   await p.locator('[data-feat="s6-reextraction-avoided"]').count() === 0);
+ok("DOM: the draft header badges the redo so the mode cannot be missed",
+   await p.locator('[data-feat="s6-redo"]').count() === 1);
 
 ok("DOM: no page errors", errors.length === 0, errors.slice(0, 2).join(" | "));
 

@@ -34,6 +34,7 @@
   let COUNCILS = [];           // council registry (override <select> options)
   let DRAFT_VIEW = null;       // last loaded draft-detail payload (GET /api/dispatch/{id})
   let BM_KEYS = new Set();     // #662: "<did>::<rec_key>" of injected gt:// reps in this view
+  let AE_PARTIAL = {};         // #912: {rec_key: [files]} the #717 delta dropped from still-sending records
 
   window.initStage6 = function () {
     if (!inited) { inited = true; renderShell(); loadCouncils(); }
@@ -149,7 +150,7 @@
       : ` · created by ${esc(v.created_by)} ${esc(fmt(v.created_at))}`;
     let html = `<div class="q-detail-head">
         <div><h2>${esc(v.draft_id)} ${statusBadge(v.status)}</h2>
-          <div class="q-sub">${v.districts.filter((d) => d.included).length} district(s) · ${v.verified_only ? "verified-only" : "standard"}${v.dispatch_type === "benchmark" ? ` · <span class="badge badge-accent" data-feat="s6-dispatch-type">benchmark dispatch</span>` : ""}${byline}</div></div>
+          <div class="q-sub">${v.districts.filter((d) => d.included).length} district(s) · ${v.verified_only ? "verified-only" : "standard"}${v.dispatch_type === "benchmark" ? ` · <span class="badge badge-accent" data-feat="s6-dispatch-type">benchmark dispatch</span>` : ""}${v.redo ? ` · <span class="badge badge-warn" data-feat="s6-redo">redo</span>` : ""}${byline}</div></div>
         <div class="q-actions">${actions}</div></div>`;
     if (abandoned) {
       html += `<div class="q-locked">Abandoned${v.abandon_reason ? ` — ${esc(v.abandon_reason)}` : ""}. Terminal.</div>`;
@@ -159,6 +160,8 @@
             <input type="checkbox" id="s6-verified" ${v.verified_only ? "checked" : ""}/> verified only (labeled targets)</label>
           <label class="s6-fl s6-mode" data-feat="s6-dispatch-type-toggle" title="A BENCHMARK dispatch is the Stages 6/7 A/B harness (which representations to which councils, and the yield). It TERMINATES AT gate@7 — its results are never written to the LCT DB. Turn this on to run a Council Lab experiment over these representations on purpose.">
             <input type="checkbox" id="s6-dispatch-type" ${v.dispatch_type === "benchmark" ? "checked" : ""}/> benchmark dispatch (stops at gate@7)</label>
+          <label class="s6-fl s6-mode" data-feat="s6-redo-toggle" title="DECLARED REDO (#717): skip the already-extracted delta and re-buy representations a prior production run already extracted. The default holds them (REQ-160: the duplicate result cannot change the facts). Turn this on for a deliberate re-extraction — e.g. a gate@8 send-back that asked for a fresh council read.">
+            <input type="checkbox" id="s6-redo" ${v.redo ? "checked" : ""}/> redo (re-buy already-extracted reps)</label>
           <button id="s6-add-district" class="btn btn-mini add">+ Add district</button>
         </div>`;
     }
@@ -181,6 +184,7 @@
     // remove. Badged, never filtered: a pool that silently differs by dispatch type is the kind of
     // invisible scoping epic #617 keeps getting bitten by.
     BM_KEYS = new Set(bmReps.map((b) => `${b.district_id}::${b.rec_key}`));
+    AE_PARTIAL = pkg.already_extracted_partial || {};   // #912: server-computed, never re-derived here
     if (bmReps.length && v.dispatch_type !== "benchmark") {
       const items = bmReps.map((b) => `${esc(b.district_id)}:<code>${esc(b.rec_key)}</code>`).join(", ");
       html += `<div class="q-locked" data-feat="s6-benchmark-reps">⚠ ${bmReps.length} representation(s) carry benchmark provenance and will BLOCK this freeze: ${items}. Deselect those records, or tick “benchmark dispatch” to run this as a Council Lab A/B on purpose.</div>`;
@@ -206,7 +210,19 @@
 
   function renderDistrictBlock(d, editable) {
     const sends = d.records.filter((r) => r.decision === "send");
-    const reps = sends.flatMap((r) => r.reps.map((rep) => repRow(d.district_id, r.rec_key, rep, editable)));
+    const reps = sends.flatMap((r) => {
+      const rows = r.reps.map((rep) => repRow(d.district_id, r.rec_key, rep, editable));
+      // #912: a PARTIALLY-held record still sends, so it never reaches the held-reason blocks below —
+      // without this note the reviewer sees a normal send row with no sign a sibling rep was
+      // subtracted by the #717 delta. Server-computed sidecar; the client never re-derives it.
+      const dropped = AE_PARTIAL[r.rec_key];
+      if (dropped && dropped.length) {
+        rows.push(`<div class="s6-rep muted" data-feat="s6-partial-already-extracted">
+            <span class="badge badge-neutral" title="a prior production run already bought these sibling rep(s) of this record; only the unread rep(s) are being sent (#717)">already extracted</span>
+            sibling rep(s) held on this record: ${dropped.map((f) => `<code>${esc(f)}</code>`).join(", ")}</div>`);
+      }
+      return rows;
+    });
     // #679: benchmark-provenance reps excluded from a production dispatch's DEFAULT selection are
     // HELD server-side, not hidden — render them so the reviewer sees what was excluded and why
     // (#662 decision 4: badged, never filtered). The reason is a server-computed decision field;
@@ -246,8 +262,8 @@
           <span class="badge badge-neutral">already extracted</span>
           <b>${doneHeld.length}</b> record(s) held — a prior production run already bought these
           reps; re-sending re-buys the council for nothing (REQ-160: earliest wins, so the duplicate
-          result cannot change the facts). A deliberate re-extraction posts <code>redo: true</code>
-          to /api/handoff/preview + /dispatch; per-district redo is the 7&rarr;6 back-edge.
+          result cannot change the facts). For a deliberate re-extraction, tick “redo” above
+          (#903); per-district redo is the 7&rarr;6 back-edge.
         </div>`);
       heldRows.push(...doneHeld.map((r) => `<div class="s6-rep muted" data-feat="s6-already-extracted">
           <span class="badge badge-neutral" title="sent in a prior production handoff that ran; re-sending would re-buy the same council (#717)">already extracted</span>
@@ -316,6 +332,8 @@
     if (verified) verified.onchange = (e) => draftEdit(draftId, { op: "set_verified_only", verified_only: e.target.checked });
     const dtype = $g("#s6-dispatch-type");
     if (dtype) dtype.onchange = (e) => draftEdit(draftId, { op: "set_dispatch_type", dispatch_type: e.target.checked ? "benchmark" : "production" });
+    const redo = $g("#s6-redo");
+    if (redo) redo.onchange = (e) => draftEdit(draftId, { op: "set_redo", redo: e.target.checked });
     const addBtn = $g("#s6-add-district"); if (addBtn) addBtn.onclick = () => openAddDistrictPicker(draftId);
     det.querySelectorAll(".s6-remove").forEach((b) => {
       b.onclick = () => draftEdit(draftId, { op: "remove_district", district_id: b.dataset.did });
