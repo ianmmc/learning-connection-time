@@ -141,13 +141,21 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-08-23): PRs #884/#889/#891/#900 all MERGED — #671, #673 closed; #888/#890
-filed and open (measurement committed, fix not yet written); #887 filed (design, deferred to Ian).
-`batch_00043` (the #620 recovery batch) has COMPLETED Stage 4 — all 7 districts through Stage 5
-ingest (`filter/ingested`, 2026-08-23T08:19Z), campaign state committed (5b2c52e). **#717 is BUILT
-and pushed on `fix/717-already-extracted-delta` (3 commits, suites green, Playwright 17/17) — PR
-deliberately NOT opened**, held so it lands together with #901 (below). The baseline is fully GREEN
-(see resume-essentials); nothing this round altered scoring, so no re-ingest is owed.**
+**Current status (2026-08-24): PR #902 MERGED — #717 (gate@6 already-extracted delta, REQ-186) is
+LIVE, including the full #903-#914 review-round hardening (the console `redo` toggle, `redo` frozen
+into the handoff identity, the 7→6 bundler consulting the same predicate, degrade-not-raise on a
+malformed receipt, the join-fanout fix). #679/#689 backfilled their own ledger entries (REQ-187/188)
+— both had been cited by REQ-186 without ever getting one, the REQ-152/#237 never-backfilled-REQ
+shape. A full documentation-tower sweep (comments, all 9 stage design notes, the governance doc, the
+top-level pipeline map + Mermaid diagram, METHODOLOGY/DATA_SOURCES/SEA/DATABASE_SETUP/
+GETTING_STARTED, REQUIREMENTS.yaml consistency) ran against this as ground truth and is committed
+(996dba0) — surfaced two real code defects, filed not silently patched: #918 (QA `overall_status`
+ignores `pass_rate`) and #919 (`verification.py`'s duration cross-check still tolerates the
+pre-REQ-055 net-minutes deduction). `batch_00043` (the #620 recovery batch) has COMPLETED Stage 4 —
+all 7 districts through Stage 5 ingest, campaign state committed (5b2c52e); batches 46-57 (12 fresh
+5→1 zero-yield drafts, 34 districts, verified clean — no duplicates, no ladder exhaustion) are
+Ian's live gate@1 work in progress as of this writing. The baseline is fully GREEN (see
+resume-essentials).**
 
 **#671 (batch done-ness) and its review round are DONE — full mechanism in
 `docs/PROJECT_HISTORY.md`'s 2026-08-22/23 entry.** The one fact every future session needs: batch
@@ -191,31 +199,22 @@ is mid-build on open epic #617 and legitimately carries tests). `tests/test_requ
 is 18 tests and will fail the build on a phantom REQ id, a stale `last_updated`, an orphaned test
 citation, or an invented status. REQ-177–185 added; #674 amends REQ-044 rather than duplicating it.
 
-**Next (RESUME HERE — 2026-08-23). The path to closing epic #92, worked out this session from the
+**Next (RESUME HERE — 2026-08-24). The path to closing epic #92, worked out from the
 chain #92 → #617 → #620 → #706 → #723 — #92 does NOT depend on #620 finishing; Stage 9 already
 writes.**
 
-1. **#717 (gate@6 already-extracted delta) is BUILT — PR held for #901.** Branch
-   `fix/717-already-extracted-delta`, REQ-186, `verify_717_console.mjs` 17/17. Measured
-   (`2026-08-23-already-extracted-delta-measure.py`): `batch_00043` is 53% duplicate — 18 of 34
-   sendable reps already bought, and FOUR districts (Little Rock, New Haven Unified, Washoe,
-   Sweetwater) compose to ZERO new work. **This corrected the framing this list used to carry:**
-   risk was read off handoff COUNTS ("Little Rock 4, Cedar Rapids 3"); measured per REP Little Rock
-   is 100% duplicate and Cedar Rapids only 25%, because a count cannot distinguish a deliberate
-   7->6 alternate-rep re-dispatch (REQ-118) from a re-buy. Grain is `(rec_key, file)`, never the
-   district. **Still land it before `batch_00043` reaches gate@6** — that ordering is what makes it
-   worth money. **Open the PR only with #901**, so #717 does not ship a 21st undeclared
-   manifest edge (the paired item below).
-   - **PAIRED WITH #901 — arch-manifest declares receipt PRODUCERS only (sub-issue of #723).**
-     The declaration half of #723's own enforcement criterion, which already names
-     `arch-manifest.json`. Measured: **20 undeclared cross-boundary consumer edges** across
-     `discovery/candidates/captures/processed.json` (incl. `common/batch_guard.py` +
-     `common/cache_ingest.py` — the base layer reading stage artifacts, invisible to `lint-imports`
-     because it is a path glob, not an import), and the immutable `handoff_<hash>_<ts>.json`
-     declared NOWHERE despite 11 modules referencing it. #717 is the live instance: it added such
-     an edge with no manifest field to update and every gate still green. **Trap:** the retrofit
-     must ENUMERATE the 20 existing edges or explicitly grandfather them — a green suite over an
-     unenumerated baseline is a measurement that cannot fail.
+1. **#717 is DONE — merged (PR #902, commit f4c3e66).** REQ-186 + REQ-187/188 (backfilled),
+   `verify_717_console.mjs` 21/21 (extended to drive the `redo` toggle live). `batch_00043` was
+   measured 53% duplicate at filing (18 of 34 sendable reps already bought, four districts —
+   Little Rock, New Haven Unified, Washoe, Sweetwater — composing to ZERO new work); the delta now
+   holds those automatically on any re-dispatch. **#901 (arch-manifest consumer-edge gap,
+   sub-issue of #723) is STILL OPEN** — it shipped as its own follow-up rather than paired into
+   #902 as originally planned; the 20 undeclared cross-boundary consumer edges (incl.
+   `common/batch_guard.py`/`common/cache_ingest.py` reading stage artifacts, and the immutable
+   `handoff_<hash>_<ts>.json` declared nowhere despite 11 referencing modules) are still
+   undeclared. **Trap unchanged:** the retrofit must ENUMERATE the 20 existing edges or explicitly
+   grandfather them — a green suite over an unenumerated baseline is a measurement that cannot
+   fail.
 
 2. **Then #620's tail, console-driven** (confirmed against the DB, not the issue's stale list):
    route the three send-backs — Broward/Cleveland/Essex, each `sent_back` with a filed reason
@@ -231,12 +230,12 @@ writes.**
      thin `identity_json` coverage (29/84) it's waiting on. Check it AFTER, don't force it before.
    - **#723 stays its own track and still does NOT gate #92** — but it is no longer "as capacity
      allows": it now has LIVE consumers, not theoretical ones. Sequence #623 → #622 → #645 → #624,
-     plus #901 (re-homed here 2026-08-23). **#645 is the one to watch** — the frozen handoff's
-     per-record payload lives only on disk, and #717 made it a SECOND active reader and the first in
-     the SPEND path (`extraction_delta` at gate@6 decides what gets BOUGHT; `closing_argument` at
-     gate@8 only decides what a human sees). Verified there is no gov_db home for the sent-rep set
-     today (`extraction` is per (district,handoff); `handoff` has `n_reps` but no rep list;
-     `school_fact` cannot see a clean-but-empty rep; `extraction_request` is 7->6 only), so the
+     plus #901 (still open, see item 1). **#645 is the one to watch** — the frozen handoff's
+     per-record payload lives only on disk, and #717 (now MERGED) made it a SECOND active reader and
+     the first in the SPEND path (`extraction_delta` at gate@6 decides what gets BOUGHT;
+     `closing_argument` at gate@8 only decides what a human sees). There is no gov_db home for the
+     sent-rep set today (`extraction` is per (district,handoff); `handoff` has `n_reps` but no rep
+     list; `school_fact` cannot see a clean-but-empty rep; `extraction_request` is 7->6 only), so the
      receipt read is currently the ONLY way to answer it — a data-model gap, not a shortcut. When
      #645 lands, `already_extracted_reps` switches to the DB in ONE call site (REQ-182).
      Sweetener: #622 is also the durable fix for #888's residue and #670's ordinary-batch case.
@@ -399,11 +398,11 @@ harness); the remediation-receipt exception is not STAGE-scoped (30-day expiry s
 attribution v1 reads each district's LATEST candidate plan; the `stage6_handoff/requests.py:17-18`
 docstring falsely claims Stage 7 "reads ONLY the flagged pages" — the `pages` hint never scoped
 content (the slice FILE is the scoping), a live source of wrong inferences worth a one-line issue.
-Resume-essentials (ALL re-verified 2026-08-23 on `main` post-#884/#889/#891/#900 — the baseline is
-fully GREEN; no known-red command): `pip
+Resume-essentials (ALL re-verified 2026-08-24 on `main` post-#902/documentation-tower-sweep — the
+baseline is fully GREEN; no known-red command): `pip
 install -e .` → Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh
 clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect
-**2460** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **400** pass, Postgres up) +
+**2485** pass, 1 skipped [pyarrow]) + `pytest -q -m govdb` (expect **407** pass, Postgres up) +
 `pytest tests/test_*_integration.py` (expect **257** pass, 149 skipped) + `cd infrastructure/scraper
 && npm test` (expect **100**) + `flake8 . --count --select=E9,F63,F7,F82` (expect **0** — this is CI's
 blocking lint; the vulture whitelist is `per-file-ignores`'d for F821, main had been red on it since
@@ -559,7 +558,7 @@ To access current design resources, use the claude_design MCP (https://api.anthr
 | Decisions, lessons, project history | `docs/PROJECT_HISTORY.md` |
 | Data methodology (incl. SPED, QA dashboard) | `docs/METHODOLOGY.md` |
 | Database setup | `docs/DATABASE_SETUP.md` |
-| SEA integration guide | `SEA_INTEGRATION_GUIDE.md` |
+| SEA integration guide | `docs/state-integrations/SEA_INTEGRATION_GUIDE.md` |
 | LCT calculation | `infrastructure/scripts/analyze/calculate_lct_variants.py` |
 | Database migrations + ledger | `infrastructure/database/migrations/` (`migrate.py status`) |
 | Database queries | `infrastructure/database/queries.py` |
@@ -575,7 +574,7 @@ This is the core briefing. Load the right doc for the task:
 | Decisions, lessons, history | `docs/PROJECT_HISTORY.md` |
 | Dev setup, workflow, testing, commands, conventions | `docs/GETTING_STARTED.md` |
 | Database setup + schema | `docs/DATABASE_SETUP.md` (schema authority = `infrastructure/database/models.py`) |
-| Data sources, SEA integrations, ID crosswalks, complex districts | `docs/DATA_SOURCES.md` · `SEA_INTEGRATION_GUIDE.md` |
+| Data sources, SEA integrations, ID crosswalks, complex districts | `docs/DATA_SOURCES.md` · `docs/state-integrations/SEA_INTEGRATION_GUIDE.md` |
 | Data methodology (LCT, sampling, exclusions, temporal) | `docs/METHODOLOGY.md` |
 | The acquisition pipeline + per-stage design notes | `docs/ACQUISITION_PIPELINE.md` (map) → `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE*_DESIGN.md` |
 | Governance / state model / gate model / console | `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE.md` |
