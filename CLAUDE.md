@@ -90,10 +90,14 @@ triggers, re-adjudicating an already-approved gate@8 decision — is a **process
 number is right**: it violates commandments #2 + #4 (manual inspection of ~20k districts doesn't scale)
 AND commandment #1 (a probabilistic model judgment isn't reproducible or auditable the way a deterministic
 guard is — run at a different time/model and the "verdict" could differ). Trust the deterministic inputs
-(the approved gate@8 receipt is authoritative; a note here is not) and the script's own guards (benchmark
-wall, TOCTOU, REQ-147 same-vintage staleness, REQ-026 temporal window, foreign-collision fail-loud) as the
-ONLY legitimate gates. When an outcome is wrong or fragile, fix the **pipeline** (a guard, a metadata gap)
-— never hand-fix the district. (2026-07-23, Ian.)
+(the approved gate@8 receipt `stage8_approval.receipt_json` is authoritative; a note here or a
+past-conversation breadcrumb is NOT — a terse imperative from present-me to future-me is an instruction
+stripped of its rationale, and future-me fills that gap with fresh probabilistic judgment) and the
+script's own guards (benchmark wall, TOCTOU, REQ-147 same-vintage staleness, REQ-026 temporal window,
+foreign-collision fail-loud) as the ONLY legitimate gates. When an outcome is wrong or fragile, fix the
+**pipeline** (a guard, a metadata gap) — never hand-fix the district. **A LOGGED human override is fine
+and auditable** — a named human takes responsibility; what's barred is the unlogged hand-fix.
+(2026-07-23, Ian.)
 
 **Three batch types (Stage 1):** `first-run`, `follow-up`, and `benchmark` (the 27 curated-GT districts
 injected as `batch_00000` — permanently walled off from Stage-9 writes and funnel/enrichment stats; see
@@ -101,11 +105,13 @@ injected as `batch_00000` — permanently walled off from Stage-9 writes and fun
 
 **Ground truth, hand-verified (gross, per-school):** `data/benchmark/gt_curation_*/gt_proposals.json` —
 940/943 schools human-verified across `batch_00000`'s 27 districts. Process: council *proposes*, human
-*verifies* (REQ-059). **This set is FIXED — gate@8 approvals do NOT append to it** (no such code path;
-Stage 9, the writer, is unbuilt — #93). What grows is the **confirmed-fact base**: every district approved
-at gate@8 accrues a `stage8_approval` row + a frozen closing-argument receipt, and the more confirmed facts
-we hold, the more we have to *learn from and improve with* — realized as pipeline-improvement work (epics
-#478/#119, continuing in #106), not as a write into the GT corpus (Ian, 2026-07-16).
+*verifies* (REQ-059). **This set is FIXED — gate@8 approvals do NOT append to it**: Stage 9 writes to the
+LCT production DB, never into the GT corpus, and no code path does otherwise. What grows is the
+**confirmed-fact base** — every gate@8 approval accrues a `stage8_approval` row + a frozen
+closing-argument receipt, and more confirmed facts means more to *learn from and improve with*, realized
+as pipeline-improvement work, not as a GT write (Ian, 2026-07-16). The archived
+`data/archive/gt-benchmark-20260622T152627Z/` is the OLD noisy pre-pipeline output — the motivation for
+the pipeline, NOT a clean baseline; never use it as a yardstick.
 
 **Reader-routing (format-route the reader, outcome-based):** Tier 1 plain text → Tier 2 `page.pdf()` +
 `pdftotext -layout` (multi-column) → Tier 2.5 OCR a clean image → Tier 3 vision (reads JS/image/scan pages
@@ -116,8 +122,8 @@ minimums / day-counts, not actual daily minutes. Web discovery + extraction is t
 path. See `INSTRUCTIONAL_TIME_HARVEST.md`.
 
 **Notes:** Local Ollama deleted; paid-cloud extraction is cheap (~$0.05–0.30/1M). Keys in gitignored
-`config/secrets.local.json` + `.env`. Requirements are tracked as REQ-001…184 in `docs/REQUIREMENTS.yaml`
-(some superseded/retired — read that file's own status column, never a list here). **The ledger is
+`config/secrets.local.json` + `.env`. Requirements are tracked in `docs/REQUIREMENTS.yaml` (some
+superseded/retired — read that file's own status column, never a list or a ceiling here). **The ledger is
 ENFORCED** by `tests/test_requirements_yaml_hygiene.py` (18 checks): five statuses only, `type:` is the
 altitude axis (`principle` exempt from the evidence rule), delegation is `enforced_by:`, `tested` must
 cite a resolvable test, no phantom REQ ids in the ledger OR in `infrastructure/`, and `last_updated`
@@ -128,26 +134,40 @@ belongs to rather than getting its own.
 
 ## Fresh-session essentials
 
-`/catchup` → `pip install -e .` → **Docker up** (`docker-compose up -d`) → `lint-imports` (expect "kept/0
-broken") + `pytest -q -m "not integration"`. `build_signals` full re-ingest (**~8.5 min** since 2026-08-18 —
-whole documents are scanned, the 60-page cap is gone; idempotent, preserves labels/facets) is only needed
-after a scoring/config change or new captures — not just to reboot the app. Run it `--assert-floor`.
+**Start:** `/catchup` → `pip install -e .` → **Docker up** (`docker-compose up -d`) → verify the
+baseline. Fresh clone also needs `git config core.hooksPath .githooks` and poppler/tesseract/ghostscript
+for Stage 4 (`GETTING_STARTED.md` §1a/§1b).
 
-Console: `python3 -m infrastructure.acquisition.process_governance.server` (→ :8005; Stage 5 default).
-**Reload the browser for `static/*.js`, restart the server for Python changes.** Self-verify UI changes with
-Playwright before shipping visuals (Python playwright isn't installed — drive the Node one in
-`infrastructure/scraper`). CI runs two jobs: the DB-free suite + `governance-db` (`pytest -m govdb` on a
-Postgres service container).
+**Verify the baseline — expected counts live in `GETTING_STARTED.md` §3, which is their ONE home.**
+`lint-imports` + `pytest -q -m "not integration"` is the fast gate; add `pytest -q -m govdb` (Docker up)
+and `npm test` in `infrastructure/scraper` when touching those layers. A count that DROPS is the signal;
+they grow with every merged PR. Stage-5 re-ingest (~8.5 min, only after a scoring change or new
+captures): §3a.
 
-**Precious state + backups:** `label` (incl. `facets_json`) / `cluster_split` / `followup_flag` /
-`handoff` + the gate@8 human-judgment tables (`stage8_approval` incl. frozen receipts, `band_exclusion`,
-`human_added_fact`, `slot_assignment`, `gate_mode`) live in the governance DB;
-`handoff_<hash>_<ts>.json` under `data/acquisition/handoffs/` is immutable; `saved_view` holds UI prefs.
-The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.json`,
-`district_status.json`, `stage8_approvals.json`, `band_exclusions.json`, `human_added_facts.json`,
-`slot_assignments.json`, …) into every commit — on a fresh clone run `git config core.hooksPath
-.githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
-(`GETTING_STARTED.md` §1a).
+**Console:** `python3 -m infrastructure.acquisition.process_governance.server` → :8005. Scratch servers
+go on **:8015 — never :8005**, Ian's working console. Playwright-verify UI work against real records
+before shipping visuals; runbook, specimen records, and the clone-isolation trap (REQ-176):
+`GETTING_STARTED.md` → "Running the governance console".
+
+**Precious state:** `label` (incl. `facets_json`) / `cluster_split` / `followup_flag` / `handoff` + the
+gate@8 human-judgment tables (`stage8_approval` incl. frozen receipts, `band_exclusion`,
+`human_added_fact`, `slot_assignment`, `gate_mode`) live in the governance DB; `handoff_<hash>_<ts>.json`
+under `data/acquisition/handoffs/` is immutable; `saved_view` holds UI prefs. The tracked
+`.githooks/pre-commit` sweeps the git-backed JSON twins into every commit — **so any commit carries
+whatever console state is live at that moment.**
+
+**Ian drives the console; prepare and verify, don't execute stage runs.** Exceptions: the Stage 9 CLI,
+the #716 replay, and the read-only measurement scripts.
+
+**Operator CLIs:** `python3 -m infrastructure.acquisition.stage9_incorporate <did> [--dry-run]` (Stage 9
+fires automatically on gate@8 approval — the CLI is the recovery/backfill path) ·
+`…process_governance.stage8_sendback route <did> --route 8->1|8->6|unrouted [--dry-run]` ·
+`…stage8_aggregate.rereview [<did> …]` · `…scripts.analyze.per_grade_lct_sample` (sign-off preview).
+
+**Measurement scripts** (rerunnable, read-only, import the LIVE functions):
+`docs/technical-notes/production-quality-control-research/` — see its README for the standing
+watchdogs; each script's docstring carries its own check-map, so run the script rather than trusting
+any summary of it.
 
 **Current status (2026-08-24 evening): PR #920 OPEN (`fix/670-loud-capture-timeout`) — #670 done,
 both halves, closes on merge (REQ-189).** The failed-latest veto: a district whose latest
@@ -176,10 +196,11 @@ and does not gate it).**
 2. **#620 tail residue, console-driven, no new code:** dispatch Broward/Cleveland (+ Orange
    County) at gate@6 once gate@5 tagging completes — Essex Westford is already written (Stage 9).
    Then the 5→1 composer for West Ada/Lincoln/Baldwin, plus Lewiston and Mobile.
-3. **Close in order:** **#614** (Stage-9 console view — **#92 closes here**, build proven by 12+
-   production writes and growing); **#640 + #625**, then **#617 closes** at #620's 27th write;
-   **#708** re-check AFTER — the campaign's fresh extractions widen its thin `identity_json`
-   coverage on their own.
+3. **Close in order:** **#92 — confirm it can close.** Its last named sub-issue #614 (Stage-9 console
+   view) closed 2026-08-23 and the epic's body ("Designed, not built") is now false: Stage 9 is built,
+   auto-fires on gate@8 approval, and has 12+ production writes. Ian's call whether anything remains.
+   Then **#640 + #625**, then **#617 closes** at #620's 27th write; **#708** re-check AFTER — the
+   campaign's fresh extractions widen its thin `identity_json` coverage on their own.
 4. **#723 track: #622 → #645 → #624, plus #901.** #622 now carries #623's resolver half and three
    pins named in its issue comment (the #670 veto falsifiers · the ordinary-batch disk-rule test
    it must consciously rewrite · the receipts-write-only AST pin), plus a new datum: the
@@ -238,79 +259,6 @@ from a migrated one and fails raw `text()` INSERTs **on CI only**. Always pair w
 Enforced DB-free by `tests/test_precious_alters_parity.py`. **Verify a new precious column against a
 THROWAWAY governance DB — the local migrated one tests the path that isn't broken.**
 
-**Cloning the governance DB does NOT isolate the git-tracked JSON twins (REQ-176).** They are files
-on disk and every exporter rebuilds them WHOLESALE from the connected DB's log, so a scratch console
-on a clone writes its throwaway drafts into `district_status.json` (this happened during #822's
-verification) and a scratch server on an EMPTY governance DB would blank all twelve — measured, the
-tracked status file holds 175 districts and an empty-DB export produces 0. `guard_tracked_backup`
-now quarantines under EITHER cause (pytest, or a non-canonical DB) with a one-time note.
-**Seeing that quarantine line while running against a clone is the guard working.**
-**Outstanding:** Playwright-verify the gate@6 + gate@1 console changes (incl. #853's third `benchmark-only held` badge arm — seed a clone with an `out_of_window` gt:// label), **#869's gate@5 "densest" badge** (it now excludes chrome, so a footer with unique times must read `adder`, not `densest` — `0103390:fb71b7cc63` is the record, footer 12 times vs page.txt 0; source-pinned only so far), #647's Stage 2/3/4 status/Run
-control, AND **#840's new gate@5 page-scoping card** (★ harvest / ◆ floor markers, `data-scoping=`
-DOM hook — static-source-pinned only so far); #667's gate@8/#662's gate@5 badges, #684's staff-day
-surfacing, the three gate@8 arrows, and **#673's gate@5 vintage surface** ARE verified — rerunnable
-verifiers `infrastructure/scraper/verify_684_console.mjs`, `verify_682_console.mjs`,
-`verify_822_console.mjs` (#822's gate@6 overflow badge + gate@7 degraded banner, 15/15 — it also
-documents the clone-and-seed runbook, since the gate@7 banner reads a STORED column and every live
-row is `{}` until a post-#822 Stage-7 run happens), and **`verify_673_console.mjs`** (12/12 PASS on
-the real TAOS records; its own first run caught a live bug — see the 2026-08-22/23 history entry).
-The pattern to extend, next to #887/#888.
-**Deferred by design (epic #128):** #642 (content-derived document vintage) and #643 (the Stage-3
-render-facts probe; rides #623's Node seam — now ALSO the spine of epic #864). **Retired, do not do:** Phase 2e's retroactive
-`dispatch_type='benchmark'` tagging — arm 2 derives it. Banked routing: #112 → epic #128. Parked:
-#475/#476, #103 (+#110); the SEA integration follow-up (~9 states) is an opt-in backlog item — ask
-Ian before filing. Documented-in-code deferrals: `_satisfied_bands_now` batching; the #522 guardrail's
-per-rep keyword/table attribution (needs a server payload change); JS behavioral tests (no JS
-harness); the remediation-receipt exception is not STAGE-scoped (30-day expiry since 2026-07-20);
-attribution v1 reads each district's LATEST candidate plan; the `stage6_handoff/requests.py:17-18`
-docstring falsely claims Stage 7 "reads ONLY the flagged pages" — the `pages` hint never scoped
-content (the slice FILE is the scoping), a live source of wrong inferences worth a one-line issue.
-Resume-essentials (re-verified 2026-08-24 on `fix/670-loud-capture-timeout`; post-#920 numbers —
-baseline GREEN, no known-red command; the integration figures carry from the same-day `main`
-verification, unchanged by #920): `pip install -e .` → Docker up (`docker-compose up -d`) →
-`git config core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0
-broken**) + `pytest -q -m "not integration"` (expect **2490** pass, 1 skipped [pyarrow]) +
-`pytest -q -m govdb` (expect **409**, Postgres up) + `pytest tests/test_*_integration.py` (expect
-**257** pass, 149 skipped) + `cd infrastructure/scraper && npm test` (expect **105**) +
-`flake8 . --count --select=E9,F63,F7,F82` (expect **0** — CI's blocking lint; the vulture whitelist
-is `per-file-ignores`'d for F821). NB `pytest -m integration` also carries a NETWORK test
-(`test_model_windows_integration.py`, #809) that re-fetches OpenRouter — skips cleanly offline,
-excluded from the default suite. **Full re-ingest is ~8.5 min**
-(`python3 -m infrastructure.acquisition.stage5_filter.build_signals --assert-floor`) — needed only
-after a scoring/config change or new captures; run it with `--assert-floor` so a recall regression
-rolls back inside the transaction; `pg_dump` the precious tables first (governance DB is
-`postgresql://…@localhost:5432/governance`, separate from the LCT DB).
-**pytest is 9.1.1**: `pytest.ini` declares `pythonpath = .` — without it, pytest 9's bare `pytest`
-script fails COLLECTION on `tests/test_benchmark_*`. `requirements.txt` floor is `pytest>=9.0`.
-Scheduled CI runs nightly (#722).
-Console: reload the browser for `static/*.js`; Playwright-verify UI work against REAL records (Huntington
-`4824000:af06722adb` 333k-char handbook; `0602095:6e8db3e114` 258 rasters + a floor-slice PDF at
-311 pages; Bentonville `0503060:a5f32ff869` staff-day tier B, `0503060` again for gate@8's write
-badge; Broward `1200180` for gate@8 send-back routing; **`0904830:71acfa3404` the 1,017-page
-handbook whose floor slice was #834's dead-slice case — the record to Playwright #840 against**).
-Drive the Node Playwright from `infrastructure/scraper`; scratch console servers on `:8015`, never
-Ian's `:8005`.
-Stage 9 incorporate CLI: `python3 -m infrastructure.acquisition.stage9_incorporate <did> [--dry-run]`
-(fires automatically on gate@8 approval, #682 — the CLI is the recovery/backfill path); gate@8
-send-back routing: `python3 -m infrastructure.acquisition.process_governance.stage8_sendback {route
-<did> --route 8->1|8->6|unrouted} [--dry-run]` (#689); re-review audit: `python3 -m
-infrastructure.acquisition.stage8_aggregate.rereview [<did> …]` (#713); sign-off preview: `python3
--m infrastructure.scripts.analyze.per_grade_lct_sample`. **Measurement scripts (rerunnable,
-read-only, import the LIVE functions)** — all under
-`docs/technical-notes/production-quality-control-research/` (filenames end `-measure.py`); each
-script's docstring carries its own check-map (C1/C2/…), so run the script, don't trust a summary:
-`2026-08-17-{per-page-uncap,timebearing-floor}` · `2026-08-18-output-overflow` (#822) ·
-`2026-08-18-roster-hit` (#826) · `2026-08-18-segment-main-alternate` (#841 — re-run post-re-ingest;
-S1 should report 0 NULL) · `2026-08-19-chrome-first-send` (#862/#870; C3 is #863's watchdog) ·
-`2026-08-21-read-timing-split` (#863; C5 is #873's login_wall watchdog — corpus property clears
-only on RE-CAPTURE, `NOTHING MEASURED` until then is the honest state) ·
-`2026-08-21-geo-ladder-regression` (#672 — quote the plan-aware column, never the raw count) ·
-`2026-08-22-batch-done-predicate` (#671/#885 — C5's cross-batch window must stay 0) ·
-`2026-08-23-leftpane-vs-stageview` (#888 — re-run before fixing; the corpus moves under it) ·
-`2026-08-23-tool-redundancy` (#890/#891 — verdicts are REDUNDANCY, never speedup, until #890 lands
-timing) · `2026-08-24-failed-latest-veto` (#670 — C2 must stay 0 violations / 0 newly-asserted).
-Full detail: `docs/PROJECT_HISTORY.md` (dated entries), `STAGE1-9_*_DESIGN.md`,
-`PIPELINE_GOVERNANCE_AND_STATE.md`, `docs/REQUIREMENTS.yaml`.
 
 ---
 
@@ -392,9 +340,6 @@ pytest tests/test_arch_manifest.py    # cross-boundary FITNESS functions vs arch
 > literals, stage receipts), enforced as fitness functions. **When you add such an edge, update the manifest**
 > — that edit is the review surface, and the suite fails on an undeclared one.
 
-#### Design System for frontend/UI via DesignSync
-To access current design resources, use the claude_design MCP (https://api.anthropic.com/v1/design/mcp, auth via /design-login) to import this project: https://claude.ai/design/p/07ef80cc-f2fe-4393-945e-99f1a40b0809
-
 ---
 
 ## Key Files
@@ -436,12 +381,16 @@ This is the core briefing. Load the right doc for the task:
 
 ## Critical Rules
 
-1. **Docker Required**: Always use `docker-compose up -d` before database operations. Never use `brew services start postgresql` - the `.env` is configured for Docker's PostgreSQL container.
+Data rules 1-5 are enforced in code (`COVID_EXCLUDED_YEARS`, the WAF one-attempt predicate, the
+temporal-span migration check) and restated in `GETTING_STARTED.md` §Critical Rules. The two that are
+purely behavioural — and therefore only live here — are 6 and 7.
+
+1. **Docker Required**: `docker-compose up -d` before any DB operation. Never `brew services start postgresql` — `.env` points at Docker's Postgres.
 2. **COVID Data Exclusion**: Never use 2019-20 through 2022-23 data
 3. **Security Blocks**: ONE-attempt rule for Cloudflare/WAF-protected districts
 4. **Temporal Validation**: Data from multiple sources must span ≤3 years
-5. **Raw Data**: Never modify files in `data/raw/`
-6. **Data Verification**: ALWAYS verify data exists in database before claiming enrichment counts. Never trust dispatch documentation without database verification.
+5. **Raw Data**: Never modify files in `data/raw/` (convention — nothing mechanically stops you)
+6. **Data Verification**: ALWAYS verify data exists in the database before claiming enrichment counts. Never trust dispatch documentation without database verification.
 7. **Research before implementing**: When a task involves a non-trivial design decision, an unfamiliar
    failure mode, or a pattern this codebase hasn't established a convention for (state-machine/invariant
    design, a new library, a class of bug just hit), do a web search *before* writing code — not only

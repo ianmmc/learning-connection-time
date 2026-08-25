@@ -8576,6 +8576,14 @@
     "updated_at": "2026-08-25T03:52:05Z"
   },
   {
+    "rec_key": "1200180:069bc6dbb6",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T04:50:12Z"
+  },
+  {
     "rec_key": "1200180:0d8a7a1514",
     "primary_label": "target_absent",
     "facets_json": "{\"sports\": \"yes\"}",
@@ -8590,6 +8598,14 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-08-25T01:00:19Z"
+  },
+  {
+    "rec_key": "1200180:175dfb36eb",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{\"office_building_hours\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T04:50:50Z"
   },
   {
     "rec_key": "1200180:1df2fda424",
@@ -8680,6 +8696,14 @@
     "updated_at": "2026-08-25T02:24:42Z"
   },
   {
+    "rec_key": "1200180:4d3c0e3a20",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T04:02:20Z"
+  },
+  {
     "rec_key": "1200180:52b4f372cd",
     "primary_label": "district_hub_by_school",
     "facets_json": "{}",
@@ -8766,6 +8790,14 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-08-25T02:24:28Z"
+  },
+  {
+    "rec_key": "1200180:7dbe93b1e3",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T04:00:08Z"
   },
   {
     "rec_key": "1200180:7fea6251da",
@@ -8864,6 +8896,14 @@
     "updated_at": "2026-08-25T02:23:18Z"
   },
   {
+    "rec_key": "1200180:a9581dbbbf",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{\"office_building_hours\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T04:00:21Z"
+  },
+  {
     "rec_key": "1200180:ab3da0c485",
     "primary_label": "school_bell_table",
     "facets_json": "{\"academic_calendar\": \"yes\", \"other_schedule\": \"yes\"}",
@@ -8886,6 +8926,14 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-08-25T00:56:23Z"
+  },
+  {
+    "rec_key": "1200180:ce58f34052",
+    "primary_label": "target_absent",
+    "facets_json": "{\"office_building_hours\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T04:50:22Z"
   },
   {
     "rec_key": "1200180:d5eb62e7a4",
