@@ -195,9 +195,15 @@ own track and does not gate it).**
 1. **PR #920 MERGED, #670 closed.** The first Stage-3 run since is the live proof of the
    `CAPTURE_SUMMARY` contract — expected uneventful (both falsifiers ran red-then-green, plus a
    real-browser smoke), but watch it. Batches 46-57 run Stage 3 on the post-merge code.
-2. **#620 tail residue, console-driven, no new code:** dispatch Broward/Cleveland (+ Orange
-   County) at gate@6 once gate@5 tagging completes — Essex Westford is already written (Stage 9).
-   Then the 5→1 composer for West Ada/Lincoln/Baldwin, plus Lewiston and Mobile.
+2. **#620 stays OPEN until all 27 are written** (Ian, 2026-08-25 — the deliverable is 27 districts
+   on production provenance, not a demonstration; also preserves #617's trigger). **16/27 written.**
+   The 11 left, by what each needs: **gate@8 review (4)** — Orange, Cleveland, West Ada, Lincoln,
+   all extracted; **gate@5 tagging (4)** — Baldwin, both New Havens, Cedar Rapids; **upstream (2)**
+   — Mobile (`captured_all`), Lewiston (`captured_partial`); **blocked (1)** — Broward, on #686.
+   NB two live findings from the 08-25 dispatch: **Orange's extraction is `output_overflow`**
+   (6 accepted / 118 unresolved on a 463-fact district) — a Council-Lab-gated case (#80/#823), NOT
+   a review error; **Cleveland returned a degenerate fact** (`school_name`/`grade_level` both null,
+   0 accepted, $0.0003) — check #707 before re-dispatching or a re-send yields the same nothing.
 3. **#614 — the real #92 blocker, REOPENED 2026-08-25.** It was closed as COMPLETED on 08-23 with
    no comment and no linked work, but **the deliverable was never built**: the console stage picker
    runs Stage 1→8 + Settings, there is no `stage9view` and no `stage9.js`. Every "Stage 9" string in

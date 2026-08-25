@@ -58,5 +58,15 @@
     "reason": "Specialized science program; not a full school. https://resources.finalsite.net/images/v1774632822/bridgeportedunet/ohnojtza3lw84d1b1bls/AquaProgramofStudies_1.pdf",
     "actor": "ian",
     "created_at": "2026-07-29T04:03:49Z"
+  },
+  {
+    "exclusion_id": 7,
+    "district_id": "5508790",
+    "band": "elementary",
+    "norm_school": "marshall early learning center",
+    "school": "marshall early learning center",
+    "reason": "Pre-K early learning center",
+    "actor": "ian",
+    "created_at": "2026-08-25T06:12:07Z"
   }
 ]
