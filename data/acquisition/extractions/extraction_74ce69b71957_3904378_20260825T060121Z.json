@@ -1,0 +1,97 @@
+{
+  "handoff_hash": "74ce69b71957",
+  "district": {
+    "district_id": "3904378",
+    "name": "Cleveland Municipal",
+    "reps": [
+      {
+        "rec_key": "3904378:6316d3e16b",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "error_kind": null,
+            "n_facts": 1,
+            "n_rows_raw": 1,
+            "facts": [
+              {
+                "grade_level": null,
+                "start_time": "07:42",
+                "end_time": "14:20",
+                "school_name": null,
+                "confidence": "high",
+                "evidence_quote": "Eighth | 1:22 p.m. \u2013 2:10 p.m. | 1:22 p.m. \u2013 2:10 p.m. | 1:22 p.m. \u2013 2:10 p.m.",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1529,
+            "completion_tokens": 143,
+            "cost_usd": 0.0002101,
+            "latency_ms": 1488,
+            "finish_reason": "stop",
+            "generation_id": "gen-1787637678-vIMKNSDj5bKDQJ6bccSw",
+            "truncation_retried": false,
+            "max_tokens_sent": 16000
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "error_kind": null,
+            "n_facts": 0,
+            "n_rows_raw": 0,
+            "facts": [],
+            "prompt_tokens": 1456,
+            "completion_tokens": 163,
+            "cost_usd": 8.584e-05,
+            "latency_ms": 2623,
+            "finish_reason": "stop",
+            "generation_id": "gen-1787637679-tmMvV3SXfNfPkeCaVqxB",
+            "truncation_retried": false,
+            "max_tokens_sent": 16000
+          }
+        ],
+        "accepted": [],
+        "unresolved": [],
+        "nameless_yield": true,
+        "overflow": false
+      }
+    ],
+    "accepted": [],
+    "unresolved": [],
+    "n_reps": 1,
+    "n_judged": 0,
+    "bands": {},
+    "telemetry": {
+      "calls": 2,
+      "judge_calls": 0,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "degraded_reps": 0,
+      "truncated_caps": [],
+      "looped": 0,
+      "prompt_tokens": 2985,
+      "completion_tokens": 306,
+      "cost_usd": 0.00029594,
+      "degraded_kinds": {},
+      "overflow_reps": 0,
+      "overflow_unassessable": 0,
+      "transient_retries": 0,
+      "nameless_yield_reps": 1
+    },
+    "state": "OH"
+  }
+}

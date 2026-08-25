@@ -1,0 +1,5353 @@
+{
+  "handoff_hash": "40a410cc08ee",
+  "district": {
+    "district_id": "1201440",
+    "name": "ORANGE",
+    "reps": [
+      {
+        "rec_key": "1201440:b8f930171d",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "error_kind": null,
+            "n_facts": 0,
+            "n_rows_raw": 0,
+            "facts": [],
+            "prompt_tokens": 10133,
+            "completion_tokens": 32000,
+            "cost_usd": 0.0138133,
+            "latency_ms": 61466,
+            "finish_reason": "length",
+            "generation_id": "gen-1787637254-XEi7HwREatJyMnKgcpKW",
+            "truncation_retried": false,
+            "max_tokens_sent": 32000
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "error_kind": null,
+            "n_facts": 124,
+            "n_rows_raw": 124,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Aloma",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Andover",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Apopka",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Arbor Ridge K-8",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Atwater Bay",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Avalon",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Azalea Park",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Bay Lake",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Bay Meadows",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Blankner K-8",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Brookshire",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Camelot",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Castleview",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Castle Creek",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Catalina",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Cheney",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Citrus",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Columbia",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Conway",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Cypress Springs",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Deerwood",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Dillard Street",
+                "confidence": "high",
+                "evidence_quote": "8:30 2:45 1:45",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Dommerich",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Dover Shores",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Dr. Phillips",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Dream Lake",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Eagle Creek",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Eagles Nest",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "East Lake",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Endeavor",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Engelwood",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Forsyth Woods",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Frangus",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Hamlin",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Hiawassee",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Hidden Oaks",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Hillcrest",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Hungerford",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Hunter\u2019s Creek",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Independence",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Ivey Lane",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "John Young",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Keene\u2019s Crossing",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Kelly Park K-8",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Lake Como K-8",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Lake Gem",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Lake George",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Lake Silver",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Lake Sybelia",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Lake Weston",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Lake Whitney",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Lakemont",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Lakeville",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Lancaster",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Laureate Park",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Lawton Chiles",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Little River",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Lockhart",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Lovell",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Luminary",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Maxey",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "MetroWest",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Millennia",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Millennia Gardens",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Mollie Ray",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Moss Park",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "NorthLake Park",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Oak Hill",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Oakshire",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Ocoee",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "OCPS Academic Center for Excellence K-8",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Orange Center",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Orlando Gifted Academy K-8",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Ovation (NEW 2026-27)",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Palm Lake",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Palmetto",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Panther Lake",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Pinar",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Pershing K-8",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Phillis Wheatley",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Pine Hills",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Pineloch",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Pinewood",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Prairie Lake",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Princeton",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Ridgewood Park",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Riverdale",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Riverside",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Rock Lake",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Rock Springs",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Rolling Hills",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Rosemont",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Sadler",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Sally Ride",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Sand Lake",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Shenandoah",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Shingle Creek",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Southwood",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Spring Lake",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Stone Lakes",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Stonewyck",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Summerlake",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "SunBlaze",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "SunRidge",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Sunrise",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Sunset Park",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Sunshine",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Tangelo Park",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Thornebrooke",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Three Points",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Tildenville",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Timber Lakes",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Union Park",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Ventura",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Village Park",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Vista Lakes",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Vista Pointe",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Washington Shores",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Water Spring",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Waterbridge",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Waterford",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Wedgefield K-8",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "West Creek",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "West Oaks",
+                "confidence": "high",
+                "evidence_quote": "8:45 3:00 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 10029,
+            "completion_tokens": 16384,
+            "cost_usd": 0.00181217,
+            "latency_ms": 211301,
+            "finish_reason": "length",
+            "generation_id": "gen-1787637315-Fm4DWIjRwrT4A9iXkwym",
+            "truncation_retried": false,
+            "max_tokens_sent": 16384
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "error_kind": null,
+            "n_facts": 16,
+            "n_rows_raw": 16,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Killarney",
+                "confidence": "high",
+                "evidence_quote": "Killarney | 8:45 | 3:00 | 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": "multiple",
+                "campus_names": [
+                  "Killarney",
+                  "Lake Como K-8",
+                  "Lake Gem",
+                  "Lake George",
+                  "Lake Silver",
+                  "Lake Sybelia",
+                  "Lake Weston",
+                  "Lake Whitney",
+                  "Lakemont",
+                  "Lakeville",
+                  "Lancaster",
+                  "Laureate Park",
+                  "Lawton Chiles",
+                  "Little River",
+                  "Lockhart",
+                  "Lovell",
+                  "Luminary",
+                  "Maxey",
+                  "MetroWest",
+                  "Millennia",
+                  "Millennia Gardens",
+                  "Mollie Ray",
+                  "Moss Park",
+                  "NorthLake Park",
+                  "Oak Hill",
+                  "Oakshire",
+                  "Ocoee",
+                  "OCPS Academic Center for Excellence K-8",
+                  "Palm Lake",
+                  "Palmetto",
+                  "Panther Lake",
+                  "Pinar",
+                  "Pershing K-8",
+                  "Phillis Wheatley",
+                  "Pine Hills",
+                  "Pineloch",
+                  "Pinewood",
+                  "Prairie Lake",
+                  "Princeton",
+                  "Ridgewood Park",
+                  "Riverdale",
+                  "Riverside",
+                  "Rock Lake",
+                  "Rock Springs",
+                  "Washington Shores",
+                  "Water Spring",
+                  "Waterbridge",
+                  "Waterford",
+                  "Wedgefield K-8",
+                  "West Creek",
+                  "West Oaks",
+                  "Westbrooke",
+                  "Westpointe",
+                  "Wetherbee",
+                  "Whispering Oaks",
+                  "Windermere",
+                  "Windy Ridge K-8",
+                  "Winegard",
+                  "Wolf Lake",
+                  "Wyndham Lakes",
+                  "Zellwood"
+                ]
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:30",
+                "end_time": "16:04",
+                "school_name": "Apopka",
+                "confidence": "high",
+                "evidence_quote": "Apopka | 9:30 | 4:04 | 2:54",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": "multiple",
+                "campus_names": [
+                  "Apopka",
+                  "Avalon",
+                  "Bridgewater",
+                  "Carver",
+                  "Chain of Lakes",
+                  "College Park",
+                  "Conway",
+                  "Corner Lake",
+                  "Discovery",
+                  "Freedom",
+                  "Glenridge",
+                  "Gotha",
+                  "Hamlin",
+                  "Horizon West",
+                  "Howard",
+                  "Hunter\u2019s Creek",
+                  "Innovation",
+                  "Lake Nona",
+                  "Lakeview",
+                  "Legacy",
+                  "Liberty",
+                  "Lockhart",
+                  "Luminary",
+                  "Maitland",
+                  "Meadow Woods",
+                  "Meadowbrook",
+                  "Memorial",
+                  "Ocoee",
+                  "Odyssey",
+                  "Piedmont Lakes",
+                  "Roberto Clemente",
+                  "Robinswood",
+                  "South Creek",
+                  "Southwest",
+                  "SunRidge",
+                  "Timber Springs",
+                  "Walker",
+                  "Water Spring",
+                  "Westridge",
+                  "Wolf Lake"
+                ]
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "14:20",
+                "school_name": "Apopka",
+                "confidence": "high",
+                "evidence_quote": "Apopka | 7:20 | 2:20 | 1:10",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:42",
+                "end_time": "15:04",
+                "school_name": "Lake Como K-8",
+                "confidence": "high",
+                "evidence_quote": "Grades 6-8 | 8:42 | 3:04 | 2:04",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:42",
+                "end_time": "15:04",
+                "school_name": "Arbor Ridge K-8",
+                "confidence": "high",
+                "evidence_quote": "Grades 6-8 | 8:42 | 3:04 | 2:04",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "14:45",
+                "school_name": "Dillard Street",
+                "confidence": "high",
+                "evidence_quote": "Dillard Street | 8:30 | 2:45 | 1:45",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "OCPS Academic Center for Excellence K-8",
+                "confidence": "high",
+                "evidence_quote": "Grades K-5 | 8:45 | 3:00 | 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:42",
+                "end_time": "15:04",
+                "school_name": "OCPS Academic Center for Excellence K-8",
+                "confidence": "high",
+                "evidence_quote": "Grades 6-8 | 8:42 | 3:04 | 2:04",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Orlando Gifted Academy K-8",
+                "confidence": "high",
+                "evidence_quote": "Grades K-5 | 8:45 | 3:00 | 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:42",
+                "end_time": "15:04",
+                "school_name": "Orlando Gifted Academy K-8",
+                "confidence": "high",
+                "evidence_quote": "Grades 6-8 | 8:42 | 3:04 | 2:04",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Pershing K-8",
+                "confidence": "high",
+                "evidence_quote": "Grades K-5 | 8:45 | 3:00 | 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:42",
+                "end_time": "15:04",
+                "school_name": "Pershing K-8",
+                "confidence": "high",
+                "evidence_quote": "Grades 6-8 | 8:42 | 3:04 | 2:04",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Wedgefield K-8",
+                "confidence": "high",
+                "evidence_quote": "Grades K-5 | 8:45 | 3:00 | 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:42",
+                "end_time": "15:04",
+                "school_name": "Wedgefield K-8",
+                "confidence": "high",
+                "evidence_quote": "Grades 6-8 | 8:42 | 3:04 | 2:04",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Windy Ridge K-8",
+                "confidence": "high",
+                "evidence_quote": "Grades K-5 | 8:45 | 3:00 | 2:00",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:42",
+                "end_time": "15:04",
+                "school_name": "Windy Ridge K-8",
+                "confidence": "high",
+                "evidence_quote": "Grades 6-8 | 8:42 | 3:04 | 2:04",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 9947,
+            "completion_tokens": 2041,
+            "cost_usd": 0.00201778,
+            "latency_ms": 58587,
+            "finish_reason": "stop",
+            "generation_id": "gen-1787637527-Eyyydnta9250CkZEiCqg",
+            "truncation_retried": false,
+            "max_tokens_sent": 16384
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "dillard street",
+            "start": "08:30",
+            "end": "14:45",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "120144001389",
+              "roster_school": "DILLARD STREET ELEMENTARY",
+              "rostered_bands": [
+                "elementary"
+              ]
+            },
+            "evidence": {
+              "judge": {
+                "quote": "Dillard Street | 8:30 | 2:45 | 1:45",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lake como",
+            "start": "08:42",
+            "end": "15:04",
+            "gross": 382,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "120144001372",
+              "roster_school": "LAKE COMO SCHOOL",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "rules": {
+                "lake como k 8": "grade_span"
+              }
+            },
+            "evidence": {
+              "judge": {
+                "quote": "Grades 6-8 | 8:42 | 3:04 | 2:04",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "ocps academic center for excellence",
+            "start": "08:45",
+            "end": "15:00",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "120144008606",
+              "roster_school": "OCPS ACADEMIC CENTER FOR EXCELLENCE",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "rules": {
+                "ocps academic center for excellence k 8": "grade_span"
+              }
+            },
+            "evidence": {
+              "judge": {
+                "quote": "Grades K-5 | 8:45 | 3:00 | 2:00",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "orlando gifted",
+            "start": "08:45",
+            "end": "15:00",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "120144008645",
+              "roster_school": "ORLANDO GIFTED ACADEMY",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "rules": {
+                "orlando gifted k 8": "grade_span"
+              }
+            },
+            "evidence": {
+              "judge": {
+                "quote": "Grades K-5 | 8:45 | 3:00 | 2:00",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "pershing",
+            "start": "08:45",
+            "end": "15:00",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "120144001425",
+              "roster_school": "PERSHING SCHOOL",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "rules": {
+                "pershing k 8": "grade_span"
+              }
+            },
+            "evidence": {
+              "judge": {
+                "quote": "Grades K-5 | 8:45 | 3:00 | 2:00",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "wedgefield",
+            "start": "08:45",
+            "end": "15:00",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "identity": {
+              "school_id": "120144008416",
+              "roster_school": "WEDGEFIELD SCHOOL",
+              "rostered_bands": [
+                "elementary",
+                "middle"
+              ],
+              "rules": {
+                "wedgefield k 8": "grade_span"
+              }
+            },
+            "evidence": {
+              "judge": {
+                "quote": "Grades K-5 | 8:45 | 3:00 | 2:00",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "aloma",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "andover",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "apopka",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "arbor ridge k 8",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "atwater bay",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "avalon",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "azalea park",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "bay lake",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "bay meadows",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "blankner k 8",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "brookshire",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "camelot",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "castleview",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "castle creek",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "catalina",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "cheney",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "citrus",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "columbia",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "conway",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "cypress springs",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "deerwood",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "dommerich",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "dover shores",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "dr phillips",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "dream lake",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "eagle creek",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "eagles nest",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "east lake",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "endeavor",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "engelwood",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "forsyth woods",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "william frangus",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "hamlin",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "hiawassee",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "hidden oaks",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "hillcrest",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "hungerford",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "hunters creek",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "independence",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "ivey lane",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "john young",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "keenes crossing",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "kelly park",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lake gem",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lake george",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lake silver",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lake sybelia",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lake weston",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lake whitney",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lakemont",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lakeville",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lancaster",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "laureate park",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lawton chiles",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "little river",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lockhart",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lovell",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "luminary",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "william s maxey",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "metrowest",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "millennia",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "millennia gardens",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "mollie ray",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "moss park",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "northlake park community",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "oak hill",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "oakshire",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "ocoee",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "orange center",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "ovation new 2026 27",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "palm lake",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "palmetto",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "panther lake",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "pinar",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "phillis wheatley",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "pine hills",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "pineloch",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "pinewood",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "prairie lake",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "princeton",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "ridgewood park",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "riverdale",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "riverside",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "rock lake",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "rock springs",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "rolling hills",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "rosemont",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "sadler",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "sally ride",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "sand lake",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "shenandoah",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "shingle creek",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "southwood",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "spring lake",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "stone lakes",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "stonewyck",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "summerlake",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "sunblaze",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "sunridge",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "sunrise",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "sunset park",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "sunshine",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "tangelo park",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "thornebrooke",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "three points",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "tildenville",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "timber lakes",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "union park",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "ventura",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "village park",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "vista lakes",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "vista pointe",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "washington shores",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "water spring",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "waterbridge",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "waterford",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "west creek",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "west oaks",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1201440:b8f930171d",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ],
+        "council_degraded": {
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "reasons": {
+            "google/gemini-2.5-flash-lite": "reply truncated at the window (32000 completion tokens, 0 distinct fact(s) kept) \u2014 the read is incomplete",
+            "mistralai/mistral-small-24b-instruct-2501": "reply truncated at the window (16384 completion tokens, 124 distinct fact(s) kept) \u2014 the read is incomplete"
+          },
+          "kinds": {
+            "google/gemini-2.5-flash-lite": "window_truncated",
+            "mistralai/mistral-small-24b-instruct-2501": "window_truncated"
+          }
+        },
+        "overflow": true,
+        "degraded_kind": "output_overflow"
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "dillard street",
+        "start": "08:30",
+        "end": "14:45",
+        "gross": 375,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "120144001389",
+          "roster_school": "DILLARD STREET ELEMENTARY",
+          "rostered_bands": [
+            "elementary"
+          ]
+        },
+        "evidence": {
+          "judge": {
+            "quote": "Dillard Street | 8:30 | 2:45 | 1:45",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lake como",
+        "start": "08:42",
+        "end": "15:04",
+        "gross": 382,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "120144001372",
+          "roster_school": "LAKE COMO SCHOOL",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "rules": {
+            "lake como k 8": "grade_span"
+          }
+        },
+        "evidence": {
+          "judge": {
+            "quote": "Grades 6-8 | 8:42 | 3:04 | 2:04",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ocps academic center for excellence",
+        "start": "08:45",
+        "end": "15:00",
+        "gross": 375,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "120144008606",
+          "roster_school": "OCPS ACADEMIC CENTER FOR EXCELLENCE",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "rules": {
+            "ocps academic center for excellence k 8": "grade_span"
+          }
+        },
+        "evidence": {
+          "judge": {
+            "quote": "Grades K-5 | 8:45 | 3:00 | 2:00",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "orlando gifted",
+        "start": "08:45",
+        "end": "15:00",
+        "gross": 375,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "120144008645",
+          "roster_school": "ORLANDO GIFTED ACADEMY",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "rules": {
+            "orlando gifted k 8": "grade_span"
+          }
+        },
+        "evidence": {
+          "judge": {
+            "quote": "Grades K-5 | 8:45 | 3:00 | 2:00",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "pershing",
+        "start": "08:45",
+        "end": "15:00",
+        "gross": 375,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "120144001425",
+          "roster_school": "PERSHING SCHOOL",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "rules": {
+            "pershing k 8": "grade_span"
+          }
+        },
+        "evidence": {
+          "judge": {
+            "quote": "Grades K-5 | 8:45 | 3:00 | 2:00",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "wedgefield",
+        "start": "08:45",
+        "end": "15:00",
+        "gross": 375,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "identity": {
+          "school_id": "120144008416",
+          "roster_school": "WEDGEFIELD SCHOOL",
+          "rostered_bands": [
+            "elementary",
+            "middle"
+          ],
+          "rules": {
+            "wedgefield k 8": "grade_span"
+          }
+        },
+        "evidence": {
+          "judge": {
+            "quote": "Grades K-5 | 8:45 | 3:00 | 2:00",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "aloma",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "andover",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "apopka",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "arbor ridge k 8",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "atwater bay",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "avalon",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "azalea park",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "bay lake",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "bay meadows",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "blankner k 8",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "brookshire",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "camelot",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "castleview",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "castle creek",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "catalina",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "cheney",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "citrus",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "columbia",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "conway",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "cypress springs",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "deerwood",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "dommerich",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "dover shores",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "dr phillips",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "dream lake",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "eagle creek",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "eagles nest",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "east lake",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "endeavor",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "engelwood",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "forsyth woods",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "william frangus",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hamlin",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hiawassee",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hidden oaks",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hillcrest",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hungerford",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hunters creek",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "independence",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ivey lane",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "john young",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "keenes crossing",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "kelly park",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lake gem",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lake george",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lake silver",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lake sybelia",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lake weston",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lake whitney",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lakemont",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lakeville",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lancaster",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "laureate park",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lawton chiles",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "little river",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lockhart",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lovell",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "luminary",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "william s maxey",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "metrowest",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "millennia",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "millennia gardens",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "mollie ray",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "moss park",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "northlake park community",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "oak hill",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "oakshire",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ocoee",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "orange center",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ovation new 2026 27",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "palm lake",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "palmetto",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "panther lake",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "pinar",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "phillis wheatley",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "pine hills",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "pineloch",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "pinewood",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "prairie lake",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "princeton",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ridgewood park",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "riverdale",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "riverside",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "rock lake",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "rock springs",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "rolling hills",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "rosemont",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "sadler",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "sally ride",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "sand lake",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "shenandoah",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "shingle creek",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "southwood",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "spring lake",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "stone lakes",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "stonewyck",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "summerlake",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "sunblaze",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "sunridge",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "sunrise",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "sunset park",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "sunshine",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "tangelo park",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "thornebrooke",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "three points",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "tildenville",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "timber lakes",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "union park",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ventura",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "village park",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "vista lakes",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "vista pointe",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "washington shores",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "water spring",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "waterbridge",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "waterford",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "west creek",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "west oaks",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1201440:b8f930171d",
+        "source_file": "camelot_hybrid.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 375,
+        "start_time": "08:30",
+        "end_time": "14:45",
+        "n_schools": 6,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "dillard street",
+            "start_time": "08:30",
+            "end_time": "14:45",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lake como",
+            "start_time": "08:42",
+            "end_time": "15:04",
+            "gross": 382,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ocps academic center for excellence",
+            "start_time": "08:45",
+            "end_time": "15:00",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "orlando gifted",
+            "start_time": "08:45",
+            "end_time": "15:00",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "pershing",
+            "start_time": "08:45",
+            "end_time": "15:00",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "wedgefield",
+            "start_time": "08:45",
+            "end_time": "15:00",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 2,
+      "truncation_retries": 0,
+      "degraded_reps": 1,
+      "truncated_caps": [
+        16384,
+        32000
+      ],
+      "looped": 0,
+      "prompt_tokens": 30109,
+      "completion_tokens": 50425,
+      "cost_usd": 0.017643250000000003,
+      "degraded_kinds": {
+        "output_overflow": 1
+      },
+      "overflow_reps": 1,
+      "overflow_unassessable": 0,
+      "transient_retries": 0,
+      "nameless_yield_reps": 0
+    },
+    "state": "FL"
+  }
+}

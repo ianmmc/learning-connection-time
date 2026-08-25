@@ -2277,9 +2277,10 @@ The standing-lesson catalogs that CLAUDE.md carried until this consolidation now
 > instances" stays checkable. Each instance's reasoning is in the dated entry for its session.
 > Append new instances HERE; do not edit a dated entry to add one.
 
-- **Measure before fixing — SEVENTEEN instances** of an issue's (or review finding's) proposed fix
+- **Measure before fixing — TWENTY-TWO instances** of an issue's (or review finding's) proposed fix
   overturned by measurement: #691, #684, #719, #755, #706's severity ranking, #721, #794, #796,
-  #795, #822's image-council premise, #826, #841, #852, #868, #672, #671, #885. Shapes worth
+  #795, #822's image-council premise, #826, #841, #852, #868, #672, #671, #885; and from the
+  2026-08-25 tracker triage: #444, #224, #115, #260, #823 (see the sub-bullet below). Shapes worth
   remembering: a design question whose substance is a wrong predicate (#671); an issue whose
   premises expired between filing and work (#672 — re-read against today's code); mechanisms real
   in source but unreachable in practice, closed as not-bugs WITH pins (#852, #868); claims
@@ -2288,6 +2289,22 @@ The standing-lesson catalogs that CLAUDE.md carried until this consolidation now
   is decoration (#793); re-run the measurement after the fix it motivated; before calling a
   divergence a bug, check whether it is intentional (#841's 3,532 "disagreements" were one
   deliberate difference).
+  **2026-08-25 tracker-triage additions — five, and three overturned MY OWN plan** (a triage plan is
+  a claim like any other, and the plan was written from agent summaries rather than from the DB):
+  **#444** — two model families and two judges all "confirmed" a pandas header bug by reasoning about
+  the generic case; opening the actual workbook showed row 0 IS a title banner (`Unnamed: 1..N`), so
+  the flagged code was correct and the proposed fix would have broken the loader. **#224** — the
+  reported symptom is refuted by the rollup's own `default=0.0` (an empty district scores 0.0 and
+  reads `resolved`: sorts LAST, and IS hidden), and the population is empty besides. **#115** — my
+  plan asserted the demand trigger had fired on "5 Drive folder URLs, 17 `needs_oauth_reauth`"; the
+  DB has **zero of each**, and the 50 Drive records are opaque `/file/d/` links, i.e. #871's
+  population. **#260** — three issues describing "3 lines in stage7.js" were 36 sites across 10
+  files, and the *impersonation* framing was wrong: no auth layer exists, so the real cost is audit
+  attribution. **#823** — its proposed 65,535-token council is unreachable, because
+  `MAX_TOKENS_CEILING = 32000` clamps every request (`size_max_tokens(65535) → 32000`); the
+  experiment would have measured a 32k council while reporting it as 65k. Shape worth keeping: **a
+  stale line number is a tell** — every one of #334/#335/#449/#260's line refs had drifted, and in
+  each case the drift hid a changed verdict.
 - **Implemented-twice-drifts — ELEVEN instances across five sessions**: #798/#810/#799/#816;
   #834's two slice predicates (43 live disagreements); #843/#845/#847/#848 (one fold, four sites,
   two disagreeing); #841's three alternate collectors; #866 (`NON_SWAPPABLE_SOURCES` spelled a

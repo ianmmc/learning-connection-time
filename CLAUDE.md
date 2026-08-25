@@ -169,88 +169,91 @@ fires automatically on gate@8 approval — the CLI is the recovery/backfill path
 watchdogs; each script's docstring carries its own check-map, so run the script rather than trusting
 any summary of it.
 
-**Current status (2026-08-25): PR #920 MERGED — #670 CLOSED, both halves (REQ-189); branch deleted,
-`main` is the only branch.** The failed-latest veto: a district whose latest
-capture/process state_event is `failed` never renders `done` — any batch type, populated artifact
-or not — and the Stage-4 twin was proven real (its comment claimed the state couldn't exist) and
-fixed the same way, both sets including the upstream capture gate. Capture completeness is now a
-gov_db fact: Node's `captureSummary()` → the `CAPTURE_SUMMARY` stdout line → a loud raise on
-missing/mismatch → counts stamped on the stage-3 completion event
-(`fingerprints_json.capture_summary`). Receipts stay pipeline-write-only (AST-pinned). #623's
-writer half DEFERRED by design (commit-before-receipt ordering); its resolver re-homed to #622,
-which inherits three named pins — issue comments posted on both. Also 08-24: **PR #902 MERGED**
-(#717 gate@6 already-extracted delta live, REQ-186; REQ-187/188 backfilled) + the
-documentation-tower sweep (996dba0; defects filed as #918/#919, not silently patched), and a
-CLAUDE.md/memory-layer rationalization that caught three stale claims by verifying every assertion
-against the live repo — the sharpest being Durable-facts asserting "Stage 9 is unbuilt" while four
-other places described live Stage-9 writes. Ian's console drained #620's send-back tail: Essex
-Westford through Stage 9 (written); Orange County re-captured cleanly; Broward/Cleveland re-run to
-Stage 5, gate@5 tagging in progress. Batches 46-57 (12 first-run drafts, 34 districts) sit at
-gate@1 — the exact population the #670 veto now protects. Baseline GREEN (see resume-essentials).
-Full narrative: `docs/PROJECT_HISTORY.md` 2026-08-24 entry.
+**Current status (2026-08-25): tracker triage + Wave 0 hygiene COMPLETE — no code changed.**
+All 11 epics and every open issue were re-validated against live code and the governance DB.
+Open issues **98 → 91**, `sev:major` **12 → 9**, epic orphans **17 → 0** (every open non-epic
+issue now has a parent). Closed 7 (#333 #228 #444 #99 #224 #261 #262); re-scoped #623 to
+writer-only-deferred; #617 now carries its own closure condition; #706/#482 checklists replaced by
+graph-as-truth; #80/#96/#128/#482 marked standing homes. Baseline GREEN: `lint-imports` 4 kept /
+0 broken, `pytest -q -m "not integration"` **2490 passed, 1 skipped**. Prior milestone: PR #920
+(#670/REQ-189 failed-latest veto + the `CAPTURE_SUMMARY` gov_db contract) and PR #902 (#717
+gate@6 already-extracted delta, REQ-186). Full narrative: `docs/PROJECT_HISTORY.md` 2026-08-24
+entry + Part 6.
 
-**Next (RESUME HERE — 2026-08-25). Path to epic #92: #92 → #614 (reopened — see item 3; #723 is its
-own track and does not gate it).**
+**Five measured findings that change what to do next — three overturned my own triage plan:**
+- **#823's remedy is unreachable as designed.** `MAX_TOKENS_CEILING = 32000`
+  (`common/model_families.py:127`, applied at `:163`) clamps every call — proved:
+  `size_max_tokens(65535) → 32000`. A 65,535-token council would be issued 32k and *measured as
+  65k*. Raising that constant hits the ~86% of traffic unrelated to overflow, so it needs its own
+  justification; the raster→image-council path reaches 32,768 with no change.
+- **#115's demand trigger has NOT fired.** Live DB: **0** Drive *folder* URLs, **0**
+  `needs_oauth_reauth`. The 50 Drive/Docs records are opaque `/file/d/` links = **#871's**
+  population. #871 should land before #115 is reconsidered.
+- **`batch_00044` is stranded, but NOT by the deferral path.** `stage5_ingest_deferred` events = 0;
+  all 8 districts reached Stage 4 and the 14:32 recapture landed clean — Stage 4 was simply never
+  re-run. The batch-wide deferral chain is real *as code* (`server.py:1978-1985`, whose own comment
+  says "the autoflow chain has no later run"), but this is not its proven instance.
+- **CLAUDE.md was wrong about batches 46-57** — they are `follow-up`/`redo=True`/**approved**, not
+  "12 first-run drafts at gate@1". **There is no first-run batch pending; the last was
+  `batch_00036`, 2026-07-28.**
+- **#616 role 2 is DONE** (`discover_stage2.py:673`, `process_stage4.py:482`);
+  `stage4_process/headless.py:217` is the #347 self-heal (role 1 KEEP), not a leftover.
 
-1. **PR #920 MERGED, #670 closed.** The first Stage-3 run since is the live proof of the
-   `CAPTURE_SUMMARY` contract — expected uneventful (both falsifiers ran red-then-green, plus a
-   real-browser smoke), but watch it. Batches 46-57 run Stage 3 on the post-merge code.
-2. **#620 stays OPEN until all 27 are written** (Ian, 2026-08-25 — the deliverable is 27 districts
-   on production provenance, not a demonstration; also preserves #617's trigger). **16/27 written.**
-   The 11 left, by what each needs: **gate@8 review (4)** — Orange, Cleveland, West Ada, Lincoln,
-   all extracted; **gate@5 tagging (6)** — Baldwin, both New Havens, Cedar Rapids, plus **Mobile
-   (69 records unlabeled of 141) and Lewiston (25 of 35)** — both are Stage-4-complete and fully
-   ingested despite a LATER capture event (a 14:32 redo-delta pass that re-fetched nothing:
-   counts match what was already processed), so they are gate@5 work, not upstream work;
-   **blocked (1)** — Broward, on #686.
-   NB two live findings from the 08-25 dispatch: **Orange's extraction is `output_overflow`**
-   (6 accepted / 118 unresolved on a 463-fact district) — a Council-Lab-gated case (#80/#823), NOT
-   a review error; **Cleveland returned a degenerate fact** (`school_name`/`grade_level` both null,
-   0 accepted, $0.0003) — check #707 before re-dispatching or a re-send yields the same nothing.
-3. **#614 — the real #92 blocker, REOPENED 2026-08-25.** It was closed as COMPLETED on 08-23 with
-   no comment and no linked work, but **the deliverable was never built**: the console stage picker
-   runs Stage 1→8 + Settings, there is no `stage9view` and no `stage9.js`. Every "Stage 9" string in
-   the console is inside `stage8.js` (the approve button + the written/not-written badge) — gate@8
-   reporting what Stage 9 did, not a Stage 9 view. **Re-scope before building:** its work-queue
-   premise expired — #682's auto-write on approval means approved and written now sit at parity
-   (measured 51/51, 0 pending), so the backlog it was filed against no longer forms. What still
-   earns its keep is the REPORTING half: per-district incorporation status/row counts, statutory
-   fallback visibility, and a standing check that approved-vs-written parity holds (a silent
-   divergence there is #670's class of failure, and nothing surfaces it today).
-   **#92 therefore does NOT close yet** — and its own body ("Designed, not built") needs correcting,
-   since Stage 9 is built with 51 production writes; #614 is its true remaining scope.
-   Then **#640 + #625**, then **#617 closes** at #620's 27th write; **#708** re-check AFTER — the
-   campaign's fresh extractions widen its thin `identity_json` coverage on their own.
-4. **#723 track: #622 → #645 → #624, plus #901.** #622 now carries #623's resolver half and three
-   pins named in its issue comment (the #670 veto falsifiers · the ordinary-batch disk-rule test
-   it must consciously rewrite · the receipts-write-only AST pin), plus a new datum: the
-   completion event's `capture_summary` counts — district-grain done-ness with no batch conjunct.
-   **#645 is the one to watch:** the frozen handoff's per-record payload is the SPEND path's only
-   sent-rep source (a data-model gap — `extraction`/`handoff`/`school_fact`/`extraction_request`
-   none hold the rep list); when it lands, `already_extracted_reps` switches to the DB in ONE call
-   site (REQ-182). **#901's trap unchanged:** the retrofit must ENUMERATE the 20 undeclared
-   consumer edges or explicitly grandfather them — a green suite over an unenumerated baseline is
-   a measurement that cannot fail.
-5. **#916 — live `sev:major`, epic #706, NOT fixed by #670.** A capture that FINISHED as the Python
-   backstop fired is recorded as a timeout: `TimeoutExpired` propagates out of `_run` ABOVE every
-   check in `_capture_one` (including #670's two), so a complete `captures.json` is never consulted
-   and Stage 4 skips the district. 7 events / 5 districts, structurally the largest ones. ORANGE's
-   manifest is 416/416 ok with 0 `not_attempted` — proof Node never hit its own deadline, which also
-   **corrects #670's account of its own specimen** (a clean finish misrecorded, not a truncation;
-   REQ-189 stands regardless). Falsifier already written in the issue; check the Stage-2/Stage-4
-   wrappers for the same short-circuit before fixing only this one — #670's Stage-4 twin was real.
-6. **Console/measurement queue:** **#887** (in-flight vs stranded badge — Ian's design call, epic
-   #96); **#888** (left-pane fix — RE-MEASURE first via
-   `2026-08-23-leftpane-vs-stageview-measure.py`, the corpus moves under it; the residue is
-   #622's job, not a second disk check); **#890** (Stage-4 tool timing, epic #128 — the seam is
-   `process_record`'s `add()` closure; prerequisite before acting on the #890/#891
-   tool-redundancy finding, since cost is unmeasured and the most valuable tool is likely the most
-   expensive).
-7. **Blocked on Ian's design calls:** #685 (active-tab-only capture — NB the naive reveal
-   recovered NOTHING; the vendor open-state class and `max-height` are load-bearing); #871 (geo's
-   second job, REQ-184 `proposed` — the gate must be able to KEEP an off-domain document first).
-   **Ian's call, live spend:** epic #80's experiments (#823-#825), now with batch_00043's six
-   fresh GT-district extractions to work against.
+**Next (RESUME HERE — 2026-08-25). Wave 1 is next; Waves 2-4 in
+`docs/scratch-paper/2026-08-25-fresh-triage-and-validation-batch-plan.md` (untracked — scratch-paper
+is gitignored).**
+
+1. **Recover `batch_00044` — Ian, console, ZERO spend.** Stage 4 → Run. All 8 districts are
+   processed and un-vetoed (ORANGE's latest capture event is `captured_all`), so `resolved ==
+   total` should hold and the ingest should fire. Two districts (`2905790` ADAIR, `4824000`
+   HUNTINGTON) have **never reached Stage 5**. Confirm `stage=5` events appear under
+   `batch_00044` afterwards.
+2. **#916 — live `sev:major`, epic #706** (body amended 08-25: its "Stage 4 skips the district"
+   claim is FALSE — ORANGE was processed; the real cost is the batch-wide ingest stall above).
+   Fix: wrap `_run` in `except subprocess.TimeoutExpired`, then run the four checks that already
+   exist (returncode · manifest existence · `CAPTURE_SUMMARY` presence · count match) and accept a
+   valid manifest with its real outcome. Falsifier-first. **Audit the Stage-2 wrapper for the same
+   short-circuit before fixing only this one** — #670's Stage-4 twin was real, so this shape has
+   recurred twice.
+3. **Then the first-run validation batch** (5-6 small districts:
+   `python3 -m infrastructure.acquisition.stage1_queue.queue_batch 58 --n 6 --dry-run`). Rationale:
+   38 PRs merged since the last genuine first-run batch, and a redo batch **cannot** substitute —
+   it seeds capture from the prior manifest (#174), so #670's ordinary-batch veto branch and the
+   `CAPTURE_SUMMARY` contract have **never executed in production**. Land #916 first (it is the one
+   failure mode that would stall the whole batch at Stage 4). Stage-by-stage runbook in the plan
+   file; autoflow is follow-up-only.
+4. **#620 stays OPEN until all 27 are written** (Ian, 08-25). **16/27.** The 11 left:
+   **gate@8 review (4)** Orange · Cleveland · West Ada · Lincoln; **gate@5 tagging (6)** Baldwin ·
+   both New Havens · Cedar Rapids · Mobile (69 of 141 unlabeled) · Lewiston (25 of 35);
+   **blocked (1)** Broward, on #686. Two live findings unchanged: **Orange is `output_overflow`**
+   (6 accepted / 118 unresolved — Council-Lab-gated, see #823 above, NOT a review error);
+   **Cleveland returns a degenerate fact** (0 accepted, twice on 08-25) — **check #707 before
+   re-dispatching** or a re-send yields the same nothing.
+5. **Path to epic #92:** #614 (REOPENED — never built: no `stage9view`, no `stage9.js`; re-scope to
+   the REPORTING half, since #682's auto-write means approved/written sit at parity 51/51). Then
+   #640 + #625, then **#617 closes at #620's 27th write**. #708 re-check AFTER — fresh extractions
+   widen its thin `identity_json` coverage on their own.
+6. **#723 track:** #622 → #645 → #624, plus #901. #622 now owns BOTH renames + #623's resolver, and
+   inherits three named pins. **#645 to watch:** the frozen handoff's per-record payload is the
+   SPEND path's only sent-rep source. **#901's trap:** enumerate the 20 undeclared consumer edges
+   or explicitly grandfather them.
+7. **Console/measurement queue:** #888 (RE-MEASURE first via
+   `2026-08-23-leftpane-vs-stageview-measure.py`) · #887 (Ian's design call) · #890 (Stage-4 tool
+   timing; prerequisite to the #890/#891 redundancy finding) · #260 (36 actor literals → one
+   accessor + a pin) · #449 (`n_bundled || 1` renders 0 as 1).
+8. **Blocked on Ian's design calls:** #685 (the naive reveal recovered NOTHING — the vendor
+   open-state class and `max-height` are load-bearing) · #871 (the gate must be able to KEEP an
+   off-domain document first; now also gates #115) · #917 (5→1 is per-BATCH but realized
+   per-DISTRICT) · epic #80's live-spend experiments (#823-#825).
+
+**Resume essentials:** `pip install -e .` · `docker-compose up -d` (Docker Postgres — never
+`brew services`) · verify with `lint-imports` (expect 4 kept / 0 broken) + `pytest -q -m "not
+integration"` (2490 passed); add `pytest -q -m govdb` and `npm test` in `infrastructure/scraper`
+when touching those layers. Console: `python3 -m
+infrastructure.acquisition.process_governance.server` → :8005 (scratch servers on **:8015**).
+Expected counts live in `GETTING_STARTED.md` §3 — their ONE home. Governance DB import is
+`from infrastructure.acquisition.common import db as gdb` (NOT `gov_db`); council configs are at
+`common/config/council_configs.json`.
 
 Ian drives the console; prepare and verify, don't execute stage runs (Stage 9 CLI, the #716
 replay, and the read-only measurement scripts are the exceptions). *Falsifier unchanged: if any
