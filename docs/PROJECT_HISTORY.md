@@ -2266,8 +2266,16 @@ Earlier the same day: PR #902 merged (#717 already-extracted delta live, REQ-186
 REQ-187/188 backfilled) and the documentation-tower sweep committed (996dba0), filing #918/#919
 rather than silently patching.
 
-**The standing-lesson catalogs (moved here from CLAUDE.md at the 2026-08-24 consolidation — the
-dated entries above hold each instance's detail; these are the consolidated indexes):**
+The standing-lesson catalogs that CLAUDE.md carried until this consolidation now live as **Part 6** (below) — an appendix, not part of this entry, so new instances accrue there without editing a dated record.
+
+---
+
+## Part 6 — Standing-lesson catalogs (living index; consolidated from CLAUDE.md 2026-08-24)
+
+> The operative rules live in CLAUDE.md's "Standing method rules" — short, and load-bearing.
+> **This is the instance index**: which issue taught which lesson, so a claim like "seventeen
+> instances" stays checkable. Each instance's reasoning is in the dated entry for its session.
+> Append new instances HERE; do not edit a dated entry to add one.
 
 - **Measure before fixing — SEVENTEEN instances** of an issue's (or review finding's) proposed fix
   overturned by measurement: #691, #684, #719, #755, #706's severity ranking, #721, #794, #796,

@@ -8808,6 +8808,14 @@
     "updated_at": "2026-08-25T03:06:51Z"
   },
   {
+    "rec_key": "1200180:8a17dcbcde",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T04:51:51Z"
+  },
+  {
     "rec_key": "1200180:8afda84e75",
     "primary_label": "target_absent",
     "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
@@ -8872,6 +8880,14 @@
     "updated_at": "2026-08-25T03:49:11Z"
   },
   {
+    "rec_key": "1200180:a1dd17161b",
+    "primary_label": "target_absent",
+    "facets_json": "{\"out_of_window\": \"yes\", \"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T04:52:33Z"
+  },
+  {
     "rec_key": "1200180:a3e6e33581",
     "primary_label": "target_absent",
     "facets_json": "{}",
@@ -8934,6 +8950,14 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-08-25T04:50:22Z"
+  },
+  {
+    "rec_key": "1200180:d456dc21f4",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T04:51:34Z"
   },
   {
     "rec_key": "1200180:d5eb62e7a4",
