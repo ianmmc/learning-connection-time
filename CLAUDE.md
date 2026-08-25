@@ -169,8 +169,8 @@ fires automatically on gate@8 approval — the CLI is the recovery/backfill path
 watchdogs; each script's docstring carries its own check-map, so run the script rather than trusting
 any summary of it.
 
-**Current status (2026-08-24 evening): PR #920 OPEN (`fix/670-loud-capture-timeout`) — #670 done,
-both halves, closes on merge (REQ-189).** The failed-latest veto: a district whose latest
+**Current status (2026-08-25): PR #920 MERGED — #670 CLOSED, both halves (REQ-189); branch deleted,
+`main` is the only branch.** The failed-latest veto: a district whose latest
 capture/process state_event is `failed` never renders `done` — any batch type, populated artifact
 or not — and the Stage-4 twin was proven real (its comment claimed the state couldn't exist) and
 fixed the same way, both sets including the upstream capture gate. Capture completeness is now a
@@ -178,27 +178,38 @@ gov_db fact: Node's `captureSummary()` → the `CAPTURE_SUMMARY` stdout line →
 missing/mismatch → counts stamped on the stage-3 completion event
 (`fingerprints_json.capture_summary`). Receipts stay pipeline-write-only (AST-pinned). #623's
 writer half DEFERRED by design (commit-before-receipt ordering); its resolver re-homed to #622,
-which inherits three named pins — issue comments posted on both. Earlier today: **PR #902 MERGED**
+which inherits three named pins — issue comments posted on both. Also 08-24: **PR #902 MERGED**
 (#717 gate@6 already-extracted delta live, REQ-186; REQ-187/188 backfilled) + the
-documentation-tower sweep (996dba0; defects filed as #918/#919, not silently patched). Ian's
-console drained #620's send-back tail same-day: Essex Westford through Stage 9 (written); Orange
-County re-captured cleanly; Broward/Cleveland re-run to Stage 5, gate@5 tagging in progress.
-Batches 46-57 (12 first-run drafts, 34 districts) sit at gate@1 — the exact population the #670
-veto now protects. Baseline GREEN (see resume-essentials). Full day narrative:
-`docs/PROJECT_HISTORY.md` 2026-08-24 entry.
+documentation-tower sweep (996dba0; defects filed as #918/#919, not silently patched), and a
+CLAUDE.md/memory-layer rationalization that caught three stale claims by verifying every assertion
+against the live repo — the sharpest being Durable-facts asserting "Stage 9 is unbuilt" while four
+other places described live Stage-9 writes. Ian's console drained #620's send-back tail: Essex
+Westford through Stage 9 (written); Orange County re-captured cleanly; Broward/Cleveland re-run to
+Stage 5, gate@5 tagging in progress. Batches 46-57 (12 first-run drafts, 34 districts) sit at
+gate@1 — the exact population the #670 veto now protects. Baseline GREEN (see resume-essentials).
+Full narrative: `docs/PROJECT_HISTORY.md` 2026-08-24 entry.
 
-**Next (RESUME HERE — 2026-08-24). Path to epic #92 unchanged (#92 → #614; #723 is its own track
-and does not gate it).**
+**Next (RESUME HERE — 2026-08-25). Path to epic #92: #92 → #614 (reopened — see item 3; #723 is its
+own track and does not gate it).**
 
-1. **Merge PR #920** (#670 closes on merge). The first post-merge Stage-3 run is the live proof of
-   the `CAPTURE_SUMMARY` contract — expected uneventful (both falsifiers ran red-then-green, plus
-   a real-browser smoke), but watch it. Batches 46-57 should run Stage 3 AFTER the merge.
+1. **PR #920 MERGED, #670 closed.** The first Stage-3 run since is the live proof of the
+   `CAPTURE_SUMMARY` contract — expected uneventful (both falsifiers ran red-then-green, plus a
+   real-browser smoke), but watch it. Batches 46-57 run Stage 3 on the post-merge code.
 2. **#620 tail residue, console-driven, no new code:** dispatch Broward/Cleveland (+ Orange
    County) at gate@6 once gate@5 tagging completes — Essex Westford is already written (Stage 9).
    Then the 5→1 composer for West Ada/Lincoln/Baldwin, plus Lewiston and Mobile.
-3. **Close in order:** **#92 — confirm it can close.** Its last named sub-issue #614 (Stage-9 console
-   view) closed 2026-08-23 and the epic's body ("Designed, not built") is now false: Stage 9 is built,
-   auto-fires on gate@8 approval, and has 12+ production writes. Ian's call whether anything remains.
+3. **#614 — the real #92 blocker, REOPENED 2026-08-25.** It was closed as COMPLETED on 08-23 with
+   no comment and no linked work, but **the deliverable was never built**: the console stage picker
+   runs Stage 1→8 + Settings, there is no `stage9view` and no `stage9.js`. Every "Stage 9" string in
+   the console is inside `stage8.js` (the approve button + the written/not-written badge) — gate@8
+   reporting what Stage 9 did, not a Stage 9 view. **Re-scope before building:** its work-queue
+   premise expired — #682's auto-write on approval means approved and written now sit at parity
+   (measured 51/51, 0 pending), so the backlog it was filed against no longer forms. What still
+   earns its keep is the REPORTING half: per-district incorporation status/row counts, statutory
+   fallback visibility, and a standing check that approved-vs-written parity holds (a silent
+   divergence there is #670's class of failure, and nothing surfaces it today).
+   **#92 therefore does NOT close yet** — and its own body ("Designed, not built") needs correcting,
+   since Stage 9 is built with 51 production writes; #614 is its true remaining scope.
    Then **#640 + #625**, then **#617 closes** at #620's 27th write; **#708** re-check AFTER — the
    campaign's fresh extractions widen its thin `identity_json` coverage on their own.
 4. **#723 track: #622 → #645 → #624, plus #901.** #622 now carries #623's resolver half and three
