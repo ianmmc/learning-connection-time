@@ -198,8 +198,11 @@ own track and does not gate it).**
 2. **#620 stays OPEN until all 27 are written** (Ian, 2026-08-25 — the deliverable is 27 districts
    on production provenance, not a demonstration; also preserves #617's trigger). **16/27 written.**
    The 11 left, by what each needs: **gate@8 review (4)** — Orange, Cleveland, West Ada, Lincoln,
-   all extracted; **gate@5 tagging (4)** — Baldwin, both New Havens, Cedar Rapids; **upstream (2)**
-   — Mobile (`captured_all`), Lewiston (`captured_partial`); **blocked (1)** — Broward, on #686.
+   all extracted; **gate@5 tagging (6)** — Baldwin, both New Havens, Cedar Rapids, plus **Mobile
+   (69 records unlabeled of 141) and Lewiston (25 of 35)** — both are Stage-4-complete and fully
+   ingested despite a LATER capture event (a 14:32 redo-delta pass that re-fetched nothing:
+   counts match what was already processed), so they are gate@5 work, not upstream work;
+   **blocked (1)** — Broward, on #686.
    NB two live findings from the 08-25 dispatch: **Orange's extraction is `output_overflow`**
    (6 accepted / 118 unresolved on a 463-fact district) — a Council-Lab-gated case (#80/#823), NOT
    a review error; **Cleveland returned a degenerate fact** (`school_name`/`grade_level` both null,
