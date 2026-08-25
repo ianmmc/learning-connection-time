@@ -172,13 +172,18 @@ def status_for_batch(batch: dict) -> dict:
     if BT.redoes_attempted(batch):
         captured &= DS.completed_by_batch(batch["batch_id"], "capture", ids)
         processed &= DS.completed_by_batch(batch["batch_id"], "process", ids)
-    done_ids = [d["district_id"] for d in batch["districts"] if d["district_id"] in processed]
 
-    # Process FAILURES (a tool/IO crash) leave NO processed.json and write a `failed` process event with
-    # no stage number — so without this they read as `todo`, indistinguishable from "not attempted".
-    # Surface the latest process event per district; if it's `failed` and there's no processed.json, the
-    # district is `failed`, not `todo`.
+    # Process FAILURES (a tool/IO crash) write a `failed` process event with no stage number — so
+    # without this they read as `todo`, indistinguishable from "not attempted". This comment used to
+    # assert a failure "leaves NO processed.json" — the exact claim #670 falsified at Stage 3 (a late
+    # kill can land after the artifact write), and the seeded twin test proved this stage carried the
+    # same latent bug. The rule is now a VETO on every batch type, applied to BOTH sets: a
+    # failed-latest `process` event withdraws `done` (retriable), and a failed-latest `capture` event
+    # withdraws the UPSTREAM GATE (`awaiting_capture`, never a Run button over a known-bad capture).
+    # gov_db outranks the artifact (epic #723's frame); no-events districts keep the disk rule
+    # byte-for-byte. Pin: test_670_failed_latest_events_veto_disk_state_on_an_ordinary_batch.
     failed_procs: dict = {}
+    failed_caps: set = set()
     with gdb.session_scope() as con:
         CI.ensure_cache_schema(con)
         for r in con.execute(text(
@@ -187,6 +192,17 @@ def status_for_batch(batch: dict) -> dict:
                    ORDER BY district_id, event_id DESC"""), {"ids": ids or [""]}).mappings():
             if r["event_type"] == "failed":
                 failed_procs[r["district_id"]] = r["note"]
+        for r in con.execute(text(
+                """SELECT DISTINCT ON (district_id) district_id, event_type
+                   FROM state_event WHERE stage_name = 'capture' AND district_id = ANY(:ids)
+                   ORDER BY district_id, event_id DESC"""), {"ids": ids or [""]}).mappings():
+            if r["event_type"] == "failed":
+                failed_caps.add(r["district_id"])
+    processed -= set(failed_procs)
+    captured -= failed_caps
+    done_ids = [d["district_id"] for d in batch["districts"] if d["district_id"] in processed]
+
+    with gdb.session_scope() as con:
         cached_counts = {r[0]: r[1] for r in con.execute(text(
             "SELECT district_id, COUNT(*) FROM processed_doc WHERE district_id = ANY(:ids) "
             "GROUP BY district_id"), {"ids": done_ids or [""]})}

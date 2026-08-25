@@ -152,3 +152,33 @@ def test_ddir_override_writes_to_the_given_dir(tmp_path, monkeypatch):
     assert p.parent == explicit
     assert not (tmp_path / "raw").exists()                         # the glob dir was never touched
     assert p.name.startswith("filtered.") and ".py-" in p.name
+
+
+def test_670_receipts_are_write_only_in_production_code():
+    """REQ-164: receipts are audit cross-checks + recovery sources, NEVER data-transmission vehicles
+    read as input by an active-pipeline stage. Pin (#670): no module under infrastructure/ outside
+    common/receipts.py CALLS the resolvers (latest_receipt / iter_receipts) — true today, kept true.
+    #670's completeness datum deliberately travels over the capture subprocess's stdout channel and
+    lives in gov_db (the stage-3 outcome event's fingerprints_json) precisely so no pipeline stage
+    ever needs to resolve a receipt. AST-scanned, so docstring mentions don't false-positive."""
+    import ast
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[1] / "infrastructure"
+    offenders = []
+    for p in sorted(root.rglob("*.py")):
+        if p.name == "receipts.py" and p.parent.name == "common":
+            continue
+        try:
+            tree = ast.parse(p.read_text(encoding="utf-8"))
+        except SyntaxError:
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                f = node.func
+                name = f.attr if isinstance(f, ast.Attribute) else (
+                    f.id if isinstance(f, ast.Name) else None)
+                if name in {"latest_receipt", "iter_receipts"}:
+                    offenders.append(f"{p.relative_to(root.parent)}:{node.lineno}")
+    assert not offenders, (
+        "receipt resolvers called from production code (receipts are write-only for the "
+        f"pipeline; source the datum from gov_db instead): {offenders}")

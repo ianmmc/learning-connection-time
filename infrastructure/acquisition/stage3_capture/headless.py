@@ -90,13 +90,34 @@ def _plan_sha256(ddir: Path) -> str:
     return hashlib.sha256("\n".join(urls).encode()).hexdigest()
 
 
+def _capture_summary_from_stdout(stdout: str, dir_name: str) -> dict | None:
+    """Parse the district's CAPTURE_SUMMARY line from the Node run's stdout — the subprocess return
+    channel (#670). One line per district, tagged, JSON payload; a multi-district run prints several,
+    so match on the `dir` field. None when absent (the caller decides that's an error)."""
+    for line in reversed((stdout or "").splitlines()):
+        if line.startswith("CAPTURE_SUMMARY "):
+            try:
+                s = json.loads(line[len("CAPTURE_SUMMARY "):])
+            except json.JSONDecodeError:
+                continue
+            if s.get("dir") == dir_name:
+                return s
+    return None
+
+
 def _capture_one(district: dict, *, retryable_only: bool = False, plan_sha: str = None,
-                 _run=subprocess.run) -> None:
+                 _run=subprocess.run) -> dict:
     """Run the Node Playwright capture for ONE district dir (a fresh subprocess). Raises on a non-zero
     exit or a missing captures.json, so run_batch records the district `failed` rather than silently
     advancing it. `retryable_only` (#116): the Node run seeds from the prior manifest and re-attempts
     ONLY retryable failures (see RETRYABLE_ERR_PREFIXES); `plan_sha` rides along so Node can verify
-    the plan hasn't been rewritten since selection (_plan_sha256)."""
+    the plan hasn't been rewritten since selection (_plan_sha256).
+
+    Returns the CAPTURE_SUMMARY dict (#670) after cross-checking it against the manifest: Node emits
+    the summary only after a successful manifest write, so a missing line, or a records count that
+    disagrees with the manifest as read now, means the run was killed or truncated mid-write — a LOUD
+    failure (raise -> `failed` state_event), never an inference from artifact existence. The summary
+    is stamped onto the stage-3 outcome event so completeness is a gov_db fact."""
     cmd = ["node", str(CAPTURE_MJS), "district", str(RAW_DIR), district["dir"].name,
            str(CONCURRENCY), str(CAPTURE_DEADLINE_S)]   # Node owns its deadline; the subprocess timeout is a backstop
     if retryable_only:
@@ -108,6 +129,16 @@ def _capture_one(district: dict, *, retryable_only: bool = False, plan_sha: str 
         raise RuntimeError(f"node capture exit {proc.returncode}: {(proc.stderr or proc.stdout)[:300]}")
     if not (district["dir"] / "captures.json").exists():
         raise RuntimeError("node capture finished but wrote no captures.json")
+    summary = _capture_summary_from_stdout(proc.stdout, district["dir"].name)
+    if summary is None:
+        raise RuntimeError("node capture wrote captures.json but printed no CAPTURE_SUMMARY line "
+                           "(killed or crashed between the manifest write and the summary)")
+    n_manifest = len(json.loads((district["dir"] / "captures.json").read_text()))
+    if summary.get("n_records") != n_manifest:
+        raise RuntimeError(f"capture summary/manifest mismatch for {district['district_id']}: "
+                           f"summary n_records={summary.get('n_records')} vs manifest {n_manifest} "
+                           f"(truncated or concurrently rewritten)")
+    return summary
 
 
 # ----------------------------------------------------------------- status / observability (reads the DB)
@@ -145,22 +176,22 @@ def status_for_batch(batch: dict) -> dict:
     captured = {did for did, dk in ondisk.items() if (dk["dir"] / "captures.json").exists()}
     if BT.redoes_attempted(batch):
         captured &= DS.completed_by_batch(batch["batch_id"], "capture", ids)
-    # `done` = discovered, HAD links, and captured. (No-link districts never capture -> manual_flag_all.)
-    done_ids = [d["district_id"] for d in batch["districts"]
-                if d["district_id"] in captured and cand_n.get(d["district_id"], 0) > 0]
 
     # Capture FAILURES (timeout / Node crash) write a `failed` capture event with no stage number --
     # so without this they read as `todo`, indistinguishable from "not attempted" (the Brookwood bug:
     # the failure showed only in the run log). Surface the latest capture event per district; if it's
-    # `failed` and the district is not `captured`, it is `failed`, not `todo`.
+    # `failed`, the district is `failed`, not `todo` — and not `done` either:
     #
     # This comment used to assert that a failure "leaves NO captures.json". #670 disproved it: a LATE
     # timeout kills the subprocess after it has already written one (Orange County FL `1201440`, 119
     # ok=true records + a TimeoutExpired event), and artifact-existence then outranked the failure so
-    # the district rendered a clean `done`. #671's predicate retires that for REDO batches — the stale
-    # captures.json no longer confers doneness, so such a district now reaches this branch and reads
-    # `timed_out`. NOT yet fixed for ordinary batches, where `captured` is still pure disk existence;
-    # that residue is #670's own remaining scope, along with detecting truncation at all (#623).
+    # the district rendered a clean `done`. The rule is now a VETO on every batch type: a district
+    # whose latest capture event is `failed` is subtracted from `captured`, so the gov_db failure
+    # outranks the artifact (epic #723's frame — the DB is the working store, disk is evidence).
+    # Strictly-withdrawing: the no-events case keeps the disk rule byte-for-byte, protecting the
+    # historical corpus whose completion events predate the stamps from reverting to `todo`
+    # (re-paying for capture). #622's full done-marker inversion inherits the pinned falsifier
+    # (test_670_failed_latest_event_vetoes_disk_done_on_an_ordinary_batch).
     failed_caps: dict = {}
     with gdb.session_scope() as con:
         CI.ensure_cache_schema(con)
@@ -170,6 +201,12 @@ def status_for_batch(batch: dict) -> dict:
                    ORDER BY district_id, event_id DESC"""), {"ids": ids or [""]}).mappings():
             if r["event_type"] == "failed":
                 failed_caps[r["district_id"]] = r["note"]
+    captured -= set(failed_caps)
+    # `done` = discovered, HAD links, and captured. (No-link districts never capture -> manual_flag_all.)
+    done_ids = [d["district_id"] for d in batch["districts"]
+                if d["district_id"] in captured and cand_n.get(d["district_id"], 0) > 0]
+
+    with gdb.session_scope() as con:
         cached_ids = {r[0] for r in con.execute(text(
             "SELECT DISTINCT district_id FROM capture WHERE district_id = ANY(:ids)"),
             {"ids": done_ids or [""]})}
@@ -321,12 +358,13 @@ def _dispatch_and_finish(todo: list, *, batch_id: str, actor: str, emit, _run,
     for d in todo:
         did = d["district_id"]
         try:
-            _capture_one(d, retryable_only=retryable_only, plan_sha=d.get("_plan_sha"), _run=_run)
+            summary = _capture_one(d, retryable_only=retryable_only, plan_sha=d.get("_plan_sha"), _run=_run)
             registry = DS.load()
             # batch_id stamps the stage=3 completion event (#647) — the dispatched/failed events
             # above always carried it; without it here "did THIS batch capture this district" is
             # unanswerable from gov_db, which is what forced the console onto the filesystem.
-            outcome = C3.finish_district(d, registry, batch_id)   # + upserts the DB cache
+            # summary (#670) stamps intended-vs-achieved onto the same event.
+            outcome = C3.finish_district(d, registry, batch_id, summary=summary)   # + upserts the DB cache
             DS.save(registry, export=False)
             results.append({"district_id": did, "name": d["name"], "outcome": outcome})
             emit("completed", district_id=did, name=d["name"], outcome=outcome)

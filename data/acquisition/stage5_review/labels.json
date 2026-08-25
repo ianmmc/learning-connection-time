@@ -1,5 +1,13 @@
 [
   {
+    "rec_key": "0100270:00a5835f2e",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:02:46Z"
+  },
+  {
     "rec_key": "0100270:06c3e0963c",
     "primary_label": "school_bell_table",
     "facets_json": "{}",
@@ -14,6 +22,14 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-29T02:50:07Z"
+  },
+  {
+    "rec_key": "0100270:08b49871de",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:02:46Z"
   },
   {
     "rec_key": "0100270:13001858f3",
@@ -224,12 +240,28 @@
     "updated_at": "2026-08-24T15:46:35Z"
   },
   {
+    "rec_key": "0100270:a90c0b9cfa",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:02:46Z"
+  },
+  {
     "rec_key": "0100270:ab17d7fd3d",
     "primary_label": "target_absent",
     "facets_json": "{}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-08-24T15:28:37Z"
+  },
+  {
+    "rec_key": "0100270:abb6ed7921",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:02:46Z"
   },
   {
     "rec_key": "0100270:ac42aa2c83",
@@ -240,12 +272,28 @@
     "updated_at": "2026-08-24T15:31:51Z"
   },
   {
+    "rec_key": "0100270:ad2f621a71",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:02:35Z"
+  },
+  {
     "rec_key": "0100270:b7284963cf",
     "primary_label": "school_start_end_prose",
     "facets_json": "{}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-04T05:56:54Z"
+  },
+  {
+    "rec_key": "0100270:b7e72b8a04",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:02:46Z"
   },
   {
     "rec_key": "0100270:c083ee2b0f",
@@ -280,6 +328,14 @@
     "updated_at": "2026-08-24T15:46:53Z"
   },
   {
+    "rec_key": "0100270:d8e42d384e",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:02:46Z"
+  },
+  {
     "rec_key": "0100270:dc3199947e",
     "primary_label": "school_bell_table",
     "facets_json": "{}",
@@ -294,6 +350,14 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-04T06:02:20Z"
+  },
+  {
+    "rec_key": "0100270:e13973f63d",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:02:46Z"
   },
   {
     "rec_key": "0100270:e1ecbe7cfe",
@@ -344,6 +408,38 @@
     "updated_at": "2026-06-29T08:50:32Z"
   },
   {
+    "rec_key": "0101410:41a8b3f202",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:08:55Z"
+  },
+  {
+    "rec_key": "0101410:4396361369",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:08:44Z"
+  },
+  {
+    "rec_key": "0101410:5bd5841807",
+    "primary_label": "target_absent",
+    "facets_json": "{\"office_building_hours\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:06:46Z"
+  },
+  {
+    "rec_key": "0101410:6e5d925616",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:09:12Z"
+  },
+  {
     "rec_key": "0101410:714f1b24a5",
     "primary_label": "target_absent",
     "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
@@ -360,12 +456,44 @@
     "updated_at": "2026-07-02T06:12:30Z"
   },
   {
+    "rec_key": "0101410:c3ac578353",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:07:59Z"
+  },
+  {
+    "rec_key": "0101410:c8a67e1ead",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:07:59Z"
+  },
+  {
+    "rec_key": "0101410:dcf0333693",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:08:55Z"
+  },
+  {
     "rec_key": "0101410:edff136170",
     "primary_label": "target_absent",
     "facets_json": "{\"transportation\": \"yes\"}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-06-29T08:50:32Z"
+  },
+  {
+    "rec_key": "0101410:f975280804",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:08:23Z"
   },
   {
     "rec_key": "0101920:008ba005ae",
@@ -6312,6 +6440,14 @@
     "updated_at": "2026-07-04T05:32:06Z"
   },
   {
+    "rec_key": "0626910:e6cceaba75",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:22:24Z"
+  },
+  {
     "rec_key": "0626910:e99fba1b1e",
     "primary_label": "target_absent",
     "facets_json": "{\"other_schedule\": \"yes\"}",
@@ -8416,12 +8552,44 @@
     "updated_at": "2026-07-29T02:00:42Z"
   },
   {
+    "rec_key": "1200180:0065fb339b",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T02:25:19Z"
+  },
+  {
+    "rec_key": "1200180:01558cc336",
+    "primary_label": "school_bell_table",
+    "facets_json": "{\"out_of_window\": \"yes\", \"_pages\": \"14\", \"_pages_list\": [14]}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T00:59:11Z"
+  },
+  {
+    "rec_key": "1200180:131e705de3",
+    "primary_label": "school_bell_table",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:00:19Z"
+  },
+  {
     "rec_key": "1200180:1df2fda424",
     "primary_label": "school_bell_table",
     "facets_json": "{}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-29T02:42:24Z"
+  },
+  {
+    "rec_key": "1200180:23f15e6a5e",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T02:39:10Z"
   },
   {
     "rec_key": "1200180:27b7aa8d9d",
@@ -8432,12 +8600,36 @@
     "updated_at": "2026-07-29T02:44:10Z"
   },
   {
+    "rec_key": "1200180:2cd51a4b71",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T02:22:19Z"
+  },
+  {
     "rec_key": "1200180:2e86777163",
     "primary_label": "school_start_end_prose",
     "facets_json": "{}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-29T02:45:23Z"
+  },
+  {
+    "rec_key": "1200180:2f70c7178a",
+    "primary_label": "school_bell_table",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:07:37Z"
+  },
+  {
+    "rec_key": "1200180:3a181f8045",
+    "primary_label": "school_start_end_prose",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"out_of_window\": \"yes\", \"office_building_hours\": \"yes\", \"_pages\": \"299-300\", \"_pages_list\": [299, 300]}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T00:57:46Z"
   },
   {
     "rec_key": "1200180:3c2c279c0c",
@@ -8448,12 +8640,60 @@
     "updated_at": "2026-07-29T02:42:10Z"
   },
   {
+    "rec_key": "1200180:48bcbe311b",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{\"office_building_hours\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T02:24:42Z"
+  },
+  {
     "rec_key": "1200180:52b4f372cd",
     "primary_label": "district_hub_by_school",
     "facets_json": "{}",
     "note": "Snakes across columns across pages",
     "status": "labeled",
     "updated_at": "2026-07-04T05:33:18Z"
+  },
+  {
+    "rec_key": "1200180:54baeaeb08",
+    "primary_label": "school_bell_table",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T00:59:57Z"
+  },
+  {
+    "rec_key": "1200180:561803b71a",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T02:39:44Z"
+  },
+  {
+    "rec_key": "1200180:5ecd26d8df",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{\"office_building_hours\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:06:06Z"
+  },
+  {
+    "rec_key": "1200180:615e7f8a43",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:01:11Z"
+  },
+  {
+    "rec_key": "1200180:67b1688ed0",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T02:23:46Z"
   },
   {
     "rec_key": "1200180:695698385e",
@@ -8464,12 +8704,124 @@
     "updated_at": "2026-07-29T02:42:54Z"
   },
   {
+    "rec_key": "1200180:7164fab87b",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T02:38:36Z"
+  },
+  {
+    "rec_key": "1200180:75a2abdfa3",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T02:24:28Z"
+  },
+  {
+    "rec_key": "1200180:7fea6251da",
+    "primary_label": "school_bell_table",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:06:51Z"
+  },
+  {
+    "rec_key": "1200180:8afda84e75",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T02:38:24Z"
+  },
+  {
+    "rec_key": "1200180:92a573011f",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T02:39:57Z"
+  },
+  {
+    "rec_key": "1200180:968adacc38",
+    "primary_label": "school_bell_table",
+    "facets_json": "{\"out_of_window\": \"yes\", \"_pages\": \"17\", \"_pages_list\": [17]}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T00:57:56Z"
+  },
+  {
+    "rec_key": "1200180:9713fd3b60",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{\"office_building_hours\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T02:23:21Z"
+  },
+  {
+    "rec_key": "1200180:993c22bd25",
+    "primary_label": "school_bell_table",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:01:51Z"
+  },
+  {
+    "rec_key": "1200180:9b933baf07",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T02:39:35Z"
+  },
+  {
+    "rec_key": "1200180:a3e6e33581",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T00:46:12Z"
+  },
+  {
+    "rec_key": "1200180:a50cd804c6",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{\"office_building_hours\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:06:28Z"
+  },
+  {
+    "rec_key": "1200180:a616737811",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T02:23:18Z"
+  },
+  {
+    "rec_key": "1200180:ab3da0c485",
+    "primary_label": "school_bell_table",
+    "facets_json": "{\"academic_calendar\": \"yes\", \"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T02:40:33Z"
+  },
+  {
     "rec_key": "1200180:aed9c3a7fc",
     "primary_label": "district_hub_by_school",
     "facets_json": "{}",
     "note": "Has multiple bands represented, but does not list all schools",
     "status": "labeled",
     "updated_at": "2026-07-29T02:41:37Z"
+  },
+  {
+    "rec_key": "1200180:bb1ca1093f",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T00:56:23Z"
   },
   {
     "rec_key": "1200180:d5eb62e7a4",
@@ -8480,12 +8832,60 @@
     "updated_at": "2026-07-29T02:43:38Z"
   },
   {
+    "rec_key": "1200180:db8dd6864f",
+    "primary_label": "target_absent",
+    "facets_json": "{\"office_building_hours\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:07:16Z"
+  },
+  {
+    "rec_key": "1200180:e1c120e2ad",
+    "primary_label": "school_bell_table",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T02:29:23Z"
+  },
+  {
+    "rec_key": "1200180:ece2435acd",
+    "primary_label": "school_bell_table",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T02:21:20Z"
+  },
+  {
+    "rec_key": "1200180:f2e1765945",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T02:39:22Z"
+  },
+  {
+    "rec_key": "1200180:f6e98380dc",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:01:43Z"
+  },
+  {
     "rec_key": "1200180:fc2370ec29",
     "primary_label": "school_bell_table",
     "facets_json": "{\"news_feed\": \"yes\", \"other_schedule\": \"yes\"}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-29T02:42:40Z"
+  },
+  {
+    "rec_key": "1200180:ff073f15ea",
+    "primary_label": "school_bell_table",
+    "facets_json": "{\"academic_calendar\": \"yes\", \"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T02:42:30Z"
   },
   {
     "rec_key": "1201440:09c2a0600c",
@@ -8840,6 +9240,14 @@
     "updated_at": "2026-07-11T06:20:46Z"
   },
   {
+    "rec_key": "1720640:81eb3eb85e",
+    "primary_label": "target_absent",
+    "facets_json": "{\"academic_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:04:51Z"
+  },
+  {
     "rec_key": "1720640:8f9a24fd51",
     "primary_label": "target_absent",
     "facets_json": "{\"news_feed\": \"yes\"}",
@@ -8912,6 +9320,14 @@
     "updated_at": "2026-07-02T15:12:27Z"
   },
   {
+    "rec_key": "1730540:0fc3605d2a",
+    "primary_label": "target_absent",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:21:04Z"
+  },
+  {
     "rec_key": "1730540:49be09d9ce",
     "primary_label": "district_hub_by_band",
     "facets_json": "{\"buried_handbook\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"9\", \"_pages_list\": [9]}",
@@ -8952,6 +9368,14 @@
     "updated_at": "2026-07-12T04:45:14Z"
   },
   {
+    "rec_key": "1730540:97c227cc75",
+    "primary_label": "target_absent",
+    "facets_json": "{\"board\": \"yes\"}",
+    "note": "Teacher union contract",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:20:44Z"
+  },
+  {
     "rec_key": "1730540:a35304d4ee",
     "primary_label": "district_hub_by_band",
     "facets_json": "{\"buried_handbook\": \"yes\", \"_pages\": \"9\", \"_pages_list\": [9]}",
@@ -8990,6 +9414,14 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-12T04:40:39Z"
+  },
+  {
+    "rec_key": "1730540:f335dc0a8c",
+    "primary_label": "school_bell_table",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:21:28Z"
   },
   {
     "rec_key": "1737350:09030084bb",
@@ -9416,6 +9848,14 @@
     "updated_at": "2026-06-25T04:16:54Z"
   },
   {
+    "rec_key": "1800048:0905f4a05b",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{\"academic_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:06:02Z"
+  },
+  {
     "rec_key": "1803700:06e3bd726e",
     "primary_label": "target_absent",
     "facets_json": "{\"community_calendar\": \"yes\"}",
@@ -9672,12 +10112,44 @@
     "updated_at": "2026-06-29T08:57:07Z"
   },
   {
+    "rec_key": "1915840:163d640760",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:15:55Z"
+  },
+  {
+    "rec_key": "1915840:657bcb1912",
+    "primary_label": "school_bell_table",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:15:18Z"
+  },
+  {
     "rec_key": "1915840:67e7d6268a",
     "primary_label": "target_absent",
     "facets_json": "{}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-06-29T08:55:07Z"
+  },
+  {
+    "rec_key": "1915840:77314117c3",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{\"office_building_hours\": \"yes\", \"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:14:52Z"
+  },
+  {
+    "rec_key": "1915840:946f4fe272",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{\"office_building_hours\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:13:51Z"
   },
   {
     "rec_key": "1915840:b2207c6c65",
@@ -10184,6 +10656,14 @@
     "updated_at": "2026-07-11T05:29:16Z"
   },
   {
+    "rec_key": "2506750:069eba864e",
+    "primary_label": "target_absent",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:17:33Z"
+  },
+  {
     "rec_key": "2506750:07bd9533e3",
     "primary_label": "target_absent",
     "facets_json": "{\"news_feed\": \"yes\"}",
@@ -10232,12 +10712,44 @@
     "updated_at": "2026-07-02T06:45:03Z"
   },
   {
+    "rec_key": "2506750:a60f5eb373",
+    "primary_label": "target_absent",
+    "facets_json": "{\"academic_calendar\": \"yes\", \"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:16:31Z"
+  },
+  {
+    "rec_key": "2506750:b555c658c2",
+    "primary_label": "target_absent",
+    "facets_json": "{\"news_feed\": \"yes\"}",
+    "note": "School start time visible, but no school end time. Instructional minutes can't be calculated.",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:23:50Z"
+  },
+  {
+    "rec_key": "2506750:bf185a20b6",
+    "primary_label": "target_absent",
+    "facets_json": "{\"news_feed\": \"yes\"}",
+    "note": "School start time visible, but no school end time. Instructional minutes can't be calculated.",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:23:50Z"
+  },
+  {
     "rec_key": "2506750:f5bde7c77f",
     "primary_label": "target_absent",
     "facets_json": "{\"news_feed\": \"yes\"}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-06-30T01:18:23Z"
+  },
+  {
+    "rec_key": "2506750:f834f1ad79",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:17:17Z"
   },
   {
     "rec_key": "2506900:057095fab4",
@@ -10312,6 +10824,22 @@
     "updated_at": "2026-07-11T05:40:48Z"
   },
   {
+    "rec_key": "2507080:56fda5c0f9",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:22:50Z"
+  },
+  {
+    "rec_key": "2507080:68258e149c",
+    "primary_label": "target_absent",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:22:39Z"
+  },
+  {
     "rec_key": "2507080:6a9ed83f0e",
     "primary_label": "target_absent",
     "facets_json": "{\"community_calendar\": \"yes\", \"transportation\": \"yes\", \"news_feed\": \"yes\", \"other_schedule\": \"yes\"}",
@@ -10334,6 +10862,14 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-11T05:41:40Z"
+  },
+  {
+    "rec_key": "2507080:882722b9c9",
+    "primary_label": "target_absent",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:23:21Z"
   },
   {
     "rec_key": "2507080:a127394f99",
@@ -10806,6 +11342,22 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-04T05:46:10Z"
+  },
+  {
+    "rec_key": "2600209:60162b4609",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:04:02Z"
+  },
+  {
+    "rec_key": "2600209:e38d44ee3b",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{\"office_building_hours\": \"yes\", \"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:04:12Z"
   },
   {
     "rec_key": "2600992:0ead93f5b2",
@@ -15696,12 +16248,28 @@
     "updated_at": "2026-07-12T05:20:11Z"
   },
   {
+    "rec_key": "3600955:5668f886cf",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:12:22Z"
+  },
+  {
     "rec_key": "3600955:748fbff172",
     "primary_label": "target_absent",
     "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-04T05:47:19Z"
+  },
+  {
+    "rec_key": "3600955:c3d73eae72",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:11:45Z"
   },
   {
     "rec_key": "3601002:03cab24008",
@@ -15942,6 +16510,14 @@
     "note": "School meal information",
     "status": "labeled",
     "updated_at": "2026-07-04T05:42:47Z"
+  },
+  {
+    "rec_key": "3609240:8f4848ab02",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:05:27Z"
   },
   {
     "rec_key": "3609240:a9ed8b942c",
@@ -16246,6 +16822,14 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-27T20:01:55Z"
+  },
+  {
+    "rec_key": "3631800:e5e95213b1",
+    "primary_label": "target_absent",
+    "facets_json": "{\"board\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:14:11Z"
   },
   {
     "rec_key": "3631800:e6443f8d09",
@@ -17608,6 +18192,14 @@
     "updated_at": "2026-07-11T06:50:49Z"
   },
   {
+    "rec_key": "4026640:04dfac343e",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\", \"academic_calendar\": \"yes\", \"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:16:17Z"
+  },
+  {
     "rec_key": "4026640:d58d6a4928",
     "primary_label": "target_absent",
     "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
@@ -17622,6 +18214,14 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-04T05:40:21Z"
+  },
+  {
+    "rec_key": "4031290:2e715bb2c7",
+    "primary_label": "district_hub_by_school",
+    "facets_json": "{\"needs_vision\": \"yes\", \"sports\": \"yes\", \"news_feed\": \"yes\", \"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:13:42Z"
   },
   {
     "rec_key": "4031290:4d54d31e94",
@@ -17654,6 +18254,14 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-15T01:57:43Z"
+  },
+  {
+    "rec_key": "4031290:a64342ca68",
+    "primary_label": "district_hub_by_school",
+    "facets_json": "{\"needs_vision\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:11:46Z"
   },
   {
     "rec_key": "4200874:162220b3fe",
@@ -17992,6 +18600,14 @@
     "updated_at": "2026-07-15T05:58:48Z"
   },
   {
+    "rec_key": "4220130:302b090b93",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:19:27Z"
+  },
+  {
     "rec_key": "4220130:3b07c3dd5c",
     "primary_label": "unusable",
     "facets_json": "{}",
@@ -18062,6 +18678,14 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-15T06:12:11Z"
+  },
+  {
+    "rec_key": "4220130:6bd459d88b",
+    "primary_label": "target_absent",
+    "facets_json": "{\"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:19:51Z"
   },
   {
     "rec_key": "4220130:762b79b017",
@@ -18150,6 +18774,14 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-11T05:17:09Z"
+  },
+  {
+    "rec_key": "4220130:dfb643be48",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{\"_pages\": \"9, 20, 21\", \"_pages_list\": [9, 20, 21]}",
+    "note": "Covers elementary schools, but not middle or high",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:19:01Z"
   },
   {
     "rec_key": "4220130:e2bb1a5ab9",
@@ -18608,12 +19240,28 @@
     "updated_at": "2026-07-12T06:41:57Z"
   },
   {
+    "rec_key": "4631710:078357cc9a",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:13:04Z"
+  },
+  {
     "rec_key": "4631710:0bdd936913",
     "primary_label": "target_absent",
     "facets_json": "{}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-12T06:41:27Z"
+  },
+  {
+    "rec_key": "4631710:2e98f6e8a2",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:12:51Z"
   },
   {
     "rec_key": "4631710:36916d747a",
@@ -20680,6 +21328,38 @@
     "updated_at": "2026-07-02T06:09:03Z"
   },
   {
+    "rec_key": "5505100:1e9900764b",
+    "primary_label": "target_absent",
+    "facets_json": "{\"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:11:10Z"
+  },
+  {
+    "rec_key": "5505100:3b5c22f065",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\", \"office_building_hours\": \"yes\", \"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:10:08Z"
+  },
+  {
+    "rec_key": "5505100:445d1b2d5b",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:10:43Z"
+  },
+  {
+    "rec_key": "5505100:50a4b4e212",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T01:10:19Z"
+  },
+  {
     "rec_key": "5507770:09a0c16b1b",
     "primary_label": "target_absent",
     "facets_json": "{\"news_feed\": \"yes\"}",
@@ -21240,6 +21920,14 @@
     "updated_at": "2026-07-04T05:13:36Z"
   },
   {
+    "rec_key": "5605302:b4c2e42eed",
+    "primary_label": "target_absent",
+    "facets_json": "{\"academic_calendar\": \"yes\", \"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:15:17Z"
+  },
+  {
     "rec_key": "5605302:b86842b745",
     "primary_label": "school_start_end_list",
     "facets_json": "{\"office_building_hours\": \"yes\"}",
@@ -21270,5 +21958,21 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-08-14T06:15:08Z"
+  },
+  {
+    "rec_key": "5605302:f9f0eab92e",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:15:46Z"
+  },
+  {
+    "rec_key": "5605302:ff99b0300f",
+    "primary_label": "target_absent",
+    "facets_json": "{\"academic_calendar\": \"yes\", \"community_calendar\": \"yes\", \"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-25T03:15:03Z"
   }
 ]

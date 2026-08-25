@@ -355,7 +355,8 @@ def write_manifest(district: dict, records: list) -> None:
             pass   # absent / already swept — the manifest is what matters
 
 
-def finish_district(district: dict, registry: dict, batch_id: str | None = None) -> str:
+def finish_district(district: dict, registry: dict, batch_id: str | None = None,
+                    summary: dict | None = None) -> str:
     """Single registry write per district, at actual completion -- never an interim
     'started' marker, same principle as Stage 2: there's nothing meaningful to reconcile
     against a half-finished state, since captures.json only exists once the Node capture
@@ -367,7 +368,13 @@ def finish_district(district: dict, registry: dict, batch_id: str | None = None)
     this change; Stage 4 was 128 of 128). That gap is why "has THIS BATCH captured this district" was
     unanswerable from gov_db, which is what forced the console to ask the filesystem instead and made
     a redo batch report itself already done. Optional and defaulted so the direct
-    `capture_stage3 run <district_id>` CLI path -- which has no batch -- is unchanged."""
+    `capture_stage3 run <district_id>` CLI path -- which has no batch -- is unchanged.
+
+    `summary` (#670) is the Node run's CAPTURE_SUMMARY (intended-vs-achieved counts, already
+    cross-checked against the manifest by the caller); stamped onto the completion event's
+    fingerprints_json under `capture_summary`, so "was this capture everything it intended?" is
+    answerable by querying state_event — a gov_db fact, never inferred from artifact existence.
+    Optional: the CLI/reconcile paths have no subprocess stdout to source it from."""
     captures_path = district["dir"] / "captures.json"
     try:
         captures = json.loads(captures_path.read_text())
@@ -388,6 +395,7 @@ def finish_district(district: dict, registry: dict, batch_id: str | None = None)
     DS.record_stage(
         registry, district["district_id"], district["name"], district["state"],
         stage=3, stage_name="capture", outcome=outcome, notes=notes, batch_id=batch_id,
+        fingerprints={"capture_summary": summary} if summary else None,
     )
     # Project this district's capture receipts into the live DB cache (the console's Stage-3 surface
     # reads them). Best-effort: captures.json on disk + the state_event are the durable record.

@@ -5208,3 +5208,50 @@ requirements:
     notes: "Backfilled, not newly designed — #689 shipped and REQ-186's own #903 acceptance
       criterion already cites it ('because the #689 gate@8 8->6 send-back route seeds a DRAFT')
       without it having its own ledger entry."
+
+  - id: REQ-189
+    github_issue: "#670 (epic #723 frame; #622 inherits the pins)"
+    description: "A STAGE FAILURE IS LOUD — gov_db outranks the artifact. A district whose LATEST
+      stage event is `failed` never renders an unqualified `done`, regardless of whether the stage's
+      disk artifact exists (the late-timeout case: a killed capture subprocess can leave a populated,
+      complete-LOOKING captures.json). And capture completeness is a gov_db fact: the stage-3
+      completion event carries the Node run's intended-vs-achieved counts (fingerprints_json
+      .capture_summary, delivered over the subprocess stdout channel — never by reading a receipt),
+      and a missing or manifest-disagreeing summary raises into the `failed` event path rather than
+      being inferred from artifact existence."
+    type: constraint
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "Stage 3: a district on ANY batch type with a populated captures.json and a failed-latest
+        capture event reads `timed_out`/`failed` (retriable, Run control active) — the falsifier
+        seeded exactly #670's Orange County state and FAILED against the pre-fix code"
+      - "Stage 4 (the latent twin — its comment claimed process failures 'leave NO processed.json'):
+        the same veto on BOTH sets — own done-ness (`failed`, retriable) and the upstream capture
+        gate (`awaiting_capture`, never a Run button over a known-bad capture)"
+      - "Strictly-withdrawing: a district with NO stage events keeps disk-asserted `done`
+        byte-for-byte (the historical corpus must never revert to `todo` and invite re-paying —
+        the #885 trap); latest-event-wins lifts the veto on a later genuine completion"
+      - "The CAPTURE_SUMMARY stdout line is built by ONE Node function (captureSummary), emitted
+        only after a successful manifest write; the Python runner raises on a missing line or an
+        n_records/manifest mismatch (a kill between the two writes becomes a loud `failed` event)"
+      - "Receipts stay write-only for the pipeline (REQ-164): no module under infrastructure/
+        outside common/receipts.py calls latest_receipt/iter_receipts — AST-pinned"
+      - "Blast radius measured and committed rerunnable (2026-08-24-failed-latest-veto-measure.py):
+        C1 population 0 at merge (Ian's same-day remediation re-runs had drained it — Orange
+        County/Broward/Cleveland all carry successful latest outcomes), C2 replayed 460 rows across
+        58 batches with 0 invariant violations and 0 newly-asserted `done`"
+    tests:
+      - "tests/test_stage3_headless.py"
+      - "tests/test_stage4_headless.py"
+      - "tests/test_receipts.py"
+    created: "2026-08-24T00:00:00Z"
+    updated: "2026-08-24T00:00:00Z"
+    notes: "Scoped by reconciling #670 against #622/#623 so nothing here is rewritten by the
+      done-marker inversion: the veto survives #622 as a behavioral pin (a full gov_db inversion
+      satisfies it by construction), and the completeness counts are the datum #622's inversion
+      can key on. The #623 Node receipt writer was deliberately DEFERRED (Ian, 2026-08-24): with
+      the counts in gov_db the disk receipt is a pure audit mirror, and a Node-written receipt
+      would precede the outcome-event commit, against REQ-164's commit-before-receipt ordering —
+      #623 designs that alongside the captures.json rename it exists for. Design note:
+      docs/technical-notes/production-quality-control-research/2026-08-24-issue670-loud-capture-timeout.md"

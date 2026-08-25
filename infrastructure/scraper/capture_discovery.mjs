@@ -706,6 +706,27 @@ export function planSha256(candidates) {
   return createHash('sha256').update(urls.join('\n')).digest('hex');
 }
 
+// #670: the per-district completeness summary — ONE construction site. Printed as the
+// CAPTURE_SUMMARY stdout line the Python runner (stage3_capture/headless._capture_one)
+// cross-checks against the manifest and stamps onto the stage-3 outcome state_event, so
+// "was this capture everything it intended?" is answerable from gov_db, not inferred from
+// artifact existence. A future receipt writer (#623) must reuse THIS function — never
+// respell the fold (the implemented-twice-drifts class).
+export function captureSummary(did, st, tasks) {
+  const recs = st.records;
+  const notAttempted = recs.filter((r) => (r.err || '').startsWith('not_attempted')).length;
+  return {
+    dir: did,
+    intended: st.intended,                                              // candidates in the plan
+    planned_this_run: tasks.reduce((n, t) => n + (t.did === did ? 1 : 0), 0),  // post-dedup/seed delta
+    n_records: recs.length,                                             // what the manifest holds
+    n_ok: recs.filter((r) => r.ok).length,
+    n_failed: recs.filter((r) => !r.ok).length,                         // includes not_attempted
+    n_not_attempted: notAttempted,
+    deadline_hit: notAttempted > 0,
+  };
+}
+
 async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly = false, planSha = null) {
   // `only` (a Set of district-dir basenames) scopes the run to specific districts -- the console's
   // batch-scoped, per-district runner uses it so a capture run touches only the batch in flight, never
@@ -746,7 +767,8 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
       }
       renameSync(journalPath, aside);
     }
-    byDistrict[did] = { capDir, records: [], seen: new Set(), emergent: 0, journalPath };
+    byDistrict[did] = { capDir, records: [], seen: new Set(), emergent: 0, journalPath,
+      intended: meta.candidates.length };
     // #174 (follow-up redo): a prior round's captures.json seeds records + seen so this run
     // captures only the delta and the written manifest stays the district's complete union.
     // First runs are untouched (no manifest exists until end-of-run). An unreadable prior
@@ -1151,6 +1173,9 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0, retryableOnly
             try { unlinkSync(path.join(ROOT, did, f)); } catch { /* best-effort sweep */ }
           }
         }
+        // #670: emitted ONLY after a successful manifest write — a missing line tells the Python
+        // runner the write never landed (it raises -> `failed` event, loud, never inferred).
+        console.log(`CAPTURE_SUMMARY ${JSON.stringify(captureSummary(did, byDistrict[did], tasks))}`);
       } catch (e) {
         console.error(`manifest write FAILED for ${did}: ${e}`); // keep writing the other districts'
       }
