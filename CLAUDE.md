@@ -222,14 +222,22 @@ own track and does not gate it).**
    site (REQ-182). **#901's trap unchanged:** the retrofit must ENUMERATE the 20 undeclared
    consumer edges or explicitly grandfather them — a green suite over an unenumerated baseline is
    a measurement that cannot fail.
-5. **Console/measurement queue:** **#887** (in-flight vs stranded badge — Ian's design call, epic
+5. **#916 — live `sev:major`, epic #706, NOT fixed by #670.** A capture that FINISHED as the Python
+   backstop fired is recorded as a timeout: `TimeoutExpired` propagates out of `_run` ABOVE every
+   check in `_capture_one` (including #670's two), so a complete `captures.json` is never consulted
+   and Stage 4 skips the district. 7 events / 5 districts, structurally the largest ones. ORANGE's
+   manifest is 416/416 ok with 0 `not_attempted` — proof Node never hit its own deadline, which also
+   **corrects #670's account of its own specimen** (a clean finish misrecorded, not a truncation;
+   REQ-189 stands regardless). Falsifier already written in the issue; check the Stage-2/Stage-4
+   wrappers for the same short-circuit before fixing only this one — #670's Stage-4 twin was real.
+6. **Console/measurement queue:** **#887** (in-flight vs stranded badge — Ian's design call, epic
    #96); **#888** (left-pane fix — RE-MEASURE first via
    `2026-08-23-leftpane-vs-stageview-measure.py`, the corpus moves under it; the residue is
    #622's job, not a second disk check); **#890** (Stage-4 tool timing, epic #128 — the seam is
    `process_record`'s `add()` closure; prerequisite before acting on the #890/#891
    tool-redundancy finding, since cost is unmeasured and the most valuable tool is likely the most
    expensive).
-6. **Blocked on Ian's design calls:** #685 (active-tab-only capture — NB the naive reveal
+7. **Blocked on Ian's design calls:** #685 (active-tab-only capture — NB the naive reveal
    recovered NOTHING; the vendor open-state class and `max-height` are load-bearing); #871 (geo's
    second job, REQ-184 `proposed` — the gate must be able to KEEP an off-domain document first).
    **Ian's call, live spend:** epic #80's experiments (#823-#825), now with batch_00043's six
