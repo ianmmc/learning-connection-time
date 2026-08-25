@@ -42,13 +42,23 @@ def _seed_district(root, did, name, *, captured=False):
     return d
 
 
+def _summary_line(dir_name, recs):
+    """The CAPTURE_SUMMARY stdout line the real Node run prints after its manifest write (#670) —
+    the runner refuses a manifest whose summary is missing or disagrees, so the fakes must honor
+    the same contract."""
+    return "CAPTURE_SUMMARY " + json.dumps({"dir": dir_name, "n_records": len(recs),
+                                            "n_ok": sum(1 for r in recs if r.get("ok"))})
+
+
 def _fake_run(records_by_dir):
-    """A fake subprocess.run: writes the district's captures.json (what the Node capture would do)."""
+    """A fake subprocess.run: writes the district's captures.json + prints the summary line (what
+    the Node capture does)."""
     def run(cmd, **kw):
         root, dir_name = cmd[3], cmd[4]
         from pathlib import Path
-        Path(root, dir_name, "captures.json").write_text(json.dumps(records_by_dir.get(dir_name, [])))
-        return types.SimpleNamespace(returncode=0, stdout="ok", stderr="")
+        recs = records_by_dir.get(dir_name, [])
+        Path(root, dir_name, "captures.json").write_text(json.dumps(recs))
+        return types.SimpleNamespace(returncode=0, stdout=_summary_line(dir_name, recs), stderr="")
     return run
 
 
@@ -99,8 +109,9 @@ class TestRunBatch:
             if dir_name == "111_d111":
                 return types.SimpleNamespace(returncode=1, stdout="", stderr="boom")
             from pathlib import Path
-            Path(root, dir_name, "captures.json").write_text(json.dumps([{"hash": "b", "ok": True}]))
-            return types.SimpleNamespace(returncode=0, stdout="", stderr="")
+            recs = [{"hash": "b", "ok": True}]
+            Path(root, dir_name, "captures.json").write_text(json.dumps(recs))
+            return types.SimpleNamespace(returncode=0, stdout=_summary_line(dir_name, recs), stderr="")
 
         summary = H3.run_batch(_batch("111", "222"), _run=run)
         by_id = {r["district_id"]: r for r in summary["results"]}
@@ -200,9 +211,9 @@ class TestRetryPartial:
         def run(cmd, **kw):
             ran.append(cmd)
             from pathlib import Path
-            Path(cmd[3], cmd[4], "captures.json").write_text(
-                json.dumps([{"hash": "a", "url": "http://111.org/a", "ok": True}]))
-            return types.SimpleNamespace(returncode=0, stdout="", stderr="")
+            recs = [{"hash": "a", "url": "http://111.org/a", "ok": True}]
+            Path(cmd[3], cmd[4], "captures.json").write_text(json.dumps(recs))
+            return types.SimpleNamespace(returncode=0, stdout=_summary_line(cmd[4], recs), stderr="")
 
         plan_sha = H3._plan_sha256(tmp_path / "111_d111")   # BEFORE the run overwrites captures
         summary = H3.retry_partial(_batch("111", "222", "333"), _run=run)
@@ -369,6 +380,66 @@ def test_647_an_ordinary_batch_still_uses_the_disk_rule(gov_session, monkeypatch
     assert H3.status_for_batch(batch)["districts"][0]["status"] == "done"   # no dispatched event needed
 
 
+# ------------------ #670: a failed-latest gov_db event VETOES artifact-existence done ------------------
+@pytest.mark.govdb
+def test_670_failed_latest_event_vetoes_disk_done_on_an_ordinary_batch(gov_session, monkeypatch, tmp_path):
+    """#670's certain half, the ordinary-batch residue #671 left. A LATE capture timeout kills the
+    subprocess after captures.json is already written (Orange County FL `1201440`, 119 ok=true records
+    + a TimeoutExpired event), and artifact-existence outranked the gov_db failure — the district
+    rendered a clean `done`, unretriable, on the exact surface the operator supervises with.
+
+    The rule: a district whose LATEST capture event is `failed` never reads `done`, regardless of
+    disk. gov_db outranks the artifact (epic #723's frame). Strictly-withdrawing — the no-events
+    case is untouched (test_647_an_ordinary_batch_still_uses_the_disk_rule stays green byte-for-byte:
+    the historical corpus, whose completion events predate the stamps, must keep asserting done from
+    disk). #622's full inversion inherits this test as a pin."""
+    import contextlib
+    from sqlalchemy import text
+    from infrastructure.acquisition.common import db as gdb
+    from infrastructure.acquisition.stage3_capture import headless as H3
+    from infrastructure.acquisition.common import district_status as DS
+    gdb.init_precious_schema()
+    monkeypatch.setattr(DS.gdb, "session_scope", lambda: contextlib.nullcontext(gov_session))
+
+    did = "ZZ670A"
+    ddir = tmp_path / "ZZ670A_LateTimeout"
+    (ddir / "captures").mkdir(parents=True)
+    # a populated, complete-LOOKING manifest — the artifact that masked the failure
+    (ddir / "captures.json").write_text('[{"hash": "h1", "url": "http://z/a", "ok": true}]')
+    (ddir / "candidates.json").write_text('{"candidates": [{"url": "http://z/a"}]}')
+    (ddir / "discovery.json").write_text(
+        '{"district_id": "ZZ670A", "name": "Late", "state": "ZZ", "domain": "z.org"}')
+    monkeypatch.setattr(H3, "RAW_DIR", tmp_path)
+    monkeypatch.setattr(H3.C3, "find_districts", lambda root: [
+        {"district_id": did, "name": "Late", "state": "ZZ", "domain": "z.org", "dir": ddir}])
+
+    batch = {"batch_id": "batch_zz670", "batch_type": "first-run",
+             "districts": [{"district_id": did, "name": "Late", "state": "ZZ", "domain": "z.org"}]}
+
+    # seed exactly the observed state: a `failed` event (TimeoutExpired note) as the LATEST capture
+    # event, with the populated captures.json on disk
+    gov_session.execute(text(
+        "INSERT INTO state_event (district_id, stage_name, event_type, batch_id, created_at, actor, note) "
+        "VALUES (:d, 'capture', 'failed', :b, 'now', 'zz', "
+        "'TimeoutExpired: Command ''node capture_discovery.mjs'' timed out after 840 seconds')"),
+        {"d": did, "b": "batch_zz670"})
+    gov_session.flush()
+
+    rows = H3.status_for_batch(batch)
+    d = rows["districts"][0]
+    assert d["status"] == "timed_out"            # was "done" — the masked failure
+    assert rows["rollup"]["failed"] == 1         # retriable: the Run control reactivates
+    assert rows["rollup"]["resolved"] == 0       # a timed-out district is NOT resolved
+
+    # and the veto LIFTS on a genuine later completion — latest event wins, in both directions
+    gov_session.execute(text(
+        "INSERT INTO state_event (district_id, stage_name, event_type, stage, batch_id, created_at, actor) "
+        "VALUES (:d, 'capture', 'captured_all', 3, :b, 'now', 'zz')"),
+        {"d": did, "b": "batch_zz670"})
+    gov_session.flush()
+    assert H3.status_for_batch(batch)["districts"][0]["status"] == "done"
+
+
 def test_647_finish_district_stamps_the_batch_on_the_completion_event(monkeypatch, tmp_path):
     """The writer half. The dispatched/failed events always carried batch_id; the COMPLETION event is
     written inside finish_district, which never received the batch — so stage=3 events landed with
@@ -388,3 +459,63 @@ def test_647_finish_district_stamps_the_batch_on_the_completion_event(monkeypatc
     seen.clear()
     C3.finish_district(district, {})            # the CLI path has no batch — unchanged
     assert seen["batch_id"] is None
+
+
+# ------------------ #670: the completeness cross-check is LOUD, and the counts land in gov_db ------------------
+class Test670CaptureSummary:
+    """The detection half: Node prints CAPTURE_SUMMARY only after a successful manifest write; the
+    runner raises on a missing line or a count that disagrees with the manifest as read now — a
+    killed/truncated run becomes a `failed` state_event (surfaced by the veto), never an inference
+    from artifact existence. The summary itself is stamped onto the stage-3 outcome event so
+    completeness is a gov_db fact (epic #723)."""
+
+    def _district(self, tmp_path, recs):
+        d = tmp_path / "999_d999"
+        d.mkdir(parents=True)
+        (d / "captures.json").write_text(json.dumps(recs))
+        return {"district_id": "999", "name": "D999", "state": "AK", "dir": d}
+
+    def test_missing_summary_line_raises(self, tmp_path):
+        district = self._district(tmp_path, [{"hash": "a", "ok": True}])
+
+        def run(cmd, **kw):   # manifest written, but killed before the summary print
+            return types.SimpleNamespace(returncode=0, stdout="", stderr="")
+        with pytest.raises(RuntimeError, match="no CAPTURE_SUMMARY line"):
+            H3._capture_one(district, _run=run)
+
+    def test_count_mismatch_raises(self, tmp_path):
+        district = self._district(tmp_path, [{"hash": "a", "ok": True}, {"hash": "b", "ok": True}])
+
+        def run(cmd, **kw):   # summary says 1, manifest holds 2 -> truncated or concurrently rewritten
+            line = "CAPTURE_SUMMARY " + json.dumps({"dir": "999_d999", "n_records": 1})
+            return types.SimpleNamespace(returncode=0, stdout=line, stderr="")
+        with pytest.raises(RuntimeError, match="summary/manifest mismatch"):
+            H3._capture_one(district, _run=run)
+
+    def test_multi_district_stdout_matches_on_dir(self, tmp_path):
+        district = self._district(tmp_path, [{"hash": "a", "ok": True}])
+        lines = ("CAPTURE_SUMMARY " + json.dumps({"dir": "888_other", "n_records": 5}) + "\n"
+                 + "CAPTURE_SUMMARY " + json.dumps({"dir": "999_d999", "n_records": 1}))
+
+        def run(cmd, **kw):
+            return types.SimpleNamespace(returncode=0, stdout=lines, stderr="")
+        assert H3._capture_one(district, _run=run)["n_records"] == 1
+
+    def test_finish_district_stamps_the_summary_into_fingerprints(self, monkeypatch, tmp_path):
+        """P4: the counts land on the completion event (fingerprints_json.capture_summary), so
+        "was this capture complete" is answerable from state_event — no file read."""
+        ddir = tmp_path / "999_d999"
+        ddir.mkdir(parents=True)
+        (ddir / "captures.json").write_text("[]")
+        seen = {}
+        monkeypatch.setattr(C3.DS, "record_stage", lambda *a, **k: seen.update(k))
+        monkeypatch.setattr(C3.CI, "cache_capture", lambda *a, **k: None)
+        district = {"district_id": "999", "name": "D999", "state": "AK", "dir": ddir}
+        summary = {"dir": "999_d999", "intended": 3, "n_records": 3, "n_ok": 2, "n_failed": 1,
+                   "n_not_attempted": 1, "deadline_hit": True}
+
+        C3.finish_district(district, {}, "batch_x", summary=summary)
+        assert seen["fingerprints"] == {"capture_summary": summary}
+        seen.clear()
+        C3.finish_district(district, {})            # CLI/reconcile path: no summary -> no stamp
+        assert seen["fingerprints"] is None

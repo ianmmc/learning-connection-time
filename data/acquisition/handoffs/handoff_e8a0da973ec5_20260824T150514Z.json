@@ -1,0 +1,483 @@
+{
+  "handoff_hash": "e8a0da973ec5",
+  "created_at": "2026-08-24T15:05:14Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "dispatch_type": "production",
+  "fingerprints": {
+    "5000395": {
+      "config": "f77ddb950061",
+      "labels": "3f14418847bc",
+      "data": "d060b2ca1ccc"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v4"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.0030600000000000002,
+    "n_reps": 3,
+    "provenance": "bootstrap",
+    "reextraction": {
+      "n_reps": 1,
+      "usd": 0.00102
+    }
+  },
+  "districts": [
+    {
+      "district_id": "5000395",
+      "name": "Essex Westford Educational Community Unified Union SD #51",
+      "state": "VT",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "5000395:6f8beade93",
+          "url": "https://docs.google.com/document/d/1vndewfgZ49RJcaDOy4NJtWvzMlWTngj1JuN3PoS4f4w/edit?usp=sharing",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "md.md",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 60,
+              "n_chars": 64882,
+              "overflow": false
+            }
+          ]
+        },
+        {
+          "rec_key": "5000395:2945f3d474",
+          "url": "gt://gt_curation_20260621T060008Z/5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51/Home _ Westford School (Elementary).pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:179b4a1c55",
+          "url": "gt://gt_curation_20260621T060008Z/5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51/Home _ Essex Middle School.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:642c632e75",
+          "url": "gt://gt_curation_20260621T060008Z/5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51/Home _ Essex Elementary School.pdf",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:c5e56759e1",
+          "url": "https://www.ewsd.org/o/hia/live-feed?page_no=6",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:e41157a6d2",
+          "url": "https://www.ewsd.org/o/wes/article/1063696",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:0bce30c44b",
+          "url": "https://www.ewsd.org/o/ees/article/2144727",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:766fc1f21c",
+          "url": "https://www.ewsd.org/o/hia/page/harvey-karen",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:ba31b8eed7",
+          "url": "https://www.ewsd.org/o/ems/live-feed?page_no=6",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:b70abbb549",
+          "url": "https://www.ewsd.org/o/ehs/live-feed?page_no=31",
+          "label": "school_start_end_list",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 144,
+              "n_chars": 14663,
+              "overflow": false
+            }
+          ]
+        },
+        {
+          "rec_key": "5000395:99c43518cc",
+          "url": "https://www.ewsd.org/o/fms/article/2144724",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:072ef9e2ea",
+          "url": "https://www.ewsd.org/o/ehs/article/1165102",
+          "label": "school_bell_table",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "n_times": 61,
+              "n_chars": 2252,
+              "overflow": false
+            }
+          ]
+        },
+        {
+          "rec_key": "5000395:a4b83995b2",
+          "url": "https://www.ewsd.org/o/sum/staff/",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:606868c2c8",
+          "url": "https://www.ewsd.org/o/sum/news/",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:74bdab3110",
+          "url": "https://www.ewsd.org/o/hia/documents/our-school/22766390",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:17df68b26d",
+          "url": "https://www.ewsd.org/o/ees",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:b17346dc78",
+          "url": "https://www.ewsd.org/o/wes/article/2144723",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:978e08c699",
+          "url": "gt://gt_curation_20260621T060008Z/5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51/Essex High School Bell Schedule.jpeg",
+          "label": "school_bell_table",
+          "decision": "hold",
+          "reason": "benchmark-rep:ineligible-for-production",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:af824533da",
+          "url": "https://www.ewsd.org/page/calendar",
+          "label": "target_absent",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:6a2db9365b",
+          "url": "https://www.ewsd.org/o/wes/page/calendar",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:f63253879e",
+          "url": "https://www.ewsd.org/o/sum/",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:5e1b10f742",
+          "url": "https://www.ewsd.org/o/sum/events?id=54459404",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:2b6f84551f",
+          "url": "https://www.ewsd.org/o/sum/article/1683935",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:f55a96a301",
+          "url": "https://www.ewsd.org/o/sum/article/1350965",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:cfa9f4adfc",
+          "url": "https://www.ewsd.org/o/fle/page/calendar",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:7f958633a6",
+          "url": "https://www.ewsd.org/o/adl/live-feed?page_no=13",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:ae18873483",
+          "url": "https://www.ewsd.org/o/ehs/page/calendars-time-management",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:7c8b5d95c0",
+          "url": "https://www.ewsd.org/ehs",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:4705ac365b",
+          "url": "https://www.ewsd.org/o/hia/page/calendar",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:b84094a129",
+          "url": "https://www.ewsd.org/o/hia",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:fcfbe38101",
+          "url": "https://www.ewsd.org/o/adl",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:5c0cabc0b9",
+          "url": "https://www.ewsd.org/o/ees/page/calendar",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:534e277706",
+          "url": "https://www.ewsd.org/o/ehs/live_feeds/11809343",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:eafd8b1db5",
+          "url": "https://www.ewsd.org/o/hia/page/caforia-joseph-hia",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:18bb04b36b",
+          "url": "https://www.ewsd.org/o/fle",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:598ab6e252",
+          "url": "https://www.ewsd.org/EMS",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:3c89540c7a",
+          "url": "https://www.ewsd.org/o/sum/article/1398383",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:04d959b1db",
+          "url": "https://www.ewsd.org/o/ems/page/calendar",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:221e8f46e8",
+          "url": "https://www.ewsd.org/o/adl/page/calendar",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:1f0c7990f2",
+          "url": "https://www.ewsd.org/o/ehs/page/calendar",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:2b0994d4ca",
+          "url": "https://www.ewsd.org/o/ees/documents/calendar/429800",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:658f2a85e6",
+          "url": "https://www.ewsd.org/wes",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:f56b70f85b",
+          "url": "https://www.ewsd.org/o/sum/article/1345746",
+          "label": "school_start_end_list",
+          "decision": "hold",
+          "reason": "hub-priority:first-dispatch-narrowed-to:5000395:1498c18c23",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:1498c18c23",
+          "url": "https://www.ewsd.org/o/fms/live-feed?page_no=14",
+          "label": "district_hub_by_school",
+          "decision": "hold",
+          "reason": "already-extracted:prior-production-run",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:ca0448b9c0",
+          "url": "https://www.ewsd.org/page/transportation-procedures",
+          "label": null,
+          "decision": "hold",
+          "reason": "unlabeled-tier-C",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:8bcf6af7b8",
+          "url": "https://www.ewsd.org/",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:bfce061e96",
+          "url": "https://drive.google.com/file/d/1QC1Pn6BY_T3vcw3heRX2fwWxPp45ayi3/view?usp=sharing",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        },
+        {
+          "rec_key": "5000395:121644b2f3",
+          "url": "https://www.ewsd.org/live-feed?page_no=2",
+          "label": null,
+          "decision": "reject",
+          "reason": "auto:tier-D",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 3,
+      "est_usd": 0.0030600000000000002
+    }
+  ]
+}

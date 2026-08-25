@@ -402,3 +402,71 @@ def test_647_stage4_finish_district_stamps_the_batch(monkeypatch, tmp_path):
     seen.clear()
     C4.finish_district(district, {})            # CLI path, no batch — unchanged
     assert seen["batch_id"] is None
+
+
+# ------------------ #670: the Stage-4 twin — a failed-latest gov_db event vetoes disk ------------------
+@pytest.mark.govdb
+def test_670_failed_latest_events_veto_disk_state_on_an_ordinary_batch(gov_session, monkeypatch, tmp_path):
+    """The Stage-4 twin of #670's veto. This file's own comment asserted "Process FAILURES leave NO
+    processed.json" — the exact claim #670 falsified at Stage 3 (a late kill can land after the
+    artifact write). Two vetoes, same rule, both on the ordinary-batch path:
+
+      - this stage's own done-ness: a failed-latest `process` event withdraws `done` even with
+        processed.json on disk;
+      - the UPSTREAM GATE: a failed-latest `capture` event withdraws `captured`, so the district
+        reads `awaiting_capture` — not `todo`, which would hand the operator a Run button that
+        processes a known-bad capture.
+
+    No-events districts keep the disk rule byte-for-byte (the historical-corpus non-regression)."""
+    import contextlib
+    from sqlalchemy import text
+    from infrastructure.acquisition.common import db as gdb
+    from infrastructure.acquisition.common import district_status as DS
+    from infrastructure.acquisition.stage4_process import headless as H4
+    gdb.init_precious_schema()
+    monkeypatch.setattr(DS.gdb, "session_scope", lambda: contextlib.nullcontext(gov_session))
+
+    did = "ZZ670B"
+    ddir = tmp_path / "ZZ670B_Twin"
+    ddir.mkdir(parents=True)
+    (ddir / "captures.json").write_text('[{"hash": "h1", "url": "http://w/a", "ok": true}]')
+    (ddir / "processed.json").write_text('[{"hash": "h1", "url": "http://w/a", "usable": true}]')
+    (ddir / "candidates.json").write_text('{"candidates": [{"url": "http://w/a"}]}')
+    (ddir / "discovery.json").write_text(
+        '{"district_id": "ZZ670B", "name": "Twin", "state": "ZZ", "domain": "w.org"}')
+    monkeypatch.setattr(H4, "RAW_DIR", tmp_path)
+    monkeypatch.setattr(H4, "stage2_complete", lambda root: [
+        {"district_id": did, "name": "Twin", "state": "ZZ", "domain": "w.org", "dir": ddir}])
+
+    batch = {"batch_id": "batch_zz670b", "batch_type": "first-run",
+             "districts": [{"district_id": did, "name": "Twin", "state": "ZZ", "domain": "w.org"}]}
+
+    # sanity: no events -> disk asserts done (the non-regression)
+    assert H4.status_for_batch(batch)["districts"][0]["status"] == "done"
+
+    # this stage's own veto: failed-latest process event + processed.json on disk -> failed, retriable
+    gov_session.execute(text(
+        "INSERT INTO state_event (district_id, stage_name, event_type, batch_id, created_at, actor, note) "
+        "VALUES (:d, 'process', 'failed', :b, 'now', 'zz', 'OSError: tool crashed mid-write')"),
+        {"d": did, "b": "batch_zz670b"})
+    gov_session.flush()
+    out = H4.status_for_batch(batch)
+    assert out["districts"][0]["status"] == "failed"
+    assert out["rollup"]["failed"] == 1
+
+    # a later genuine process outcome lifts it — latest event wins, both directions
+    gov_session.execute(text(
+        "INSERT INTO state_event (district_id, stage_name, event_type, stage, batch_id, created_at, "
+        "actor) VALUES (:d, 'process', 'processed_all', 4, :b, 'now', 'zz')"),
+        {"d": did, "b": "batch_zz670b"})
+    gov_session.flush()
+    assert H4.status_for_batch(batch)["districts"][0]["status"] == "done"
+
+    # the upstream gate: a failed-latest CAPTURE event withdraws `captured` -> awaiting_capture,
+    # regardless of the disk pair (Stage 3 shows it timed_out/retriable at the same moment)
+    gov_session.execute(text(
+        "INSERT INTO state_event (district_id, stage_name, event_type, batch_id, created_at, actor, note) "
+        "VALUES (:d, 'capture', 'failed', :b, 'now', 'zz', 'TimeoutExpired: node capture')"),
+        {"d": did, "b": "batch_zz670b"})
+    gov_session.flush()
+    assert H4.status_for_batch(batch)["districts"][0]["status"] == "awaiting_capture"
