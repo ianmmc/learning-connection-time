@@ -2220,3 +2220,94 @@ suite (2485 DB-free / 407 govdb / 100 Node) green throughout, and the #717 alrea
 work from the prior session (REQ-186, PR #902 + its #903-#914 review round) is now fully reflected
 in STAGE6_DISPATCH_DESIGN.md, the governance doc, and the top-level pipeline map — it had shipped
 between doc passes and had not yet propagated past its own stage doc.
+
+### 2026-08-24 — #670 closes by reconciliation, not accretion: the failed-latest veto, completeness as a gov_db fact, and the Stage-4 twin the comment said couldn't exist
+
+The morning's console work drained #620's send-back tail before the session even planned around it:
+Essex Westford went send-back → re-dispatch → gate@8 → Stage 9 in one sitting, Orange County's
+re-capture resolved cleanly, and Broward/Cleveland re-ran through Stage 5 into Ian's gate@5 tagging.
+A verification pass over the four districts' blockers (#689/#693/#691/#686, all confirmed fixed on
+main) surfaced the one that wasn't: **#670's ordinary-batch residue was still live, and batches
+46-57 — 34 first-run districts about to hit Stage 3 — were exactly its exposed population.**
+
+**The reconciliation (PR #920, REQ-189).** Ian asked whether #670 and #623 could be finished
+together, then insisted #622/#670 be rescoped so only ONE set of changes lands. Three exploration
+agents mapped the seams; the answer reshaped all three issues:
+
+- **A veto, not an inversion.** A district whose LATEST capture/process state_event is `failed`
+  never renders `done`, regardless of a populated artifact — on every batch type. Full done-marker
+  inversion stays #622's job (only 28/147 stage-3 / 0/128 stage-4 completions carry a `batch_id`;
+  DB-keying ordinary batches withdraws genuine completions, the measured #885 trap). The veto is
+  strictly-withdrawing, reuses the existing latest-event query, and survives #622 as a pin.
+- **Completeness is a gov_db fact, not a file comparison.** Mid-planning, Ian rejected the draft's
+  receipt-read cross-check outright: per REQ-164 the district-stage JSON files are receipts only,
+  never pipeline input. The redesign: Node's `captureSummary()` (ONE construction site) prints a
+  `CAPTURE_SUMMARY` stdout line only after a successful manifest write; Python raises loudly on a
+  missing line or count/manifest mismatch (→ `failed` event → the veto); the counts stamp the
+  stage-3 completion event's `fingerprints_json.capture_summary`. An AST pin now enforces that
+  nothing under `infrastructure/` outside `common/receipts.py` resolves receipts.
+- **#623's writer half was deliberately DEFERRED** — with counts in gov_db the disk receipt is a
+  pure audit mirror, and Node writing it at capture time would precede the outcome-event commit,
+  against commit-before-receipt. #623 designs that alongside the `captures.json` rename it exists
+  for; its resolver half re-homed to #622 (issue comments posted, pins named).
+- **The Stage-4 twin was real.** Its comment asserted "Process FAILURES leave NO processed.json" —
+  the exact claim #670 falsified at Stage 3 — and the seeded test proved it rendered `done` over a
+  failed-latest event. Same veto, BOTH sets, including the upstream capture gate
+  (`awaiting_capture`, never a Run button over a known-bad capture).
+
+Both falsifiers ran red-then-green. The measurement
+(`2026-08-24-failed-latest-veto-measure.py`) reported C1 population **0 at merge — a drained zero,
+not a hollow one**: Ian's same-day remediation had resolved the very districts that constituted it,
+sanity-checked against raw counts (119/119 disk-done districts hold capture events — the historical
+gap was always the `batch_id` STAMP, never the event log). C2 replayed 460 district×batch×stage
+rows across 58 batches live: 0 violations, 0 newly-asserted `done`.
+
+Earlier the same day: PR #902 merged (#717 already-extracted delta live, REQ-186;
+REQ-187/188 backfilled) and the documentation-tower sweep committed (996dba0), filing #918/#919
+rather than silently patching.
+
+The standing-lesson catalogs that CLAUDE.md carried until this consolidation now live as **Part 6** (below) — an appendix, not part of this entry, so new instances accrue there without editing a dated record.
+
+---
+
+## Part 6 — Standing-lesson catalogs (living index; consolidated from CLAUDE.md 2026-08-24)
+
+> The operative rules live in CLAUDE.md's "Standing method rules" — short, and load-bearing.
+> **This is the instance index**: which issue taught which lesson, so a claim like "seventeen
+> instances" stays checkable. Each instance's reasoning is in the dated entry for its session.
+> Append new instances HERE; do not edit a dated entry to add one.
+
+- **Measure before fixing — SEVENTEEN instances** of an issue's (or review finding's) proposed fix
+  overturned by measurement: #691, #684, #719, #755, #706's severity ranking, #721, #794, #796,
+  #795, #822's image-council premise, #826, #841, #852, #868, #672, #671, #885. Shapes worth
+  remembering: a design question whose substance is a wrong predicate (#671); an issue whose
+  premises expired between filing and work (#672 — re-read against today's code); mechanisms real
+  in source but unreachable in practice, closed as not-bugs WITH pins (#852, #868); claims
+  unfalsifiable as posed (#822's clamped estimate, #841's NULL-coerced counts). Corollaries: a fix
+  can remove a failure's VISIBILITY instead of the failure (#792); a marker without a consequence
+  is decoration (#793); re-run the measurement after the fix it motivated; before calling a
+  divergence a bug, check whether it is intentional (#841's 3,532 "disagreements" were one
+  deliberate difference).
+- **Implemented-twice-drifts — ELEVEN instances across five sessions**: #798/#810/#799/#816;
+  #834's two slice predicates (43 live disagreements); #843/#845/#847/#848 (one fold, four sites,
+  two disagreeing); #841's three alternate collectors; #866 (`NON_SWAPPABLE_SOURCES` spelled a
+  fourth way); #869 (three chrome-inclusive "densest" copies, incl. a CLIENT mirror — app.js's
+  chrome set is now pinned member-for-member); #876 (a copy left behind by the very extraction
+  that created the helper); #880 (a measurement script re-implementing the `kept_in()` it
+  validated). Countermeasure is structural, never a lock-two-copies test: ONE exported function in
+  the base layer (REQ-182). #846's sharpening: an identity assertion locks the FUNCTION, not its
+  INPUTS — input construction must be one function too, asserted at the call sites.
+- **A measurement that cannot fail — NINE shapes**: §10.11 · a fix round's own findings · a merged
+  fix un-run against the live DB (§13.1) · Pass B comparing the post-state with itself · #822's
+  clamped estimate · #841's NULL-coerced times · #866's identity assertion about constants ·
+  the 2026-08-23 tool-redundancy synthesis rule (a bar no tool clears printed KEEP for all five) ·
+  and the general rule: an explicit `NOTHING MEASURED` verdict instead of a green zero on an empty
+  sweep, now standard in every measurement script.
+- **A correct fix can ship with a WRONG RATIONALE** (PR #865: right line, justification wrong
+  twice — 4 records vs a measured 244, and a reassurance false on 5 live records). Corollaries: a
+  fix's measured blast radius is part of the fix (commit the rerunnable script, never the
+  recollection — #870); a reassuring sentence in a comment is a claim — measure it or delete it.
+- **A measurement script is EVIDENCE, held to the standard of what it measures** (#879: a bare
+  `endswith` counted North Little Rock as Little Rock; the published 164 was 160). Import the
+  production predicate; and when choosing a PROXY, check it has the property under test (#873's
+  first pass used `segment:main` for chrome growth — main EXCLUDES chrome).

@@ -130,20 +130,36 @@ details: [DATABASE_SETUP.md → "Two databases"](DATABASE_SETUP.md#two-databases
 
 ### 3. Run Tests
 
+**This section is the baseline authority** — the counts below are the ones to check a working tree
+against. They grow with every merged PR, so treat them as "expect at least"; a DROP is the signal.
+Last verified 2026-08-24.
+
 ```bash
-# Fast, resource-free suite (what CI's first job runs; ~2485 tests as of 2026-08-23 — check
-# CLAUDE.md's resume-essentials for the live count, it grows with every merged PR)
-pytest -q -m "not integration"
-
-# Governance-DB suite (needs Docker Postgres up; CI's second job; ~407 tests as of 2026-08-23, same caveat)
-pytest -q -m govdb
-
-# Everything, verbose
-pytest tests/ -v
-
-# Integration tests only (network/system-dependent)
-pytest tests/ -v -m integration
+pytest -q -m "not integration"    # CI job 1, no DB needed — expect 2490 pass, 1 skipped (pyarrow)
+pytest -q -m govdb                # CI job 2, needs Docker Postgres — expect 409
+pytest tests/test_*_integration.py  # expect 257 pass, 149 skipped
+cd infrastructure/scraper && npm test   # Node capture layer — expect 105
+lint-imports                      # layering contracts — expect "4 kept, 0 broken"
+flake8 . --count --select=E9,F63,F7,F82  # CI's BLOCKING lint — expect 0
 ```
+
+Notes:
+- **`pytest -m integration` carries a NETWORK test** (`test_model_windows_integration.py`, #809) that
+  re-fetches OpenRouter; it skips cleanly offline and is excluded from the default suite.
+- **pytest is 9.1.1.** `pytest.ini` declares `pythonpath = .` — without it, pytest 9's bare `pytest`
+  script fails COLLECTION on `tests/test_benchmark_*`. `requirements.txt` floor is `pytest>=9.0`.
+- The vulture whitelist is `per-file-ignores`'d for F821 (why the flake8 select-list is narrow).
+- Scheduled CI runs nightly (#722).
+
+### 3a. Stage-5 signal re-ingest (only when you changed scoring, or captured new pages)
+
+```bash
+python3 -m infrastructure.acquisition.stage5_filter.build_signals --assert-floor
+```
+
+**~8.5 min** (whole documents are scanned; the 60-page cap is gone). Idempotent — preserves
+labels/facets. **Always pass `--assert-floor`** so a recall regression rolls back inside the
+transaction, and `pg_dump` the precious tables first. Not needed merely to reboot the app.
 
 ---
 
@@ -216,12 +232,35 @@ What lives here now is a flat set of Playwright `.mjs` modules (`capture_discove
 ```bash
 cd infrastructure/scraper
 npm install            # playwright is the only dependency
-npm test               # node --test *.test.mjs (100 tests as of 2026-08-23)
+npm test               # node --test *.test.mjs (see §3 for the live count)
 npm run lint:deps      # depcruise over the flat *.mjs (the Node side of the layering check)
 ```
 
-These are the only two scripts `package.json` defines. Playwright also drives self-verification of console
-UI changes (CLAUDE.md: the Python playwright isn't installed — drive this Node one).
+These are the only two scripts `package.json` defines.
+
+### Running the governance console, and verifying UI work
+
+```bash
+python3 -m infrastructure.acquisition.process_governance.server     # → :8005, Stage 5 by default
+```
+
+- **Reload the browser for `static/*.js` changes; restart the server for Python changes.**
+- **Scratch/experimental servers run on `:8015` — never on `:8005`, which is Ian's working console.**
+- **Playwright-verify UI changes before shipping visuals.** The Python playwright isn't installed —
+  drive the Node one from `infrastructure/scraper`. The house pattern is a committed, rerunnable
+  `verify_<issue>_console.mjs` (five exist: 673, 682, 684, 717, 822); extend it rather than doing a
+  one-off manual check, and verify against REAL records, not fixtures — a synthetic page won't
+  reproduce the conditions these surfaces exist for. Useful specimens: Huntington
+  `4824000:af06722adb` (333k-char handbook) · `0602095:6e8db3e114` (258 rasters, floor-slice PDF at
+  311 pages) · Bentonville `0503060:a5f32ff869` (staff-day tier B; also gate@8's write badge) ·
+  Broward `1200180` (gate@8 send-back routing) · `0904830:71acfa3404` (1,017-page handbook, the
+  dead-slice case).
+- **Cloning the governance DB does NOT isolate the git-tracked JSON twins (REQ-176)** — they are files
+  on disk and every exporter rebuilds them WHOLESALE from the connected DB, so a scratch console on a
+  clone writes its throwaway drafts into `district_status.json`, and a scratch server on an EMPTY
+  governance DB would blank all twelve (measured: 175 districts → 0). `guard_tracked_backup`
+  quarantines under either cause; **seeing that quarantine line while running against a clone is the
+  guard working**, not a failure.
 
 ### Check Enrichment Status
 
