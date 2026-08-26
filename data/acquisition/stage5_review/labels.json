@@ -11032,6 +11032,22 @@
     "updated_at": "2026-08-26T05:16:55Z"
   },
   {
+    "rec_key": "2006180:1bf3c2bd2d",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-26T05:20:43Z"
+  },
+  {
+    "rec_key": "2006180:2e1ac22fc6",
+    "primary_label": "district_hub_by_school",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-26T05:21:50Z"
+  },
+  {
     "rec_key": "2006180:2e63cfff0f",
     "primary_label": "unusable",
     "facets_json": "{}",
@@ -11048,12 +11064,60 @@
     "updated_at": "2026-06-25T01:07:27Z"
   },
   {
+    "rec_key": "2006180:6a995a5655",
+    "primary_label": "target_absent",
+    "facets_json": "{\"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-26T05:20:09Z"
+  },
+  {
+    "rec_key": "2006180:7bad877748",
+    "primary_label": "district_hub_by_school",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-26T05:21:50Z"
+  },
+  {
+    "rec_key": "2006180:7fc999bf67",
+    "primary_label": "target_absent",
+    "facets_json": "{\"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-26T05:20:51Z"
+  },
+  {
+    "rec_key": "2006180:8479cd4136",
+    "primary_label": "school_bell_table",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-26T05:22:02Z"
+  },
+  {
     "rec_key": "2006180:84f1cf3eb7",
     "primary_label": "target_absent",
     "facets_json": "{\"sports\": \"yes\"}",
     "note": "Last day of school notice",
     "status": "labeled",
     "updated_at": "2026-07-02T06:13:21Z"
+  },
+  {
+    "rec_key": "2006180:92286798bf",
+    "primary_label": "school_bell_table",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-26T05:22:08Z"
+  },
+  {
+    "rec_key": "2006180:a11c5dfe52",
+    "primary_label": "target_absent",
+    "facets_json": "{\"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-26T05:21:26Z"
   },
   {
     "rec_key": "2006180:a1a358b988",
@@ -11072,6 +11136,14 @@
     "updated_at": "2026-06-25T01:07:05Z"
   },
   {
+    "rec_key": "2006180:ad415d9e00",
+    "primary_label": "district_hub_by_school",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-26T05:21:50Z"
+  },
+  {
     "rec_key": "2006180:bccf8721d0",
     "primary_label": "target_absent",
     "facets_json": "{\"sports\": \"yes\", \"news_feed\": \"yes\"}",
@@ -11080,12 +11152,28 @@
     "updated_at": "2026-08-26T05:17:34Z"
   },
   {
+    "rec_key": "2006180:d33ea823c1",
+    "primary_label": "target_absent",
+    "facets_json": "{\"news_feed\": \"yes\"}",
+    "note": "Link to bell schedule present",
+    "status": "labeled",
+    "updated_at": "2026-08-26T05:21:15Z"
+  },
+  {
     "rec_key": "2006180:de6f4bdb3b",
     "primary_label": "target_absent",
     "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-08-26T05:16:40Z"
+  },
+  {
+    "rec_key": "2006180:e5d75d754e",
+    "primary_label": "target_absent",
+    "facets_json": "{\"academic_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-26T05:19:55Z"
   },
   {
     "rec_key": "2006180:eca2b17c4d",
@@ -11102,6 +11190,14 @@
     "note": "Events calendar is a page element",
     "status": "labeled",
     "updated_at": "2026-07-02T06:13:46Z"
+  },
+  {
+    "rec_key": "2006180:f72ac96acc",
+    "primary_label": "target_absent",
+    "facets_json": "{\"news_feed\": \"yes\", \"other_schedule\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-26T05:20:29Z"
   },
   {
     "rec_key": "2200283:0515175631",
@@ -20926,6 +21022,14 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-11T05:54:10Z"
+  },
+  {
+    "rec_key": "4824000:7b8c9b10f0",
+    "primary_label": "target_absent",
+    "facets_json": "{\"board\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-26T05:22:47Z"
   },
   {
     "rec_key": "4824000:7f9c644ce5",
