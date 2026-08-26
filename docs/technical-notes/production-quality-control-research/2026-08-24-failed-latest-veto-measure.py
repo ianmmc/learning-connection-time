@@ -99,7 +99,11 @@ def main() -> None:
         c1_total += len(rows)
         print(f"  {stage}: {len(rows)} district(s)")
         for did, note, at in sorted(rows):
-            kind = "timed_out" if note.startswith("TimeoutExpired") else "failed"
+            # #926: the PRODUCTION predicate, not a copy — H3.is_timeout_note is the one home
+            # (REQ-182) and knows both note generations (TimeoutExpired pre-#924, CaptureTimeout
+            # since). The hand-rolled startswith() this replaced would have silently classified
+            # every post-#924 timeout as `failed` while the console said `timed_out` (#879).
+            kind = "timed_out" if H3.is_timeout_note(note) else "failed"
             print(f"    {did}  [{kind}, {_age_days(at)} old]  {note[:90]}")
     if c1_total == 0:
         print(f"  (population currently empty — fine AFTER remediation; on first run this would be "
