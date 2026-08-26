@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-08-26T05:37:41Z",
+  "last_updated": "2026-08-26T06:38:30Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -3035,9 +3035,9 @@
     "0600153": {
       "name": "Alhambra Unified",
       "state": "CA",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 5,
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00058",
       "history": [
@@ -3055,6 +3055,54 @@
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-26T05:37:54Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-26T05:40:54Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-26T05:47:24Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-08-26T05:48:11Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-26T05:59:35Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_partial",
+          "at": "2026-08-26T06:04:07Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-26T06:38:30Z"
         }
       ],
       "notes": "gate@1 approved batch_00058"
@@ -6504,9 +6552,9 @@
     "1700223": {
       "name": "Okaw Valley CUSD 302",
       "state": "IL",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 5,
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00058",
       "history": [
@@ -6524,6 +6572,54 @@
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-26T05:37:54Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-26T05:38:32Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-26T05:47:24Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-08-26T05:48:27Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-26T05:59:35Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-08-26T06:05:31Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-26T06:38:30Z"
         }
       ],
       "notes": "gate@1 approved batch_00058"
@@ -8566,9 +8662,9 @@
     "1930900": {
       "name": "West Delaware County Comm School District",
       "state": "IA",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 5,
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00058",
       "history": [
@@ -8586,6 +8682,54 @@
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-26T05:37:54Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-26T05:39:30Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-26T05:47:24Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-08-26T05:48:57Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-26T05:59:35Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-08-26T06:07:43Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-26T06:38:30Z"
         }
       ],
       "notes": "gate@1 approved batch_00058"
@@ -10057,9 +10201,9 @@
     "2509150": {
       "name": "Old Rochester",
       "state": "MA",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 5,
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00058",
       "history": [
@@ -10077,6 +10221,54 @@
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-26T05:37:54Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-26T05:38:51Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-26T05:47:24Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-08-26T05:49:48Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-26T05:59:35Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-08-26T06:13:08Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-26T06:38:30Z"
         }
       ],
       "notes": "gate@1 approved batch_00058"
@@ -10372,9 +10564,9 @@
     "2600296": {
       "name": "Laurus Academy",
       "state": "MI",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 5,
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00058",
       "history": [
@@ -10392,6 +10584,54 @@
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-26T05:37:54Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-26T05:38:46Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-26T05:47:24Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-08-26T05:50:00Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-26T05:59:35Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-08-26T06:13:24Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-26T06:38:30Z"
         }
       ],
       "notes": "gate@1 approved batch_00058"
@@ -13979,9 +14219,9 @@
     "3600049": {
       "name": "ICAHN CHARTER SCHOOL 1",
       "state": "NY",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 5,
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00058",
       "history": [
@@ -13999,6 +14239,54 @@
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-26T05:37:54Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-26T05:38:01Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-26T05:47:24Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-08-26T05:50:06Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-26T05:59:35Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-08-26T06:13:48Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-26T06:38:30Z"
         }
       ],
       "notes": "gate@1 approved batch_00058"
@@ -15904,9 +16192,9 @@
     "3901631": {
       "name": "Akron Career Tech High School",
       "state": "OH",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 5,
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00058",
       "history": [
@@ -15924,6 +16212,54 @@
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-26T05:37:54Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-26T05:38:13Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-26T05:47:24Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-08-26T05:50:19Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-26T05:59:35Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-08-26T06:15:19Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-26T06:38:30Z"
         }
       ],
       "notes": "gate@1 approved batch_00058"
@@ -16854,9 +17190,9 @@
     "4014970": {
       "name": "HOMINY",
       "state": "OK",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 5,
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00058",
       "history": [
@@ -16874,6 +17210,54 @@
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-26T05:37:54Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-26T05:38:42Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-26T05:47:24Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-08-26T05:50:35Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-26T05:59:35Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-08-26T06:15:53Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-26T06:38:30Z"
         }
       ],
       "notes": "gate@1 approved batch_00058"
@@ -17159,9 +17543,9 @@
     "4200018": {
       "name": "Urban Pathways 6-12 CS",
       "state": "PA",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 5,
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00058",
       "history": [
@@ -17179,6 +17563,54 @@
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-26T05:37:54Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-26T05:37:57Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-26T05:47:24Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-08-26T05:50:45Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-26T05:59:35Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-08-26T06:18:54Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-26T06:38:30Z"
         }
       ],
       "notes": "gate@1 approved batch_00058"
@@ -18075,9 +18507,9 @@
     "4503910": {
       "name": "Orangeburg",
       "state": "SC",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 5,
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00058",
       "history": [
@@ -18095,6 +18527,54 @@
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-26T05:37:54Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-26T05:44:55Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-26T05:47:24Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-08-26T05:51:52Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-26T05:59:35Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-08-26T06:21:38Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-26T06:38:30Z"
         }
       ],
       "notes": "gate@1 approved batch_00058"
@@ -18775,9 +19255,9 @@
     "4826370": {
       "name": "LACKLAND ISD",
       "state": "TX",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 5,
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00058",
       "history": [
@@ -18795,6 +19275,54 @@
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-26T05:37:54Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-26T05:39:04Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-26T05:47:24Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-08-26T05:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-26T05:59:35Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-08-26T06:23:19Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-26T06:38:30Z"
         }
       ],
       "notes": "gate@1 approved batch_00058"
@@ -19831,9 +20359,9 @@
     "4900720": {
       "name": "Ogden City District",
       "state": "UT",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 5,
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00058",
       "history": [
@@ -19851,6 +20379,54 @@
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-08-26T05:37:54Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-08-26T05:42:37Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-08-26T05:47:24Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-08-26T05:53:54Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-08-26T05:59:35Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-08-26T06:38:09Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-08-26T06:38:30Z"
         }
       ],
       "notes": "gate@1 approved batch_00058"

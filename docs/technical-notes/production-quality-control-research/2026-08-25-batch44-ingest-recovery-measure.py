@@ -24,10 +24,12 @@ WHAT IT CHECKS  (read-only; imports the LIVE production functions, never a re-im
         filtered.json as pipeline input anyway (Stage 6 reads the release projection from gov_db).
         The check now globs the receipt the production writer actually emits, and scores its
         freshness against the ingest, so "the release tail ran" is genuinely testable.
-    C4  The `stage=5` progression event is EXPECTED TO STILL BE ABSENT. The CLI path bypasses
-        `_ingest_stage5_if_complete`'s bookkeeping, which is the only writer of that event.
-        Asserting its absence keeps a future reader from mistaking the marker gap for a failed
-        recovery — the marker gap IS #921's remaining scope.
+    C4  The `stage=5` progression marker, scored for CONSISTENCY rather than a fixed number
+        (corrected 2026-08-26 — see the inline note). Two legitimate states: 0 events (the
+        CLI/recovery path, which bypasses `_ingest_stage5_if_complete`'s bookkeeping — the only
+        writer — so the gap is #921's scope, not a failure) or one per district (the console path,
+        where the Stage-4 tail wrote it). A count strictly between the two is a PARTIAL marker
+        write, which neither path produces and nothing else here would catch.
 
 VERDICT DISCIPLINE
     An empty sweep prints NOTHING MEASURED, never a green zero: if the batch cannot be loaded, or
@@ -35,7 +37,8 @@ VERDICT DISCIPLINE
     reported as UNMEASURED and the run cannot pass.
 
 USAGE
-    python3 docs/scratch-paper/2026-08-25-batch44-ingest-recovery-verify.py [batch_id]
+    python3 docs/technical-notes/production-quality-control-research/\
+        2026-08-25-batch44-ingest-recovery-measure.py [batch_id]      # default: batch_00044
 """
 import json
 import sys
@@ -127,13 +130,33 @@ def main() -> int:
         print(f"{did:<10}{np_:>10}{nr:>8}{missing:>9}{extra:>7}  {rc}{note}{flag}")
     print()
 
-    # C4 — the marker is expected to still be absent (the CLI bypasses its writer).
+    # C4 — the stage=5 progression marker. CORRECTED 2026-08-26 (found by running this against
+    # batch_00058): the first version hard-coded "0 is expected", because it was written for the
+    # batch_00044 RECOVERY, where a CLI re-ingest bypasses `_ingest_stage5_if_complete`'s
+    # bookkeeping — the only writer of this event. Run against a healthy console-driven batch it
+    # called the correct answer (one event per district) "unexpected — investigate". A measurement
+    # whose expectation is hard-coded to one of its two legitimate paths reports false alarms on
+    # the other.
+    #
+    # There are exactly two consistent states, and the script cannot know which path ran, so it
+    # scores CONSISTENCY rather than a fixed number:
+    #   n == 0            -> the CLI/recovery path; the marker gap is #921's remaining scope
+    #   n == n_districts  -> the console path (Stage-4 tail); the seam wrote its marker, healthy
+    # Anything strictly between is the real anomaly — a PARTIAL marker write, which neither path
+    # produces and which no other check here would catch.
     with gdb.session_scope() as s:
         n_evt = s.execute(text(
-            "SELECT COUNT(*) FROM state_event WHERE batch_id = :b AND stage = 5"),
-            {"b": BATCH}).scalar()
-    print(f"C4  stage=5 events under {BATCH}: {n_evt} "
-          f"({'as expected — the CLI bypasses the bookkeeping (#921)' if n_evt == 0 else 'unexpected — investigate'})")
+            "SELECT COUNT(DISTINCT district_id) FROM state_event "
+            "WHERE batch_id = :b AND stage = 5"), {"b": BATCH}).scalar()
+    if n_evt == 0:
+        c4 = "recovery/CLI path — the marker gap is #921's remaining scope, not a failure"
+    elif n_evt == len(ids):
+        c4 = f"console path — the Stage-4→5 seam wrote its marker for all {len(ids)}, healthy"
+    else:
+        c4 = (f"*** PARTIAL MARKER WRITE — {n_evt} of {len(ids)} districts. Neither path produces "
+              f"this; investigate the Stage-4→5 seam ***")
+        failures.append("C4-partial-marker")
+    print(f"C4  districts with a stage=5 event under {BATCH}: {n_evt}/{len(ids)} — {c4}")
     print()
 
     for did, why in unmeasured:
@@ -145,8 +168,10 @@ def main() -> int:
     if failures:
         print(f"\nVERDICT: FAIL — {len(failures)} district(s) still short: {', '.join(failures)}")
         return 1
+    tail = ("The stage=5 marker gap remains open as #921."
+            if n_evt == 0 else "Stage-4→5 seam marker present — the #921 gap does not apply here.")
     print(f"\nVERDICT: PASS — all {len(rows)} districts fully ingested "
-          f"(0 missing, 0 extra). The stage=5 marker gap remains open as #921.")
+          f"(0 missing, 0 extra). {tail}")
     return 0
 
 
