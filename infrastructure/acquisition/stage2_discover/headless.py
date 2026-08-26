@@ -37,6 +37,7 @@ from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import discover as DISC
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
+from infrastructure.acquisition.common import subproc
 from infrastructure.acquisition.stage2_discover import discover_stage2 as D2
 
 CLI_TIMEOUT_S = 420   # diagnostic-only: per-district `claude -p` budget for the cli_reliability harness
@@ -174,12 +175,31 @@ def run_claude_cli(prompt: str, *, model: str = "haiku", effort: str = "low",
     ]
     last = "no attempts ran"
     for _attempt in range(retries + 1):
-        proc = _run(cmd, input=prompt, capture_output=True, text=True,
-                    timeout=timeout, cwd=str(paths.REPO_ROOT))
+        # #927 (the #916 shape one layer over): the CLI can emit its COMPLETE JSON envelope and then
+        # hang on shutdown (an MCP server / child process that won't exit) until the backstop fires.
+        # The envelope IS this subprocess's product and it is sitting in `e.stdout` — bytes even
+        # under text=True, hence stream_to_text — so consult it before declaring the attempt dead.
+        # Only a timeout with NO parseable envelope re-raises: the pre-#927 abort-on-hang semantics,
+        # deliberately NOT a retry — every retry of a hang costs another full `timeout` seconds.
         try:
-            envelope = json.loads(proc.stdout)
+            proc = _run(cmd, input=prompt, capture_output=True, text=True,
+                        timeout=timeout, cwd=str(paths.REPO_ROOT))
+            stdout, exit_desc = proc.stdout, f"exit {proc.returncode}"
+            stderr = proc.stderr
+        except subprocess.TimeoutExpired as e:
+            stdout = subproc.stream_to_text(e.stdout)
+            try:
+                json.loads(stdout)
+            except json.JSONDecodeError:
+                # nothing salvageable -- a genuine hang stays a loud timeout. `raise e`, not bare
+                # `raise`: inside this inner handler a bare raise re-raises the JSONDecodeError,
+                # which would surface the probe instead of the timeout (caught by the falsifier).
+                raise e from None
+            exit_desc, stderr = f"timeout after {timeout}s (envelope salvaged)", ""
+        try:
+            envelope = json.loads(stdout)
         except json.JSONDecodeError:
-            last = f"exit {proc.returncode}, non-JSON output: {(proc.stderr or proc.stdout)[:300]}"
+            last = f"{exit_desc}, non-JSON output: {(stderr or stdout)[:300]}"
             continue   # a real crash, not the structured envelope -- retry
         if envelope.get("subtype") == STRUCTURED_RETRY_SUBTYPE:
             last = f"structured-output retries exhausted: {envelope.get('errors')}"

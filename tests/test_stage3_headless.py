@@ -519,3 +519,158 @@ class Test670CaptureSummary:
         seen.clear()
         C3.finish_district(district, {})            # CLI/reconcile path: no summary -> no stamp
         assert seen["fingerprints"] is None
+
+
+class Test916BackstopTimeoutOverCompleteWork:
+    """#916: the Python subprocess timeout is a BACKSTOP over a deadline Node owns
+    (CAPTURE_DEADLINE_S). When it fires late — after Node has already written captures.json and
+    printed its CAPTURE_SUMMARY — the work is COMPLETE, but `subprocess.run` raises
+    `TimeoutExpired` from the call itself, so every one of `_capture_one`'s four validity checks
+    (returncode, manifest existence, summary presence, count match) is skipped and the district is
+    recorded `failed`. Live instance: ORANGE `1201440` in batch_00044 — 416 records, every one
+    `ok=true`, recorded as a timeout.
+
+    The cost is NOT a batch stall (that chain has zero measured instances). A false `failed`
+    leaves the district `awaiting_capture` with `retriable == 0`, so `stage4.js:83` offers a note
+    instead of a Run button and the only way forward is a Stage-3 RE-CAPTURE — the redo path,
+    which seeds from the prior manifest (#174). A first-run district silently becomes a redo
+    district, voiding its validation value.
+
+    The fix runs the SAME four checks on the timeout path. A timeout is only forgiven when the
+    artifact proves the work finished; a timeout over incomplete work still fails loudly, and the
+    fact that the backstop fired is preserved on the summary (#792: never trade a failure for its
+    invisibility).
+    """
+
+    def _district(self, tmp_path, recs):
+        d = tmp_path / "999_d999"
+        d.mkdir(parents=True)
+        (d / "captures.json").write_text(json.dumps(recs))
+        return {"district_id": "999", "name": "D999", "state": "AK", "dir": d}
+
+    @staticmethod
+    def _timeout_run(stdout, *, encode=True):
+        """A fake `_run` that behaves like the real backstop: raises TimeoutExpired carrying the
+        output produced before the kill. NOTE the type — `subprocess.run` populates
+        `TimeoutExpired.stdout` as BYTES even under `text=True` (verified on CPython 3.13), and
+        `stderr` is None on POSIX. Handing those to a str parser silently never matches, so the
+        fake reproduces the real types rather than a convenient str."""
+        import subprocess as _sp
+
+        def run(cmd, **kw):
+            raise _sp.TimeoutExpired(
+                cmd, 1.0, output=(stdout.encode() if encode else stdout), stderr=None)
+        return run
+
+    def test_timeout_after_a_complete_manifest_is_accepted(self, tmp_path):
+        """THE FALSIFIER — must fail before the fix."""
+        recs = [{"hash": "a", "ok": True}, {"hash": "b", "ok": True}]
+        district = self._district(tmp_path, recs)
+        summary = H3._capture_one(district, _run=self._timeout_run(_summary_line("999_d999", recs)))
+        assert summary["n_records"] == 2
+
+    def test_the_backstop_fact_survives_on_the_summary(self, tmp_path):
+        """#792: accepting the work must not erase that the backstop fired — the flag rides the
+        summary onto the completion event (fingerprints_json.capture_summary), so a run that only
+        just made it is still auditable as such."""
+        recs = [{"hash": "a", "ok": True}]
+        district = self._district(tmp_path, recs)
+        summary = H3._capture_one(district, _run=self._timeout_run(_summary_line("999_d999", recs)))
+        assert summary.get("backstop_timeout") is True
+
+    def test_a_normal_run_is_not_marked_with_the_backstop_flag(self, tmp_path):
+        recs = [{"hash": "a", "ok": True}]
+        district = self._district(tmp_path, recs)
+
+        def run(cmd, **kw):
+            return types.SimpleNamespace(
+                returncode=0, stdout=_summary_line("999_d999", recs), stderr="")
+        assert "backstop_timeout" not in H3._capture_one(district, _run=run)
+
+    def test_timeout_with_a_count_mismatch_still_raises_and_classifies_as_timeout(self, tmp_path):
+        """Killed mid-write: the manifest holds 2, the summary printed 1. Forgiving the timeout
+        must not forgive a truncated artifact — and (#925) the failure must still CLASSIFY as a
+        timeout: the pre-#924 behavior (TimeoutExpired escaping uncaught) rendered `timed_out`,
+        and #924's first draft regressed this branch to a plain RuntimeError -> `failed`."""
+        district = self._district(tmp_path, [{"hash": "a", "ok": True}, {"hash": "b", "ok": True}])
+        line = "CAPTURE_SUMMARY " + json.dumps({"dir": "999_d999", "n_records": 1})
+        with pytest.raises(H3.CaptureTimeout, match="summary/manifest mismatch") as ei:
+            H3._capture_one(district, _run=self._timeout_run(line))
+        assert H3.is_timeout_note(f"{type(ei.value).__name__}: {ei.value}")
+
+    def test_timeout_with_no_summary_line_still_raises_and_classifies_as_timeout(self, tmp_path):
+        """The RETRY-PARTIAL shape (#925): run_retry_partial only selects districts whose
+        captures.json already exists, so on that path a genuine hang ALWAYS lands here — the
+        manifest on disk is the prior run's seed, not this run's output. Must classify `timed_out`,
+        and the message must not claim this run wrote the manifest."""
+        district = self._district(tmp_path, [{"hash": "a", "ok": True}])
+        with pytest.raises(H3.CaptureTimeout, match="no CAPTURE_SUMMARY on stdout") as ei:
+            H3._capture_one(district, _run=self._timeout_run(""))
+        assert H3.is_timeout_note(f"{type(ei.value).__name__}: {ei.value}")
+        assert "prior run's seed" in str(ei.value)   # the message owns the retry-partial ambiguity
+
+    def test_nontimeout_failures_still_raise_plain_runtimeerror(self, tmp_path):
+        """#925's complement: the classification widening must not leak the other way — a normal
+        run's summary-absent / count-mismatch failures stay `failed`, never `timed_out`."""
+        district = self._district(tmp_path, [{"hash": "a", "ok": True}])
+
+        def run_no_summary(cmd, **kw):
+            return types.SimpleNamespace(returncode=0, stdout="", stderr="")
+        with pytest.raises(RuntimeError, match="no CAPTURE_SUMMARY line") as ei:
+            H3._capture_one(district, _run=run_no_summary)
+        assert not isinstance(ei.value, H3.CaptureTimeout)
+        assert not H3.is_timeout_note(f"{type(ei.value).__name__}: {ei.value}")
+
+    def test_timeout_with_no_manifest_still_raises(self, tmp_path):
+        """A real timeout over unfinished work — the case the backstop exists for."""
+        d = tmp_path / "999_d999"
+        d.mkdir(parents=True)
+        district = {"district_id": "999", "name": "D999", "state": "AK", "dir": d}
+        with pytest.raises(RuntimeError, match="timed out"):
+            H3._capture_one(district, _run=self._timeout_run(""))
+
+    def test_str_stdout_on_the_timeout_path_is_also_handled(self, tmp_path):
+        """Defensive: `TimeoutExpired.stdout` is bytes on CPython today, but the attribute is
+        documented loosely and Windows populates it by a different path. Both types must parse."""
+        recs = [{"hash": "a", "ok": True}]
+        district = self._district(tmp_path, recs)
+        summary = H3._capture_one(
+            district, _run=self._timeout_run(_summary_line("999_d999", recs), encode=False))
+        assert summary["n_records"] == 1
+
+
+class Test916TimeoutNoteClassification:
+    """The coupling #916's fix nearly broke. `status_for_batch` renders `timed_out` by matching the
+    failure note's exception NAME, and the note is built as f"{type(e).__name__}: …". Changing which
+    exception escapes `_capture_one` therefore silently reclassifies genuine timeouts as plain
+    `failed` — caught only because the predicate was re-read after the fix, not because a test
+    failed. It now has ONE home (REQ-182) and both names are pinned: `TimeoutExpired` for the events
+    already in gov_db, `CaptureTimeout` for everything written since."""
+
+    def test_both_generations_of_timeout_note_classify_as_timeout(self):
+        assert H3.is_timeout_note("TimeoutExpired: Command '[...]' timed out after 840 seconds")
+        assert H3.is_timeout_note("CaptureTimeout: node capture timed out after 840s and wrote "
+                                  "no captures.json")
+
+    def test_other_failures_are_not_timeouts(self):
+        assert not H3.is_timeout_note("RuntimeError: node capture exit 1: boom")
+        assert not H3.is_timeout_note("RuntimeError: node capture wrote captures.json but printed "
+                                      "no CAPTURE_SUMMARY line")
+        assert not H3.is_timeout_note("")
+        assert not H3.is_timeout_note(None)
+
+    def test_an_unredeemed_timeout_raises_the_name_the_predicate_expects(self, tmp_path):
+        """End-to-end on the coupling: the exception a real timeout-over-unfinished-work raises must
+        produce a note the classifier still recognizes. Asserting the two halves separately would
+        let them drift apart — which is exactly what happened."""
+        import subprocess as _sp
+        d = tmp_path / "999_d999"
+        d.mkdir(parents=True)
+        district = {"district_id": "999", "name": "D999", "state": "AK", "dir": d}
+
+        def run(cmd, **kw):
+            raise _sp.TimeoutExpired(cmd, 1.0, output=b"", stderr=None)
+        with pytest.raises(Exception) as ei:
+            H3._capture_one(district, _run=run)
+        note = f"{type(ei.value).__name__}: {str(ei.value)[:200]}"
+        assert H3.is_timeout_note(note), f"note would render `failed`, not `timed_out`: {note}"

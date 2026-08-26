@@ -29,6 +29,7 @@ from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
+from infrastructure.acquisition.common import subproc
 from infrastructure.acquisition.stage3_capture import capture_stage3 as C3
 
 RAW_DIR = paths.RAW_CAPTURES
@@ -90,6 +91,26 @@ def _plan_sha256(ddir: Path) -> str:
     return hashlib.sha256("\n".join(urls).encode()).hexdigest()
 
 
+class CaptureTimeout(RuntimeError):
+    """A backstop timeout that the artifact did NOT redeem — i.e. a real timeout over unfinished
+    work. Distinct from the bare `subprocess.TimeoutExpired` because #916 means that exception no
+    longer decides anything on its own: it is caught, the manifest is consulted, and only an
+    unredeemed timeout is re-raised as this."""
+
+
+# The district-status note is built as f"{type(e).__name__}: …", so `timed_out` is recognized by
+# exception NAME. Both names must be listed: `TimeoutExpired` for events written before #916 (the
+# historical rows still in gov_db) and `CaptureTimeout` for the ones written since. ONE home for the
+# rule (REQ-182) — the first draft of the #916 fix left the inline `note.startswith("TimeoutExpired")`
+# at status_for_batch and silently reclassified every genuine timeout as a plain `failed`.
+_TIMEOUT_NOTE_PREFIXES = ("TimeoutExpired", "CaptureTimeout")
+
+
+def is_timeout_note(note: str) -> bool:
+    """True when a capture failure note describes a backstop timeout (vs. any other error)."""
+    return (note or "").startswith(_TIMEOUT_NOTE_PREFIXES)
+
+
 def _capture_summary_from_stdout(stdout: str, dir_name: str) -> dict | None:
     """Parse the district's CAPTURE_SUMMARY line from the Node run's stdout — the subprocess return
     channel (#670). One line per district, tagged, JSON payload; a multi-district run prints several,
@@ -124,20 +145,66 @@ def _capture_one(district: dict, *, retryable_only: bool = False, plan_sha: str 
         cmd.append("retryable-only")
         if plan_sha:
             cmd.append(f"plan-sha256={plan_sha}")
-    proc = _run(cmd, capture_output=True, text=True, timeout=CAPTURE_TIMEOUT_S, cwd=str(paths.REPO_ROOT))
-    if proc.returncode != 0:
-        raise RuntimeError(f"node capture exit {proc.returncode}: {(proc.stderr or proc.stdout)[:300]}")
+    # #916: the Python timeout is a BACKSTOP over a deadline Node owns (CAPTURE_DEADLINE_S). It can
+    # fire LATE -- after Node has written captures.json and printed its summary -- and `TimeoutExpired`
+    # is raised by the call itself, so every check below used to be skipped and a COMPLETE capture was
+    # recorded `failed` (ORANGE `1201440`, batch_00044: 416 records, all ok=true, logged as a timeout).
+    # A false `failed` is not merely cosmetic: it leaves the district `awaiting_capture` with
+    # `retriable == 0`, so stage4.js offers a note instead of a Run control and the only way forward is
+    # a RE-CAPTURE -- the redo path, which seeds from the prior manifest (#174). A first-run district
+    # silently becomes a redo district.
+    #
+    # So the timeout does not decide the outcome; the ARTIFACT does. Both paths converge on the same
+    # three checks below. What the timeout path drops is only the returncode check -- a killed process
+    # has no meaningful exit status -- and that is the weakest of the four anyway: #670 established
+    # that the manifest + summary + count agreement are what prove completeness. A timeout over
+    # incomplete work still fails loudly on exactly those checks.
+    backstop_timeout = False
+    try:
+        proc = _run(cmd, capture_output=True, text=True, timeout=CAPTURE_TIMEOUT_S,
+                    cwd=str(paths.REPO_ROOT))
+    except subprocess.TimeoutExpired as e:
+        backstop_timeout = True
+        stdout = subproc.stream_to_text(e.stdout)
+    else:
+        if proc.returncode != 0:
+            raise RuntimeError(f"node capture exit {proc.returncode}: "
+                               f"{(proc.stderr or proc.stdout)[:300]}")
+        stdout = proc.stdout
     if not (district["dir"] / "captures.json").exists():
+        if backstop_timeout:
+            raise CaptureTimeout(
+                f"node capture timed out after {CAPTURE_TIMEOUT_S}s and wrote no captures.json")
         raise RuntimeError("node capture finished but wrote no captures.json")
-    summary = _capture_summary_from_stdout(proc.stdout, district["dir"].name)
+    summary = _capture_summary_from_stdout(stdout, district["dir"].name)
     if summary is None:
+        # #925: on the timeout path this must stay classified `timed_out`, and the message must not
+        # claim this run wrote the manifest — retry-partial only selects districts whose
+        # captures.json ALREADY exists (run_retry_partial's existence gate), so on that path a
+        # genuine hang always lands HERE with the prior run's seed on disk, never in the
+        # missing-manifest branch above.
+        if backstop_timeout:
+            raise CaptureTimeout(
+                f"node capture timed out after {CAPTURE_TIMEOUT_S}s with no CAPTURE_SUMMARY on "
+                f"stdout — the captures.json on disk may be a prior run's seed and proves nothing "
+                f"about this run")
         raise RuntimeError("node capture wrote captures.json but printed no CAPTURE_SUMMARY line "
                            "(killed or crashed between the manifest write and the summary)")
     n_manifest = len(json.loads((district["dir"] / "captures.json").read_text()))
     if summary.get("n_records") != n_manifest:
-        raise RuntimeError(f"capture summary/manifest mismatch for {district['district_id']}: "
-                           f"summary n_records={summary.get('n_records')} vs manifest {n_manifest} "
-                           f"(truncated or concurrently rewritten)")
+        mismatch = (f"capture summary/manifest mismatch for {district['district_id']}: "
+                    f"summary n_records={summary.get('n_records')} vs manifest {n_manifest} "
+                    f"(truncated or concurrently rewritten)")
+        if backstop_timeout:
+            raise CaptureTimeout(
+                f"node capture timed out after {CAPTURE_TIMEOUT_S}s; {mismatch}")
+        raise RuntimeError(mismatch)
+    if backstop_timeout:
+        # Accepting the work must NOT erase that the backstop fired (#792: a fix that removes a
+        # failure's VISIBILITY instead of the failure). The flag rides the summary onto the
+        # completion event (fingerprints_json.capture_summary), so "this district only just made it"
+        # stays a queryable gov_db fact and a rising rate is detectable rather than silent.
+        summary["backstop_timeout"] = True
     return summary
 
 
@@ -236,7 +303,7 @@ def status_for_batch(batch: dict) -> dict:
         if did not in captured:
             if did in failed_caps:           # capture errored/timed out -> failed (retriable), not todo
                 note = failed_caps[did] or ""
-                st = "timed_out" if note.startswith("TimeoutExpired") else "failed"
+                st = "timed_out" if is_timeout_note(note) else "failed"
                 districts.append({**row, "status": st, "outcome": st, "error": note[:300]})
             else:
                 districts.append({**row, "status": "todo"})
