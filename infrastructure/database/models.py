@@ -66,6 +66,13 @@ class District(Base):
     enrollment: Mapped[Optional[int]] = mapped_column(Integer)
     instructional_staff: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
     total_staff: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    # VESTIGIAL — never written, never read; NULL for all 17,842 rows (verified 2026-08-25). The CCD
+    # ingest's District(...) call (migrations/import_all_data.py:195) omits it, and a grimp sweep of
+    # every module importing this one finds no reference outside this file. A read returns None, which
+    # is easy to misread as "this district has no schools" — it happened while validating batch_00058.
+    # The adjusted IN-SCOPE school count lives elsewhere: `nces_school_counts` in each Stage-1 batch
+    # receipt, from common/school_sampling.py::school_index() (open, regular, non-virtual, not
+    # standalone-preschool). Kept only because dropping it is a production migration for no gain.
     schools_count: Mapped[Optional[int]] = mapped_column(Integer)
     year: Mapped[str] = mapped_column(String(10), nullable=False)
     data_source: Mapped[str] = mapped_column(String(50), default="nces_ccd")
@@ -137,7 +144,7 @@ class District(Base):
             "enrollment": self.enrollment,
             "instructional_staff": float(self.instructional_staff) if self.instructional_staff else None,
             "total_staff": float(self.total_staff) if self.total_staff else None,
-            "schools_count": self.schools_count,
+            "schools_count": self.schools_count,   # always None — see the column comment above
             "year": self.year,
             "data_source": self.data_source,
         }

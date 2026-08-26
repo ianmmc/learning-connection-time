@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-08-25T06:14:42Z",
+  "last_updated": "2026-08-26T05:37:41Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -3031,6 +3031,33 @@
         }
       ],
       "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+    },
+    "0600153": {
+      "name": "Alhambra Unified",
+      "state": "CA",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00058",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-08-26T05:29:26Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-26T05:37:41Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00058"
     },
     "0601464": {
       "name": "Community Montessori District",
@@ -6474,6 +6501,33 @@
       ],
       "notes": "a2bc80c004ca"
     },
+    "1700223": {
+      "name": "Okaw Valley CUSD 302",
+      "state": "IL",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00058",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-08-26T05:29:26Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-26T05:37:41Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00058"
+    },
     "1713590": {
       "name": "Egyptian CUSD 5",
       "state": "IL",
@@ -8509,6 +8563,33 @@
       ],
       "notes": "reject district 1928020"
     },
+    "1930900": {
+      "name": "West Delaware County Comm School District",
+      "state": "IA",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00058",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-08-26T05:29:26Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-26T05:37:41Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00058"
+    },
     "2006180": {
       "name": "Fort Scott",
       "state": "KS",
@@ -9973,6 +10054,33 @@
       ],
       "notes": "bb177cd7c381"
     },
+    "2509150": {
+      "name": "Old Rochester",
+      "state": "MA",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00058",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-08-26T05:29:26Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-26T05:37:41Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00058"
+    },
     "2513230": {
       "name": "Worcester",
       "state": "MA",
@@ -10260,6 +10368,33 @@
         }
       ],
       "notes": "gate@1 approved batch_00052"
+    },
+    "2600296": {
+      "name": "Laurus Academy",
+      "state": "MI",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00058",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-08-26T05:29:26Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-26T05:37:41Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00058"
     },
     "2600950": {
       "name": "Reach Charter Academy",
@@ -13841,6 +13976,33 @@
       ],
       "notes": "f33790e63820"
     },
+    "3600049": {
+      "name": "ICAHN CHARTER SCHOOL 1",
+      "state": "NY",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00058",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-08-26T05:29:26Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-26T05:37:41Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00058"
+    },
     "3600119": {
       "name": "NEW YORK CITY GEOGRAPHIC DISTRICT #14",
       "state": "NY",
@@ -15739,6 +15901,33 @@
       ],
       "notes": ""
     },
+    "3901631": {
+      "name": "Akron Career Tech High School",
+      "state": "OH",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00058",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-08-26T05:29:26Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-26T05:37:41Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00058"
+    },
     "3904378": {
       "name": "Cleveland Municipal",
       "state": "OH",
@@ -16662,6 +16851,33 @@
       ],
       "notes": "reject district 4006330"
     },
+    "4014970": {
+      "name": "HOMINY",
+      "state": "OK",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00058",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-08-26T05:29:26Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-26T05:37:41Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00058"
+    },
     "4026640": {
       "name": "SOUTH COFFEYVILLE",
       "state": "OK",
@@ -16939,6 +17155,33 @@
         }
       ],
       "notes": "gate@1 approved batch_00053"
+    },
+    "4200018": {
+      "name": "Urban Pathways 6-12 CS",
+      "state": "PA",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00058",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-08-26T05:29:26Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-26T05:37:41Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00058"
     },
     "4200874": {
       "name": "Mastery CS-Francis D. Pastorius Elementary",
@@ -17829,6 +18072,33 @@
       ],
       "notes": "c127b5f6e5d7"
     },
+    "4503910": {
+      "name": "Orangeburg",
+      "state": "SC",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00058",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-08-26T05:29:26Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-26T05:37:41Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00058"
+    },
     "4600041": {
       "name": "Britton-Hecla School District 45-4",
       "state": "SD",
@@ -18501,6 +18771,33 @@
         }
       ],
       "notes": "gate@1 auto-approved (follow-up autoflow) batch_00044"
+    },
+    "4826370": {
+      "name": "LACKLAND ISD",
+      "state": "TX",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00058",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-08-26T05:29:26Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-26T05:37:41Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00058"
     },
     "4828590": {
       "name": "LULING ISD",
@@ -19530,6 +19827,33 @@
         }
       ],
       "notes": "wrote 3 band(s): elementary=council_extraction,high=council_extraction,middle=council_extraction"
+    },
+    "4900720": {
+      "name": "Ogden City District",
+      "state": "UT",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00058",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-08-26T05:29:26Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-08-26T05:37:41Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00058"
     },
     "5000395": {
       "name": "Essex Westford Educational Community Unified Union SD #51",

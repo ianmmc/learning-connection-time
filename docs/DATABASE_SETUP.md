@@ -155,7 +155,7 @@ Primary table containing all U.S. school districts.
 | enrollment | INTEGER | Total enrollment |
 | instructional_staff | NUMERIC(10,2) | District-level instructional staff FTE |
 | total_staff | NUMERIC(10,2) | Total staff FTE |
-| schools_count | INTEGER | Number of schools |
+| schools_count | INTEGER | **UNPOPULATED — never written, never read. Do not use.** See the note below. |
 | year | VARCHAR(10) | Data year |
 | data_source | VARCHAR(50) | Source (default `nces_ccd`) |
 | st_leaid | VARCHAR(20) | State-assigned LEA ID (e.g., "CA-6275796") |
@@ -164,6 +164,23 @@ Primary table containing all U.S. school districts.
 | is_shared_service_entity | BOOLEAN | Shared-service classification flag |
 | created_at | TIMESTAMP | Record creation time |
 | updated_at | TIMESTAMP | Last update time |
+
+> **`schools_count` is a vestigial pre-pipeline column — never trust a read of it** (verified
+> 2026-08-25). It is **NULL for all 17,842 rows** and has never been written: the CCD ingest's
+> `District(...)` constructor (`migrations/import_all_data.py:195`) simply does not include it. A
+> grimp sweep of all 18 modules that import `database.models` finds exactly two references, both
+> inside `models.py` — the column declaration and its own `to_dict()`. Nothing else reads it.
+> `District.to_dict()` therefore emits a real-looking `"schools_count": None` key; ignore it.
+>
+> **The school count you actually want is `nces_school_counts`**, computed per district at Stage-1
+> queue time and stored in the batch receipt (`data/acquisition/queue/batch_*.json`), from
+> `common/school_sampling.py::school_index()`. That one IS the adjusted in-scope figure — its
+> `_eligible()` predicate is *open, regular, non-virtual, not standalone-preschool* (PK–KG-only
+> excluded; a K-5 with `GSLO=PK` still counts), grouped by the raw `ccd_sch` LEVEL field. As each
+> batch receipt states: "the topology denominator — NOT ccd_lea's reported figure."
+>
+> Kept rather than dropped: removing it means a migration against the production LCT DB for no
+> functional gain. It is harmless once it stops claiming to hold a value.
 
 **Indexes**:
 - Primary key on `nces_id`
