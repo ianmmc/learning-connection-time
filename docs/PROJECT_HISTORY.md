@@ -2393,3 +2393,70 @@ Authority: commit `dc0ef6f`; issues #921 (ingest trigger), #922 (Settings re-ing
 #923 (label-orphan visibility, epic #706), scope correction on #916. Rerunnable evidence:
 `docs/technical-notes/production-quality-control-research/2026-08-25-batch44-ingest-recovery-measure.py`
 (+ paired `-measurement.md`).
+
+### 2026-08-26 — The 38-PR validation batch passes; and two more ways a measurement lies
+
+**The milestone: `batch_00058` ran clean end-to-end**, the first genuine first-run batch since
+`batch_00036` (2026-07-28) and the validation of 38 merged PRs. It is worth recording *what it
+proved*, because three mechanisms had **never executed in production** before it and could not be
+exercised by a redo batch (a redo seeds capture from the prior manifest, #174, and takes the
+`completed_by_batch` redo path):
+
+- **The `CAPTURE_SUMMARY` contract (#670)** — 12/12 completion events carry `capture_summary` in
+  `fingerprints_json`, counts agree with the disk manifests on all 12 (252 records),
+  `backstop_timeout` False throughout. Capture completeness is now a queryable gov_db fact rather
+  than an inference from artifact existence.
+- **#670's ordinary-batch veto branch** — written for exactly this population, run against it for
+  the first time; no false vetoes.
+- **The Stage-4→5 seam on a healthy batch** — `resolved == total` → the ingest fired → 12 `stage=5`
+  events landed. This is the positive check `batch_00044` failed, and it **narrows #921**: that
+  defect is about *recovery when the ingest window is missed*, not the happy path.
+
+Upstream results, for the record: Stage 2 12/12 `found_all`, 70/70 schools, 231 candidates all
+unique and 100% on-domain, Wave 2 correctly never invoked (no residual) — the best 12-district
+first-run on record against a 75-91% comparable cohort and an 87% corpus rate. Stage 3 12/12
+`captured_all`, 252 captures, **zero** err rows, zero `security_block`, zero timeouts.
+
+**#916 landed as PR #924, and the fix's own two hazards are the durable part.** The bug: the Python
+subprocess timeout is a *backstop* over a deadline Node owns, so it can fire after Node has written
+`captures.json` and printed its summary — and because `TimeoutExpired` is raised by the call itself,
+all four validity checks were skipped and a COMPLETE capture was recorded `failed`. The fix makes
+the **artifact** decide, not the timeout. Two things nearly shipped with it:
+
+1. **`TimeoutExpired.stdout` is `bytes` even under `text=True`** (verified empirically, CPython
+   3.13; `stderr` is None on POSIX) — the decode happens in the normal return path a timeout never
+   reaches. Handing it to the str parser would have read a `CAPTURE_SUMMARY` that IS there as
+   absent: **the #916 failure shape reproduced inside #916's own salvage path.**
+2. **`status_for_batch` classified `timed_out` by matching the exception NAME** in the failure note,
+   so changing which exception escapes silently reclassified every genuine timeout as plain
+   `failed`. Caught by re-reading the predicate, *not* by a failing test. New shape worth naming:
+   **an exception type can be a load-bearing interface.** Changing which exception escapes is an
+   API change, and a string-matched exception name is an implemented-twice drift waiting to happen.
+
+**The review round (#925/#926/#927) corrected the fix three times, and one correction was of my
+reasoning, not my code.** #927 found the same short-circuit in Stage 2, which my own audit had
+dismissed with "nothing to salvage." The dismissal conflated *"Python writes the artifacts"* with
+*"the subprocess's output is worthless"* — but the CLI's JSON envelope **is** its product, and it
+sits in `e.stdout` when the process hangs on shutdown. **An audit's negative result needs the same
+evidence standard as a positive one**; "I looked and found nothing" is a claim.
+
+**Two new instances of the standing measurement rules, both found by RUNNING, not reviewing:**
+
+- **A column can be documented and never written.** `districts.schools_count` reads 0 for every
+  district, and I nearly proposed redrawing `batch_00058` over it. It is **NULL for all 17,842
+  rows** and has never been populated — the CCD ingest's `District(...)` constructor omits it, and
+  a grimp sweep of all 18 modules importing `database.models` finds two references, both inside
+  `models.py`. `DATABASE_SETUP.md` documented it as "Number of schools," a promise the schema never
+  kept. Rule: **before reading meaning into a value, confirm something writes it.** (The real
+  in-scope count — open, regular, non-virtual, not standalone-preschool — is `nces_school_counts`,
+  computed per district at Stage-1 queue time from `school_sampling.school_index()`.)
+- **A measurement hard-coded to one of its own legitimate paths reports false alarms on the other.**
+  My `batch44-ingest-recovery-measure.py` asserted "0 `stage=5` events is expected" — true for the
+  CLI recovery it was written against, and it called the *correct* answer (one event per district)
+  "unexpected — investigate" on the first healthy batch it saw. It now scores **consistency**: 0 ==
+  recovery path, n == n_districts == console path, anything strictly between == a partial marker
+  write neither path produces. A verdict must be a function of the state, not of the author's
+  situation when writing it.
+
+Authority: PR #924 (merged `0210d86`) closing #916/#925/#926/#927; commits `44b4ab0`, `713464b`.
+Live evidence: `2026-08-25-batch44-ingest-recovery-measure.py` (now correct on both batch shapes).
