@@ -587,20 +587,39 @@ class Test916BackstopTimeoutOverCompleteWork:
                 returncode=0, stdout=_summary_line("999_d999", recs), stderr="")
         assert "backstop_timeout" not in H3._capture_one(district, _run=run)
 
-    def test_timeout_with_a_count_mismatch_still_raises(self, tmp_path):
+    def test_timeout_with_a_count_mismatch_still_raises_and_classifies_as_timeout(self, tmp_path):
         """Killed mid-write: the manifest holds 2, the summary printed 1. Forgiving the timeout
-        must not forgive a truncated artifact."""
+        must not forgive a truncated artifact — and (#925) the failure must still CLASSIFY as a
+        timeout: the pre-#924 behavior (TimeoutExpired escaping uncaught) rendered `timed_out`,
+        and #924's first draft regressed this branch to a plain RuntimeError -> `failed`."""
         district = self._district(tmp_path, [{"hash": "a", "ok": True}, {"hash": "b", "ok": True}])
         line = "CAPTURE_SUMMARY " + json.dumps({"dir": "999_d999", "n_records": 1})
-        with pytest.raises(RuntimeError, match="summary/manifest mismatch"):
+        with pytest.raises(H3.CaptureTimeout, match="summary/manifest mismatch") as ei:
             H3._capture_one(district, _run=self._timeout_run(line))
+        assert H3.is_timeout_note(f"{type(ei.value).__name__}: {ei.value}")
 
-    def test_timeout_with_no_summary_line_still_raises(self, tmp_path):
-        """A genuine mid-run kill: manifest on disk, but Node never got to print the summary —
-        exactly the case artifact-existence alone would have wrongly accepted (#670)."""
+    def test_timeout_with_no_summary_line_still_raises_and_classifies_as_timeout(self, tmp_path):
+        """The RETRY-PARTIAL shape (#925): run_retry_partial only selects districts whose
+        captures.json already exists, so on that path a genuine hang ALWAYS lands here — the
+        manifest on disk is the prior run's seed, not this run's output. Must classify `timed_out`,
+        and the message must not claim this run wrote the manifest."""
         district = self._district(tmp_path, [{"hash": "a", "ok": True}])
-        with pytest.raises(RuntimeError, match="no CAPTURE_SUMMARY line"):
+        with pytest.raises(H3.CaptureTimeout, match="no CAPTURE_SUMMARY on stdout") as ei:
             H3._capture_one(district, _run=self._timeout_run(""))
+        assert H3.is_timeout_note(f"{type(ei.value).__name__}: {ei.value}")
+        assert "prior run's seed" in str(ei.value)   # the message owns the retry-partial ambiguity
+
+    def test_nontimeout_failures_still_raise_plain_runtimeerror(self, tmp_path):
+        """#925's complement: the classification widening must not leak the other way — a normal
+        run's summary-absent / count-mismatch failures stay `failed`, never `timed_out`."""
+        district = self._district(tmp_path, [{"hash": "a", "ok": True}])
+
+        def run_no_summary(cmd, **kw):
+            return types.SimpleNamespace(returncode=0, stdout="", stderr="")
+        with pytest.raises(RuntimeError, match="no CAPTURE_SUMMARY line") as ei:
+            H3._capture_one(district, _run=run_no_summary)
+        assert not isinstance(ei.value, H3.CaptureTimeout)
+        assert not H3.is_timeout_note(f"{type(ei.value).__name__}: {ei.value}")
 
     def test_timeout_with_no_manifest_still_raises(self, tmp_path):
         """A real timeout over unfinished work — the case the backstop exists for."""

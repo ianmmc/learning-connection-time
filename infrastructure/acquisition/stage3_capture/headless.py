@@ -29,6 +29,7 @@ from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
+from infrastructure.acquisition.common import subproc
 from infrastructure.acquisition.stage3_capture import capture_stage3 as C3
 
 RAW_DIR = paths.RAW_CAPTURES
@@ -110,17 +111,6 @@ def is_timeout_note(note: str) -> bool:
     return (note or "").startswith(_TIMEOUT_NOTE_PREFIXES)
 
 
-def _stream_to_text(stream) -> str:
-    """Normalize a subprocess output stream to str. Needed because `subprocess.run` populates
-    `TimeoutExpired.stdout` as **bytes even under `text=True`** (the decoding happens in the normal
-    return path, which a timeout never reaches) and as None when nothing was captured. Handing bytes
-    to `_capture_summary_from_stdout` would silently never match — a CAPTURE_SUMMARY that IS there
-    read as absent, i.e. #916 all over again one layer down."""
-    if stream is None:
-        return ""
-    return stream.decode("utf-8", "replace") if isinstance(stream, bytes) else stream
-
-
 def _capture_summary_from_stdout(stdout: str, dir_name: str) -> dict | None:
     """Parse the district's CAPTURE_SUMMARY line from the Node run's stdout — the subprocess return
     channel (#670). One line per district, tagged, JSON payload; a multi-district run prints several,
@@ -175,7 +165,7 @@ def _capture_one(district: dict, *, retryable_only: bool = False, plan_sha: str 
                     cwd=str(paths.REPO_ROOT))
     except subprocess.TimeoutExpired as e:
         backstop_timeout = True
-        stdout = _stream_to_text(e.stdout)
+        stdout = subproc.stream_to_text(e.stdout)
     else:
         if proc.returncode != 0:
             raise RuntimeError(f"node capture exit {proc.returncode}: "
@@ -188,13 +178,27 @@ def _capture_one(district: dict, *, retryable_only: bool = False, plan_sha: str 
         raise RuntimeError("node capture finished but wrote no captures.json")
     summary = _capture_summary_from_stdout(stdout, district["dir"].name)
     if summary is None:
+        # #925: on the timeout path this must stay classified `timed_out`, and the message must not
+        # claim this run wrote the manifest — retry-partial only selects districts whose
+        # captures.json ALREADY exists (run_retry_partial's existence gate), so on that path a
+        # genuine hang always lands HERE with the prior run's seed on disk, never in the
+        # missing-manifest branch above.
+        if backstop_timeout:
+            raise CaptureTimeout(
+                f"node capture timed out after {CAPTURE_TIMEOUT_S}s with no CAPTURE_SUMMARY on "
+                f"stdout — the captures.json on disk may be a prior run's seed and proves nothing "
+                f"about this run")
         raise RuntimeError("node capture wrote captures.json but printed no CAPTURE_SUMMARY line "
                            "(killed or crashed between the manifest write and the summary)")
     n_manifest = len(json.loads((district["dir"] / "captures.json").read_text()))
     if summary.get("n_records") != n_manifest:
-        raise RuntimeError(f"capture summary/manifest mismatch for {district['district_id']}: "
-                           f"summary n_records={summary.get('n_records')} vs manifest {n_manifest} "
-                           f"(truncated or concurrently rewritten)")
+        mismatch = (f"capture summary/manifest mismatch for {district['district_id']}: "
+                    f"summary n_records={summary.get('n_records')} vs manifest {n_manifest} "
+                    f"(truncated or concurrently rewritten)")
+        if backstop_timeout:
+            raise CaptureTimeout(
+                f"node capture timed out after {CAPTURE_TIMEOUT_S}s; {mismatch}")
+        raise RuntimeError(mismatch)
     if backstop_timeout:
         # Accepting the work must NOT erase that the backstop fired (#792: a fix that removes a
         # failure's VISIBILITY instead of the failure). The flag rides the summary onto the
