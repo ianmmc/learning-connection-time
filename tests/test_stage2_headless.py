@@ -479,3 +479,60 @@ def test_620_an_ordinary_batch_still_uses_the_disk_rule(gov_session, monkeypatch
     batch = {"batch_id": "batch_zz620b", "batch_type": "first-run",
              "districts": [{"district_id": did, "name": "Ordinary", "state": "ZZ", "domain": "y.org"}]}
     assert H2.status_for_batch(batch)[0]["status"] == "done"   # disk rule, no state_event needed
+
+
+class Test927TimeoutEnvelopeSalvage:
+    """#927 (the #916 shape one layer over, from the /code-review of PR #924): the CLI can emit its
+    complete JSON envelope and then hang on shutdown (an MCP server / child that won't exit) until
+    the backstop timeout fires. The envelope is this subprocess's PRODUCT and it is sitting in
+    `TimeoutExpired.stdout` — as BYTES even under text=True — so it is consulted before the attempt
+    is declared dead. A timeout with no parseable envelope keeps the pre-#927 abort-on-hang
+    semantics (re-raise, never retry: every retry of a hang costs another full timeout)."""
+
+    @staticmethod
+    def _timeout_run(stdout_bytes):
+        def run(cmd, **kw):
+            raise subprocess.TimeoutExpired(cmd, 75, output=stdout_bytes, stderr=None)
+        return run
+
+    def test_complete_envelope_is_salvaged_from_a_hang(self):
+        """THE FALSIFIER — must fail before the fix (TimeoutExpired propagated, payload lost)."""
+        payload = {"district_id": "123", "domain": "d.org",
+                   "schools": [{"school_id": "s1", "urls": ["http://d.org/bell"]}]}
+        out = H.run_claude_cli("p", _run=self._timeout_run(_envelope(payload).encode()))
+        assert out == payload
+
+    def test_a_hang_with_no_envelope_still_raises_timeout_not_retry(self):
+        """The genuine hang: nothing parseable on stdout. Must re-raise TimeoutExpired on the FIRST
+        attempt — retrying a hang would cost another full timeout per retry."""
+        calls = {"n": 0}
+
+        def run(cmd, **kw):
+            calls["n"] += 1
+            raise subprocess.TimeoutExpired(cmd, 75, output=b"partial garbage {", stderr=None)
+        with pytest.raises(subprocess.TimeoutExpired):
+            H.run_claude_cli("p", retries=2, _run=run)
+        assert calls["n"] == 1
+
+    def test_none_stdout_on_the_hang_also_raises(self):
+        with pytest.raises(subprocess.TimeoutExpired):
+            H.run_claude_cli("p", _run=self._timeout_run(None))
+
+    def test_a_salvaged_error_envelope_is_still_an_error(self):
+        """Salvage must not soften the envelope's own verdict: a genuine error envelope pulled out
+        of a hang raises exactly as it would from a clean exit."""
+        env = json.dumps({"type": "result", "subtype": "error_during_execution",
+                          "is_error": True, "result": "boom", "permission_denials": []})
+        with pytest.raises(RuntimeError, match="claude CLI error"):
+            H.run_claude_cli("p", _run=self._timeout_run(env.encode()))
+
+    def test_a_salvaged_websearch_denial_still_fails_loud(self):
+        """The batch_00001 under-reporting guard survives the salvage path: a denied WebSearch means
+        empty schools indistinguishable from found-nothing, so it must raise even when the envelope
+        arrived via a timeout."""
+        env = json.dumps({"type": "result", "subtype": "success", "is_error": False,
+                          "result": "Done.", "structured_output": {"district_id": "1", "domain": "",
+                                                                   "schools": []},
+                          "permission_denials": [{"tool_name": "WebSearch"}]})
+        with pytest.raises(RuntimeError, match="denied WebSearch"):
+            H.run_claude_cli("p", _run=self._timeout_run(env.encode()))
