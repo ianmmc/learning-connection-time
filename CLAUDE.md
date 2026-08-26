@@ -189,10 +189,18 @@ entry + Part 6.
 - **#115's demand trigger has NOT fired.** Live DB: **0** Drive *folder* URLs, **0**
   `needs_oauth_reauth`. The 50 Drive/Docs records are opaque `/file/d/` links = **#871's**
   population. #871 should land before #115 is reconsidered.
-- **`batch_00044` is stranded, but NOT by the deferral path.** `stage5_ingest_deferred` events = 0;
-  all 8 districts reached Stage 4 and the 14:32 recapture landed clean — Stage 4 was simply never
-  re-run. The batch-wide deferral chain is real *as code* (`server.py:1978-1985`, whose own comment
-  says "the autoflow chain has no later run"), but this is not its proven instance.
+- **`batch_00044` was stranded, but NOT by the deferral path — RECOVERED 2026-08-25.**
+  `stage5_ingest_deferred` events = 0; all 8 districts reached Stage 4 and the 14:32 recapture
+  landed clean — Stage 4 was simply never re-run. The batch-wide deferral chain is real *as code*
+  (`server.py:1978-1985`, whose own comment says "the autoflow chain has no later run"), but this
+  is not its proven instance. **The prescribed remedy ("Stage 4 → Run") turned out to be
+  unexecutable — see #921**, and recovery was a full `build_signals --assert-floor` re-ingest.
+- **Stage-5 ingest state is DISTRICT-scoped, not batch-scoped** (measured 08-25): `record` has no
+  batch column, `label` keys on `rec_key`, and `ingest_batch(district_ids)` already loops
+  `ingest_district` per district — the name is the only batch-shaped thing about it. **42% of
+  districts (73/172) appear in >1 batch**, max 6. So "re-ingest a batch" is a misleading label on
+  a district-grained operation; district is the correct unit, with a batch as a *selector* that
+  expands to districts.
 - **CLAUDE.md was wrong about batches 46-57** — they are `follow-up`/`redo=True`/**approved**, not
   "12 first-run drafts at gate@1". **There is no first-run batch pending; the last was
   `batch_00036`, 2026-07-28.**
@@ -203,11 +211,16 @@ entry + Part 6.
 `docs/scratch-paper/2026-08-25-fresh-triage-and-validation-batch-plan.md` (untracked — scratch-paper
 is gitignored).**
 
-1. **Recover `batch_00044` — Ian, console, ZERO spend.** Stage 4 → Run. All 8 districts are
-   processed and un-vetoed (ORANGE's latest capture event is `captured_all`), so `resolved ==
-   total` should hold and the ingest should fire. Two districts (`2905790` ADAIR, `4824000`
-   HUNTINGTON) have **never reached Stage 5**. Confirm `stage=5` events appear under
-   `batch_00044` afterwards.
+1. **DONE 2026-08-25 — `batch_00044` recovered.** All 8 districts now fully ingested (0 URLs
+   missing, 0 extra; ADAIR `2905790` was 13 short, HUNTINGTON `4824000` 12). Verified by
+   `docs/technical-notes/production-quality-control-research/2026-08-25-batch44-ingest-recovery-measure.py`.
+   **The plan's named action — "Stage 4 → Run" — was never executable**: at `resolved == total`
+   `stage4.js:78` (`canRun = retriable > 0`) withdraws the Run control, and that is the *only*
+   trigger for `_ingest_stage5_if_complete`. Filed as **#921** (epic #706). Recovery was instead a
+   full `build_signals --assert-floor` re-ingest (Ian's call: one scoring vintage corpus-wide beats
+   per-district vintages coexisting). **`batch_00044` still has 0 `stage=5` events and that is
+   expected** — the CLI bypasses the bookkeeping that writes the marker; that gap is #921's
+   remaining scope, NOT a failed recovery.
 2. **#916 — live `sev:major`, epic #706** (body amended 08-25: its "Stage 4 skips the district"
    claim is FALSE — ORANGE was processed; the real cost is the batch-wide ingest stall above).
    Fix: wrap `_run` in `except subprocess.TimeoutExpired`, then run the four checks that already

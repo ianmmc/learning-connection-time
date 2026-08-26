@@ -153,13 +153,51 @@ Notes:
 
 ### 3a. Stage-5 signal re-ingest (only when you changed scoring, or captured new pages)
 
+**Step 1 — back up the precious tables first.** This is not optional: the re-ingest drops and
+rebuilds every derived signal table corpus-wide.
+
+```bash
+docker exec lct_postgres pg_dump -U lct_user -d governance \
+  -t label -t cluster_split -t followup_flag -t handoff \
+  -t stage8_approval -t band_exclusion -t human_added_fact \
+  -t slot_assignment -t gate_mode -t saved_view \
+  > data/backups/precious-$(date -u +%Y%m%dT%H%M%SZ).sql
+```
+
+> **Two traps, both hit in practice (2026-08-25).** `pg_dump` is **not installed on the host** —
+> it lives in the Docker container, so the command *must* start with `docker exec lct_postgres`
+> (Critical Rule #1: the DB is Docker's, never brew's). And you must redirect with `> file`, **not**
+> `-f file`: with `-f` the dump is written *inside* the container, where the command still exits
+> **0** and prints nothing, leaving you believing you have a backup that isn't on your disk. Only
+> stdout crosses the container boundary. Note also that this is the **`governance`** DB as
+> **`lct_user`** — `DATABASE_SETUP.md`'s `pg_dump` example targets the *LCT* DB
+> (`learning_connection_time`) with a different table set, and is not a substitute here.
+>
+> Verify before proceeding — the dump's row counts must match live:
+> `python3 -c "from infrastructure.acquisition.common import db as gdb; from sqlalchemy import text;
+> s=gdb.session_scope().__enter__(); print({t: s.execute(text(f'SELECT COUNT(*) FROM {t}')).scalar()
+> for t in ['label','handoff','stage8_approval','band_exclusion','human_added_fact']})"`
+
+**Step 2 — the re-ingest.**
+
 ```bash
 python3 -m infrastructure.acquisition.stage5_filter.build_signals --assert-floor
 ```
 
 **~8.5 min** (whole documents are scanned; the 60-page cap is gone). Idempotent — preserves
-labels/facets. **Always pass `--assert-floor`** so a recall regression rolls back inside the
-transaction, and `pg_dump` the precious tables first. Not needed merely to reboot the app.
+labels/facets (`rec_key` is stable, and `import_labels` restores from the JSON backup).
+**Always pass `--assert-floor`** so a recall regression rolls back inside the transaction — a
+non-zero exit therefore means *nothing changed*, not *partially applied*. Not needed merely to
+reboot the app.
+
+**What it does NOT do:** it bypasses `_ingest_stage5_if_complete`'s bookkeeping, so no `stage=5`
+progression event is written for the affected batches. Verify by record coverage, never by looking
+for that event (#921).
+
+**Scope note (#921):** this is the corpus-wide hammer. Stage-5 state is **district**-scoped — the
+`record` table has no batch column, and `ingest_batch(district_ids)` already loops per district —
+so there is no such thing as re-ingesting "a batch" except as shorthand for its districts, 42% of
+which sit in more than one batch anyway.
 
 ---
 
