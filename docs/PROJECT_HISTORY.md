@@ -2328,3 +2328,68 @@ The standing-lesson catalogs that CLAUDE.md carried until this consolidation now
   `endswith` counted North Little Rock as Little Rock; the published 164 was 160). Import the
   production predicate; and when choosing a PROXY, check it has the property under test (#873's
   first pass used `segment:main` for chrome growth — main EXCLUDES chrome).
+
+### 2026-08-25 (evening) — A prescribed recovery that was never executable; and two decisions about precious-vs-regenerable state
+
+**The trigger was a narrow question** — *"to unstick Huntington and Adair, do we need #916 fixed?"* —
+and the answer was no, for a reason that invalidated the plan built on top of it. `batch_00044`'s
+strand was attributed to #916's chain (`TimeoutExpired` → `failed` capture → #670 veto →
+`resolved < total` → batch-wide ingest deferral). Measured: `stage5_ingest_deferred` events = **0**
+corpus-wide, no district carried a failed-latest capture event, and the ingest gate was already open.
+The chain is real *as code* and has still **never fired in production**; it had been written up as a
+demonstrated mechanism.
+
+**The finding that mattered was structural, and it is now #921.** `_ingest_stage5_if_complete` is
+reachable only from the tail of a Stage-4 run, and `stage4.js:78` (`canRun = retriable > 0`)
+withdraws the Run control at exactly `resolved == total` — the state where the ingest would fire. The
+two conditions are mutually exclusive by construction, so **a batch that misses its ingest window is
+unrecoverable from the console**. The prescribed remedy ("Stage 4 → Run") had no button behind it.
+This is the shape `stage4_process/headless.py:159-161` names for #671 — *"the false `done` also
+removed the means of correcting it"* — except here the `done` is **genuine**. Generalization worth
+keeping: **when a remedy and its precondition are complements, the remedy is unreachable by
+construction** — check that a prescribed action is *available* in the state that calls for it, not
+merely correct.
+
+**Decision — recover with the corpus-wide re-ingest, not a bespoke batch-scoped script** (Ian). A
+one-off `ingest_batch` invocation would leave districts scored under different vintages coexisting in
+one store; the full `build_signals --assert-floor` path keeps a single scoring vintage corpus-wide and
+is the already-documented, already-exercised procedure. Defensibility of the *corpus* beat convenience
+for the *batch*. Recovery verified: all 8 districts 0 missing / 0 extra.
+
+**Decision — orphaned labels are kept, and the fix is reporting, not retirement** (Ian, → #923). An
+audit found 193 label rows whose `rec_key` no longer matches a record — 81 carrying human
+`unusable`+facets judgments, all one district (`3173740` Millard), all orphaned by a 2026-07-20
+`security_block_reclassified` under the WAF one-attempt rule. Orphaning is the *designed* intersection
+of two correct rules (records regenerable + per-district DELETE+INSERT; labels precious + never
+deleted), and URL-stable `rec_key` means a returning URL reattaches its label automatically. The
+defect is that the loss is invisible — and subtly so: **`--assert-floor` cannot see it**, because the
+recall floor joins `record ⋈ label`, so orphaning shrinks the denominator and the floor stays green
+while labeled coverage drains. Report loudly, gate nothing (a security reclassification is a
+legitimate reason for labeled records to leave; a hard gate would fight Critical Rule #3).
+
+**Grain finding, → #922:** Stage-5 state is **district**-scoped, not batch-scoped — `record` has no
+batch column, `label` keys on `rec_key`, and `ingest_batch(district_ids)` already loops per district.
+**42% of districts (73/172, max 6) sit in more than one batch**, so "re-ingest a batch" is a
+misleading label on an already-district-grained operation. A batch is a *selector that expands to
+districts*, never a scope of its own.
+
+**Two of my own checks were wrong, in the two catalogued shapes.** A `filtered.json` existence test
+reported MISSING for all 8 districts and was nearly read as a finding — REQ-164 had retired that
+filename for a stamped receipt (`release.py:567`); the tell was that it was "missing" for a district
+that had already reached Stage 9 (*import the production predicate, never approximate it* — #879). And
+an `awk` row-count verifier whose terminator never matched printed `cluster_split` 5194 against a live
+0 (*a measurement that cannot fail is not a verdict — and neither is one that cannot succeed*). Both
+measured nothing; neither changed an outcome; both are recorded in the measurement note rather than
+silently fixed.
+
+**An operator instruction that cannot be followed is a defect.** `GETTING_STARTED.md` §3a said only
+"`pg_dump` the precious tables first" — no command, and no mention that the DB is Dockerized. It
+failed in practice, and the natural repair is worse than the error: `docker exec` while keeping `-f`
+exits **0**, prints nothing, and writes the dump *inside* the container, so the operator proceeds to a
+destructive corpus-wide re-ingest believing they hold a backup. Only stdout crosses the container
+boundary. §3a now carries the verified command and both traps.
+
+Authority: commit `dc0ef6f`; issues #921 (ingest trigger), #922 (Settings re-ingest pane, epic #96),
+#923 (label-orphan visibility, epic #706), scope correction on #916. Rerunnable evidence:
+`docs/technical-notes/production-quality-control-research/2026-08-25-batch44-ingest-recovery-measure.py`
+(+ paired `-measurement.md`).

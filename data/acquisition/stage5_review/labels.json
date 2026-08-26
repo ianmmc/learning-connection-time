@@ -12880,6 +12880,14 @@
     "updated_at": "2026-07-12T00:56:47Z"
   },
   {
+    "rec_key": "2905790:251cde802c",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-08-26T04:31:46Z"
+  },
+  {
     "rec_key": "2905790:3a6ca58dec",
     "primary_label": "target_absent",
     "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
