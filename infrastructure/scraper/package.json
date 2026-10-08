@@ -9,12 +9,12 @@
     "lint:deps": "depcruise --config .dependency-cruiser.cjs *.mjs"
   },
   "dependencies": {
-    "playwright": "^1.49.0"
+    "playwright": "~1.64.0"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22"
   },
   "devDependencies": {
-    "dependency-cruiser": "^18.0.0"
+    "dependency-cruiser": "^18.5.0"
   }
 }

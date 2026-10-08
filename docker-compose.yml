@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16.15-alpine   # pinned to the patch; CI's service container uses the same tag
     container_name: lct_postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-learning_connection_time}

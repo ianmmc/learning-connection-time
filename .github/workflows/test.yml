@@ -26,12 +26,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
-          python-version: '3.11'
+          python-version: '3.13'   # matches local dev (dependency currency PR, 2026-10-08)
           cache: 'pip'
 
       - name: Install dependencies
@@ -54,12 +54,12 @@ jobs:
       run:
         working-directory: infrastructure/scraper
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '22'   # dependency-cruiser 18 requires ^22||^24||>=26; the capture itself runs on >=20
+          node-version: '22'   # = package.json engines (>=22); dependency-cruiser 18 requires ^22||^24||>=26
           cache: 'npm'
           cache-dependency-path: infrastructure/scraper/package-lock.json
 
@@ -67,7 +67,7 @@ jobs:
         run: npm ci
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('infrastructure/scraper/package-lock.json') }}
@@ -88,7 +88,7 @@ jobs:
     # localhost:5432 — matching common/db.py's GOVERNANCE_DB_* defaults (governance / governance_user).
     services:
       postgres:
-        image: postgres:16
+        image: postgres:16.15-alpine   # SAME image as docker-compose.yml — no local/CI libc or patch skew
         env:
           POSTGRES_USER: governance_user
           POSTGRES_PASSWORD: governance_pw
@@ -102,12 +102,12 @@ jobs:
           --health-retries 10
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
-          python-version: '3.11'
+          python-version: '3.13'   # matches local dev (dependency currency PR, 2026-10-08)
           cache: 'pip'
 
       - name: Install dependencies
