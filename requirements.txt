@@ -34,7 +34,9 @@ great-expectations>=0.17.0
 pydantic>=2.5.0
 
 # Database (optional)
-sqlalchemy>=2.0.0
+# <2.1: SQLAlchemy 2.1 makes bare `postgresql://` URLs use psycopg 3 (not installed), and the
+# DB-free guard in tests/conftest.py intercepts psycopg2.connect only. Lift the cap deliberately.
+sqlalchemy>=2.0.0,<2.1
 psycopg2-binary>=2.9.0
 
 # Excel/CSV handling
