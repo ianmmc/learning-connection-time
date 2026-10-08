@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-08-24T00:00:00Z"
+last_updated: "2026-10-08T00:00:00Z"
 
 # STATUS VOCABULARY — normalized 2026-07-16, narrowed to FIVE 2026-08-21 (Ian). These are the whole
 # set; do not invent more. The pre-normalization file carried ad-hoc `in-progress` / `not_started` /
@@ -2440,11 +2440,15 @@ requirements:
       - Cross-stage cache — ingests all stages' artifacts (discovery/candidates/captures/processed/batch), not just Stage 5
       - Existing data migrated in (or cache rebuilt + precious JSON backups re-imported); Stage-5 tests stay green
       - Cloud-ready via the existing DATABASE_URL path
+      - "The Postgres driver is chosen explicitly, never by SQLAlchemy's default (#930): every engine (LCT +
+        governance) builds through infrastructure/utilities/db_url.py::sqlalchemy_url, which pins psycopg 3 for any
+        postgres URL form, including a bare one arriving verbatim from DATABASE_URL / GOVERNANCE_DATABASE_URL"
     tests:
       - "tests/test_stage5_cross_stage_cache.py"
       - "tests/conftest.py::gov_session"
+      - "tests/test_db_url.py"
     created: "2026-06-26T00:00:00Z"
-    updated: "2026-06-26T00:00:00Z"
+    updated: "2026-10-08T00:00:00Z"
     notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE.md §1a/§9 (step 2). Supersedes the SQLite decision in
       STAGE5_FILTER_DESIGN.md. Later governance steps (REQ-100 trigger UI, REQ-101 dispatch, REQ-102 CP-A view,
       REQ-104 Stage 2 headless) are enumerated in §9 and were registered tests-first at build time.

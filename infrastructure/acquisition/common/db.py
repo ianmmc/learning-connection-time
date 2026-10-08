@@ -22,6 +22,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
+from infrastructure.utilities.db_url import sqlalchemy_url
+
 _engine: Optional[Engine] = None
 _SessionLocal: Optional[sessionmaker] = None
 
@@ -77,7 +79,7 @@ def get_engine(database_url: Optional[str] = None, echo: bool = False) -> Engine
     """Get or create the cached governance engine. Pass database_url to point elsewhere (tests)."""
     global _engine, _SessionLocal
     if _engine is None or database_url is not None:
-        _engine = create_engine(database_url or governance_url(), echo=echo,
+        _engine = create_engine(sqlalchemy_url(database_url or governance_url()), echo=echo,
                                 pool_size=5, max_overflow=10, pool_timeout=30, pool_recycle=1800)
         _SessionLocal = None  # rebind the factory to the new engine
     return _engine
