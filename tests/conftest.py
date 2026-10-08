@@ -57,10 +57,18 @@ def _guard_no_postgres_in_dbfree_tests(request):
             f"DB-free test '{request.node.nodeid}' requests real-DB fixture(s) "
             f"{sorted(real_db_fixtures)} without @pytest.mark.integration/@pytest.mark.govdb — "
             f"add the marker (#201).")
-    import psycopg2
+    import importlib
     from sqlalchemy.engine import Engine
     real_engine_connect = Engine.connect
-    real_pg_connect = psycopg2.connect
+    # Every raw driver that is importable gets blocked (#930): psycopg 3 is the declared driver, but a local
+    # env upgraded in place still carries psycopg2, and an unpatched driver is a silent bypass of this guard.
+    drivers = {}
+    for name in ("psycopg", "psycopg2"):
+        try:
+            mod = importlib.import_module(name)
+        except ImportError:
+            continue
+        drivers[name] = (mod, mod.connect)
     nodeid = request.node.nodeid
 
     def _blocked(entrypoint):
@@ -75,16 +83,20 @@ def _guard_no_postgres_in_dbfree_tests(request):
             _blocked("Engine.connect")
         return real_engine_connect(self, *a, **k)
 
-    def guarded_pg_connect(*a, **k):
-        _blocked("psycopg2.connect")
+    def _guarded(name):
+        def guarded_pg_connect(*a, **k):
+            _blocked(f"{name}.connect")
+        return guarded_pg_connect
 
     Engine.connect = guarded_engine_connect
-    psycopg2.connect = guarded_pg_connect
+    for name, (mod, _) in drivers.items():
+        mod.connect = _guarded(name)
     try:
         yield
     finally:
         Engine.connect = real_engine_connect
-        psycopg2.connect = real_pg_connect
+        for mod, real in drivers.values():
+            mod.connect = real
 
 
 # --- Governance Postgres fixture (REQ-103) ---
@@ -127,7 +139,7 @@ USE_REAL_DB = os.getenv('USE_REAL_DB', 'false').lower() == 'true'
 @pytest.fixture
 def mock_db_connection():
     """
-    Mock psycopg2 connection for unit tests.
+    Mock psycopg connection for unit tests.
 
     Usage:
         def test_something(mock_db_connection):
@@ -250,8 +262,8 @@ def real_db_connection():
     if not USE_REAL_DB:
         pytest.skip("Skipping real database test (USE_REAL_DB not set)")
 
-    import psycopg2
-    conn = psycopg2.connect(TEST_DATABASE_URL)
+    import psycopg
+    conn = psycopg.connect(TEST_DATABASE_URL)
     yield conn
     conn.close()
 

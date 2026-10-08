@@ -181,7 +181,7 @@ def tree():
     cluster grouping (NOT the category hypothesis — that stays hidden until labeled)."""
     out = []
     with gdb.session_scope() as con:
-        districts = con.execute(text("SELECT * FROM district ORDER BY name")).mappings().all()
+        districts = con.execute(text("SELECT * FROM district ORDER BY name, district_id")).mappings().all()
         # #662 decision 4 (Ian, 2026-07-26): carry the capture's SOURCE so gate@5 can BADGE an
         # injected `gt://` representation instead of silently filtering it. Selected as a plain
         # column and compared in Python against the constant — re-spelling arm 2's
@@ -192,7 +192,7 @@ def tree():
                       l.status, l.primary_label, c.source AS capture_source
                FROM record r LEFT JOIN label l ON l.rec_key=r.rec_key
                LEFT JOIN capture c ON c.district_id=r.district_id AND c.hash=r.hash
-               WHERE r.district_id=:did ORDER BY r.tier, r.sort_score DESC""")
+               WHERE r.district_id=:did ORDER BY r.tier, r.sort_score DESC, r.rec_key""")
         for d in districts:
             recs = [dict(r) for r in con.execute(q, {"did": d["district_id"]}).mappings()]
             for rec in recs:
