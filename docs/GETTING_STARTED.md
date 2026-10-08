@@ -135,7 +135,7 @@ against. They grow with every merged PR, so treat them as "expect at least"; a D
 Last verified 2026-10-08 (#930, fresh venv).
 
 ```bash
-pytest -q -m "not integration"    # CI job 1, no DB needed — expect 2515 pass, 1 skipped (legacy-psycopg2 guard test, when psycopg2 is absent)
+pytest -q -m "not integration"    # CI job 1, no DB needed — expect 2525 pass, 1 skipped (legacy-psycopg2 guard test, when psycopg2 is absent)
 pytest -q -m govdb                # CI job 2, needs Docker Postgres — expect 409 (408 + 1 data-dependent skip on an empty DB)
 pytest tests/test_*_integration.py  # expect 257 pass, 149 skipped
 cd infrastructure/scraper && npm test   # Node capture layer — expect 105

@@ -63,11 +63,11 @@ pillow>=12.3,<13          # transitive (camelot/pdfplumber) — declared for the
 # Governance console — the local FastAPI app (process_governance/server.py) + its tests' TestClient.
 fastapi>=0.143,<0.144     # Starlette 1.x (removed on_event; server.py already uses lifespan)
 uvicorn>=0.54,<0.55
-httpx>=0.28,<0.29           # required by fastapi.testclient.TestClient (and the SERP/Stage-2 HTTP calls)
+httpx2>=2.13,<3            # fastapi/starlette TestClient (Starlette 1.x prefers it; plain httpx is deprecated there) + openai 3's transport (#933)
 
 # Stage 7 (Extract) — the paid OpenRouter council client. OpenRouter is OpenAI-API-compatible;
 # openrouter.py uses the OpenAI SDK as its SSE-streaming HTTP client (base_url=OPENROUTER_BASE_URL).
-openai>=2.41,<3           # <3: openai 3 (HTTPX2) needs the Stage-7 error fixtures migrated — tracked separately
+openai>=3.26,<4           # HTTPX2-backed; test errors come from the real SDK via tests/openai_fakes.sdk_error (#933)
 
 # Lint + architecture tooling — ONE list shared with CI's lint workflow (lint.yml installs only this file).
 -r requirements-lint.txt
