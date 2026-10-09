@@ -17,6 +17,10 @@
 # CI still runs on the pushed branch either way — this is a fast local mirror, not a replacement.
 
 set -uo pipefail
+# Prefer the project venv when present (GETTING_STARTED §1): the hooks must run what CI runs, not
+# whatever interpreter the calling shell or IDE happens to have on PATH (the global-Python skew, #929/#933).
+_VENV="$(git rev-parse --show-toplevel)/.venv"
+if [ -x "$_VENV/bin/python3" ]; then export PATH="$_VENV/bin:$PATH"; fi
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT"
 

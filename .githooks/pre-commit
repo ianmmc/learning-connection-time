@@ -11,6 +11,10 @@
 #  2. Validate enrichment claims in staged docs against the DB (prevents hallucinated counts — Rule #6).
 
 set -e
+# Prefer the project venv when present (GETTING_STARTED §1): the hooks must run what CI runs, not
+# whatever interpreter the calling shell or IDE happens to have on PATH (the global-Python skew, #929/#933).
+_VENV="$(git rev-parse --show-toplevel)/.venv"
+if [ -x "$_VENV/bin/python3" ]; then export PATH="$_VENV/bin:$PATH"; fi
 
 # Colors for output
 RED='\033[0;31m'

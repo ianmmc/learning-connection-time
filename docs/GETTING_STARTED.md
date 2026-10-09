@@ -31,10 +31,11 @@ This reframes "20:1 ratio" into a metric that makes resource disparities viscera
 git clone <repository-url>
 cd learning-connection-time
 
-# Python environment
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+# Python environment — a PROJECT venv at .venv (gitignored), Python 3.13 = CI. Never the global
+# interpreter: it drifted from CI's fresh install (#929: SQLAlchemy 2.0 vs 2.1; #933: openai 2 vs 3).
+python3.13 -m venv .venv
+source .venv/bin/activate        # every session — console, CLIs, pytest (or let direnv do it)
+pip install -r requirements.txt  # re-run after any requirements*.txt change
 
 # Install the repo as an editable package so `infrastructure.acquisition.*` (the
 # acquisition pipeline) imports work from anywhere — required since REQ-098 removed
@@ -97,7 +98,9 @@ The same `core.hooksPath` also activates a tracked **pre-push** hook (#202): bef
 CI-equivalent DB-free gates locally — `lint-imports` (the CI `lint` job) + `pytest -m "not integration"`
 (the CI `test` job, ~5s, which already includes the #124 arch-manifest fitness tests) — so a preventable
 red CI is caught at the desk instead of a round-trip. It does **not** run the govdb suite (that needs
-Postgres; CI's `governance-db` job covers it). Bypass for a WIP/docs-only push with `SKIP_PREPUSH=1 git push`.
+Postgres; CI's `governance-db` job covers it). Bypass for a WIP/docs-only push with `SKIP_PREPUSH=1 git push`. **Both hooks prepend `.venv/bin` to PATH
+when `.venv` exists**, so a push or commit from an IDE or an unactivated terminal still tests against the
+project's pinned dependencies rather than the global interpreter.
 
 **Stacked PRs (#251):** a PR based on another PR's branch is fine *while the parent is open*, but its base
 MUST be retargeted to `main` before merge — merging into the stale parent branch shows "merged" in every UI
