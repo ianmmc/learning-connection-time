@@ -13,6 +13,7 @@ from infrastructure.acquisition.common.model_families import (
     WINDOW_MARGIN_TOKENS, usable_output)
 from infrastructure.acquisition.stage7_extract import openrouter as OR
 from infrastructure.acquisition.process_governance.stage7_run import council_degraded
+from openai_fakes import sdk_error as _sdk_error  # noqa: E402  (#933: the REAL SDK's errors)
 
 MISTRAL = "mistralai/mistral-small-24b-instruct-2501"
 GEMINI = "google/gemini-2.5-flash-lite"
@@ -39,14 +40,12 @@ def test_usable_output_shapes():
 
 
 def _fake_400(monkeypatch, message):
-    """Wire a fake OpenAI client whose stream raises APIStatusError(message) — the httpx-backed
-    construction test_stage7_openrouter.py's 402 fake established."""
-    import httpx
+    """Wire a fake OpenAI client whose stream raises the error the REAL SDK raises for an HTTP 400
+    carrying `message` (#933: `openai_fakes.sdk_error`, never a hand-built exception)."""
     import openai
+    from openai_fakes import sdk_error
 
-    resp = httpx.Response(400, request=httpx.Request("POST", "https://openrouter.ai/x"),
-                          text=message)
-    err = openai.APIStatusError(message, response=resp, body=None)
+    err = sdk_error(status=400, message=message)
 
     class _Completions:
         def create(self, **kw):
@@ -78,7 +77,7 @@ class TestCallClamp:
         class _Completions:
             def create(self, **kw):
                 sent.update(kw)
-                raise openai.APITimeoutError(request=None)   # stop after capturing the body
+                raise _sdk_error(timeout=True)   # stop after capturing the body
 
         class _Chat:
             completions = _Completions()
@@ -110,7 +109,7 @@ class TestCallClamp:
         class _Completions:
             def create(self, **kw):
                 sent.update(kw)
-                raise openai.APITimeoutError(request=None)
+                raise _sdk_error(timeout=True)
 
         class _Chat:
             completions = _Completions()
@@ -161,7 +160,7 @@ class TestCallClamp:
         class _Completions:
             def create(self, **kw):
                 sent.update(kw)
-                raise openai.APITimeoutError(request=None)
+                raise _sdk_error(timeout=True)
 
         class _Chat:
             completions = _Completions()

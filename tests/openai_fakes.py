@@ -9,6 +9,38 @@ Test modules alias these to their existing private names, e.g. `from openai_fake
 _Chunk`, and wrap `patch`/`patch_sequence` to bind their module's `OR`."""
 import types
 
+import httpx2
+import openai
+
+# The REAL client class, captured at import: many tests monkeypatch `openai.OpenAI` with a fake, and
+# `sdk_error` must still drive the genuine SDK.
+_REAL_OPENAI = openai.OpenAI
+
+
+def sdk_error(*, status=None, message="", timeout=False, connect=False):
+    """The exception the REAL SDK raises for this HTTP outcome (#933) — never a hand-built one.
+
+    Drives a genuine `openai.OpenAI` over an `httpx2.MockTransport` and returns what it raises, so the
+    exception class (e.g. `BadRequestError`, not bare `APIStatusError`), the response type the SDK
+    actually uses, and `str(e)`'s format are all the SDK's own. Hand-built errors passed with httpx-1
+    objects under openai 3 — green tests whose proxy had lost the property under test.
+    `status` + `message` -> an OpenRouter-shaped error body; `timeout`/`connect` -> transport failures."""
+    def handler(request):
+        if timeout:
+            raise httpx2.ReadTimeout("timed out", request=request)
+        if connect:
+            raise httpx2.ConnectError("connection refused", request=request)
+        return httpx2.Response(status, json={"error": {"message": message, "code": status}})
+
+    client = _REAL_OPENAI(base_url="https://openrouter.ai/api/v1", api_key="sk-test", max_retries=0,
+                          http_client=httpx2.Client(transport=httpx2.MockTransport(handler)))
+    try:
+        client.chat.completions.create(model="fake/model", messages=[{"role": "user", "content": "x"}],
+                                       stream=True)
+    except openai.APIError as e:
+        return e
+    raise AssertionError("the SDK raised nothing for this outcome")
+
 
 class Delta:
     def __init__(self, content=None):

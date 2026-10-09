@@ -18,6 +18,8 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from infrastructure.utilities.db_url import sqlalchemy_url
+
 # Load environment variables from the repo-root .env if present. Anchored to an ABSOLUTE path (this
 # file's parents[2] == repo root), not load_dotenv()'s default CWD-upward search — so the DB credentials
 # resolve no matter what directory the server/CLI is launched from (a CWD-relative load left the password
@@ -167,7 +169,7 @@ def get_engine(database_url: Optional[str] = None, echo: bool = False) -> Engine
             _SessionLocal = None
         url = database_url or get_database_url()
         _engine = create_engine(
-            url,
+            sqlalchemy_url(url),
             echo=echo,
             pool_size=5,  # Maximum number of connections in pool
             max_overflow=10,  # Additional connections beyond pool_size

@@ -31,10 +31,11 @@ This reframes "20:1 ratio" into a metric that makes resource disparities viscera
 git clone <repository-url>
 cd learning-connection-time
 
-# Python environment
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+# Python environment — a PROJECT venv at .venv (gitignored), Python 3.13 = CI. Never the global
+# interpreter: it drifted from CI's fresh install (#929: SQLAlchemy 2.0 vs 2.1; #933: openai 2 vs 3).
+python3.13 -m venv .venv
+source .venv/bin/activate        # every session — console, CLIs, pytest (or let direnv do it)
+pip install -r requirements.txt  # re-run after any requirements*.txt change
 
 # Install the repo as an editable package so `infrastructure.acquisition.*` (the
 # acquisition pipeline) imports work from anywhere — required since REQ-098 removed
@@ -97,7 +98,9 @@ The same `core.hooksPath` also activates a tracked **pre-push** hook (#202): bef
 CI-equivalent DB-free gates locally — `lint-imports` (the CI `lint` job) + `pytest -m "not integration"`
 (the CI `test` job, ~5s, which already includes the #124 arch-manifest fitness tests) — so a preventable
 red CI is caught at the desk instead of a round-trip. It does **not** run the govdb suite (that needs
-Postgres; CI's `governance-db` job covers it). Bypass for a WIP/docs-only push with `SKIP_PREPUSH=1 git push`.
+Postgres; CI's `governance-db` job covers it). Bypass for a WIP/docs-only push with `SKIP_PREPUSH=1 git push`. **Both hooks prepend `.venv/bin` to PATH
+when `.venv` exists**, so a push or commit from an IDE or an unactivated terminal still tests against the
+project's pinned dependencies rather than the global interpreter.
 
 **Stacked PRs (#251):** a PR based on another PR's branch is fine *while the parent is open*, but its base
 MUST be retargeted to `main` before merge — merging into the stale parent branch shows "merged" in every UI
@@ -132,11 +135,11 @@ details: [DATABASE_SETUP.md → "Two databases"](DATABASE_SETUP.md#two-databases
 
 **This section is the baseline authority** — the counts below are the ones to check a working tree
 against. They grow with every merged PR, so treat them as "expect at least"; a DROP is the signal.
-Last verified 2026-08-24.
+Last verified 2026-10-08 (#930, fresh venv).
 
 ```bash
-pytest -q -m "not integration"    # CI job 1, no DB needed — expect 2490 pass, 1 skipped (pyarrow)
-pytest -q -m govdb                # CI job 2, needs Docker Postgres — expect 409
+pytest -q -m "not integration"    # CI job 1, no DB needed — expect 2525 pass, 1 skipped (legacy-psycopg2 guard test, when psycopg2 is absent)
+pytest -q -m govdb                # CI job 2, needs Docker Postgres — expect 409 (408 + 1 data-dependent skip on an empty DB)
 pytest tests/test_*_integration.py  # expect 257 pass, 149 skipped
 cd infrastructure/scraper && npm test   # Node capture layer — expect 105
 lint-imports                      # layering contracts — expect "4 kept, 0 broken"
@@ -146,6 +149,10 @@ flake8 . --count --select=E9,F63,F7,F82  # CI's BLOCKING lint — expect 0
 Notes:
 - **`pytest -m integration` carries a NETWORK test** (`test_model_windows_integration.py`, #809) that
   re-fetches OpenRouter; it skips cleanly offline and is excluded from the default suite.
+- **Postgres driver is psycopg 3** (`psycopg[binary]`, SQLAlchemy 2.1 — #930). Every engine pins it via
+  `infrastructure/utilities/db_url.py::sqlalchemy_url`, so a bare `postgresql://` override can't float. An env
+  upgraded in place keeps psycopg2 harmlessly (the DB-free guard blocks both); `pip uninstall psycopg2-binary`
+  to match CI exactly.
 - **pytest is 9.1.1.** `pytest.ini` declares `pythonpath = .` — without it, pytest 9's bare `pytest`
   script fails COLLECTION on `tests/test_benchmark_*`. `requirements.txt` floor is `pytest>=9.0`.
 - The vulture whitelist is `per-file-ignores`'d for F821 (why the flake8 select-list is narrow).
@@ -336,16 +343,13 @@ python3 infrastructure/scripts/reset_database.py --force       # reset (preserve
 # Run tests
 pytest tests/ -v
 
-# Check for type errors (if applicable)
-# mypy infrastructure/
-
 # Commit with conventional format
 git commit -m "feat: Add new bell schedule parser"
 ```
 
 ### Conventions
 
-- **Python:** 3.11+ (3.13 in CI), PEP 8, type hints where they help, `logging` over `print` in library code.
+- **Python:** 3.11+ (3.13 locally and in CI), PEP 8, type hints where they help, `logging` over `print` in library code.
 - **File naming:** Python modules/scripts `snake_case.py` (0 of the 28 files under `infrastructure/scripts/`
   are hyphenated — this line said `kebab-case.py` until 2026-07-16, contradicting the whole codebase);
   Node capture modules `snake_case.mjs`; data `name_YYYY_YY.csv`; generated artifacts

@@ -217,7 +217,7 @@ exercise against the #200/#209-hardened pipeline, not a distinct issue awaiting 
   construction too (`rep_prompt_size`: content + system prompt, shaped by kind — #846), asserted at
   the call sites: the same rep yields the same estimate from a signal row and an assembled body.
   `_client()` (the OpenAI SDK client) is `functools.lru_cache`d
-  per `(key, timeout)` (#148) so consecutive calls in a batch reuse one httpx connection pool instead of
+  per `(key, timeout)` (#148) so consecutive calls in a batch reuse one HTTP connection pool (httpx2 under openai 3, #933) instead of
   a fresh TLS handshake each call (was ~30-60s/batch of pure handshake); an autouse conftest fixture
   clears the cache per test. Raises `BillingAuthError` on 401/402 (halts the run rather than burning
   further calls on a dead key).
@@ -787,6 +787,16 @@ trigger (§0) — all surfaces call the same underlying functions.
 ---
 
 ## 6. Provenance / decision log
+
+**2026-10-08 — openai 3 / httpx2 (#933).** The SDK's only breaking change is the HTTPX2 transport;
+`openrouter.py` passes no custom client, so production is unchanged. The TESTS were the risk: every Stage-7
+error fixture hand-built `openai.API*Error` from httpx-1 objects (or `request=None`), and the whole suite
+stayed green under openai 3 by duck typing — measuring the classifier against errors the SDK cannot raise
+(e.g. a real context 400 is `BadRequestError` with the SDK's `Error code: 400 - {...}` framing in `str(e)`).
+**Rule now:** test errors come from `tests/openai_fakes.sdk_error`, which drives the REAL client over an
+`httpx2.MockTransport` and returns what it raises; `tests/test_openai_fakes_fidelity.py` pins the response
+type to the INSTALLED SDK's annotation (survives the next major), runs `classify_error` on the genuine text,
+and fails on any hand-built `openai.<X>Error(...)` in `tests/` (mutation-checked).
 
 **2026-07-15 — epic #119 (Stage 7 extraction quality), CLOSED (PRs #508–#511).** Four changes, folded
 into §0/§1 above: **#508** rewrote the truncation salvage in `parse.py` to `json.JSONDecoder().raw_decode`

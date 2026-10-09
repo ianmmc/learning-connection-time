@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "learning-connection-time"
 version = "0.1.0"
 description = "Learning Connection Time — LCT equity metrics + the per-school instructional-time acquisition pipeline"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 # Dependencies are intentionally NOT declared here yet — they remain managed by requirements.txt
 # (`pip install -r requirements.txt`). This file exists so `pip install -e .` makes the source tree
 # importable as proper packages (`infrastructure.acquisition.*`), removing the sys.path.insert shims

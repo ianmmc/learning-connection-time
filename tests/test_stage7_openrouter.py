@@ -88,9 +88,7 @@ def test_truncation_retry_sums_both_billed_attempts_cost(monkeypatch):
 def test_failed_retry_keeps_the_salvaged_head(monkeypatch):
     """If the retry itself ERRORS (transient), don't discard the first attempt's salvaged head —
     return the original content, flagged as retried, with the first (billed) attempt's cost intact."""
-    import openai
-    import httpx
-    timeout = openai.APITimeoutError(request=httpx.Request("POST", "https://openrouter.ai/x"))
+    timeout = _F.sdk_error(timeout=True)
     calls = _patch_sequence(monkeypatch, [_truncated_batch(), timeout])
     res = OR.call(BODY)
     assert res.truncated and res.truncation_retried is True and len(calls) == 2
@@ -130,12 +128,9 @@ def test_mid_stream_error_keeps_partial_content(monkeypatch):
 
 
 def test_billing_auth_raises(monkeypatch):
-    import httpx
     import openai
 
-    resp402 = httpx.Response(402, request=httpx.Request("POST", "https://openrouter.ai/x"),
-                             text="Payment Required")
-    err = openai.APIStatusError("Payment Required", response=resp402, body=None)
+    err = _F.sdk_error(status=402, message="Payment Required")
 
     class _Boom:
         def __init__(self, **kw):
@@ -205,9 +200,7 @@ def test_851_transient_retry_count_survives_a_successful_truncation_retry(monkey
     the #711 loop had put on the truncated attempt used to be dropped in the field-copy block —
     a call that survived provider weather reported `transient_retries=0`. Every attempt's spend
     still sums (#182), and the retry's max_tokens is what is reported (#801)."""
-    import openai
-    import httpx
-    timeout = openai.APITimeoutError(request=httpx.Request("POST", "https://openrouter.ai/x"))
+    timeout = _F.sdk_error(timeout=True)
     calls = _patch_sequence(monkeypatch, [timeout, _truncated_batch(), _recovered_batch()])
     res = OR.call(BODY)
     assert len(calls) == 3                                   # timeout → truncated → recovered
@@ -223,9 +216,7 @@ def test_851_transient_retry_count_survives_a_successful_truncation_retry(monkey
 def test_851_transient_retry_count_survives_a_FAILED_truncation_retry(monkeypatch):
     """The other branch (`keep = res`) always kept the count; pinned so the accumulator cannot
     regress it while fixing the first."""
-    import openai
-    import httpx
-    timeout = openai.APITimeoutError(request=httpx.Request("POST", "https://openrouter.ai/x"))
+    timeout = _F.sdk_error(timeout=True)
     calls = _patch_sequence(monkeypatch, [timeout, _truncated_batch(), timeout])
     res = OR.call(BODY)
     assert len(calls) == 3

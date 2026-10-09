@@ -15,18 +15,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
-          python-version: '3.11'
+          python-version: '3.13'   # matches local dev (dependency currency PR, 2026-10-08)
           cache: 'pip'
 
       - name: Install linting tools
         run: |
           python -m pip install --upgrade pip
-          pip install flake8 pyyaml
+          pip install -r requirements-lint.txt   # the ONE lint list, shared with requirements.txt
 
       - name: Lint with flake8 (critical errors only)
         run: |
@@ -52,23 +52,23 @@ jobs:
   # Architecture contracts + dead-code sweep (REQ-098). import-linter enforces the acquisition
   # layering / forbidden-import contracts the pre-push hook claims CI runs but never actually did.
   # infrastructure/ is a namespace package, so grimp builds the graph from PYTHONPATH alone — no
-  # full-requirements install needed (import-linter pulls grimp).
+  # full-requirements install needed — requirements-lint.txt only.
   arch-lint:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
-          python-version: '3.11'
+          python-version: '3.13'   # matches local dev (dependency currency PR, 2026-10-08)
           cache: 'pip'
 
       - name: Install architecture-lint tools
         run: |
           python -m pip install --upgrade pip
-          pip install "import-linter>=2.0" "vulture>=2.10"
+          pip install -r requirements-lint.txt
 
       - name: Enforce import contracts (import-linter — blocking)
         env:
