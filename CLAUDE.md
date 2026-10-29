@@ -169,21 +169,15 @@ fires automatically on gate@8 approval — the CLI is the recovery/backfill path
 watchdogs; each script's docstring carries its own check-map, so run the script rather than trusting
 any summary of it.
 
-**Current status (2026-08-26): `batch_00058` PASSED end-to-end — the 38-PR validation is done.**
-Commit `713464b`. The first genuine first-run batch since `batch_00036` (2026-07-28) ran Stages 1→4
-clean and **proved three mechanisms that had never executed in production** (a redo batch structurally
-cannot exercise them — it seeds capture from the prior manifest, #174): the **`CAPTURE_SUMMARY`
-contract (#670)** — 12/12 completion events carry `capture_summary`, counts agree with disk manifests
-on all 12, `backstop_timeout` False throughout; **#670's ordinary-batch veto branch**, no false vetoes;
-and **the Stage-4→5 seam on a healthy batch** — `resolved == total` → ingest fired → 12 `stage=5`
-events landed. That last one **narrows #921**: it is about RECOVERY when the ingest window is missed,
-not the happy path. Results: Stage 2 12/12 `found_all`, 70/70 schools, 231 candidates all unique and
-100% on-domain, Wave 2 correctly never invoked (best 12-district first-run on record vs a 75-91%
-cohort, 87% corpus); Stage 3 12/12 `captured_all`, 252 captures, **zero** err rows / security_blocks /
-timeouts; Stage 4 11 `processed_all` + 1 `processed_partial`, 250/252 docs usable.
-Prior: **PR #924** merged (`0210d86`) closing **#916 + #925/#926/#927**. Baseline GREEN: `lint-imports`
-4 kept / 0 broken, `pytest -q -m "not integration"` **2506 passed, 1 skipped**. Full narrative:
-`docs/PROJECT_HISTORY.md` 2026-08-26 entry.
+**Current status (2026-10-29): the dependency-currency stack is MERGED — main is on SQLAlchemy 2.1 /
+psycopg 3, openai 3 / httpx2, pandas 3, FastAPI 0.143 / Starlette 1.x, Postgres 16.15.** Main `9cfa49f`:
+PRs **#931 → #932 → #939 → #942** (closing #930/#933/#934 and all 16 review issues #943–#958). Durable
+decisions + the lessons: `docs/PROJECT_HISTORY.md` 2026-10-29 entry. The **pipeline itself has not
+moved since 2026-08-26** (latest `state_event` 08-26; `batch_00058` sits at Stage 5, 60 `stage8_approval`
+rows, 57 districts in `bell_schedules`) — the October session was infrastructure only. Baseline GREEN on
+main: `lint-imports` **5 kept / 0 broken**, `pytest -q -m "not integration"` **2560 passed, 1 skipped**,
+govdb 410, Node 106. The one red test is `test_model_windows_integration.py` (network, excluded from the
+default suite): the catalog drift it reports IS **#938**, not a regression.
 
 **Standing findings that change what to do next:**
 - **#823's remedy is unreachable as designed.** `MAX_TOKENS_CEILING = 32000`
@@ -203,20 +197,34 @@ Prior: **PR #924** merged (`0210d86`) closing **#916 + #925/#926/#927**. Baselin
   never written (the CCD ingest's constructor omits it), never read. The in-scope school count is
   `nces_school_counts` in each Stage-1 batch receipt, from `school_sampling.school_index()`.
 
-**Next (RESUME HERE — 2026-08-26). Working plan:
-`docs/scratch-paper/2026-08-25-fresh-triage-and-validation-batch-plan.md` (untracked — gitignored).**
+**Next (RESUME HERE — 2026-10-29).** Two tracks; the deps leftovers are small, the pipeline plan is
+unchanged from 08-26 (`docs/scratch-paper/2026-08-25-fresh-triage-and-validation-batch-plan.md`, untracked).
 
+**A. Deps leftovers (all filed, none blocking):**
+1. **#940 — Ian's methodology call:** 545 `lct_calculations` rows carry numeric NaN, not NULL. The
+   four scratch DBs `lct_rb_p2` · `lct_rb_p2_before` · `lct_rb_p3` · `lct_scratch_934` (~750 MB) are its
+   before/after baselines — keep until #940 is decided, then drop.
+2. **#941** (`rebuild_database.py` Phase 6 would destroy Stage-9 bell schedules) · **#938** (refresh
+   `MODEL_WINDOWS`; the fetch command is in `model_families.py`) · **#935** lockfile · **#936** Node 24 ·
+   **#937** Postgres 18 runbook (Ian executes on the live DB).
+3. **Local branches to delete** (merged; the auto-mode classifier refused the deletion):
+   `git branch -d chore/deps-currency feat/930-sqlalchemy-21-psycopg3 feat/933-openai3-httpx2
+   feat/934-pandas3 fix/953-dismiss-modals-cold fix/957-stale-docs fix/pin-sqlalchemy-below-2.1` and
+   `git push origin --delete fix/953-dismiss-modals-cold fix/957-stale-docs`.
+
+**B. Pipeline (resumes exactly where 08-26 left it):**
 1. **`batch_00058` gate@5 tagging — Ian, console.** 12 fresh districts, 252 records; the **first
    unlabeled records to face the #828/#829/#865/#872 scoring**. Expected shapes, not regressions: the
    three single-school charters are thin by district shape (`2600296` 2 records, `3600049` 2,
    `4200018` 3), so a `manual_flag` there is ordinary. **One live finding to look at:** Alhambra
    `0600153` has 2 unusable docs, one of which is `ausd.us/apps/bell_schedules/printerfriendly.jsp` —
-   a URL that literally says bell schedules where EVERY reader tier recovered ~100 chars (txt 99,
-   pdftotext 117, tesseract 100). Looks like a printer-friendly endpoint that needs query params and
-   returns near-empty bare. Not a pipeline defect; if the shape recurs it is a discovery-quality issue
-   worth filing.
+   every reader tier recovered ~100 chars; looks like a printer-friendly endpoint that needs query
+   params. Not a pipeline defect; if the shape recurs it is a discovery-quality issue worth filing.
 2. **Then Stage 6→9 for `batch_00058`.** #717's already-extracted delta should hold nothing (no prior
-   production run for these districts) — that is its first clean-population test.
+   production run for these districts) — that is its first clean-population test. **Note #947 landed
+   meanwhile:** hub-winner selection is now order-independent (`record_order()` + a total key); the
+   measured effect on existing frozen handoffs was nil (Lewiston unchanged, Elmbrook's two identical
+   A-tier hubs now tie-break on `rec_key`).
 3. **#620 stays OPEN until all 27 are written** (Ian, 08-25). **16/27.** The 11 left: **gate@8 review
    (4)** Orange · Cleveland · West Ada · Lincoln; **gate@5 tagging (6)** Baldwin · both New Havens ·
    Cedar Rapids · Mobile (69 of 141 unlabeled) · Lewiston (25 of 35); **blocked (1)** Broward, on #686.
@@ -231,26 +239,30 @@ Prior: **PR #924** merged (`0210d86`) closing **#916 + #925/#926/#927**. Baselin
    three named pins. **#645 to watch:** the frozen handoff's per-record payload is the SPEND path's only
    sent-rep source. **#901's trap:** enumerate the 20 undeclared consumer edges or grandfather them.
 6. **Console/measurement queue:** **#922** (Settings re-ingest pane — its design content is the GLOBAL
-   lock; `_acquire_batch_run` serializes per batch only, `server.py:1798`) · **#923** (label-orphan
-   visibility; 193 orphans, 81 carrying human work, all `3173740` Millard from a 2026-07-20
-   `security_block_reclassified` — `--assert-floor` CANNOT see the loss, it joins `record ⋈ label`) ·
-   **#921** (the ingest trigger; now narrowed to recovery) · #888 (RE-MEASURE first) · #887 · #890 ·
-   #260 · #449.
+   lock; `_acquire_batch_run` serializes per batch only) · **#923** (label-orphan visibility; 193
+   orphans, 81 carrying human work, all `3173740` Millard — `--assert-floor` CANNOT see the loss, it
+   joins `record ⋈ label`) · **#921** (the ingest trigger; narrowed to recovery) · #888 (RE-MEASURE
+   first) · #887 · #890 · #260 · #449.
 7. **Blocked on Ian's design calls:** #685 (the naive reveal recovered NOTHING — the vendor open-state
    class and `max-height` are load-bearing) · #871 (the gate must be able to KEEP an off-domain document
    first; also gates #115) · #917 (5→1 is per-BATCH but realized per-DISTRICT) · epic #80's live-spend
    experiments (#823-#825).
 
-**Resume essentials:** `pip install -e .` · `docker-compose up -d` (Docker Postgres — never
-`brew services`) · verify with `lint-imports` (expect 4 kept / 0 broken) + `pytest -q -m "not
-integration"` (2506 passed); add `pytest -q -m govdb` and `npm test` in `infrastructure/scraper` when
-touching those layers. Console: `python3 -m
-infrastructure.acquisition.process_governance.server` → :8005 (scratch servers on **:8015**).
-Expected counts live in `GETTING_STARTED.md` §3 — their ONE home; §3a carries the verified
-precious-tables `pg_dump` (it runs **inside** the container and must redirect with `>`, never `-f`).
-Governance DB import is `from infrastructure.acquisition.common import db as gdb` (NOT `gov_db`);
-council configs at `common/config/council_configs.json`. Batch health check:
+**Resume essentials:** `source .venv/bin/activate` (the project `.venv` is the ONE env — the git hooks
+prefer it and the pre-push refuses a stale one, #955) · `pip install -r requirements.txt && pip install
+-e .` · `docker-compose up -d` (Docker Postgres 16.15 — never `brew services`) · verify with
+`lint-imports` (expect 5 kept / 0 broken) + `pytest -q -m "not integration"` (2560 passed, 1 skipped);
+add `pytest -q -m govdb` (410) and `npm test` in `infrastructure/scraper` (106) when touching those
+layers. Console: `python3 -m infrastructure.acquisition.process_governance.server` → :8005 (scratch
+servers on **:8015**). Expected counts live in `GETTING_STARTED.md` §3 — their ONE home; §3a carries the
+verified precious-tables `pg_dump` (it runs **inside** the container and must redirect with `>`, never
+`-f`); last backup `data/backups/precious-20261029T134609Z.sql` (gitignored). Governance DB import is
+`from infrastructure.acquisition.common import db as gdb` (NOT `gov_db`); every engine URL goes through
+`infrastructure/utilities/db_url.py` (driver pinned to psycopg 3, auto-prepare OFF — never build an
+engine around it); the LCT calc's DB rows come ONLY from `infrastructure/utilities/frames.db_records`.
+Council configs at `common/config/council_configs.json`. Batch health check:
 `python3 docs/technical-notes/production-quality-control-research/2026-08-25-batch44-ingest-recovery-measure.py <batch_id>`.
+Stage-7 tests build SDK errors via `tests/openai_fakes.py` (the real SDK, never a hand-rolled exception).
 
 Ian drives the console; prepare and verify, don't execute stage runs (Stage 9 CLI, the #716 replay, and
 the read-only measurement scripts are the exceptions). *Falsifier unchanged: if any district needs a
@@ -357,7 +369,7 @@ python3 infrastructure/scripts/verify_enrichment.py --quick
 These are installed (dev-deps) and are the project's standard way to map dependencies and enforce
 layering — reach for them before writing or verifying any "what depends on what" narrative:
 ```bash
-lint-imports                 # enforce the acquisition layering contracts (config: pyproject.toml); expect "4 kept, 0 broken"
+lint-imports                 # enforce the acquisition layering contracts (config: pyproject.toml); expect "5 kept, 0 broken"
 python3 -c "import grimp; g=grimp.build_graph('infrastructure'); \
   print(sorted(g.find_modules_directly_imported_by('infrastructure.acquisition.stage1_queue.queue_batch')))"
                              # grimp: query the real import graph (what a module imports / is imported by)

@@ -2460,3 +2460,74 @@ evidence standard as a positive one**; "I looked and found nothing" is a claim.
 
 Authority: PR #924 (merged `0210d86`) closing #916/#925/#926/#927; commits `44b4ab0`, `713464b`.
 Live evidence: `2026-08-25-batch44-ingest-recovery-measure.py` (now correct on both batch shapes).
+
+### 2026-10-29 — The dependency-currency stack lands (SQLAlchemy 2.1 / psycopg 3, openai 3 / httpx2, pandas 3) — and the driver, the write path, and the SDK error become decisions the repo owns
+
+**Why now.** CI went red on an unchanged commit (#929): SQLAlchemy 2.1 silently remapped a bare
+`postgresql://` from psycopg2 to psycopg 3 on a fresh install. The short fix was a pin; the decision
+(Ian) was to **move to latest on principle, bound every direct dependency below its next major, and
+re-check currency intentionally rather than hear about every release** — then to do the whole currency
+sweep in one go while the context was loaded. Four stacked PRs, merged in order: **#931** (SQLAlchemy
+2.1 + psycopg 3), **#932** (the low-risk sweep: FastAPI 0.143 / Starlette 1.x, Postgres 16.15, Playwright,
+pillow security floor, scikit-learn/scikit-optimize REMOVED — never imported; re-add triggers in
+`STAGE5_FILTER_DESIGN.md` §5c), **#939** (openai 3 / httpx2), **#942** (pandas 3). A `/code-review max`
+over the stack produced 16 issues (#943–#958); every one was *reproduced before it was fixed* and every
+fix carries a test shown able to fail. The decisions that outlive the PRs:
+
+- **The Postgres driver is a repo decision, never SQLAlchemy's default (REQ-103).** ONE normalizer,
+  `infrastructure/utilities/db_url.py`, through which both engine builders pass; it pins
+  `postgresql+psycopg` for every URL form (`postgres://`, `+psycopg2`, bare) because env overrides reach
+  the engine VERBATIM. A test that fed only `postgresql://` passed with the normalizer deleted (#945) —
+  the forms that need it are the ones that must be in the test.
+- **psycopg 3 auto-prepared statements are OFF on every engine (#943), measured not assumed.** The 6th
+  execution prepares, the 11th switches to a generic plan; the gate@5 records query — ordered only by
+  non-unique columns at the time — *changed row order from the 11th call* on one pooled connection, and a
+  `SELECT *` after DDL raises `cached plan must not change result type`. Transaction-mode poolers reject
+  prepared statements outright. `prepare_threshold=None`, proved server-side (`pg_prepared_statements`
+  stays 0 after 12 executions; 1 without the pin).
+- **Server-side binding changes which SQL is legal (#944).** A string parameter arrives `unknown`; one
+  that only ever meets a VARIADIC "any" function (CONCAT) cannot be typed → `IndeterminateDatatype`. The
+  regex scan missed it; the rerunnable sweep now AST-extracts every `text()` literal and asks Postgres
+  to PREPARE it on throwaway clones (208 OK / 0 findings; reverting the CAST yields exactly 1). Its own
+  first proof run *hid* the bug: "a finding only if ALL targets agree" let the governance clone's
+  `UndefinedTable` mask the LCT clone's `IndeterminateDatatype` — **one target reaching the error is the
+  verdict.**
+- **Decision-bearing ORDER BYs must be total (#947).** Hub-winner selection decided ties by DB order.
+  ONE `record_order()` fragment (`tier, sort_score DESC, rec_key`) at all six sites plus a total key in
+  the dispatcher; a guard test asserts every ORDER BY over `record` ends in `rec_key` or the fragment.
+  Measured effect: Lewiston unchanged; Elmbrook's winner moves between two A-tier hubs identical on
+  every criterion. Frozen handoffs untouched.
+- **The LCT calculation has ONE DB write path (#934/#956, REQ-020).** pandas 3's `str` dtype turns a
+  missing value into the TEXT `'NaN'` through `to_dict('records')`; `frames.db_records` is the only way
+  rows reach `write_calculations_to_db`, pinned by AST. The parity measure recomputes a pandas-3 clone
+  against a pandas-2 clone and is row-identical on `lct_calculations` — *except* ~85 rows that differ by
+  0.0001 (#952: psycopg 3 float8 bind rounding, recorded under REQ-020, not fixed) and 545 rows that hold
+  NUMERIC NaN under BOTH versions (#940, a methodology call Ian owns; the four scratch clones are its
+  baselines).
+- **openai 3 wraps the transport, so the SDK's exception TYPES are the interface (#948/#949/#958).** A
+  stream dying after partial output is `APIConnectionError`/`APITimeoutError` (a per-call miss again, the
+  cause text kept); a mid-stream `error` event is a bare `APIError` and now gets the #803 classification;
+  `str(e)` carries only `error.message` from 3.38, so classification reads the body. Rule: **test errors
+  come from the real SDK** (`tests/openai_fakes.sdk_error`), never a hand-rolled exception, and a guard
+  test enforces it repo-wide.
+- **The project `.venv` is the one environment, and the hooks say so (#955).** `pre-commit`/`pre-push`
+  prefer `.venv`, print the interpreter, and `pre-push` refuses a stale env. Two self-corrections the same
+  day, both of the "a check that cannot fail" shape: `pip --dry-run -q` suppressed the very line the
+  check grepped for (vacuous green, and my PR comment claimed it had refused), and the block ran before
+  the `SKIP_PREPUSH=1` early-exit so the escape hatch was dead. Proved by running the hook directly on
+  the stale branch, both paths.
+- **Stage 4 holds no path back to the network — now an import-linter contract (#950, REQ-172)**, the 5th
+  contract; a stage4 `httpx2` import breaks it.
+- **CI runner pinned `ubuntu-24.04`.** `ubuntu-latest` rolled to 26.04 mid-session and Playwright 1.57
+  has no build for it; a floating runner label is an unbounded dependency like any other.
+
+**Method notes.** Each PR was verified in a branch-matched venv (the top-of-stack `.venv` cannot run the
+lower branches' tests — `import httpx` fails there), and the lower PRs were pushed with `SKIP_PREPUSH=1`
+documented in a PR comment. `git checkout -- <file>` used as "undo a mutation" wiped pending edits
+twice; never use it on a file with uncommitted work. Left open by design: #935 (lockfile), #936 (Node
+24), #937 (Postgres 18 runbook — Ian executes), #938 (MODEL_WINDOWS drift, the one red network test),
+#940, #941.
+
+Authority: PRs #931 `e095e7b` → #932 `771798d` → #939 `a8b4dde` → #942 `9cfa49f` on main; REQ-020/REQ-103 amended;
+`2026-10-29-issue944-psycopg3-prepare-sweep-measure.py`, `2026-10-28-issue934-pandas3-db-parity-measure.py`;
+`STAGE5_FILTER_DESIGN.md` §5c, `STAGE7_EXTRACT_DESIGN.md` §6.

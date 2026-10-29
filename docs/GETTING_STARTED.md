@@ -145,31 +145,32 @@ details: [DATABASE_SETUP.md → "Two databases"](DATABASE_SETUP.md#two-databases
 
 **This section is the baseline authority** — the counts below are the ones to check a working tree
 against. They grow with every merged PR, so treat them as "expect at least"; a DROP is the signal.
-Last verified 2026-10-29 (#957): CI run `40819935298` (Tests workflow, `feat/934-pandas3` @ `27a4341`)
-and a local `.venv` run of the same tree. **CI and local counts are listed SEPARATELY** — their SKIPS
+Last verified 2026-10-29 (post-merge of the #931→#942 stack): CI run `40931091521` (Tests workflow,
+`main` @ `9cfa49f`) and a local `.venv` run of the same tree (pandas 3.1.0 / SQLAlchemy 2.1.4 / openai 3.27).
+**CI and local counts are listed SEPARATELY** — their SKIPS
 differ for environmental reasons, so the figure that must agree is the TOTAL (passed + skipped).
 
 ```bash
-pytest -q -m "not integration"    # CI job `test`: 2527 passed, 6 skipped · local: 2530 passed, 3 skipped (total 2533 either way)
-pytest -q -m govdb                # CI job `governance-db`: 380 passed, 29 skipped · local (Docker, both DBs): 408 passed, 1 skipped (total 409)
-pytest tests/test_*_integration.py  # expect 257 pass, 149 skipped
-cd infrastructure/scraper && npm test   # Node capture layer — expect 105 (CI job `node-tests`: 105 pass)
-lint-imports                      # layering contracts — expect "4 kept, 0 broken"
+pytest -q -m "not integration"    # CI job `test`: 2555 passed, 6 skipped · local: 2560 passed, 1 skipped (total 2561 either way)
+pytest -q -m govdb                # CI job `governance-db`: 381 passed, 29 skipped · local (Docker, both DBs): 410 passed, 0 skipped (total 410)
+pytest tests/test_*_integration.py  # expect 256 pass, 149 skipped, 1 FAIL until #938 refreshes MODEL_WINDOWS (network test, catalog drift)
+cd infrastructure/scraper && npm test   # Node capture layer — expect 106 (CI job `node-tests`: 106 pass)
+lint-imports                      # layering contracts — expect "5 kept, 0 broken" (5th: Stage 4 holds no path to the network, #950)
 flake8 . --count --select=E9,F63,F7,F82  # CI's BLOCKING lint — expect 0
 ```
 
 Why the skips differ (add `-rs` to see the reasons yourself):
-- **DB-free job** — 3 skips are common to both: the legacy-psycopg2 guard (psycopg2 absent), the NCES CCD
-  files not on disk, and the gitignored acquired files (`data/raw/`). CI skips **3 more** —
-  `test_stage4_tools.py::TestPdftotextPageSeparators` and two real-PDF tests in `test_stage5_scoring.py`
-  — because the hosted runner has no ghostscript/poppler (§1a); a dev machine with them installed runs
-  those 3, hence 2530 locally.
+- **DB-free job** — 1 skip is common to both: the legacy-psycopg2 guard (psycopg2 absent everywhere now).
+  CI skips **5 more**: the NCES CCD files not on disk (`test_school_sampling_253.py` golden count), the
+  gitignored acquired files (`data/raw/`), and `test_stage4_tools.py::TestPdftotextPageSeparators` plus
+  two real-PDF tests in `test_stage5_scoring.py` (the hosted runner has no ghostscript/poppler, §1a); a
+  dev machine with the tooling and data runs those 5, hence 2560 locally.
 - **govdb job** — CI's service container is the *governance* DB only, so the 28
   `test_stage9_incorporate_integration.py` tests skip (`LCT production Postgres unavailable`) along with
-  `test_stage8_rereview.py` (no `school_fact` rows); locally both DBs live in Docker and only the
-  data-dependent skip remains. (Local govdb last re-run 2026-10-08; the DB-free local figure is from
-  2026-10-29 in a `.venv` whose pandas was still 2.3.3, below the pinned floor — the total still matched
-  CI's. When local and CI disagree, CI is the authority.)
+  `test_stage8_rereview.py` (no `school_fact` rows); locally both DBs live in Docker and nothing skips.
+  When local and CI disagree, CI is the authority.
+- **CI runner is pinned `ubuntu-24.04`** (both workflows): `ubuntu-latest` rolled to 26.04 on 2026-10-29
+  and Playwright 1.57 has no browser build for it (`node-tests` went red on an unchanged tree).
 
 Notes:
 - **`pytest -m integration` carries a NETWORK test** (`test_model_windows_integration.py`, #809) that
