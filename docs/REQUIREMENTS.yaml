@@ -523,7 +523,15 @@ requirements:
       - Staff totals match before/after within rounding error
       - Baseline comparison report generated showing 0.0 difference in metrics
       - Migration creates tables but does not modify existing enrollment/staff data
+      - "The LCT calculation's DB write (calculate_lct_variants -> write_calculations_to_db) builds its rows ONLY
+        through infrastructure/utilities/frames.py::db_records, so a missing non-numeric value is stored as NULL,
+        never as text ('NaN'/'None') — measured under pandas 3: a bare to_dict('records') wrote 'NaN' into 160,370
+        of 160,916 lct_calculations rows in a rebuilt scratch clone, 2026-10-09/28 (#934). Scope (#956): the
+        SEA/NCES importers under infrastructure/database/migrations/ write through their own per-row converters
+        and are outside this guard (they replay identically on pandas 2.3.3 vs 3.1.0). Numeric NaN handling is
+        pending #940 (keep_numeric_nan preserves the pandas-2 behaviour until then)."
     tests:
+      - tests/test_frames.py
       - tests/test_state_integration.py::TestMigrationDataIntegrity::test_lct_calculations_identical_before_and_after_migration
       - tests/test_state_integration.py::TestMigrationDataIntegrity::test_district_count_constant_after_migration
       - tests/test_state_integration.py::TestMigrationDataIntegrity::test_enrollment_totals_match_within_rounding
@@ -532,7 +540,7 @@ requirements:
       - tests/test_state_integration.py::TestMigrationDataIntegrity::test_migration_does_not_modify_enrollment_data
       - tests/test_state_integration.py::TestMigrationDataIntegrity::test_migration_does_not_modify_staff_data
     created: "2026-01-12T03:30:00Z"
-    updated: "2026-01-16T00:00:00Z"
+    updated: "2026-10-29T00:00:00Z"
     notes: "From Texas integration validation - bit-for-bit identical calculations.
       2026-10-29 (#952, measured in the #931 review): the psycopg2 -> psycopg 3 move (#930/#931) changes how the
       unrounded Python float lct_value reaches Numeric(10,4) — psycopg2 inlined repr(float) as an exact literal,

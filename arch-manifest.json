@@ -66,12 +66,6 @@
         "infrastructure/scripts/reset_database.py"
       ]
     },
-    "python3": {
-      "why": "rebuild_database.py re-invokes sibling scripts as subprocesses.",
-      "callers": [
-        "infrastructure/scripts/rebuild_database.py"
-      ]
-    },
     "pandoc": {
       "why": "Manual bell-schedule importer: docx -> text.",
       "callers": [

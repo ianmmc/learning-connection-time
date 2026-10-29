@@ -28,8 +28,8 @@ git clone https://github.com/your-username/learning-connection-time.git
 cd learning-connection-time
 
 # Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+python -m venv .venv       # .venv (not venv/): the git hooks prefer .venv/bin when it exists
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt

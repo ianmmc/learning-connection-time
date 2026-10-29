@@ -536,14 +536,7 @@ Check that your source data matches expected column names. Update column mapping
 
 ### Memory Issues with Large Files
 
-Use `dask` for very large datasets:
-
-```python
-import dask.dataframe as dd
-df = dd.read_csv('large_file.csv')
-```
-
-Or process in chunks:
+Process in chunks with pandas — the only tabular dependency in the stack since #932:
 
 ```python
 for chunk in pd.read_csv('file.csv', chunksize=10000):

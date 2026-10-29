@@ -22,7 +22,7 @@ See `docs/ACQUISITION_PIPELINE.md` (Stage 3) for the full design.
 ## Setup & run
 
 ```bash
-npm install                      # installs playwright only
+npm install                      # playwright + dependency-cruiser (dev, for `npm run lint:deps`); Node >=22
 npx playwright install chromium  # browser binary
 
 node --test *.test.mjs           # run the unit tests

@@ -80,7 +80,7 @@ def run_script(script_path: str, args: list = None, dry_run: bool = False) -> bo
         True if successful, False otherwise
     """
     full_path = project_root / script_path
-    cmd = ["python3", str(full_path)]
+    cmd = [sys.executable, str(full_path)]   # the CALLER's interpreter, never PATH's python3 (#934)
     if args:
         cmd.extend(args)
 
