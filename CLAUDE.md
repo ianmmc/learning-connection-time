@@ -201,9 +201,10 @@ default suite): the catalog drift it reports IS **#938**, not a regression.
 unchanged from 08-26 (`docs/scratch-paper/2026-08-25-fresh-triage-and-validation-batch-plan.md`, untracked).
 
 **A. Deps leftovers (all filed, none blocking):**
-1. **#940 — Ian's methodology call:** 545 `lct_calculations` rows carry numeric NaN, not NULL. The
-   four scratch DBs `lct_rb_p2` · `lct_rb_p2_before` · `lct_rb_p3` · `lct_scratch_934` (~750 MB) are its
-   before/after baselines — keep until #940 is decided, then drop.
+1. **#940 — Ian's methodology call:** 545 `lct_calculations` rows carry numeric NaN, not NULL. Its
+   before/after baselines are the four scratch clones, DROPPED 2026-10-29 and kept as `pg_restore`-able
+   archives: `data/backups/scratch-{lct_rb_p2,lct_rb_p2_before,lct_rb_p3,lct_scratch_934}-20261029.dump`
+   (gitignored, ~37 MB total; restore with `pg_restore -U lct_user -C -d postgres <file>` inside the container).
 2. **#941** (`rebuild_database.py` Phase 6 would destroy Stage-9 bell schedules) · **#938** (refresh
    `MODEL_WINDOWS`; the fetch command is in `model_families.py`) · **#935** lockfile · **#936** Node 24 ·
    **#937** Postgres 18 runbook (Ian executes on the live DB).
