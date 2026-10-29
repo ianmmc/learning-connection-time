@@ -453,15 +453,24 @@ def load_district(session, district_id: str):
                                  "by_level": json.loads(d["nces_by_level_json"]) if d["nces_by_level_json"] else {}}}
 
 
-_RECORD_COLS = ("""r.rec_key, r.url, r.tier, r.category_hypothesis, r.signals_json, r.is_emergent,
+_RECORD_COLS = ("""r.rec_key, r.url, r.tier, r.sort_score, r.category_hypothesis, r.signals_json, r.is_emergent,
                    r.intended_schools_json, l.primary_label, l.facets_json""")
 _REP_COLS = ("source", "filename", "file_kind", "n_chars", "n_times", "usable")
+
+
+def record_order(alias: str = "r") -> str:
+    """The ONE canonical order for every decision-bearing query over `record` (#947): tier, sort_score DESC,
+    then rec_key — a TOTAL order, so no consumer ever depends on the planner's tie order. Measured: with the
+    old `tier, sort_score DESC` alone, 2 of 42 hub districts' paid-dispatch winners (and the gate@5 row
+    order from psycopg 3's 11th call on a connection, #943) were decided by whichever join the planner
+    chose. Same key the ingest's rep election uses (build_signals TIER_RANK, -score, rec_key)."""
+    return f"{alias}.tier, {alias}.sort_score DESC, {alias}.rec_key"
 
 
 def _shape_record(r, reps) -> dict:
     """One record row + its rep rows → the release dict (the ONE shaping used by both loaders; #148)."""
     return {
-        "rec_key": r["rec_key"], "url": r["url"], "tier": r["tier"],
+        "rec_key": r["rec_key"], "url": r["url"], "tier": r["tier"], "sort_score": r["sort_score"],
         "category": r["category_hypothesis"], "signals": json.loads(r["signals_json"] or "{}"),
         "is_emergent": r["is_emergent"],
         "intended_schools": json.loads(r["intended_schools_json"] or "[]"),
@@ -488,7 +497,7 @@ def load_district_records(session, district_id: str) -> list:
         f"""SELECT {_RECORD_COLS}
            FROM record r LEFT JOIN label l ON l.rec_key = r.rec_key
            WHERE r.district_id = :d AND {CANONICAL_RECORD_WHERE}
-           ORDER BY r.tier, r.sort_score DESC"""), {"d": district_id}).mappings().all()
+           ORDER BY {record_order()}"""), {"d": district_id}).mappings().all()
     reps = _reps_by_key(session, [r["rec_key"] for r in recs])
     return [_shape_record(r, reps.get(r["rec_key"], [])) for r in recs]
 
@@ -497,7 +506,7 @@ def load_districts_records(session, district_ids) -> dict:
     """{district_id: [record, ...]} for MANY districts in two queries — the bulk twin of
     load_district_records (#637: stage4_attribution called the per-district loader in a loop over
     the whole labeled TARGET corpus, an N+1 that grows with every labeled district). Same canonical
-    filter + shaping; per-district record order preserved (tier, sort_score DESC)."""
+    filter + shaping; per-district record order preserved (`record_order()`)."""
     dids = list(district_ids)
     if not dids:
         return {}
@@ -505,7 +514,7 @@ def load_districts_records(session, district_ids) -> dict:
         f"""SELECT r.district_id, {_RECORD_COLS}
            FROM record r LEFT JOIN label l ON l.rec_key = r.rec_key
            WHERE r.district_id = ANY(:d) AND {CANONICAL_RECORD_WHERE}
-           ORDER BY r.district_id, r.tier, r.sort_score DESC"""), {"d": dids}).mappings().all()
+           ORDER BY r.district_id, {record_order()}"""), {"d": dids}).mappings().all()
     reps = _reps_by_key(session, [r["rec_key"] for r in recs])
     out: dict = {}
     for r in recs:
