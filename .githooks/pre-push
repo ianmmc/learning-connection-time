@@ -31,7 +31,9 @@ echo -e "${GREEN}pre-push: interpreter $(command -v python3) ($(python3 -c 'impo
 if [ ! -x "$_VENV/bin/python3" ]; then
     echo -e "${YELLOW}pre-push: no .venv — running under a NON-project interpreter (GETTING_STARTED §1). Results may not match CI.${NC}"
 else
-    _STALE="$(python3 -m pip install --dry-run -q -r requirements.txt 2>&1 | grep -E 'Would install|ERROR' | head -5)"
+    # no -q: pip prints the decisive 'Would install ...' line at INFO level, which -q suppressed (the first
+    # cut of this check passed a pandas-2 venv against a pandas>=3.1 requirements.txt — measured, #955)
+    _STALE="$(python3 -m pip install --dry-run -r requirements.txt 2>&1 | grep -E '^Would install|^ERROR' | head -5)"
     if [ -n "$_STALE" ]; then
         echo -e "${RED}pre-push: .venv does not satisfy requirements.txt:${NC}"
         echo "$_STALE"
