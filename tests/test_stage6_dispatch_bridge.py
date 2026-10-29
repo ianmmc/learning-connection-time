@@ -425,3 +425,48 @@ def test_gate6_console_renders_the_hub_priority_holds():
     assert 'data-feat="s6-hub-held-summary"' in js         # the aggregate count row
     assert 'data-feat="s6-hub-held"' in js                 # the per-record rows
     assert BR.HUB_PRIORITY_REASON_PREFIX in js             # the client keys on the server's spelling
+
+
+def test_947_hub_winner_is_independent_of_input_order():
+    """#947: the between-hubs key is TOTAL (year, nitw, tier, sort_score, rec_key) — the old `max` was
+    first-wins on (year, nitw), so equal hubs were decided by SQL row order and, beneath it, the planner.
+    Every permutation of a tied set must name the same winner. Measured live: 2 of 42 hub districts
+    (Lewiston 2307320, Elmbrook 5501770) were order-dependent before this."""
+    import itertools
+    hubs = [dict(_h(f"d:{k}", "district_hub_by_band", 2025, 12), tier=t, sort_score=sc)
+            for k, t, sc in (("a", "A", 8.0), ("b", "A", 8.0), ("c", "B", 9.5), ("d", "A", 7.0))]
+    winners = {BR._hub_priority_holds(list(perm))[0] for perm in itertools.permutations(hubs)}
+    assert winners == {"d:b"}            # tier A beats B; sort_score 8.0 ties → rec_key 'd:b' > 'd:a'
+
+
+def test_947_record_order_fragment_is_total():
+    """The site guard below only proves every site USES the fragment (it reads SQL text, where the fragment
+    is an f-string hole) — this pins the fragment itself, so stripping rec_key from it fails here."""
+    from infrastructure.acquisition.stage5_filter import release as REL
+    assert REL.record_order() == "r.tier, r.sort_score DESC, r.rec_key"
+    assert REL.record_order("x").endswith("x.rec_key")
+
+
+def test_947_every_decision_bearing_order_by_over_record_is_total():
+    """Every `ORDER BY` in a production statement over `record` ends in `rec_key` (via
+    `release.record_order()`), so no consumer inherits the planner's tie order. Aggregates (GROUP BY)
+    carry no row identity and are exempt."""
+    import ast
+    import re
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[1] / "infrastructure" / "acquisition"
+    bad = []
+    for path in root.rglob("*.py"):
+        for node in ast.walk(ast.parse(path.read_text(), filename=str(path))):
+            if not (isinstance(node, ast.Call) and getattr(node.func, "id", None) == "text" and node.args):
+                continue
+            arg = node.args[0]
+            sql = arg.value if isinstance(arg, ast.Constant) else (
+                "".join(v.value if isinstance(v, ast.Constant) else "{" + ast.unparse(v.value) + "}"
+                        for v in arg.values) if isinstance(arg, ast.JoinedStr) else "")
+            if not re.search(r"\bFROM\s+record\b", sql, re.I) or "GROUP BY" in sql.upper():
+                continue
+            m = re.search(r"ORDER BY\s+(.*?)(?:\s+LIMIT|\s*$|\"\"\")", sql, re.I | re.S)
+            if m and not re.search(r"(rec_key|record_order\(\)\})\s*$", m.group(1).strip()):
+                bad.append(f"{path.relative_to(root.parent.parent)}:{node.lineno}: ORDER BY {m.group(1).strip()[:60]}")
+    assert not bad, "non-total ORDER BY over record — end it with release.record_order():\n  " + "\n  ".join(bad)

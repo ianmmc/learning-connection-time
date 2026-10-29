@@ -101,8 +101,8 @@ def update_fl_sped_estimates(session, year: str, dry_run: bool = False) -> Dict[
                         estimation_method = 'fl_sea_actual',
                         confidence = 'high',
                         notes = CONCAT(COALESCE(notes, ''),
-                                      '; Updated with FL SEA actual data (', :year, ')',
-                                      ' replacing ', :old_method, ' estimate'),
+                                      '; Updated with FL SEA actual data (', CAST(:year AS text), ')',
+                                      ' replacing ', CAST(:old_method AS text), ' estimate'),
                         updated_at = NOW()
                     WHERE id = :estimate_id
                 """)

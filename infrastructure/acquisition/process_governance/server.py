@@ -187,12 +187,12 @@ def tree():
         # column and compared in Python against the constant — re-spelling arm 2's
         # `source = 'benchmark_gt'` as SQL here would be a second copy of the rule (see
         # tests/test_one_home_fitness.py). capture's key is (district_id, hash), so this is 1:1.
-        q = text("""SELECT r.rec_key, r.url, r.hash, r.kind, r.tier, r.sort_score, r.duplicate_of,
+        q = text(f"""SELECT r.rec_key, r.url, r.hash, r.kind, r.tier, r.sort_score, r.duplicate_of,
                       r.cluster_id, r.is_cluster_rep, r.cluster_size, r.is_emergent,
                       l.status, l.primary_label, c.source AS capture_source
                FROM record r LEFT JOIN label l ON l.rec_key=r.rec_key
                LEFT JOIN capture c ON c.district_id=r.district_id AND c.hash=r.hash
-               WHERE r.district_id=:did ORDER BY r.tier, r.sort_score DESC, r.rec_key""")
+               WHERE r.district_id=:did ORDER BY {REL.record_order()}""")
         for d in districts:
             recs = [dict(r) for r in con.execute(q, {"did": d["district_id"]}).mappings()]
             for rec in recs:
@@ -222,9 +222,9 @@ def record(rec_key: str):
         members = []
         if r["cluster_id"]:
             for m in con.execute(text(
-                    """SELECT r.rec_key, r.url, r.is_cluster_rep, l.status FROM record r
+                    f"""SELECT r.rec_key, r.url, r.is_cluster_rep, l.status FROM record r
                        LEFT JOIN label l ON l.rec_key=r.rec_key
-                       WHERE r.cluster_id=:cid ORDER BY r.is_cluster_rep DESC, r.tier, r.sort_score DESC"""),
+                       WHERE r.cluster_id=:cid ORDER BY r.is_cluster_rep DESC, {REL.record_order()}"""),
                     {"cid": r["cluster_id"]}).mappings():
                 members.append(dict(m))
         signals = json.loads(r["signals_json"])
@@ -422,7 +422,7 @@ async def split_record(rec_key: str):
             con.execute(text("UPDATE record SET cluster_id=NULL, is_cluster_rep=1, cluster_size=1 WHERE rec_key=:rk"),
                         {"rk": rec_key})
             rest = [row[0] for row in con.execute(text(
-                "SELECT rec_key FROM record WHERE cluster_id=:cid ORDER BY tier, sort_score DESC"),
+                f"SELECT r.rec_key FROM record r WHERE r.cluster_id=:cid ORDER BY {REL.record_order()}"),
                 {"cid": cid}).fetchall()]
             if len(rest) <= 1:   # cluster collapses — remaining record (if any) becomes a singleton
                 for rk in rest:
@@ -588,7 +588,7 @@ def stage5_districts(
             FROM record r LEFT JOIN label l ON l.rec_key=r.rec_key
             LEFT JOIN capture c ON c.district_id=r.district_id AND c.hash=r.hash
             WHERE {' AND '.join(rwhere)}
-            ORDER BY r.attention_score DESC NULLS LAST, r.tier"""), rparams).mappings():
+            ORDER BY r.attention_score DESC NULLS LAST, {REL.record_order()}"""), rparams).mappings():
             recs_by_did.setdefault(r["district_id"], []).append({
                 **{k: r[k] for k in ("rec_key", "url", "tier", "attention_score", "is_cluster_rep",
                                      "cluster_id", "cluster_size", "is_emergent", "label_status", "primary_label")},
@@ -2159,7 +2159,9 @@ def _json_bool(payload: dict, key: str) -> bool:
     """A flag from a JSON payload, as an ACTUAL boolean — absent/None => False, anything that is not
     a JSON true/false is a 400 (#911). `bool(payload.get(key))` coerced the string "false" to True,
     inverting caller intent; these endpoints' docstrings explicitly invite non-console callers (curl,
-    a script posting `redo: true`), which is exactly who would hit that."""
+    a script posting `redo: true`), which is exactly who would hit that. Such a caller MUST send
+    `Content-Type: application/json` — FastAPI >= 0.132 answers a header-less JSON body with 422 before
+    any handler runs (#951; its CSRF hardening for localhost apps, deliberately left on)."""
     v = payload.get(key, False)
     if v is None:
         return False
@@ -2205,6 +2207,7 @@ async def handoff_dispatch(payload: dict):
     redo = _json_bool(payload, "redo")                     # #717 declared-redo (see /preview)
     expected_identity = payload.get("expected_identity")   # optional (issue #37) — the console always
     if not ids:                                            # sends it; a bare CLI/test POST still works
+                                                           # (with Content-Type: application/json, #951)
         raise HTTPException(400, "no districts selected")
     try:
         with gdb.session_scope() as con:

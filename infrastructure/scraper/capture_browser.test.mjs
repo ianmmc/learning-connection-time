@@ -62,9 +62,8 @@ test('dismissModals fires the CLICK path: an Accept button removes its banner', 
       <div id="banner">We use cookies.
         <button onclick="document.getElementById('banner').remove()">Accept</button></div>
       <main>Real page content</main></body></html>`);
-    // NOTE: dismissModals' boolean return is trivially true whenever the CSS injection succeeds
-    // (see the no-modal test below), so it proves nothing about the click -- the DOM is the witness.
-    await dismissModals(page);
+    const dismissed = await dismissModals(page);
+    assert.equal(dismissed, true, 'a landed click reports dismissed (#953)');
     assert.equal(await page.locator('#banner').count(), 0, 'the Accept click removed the banner');
     assert.equal(await page.locator('main').count(), 1, 'real content is untouched');
   });
@@ -75,7 +74,8 @@ test('dismissModals fires the DOM-REMOVAL path: a .cookie-banner with no button 
     await loadFixture(page, `<!doctype html><html><body>
       <div class="cookie-banner">We use cookies.</div>
       <main>Real page content</main></body></html>`);
-    await dismissModals(page);   // return value is vacuous (see CLICK-path note); assert on the DOM
+    const dismissed = await dismissModals(page);
+    assert.equal(dismissed, true, 'a DOM removal reports dismissed');
     assert.equal(await page.locator('.cookie-banner').count(), 0, 'the consent banner was removed');
     assert.equal(await page.locator('main').count(), 1);
   });
@@ -86,8 +86,24 @@ test('dismissModals is non-destructive on a page with no modal at all', async (t
     await loadFixture(page, `<!doctype html><html><body>
       <main>Just the bell schedule, no modal.</main></body></html>`);
     const dismissed = await dismissModals(page);
-    assert.equal(dismissed, true, 'the hide-CSS injection alone counts as handled');
+    assert.equal(dismissed, false, 'the hide-CSS injection alone is not a dismissal (#953)');
     assert.match(await page.locator('main').innerText(), /bell schedule/i, 'real content survives');
+  });
+});
+
+test('dismissModals returns false when the only dismiss button is visible but its click times out (#953)', async (t) => {
+  await withPage(t, async (page) => {
+    // The Accept button is visible, but a pointer-intercepting shield (z-index below the DOM-removal
+    // path's >100 threshold, no modal/overlay class) sits on top of it, so Playwright's actionability
+    // retry runs out the click budget. Before #953 this still returned true via the CSS injection.
+    await loadFixture(page, `<!doctype html><html><body>
+      <div id="banner">We use cookies.
+        <button onclick="document.getElementById('banner').remove()">Accept</button></div>
+      <div id="shield" style="position:fixed;inset:0;z-index:50;background:transparent"></div>
+      <main>Real page content</main></body></html>`);
+    const dismissed = await dismissModals(page, { clickTimeoutMs: 400 });
+    assert.equal(dismissed, false, 'a timed-out click is not a dismissal');
+    assert.equal(await page.locator('#banner').count(), 1, 'the banner was never clicked away');
   });
 });
 
