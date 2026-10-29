@@ -216,11 +216,16 @@ exercise against the #200/#209-hardened pipeline, not a distinct issue awaiting 
   UNCLAMPED (distinct from `size_max_tokens`, what we request), and the estimator's inputs are one
   construction too (`rep_prompt_size`: content + system prompt, shaped by kind — #846), asserted at
   the call sites: the same rep yields the same estimate from a signal row and an assembled body.
-  `_client()` (the OpenAI SDK client) is `functools.lru_cache`d
-  per `(key, timeout)` (#148) so consecutive calls in a batch reuse one HTTP connection pool (httpx2 under openai 3, #933) instead of
-  a fresh TLS handshake each call (was ~30-60s/batch of pure handshake); an autouse conftest fixture
-  clears the cache per test. Raises `BillingAuthError` on 401/402 (halts the run rather than burning
-  further calls on a dead key).
+  `_client()` (the OpenAI SDK client) is `functools.lru_cache`d per `(key, timeout)` (#148), so one
+  client OBJECT serves every call in a batch. Whether a call also reuses a pooled HTTP connection is
+  **not established** (#957): with the production `for chunk in stream` loop the streamed response is
+  closed at `[DONE]` before its terminal chunk is drained, and measured in the #957 review (openai 2.54
+  and 3.41, httpx2 transport under openai 3 — #933) every streamed call opened a NEW TCP/TLS connection
+  (6 calls → 6 connections; a non-streamed or fully drained call → 1). #148's premise — ~30-60s/batch of
+  pure handshake, cured by caching the client — therefore needs re-measuring on the streamed path before
+  it is carried forward; the cache itself stays (it is what the test fixture contract relies on). An
+  autouse conftest fixture clears the cache per test. Raises `BillingAuthError` on 401/402 (halts the
+  run rather than burning further calls on a dead key).
 - `parse.py` — tolerant JSON parser: markdown-fence stripping, **salvage-on-truncation via
   `json.JSONDecoder().raw_decode`** (#508/#276 — the real tokenizer scans from each `{`, so braces inside
   string values (school names/notes) and nested objects no longer truncate the salvage; the old `[^{}]*`

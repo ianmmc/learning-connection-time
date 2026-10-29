@@ -55,8 +55,8 @@ This reframes "20:1 student-teacher ratio" into a more visceral equity metric.
 ### Setup
 ```bash
 # 1. Set up Python environment
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv            # .venv (not venv/): the git hooks prefer .venv/bin when it exists
+source .venv/bin/activate
 pip install -e .
 
 # 2. Fresh clone only: point git at the tracked pre-commit hook (sweeps precious

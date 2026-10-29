@@ -203,11 +203,14 @@ class CallResult:
 
 @functools.lru_cache(maxsize=8)
 def _client(api_key: str, timeout: int):
-    """The OpenAI SDK client, CACHED per (key, timeout) so consecutive calls in a batch reuse ONE
-    httpx connection pool instead of a fresh TLS handshake each call (#148: ~30-60s/batch of pure
-    handshake). The client is safe to reuse across calls. Tests that swap `openai.OpenAI` for a fake
-    rely on the autouse `_reset_openrouter_client_cache` conftest fixture clearing this each test —
-    else a prior test's cached fake client would be served (same (key, timeout))."""
+    """The OpenAI SDK client, CACHED per (key, timeout) so one client OBJECT serves every call in a
+    batch (#148). Whether a call also reuses a pooled HTTP connection is NOT established (#957): the
+    streamed response is closed at [DONE] before its terminal chunk is drained, and measured, every
+    streamed call opened a new TCP/TLS connection — re-measure #148's ~30-60s/batch handshake premise
+    on the streamed path before relying on it. The client is safe to reuse across calls. Tests that
+    swap `openai.OpenAI` for a fake rely on the autouse `_reset_openrouter_client_cache` conftest
+    fixture clearing this each test — else a prior test's cached fake client would be served (same
+    (key, timeout))."""
     import openai
     return openai.OpenAI(base_url=OPENROUTER_BASE_URL, api_key=api_key, timeout=timeout,
                          default_headers=ATTRIBUTION_HEADERS)

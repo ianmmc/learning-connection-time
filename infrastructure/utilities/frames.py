@@ -2,7 +2,8 @@
 
 A missing value must reach the driver as `None` (SQL NULL), never as a float NaN. Under pandas 3 a missing
 string is NaN (the default `str` dtype), and `to_dict('records')` passes it straight through: measured, the LCT
-calculation wrote the TEXT 'NaN' into 162,677 `lct_calculations` rows that pandas 2 left NULL. Every DataFrame
+calculation wrote the TEXT 'NaN' into 160,370 of 160,916 `lct_calculations` rows (rebuilt scratch clone,
+2026-10-09/28) that pandas 2 left NULL. Every DataFrame
 that is written to the database goes through `db_records`.
 """
 import numpy as np

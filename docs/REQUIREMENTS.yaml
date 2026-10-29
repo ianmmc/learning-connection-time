@@ -525,7 +525,8 @@ requirements:
       - Migration creates tables but does not modify existing enrollment/staff data
       - "A DataFrame reaches the LCT DB ONLY through infrastructure/utilities/frames.py::db_records, so a missing
         non-numeric value is stored as NULL, never as text ('NaN'/'None') — measured under pandas 3: a bare
-        to_dict('records') wrote 'NaN' into 160,370 lct_calculations rows (#934). Numeric NaN handling is
+        to_dict('records') wrote 'NaN' into 160,370 of 160,916 lct_calculations rows in a rebuilt scratch clone,
+        2026-10-09/28 (#934). Numeric NaN handling is
         pending #940 (keep_numeric_nan preserves the pandas-2 behaviour until then)."
     tests:
       - tests/test_frames.py
