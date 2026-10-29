@@ -33,3 +33,21 @@ def test_guard_blocks_legacy_psycopg2_when_still_installed():
     psycopg2 = pytest.importorskip("psycopg2")
     with pytest.raises(RuntimeError, match="psycopg2.connect"):
         psycopg2.connect("postgresql://unused/never-opened")
+
+
+@pytest.mark.parametrize("path", ["psycopg.connect", "psycopg.Connection.connect", "Engine.raw_connection"])
+def test_guard_blocks_every_patched_connect_path(path):
+    """#946: the guard's claim is only as wide as the paths it patches — one self-test per path, so an
+    unpatched path cannot hide behind the comment. (A reference captured BEFORE the fixture ran —
+    `from psycopg import connect` at a test module's top — is NOT caught; the guard says so.)"""
+    from sqlalchemy.engine import Engine
+    from infrastructure.acquisition.common import db as gdb
+    if path == "Engine.raw_connection":
+        with pytest.raises(RuntimeError, match="must not touch Postgres"):
+            gdb.get_engine().raw_connection()
+    elif path == "psycopg.Connection.connect":
+        with pytest.raises(RuntimeError, match="Connection.connect"):
+            psycopg.Connection.connect("postgresql://unused/never-opened")
+    else:
+        with pytest.raises(RuntimeError, match="psycopg.connect"):
+            psycopg.connect("postgresql://unused/never-opened")

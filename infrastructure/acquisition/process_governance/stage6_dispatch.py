@@ -165,7 +165,11 @@ def _hub_priority_holds(sendables: list) -> tuple:
     hubs = [r for r in sendables if r.get("label") in HUB_LABELS]
     if not hubs:
         return None, set()
-    winner = max(hubs, key=lambda r: (r["year"] if r["year"] is not None else -1, r.get("nitw") or 0))
+    # #947: a TOTAL key. Year, then nitw, then the canonical record order (tier, sort_score, rec_key —
+    # `release.record_order()`), which the old first-wins `max` only inherited from the SQL order and
+    # the planner's tie-breaking beneath it (2 of 42 hub districts measured order-dependent).
+    winner = max(hubs, key=lambda r: (r["year"] if r["year"] is not None else -1, r.get("nitw") or 0,
+                                      -BS.TIER_RANK.get(r.get("tier"), 9), r.get("sort_score") or 0, r["rec_key"]))
     floor = HUB_YIELD_FLOOR_MULT * (winner.get("nitw") or 1)
     holds = {r["rec_key"] for r in sendables
              if r["rec_key"] != winner["rec_key"]
@@ -269,6 +273,7 @@ def district_release_input(session, district_id: str, verified_only: bool = Fals
             sig = rec.get("signals") or {}
             sendables.append({"rec_key": rec["rec_key"], "label": rec.get("label"),
                               "url": rec.get("url"),
+                              "tier": rec.get("tier"), "sort_score": rec.get("sort_score"),   # #947 hub key
                               "year": _content_start_year(sig),
                               # #869: the SENDABLE pool's density, not every rep's. `max` over all
                               # reps let a footer/nav count (scored since #841) decide which Edlio
