@@ -385,7 +385,9 @@ and `paths.REVIEW_DB` have since been **retired** (#126) — the governance Post
 - **`infrastructure/acquisition/common/db.py`** — `Base`, `get_engine`, `session_scope`,
   `init_precious_schema()`. Config: `GOVERNANCE_DATABASE_URL` (cloud) or `GOVERNANCE_DB_*`
   (defaults → local container: host localhost, port 5432, name `governance`, user `governance_user`,
-  pw `governance_pw`). Driver psycopg2, `postgresql://` URL.
+  pw `governance_pw`). Driver psycopg 3 (`psycopg[binary]`, #930): every engine's URL is pinned to
+  `postgresql+psycopg://` by `infrastructure/utilities/db_url.py::sqlalchemy_url`, so a bare
+  `postgresql://` setting can't float to another driver.
 - **`infrastructure/acquisition/stage5_filter/models.py`** — precious `Label` + `ClusterSplit`
   models on `Base`. `init_precious_schema()` create_all's them (caller imports the models so
   `common/` stays stage-agnostic). Verified create_all stands up `label`+`cluster_split`.

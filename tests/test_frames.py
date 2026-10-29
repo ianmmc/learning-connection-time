@@ -1,7 +1,8 @@
 """#934 — a DataFrame becomes DB rows through ONE function, and a missing value always lands as SQL NULL.
 
-Measured under pandas 3: `calculate_lct_variants` wrote the TEXT 'NaN' into 162,677 `lct_calculations` rows
-(instructional_minutes_year) where pandas 2 wrote NULL. pandas 3's default `str` dtype represents a missing
+Measured under pandas 3: `calculate_lct_variants` wrote the TEXT 'NaN' into 160,370 of 160,916 `lct_calculations`
+rows (instructional_minutes_year; rebuilt scratch clone, 2026-10-09/28) where pandas 2 wrote NULL. pandas 3's
+default `str` dtype represents a missing
 string as float NaN; `to_dict('records')` hands that NaN to the driver, which stores it in a text column as
 'NaN'. No error, no warning — and `read_csv` parses the text back to NaN, so a CSV round-trip hides it."""
 import math

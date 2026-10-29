@@ -31,9 +31,10 @@ This reframes "20:1 ratio" into a metric that makes resource disparities viscera
 git clone <repository-url>
 cd learning-connection-time
 
-# Python environment — a PROJECT venv at .venv (gitignored), Python 3.13 = CI. Never the global
-# interpreter: it drifted from CI's fresh install (#929: SQLAlchemy 2.0 vs 2.1; #933: openai 2 vs 3).
-python3.13 -m venv .venv
+# Python environment — a PROJECT venv at .venv (gitignored). Any Python 3.11+ works
+# (`requires-python` in pyproject.toml); 3.13 is what CI runs and is the recommended choice. Never the
+# global interpreter: it drifted from CI's fresh install (#929: SQLAlchemy 2.0 vs 2.1; #933: openai 2 vs 3).
+python3.13 -m venv .venv         # or python3.11 / python3.12 — 3.13 matches CI
 source .venv/bin/activate        # every session — console, CLIs, pytest (or let direnv do it)
 pip install -r requirements.txt  # re-run after any requirements*.txt change
 
@@ -60,18 +61,27 @@ rather than crashing — but no text is harvested). Stage 3 (Capture) additional
 | `pdftotext`, `pdftoppm` | Tier-1 text extract + rasterize-for-OCR | `poppler` | `poppler-utils` |
 | `tesseract` | OCR (invoked directly, no `pytesseract`) | `tesseract` | `tesseract-ocr` |
 | `gs` (ghostscript) | camelot's PDF backend | `ghostscript` | `ghostscript` |
-| `node` | Stage 3 Playwright capture (`.mjs`) | `node` | see nodejs.org |
+| `node` | Stage 3 Playwright capture (`.mjs`) — **Node >=22** (`package.json` `engines`) | `node` | nvm or NodeSource (NOT apt's `nodejs`, see below) |
 
 ```bash
 # macOS
 brew install poppler tesseract ghostscript node
 
-# Debian / Ubuntu
-sudo apt-get install -y poppler-utils tesseract-ocr ghostscript nodejs
+# Debian / Ubuntu — do NOT take `nodejs` from apt: Debian 12 and Ubuntu 24.04 ship Node 18, below the
+# capture layer's `engines: node >=22` (and below Playwright 1.64's Node 20 floor). Install Node 22+ via
+# nvm (per-user) or NodeSource (system-wide):
+sudo apt-get install -y poppler-utils tesseract-ocr ghostscript
+nvm install 22 && nvm use 22                                   # nvm: https://github.com/nvm-sh/nvm
+# — or —
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt-get install -y nodejs
 
-# Verify all are on PATH
+# Verify all are on PATH (node must report v22 or newer)
 for b in pdftotext pdftoppm tesseract gs node; do command -v "$b" || echo "MISSING: $b"; done
+node --version
 ```
+
+The Playwright **browser binary** is a separate, one-time install after `npm install` — see
+"The Node capture layer" below (`npx playwright install chromium`).
 
 ### 1b. Git hooks (one-time)
 
@@ -135,16 +145,31 @@ details: [DATABASE_SETUP.md → "Two databases"](DATABASE_SETUP.md#two-databases
 
 **This section is the baseline authority** — the counts below are the ones to check a working tree
 against. They grow with every merged PR, so treat them as "expect at least"; a DROP is the signal.
-Last verified 2026-10-08 (#930, fresh venv).
+Last verified 2026-10-29 (#957): CI run `40819935298` (Tests workflow, `feat/934-pandas3` @ `27a4341`)
+and a local `.venv` run of the same tree. **CI and local counts are listed SEPARATELY** — their SKIPS
+differ for environmental reasons, so the figure that must agree is the TOTAL (passed + skipped).
 
 ```bash
-pytest -q -m "not integration"    # CI job 1, no DB needed — expect 2532 pass, 1 skipped (legacy-psycopg2 guard test, when psycopg2 is absent)
-pytest -q -m govdb                # CI job 2, needs Docker Postgres — expect 409 (408 + 1 data-dependent skip on an empty DB)
+pytest -q -m "not integration"    # CI job `test`: 2527 passed, 6 skipped · local: 2530 passed, 3 skipped (total 2533 either way)
+pytest -q -m govdb                # CI job `governance-db`: 380 passed, 29 skipped · local (Docker, both DBs): 408 passed, 1 skipped (total 409)
 pytest tests/test_*_integration.py  # expect 257 pass, 149 skipped
-cd infrastructure/scraper && npm test   # Node capture layer — expect 105
+cd infrastructure/scraper && npm test   # Node capture layer — expect 105 (CI job `node-tests`: 105 pass)
 lint-imports                      # layering contracts — expect "4 kept, 0 broken"
 flake8 . --count --select=E9,F63,F7,F82  # CI's BLOCKING lint — expect 0
 ```
+
+Why the skips differ (add `-rs` to see the reasons yourself):
+- **DB-free job** — 3 skips are common to both: the legacy-psycopg2 guard (psycopg2 absent), the NCES CCD
+  files not on disk, and the gitignored acquired files (`data/raw/`). CI skips **3 more** —
+  `test_stage4_tools.py::TestPdftotextPageSeparators` and two real-PDF tests in `test_stage5_scoring.py`
+  — because the hosted runner has no ghostscript/poppler (§1a); a dev machine with them installed runs
+  those 3, hence 2530 locally.
+- **govdb job** — CI's service container is the *governance* DB only, so the 28
+  `test_stage9_incorporate_integration.py` tests skip (`LCT production Postgres unavailable`) along with
+  `test_stage8_rereview.py` (no `school_fact` rows); locally both DBs live in Docker and only the
+  data-dependent skip remains. (Local govdb last re-run 2026-10-08; the DB-free local figure is from
+  2026-10-29 in a `.venv` whose pandas was still 2.3.3, below the pinned floor — the total still matched
+  CI's. When local and CI disagree, CI is the authority.)
 
 Notes:
 - **`pytest -m integration` carries a NETWORK test** (`test_model_windows_integration.py`, #809) that
@@ -276,9 +301,10 @@ What lives here now is a flat set of Playwright `.mjs` modules (`capture_discove
 
 ```bash
 cd infrastructure/scraper
-npm install            # playwright is the only dependency
-npm test               # node --test *.test.mjs (see §3 for the live count)
-npm run lint:deps      # depcruise over the flat *.mjs (the Node side of the layering check)
+npm install                       # playwright (runtime dep) + dependency-cruiser (dev dep, for lint:deps); Node >=22 (`engines`)
+npx playwright install chromium   # the browser binary — one-time per machine (CI: `--with-deps chromium`)
+npm test                          # node --test *.test.mjs (see §3 for the live count)
+npm run lint:deps                 # depcruise over the flat *.mjs (the Node side of the layering check)
 ```
 
 These are the only two scripts `package.json` defines.

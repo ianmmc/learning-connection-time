@@ -633,7 +633,16 @@ docker exec -it lct_postgres psql -U lct_user -d learning_connection_time
 
 ### Common Errors
 
-**Error**: `psycopg.OperationalError: connection failed: FATAL: database "learning_connection_time" does not exist`
+**Error** (psycopg 3's actual text, verified 2026-10-29 against the Docker Postgres with a nonexistent DB name, substituted here — it reports every
+address it tried):
+```
+psycopg.OperationalError: connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database "learning_connection_time" does not exist
+Multiple connection attempts failed. All failures were:
+- host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  database "learning_connection_time" does not exist
+- host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database "learning_connection_time" does not exist
+```
+(If you see `fe_sendauth: no password supplied` instead, the URL reached the server without a password —
+check `.env` first; the database check never ran.)
 
 **Solution**: Create database first:
 ```bash
