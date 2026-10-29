@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-10-08T00:00:00Z"
+last_updated: "2026-10-28T00:00:00Z"
 
 # STATUS VOCABULARY — normalized 2026-07-16, narrowed to FIVE 2026-08-21 (Ian). These are the whole
 # set; do not invent more. The pre-normalization file carried ad-hoc `in-progress` / `not_started` /
@@ -523,7 +523,12 @@ requirements:
       - Staff totals match before/after within rounding error
       - Baseline comparison report generated showing 0.0 difference in metrics
       - Migration creates tables but does not modify existing enrollment/staff data
+      - "A DataFrame reaches the LCT DB ONLY through infrastructure/utilities/frames.py::db_records, so a missing
+        non-numeric value is stored as NULL, never as text ('NaN'/'None') — measured under pandas 3: a bare
+        to_dict('records') wrote 'NaN' into 160,370 lct_calculations rows (#934). Numeric NaN handling is
+        pending #940 (keep_numeric_nan preserves the pandas-2 behaviour until then)."
     tests:
+      - tests/test_frames.py
       - tests/test_state_integration.py::TestMigrationDataIntegrity::test_lct_calculations_identical_before_and_after_migration
       - tests/test_state_integration.py::TestMigrationDataIntegrity::test_district_count_constant_after_migration
       - tests/test_state_integration.py::TestMigrationDataIntegrity::test_enrollment_totals_match_within_rounding
@@ -532,7 +537,7 @@ requirements:
       - tests/test_state_integration.py::TestMigrationDataIntegrity::test_migration_does_not_modify_enrollment_data
       - tests/test_state_integration.py::TestMigrationDataIntegrity::test_migration_does_not_modify_staff_data
     created: "2026-01-12T03:30:00Z"
-    updated: "2026-01-16T00:00:00Z"
+    updated: "2026-10-28T00:00:00Z"
     notes: "From Texas integration validation - bit-for-bit identical calculations"
 
   - id: REQ-021

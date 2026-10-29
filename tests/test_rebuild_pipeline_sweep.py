@@ -71,3 +71,18 @@ class TestPhase2bDryRun:
 
         assert run_script.call_args.kwargs.get('dry_run') is True \
             or (len(run_script.call_args.args) >= 3 and run_script.call_args.args[2] is True)
+
+
+class TestPhasesRunUnderTheCallersInterpreter:
+    def test_run_script_uses_sys_executable_not_path_python3(self):
+        """#934: phases ran as bare `python3` from PATH — launched as `.venv/bin/python rebuild_database.py`
+        without activating, every phase silently ran under the GLOBAL interpreter (other pandas, other
+        driver). A phase must run under exactly the interpreter that launched the orchestrator."""
+        import sys
+        from infrastructure.scripts import rebuild_database as rb
+
+        with patch.object(rb.subprocess, 'run', return_value=MagicMock(returncode=0)) as run:
+            assert rb.run_script("infrastructure/scripts/reset_database.py", ["--force"])
+        cmd = run.call_args[0][0]
+        assert cmd[0] == sys.executable
+        assert cmd[1].endswith("reset_database.py") and cmd[2:] == ["--force"]

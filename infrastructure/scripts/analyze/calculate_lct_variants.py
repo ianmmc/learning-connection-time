@@ -74,6 +74,7 @@ def get_utc_timestamp() -> str:
 
 
 from infrastructure.database.connection import session_scope, get_engine
+from infrastructure.utilities.frames import db_records
 from infrastructure.database.school_year import (
     COVID_EXCLUDED_YEARS,
     is_covid_year,
@@ -1529,8 +1530,11 @@ Examples:
         # === DB-FIRST APPROACH (January 2026) ===
         # Write calculations to database first, then export CSVs from DB
 
-        # Convert DataFrame to list of dicts for database insertion
-        results_list = df.to_dict('records')
+        # Convert DataFrame to list of dicts for database insertion — through the ONE DataFrame->DB
+        # function (#934): under pandas 3 a missing string is NaN, and to_dict() wrote the TEXT 'NaN'
+        # into 160k instructional_minutes_year rows. keep_numeric_nan preserves pandas 2's numeric
+        # behaviour until #940 decides what an uncomputable (NOT NULL) lct_value should become.
+        results_list = db_records(df, keep_numeric_nan=True)
 
         # Clear existing calculations before writing (DB-first recalculation).
         # write_calculations_to_db appends, and the uq_lct_calculation_v2 unique

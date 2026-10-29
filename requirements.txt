@@ -3,7 +3,7 @@
 # Floors carry security minimums where noted.
 
 # Core data processing
-pandas>=2.3,<3            # <3: pandas 3 (CoW, string dtype) is its own migration — tracked separately
+pandas>=3.1,<4            # pandas 3 (CoW + str dtype): DataFrames reach the DB ONLY via infrastructure/utilities/frames.db_records (#934)
 numpy>=2.3,<3
 pyarrow>=21,<26           # parquet export in calculate_lct_variants.py (optional import there)
 
