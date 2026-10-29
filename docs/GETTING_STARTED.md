@@ -340,16 +340,13 @@ python3 infrastructure/scripts/reset_database.py --force       # reset (preserve
 # Run tests
 pytest tests/ -v
 
-# Check for type errors (if applicable)
-# mypy infrastructure/
-
 # Commit with conventional format
 git commit -m "feat: Add new bell schedule parser"
 ```
 
 ### Conventions
 
-- **Python:** 3.11+ (3.13 in CI), PEP 8, type hints where they help, `logging` over `print` in library code.
+- **Python:** 3.11+ (3.13 locally and in CI), PEP 8, type hints where they help, `logging` over `print` in library code.
 - **File naming:** Python modules/scripts `snake_case.py` (0 of the 28 files under `infrastructure/scripts/`
   are hyphenated — this line said `kebab-case.py` until 2026-07-16, contradicting the whole codebase);
   Node capture modules `snake_case.mjs`; data `name_YYYY_YY.csv`; generated artifacts

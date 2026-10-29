@@ -790,6 +790,17 @@ canonical Python impl, and LOGO-CV's disjoint eval folds make the CV-overlap cor
 (Wilcoxon + the cluster bootstrap cover it). This same pandas+statsmodels+pingouin stack is what the
 eventual cross-dimensional LCT-by-district/state analysis will stand on.
 
+> **Correction (2026-10-08, dependency currency PR):** `sklearn` never supplied the LOGO folds. With
+> GLOBAL thresholds (nothing is fit per fold), leave-one-district-out reduces to grouping records by
+> district, which `frontier.logo_cv` and `promotion_gate.logo_fold_guard` do directly — no estimator is
+> involved, so it is not a hand-rolled estimator under the rule above. Measured: zero `sklearn`/`skopt`
+> imports anywhere in the repo, so `scikit-learn` and `scikit-optimize` were **removed from
+> `requirements.txt`**. **Re-add them deliberately (bounded) when the first import lands:**
+> `scikit-learn` if per-fold FITTING arrives (then use its `LeaveOneGroupOut`, groups = district — do not
+> hand-roll fitted-fold CV); `scikit-optimize` for the Bayesian escalation (`gp_minimize`) when the knob
+> space outgrows enumeration (REQ-096/097). Check `scikit-optimize`'s maintenance first — no release since
+> 2024-06; Optuna is the actively maintained alternative to evaluate at that point.
+
 **The gate — `promotion_gate.py` (#212), pure + tested.** Consumes the same per-district re-score the
 frontier grid uses (`frontier._retier` → `[(district, rec_key, tier, is_target)]`; no re-ingest, no cash).
 `promotion_verdict(champion_rows, challenger_rows, *, margin, ...)` runs the layered gate (FINDINGS §2 order):
@@ -1150,6 +1161,11 @@ recency/validity-floor story already told there.
 ---
 
 ## Change log
+- **2026-10-08 — tuning-stack dependencies removed (dependency currency PR).** `scikit-learn` and
+  `scikit-optimize` dropped from `requirements.txt`: never imported (§5c's "`sklearn` (LOGO folds)" was
+  inaccurate — the folds are a per-district grouping; correction marked in §5c, the 2026-07-10 entry
+  below is left as written). Re-add triggers + the Optuna note: §5c. statsmodels / pingouin / scipy are
+  imported and stay.
 
 - **2026-08-24 — doc refresh: added §7b and closed out the #673/#674 KNOWN DEFECT/GAP, documenting code
   that landed 2026-08-18/19 but was missing from this note.** Four related fixes, all the

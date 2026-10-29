@@ -1,0 +1,12 @@
+# Lint + architecture tooling. Included by requirements.txt (-r); lint.yml installs ONLY this file, so CI's
+# lint jobs and local dev resolve the same bounded versions (dependency currency PR, 2026-10-08).
+flake8>=7.3,<8            # CI's blocking lint
+pyyaml>=6.0.2,<7          # also a runtime dep (configs); listed here because lint.yml parses REQUIREMENTS.yaml
+
+# Architecture / dependency tooling (REQ-098 step 4) — run via `lint-imports` (contracts in
+# pyproject.toml) and `vulture infrastructure/acquisition`. Requires `pip install -e .` so the
+# `infrastructure.acquisition.*` packages resolve. See PIPELINE_GOVERNANCE_AND_STATE.md §10.
+import-linter>=2.12,<3    # architecture contracts (layers / forbidden) over the import graph
+grimp>=3.14,<4            # the import-graph builder import-linter sits on (queryable directly)
+vulture>=2.16,<3          # dead-code / unused-import detection
+jsonschema>=4.25,<5       # shared-config knob validation (#205 part 1) — tests/test_config_schemas.py
