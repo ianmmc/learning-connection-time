@@ -99,6 +99,24 @@ def classify_error(status: "int | None", message: str) -> str:
             else "transient")
 
 
+def _error_detail(e: Exception) -> str:
+    """The SDK error as ONE string, for classification and the persisted CallResult.error: `str(e)` — which
+    openai >= 3.38 reduces to `error.message` alone (#949) — plus the response body when it carries more
+    (OpenRouter's 'Provider returned error' wrapper keeps the upstream text in metadata.raw; a bare
+    {error: '<text>'} or {detail: ...} body has no .message at all), plus the transport cause openai >= 3.14
+    hides behind 'Connection error.' / 'Request timed out.' (#948). Markers are matched on the whole."""
+    parts = [str(e)]
+    body = getattr(e, "body", None)
+    if body:
+        text = body if isinstance(body, str) else json.dumps(body, default=str)
+        if text not in parts[0]:
+            parts.append(text)
+    cause = e.__cause__
+    if cause is not None and str(cause) and str(cause) not in parts[0]:
+        parts.append(f"{type(cause).__name__}: {cause}")
+    return " | ".join(parts)
+
+
 # App attribution (optional per the docs; identifies the app on openrouter.ai rankings/activity).
 ATTRIBUTION_HEADERS = {
     "HTTP-Referer": "https://github.com/ianmmc/learning-connection-time",
@@ -319,14 +337,29 @@ def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DE
             # #709: a context-window 400 is STRUCTURAL — retrying the identical request fails
             # identically, and a voter lost to it makes cross-family consensus impossible by
             # construction. Classified apart from 'transient' so the rep can be marked degraded.
-            msg = str(e)
+            msg = _error_detail(e)
             return CallResult(model=model, ok=False, content="".join(parts), latency_ms=_ms(t0),
                               error=msg, error_kind=classify_error(status, msg),
                               generation_id=gen_id, max_tokens_sent=mt)
         except (openai.APITimeoutError, openai.APIConnectionError) as e:
+            # #948: openai >= 3.14 raises these for a transport failure while ITERATING the stream too, not
+            # only on connect. Before any output it is the same weather as a failed connect: transient, #711
+            # retries it. After partial output the generation was already billed (OpenRouter keeps billing
+            # an aborted stream on Google/Mistral) and #711 keeps only the last generation id and no cost
+            # for a failed attempt — so it stays what it was before the SDK change: a per-call miss.
             return CallResult(model=model, ok=False, content="".join(parts), latency_ms=_ms(t0),
-                              error=str(e), error_kind="transient", generation_id=gen_id,
-                              max_tokens_sent=mt)
+                              error=_error_detail(e), error_kind="transient" if not parts else "other",
+                              generation_id=gen_id, max_tokens_sent=mt)
+        except openai.APIError as e:
+            # #958: OpenRouter's mid-stream error EVENT ({"error": {...}} on an HTTP 200 stream) is raised
+            # by the SDK's iterator as a bare APIError (body = the event's error) and never YIELDED as a
+            # chunk — the `mid_err` chunk branch below was unreachable through the real SDK (measured on
+            # openai 1.50 / 2.41 / 3.26 / 3.41: every one raised here). Same ONE classification rule
+            # (#803) and the same partial-content retention the chunk branch promised.
+            msg = _error_detail(e)
+            return CallResult(model=model, ok=False, content="".join(parts), latency_ms=_ms(t0),
+                              error=f"mid-stream: {msg}", error_kind=classify_error(None, msg),
+                              generation_id=gen_id, max_tokens_sent=mt)
         except Exception as e:  # noqa: BLE001 — any other SDK/parse error is a per-call miss, not a halt
             return CallResult(model=model, ok=False, content="".join(parts), latency_ms=_ms(t0),
                               error=str(e), error_kind="other", generation_id=gen_id,

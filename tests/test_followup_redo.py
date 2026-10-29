@@ -164,8 +164,20 @@ class TestStage4ReprocessIsLocalOnly:
     unlimited-recapture and the delta-only invariant dies where no unit test is looking. Source-level
     fitness pin, same posture as the REQ-172 wiring pin in capture_records.test.mjs."""
 
-    FORBIDDEN_IMPORTS = ("playwright", "requests", "httpx", "aiohttp",
-                         "urllib.request", "http.client", "socket")
+    # #950: the client list lives in ONE place — the import-linter contract in pyproject.toml (which
+    # also enforces it on the graph). import-linter cannot name a stdlib SUBpackage, so the two below
+    # are this pin's own. `httpx2`/`httpcore2` were missing here when #939 swapped httpx for httpx2.
+    STDLIB_SUBPACKAGES = ("urllib.request", "http.client")
+
+    @property
+    def FORBIDDEN_IMPORTS(self):
+        import tomllib
+        from pathlib import Path
+        cfg = tomllib.loads((Path(__file__).resolve().parents[1] / "pyproject.toml").read_text())
+        contract = next(c for c in cfg["tool"]["importlinter"]["contracts"]
+                        if c["type"] == "forbidden" and "Stage 4 holds no path back to the network" in c["name"])
+        assert {"httpx", "httpx2", "httpcore2", "urllib3", "requests"} <= set(contract["forbidden_modules"])
+        return tuple(contract["forbidden_modules"]) + self.STDLIB_SUBPACKAGES
 
     def _package_sources(self):
         from pathlib import Path

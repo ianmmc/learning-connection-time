@@ -7,6 +7,7 @@ duplicated across test_stage7_openrouter.py and test_streaming_contract.py and a
 
 Test modules alias these to their existing private names, e.g. `from openai_fakes import Chunk as
 _Chunk`, and wrap `patch`/`patch_sequence` to bind their module's `OR`."""
+import json
 import types
 
 import httpx2
@@ -17,20 +18,23 @@ import openai
 _REAL_OPENAI = openai.OpenAI
 
 
-def sdk_error(*, status=None, message="", timeout=False, connect=False):
+def sdk_error(*, status=None, message="", timeout=False, connect=False, body=None):
     """The exception the REAL SDK raises for this HTTP outcome (#933) — never a hand-built one.
 
     Drives a genuine `openai.OpenAI` over an `httpx2.MockTransport` and returns what it raises, so the
     exception class (e.g. `BadRequestError`, not bare `APIStatusError`), the response type the SDK
     actually uses, and `str(e)`'s format are all the SDK's own. Hand-built errors passed with httpx-1
     objects under openai 3 — green tests whose proxy had lost the property under test.
-    `status` + `message` -> an OpenRouter-shaped error body; `timeout`/`connect` -> transport failures."""
+    `status` + `message` -> an OpenRouter-shaped error body; `timeout`/`connect` -> transport failures;
+    `body` (dict or raw text) -> that exact body instead (#949: the wrapper / bare / detail / HTML shapes)."""
     def handler(request):
         if timeout:
             raise httpx2.ReadTimeout("timed out", request=request)
         if connect:
             raise httpx2.ConnectError("connection refused", request=request)
-        return httpx2.Response(status, json={"error": {"message": message, "code": status}})
+        if isinstance(body, str):
+            return httpx2.Response(status, content=body.encode(), headers={"content-type": "text/html"})
+        return httpx2.Response(status, json=body if body is not None else {"error": {"message": message, "code": status}})
 
     client = _REAL_OPENAI(base_url="https://openrouter.ai/api/v1", api_key="sk-test", max_retries=0,
                           http_client=httpx2.Client(transport=httpx2.MockTransport(handler)))
@@ -117,5 +121,52 @@ def patch_sequence(monkeypatch, OR, batches):
 
     import openai
     monkeypatch.setattr(openai, "OpenAI", _Client)
+    monkeypatch.setattr(OR, "resolve_key", lambda explicit=None: "sk-test")
+    return calls
+
+
+def sse(*events) -> bytes:
+    """An SSE body: each event a chunk dict (JSON-encoded) or the literal "[DONE]"."""
+    return "".join(f"data: {e if isinstance(e, str) else json.dumps(e)}\n\n" for e in events).encode()
+
+
+def chunk(content=None, *, finish_reason=None, error=None, usage=None, id="gen-test-123") -> dict:
+    """One OpenRouter streaming chunk as the WIRE dict (what the real SDK parses) — not a fake object."""
+    d = {"id": id, "object": "chat.completion.chunk", "model": "fake/model",
+         "choices": [{"index": 0, "delta": {"content": content} if content is not None else {},
+                      "finish_reason": finish_reason}]}
+    if error is not None:
+        d["error"] = error
+    if usage is not None:
+        d["usage"] = usage
+    return d
+
+
+def patch_real_stream(monkeypatch, OR, body_per_call, *, fail_after=None, fail_with="read"):
+    """Serve scripted SSE bodies through the REAL SDK (#948/#958): monkeypatches `openai.OpenAI` so
+    `OR._client` builds a genuine client over an `httpx2.MockTransport`. `body_per_call[i]` is the bytes
+    (see `sse`) for the i-th request; `fail_after=(call_index, n_events)` makes that call's body raise a
+    transport error after n events (`fail_with` = "read" -> ReadError, "timeout" -> ReadTimeout).
+    Returns the list of request bodies the SDK actually sent (one per call)."""
+    calls = []
+
+    def handler(request):
+        calls.append(json.loads(request.content))
+        i = len(calls) - 1
+        raw = body_per_call[min(i, len(body_per_call) - 1)]
+
+        def gen():
+            events = raw.split(b"\n\n")
+            events = [ev + b"\n\n" for ev in events if ev]
+            for n, ev in enumerate(events):
+                if fail_after and fail_after[0] == i and n == fail_after[1]:
+                    exc = httpx2.ReadTimeout if fail_with == "timeout" else httpx2.ReadError
+                    raise exc("scripted transport failure", request=request)
+                yield ev
+        return httpx2.Response(200, headers={"content-type": "text/event-stream"}, content=gen())
+
+    def real_client(**kw):
+        return _REAL_OPENAI(**kw, http_client=httpx2.Client(transport=httpx2.MockTransport(handler)))
+    monkeypatch.setattr(openai, "OpenAI", real_client)
     monkeypatch.setattr(OR, "resolve_key", lambda explicit=None: "sk-test")
     return calls

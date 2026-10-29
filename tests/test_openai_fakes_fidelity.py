@@ -55,15 +55,30 @@ def test_classifier_on_the_sdks_real_error_text(status, message, kind):
 
 
 def test_no_test_hand_builds_an_sdk_error():
-    """Every SDK error a test raises comes from `openai_fakes.sdk_error`. A direct `openai.<X>Error(...)`
-    construction is the drift this issue fixed."""
+    """Every SDK error a test raises comes from `openai_fakes.sdk_error`. A direct construction — `openai.X(...)`,
+    `from openai import X; X(...)`, or an alias of either — is the drift this issue fixed (#958 widened it
+    beyond the literal `openai.<X>Error(...)` form, and to subdirectories)."""
     offenders = []
-    for path in TESTS.glob("*.py"):
+    for path in TESTS.rglob("*.py"):
         if path.name == "openai_fakes.py":
             continue
-        for node in ast.walk(ast.parse(path.read_text())):
-            if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
-                    and isinstance(node.func.value, ast.Name) and node.func.value.id == "openai"
-                    and node.func.attr.endswith("Error")):
-                offenders.append(f"{path.name}:{node.lineno} openai.{node.func.attr}(...)")
+        tree = ast.parse(path.read_text())
+        from_openai = {}                                   # local name -> openai attribute
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom) and node.module and node.module.split(".")[0] == "openai":
+                for alias in node.names:
+                    from_openai[alias.asname or alias.name] = alias.name
+            elif isinstance(node, ast.Import):
+                for alias in node.names:
+                    if alias.name.split(".")[0] == "openai":
+                        from_openai[alias.asname or alias.name] = "<module>"
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            f = node.func
+            if isinstance(f, ast.Attribute) and isinstance(f.value, ast.Name) \
+                    and from_openai.get(f.value.id) == "<module>" and f.attr.endswith("Error"):
+                offenders.append(f"{path.relative_to(TESTS)}:{node.lineno} {f.value.id}.{f.attr}(...)")
+            elif isinstance(f, ast.Name) and from_openai.get(f.id, "").endswith("Error"):
+                offenders.append(f"{path.relative_to(TESTS)}:{node.lineno} {f.id}(...) [from openai import {from_openai[f.id]}]")
     assert not offenders, "use openai_fakes.sdk_error instead:\n  " + "\n  ".join(offenders)

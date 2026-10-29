@@ -142,13 +142,13 @@ class TestCallClamp:
     def test_p3_provider_context_400_classifies_structural(self, monkeypatch):
         """The Memphis/Orange 400 body classifies error_kind='context', not 'transient'."""
         _fake_400(monkeypatch,
-                  "Error code: 400 - This endpoint's maximum context length is 32768 tokens. "
-                  "However, you requested about 36487 tokens.")
+                  "This endpoint's maximum context length is 32768 tokens. "
+                  "However, you requested about 36487 tokens.")   # the SDK adds its own 'Error code: 400 - ' framing
         res = OR.call(_body(MISTRAL, "small prompt"))
         assert not res.ok and res.error_kind == "context"
 
     def test_p3_other_400_stays_transient(self, monkeypatch):
-        _fake_400(monkeypatch, "Error code: 400 - invalid role in message 3")
+        _fake_400(monkeypatch, "invalid role in message 3")
         res = OR.call(_body(MISTRAL, "small prompt"))
         assert not res.ok and res.error_kind == "transient"
 
