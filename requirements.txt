@@ -58,7 +58,7 @@ python-dotenv>=1.2.2,<2   # floor: CVE-2026-28684
 pdfplumber>=0.11.10,<0.12
 pymupdf>=1.27,<2          # not used in production (dropped in the spike); kept for the Stage 4 test fixtures
 camelot-py>=2.0,<3        # pulls opencv-python-headless + pillow + pypdfium2 transitively
-pillow>=12.3,<13          # transitive (camelot/pdfplumber) — declared for the security floor: Stage 4 parses UNTRUSTED PDFs/images
+pillow>=13.0,<14          # transitive (camelot/pdfplumber) — security floor: Stage 4 parses UNTRUSTED PDFs/images (13.0: GHSA-78g4-xqwv-q3g8, heap overflow via Image.open)
 
 # Governance console — the local FastAPI app (process_governance/server.py) + its tests' TestClient.
 fastapi>=0.143,<0.144     # Starlette 1.x (removed on_event; server.py already uses lifespan)
