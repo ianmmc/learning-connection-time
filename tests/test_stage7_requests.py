@@ -2,6 +2,7 @@
 Feeds synthetic extraction results and asserts the routed requests at all three altitudes."""
 from infrastructure.acquisition.common import model_families as MF
 from infrastructure.acquisition.stage7_extract import requests as RQ
+from openai_fakes import sdk_error as _sdk_error  # noqa: E402  (#933: the REAL SDK's errors)
 
 
 def _result(district_id="D1", reps=None, accepted=None):
@@ -530,8 +531,8 @@ def test_711_a_transient_429_retries_the_same_rep_then_the_ladder_is_untouched(m
         def create(self, **kw):
             calls["n"] += 1
             if calls["n"] == 1:
-                raise openai.APITimeoutError(request=None)     # transient
-            raise openai.APITimeoutError(request=None)
+                raise _sdk_error(timeout=True)     # transient
+            raise _sdk_error(timeout=True)
 
     class _Chat:
         completions = _Completions()
@@ -552,17 +553,16 @@ def test_711_a_transient_429_retries_the_same_rep_then_the_ladder_is_untouched(m
 def test_711_a_structural_context_error_is_NOT_retried(monkeypatch):
     """The taxonomy that matters: transient retries the same rep, STRUCTURAL does not (the
     identical request fails identically — #709). Retrying a context 400 would just burn money."""
-    import httpx
     import openai
     from infrastructure.acquisition.stage7_extract import openrouter as OR
+    from openai_fakes import sdk_error
     calls = {"n": 0}
-    msg = "Error code: 400 - This endpoint's maximum context length is 32768 tokens."
-    resp = httpx.Response(400, request=httpx.Request("POST", "https://openrouter.ai/x"), text=msg)
+    err = sdk_error(status=400, message="This endpoint's maximum context length is 32768 tokens.")
 
     class _Completions:
         def create(self, **kw):
             calls["n"] += 1
-            raise openai.APIStatusError(msg, response=resp, body=None)
+            raise err
 
     class _Chat:
         completions = _Completions()

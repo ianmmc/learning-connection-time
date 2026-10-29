@@ -13,6 +13,7 @@ from infrastructure.acquisition.common.model_families import (
     WINDOW_MARGIN_TOKENS, usable_output)
 from infrastructure.acquisition.stage7_extract import openrouter as OR
 from infrastructure.acquisition.process_governance.stage7_run import council_degraded
+from openai_fakes import sdk_error as _sdk_error  # noqa: E402  (#933: the REAL SDK's errors)
 
 MISTRAL = "mistralai/mistral-small-24b-instruct-2501"
 GEMINI = "google/gemini-2.5-flash-lite"
@@ -39,14 +40,12 @@ def test_usable_output_shapes():
 
 
 def _fake_400(monkeypatch, message):
-    """Wire a fake OpenAI client whose stream raises APIStatusError(message) — the httpx-backed
-    construction test_stage7_openrouter.py's 402 fake established."""
-    import httpx
+    """Wire a fake OpenAI client whose stream raises the error the REAL SDK raises for an HTTP 400
+    carrying `message` (#933: `openai_fakes.sdk_error`, never a hand-built exception)."""
     import openai
+    from openai_fakes import sdk_error
 
-    resp = httpx.Response(400, request=httpx.Request("POST", "https://openrouter.ai/x"),
-                          text=message)
-    err = openai.APIStatusError(message, response=resp, body=None)
+    err = sdk_error(status=400, message=message)
 
     class _Completions:
         def create(self, **kw):
@@ -78,7 +77,7 @@ class TestCallClamp:
         class _Completions:
             def create(self, **kw):
                 sent.update(kw)
-                raise openai.APITimeoutError(request=None)   # stop after capturing the body
+                raise _sdk_error(timeout=True)   # stop after capturing the body
 
         class _Chat:
             completions = _Completions()
@@ -110,7 +109,7 @@ class TestCallClamp:
         class _Completions:
             def create(self, **kw):
                 sent.update(kw)
-                raise openai.APITimeoutError(request=None)
+                raise _sdk_error(timeout=True)
 
         class _Chat:
             completions = _Completions()
@@ -143,13 +142,13 @@ class TestCallClamp:
     def test_p3_provider_context_400_classifies_structural(self, monkeypatch):
         """The Memphis/Orange 400 body classifies error_kind='context', not 'transient'."""
         _fake_400(monkeypatch,
-                  "Error code: 400 - This endpoint's maximum context length is 32768 tokens. "
-                  "However, you requested about 36487 tokens.")
+                  "This endpoint's maximum context length is 32768 tokens. "
+                  "However, you requested about 36487 tokens.")   # the SDK adds its own 'Error code: 400 - ' framing
         res = OR.call(_body(MISTRAL, "small prompt"))
         assert not res.ok and res.error_kind == "context"
 
     def test_p3_other_400_stays_transient(self, monkeypatch):
-        _fake_400(monkeypatch, "Error code: 400 - invalid role in message 3")
+        _fake_400(monkeypatch, "invalid role in message 3")
         res = OR.call(_body(MISTRAL, "small prompt"))
         assert not res.ok and res.error_kind == "transient"
 
@@ -161,7 +160,7 @@ class TestCallClamp:
         class _Completions:
             def create(self, **kw):
                 sent.update(kw)
-                raise openai.APITimeoutError(request=None)
+                raise _sdk_error(timeout=True)
 
         class _Chat:
             completions = _Completions()
