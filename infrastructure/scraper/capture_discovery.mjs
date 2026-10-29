@@ -506,19 +506,30 @@ function setupPageDialogHandler(page) {
   page.on('dialog', async (dialog) => { await dialog.dismiss().catch(() => {}); });
 }
 
-export async function dismissModals(page) {
+// #953: a freshly installed Chromium 156 blocks ~2 s at its first frame on macOS arm64, so a 1000 ms
+// click budget lost deterministically on the first run after `npx playwright install chromium`.
+const DISMISS_CLICK_TIMEOUT_MS = 5000;
+
+// Returns true only when a dismissal was OBSERVED to land (a click or a DOM removal); the CSS
+// injection alone is not evidence that anything was dismissed, and a timed-out click is not a click.
+export async function dismissModals(page, { clickTimeoutMs = DISMISS_CLICK_TIMEOUT_MS } = {}) {
   let dismissed = false;
-  try { await page.addStyleTag({ content: MODAL_HIDING_CSS }); dismissed = true; } catch {}
+  try { await page.addStyleTag({ content: MODAL_HIDING_CSS }); } catch {}
   for (const selector of DISMISS_SELECTORS) {
     try {
       const el = page.locator(selector).first();
       if (await el.isVisible({ timeout: 500 })) {
-        await el.click({ timeout: 1000 });
+        await el.click({ timeout: clickTimeoutMs });
         dismissed = true;
         await page.waitForTimeout(300);
         break;
       }
-    } catch { /* not found/not clickable, try next selector */ }
+    } catch (e) {
+      if (e?.name === 'TimeoutError') {
+        console.error(`  dismissModals: ${selector} visible but click timed out after ${clickTimeoutMs}ms -- trying next selector`);
+      }
+      /* otherwise not found/not clickable, try next selector */
+    }
   }
   try {
     const removed = await page.evaluate(() => {
