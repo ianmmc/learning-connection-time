@@ -35,8 +35,8 @@ The project migrated from JSON files to PostgreSQL (December 2025) for:
 
 - **Database**: PostgreSQL 16
 - **Containerization**: Docker Compose
-- **ORM**: SQLAlchemy 2.x with declarative models
-- **Python Driver**: psycopg2
+- **ORM**: SQLAlchemy 2.1 with declarative models
+- **Python Driver**: psycopg 3 (`psycopg[binary]`), pinned explicitly by `infrastructure/utilities/db_url.py` (#930)
 - **Schema Management**: DDL scripts in `infrastructure/database/migrations/`
 
 ---
@@ -633,7 +633,7 @@ docker exec -it lct_postgres psql -U lct_user -d learning_connection_time
 
 ### Common Errors
 
-**Error**: `psycopg2.OperationalError: FATAL: database "learning_connection_time" does not exist`
+**Error**: `psycopg.OperationalError: connection failed: FATAL: database "learning_connection_time" does not exist`
 
 **Solution**: Create database first:
 ```bash

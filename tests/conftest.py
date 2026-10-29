@@ -57,10 +57,8 @@ def _guard_no_postgres_in_dbfree_tests(request):
             f"DB-free test '{request.node.nodeid}' requests real-DB fixture(s) "
             f"{sorted(real_db_fixtures)} without @pytest.mark.integration/@pytest.mark.govdb — "
             f"add the marker (#201).")
-    import psycopg2
+    import importlib
     from sqlalchemy.engine import Engine
-    real_engine_connect = Engine.connect
-    real_pg_connect = psycopg2.connect
     nodeid = request.node.nodeid
 
     def _blocked(entrypoint):
@@ -70,21 +68,46 @@ def _guard_no_postgres_in_dbfree_tests(request):
             f"touch Postgres — it passes locally but skips/fails in CI's DB-free job. Add the marker, or "
             f"mock the database (#201).")
 
+    # What is patched, exactly (#946): SQLAlchemy's two ways to a DBAPI connection, and — for every raw
+    # driver that is importable (psycopg 3 is declared; an env upgraded in place still carries psycopg2) —
+    # the module-level `connect` AND the `Connection.connect` classmethod it aliases (patching one does not
+    # patch the other; `psycopg.connect` is a separate reference). NOT caught: a reference captured before
+    # this fixture ran (`from psycopg import connect` at a module's top) — no repo code does that, and
+    # tests/test_dbfree_guard.py pins each covered path so the list above cannot drift from the patches.
+    saved = []
+
+    def _patch(obj, attr, replacement):
+        saved.append((obj, attr, obj.__dict__.get(attr, getattr(obj, attr))))
+        setattr(obj, attr, replacement)
+
     def guarded_engine_connect(self, *a, **k):
         if self.url.get_backend_name() == "postgresql":
             _blocked("Engine.connect")
-        return real_engine_connect(self, *a, **k)
+        return saved_engine_connect(self, *a, **k)
 
-    def guarded_pg_connect(*a, **k):
-        _blocked("psycopg2.connect")
+    def guarded_raw_connection(self, *a, **k):
+        if self.url.get_backend_name() == "postgresql":
+            _blocked("Engine.raw_connection")
+        return saved_raw_connection(self, *a, **k)
 
-    Engine.connect = guarded_engine_connect
-    psycopg2.connect = guarded_pg_connect
+    saved_engine_connect, saved_raw_connection = Engine.connect, Engine.raw_connection
+    _patch(Engine, "connect", guarded_engine_connect)
+    _patch(Engine, "raw_connection", guarded_raw_connection)
+    for name in ("psycopg", "psycopg2"):
+        try:
+            mod = importlib.import_module(name)
+        except ImportError:
+            continue
+        _patch(mod, "connect", lambda *a, _n=name, **k: _blocked(f"{_n}.connect"))
+        for cls_name in ("Connection", "AsyncConnection"):
+            cls = getattr(mod, cls_name, None)
+            if cls is not None and "connect" in cls.__dict__:
+                _patch(cls, "connect", classmethod(lambda cls_, *a, _n=f"{name}.{cls_name}.connect", **k: _blocked(_n)))
     try:
         yield
     finally:
-        Engine.connect = real_engine_connect
-        psycopg2.connect = real_pg_connect
+        for obj, attr, original in reversed(saved):
+            setattr(obj, attr, original)
 
 
 # --- Governance Postgres fixture (REQ-103) ---
@@ -127,7 +150,7 @@ USE_REAL_DB = os.getenv('USE_REAL_DB', 'false').lower() == 'true'
 @pytest.fixture
 def mock_db_connection():
     """
-    Mock psycopg2 connection for unit tests.
+    Mock psycopg connection for unit tests.
 
     Usage:
         def test_something(mock_db_connection):
@@ -250,8 +273,8 @@ def real_db_connection():
     if not USE_REAL_DB:
         pytest.skip("Skipping real database test (USE_REAL_DB not set)")
 
-    import psycopg2
-    conn = psycopg2.connect(TEST_DATABASE_URL)
+    import psycopg
+    conn = psycopg.connect(TEST_DATABASE_URL)
     yield conn
     conn.close()
 
