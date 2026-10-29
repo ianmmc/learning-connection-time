@@ -1,6 +1,8 @@
-# Version policy (#929/#930): every dependency is BOUNDED — `>=floor,<next-major` (or `<next-minor` for 0.x
-# packages, whose minors break). A new major/minor is a deliberate PR, never a fresh-install surprise.
-# Floors carry security minimums where noted.
+# Version policy (#929/#930, honest form per #955): every DIRECT dependency is bounded below its next major
+# (`<next-minor` for 0.x packages, whose minors break). That stops a new MAJOR landing on a fresh install,
+# and nothing more: minors and patches of direct deps still float, transitives are unbounded, and CI's
+# fresh install can therefore still resolve differently from a local env (the #929 shape). Exact,
+# resolve-identical installs are #935's lockfile. Floors carry security minimums where noted.
 
 # Core data processing
 pandas>=3.1,<4            # pandas 3 (CoW + str dtype): DataFrames reach the DB ONLY via infrastructure/utilities/frames.db_records (#934)
@@ -61,7 +63,9 @@ camelot-py>=2.0,<3        # pulls opencv-python-headless + pillow + pypdfium2 tr
 pillow>=13.0,<14          # transitive (camelot/pdfplumber) — security floor: Stage 4 parses UNTRUSTED PDFs/images (13.0: GHSA-78g4-xqwv-q3g8, heap overflow via Image.open)
 
 # Governance console — the local FastAPI app (process_governance/server.py) + its tests' TestClient.
-fastapi>=0.143,<0.144     # Starlette 1.x (removed on_event; server.py already uses lifespan)
+fastapi>=0.143,<0.144     # Starlette 1.x (removed on_event; server.py already uses lifespan). 0.132+ rejects a
+                          # JSON body sent without Content-Type (strict_content_type) — pinned, see #951
+starlette>=1.2,<2         # floor: TestClient learned httpx2 in 1.2.0 (#955); fastapi alone leaves it unbounded below
 uvicorn>=0.54,<0.55
 httpx2>=2.13,<3            # fastapi/starlette TestClient (Starlette 1.x prefers it; plain httpx is deprecated there) + openai 3's transport (#933)
 

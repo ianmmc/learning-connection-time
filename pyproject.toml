@@ -71,6 +71,17 @@ ignore_imports = [
     "infrastructure.acquisition.stage7_extract.openrouter -> openai",
 ]
 
+[[tool.importlinter.contracts]]
+name = "Stage 4 holds no path back to the network (REQ-172, #950) — a redo reprocesses in full, which is only safe local-only"
+type = "forbidden"
+source_modules = ["infrastructure.acquisition.stage4_process"]
+forbidden_modules = [
+    "playwright", "requests", "httpx", "httpx2", "httpcore", "httpcore2", "urllib3", "aiohttp", "socket",
+]
+# import-linter cannot name a stdlib SUBpackage (urllib.request, http.client) — tests/test_followup_redo.py
+# pins those two by source regex and reads this list for the rest, so there is ONE list of clients.
+allow_indirect_imports = true   # direct imports only (what the REQ-172 source pin always meant); common/ may import clients for OTHER stages
+
 [tool.setuptools.packages.find]
 where = ["."]
 # `infrastructure` is a PEP 420 namespace package (no top-level __init__.py); its source subpackages

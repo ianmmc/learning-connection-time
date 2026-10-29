@@ -59,16 +59,6 @@ def _guard_no_postgres_in_dbfree_tests(request):
             f"add the marker (#201).")
     import importlib
     from sqlalchemy.engine import Engine
-    real_engine_connect = Engine.connect
-    # Every raw driver that is importable gets blocked (#930): psycopg 3 is the declared driver, but a local
-    # env upgraded in place still carries psycopg2, and an unpatched driver is a silent bypass of this guard.
-    drivers = {}
-    for name in ("psycopg", "psycopg2"):
-        try:
-            mod = importlib.import_module(name)
-        except ImportError:
-            continue
-        drivers[name] = (mod, mod.connect)
     nodeid = request.node.nodeid
 
     def _blocked(entrypoint):
@@ -78,25 +68,46 @@ def _guard_no_postgres_in_dbfree_tests(request):
             f"touch Postgres — it passes locally but skips/fails in CI's DB-free job. Add the marker, or "
             f"mock the database (#201).")
 
+    # What is patched, exactly (#946): SQLAlchemy's two ways to a DBAPI connection, and — for every raw
+    # driver that is importable (psycopg 3 is declared; an env upgraded in place still carries psycopg2) —
+    # the module-level `connect` AND the `Connection.connect` classmethod it aliases (patching one does not
+    # patch the other; `psycopg.connect` is a separate reference). NOT caught: a reference captured before
+    # this fixture ran (`from psycopg import connect` at a module's top) — no repo code does that, and
+    # tests/test_dbfree_guard.py pins each covered path so the list above cannot drift from the patches.
+    saved = []
+
+    def _patch(obj, attr, replacement):
+        saved.append((obj, attr, obj.__dict__.get(attr, getattr(obj, attr))))
+        setattr(obj, attr, replacement)
+
     def guarded_engine_connect(self, *a, **k):
         if self.url.get_backend_name() == "postgresql":
             _blocked("Engine.connect")
-        return real_engine_connect(self, *a, **k)
+        return saved_engine_connect(self, *a, **k)
 
-    def _guarded(name):
-        def guarded_pg_connect(*a, **k):
-            _blocked(f"{name}.connect")
-        return guarded_pg_connect
+    def guarded_raw_connection(self, *a, **k):
+        if self.url.get_backend_name() == "postgresql":
+            _blocked("Engine.raw_connection")
+        return saved_raw_connection(self, *a, **k)
 
-    Engine.connect = guarded_engine_connect
-    for name, (mod, _) in drivers.items():
-        mod.connect = _guarded(name)
+    saved_engine_connect, saved_raw_connection = Engine.connect, Engine.raw_connection
+    _patch(Engine, "connect", guarded_engine_connect)
+    _patch(Engine, "raw_connection", guarded_raw_connection)
+    for name in ("psycopg", "psycopg2"):
+        try:
+            mod = importlib.import_module(name)
+        except ImportError:
+            continue
+        _patch(mod, "connect", lambda *a, _n=name, **k: _blocked(f"{_n}.connect"))
+        for cls_name in ("Connection", "AsyncConnection"):
+            cls = getattr(mod, cls_name, None)
+            if cls is not None and "connect" in cls.__dict__:
+                _patch(cls, "connect", classmethod(lambda cls_, *a, _n=f"{name}.{cls_name}.connect", **k: _blocked(_n)))
     try:
         yield
     finally:
-        Engine.connect = real_engine_connect
-        for mod, real in drivers.values():
-            mod.connect = real
+        for obj, attr, original in reversed(saved):
+            setattr(obj, attr, original)
 
 
 # --- Governance Postgres fixture (REQ-103) ---

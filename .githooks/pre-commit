@@ -21,6 +21,7 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
+[ -x "$_VENV/bin/python3" ] || echo -e "${YELLOW}pre-commit: no .venv — running under $(command -v python3) (GETTING_STARTED §1)${NC}"
 
 echo -e "${GREEN}Running pre-commit validation...${NC}"
 
