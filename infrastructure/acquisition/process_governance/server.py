@@ -2159,7 +2159,9 @@ def _json_bool(payload: dict, key: str) -> bool:
     """A flag from a JSON payload, as an ACTUAL boolean — absent/None => False, anything that is not
     a JSON true/false is a 400 (#911). `bool(payload.get(key))` coerced the string "false" to True,
     inverting caller intent; these endpoints' docstrings explicitly invite non-console callers (curl,
-    a script posting `redo: true`), which is exactly who would hit that."""
+    a script posting `redo: true`), which is exactly who would hit that. Such a caller MUST send
+    `Content-Type: application/json` — FastAPI >= 0.132 answers a header-less JSON body with 422 before
+    any handler runs (#951; its CSRF hardening for localhost apps, deliberately left on)."""
     v = payload.get(key, False)
     if v is None:
         return False
@@ -2205,6 +2207,7 @@ async def handoff_dispatch(payload: dict):
     redo = _json_bool(payload, "redo")                     # #717 declared-redo (see /preview)
     expected_identity = payload.get("expected_identity")   # optional (issue #37) — the console always
     if not ids:                                            # sends it; a bare CLI/test POST still works
+                                                           # (with Content-Type: application/json, #951)
         raise HTTPException(400, "no districts selected")
     try:
         with gdb.session_scope() as con:
