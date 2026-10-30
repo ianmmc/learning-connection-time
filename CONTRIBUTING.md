@@ -90,4 +90,4 @@ Open an issue with the "question" label for any questions about contributing.
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree that your code contributions will be licensed under the Apache License, Version 2.0 ([LICENSE](LICENSE)), and your documentation contributions under Creative Commons Attribution 4.0 International ([LICENSE-docs](LICENSE-docs)). See [NOTICE](NOTICE) for how the two apply.

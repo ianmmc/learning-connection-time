@@ -384,6 +384,16 @@ Document issues in the relevant doc or as a new entry in `docs/PROJECT_HISTORY.m
 **Project:** Learning Connection Time Analysis
 **Initiative:** "Reducing the Ratio" educational equity initiative
 **Mission:** Making resource disparities visceral and understandable
+**Author:** Ian McCullough ([ORCID 0000-0002-6004-1846](https://orcid.org/0000-0002-6004-1846))
+
+**License:**
+- **Code** — [Apache License 2.0](LICENSE). Redistributions must carry the [NOTICE](NOTICE) file.
+- **Documentation and published outputs** (`docs/`, `outputs/`, including the LCT methodology and the
+  nine-stage acquisition pipeline design) — [CC BY 4.0](LICENSE-docs).
+- **Third-party data** (NCES, state agencies, district websites) remains under its own terms.
+
+**Citing this work:** if you use the LCT metric, its methodology, or the acquisition pipeline design,
+please cite it — see [CITATION.cff](CITATION.cff) or GitHub's "Cite this repository" button.
 
 **Data Sources:**
 - NCES Common Core of Data (public domain)

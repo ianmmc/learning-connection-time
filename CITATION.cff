@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use the Learning Connection Time metric, its methodology, or the acquisition pipeline design, please cite this work as below."
+title: "Learning Connection Time (LCT)"
+abstract: "Learning Connection Time transforms student-to-teacher ratios into minutes of potential individual instructional time per student per day, and acquires actual school bell schedules through a nine-stage per-school acquisition pipeline to measure educational equity across U.S. school districts."
+type: software
+authors:
+  - family-names: McCullough
+    given-names: Ian
+    orcid: "https://orcid.org/0000-0002-6004-1846"
+repository-code: "https://github.com/ianmmc/learning-connection-time"
+license: Apache-2.0
+keywords:
+  - educational equity
+  - instructional time
+  - student-teacher ratio
+  - bell schedules
+  - school districts

@@ -1,0 +1,21 @@
+Learning Connection Time (LCT)
+Copyright 2025-2026 Ian McCullough (ORCID 0000-0002-6004-1846)
+
+This product includes the Learning Connection Time metric and the nine-stage
+per-school instructional-time acquisition pipeline, both originated by
+Ian McCullough. https://github.com/ianmmc/learning-connection-time
+
+Licensing:
+  - Source code (infrastructure/, scripts/, tools/, tests/ and other software
+    files) is licensed under the Apache License, Version 2.0 (see LICENSE).
+  - Documentation (docs/ and other written material, including the LCT
+    methodology and the acquisition pipeline design) and published outputs
+    (outputs/) are licensed under Creative Commons Attribution 4.0
+    International (CC BY 4.0) (see LICENSE-docs).
+  - Third-party data (NCES Common Core of Data, state education agency data,
+    and district-published bell schedules) is not covered by either license
+    and remains subject to its own terms.
+
+If you use the LCT metric, its methodology, or the acquisition pipeline design
+in research, reporting, or software, please cite this work as described in
+CITATION.cff.
