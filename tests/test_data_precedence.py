@@ -362,7 +362,7 @@ class TestSpedDataPrecedence:
             "confidence": "low",
         }
 
-        federal_baseline_ratio = 0.067  # 6.7% self-contained from 2017-18
+        federal_baseline_ratio = 0.161  # illustrative: the 2017-18 national self-contained share (#970)
 
         # Act - Apply state proportion to federal environment ratios
         estimated_self_contained_pct = state_proportion["sped_percentage"] * federal_baseline_ratio

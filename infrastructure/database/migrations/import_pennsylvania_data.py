@@ -48,6 +48,8 @@ logger = logging.getLogger(__name__)
 
 # State configuration
 STATE_CODE = 'PA'
+# Vintage of the PDE files on disk — a SEA import's year is its source's year (one spelling, #980)
+SOURCE_YEAR = '2024-25'
 
 # Data file paths
 PA_DATA_DIR = project_root / "data" / "raw" / "state" / "pennsylvania"
@@ -219,7 +221,7 @@ def import_district_identifiers(session, crosswalk, staffing_df, enrollment_df):
                 "name": district_name,
                 "type": lea_type,
                 "county": county,
-                "year": "2024-25"
+                "year": SOURCE_YEAR
             })
             imported += 1
         except Exception as e:
@@ -266,7 +268,7 @@ def import_staff_data(session, crosswalk, staffing_df):
                     updated_at = CURRENT_TIMESTAMP
             """), {
                 "nces_id": nces_id,
-                "year": "2024-25",
+                "year": SOURCE_YEAR,
                 "ct": safe_float(row.get('CT')),    # Classroom Teachers
                 "pp": safe_float(row.get('PP')),    # Professional Personnel
                 "ad": safe_float(row.get('Ad')),    # Administrators
@@ -332,7 +334,7 @@ def import_enrollment_data(session, crosswalk, enrollment_df):
                     updated_at = CURRENT_TIMESTAMP
             """), {
                 "nces_id": nces_id,
-                "year": "2024-25",
+                "year": SOURCE_YEAR,
                 "total": safe_float(row.get('Total')),
                 "prekf": safe_float(row.get('PKF')),
                 "k5f": safe_float(row.get('K5F')),

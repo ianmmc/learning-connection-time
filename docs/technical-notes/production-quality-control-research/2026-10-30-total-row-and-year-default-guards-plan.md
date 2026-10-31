@@ -113,6 +113,14 @@ describes in words ("verified against `lct_calculations` rows") made executable;
   default for manual collection, converted to `current_school_year()`), and `school_year.py`'s own
   `SPED_BASELINE_YEAR` / `PRE_COVID_FALLBACK_YEAR` (declared — they ARE the single homes). A test module
   living under `infrastructure/` (`database/test_infrastructure.py`) is excluded by name.
+- **Correction (2026-10-31, review of PR #971/#973 — #975–#989).** The "342k students" / "24,522,548 vs
+  12,261,274" figures quoted for the #970 shape include the file's own US aggregate row; for the
+  importer's 56 states they are Σ(environments + Total) **12,244,430** vs Total **6,122,215** (exactly
+  2.000×). P2 as amended is now ENFORCED (`max_disagree=0`, #976), not printed. G2 is closed-world on
+  the environment vocabulary and the header row is sought by content (#975/#982). G3 is AST-based with
+  per-(file, literal, COUNT) exemptions (#980). P4/P5 now have DB-free tests
+  (`tests/test_data_guard_wiring.py`, `tests/test_primary_year_presence.py::TestTheVerdictCanFail`) and
+  every wired guard site is exercised by a production entry point (#981).
 - **Three exemptions became one.** `SPED_BASELINE_YEAR` already existed in `school_year.py`; the
   `2017-18` literals in `models.py`, `import_sped_baseline.py` and `apply_sped_estimates.py` now
   import it instead of re-spelling it (the implemented-twice rule), so only `school_year.py` is

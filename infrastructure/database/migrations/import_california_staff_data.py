@@ -285,12 +285,12 @@ def import_enrollment_to_database(session, staff_df: pd.DataFrame, crosswalk: di
 
 
 def main():
+    global DATA_YEAR
     parser = argparse.ArgumentParser(description="Import California staff ratio data 2024-25")
-    parser.add_argument("--year", default="2024-25", help="School year (default: 2024-25)")
+    parser.add_argument("--year", default=DATA_YEAR, help=f"Vintage of the CDE staff files (default: {DATA_YEAR})")
     parser.add_argument("--dry-run", action="store_true", help="Preview import without committing")
     args = parser.parse_args()
 
-    global DATA_YEAR
     DATA_YEAR = args.year
 
     logger.info("=" * 70)

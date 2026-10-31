@@ -42,6 +42,7 @@ def reconcile_total(
     tolerance: float = 0.005,
     n_compared: int = 1,
     n_disagree: int = 0,
+    max_disagree: int | None = None,
 ) -> TotalReconciliation:
     """Compare a sum we computed from component rows against the total the SOURCE itself publishes.
 
@@ -50,11 +51,20 @@ def reconcile_total(
     the fingerprint of "the total row was summed in with its own components" (#970 was 2.000×), which
     deserves a different message from a generic drift.
 
-    `n_compared` / `n_disagree` are pass-through bookkeeping for per-entity reconciliations whose
-    caller already counted row-level disagreements (e.g. per-LEA) and now checks the aggregate.
+    `n_compared` / `n_disagree` are bookkeeping for per-entity reconciliations whose caller already
+    counted row-level disagreements (e.g. per-LEA) and now checks the aggregate. `max_disagree`
+    ENFORCES that count: a dropped or relabeled small category moves a few rows but not the aggregate
+    (measured: dropping 'Grade 13' from the CCD mapping left the ratio at 0.99996 with 150 LEAs
+    differing — #976), so the aggregate tolerance alone cannot see it.
     """
     if reference_total is None or reference_total <= 0:
         raise DataGuardError(f"{label}: reference total is {reference_total!r}; nothing to reconcile against")
+    if max_disagree is not None and n_disagree > max_disagree:
+        raise DataGuardError(
+            f"{label}: {n_disagree:,} of {n_compared:,} rows disagree with the source's own per-row "
+            f"total (cap {max_disagree}) — a category was dropped or relabeled; the aggregate tolerance "
+            f"cannot see a small one (#976)"
+        )
     ratio = float(component_sum) / float(reference_total)
     receipt = TotalReconciliation(label, float(component_sum), float(reference_total), ratio,
                                   n_compared, n_disagree)

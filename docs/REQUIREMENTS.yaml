@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-10-30T00:00:00Z"
+last_updated: "2026-10-31T00:00:00Z"
 
 # STATUS VOCABULARY — normalized 2026-07-16, narrowed to FIVE 2026-08-21 (Ian). These are the whole
 # set; do not invent more. The pre-normalization file carried ad-hoc `in-progress` / `not_started` /
@@ -470,7 +470,13 @@ requirements:
         row IS the ages-6-21 total (never summed in with the environment rows), and self-contained =
         `Inside regular class less than 40% of the day` + `Separate School, Age 6-21` (the file's exact
         labels). National share 16.1% in 2017-18, NOT the ~6.7% the pre-#970 importer produced by
-        double-counting the denominator and never matching the separate-school row (amended 2026-10-30, #970)
+        double-counting the denominator and never matching the separate-school row (amended 2026-10-30
+        for issue 970; a bare " #" would start a YAML comment and truncate this scalar — #988)
+      - The IDEA 618 parsers find the header row by CONTENT and resolve every column by NAME; a missing
+        column, a label the parser does not classify, a state whose Total row is suppressed while its
+        environment rows are numeric, or an environment sum that is an exact integer multiple of the
+        Total row all FAIL (DataGuardError) — never a fallback index or a silent zero (#975/#982,
+        amended 2026-10-31)
       - Uses CRDC 2017-18 for LEA-level SPED enrollment
       - Calculates 3 SPED scopes - core_sped, teachers_gened, instructional_sped
       - core_sped uses SPED teachers / self-contained SPED students
@@ -486,9 +492,11 @@ requirements:
       - tests/test_sped_segmentation.py::TestSpedBaselineRatios::test_california_actual_sped_takes_precedence
       - tests/test_sped_segmentation.py::TestSpedBaselineRatios::test_teacher_estimates_always_use_2017_18_ratios
       - tests/test_sped_segmentation.py::TestSpedLCTValidation::test_weighted_average_audit_validation
+      - tests/test_data_guard_wiring.py::TestChildCountGuardsAreWired
+      - tests/test_data_guard_wiring.py::TestPersonnelGuardsAreWired
     created: "2026-01-12T03:30:00Z"
-    updated: "2026-01-12T03:30:00Z"
-    notes: "From SPED_SEGMENTATION_IMPLEMENTATION.md v3 self-contained focus"
+    updated: "2026-10-31T00:00:00Z"
+    notes: "From SPED_SEGMENTATION_IMPLEMENTATION.md v3 self-contained focus; guards amended 2026-10-31 (#975/#981/#982)"
 
   - id: REQ-019
     description: Layer 2 state integration via ST_LEAID crosswalk

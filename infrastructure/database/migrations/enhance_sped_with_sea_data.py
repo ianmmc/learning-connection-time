@@ -9,7 +9,7 @@ This script implements selective enhancement (Option B) for SPED teacher breakdo
 Updates the sped_estimates table to prefer SEA actual data over federal estimates.
 
 Usage:
-    python enhance_sped_with_sea_data.py [--year 2023-24] [--dry-run]
+    python enhance_sped_with_sea_data.py [--year YYYY-YY] [--dry-run]   # default: NCES_PRIMARY_YEAR
 
 Reference:
     - docs/technical-notes/SEA_TEACHER_CATEGORY_MAPPINGS.md (to be created)
@@ -74,18 +74,22 @@ def update_fl_sped_estimates(session, year: str, dry_run: bool = False) -> Dict[
             se.current_total_teachers,
             fl.classroom_teachers + fl.ese_teachers as fl_total_teachers
         FROM sped_estimates se
-        JOIN fl_staff_data fl ON se.district_id = fl.nces_id
+        JOIN fl_staff_data fl ON se.district_id = fl.nces_id AND fl.year = :year
         WHERE se.estimate_year = :year
           AND fl.classroom_teachers IS NOT NULL
           AND fl.ese_teachers IS NOT NULL
     """)
 
     results = session.execute(query, {"year": year}).fetchall()
-    # G4 (#972): zero joined rows means the year is not in sped_estimates (or FL has no staff rows),
-    # not "nothing to enhance".
+    # G4 (#972): zero joined rows means the year is in neither sped_estimates nor fl_staff_data, not
+    # "nothing to enhance". The join keys on fl.year too (#983): without it an estimate year FL does
+    # not carry would be paired with whatever vintage FL does carry and stamped as that year's actual.
     require_nonempty_selection(
-        results, what=f"sped_estimates ⋈ fl_staff_data for estimate_year={year}",
-        available=sorted(y for (y,) in session.execute(text("SELECT DISTINCT estimate_year FROM sped_estimates")) if y),
+        results, what=f"sped_estimates ⋈ fl_staff_data for year={year}",
+        available={
+            "sped_estimates": sorted(y for (y,) in session.execute(text("SELECT DISTINCT estimate_year FROM sped_estimates")) if y),
+            "fl_staff_data": sorted(y for (y,) in session.execute(text("SELECT DISTINCT year FROM fl_staff_data")) if y),
+        },
     )
 
     for row in results:
@@ -189,7 +193,7 @@ def main():
         logger.info("")
         logger.info("Next steps:")
         logger.info("1. Run LCT calculations to use enhanced SPED data:")
-        logger.info("   python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2023-24")
+        logger.info(f"   python infrastructure/scripts/analyze/calculate_lct_variants.py --target-year {args.year}")
         logger.info("2. Compare FL SPED scopes (core_sped, teachers_gened) before/after")
         logger.info("3. Document enhancement in methodology")
 

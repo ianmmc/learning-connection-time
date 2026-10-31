@@ -61,7 +61,7 @@ STATE_CODE = 'TX'
 DATA_YEAR = '2024-25'
 
 # Data file paths
-TX_DATA_DIR = project_root / "data" / "raw" / "state" / "texas" / "2024-25"
+TX_DATA_DIR = project_root / "data" / "raw" / "state" / "texas" / DATA_YEAR
 STAFF_FILE = TX_DATA_DIR / "2025 District Staff Information.csv"
 STUDENT_FILE = TX_DATA_DIR / "2025 District Student Information.csv"
 REFERENCE_FILE = TX_DATA_DIR / "2025 District Reference.csv"
@@ -407,12 +407,12 @@ def import_enrollment_to_database(session, student_df: pd.DataFrame, crosswalk: 
 
 
 def main():
+    global DATA_YEAR
     parser = argparse.ArgumentParser(description="Import Texas TAPR 2024-25 data")
-    parser.add_argument("--year", default="2024-25", help="School year (default: 2024-25)")
+    parser.add_argument("--year", default=DATA_YEAR, help=f"Vintage of the TAPR files (default: {DATA_YEAR})")
     parser.add_argument("--dry-run", action="store_true", help="Preview import without committing")
     args = parser.parse_args()
 
-    global DATA_YEAR
     DATA_YEAR = args.year
 
     logger.info("=" * 70)

@@ -25,7 +25,6 @@ Usage:
 """
 
 import argparse
-from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -37,6 +36,7 @@ import pandas as pd
 project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
+from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR  # noqa: E402 — after the shim (#987)
 from infrastructure.database.connection import session_scope
 from sqlalchemy import text
 

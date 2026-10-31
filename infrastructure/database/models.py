@@ -1189,8 +1189,9 @@ class SpedStateBaseline(Base):
     sped_students_total: Mapped[Optional[int]] = mapped_column(Integer)
 
     # IDEA 618 Educational Environments: Self-Contained SPED (Ages 6-21)
-    # Self-contained = Separate Class + Separate School + <40% in regular class
-    # Excludes: Residential Facility, Correctional Facilities (not district-managed)
+    # Self-contained = 'Inside regular class less than 40% of the day' + 'Separate School, Age 6-21'
+    # (the file's exact labels — 'Separate Class' is an ages-3-5 setting; #970). Excludes: Residential
+    # Facility, Correctional Facilities, Home, Homebound/Hospital, Parentally Placed (not district-managed)
     sped_students_self_contained: Mapped[Optional[int]] = mapped_column(Integer)
     sped_students_mainstreamed: Mapped[Optional[int]] = mapped_column(Integer)  # 80%+ and 40-79% in regular class
 

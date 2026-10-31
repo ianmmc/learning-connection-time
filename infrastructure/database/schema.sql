@@ -2447,7 +2447,7 @@ CREATE TABLE public.sped_state_baseline (
 -- Name: COLUMN sped_state_baseline.sped_students_self_contained; Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.sped_state_baseline.sped_students_self_contained IS 'Self-contained SPED students: Separate Class + Separate School + <40% in regular class';
+COMMENT ON COLUMN public.sped_state_baseline.sped_students_self_contained IS 'Self-contained SPED students (ages 6-21): ''Inside regular class less than 40% of the day'' + ''Separate School, Age 6-21'' (#970; Separate Class is an ages-3-5 setting)';
 
 
 --

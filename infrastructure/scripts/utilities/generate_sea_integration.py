@@ -26,7 +26,6 @@ Examples:
 """
 
 import argparse
-from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
 import sys
 from pathlib import Path
 from datetime import datetime
@@ -36,6 +35,8 @@ import re
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
+
+from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR  # noqa: E402 — after the shim (#987)
 
 # State name mapping
 STATE_NAMES = {

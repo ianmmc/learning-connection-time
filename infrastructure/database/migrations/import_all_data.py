@@ -198,7 +198,7 @@ def import_districts(session, dry_run: bool = False) -> int:
                 state=row["state"].strip(),
                 enrollment=enrollment,
                 instructional_staff=instructional_staff,
-                year=row.get("year", "2023-24"),
+                year=row.get("year", NCES_PRIMARY_YEAR),
                 data_source=row.get("data_source", "nces_ccd"),
                 # Preserve existing website_url if present
                 website_url=existing_urls.get(nces_id),
@@ -399,7 +399,7 @@ def import_bell_schedules(session, dry_run: bool = False) -> int:
             else:
                 normalized_id = district_id
 
-        year = district_data.get("year", "2024-25")
+        year = district_data.get("year", NCES_PRIMARY_YEAR)
 
         for grade_level in grade_levels:
             if grade_level not in district_data:

@@ -33,6 +33,17 @@ from infrastructure.database.models import (
 )
 
 
+def national_self_contained_mean(session) -> float:
+    """Fallback when a state baseline is absent: the mean of the stored state self-contained
+    proportions — the same fallback apply_sped_estimates uses — never a hand-typed share (the 0.067
+    this replaced was the pre-#970 figure, stale the day the importer was fixed)."""
+    from sqlalchemy import func
+    mean = session.query(func.avg(SpedStateBaseline.ratio_self_contained_proportion)).scalar()
+    if mean is None:
+        raise SystemExit("ca_validation_report: sped_state_baseline carries no self-contained ratios")
+    return float(mean)
+
+
 def generate_sped_comparison():
     """Compare CA actual SPED data with baseline estimates."""
     print("=" * 80)
@@ -50,7 +61,7 @@ def generate_sped_comparison():
             print(f"  Self-contained proportion: {ca_baseline.ratio_self_contained_proportion:.2%}")
         else:
             print("\nWARNING: No California state baseline found")
-            ca_baseline_prop = 0.067  # National average fallback
+            ca_baseline_prop = national_self_contained_mean(session)
 
         # Get CA districts with actual SPED data
         ca_districts = session.query(
@@ -87,7 +98,7 @@ def generate_sped_comparison():
                 if ca_baseline:
                     baseline_prop = ca_baseline.ratio_self_contained_proportion
                 else:
-                    baseline_prop = 0.067  # National average
+                    baseline_prop = national_self_contained_mean(session)
 
                 baseline_props.append(baseline_prop)
                 differences.append(actual_sped.self_contained_proportion - baseline_prop)
@@ -115,7 +126,7 @@ def generate_sped_comparison():
         # Show top/bottom differences
         sorted_data = sorted(zip(differences, ca_districts), key=lambda x: x[0])
 
-        baseline_val = ca_baseline.ratio_self_contained_proportion if ca_baseline else 0.067
+        baseline_val = ca_baseline.ratio_self_contained_proportion if ca_baseline else national_self_contained_mean(session)
 
         print(f"\nTop 5 districts with HIGHER self-contained than baseline:")
         shown = 0

@@ -2531,3 +2531,55 @@ twice; never use it on a file with uncommitted work. Left open by design: #935 (
 Authority: PRs #931 `e095e7b` → #932 `771798d` → #939 `a8b4dde` → #942 `9cfa49f` on main; REQ-020/REQ-103 amended;
 `2026-10-29-issue944-psycopg3-prepare-sweep-measure.py`, `2026-10-28-issue934-pandas3-db-parity-measure.py`;
 `STAGE5_FILTER_DESIGN.md` §5c, `STAGE7_EXTRACT_DESIGN.md` §6.
+
+### 2026-10-30/31 — The SPED baseline was half its own size; a guard is only real if a test drives it through the caller; and the IDEA/CRDC refresh gets a plan
+
+**Why now.** Asked whether newer IDEA 618 / CRDC releases should replace the 2017-18 SPED baseline,
+the inspection that preceded any download found the live importer was wrong on the data it already had.
+Everything after followed from "fix the measurement before refreshing it."
+
+- **Licensing is attribution-bearing (Ian, 2026-10-30).** Code under Apache-2.0 (NOTICE carries the
+  attribution), docs and outputs under CC BY 4.0, `CITATION.cff` with ORCID 0000-0002-6004-1846, Zenodo
+  for DOIs. Copyright protects expression, not the method (17 USC 102(b)); recognition of the LCT idea
+  and the 9-stage pipeline comes from dated, citable public disclosure (DOI, later a preprint), which
+  also stands as prior art against a third-party patent. Ian is not patenting. Commit `0155947`.
+- **#970: the IDEA child count was parsed with its own Total row summed in** (a 2.000× denominator) and
+  `'Separate School'` never matched `'Separate School, Age 6-21'`. The national self-contained share was
+  **6.65%, really 16.1%**; SPED teachers per district came out about half, the rest booked as GenEd.
+  `METHODOLOGY.md`'s "~6.7%" came from the bug. The documented audit ("SPED + GenEd ≈ total teachers")
+  holds by construction, so it could never have caught it. Live re-run with a backup first:
+  `core_sped` mean 185.6 → 156.1, capped-at-360 998 → 333; the `instructional` control did not move.
+- **#972: `apply_sped_estimates` defaults to `NCES_PRIMARY_YEAR` and reads the year-keyed tables**, not
+  the single-vintage `districts` snapshot (which found 0 districts for 2024-25 and printed "Updated: 0",
+  exit 0).
+- **Both failure shapes became guards, not just fixes (PR #973):** `data_guards.reconcile_total` (source
+  total vs our component sum; an exact integer multiple is reported as the #970 signature),
+  `require_labels_seen` (a vocabulary that matches nothing is a parse error), `require_nonempty_selection`
+  (a year-scoped selection matching 0 rows fails), a fitness test that refuses hand-typed school-year
+  literals unless declared in `arch-manifest.json` `data_year_literals`, and G5 (`NCES_PRIMARY_YEAR`
+  present and newest in every year-keyed table). **Policy:** "current" is spelled `NCES_PRIMARY_YEAR`;
+  a literal year is legitimate only as a FIXED source vintage, declared with a reason.
+- **A `/code-review max` of #971 + #973 found the guards narrower than claimed (#975–#989).** The two
+  that generalize: (1) **the fast gate stayed green with every wired guard replaced by a no-op** — the
+  guard functions were tested, their call sites never were; the fix drives each guard through its
+  production entry point (`tests/test_data_guard_wiring.py`). (2) **A year flag that only relabels is the
+  #972 shape reintroduced**: MA's `--enrollment-year` and NY's `--year` stamped any year onto a fixed
+  file. A vintage flag must SELECT the data, or not exist. Also: a fallback column index defeats a
+  header guard (#975); "per-row count printed, aggregate enforced" let a dropped grade category through
+  (#976); the year scanner moved to the AST with per-(file, literal, count) exemptions (#980). The fixes
+  are PR #1005 (`fix/975-989-review-findings`) — **built and tested, opened 2026-10-31** (#973
+  merged before the commit was pushed). The lower-severity items are #990–#998.
+- **#974 (Ian's methodology call, open):** the SPED partition starts from `teachers_total` while the
+  headline `teachers_only` scope uses `scope_teachers_only`, so METHODOLOGY's "weighted average ≈ 0.00"
+  identity holds exactly for only 23% of districts.
+- **The IDEA/CRDC refresh is planned, not started** (epic #724: #999–#1004 + #960). Order: merge the
+  hardening → multi-vintage baseline schema (#999) + IDEA vintage profiles (#1000) → CRDC reserve codes
+  (#960) → CRDC 2023-24 (#1001) → read-only before/after (#1002) → **Ian decides** (adopt? "School
+  Age" — which now includes kindergarten 5-year-olds — vs 6-21? do ratio vintages enter the REQ-026
+  window?) → adopt (#1003) → per-LEA self-contained share as its own change (#1004). Two findings shape
+  it: the baseline tables hold one vintage (a refresh would overwrite 2017-18 with no side-by-side),
+  and the REQ-026 "exemption" is implicit (the ratio vintage never enters temporal validation).
+
+Authority: `0155947` (license); PRs #971 `ab5c6c0`, #973 `f3c83ce`; branch `fix/975-989-review-findings`
+PR #1005; `2026-10-30-total-row-and-year-default-guards-plan.md`;
+`2026-10-31-idea-crdc-sped-baseline-refresh-plan.md`; issues #970, #972, #974, #975–#989, #999–#1004.
