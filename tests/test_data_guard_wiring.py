@@ -252,6 +252,18 @@ class TestApplySpedEstimatesGuardsAreWired:
             ratios_from_rows("2017-18", [], [])
 
 
+class TestApplyEstimatesReplacesTheYear:
+    def test_an_estimate_the_run_did_not_write_is_removed(self, monkeypatch):
+        """#974: a district that left the selection must not keep an estimate from another base."""
+        import infrastructure.database.migrations.apply_sped_estimates as m
+        monkeypatch.setattr(m, "select_year_totals", lambda session, year: [m.YearTotals("0100001", "AL", 1000, 50.0)])
+        stale = m.SpedEstimate(district_id="0199999", estimate_year="2024-25")
+        kept = m.SpedEstimate(district_id="0100001", estimate_year="2024-25")
+        s = _EstimateSession(existing=[stale, kept])
+        assert m.apply_estimates(s, "2024-25", _ratios()) == 1
+        assert s.deleted == [stale] and s.committed and kept.baseline_year == "2017-18"
+
+
 def _ratios():
     from infrastructure.database.migrations.apply_sped_estimates import BaselineRatios
     return BaselineRatios("2017-18", {"AL": 0.1}, {"AL": 0.3}, {"AL": 0.16},
@@ -260,17 +272,20 @@ def _ratios():
 
 
 class _EstimateSession:
-    def __init__(self):
-        self.committed, self.added = False, []
+    def __init__(self, existing=()):
+        self.committed, self.added, self.deleted, self.existing = False, [], [], list(existing)
 
     def query(self, *a):
         return self
 
     def filter(self, *a):
-        return []
+        return self.existing
 
     def add(self, obj):
         self.added.append(obj)
+
+    def delete(self, obj):
+        self.deleted.append(obj)
 
     def commit(self):
         self.committed = True

@@ -499,29 +499,24 @@ class TestSpedYearTotals:
     Needs the live LCT DB (Docker up); excluded from the fast gate by the `integration` marker.
     """
 
-    def test_year_totals_match_the_districts_snapshot_for_its_vintage(self):
-        """The year-keyed sourcing reproduces the single-vintage `districts` snapshot exactly, so
-        switching the source changes the YEAR an estimate can target, not the numbers."""
+    def test_year_totals_are_the_teachers_only_base(self):
+        """#974: the estimator's per-district totals ARE what the headline teachers_only LCT divides —
+        same K-12 teachers, same K-12 enrollment — so the SPED partition partitions that number."""
+        from sqlalchemy import text
         from infrastructure.database.connection import session_scope
         from infrastructure.database.migrations.apply_sped_estimates import select_year_totals
-        from infrastructure.database.models import District
+        from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
 
         with session_scope() as s:
-            vintage = s.query(District.year).filter(District.year.isnot(None)).distinct().all()
-            assert len(vintage) == 1, f"districts is expected to be a single-vintage snapshot, got {vintage}"
-            (year,) = vintage[0]
-            snapshot = {
-                d.nces_id: (int(d.enrollment), float(d.instructional_staff))
-                for d in s.query(District).filter(District.enrollment > 0, District.instructional_staff > 0)
-            }
-            totals = {t.nces_id: (t.enrollment, t.instructional_staff) for t in select_year_totals(s, year)}
+            totals = {t.nces_id: (t.enrollment, t.instructional_staff) for t in select_year_totals(s, NCES_PRIMARY_YEAR)}
+            headline = {d: (int(e), float(st)) for d, e, st in s.execute(text(
+                "SELECT district_id, enrollment, instructional_staff FROM lct_calculations "
+                "WHERE staff_scope = 'teachers_only' AND grade_level IS NULL AND year = :y"), {"y": NCES_PRIMARY_YEAR})}
 
-        assert totals, "NOTHING MEASURED — select_year_totals returned no rows for the snapshot vintage"
-        mismatched = {k: (snapshot[k], totals[k]) for k in snapshot.keys() & totals.keys() if snapshot[k] != totals[k]}
-        assert not mismatched, f"{len(mismatched)} districts differ, e.g. {list(mismatched.items())[:3]}"
-        assert set(snapshot) == set(totals), (
-            f"coverage differs: only-snapshot={len(set(snapshot)-set(totals))} only-year-keyed={len(set(totals)-set(snapshot))}"
-        )
+        both = totals.keys() & headline.keys()
+        assert len(both) > 15_000, f"NOTHING MEASURED — only {len(both)} districts in both"
+        off = {k: (totals[k], headline[k]) for k in both if totals[k] != headline[k]}
+        assert not off, f"{len(off)} districts differ, e.g. {list(off.items())[:3]}"
 
     def test_primary_year_is_estimable(self):
         """NCES_PRIMARY_YEAR must be reachable by the default `apply_sped_estimates` run."""
@@ -535,3 +530,39 @@ class TestSpedYearTotals:
 
     # The DB-free COVID refusal lives in tests/test_data_guard_wiring.py (#981: inside this
     # @integration class it was deselected by `-m "not integration"`, which is all CI runs).
+
+
+@pytest.mark.integration
+class TestSpedPartitionIdentity:
+    """#974: the SPED partition must partition the HEADLINE number. For every district carrying all
+    three of core_sped, teachers_gened and teachers_only (same year), the enrollment-weighted mean of
+    the two partition LCTs equals teachers_only LCT. Outside the identity by construction, and excluded:
+    rows the 360 cap clipped; CA actual-enrollment overrides (a different enrollment split); and
+    BLENDED headline rows whose enrollment year differs from their staff year (a district without
+    current staff pairs last year's staff with this year's enrollment, while a SPED estimate is
+    year-keyed on ONE year for both — measured 2026-10-31: 212 such rows, vs 14,448 single-year)."""
+
+    SQL = """
+        WITH g AS (SELECT district_id, year, enrollment ge, lct_value lg, notes FROM lct_calculations
+                   WHERE staff_scope = 'teachers_gened' AND grade_level IS NULL),
+             c AS (SELECT district_id, year, enrollment ce, lct_value lc, notes FROM lct_calculations
+                   WHERE staff_scope = 'core_sped' AND grade_level IS NULL),
+             t AS (SELECT district_id, year, lct_value lt FROM lct_calculations
+                   WHERE staff_scope = 'teachers_only' AND grade_level IS NULL
+                     AND enrollment_source_year = staff_source_year)
+        SELECT g.district_id, (c.ce * c.lc + g.ge * g.lg) / (c.ce + g.ge) AS wavg, t.lt
+        FROM g JOIN c USING (district_id, year) JOIN t USING (district_id, year)
+        WHERE coalesce(c.notes, '') NOT LIKE '%WARN_SPED_RATIO_CAP%'
+          AND coalesce(g.notes, '') NOT LIKE '%WARN_SPED_RATIO_CAP%'
+          AND coalesce(c.notes, '') NOT LIKE '%ca_actual%'
+    """
+
+    def test_weighted_partition_equals_teachers_only(self):
+        from sqlalchemy import text
+        from infrastructure.database.connection import session_scope
+        with session_scope() as s:
+            rows = s.execute(text(self.SQL)).all()
+        assert rows, "NOTHING MEASURED — no district carries core_sped, teachers_gened and teachers_only"
+        # lct_value is stored to 4 dp; the weighted mean of two rounded values carries <= 0.0001 of error
+        off = [(d, float(w), float(t)) for d, w, t in rows if abs(float(w) - float(t)) >= 0.005]
+        assert not off, f"{len(off):,} of {len(rows):,} districts break the identity, e.g. {off[:3]}"

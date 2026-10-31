@@ -1949,7 +1949,7 @@ COMMENT ON TABLE public.staff_counts_effective IS 'Resolved current staff counts
 -- Name: COLUMN staff_counts_effective.scope_teachers_only; Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.staff_counts_effective.scope_teachers_only IS 'Pre-calculated: teachers_total';
+COMMENT ON COLUMN public.staff_counts_effective.scope_teachers_only IS 'teachers_k12: elementary + secondary + kindergarten teachers (NO Pre-K, NO ungraded) — the teachers_only LCT numerator, and since #974 the SPED partition''s teacher base. NOT teachers_total.';
 
 
 --

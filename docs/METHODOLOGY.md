@@ -736,10 +736,18 @@ self-contained SPED = all-SPED × state self-contained proportion (IDEA 618, nat
 ratio → SPED instructional = self-contained × state instructional ratio → GenEd teachers = total teachers
 − SPED teachers.
 
-**Audit validation (passes):** self-contained + GenEd = total enrollment; SPED teachers + GenEd teachers ≈
-total teachers; and critically, the **weighted average** of `core_sped` and `teachers_gened` LCT equals the
-overall `teachers_only` LCT (difference ≈ 0.00 — confirms the segmentation correctly partitions both
-enrollment and teachers, not just one side).
+**Partition base (#974, 2026-10-31).** The partition starts from the headline `teachers_only` scope's own
+base: K-12 teachers (`staff_counts_effective.scope_teachers_only` = elementary + secondary + kindergarten,
+no Pre-K, no ungraded) and K-12 enrollment (`enrollment_k12`). Before 2026-10-31 it started from
+`teachers_total` / `enrollment_total` (all teachers incl. Pre-K and ungraded, ~8% larger), so it partitioned
+a different population than the scope it claimed to — the identity below held for 23% of districts.
+
+**Audit validation (evaluated, not asserted):** self-contained + GenEd = K-12 enrollment; SPED teachers +
+GenEd teachers = K-12 teachers; and the **enrollment-weighted average** of `core_sped` and `teachers_gened`
+LCT equals `teachers_only` LCT to < 0.005 min. `tests/test_sped_segmentation.py::TestSpedPartitionIdentity`
+evaluates it on the live rows (2026-10-31: 14,448 of 14,448 districts). Outside it by construction:
+rows the 360 cap clipped, CA actual-enrollment overrides, and the ~210 BLENDED headline rows whose
+enrollment year differs from their staff year (a SPED estimate is year-keyed on one year).
 
 **Database tables:** `sped_state_baseline` (56 states/territories per `baseline_year`, IDEA 618 ratios),
 `sped_lea_baseline` (18,626 LEAs for 2024-25, 18,606 for 2017-18; CRDC SPED proportion), `sped_estimates`

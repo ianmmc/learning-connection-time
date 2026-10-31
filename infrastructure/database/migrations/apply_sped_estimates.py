@@ -35,7 +35,7 @@ from infrastructure.utilities.data_guards import DataGuardError, require_nonempt
 from infrastructure.utilities.school_year import COVID_EXCLUDED_YEARS, NCES_PRIMARY_YEAR, SPED_BASELINE_YEAR
 from infrastructure.database.models import (
     District, SpedStateBaseline, SpedLeaBaseline, SpedEstimate, DataLineage,
-    EnrollmentByGrade, StaffCounts,
+    EnrollmentByGrade, StaffCountsEffective,
 )
 
 
@@ -54,34 +54,36 @@ MAX_SKIPPED_SHARE = 0.05
 
 
 def select_year_totals(session, year: str) -> list[YearTotals]:
-    """The districts to estimate for `year`: the NCES CCD enrollment_by_grade.enrollment_total joined to
-    the NCES CCD staff_counts.teachers_total for that year, both > 0, with District for state.
+    """The districts to estimate for `year`, on the HEADLINE scope's own base (#974): K-12 enrollment
+    (enrollment_by_grade.enrollment_k12, NCES CCD) and K-12 teachers (staff_counts_effective.
+    scope_teachers_only = elementary + secondary + kindergarten, no Pre-K, no ungraded), both > 0.
 
-    `districts` itself is a single-vintage snapshot and is used only for identity (#972). Both inputs
-    are pinned to the NCES CCD rows (#979/#986): `staff_counts` rather than `staff_counts_effective`,
-    because merge_sea_precedence overwrites the latter's teachers_total in place, which made the SPED
-    partition depend on whether the SEA merge had run first; and `data_source == 'nces_ccd'` on both,
-    because the unique keys include data_source and a second source row would fan a district out into
-    two YearTotals. Measured 2026-10-30 on the 2023-24 vintage: enrollment_total == districts.enrollment
-    and teachers_total == districts.instructional_staff for all 17,842 rows
-    (tests/test_sped_segmentation.py::TestSpedYearTotals locks this).
+    That is exactly what calculate_lct_variants divides for `teachers_only`, so the SPED partition
+    (core_sped + teachers_gened) sums to the headline number by construction — the audit identity
+    METHODOLOGY states, now evaluated by tests/test_sped_segmentation.py::TestSpedPartitionIdentity.
+    It replaced teachers_total / enrollment_total (all teachers incl. Pre-K and ungraded, ~8% larger),
+    under which the identity held for 23% of districts.
+
+    scope_teachers_only is read from staff_counts_effective, yet stays independent of the SEA merge:
+    merge_sea_precedence rewrites ONLY teachers_total there (never the per-level fields or any scope_*;
+    the #979/#986 concern), and the table is keyed (district_id, effective_year), so no fan-out.
+    `districts` itself is a single-vintage snapshot and is used only for identity (#972).
     """
     if year in COVID_EXCLUDED_YEARS:
         raise DataGuardError(f"apply_sped_estimates: {year} is a COVID-excluded year (REQ-007)")
     rows = (
         session.query(
             District.nces_id, District.state,
-            EnrollmentByGrade.enrollment_total, StaffCounts.teachers_total,
+            EnrollmentByGrade.enrollment_k12, StaffCountsEffective.scope_teachers_only,
         )
         .join(EnrollmentByGrade, EnrollmentByGrade.district_id == District.nces_id)
-        .join(StaffCounts, StaffCounts.district_id == District.nces_id)
+        .join(StaffCountsEffective, StaffCountsEffective.district_id == District.nces_id)
         .filter(
             EnrollmentByGrade.source_year == year,
             EnrollmentByGrade.data_source == NCES_SOURCE,
-            StaffCounts.source_year == year,
-            StaffCounts.data_source == NCES_SOURCE,
-            EnrollmentByGrade.enrollment_total > 0,
-            StaffCounts.teachers_total > 0,
+            StaffCountsEffective.effective_year == year,
+            EnrollmentByGrade.enrollment_k12 > 0,
+            StaffCountsEffective.scope_teachers_only > 0,
         )
         .all()
     )
@@ -95,11 +97,11 @@ def select_year_totals(session, year: str) -> list[YearTotals]:
 
 
 def available_years(session) -> dict[str, list[str]]:
-    """Which years each year-keyed NCES table carries — for the fail-loud message."""
-    nces = {"where": "data_source = :src", "params": {"src": NCES_SOURCE}}
+    """Which years each year-keyed table select_year_totals reads carries — for the fail-loud message."""
     return {
-        "enrollment_by_grade": distinct_years(session, "enrollment_by_grade", "source_year", **nces),
-        "staff_counts": distinct_years(session, "staff_counts", "source_year", **nces),
+        "enrollment_by_grade": distinct_years(session, "enrollment_by_grade", "source_year",
+                                              where="data_source = :src", params={"src": NCES_SOURCE}),
+        "staff_counts_effective": distinct_years(session, "staff_counts_effective", "effective_year"),
     }
 
 
@@ -267,11 +269,13 @@ def apply_estimates(session, year: str, ratios: BaselineRatios) -> int:
         e.district_id: e for e in session.query(SpedEstimate).filter(SpedEstimate.estimate_year == year)
     }
 
+    written: set[str] = set()
     for district in districts:
         est = estimate_district(district, ratios)
         if est is None:
             skipped_no_ratio += 1
             continue
+        written.add(district.nces_id)
         used_national_avg += est.used_national
         used_state_avg += est.used_state_avg
         used_lea_ratio += not est.used_state_avg
@@ -317,6 +321,13 @@ def apply_estimates(session, year: str, ratios: BaselineRatios) -> int:
                              f"({skipped_no_ratio / len(districts):.1%}) have no SPED proportion under baseline "
                              f"{ratios.baseline_year} (cap {MAX_SKIPPED_SHARE:.0%}) — a baseline/state mismatch")
 
+    # A run REPLACES the year: an estimate this run did not write (the district left the selection,
+    # or now has no proportion) was computed on another base/baseline and must not outlive it — the
+    # #974 re-base measured 31 such rows that an upsert-only run would have left stale.
+    stale = [e for d, e in existing_by_district.items() if d not in written]
+    for e in stale:
+        session.delete(e)
+
     DataLineage.log(
         session,
         entity_type="sped_estimates",
@@ -327,6 +338,7 @@ def apply_estimates(session, year: str, ratios: BaselineRatios) -> int:
             "baseline_year": ratios.baseline_year,
             "created": created,
             "updated": updated,
+            "removed_stale": len(stale),
             "skipped_no_ratio": skipped_no_ratio,
             "used_lea_ratio": used_lea_ratio,
             "used_state_avg": used_state_avg,
@@ -341,6 +353,7 @@ def apply_estimates(session, year: str, ratios: BaselineRatios) -> int:
     print(f"\n  Results:")
     print(f"    Created: {created:,}")
     print(f"    Updated: {updated:,}")
+    print(f"    Removed (no longer estimated for {year}): {len(stale):,}")
     print(f"    Skipped (no ratio): {skipped_no_ratio:,}")
     print(f"    Used LEA-specific ratio: {used_lea_ratio:,}")
     print(f"    Used state average: {used_state_avg:,}")
