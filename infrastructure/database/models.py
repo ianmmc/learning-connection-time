@@ -563,7 +563,7 @@ class CalculationRun(Base):
         default=CalculationMode.BLENDED
     )
     target_year: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
-    run_type: Mapped[str] = mapped_column(String(30), nullable=False)  # full, incremental
+    run_type: Mapped[str] = mapped_column(String(30), nullable=False)  # full, incremental, scoped (#628)
     status: Mapped[str] = mapped_column(String(20), nullable=False)  # running, completed, failed
 
     # Data range tracking (computed from actual sources used)

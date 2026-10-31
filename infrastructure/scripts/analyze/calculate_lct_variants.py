@@ -39,15 +39,28 @@ Usage:
     # Target year mode: Enrollment anchored to target year, staff/bell blended
     python calculate_lct_variants.py --target-year 2023-24 [--output-dir path]
 
+    # Scoped recompute (#628): recompute + rewrite ONLY these districts' rows (seconds, not minutes)
+    python calculate_lct_variants.py --districts 0600153 3600049
+
+    # Dry run (#628): compute + emit the report/CSVs, write NOTHING to the database
+    python calculate_lct_variants.py --dry-run [--districts ...]
+
+The FULL recompute (no --districts) rewrites the whole lct_calculations table (~17k districts, ~164k
+rows) and takes a few minutes: run it BACKGROUNDED, never in a foreground command window that
+SIGTERMs at 2 minutes (exit 143, no traceback — that is a timeout, not a hang).
+
 Reference: docs/METHODOLOGY.md (scope definitions, minutes-source cascade, SPED segmentation)
 """
 
 import argparse
 import json
+import math
+import re
 import sys
+from decimal import ROUND_HALF_UP, Decimal
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Iterable, Sequence
 
 import pandas as pd
 
@@ -72,6 +85,8 @@ def get_utc_timestamp() -> str:
     """
     return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
+
+from sqlalchemy import text
 
 from infrastructure.database.connection import session_scope, get_engine
 from infrastructure.utilities.frames import db_records
@@ -485,10 +500,48 @@ def calculate_year_span(years: List[str]) -> int:
     return max(numeric_years) - min(numeric_years)
 
 
+_DISTRICT_ID_RE = re.compile(r"[A-Za-z0-9]{1,10}")  # districts.nces_id is VARCHAR(10); NCES ids are 7 digits
+
+
+def parse_district_ids(raw: Iterable[str]) -> List[str]:
+    """`--districts` values -> a de-duplicated id list (first-seen order). Space- and comma-separated
+    forms are equivalent. An empty list is an error, never a silent fall-through to a FULL run."""
+    ids: List[str] = []
+    for token in raw:
+        for part in token.split(","):
+            part = part.strip()
+            if not part:
+                continue
+            if not _DISTRICT_ID_RE.fullmatch(part):
+                raise ValueError(f"{part!r} is not a valid district id")
+            if part not in ids:
+                ids.append(part)
+    if not ids:
+        raise ValueError("--districts needs at least one district id")
+    return ids
+
+
+def scope_staff_records(
+    staff_with_years: Dict[str, Any],
+    shared_service_ids: set,
+    district_ids: Optional[Sequence[str]] = None,
+) -> List[Any]:
+    """The staff records a run computes: every district except shared-service entities, narrowed to
+    `district_ids` when a scoped run (#628) names some. The scope is applied HERE, to the SAME list a full
+    run iterates, so a scoped district goes through byte-for-byte the same per-district code — it can only
+    ever get the rows a full run gives it (a shared-service id yields none, exactly as in a full run)."""
+    wanted = None if district_ids is None else set(district_ids)
+    return [
+        r for did, (r, _) in staff_with_years.items()
+        if did not in shared_service_ids and (wanted is None or did in wanted)
+    ]
+
+
 def calculate_all_variants(
     session,
     calculation_mode: CalculationMode = CalculationMode.BLENDED,
-    target_year: Optional[str] = None
+    target_year: Optional[str] = None,
+    district_ids: Optional[Sequence[str]] = None,
 ) -> tuple[pd.DataFrame, str, str]:
     """
     Calculate all LCT variants for all districts with staff data.
@@ -497,6 +550,9 @@ def calculate_all_variants(
         session: Database session
         calculation_mode: BLENDED or TARGET_YEAR
         target_year: Required for TARGET_YEAR mode, optional for BLENDED
+        district_ids: Scoped recompute (#628) — compute only these districts (None = all). Every
+            per-district value depends on that district's own rows only, so the scoped result equals
+            the full result restricted to these districts.
 
     Returns:
         Tuple of (DataFrame with LCT calculations, data_year_min, data_year_max)
@@ -526,11 +582,12 @@ def calculate_all_variants(
             District.is_shared_service_entity == True
         ).all()
     }
-    staff_records = [
-        r for district_id, (r, _) in staff_with_years.items()
-        if district_id not in shared_service_ids
-    ]
-    print(f"  Found {len(staff_records):,} districts with staff data (excluding shared service entities)")
+    staff_records = scope_staff_records(staff_with_years, shared_service_ids, district_ids)
+    if district_ids is None:
+        print(f"  Found {len(staff_records):,} districts with staff data (excluding shared service entities)")
+    else:
+        print(f"  Scoped to {len(district_ids):,} requested districts: "
+              f"{len(staff_records):,} have staff data (excluding shared service entities)")
 
     # Get enrollment (mode-aware)
     enrollment_with_years = get_most_recent_enrollment(
@@ -1257,8 +1314,32 @@ def save_parquet(df: pd.DataFrame, filepath: Path) -> bool:
         return False
 
 
+def lct_clear_criteria(
+    run_id: Optional[str] = None,
+    year: Optional[str] = None,
+    district_ids: Optional[Sequence[str]] = None,
+) -> list:
+    """The WHERE clauses of a clear. Kept pure so the scoping guarantee — what a scoped run may delete —
+    is testable without a database. `[]` means "the whole table"."""
+    if district_ids is not None and len(district_ids) == 0:
+        # an empty scope must never widen into the whole-table delete that "no criteria" means
+        raise ValueError("district_ids is empty — refusing to widen it to a full clear")
+    if run_id:
+        criteria = [LCTCalculation.run_id == run_id]
+    elif year:
+        criteria = [LCTCalculation.year == year]
+    else:
+        criteria = []
+    if district_ids is not None:
+        criteria.append(LCTCalculation.district_id.in_(list(district_ids)))
+    return criteria
+
+
 def clear_lct_calculations(
-    session, run_id: Optional[str] = None, year: Optional[str] = None
+    session,
+    run_id: Optional[str] = None,
+    year: Optional[str] = None,
+    district_ids: Optional[Sequence[str]] = None,
 ) -> int:
     """
     Clear existing LCT calculations.
@@ -1270,22 +1351,25 @@ def clear_lct_calculations(
               year — a target-year recalculation must not destroy other years'
               rows (issue #297). If both are None, clear ALL calculations
               (blended mode rewrites the whole table).
+        district_ids: Scoped recompute (#628) — restrict the clear to these districts' rows
+              (ANDed with run_id/year). Blended rows carry mixed staff_years, so a scoped blended
+              clear keys on the district, not the year. Every other district's rows are untouched.
 
     Returns:
         Number of records deleted
     """
-    if run_id:
-        deleted = session.query(LCTCalculation).filter(
-            LCTCalculation.run_id == run_id
-        ).delete()
-    elif year:
-        deleted = session.query(LCTCalculation).filter(
-            LCTCalculation.year == year
-        ).delete()
-    else:
-        deleted = session.query(LCTCalculation).delete()
+    query = session.query(LCTCalculation)
+    criteria = lct_clear_criteria(run_id=run_id, year=year, district_ids=district_ids)
+    if criteria:
+        query = query.filter(*criteria)
+    return query.delete(synchronize_session=False)
 
-    return deleted
+
+def find_unknown_districts(session, district_ids: Sequence[str]) -> List[str]:
+    """Requested ids that are not in `districts` — a typo must abort a scoped run, not silently clear and
+    recompute nothing."""
+    found = {r[0] for r in session.query(District.nces_id).filter(District.nces_id.in_(list(district_ids))).all()}
+    return [d for d in district_ids if d not in found]
 
 
 def write_calculations_to_db(
@@ -1431,7 +1515,56 @@ def export_lct_from_db(
             "level_lct_notes": calc.notes or "",
         })
 
-    df = pd.DataFrame(records)
+    return _write_export_csvs(pd.DataFrame(records), output_dir, timestamp, year_str)
+
+
+EXPORT_COLUMNS = [
+    "district_id", "district_name", "state", "staff_scope", "lct_value", "instructional_minutes",
+    "instructional_minutes_source", "instructional_minutes_year", "staff_count", "staff_source",
+    "staff_year", "enrollment", "enrollment_type", "level_lct_notes",
+]
+
+
+def _stored_numeric(value, scale: int):
+    """`value` as a NUMERIC(.., scale) column would hand it back (Postgres rounds half away from zero).
+    NaN/None pass through (a NaN is storable in NUMERIC and is what the writer sends — #940)."""
+    if value is None:
+        return None
+    value = float(value)
+    if not math.isfinite(value):
+        return value
+    return float(Decimal(repr(value)).quantize(Decimal(1).scaleb(-scale), rounding=ROUND_HALF_UP))
+
+
+def export_frame_from_records(results: List[Dict[str, Any]]) -> pd.DataFrame:
+    """The frame `export_lct_from_db` would read back after `write_calculations_to_db`, built from the
+    in-memory records instead (the --dry-run path: nothing is written, so nothing can be read back). Each
+    value passes through the column type it would be stored in, so the dry-run report is the report a real
+    run produces — not an approximation of it. Equality with a real run is measured on a scratch DB."""
+    records = [{
+        "district_id": r["district_id"],
+        "district_name": r["district_name"],
+        "state": r["state"],
+        "staff_scope": r["staff_scope"],
+        "lct_value": _stored_numeric(r["lct_value"], 4),
+        "instructional_minutes": r["instructional_minutes"],
+        "instructional_minutes_source": r["instructional_minutes_source"],
+        "instructional_minutes_year": r["instructional_minutes_year"],
+        "staff_count": _stored_numeric(r["staff_count"], 2),
+        "staff_source": r["staff_source"],
+        "staff_year": r["staff_year"],
+        "enrollment": r["enrollment"],
+        "enrollment_type": r["enrollment_type"],
+        "level_lct_notes": r.get("level_lct_notes") or "",
+    } for r in results]
+    return pd.DataFrame(records, columns=EXPORT_COLUMNS)
+
+
+def _write_export_csvs(
+    df: pd.DataFrame, output_dir: Path, timestamp: str, year_str: str
+) -> tuple[pd.DataFrame, List[str]]:
+    """Round for display (REQ-001), write the detail + valid CSVs — the ONE tail both the database
+    export and the dry-run frame go through."""
     output_files = []
 
     if len(df) == 0:
@@ -1457,16 +1590,35 @@ def export_lct_from_db(
     return df, output_files
 
 
-def main():
+def resolve_output_dir(requested: Optional[Path], partial: bool) -> Path:
+    """--output-dir, else the corpus directory. A scoped or dry run describes a PARTIAL / hypothetical
+    corpus, so it never defaults into the directory whose lct_qa_report_*.json / lct_all_variants_*.csv
+    ARE the corpus-wide "current" artifacts (README, METHODOLOGY) — it defaults to a `partial/` subdirectory
+    (and its files carry a tag too, #628)."""
+    if requested:
+        return requested
+    corpus_dir = project_root / "data" / "enriched" / "lct-calculations"
+    return corpus_dir / "partial" if partial else corpus_dir
+
+
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Calculate LCT variants",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # Default: Blended mode - uses most recent data within REQ-026 3-year window
+  # (FULL recompute: ~17k districts, a few minutes - run it backgrounded)
   python calculate_lct_variants.py
 
   # Target year mode: Enrollment anchored to target year, staff/bell blended
   python calculate_lct_variants.py --target-year 2023-24
+
+  # Scoped recompute: rewrite ONLY these districts' rows (seconds); everything else is untouched
+  python calculate_lct_variants.py --districts 0600153 3600049
+
+  # Dry run: compute + write the report files, change NOTHING in the database
+  python calculate_lct_variants.py --dry-run
         """
     )
     parser.add_argument(
@@ -1477,7 +1629,34 @@ Examples:
     parser.add_argument("--output-dir", type=Path, default=None, help="Output directory")
     parser.add_argument("--parquet", action="store_true", help="Also save Parquet files")
     parser.add_argument("--no-track", action="store_true", help="Don't track run in database")
-    args = parser.parse_args()
+    parser.add_argument(
+        "--districts", nargs="+", metavar="ID", default=None,
+        help="Scoped recompute (#628): recompute and rewrite ONLY these districts' lct_calculations rows "
+             "(delete + reinsert; every other district's rows are untouched). Space- or comma-separated "
+             "NCES ids. The run is recorded as run_type='scoped' and its report/QA cover only these "
+             "districts - it never replaces the corpus-wide report. Unknown ids abort the run."
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true",
+        help="Compute and emit the report/CSVs to --output-dir, but write NOTHING to the database "
+             "(no lct_calculations rows, no calculation_runs row; the transaction is read-only). "
+             "Combines with --districts and --target-year."
+    )
+    return parser
+
+
+def main(argv: Optional[Sequence[str]] = None):
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    district_ids: Optional[List[str]] = None
+    if args.districts is not None:
+        try:
+            district_ids = parse_district_ids(args.districts)
+        except ValueError as e:
+            parser.error(str(e))
+    scoped = district_ids is not None
+    dry_run = args.dry_run
 
     # Determine calculation mode
     if args.target_year:
@@ -1487,14 +1666,22 @@ Examples:
         calculation_mode = CalculationMode.BLENDED
         mode_display = "BLENDED (most recent data within REQ-026 window)"
 
-    # Default output directory
-    output_dir = args.output_dir or project_root / "data" / "enriched" / "lct-calculations"
+    output_dir = resolve_output_dir(args.output_dir, partial=scoped or dry_run)
     output_dir.mkdir(parents=True, exist_ok=True)
+    file_tag = ("dryrun_" if dry_run else "") + ("scoped_" if scoped else "")
 
     print("=" * 60)
     print("LCT VARIANT CALCULATIONS")
     print("=" * 60)
     print(f"Mode: {mode_display}")
+    if scoped:
+        shown = ", ".join(district_ids[:10]) + (f", ... (+{len(district_ids) - 10})" if len(district_ids) > 10 else "")
+        print(f"Scope: SCOPED to {len(district_ids):,} district(s): {shown}")
+    else:
+        print("Scope: FULL corpus - a multi-minute job; run it backgrounded, not in a foreground window "
+              "that times out at 2 minutes")
+    if dry_run:
+        print("DRY RUN: nothing is written to the database")
     print(f"Output: {output_dir}")
     print()
     print("SCOPE DEFINITIONS (December 2025):")
@@ -1526,19 +1713,34 @@ Examples:
         year_str = args.target_year.replace('-', '_') + "_"
     else:
         year_str = ""  # No year in filename for BLENDED mode
+    year_str = file_tag + year_str
     print(f"Timestamp: {timestamp}")
     print()
 
     with session_scope() as session:
-        # Start calculation run tracking (do this early to get run_id)
+        if dry_run:
+            # Belt and braces: not only does this path issue no write, the transaction itself is
+            # read-only, so a future edit that adds one fails loudly instead of writing.
+            session.execute(text("SET TRANSACTION READ ONLY"))
+
+        if scoped:
+            unknown = find_unknown_districts(session, district_ids)
+            if unknown:
+                print(f"ERROR: unknown district id(s): {', '.join(unknown)} - nothing computed or written.")
+                sys.exit(2)
+
+        # Start calculation run tracking (do this early to get run_id). A scoped run is its own
+        # calculation_runs row (run_type='scoped'): its rows carry ITS run_id, so lineage says which run
+        # produced them, and the corpus-wide 'full' run row is never rewritten with a partial QA summary.
+        # A dry run tracks nothing.
         run = None
-        if not args.no_track:
+        if not args.no_track and not dry_run:
             try:
                 run = CalculationRun.start_run(
                     session,
                     calculation_mode=calculation_mode,
                     target_year=args.target_year,
-                    run_type="full",
+                    run_type="scoped" if scoped else "full",
                 )
                 session.flush()
                 print(f"Started calculation run: {run.run_id}")
@@ -1552,7 +1754,8 @@ Examples:
         df, data_year_min, data_year_max = calculate_all_variants(
             session,
             calculation_mode=calculation_mode,
-            target_year=args.target_year
+            target_year=args.target_year,
+            district_ids=district_ids,
         )
 
         if len(df) == 0:
@@ -1581,20 +1784,36 @@ Examples:
         # clears only that year's rows (issue #297 — a full clear destroyed other
         # years' calculations); blended mode writes rows across mixed staff_years,
         # so it still clears the whole table.
+        #
+        # Scoped (#628): the clear is narrowed to the named districts (delete + reinsert only their rows;
+        # blended rows carry mixed staff_years, so the key is the district, not the year). Delete and insert
+        # share this one transaction: a failure rolls the scope back to its previous rows.
+        # Dry run: neither the clear nor the write happens; the export frame is built from the in-memory
+        # records through the same column quantization the table applies.
         year_for_db = args.target_year if args.target_year else 'blended'
-        cleared_count = clear_lct_calculations(
-            session, year=args.target_year if args.target_year else None
-        )
-        if cleared_count:
-            print(f"Cleared {cleared_count:,} existing calculations before recalculation")
-        inserted_count = write_calculations_to_db(
-            session, results_list, run_id, year_for_db
-        )
+        if dry_run:
+            inserted_count = 0
+            print(f"\nDRY RUN: would clear + rewrite {len(results_list):,} calculations "
+                  f"for {df['district_id'].nunique():,} districts - skipped")
+            df_from_db, output_files = _write_export_csvs(
+                export_frame_from_records(results_list), output_dir, timestamp, year_str
+            )
+        else:
+            cleared_count = clear_lct_calculations(
+                session,
+                year=args.target_year if args.target_year else None,
+                district_ids=district_ids,
+            )
+            if cleared_count:
+                print(f"Cleared {cleared_count:,} existing calculations before recalculation")
+            inserted_count = write_calculations_to_db(
+                session, results_list, run_id, year_for_db
+            )
 
-        # Export CSVs from database
-        df_from_db, output_files = export_lct_from_db(
-            session, run_id, output_dir, timestamp, year_str
-        )
+            # Export CSVs from database
+            df_from_db, output_files = export_lct_from_db(
+                session, run_id, output_dir, timestamp, year_str
+            )
 
         # Use the database export as our source of truth
         df = df_from_db
@@ -1723,6 +1942,12 @@ Examples:
         qa_report['target_year'] = args.target_year
         qa_report['data_year_min'] = data_year_min
         qa_report['data_year_max'] = data_year_max
+        # A scoped / dry-run report describes a PARTIAL or hypothetical corpus: say so IN the artifact
+        # (means, pass rate and hierarchy checks below are over the scope only).
+        if scoped:
+            qa_report['metadata']['scope'] = {"districts": district_ids}
+        if dry_run:
+            qa_report['metadata']['dry_run'] = True
         qa_file = output_dir / f"lct_qa_report_{year_str}{timestamp}.json"
         with open(qa_file, 'w') as f:
             json.dump(qa_report, f, indent=2)
@@ -1788,8 +2013,16 @@ Examples:
             except Exception as e:
                 print(f"\nWarning: Could not complete run tracking: {e}")
 
+        if scoped:
+            missing = sorted(set(district_ids) - set(df['district_id']))
+            if missing:
+                print(f"\nNOTE: no rows computed for {len(missing)} requested district(s): "
+                      f"{', '.join(missing)} (shared-service entity, or no staff/K-12 enrollment data); "
+                      f"{'a real run would leave' if dry_run else 'they now have'} no lct_calculations rows, "
+                      f"exactly as a full run would give them")
+
         print("\n" + "=" * 60)
-        print("CALCULATION COMPLETE")
+        print("DRY RUN COMPLETE - database unchanged" if dry_run else "CALCULATION COMPLETE")
         print("=" * 60)
 
 
