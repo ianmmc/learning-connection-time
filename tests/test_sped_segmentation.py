@@ -490,3 +490,50 @@ def sample_ca_actual_sped():
         "enrollment_source": "ca_actual_2023-24",
         "teacher_source": "sped_estimate_2017-18",
     }
+
+
+@pytest.mark.integration
+class TestSpedYearTotals:
+    """#972: apply_sped_estimates sources per-year totals from the year-keyed tables.
+
+    Needs the live LCT DB (Docker up); excluded from the fast gate by the `integration` marker.
+    """
+
+    def test_year_totals_match_the_districts_snapshot_for_its_vintage(self):
+        """The year-keyed sourcing reproduces the single-vintage `districts` snapshot exactly, so
+        switching the source changes the YEAR an estimate can target, not the numbers."""
+        from infrastructure.database.connection import session_scope
+        from infrastructure.database.migrations.apply_sped_estimates import select_year_totals
+        from infrastructure.database.models import District
+
+        with session_scope() as s:
+            vintage = s.query(District.year).filter(District.year.isnot(None)).distinct().all()
+            assert len(vintage) == 1, f"districts is expected to be a single-vintage snapshot, got {vintage}"
+            (year,) = vintage[0]
+            snapshot = {
+                d.nces_id: (int(d.enrollment), float(d.instructional_staff))
+                for d in s.query(District).filter(District.enrollment > 0, District.instructional_staff > 0)
+            }
+            totals = {t.nces_id: (t.enrollment, t.instructional_staff) for t in select_year_totals(s, year)}
+
+        assert totals, "NOTHING MEASURED — select_year_totals returned no rows for the snapshot vintage"
+        mismatched = {k: (snapshot[k], totals[k]) for k in snapshot.keys() & totals.keys() if snapshot[k] != totals[k]}
+        assert not mismatched, f"{len(mismatched)} districts differ, e.g. {list(mismatched.items())[:3]}"
+        assert set(snapshot) == set(totals), (
+            f"coverage differs: only-snapshot={len(set(snapshot)-set(totals))} only-year-keyed={len(set(totals)-set(snapshot))}"
+        )
+
+    def test_primary_year_is_estimable(self):
+        """NCES_PRIMARY_YEAR must be reachable by the default `apply_sped_estimates` run."""
+        from infrastructure.database.connection import session_scope
+        from infrastructure.database.migrations.apply_sped_estimates import select_year_totals
+        from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
+
+        with session_scope() as s:
+            n = len(select_year_totals(s, NCES_PRIMARY_YEAR))
+        assert n > 15_000, f"only {n} districts have both enrollment and staff for {NCES_PRIMARY_YEAR}"
+
+    def test_covid_year_is_refused(self):
+        from infrastructure.database.migrations.apply_sped_estimates import select_year_totals
+        with pytest.raises(SystemExit, match="COVID-excluded"):
+            select_year_totals(None, "2021-22")
