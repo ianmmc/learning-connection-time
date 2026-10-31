@@ -173,9 +173,9 @@ any summary of it.
 PLANNED.** Main `f3c83ce`: PRs **#971** (#970 — the IDEA child-count parse summed its own Total row and
 missed `Separate School, Age 6-21`: national self-contained share 6.65% → **16.1%**, re-run live) and
 **#973** (#972 year-keyed `apply_sped_estimates` + the `data_guards` G1–G5 suite and the declared-year
-fitness test). A `/code-review max` of both found 15 defects (#975–#989); **their fixes are commit
-`67108d4` on local branch `fix/975-989-review-findings` — built and tested (fast gate 2657/1), NOT pushed,
-NOT merged** (#973 merged before it landed). Decisions + lessons: `docs/PROJECT_HISTORY.md` 2026-10-30/31
+fitness test). A `/code-review max` of both found 15 defects (#975–#989); **their fixes are PR
+**#1005** (`fix/975-989-review-findings`, fast gate 2657/1) — OPEN, NOT merged** (#973 merged before it
+landed). Decisions + lessons: `docs/PROJECT_HISTORY.md` 2026-10-30/31
 entry (also the Apache-2.0 / CC BY 4.0 relicense, `0155947`). The **pipeline has not moved since
 2026-08-26** (latest `state_event` 08-26; `batch_00058` at Stage 5; 57 districts in `bell_schedules`).
 Baseline GREEN on main: `lint-imports` **5 kept / 0 broken**, `pytest -q -m "not integration"` **2586
@@ -206,7 +206,7 @@ pipeline track (B) is unchanged from 08-26 (`docs/scratch-paper/2026-08-25-fresh
 `docs/technical-notes/production-quality-control-research/2026-10-31-idea-crdc-sped-baseline-refresh-plan.md`
 (findings, acceptance properties A1–A6). New files are on disk with sha256 in each `SOURCE.md`:
 `data/raw/federal/idea-618/{2023_24,2024_25}/`, `data/raw/federal/crdc/2023_24/` (gitignored).
-0. **Prerequisite — get `fix/975-989-review-findings` (`67108d4`) merged:** push + PR (Ian's call);
+0. **Prerequisite — merge PR #1005** (`fix/975-989-review-findings`; pushed 2026-10-31);
    closes #975–#989. Consequence to expect: `merge_sea_precedence` now **fails loud on MA** (live
    `ma_staff_data` is stamped `2025-26`, declared `2024-25`) until MA is re-imported — the guard working (#984).
 1. **#999** multi-vintage `sped_*_baseline` schema + `apply_sped_estimates --baseline-year` ‖ **#1000**

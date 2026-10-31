@@ -2567,7 +2567,7 @@ Everything after followed from "fix the measurement before refreshing it."
   file. A vintage flag must SELECT the data, or not exist. Also: a fallback column index defeats a
   header guard (#975); "per-row count printed, aggregate enforced" let a dropped grade category through
   (#976); the year scanner moved to the AST with per-(file, literal, count) exemptions (#980). The fixes
-  are commit `67108d4` on `fix/975-989-review-findings` — **built and tested, not yet merged** (#973
+  are PR #1005 (`fix/975-989-review-findings`) — **built and tested, opened 2026-10-31** (#973
   merged before the commit was pushed). The lower-severity items are #990–#998.
 - **#974 (Ian's methodology call, open):** the SPED partition starts from `teachers_total` while the
   headline `teachers_only` scope uses `scope_teachers_only`, so METHODOLOGY's "weighted average ≈ 0.00"
@@ -2581,5 +2581,5 @@ Everything after followed from "fix the measurement before refreshing it."
   and the REQ-026 "exemption" is implicit (the ratio vintage never enters temporal validation).
 
 Authority: `0155947` (license); PRs #971 `ab5c6c0`, #973 `f3c83ce`; branch `fix/975-989-review-findings`
-`67108d4`; `2026-10-30-total-row-and-year-default-guards-plan.md`;
+PR #1005; `2026-10-30-total-row-and-year-default-guards-plan.md`;
 `2026-10-31-idea-crdc-sped-baseline-refresh-plan.md`; issues #970, #972, #974, #975–#989, #999–#1004.

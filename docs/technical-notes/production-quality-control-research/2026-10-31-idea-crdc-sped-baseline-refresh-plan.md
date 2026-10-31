@@ -29,8 +29,8 @@ operative risks are restated per task below.
 
 ## Prerequisite — already built, not yet merged
 
-The parser hardening that makes this refresh safe is on local branch `fix/975-989-review-findings`
-(commit `67108d4`, rebased on main 2026-10-31, **not pushed**): header row sought by content, every
+The parser hardening that makes this refresh safe is PR #1005 (`fix/975-989-review-findings`,
+opened 2026-10-31, **not yet merged**): header row sought by content, every
 column by name (#975), closed-world environment vocabulary + missing-Total guard (#982), CCD row cap
 (#976), year-keyed SEA selects (#983/#984), AST year scanner (#980), wiring tests (#981). **Merge it
 first**; every task below assumes it. Issues #975–#989 close with it.
