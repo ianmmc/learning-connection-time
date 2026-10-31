@@ -16,6 +16,9 @@ Each vintage is keyed by baseline_year and replaces only its own rows (#999).
 
 Usage:
     python import_sped_baseline.py [--baseline-year 2017-18] [--sample N]
+
+--sample N is a parse-only check (#1008): the import REPLACES its vintage's rows, so a sample is never
+written — it would shrink the live baseline to N LEAs.
 """
 
 import argparse
@@ -666,12 +669,13 @@ def print_summary(state_data: dict, lea_data: dict):
               f"min {min(proportions):.2%}, max {max(proportions):.2%}")
 
 
-def main():
+def main(argv: list[str] | None = None):
     parser = argparse.ArgumentParser(description="Import one SPED baseline vintage (IDEA 618 + CRDC + CCD)")
     parser.add_argument("--baseline-year", default=SPED_BASELINE_YEAR, choices=sorted(PROFILES),
                         help=f"Baseline vintage to import (default: SPED_BASELINE_YEAR = {SPED_BASELINE_YEAR})")
-    parser.add_argument("--sample", type=int, help="Limit CRDC school rows / CCD LEAs, for testing")
-    args = parser.parse_args()
+    parser.add_argument("--sample", type=int,
+                        help="Parse-only check: limit CRDC school rows / CCD LEAs and write NOTHING (#1008)")
+    args = parser.parse_args(argv)
     profile = get_profile(args.baseline_year)
 
     print("=" * 60)
@@ -692,8 +696,13 @@ def main():
         reconcile_crdc_with_ccd(profile, lea_data)
     if profile.lea_environments:
         attach_lea_environments(profile, lea_data)
-    with session_scope() as session:
-        save_to_database(session, profile, state_data, lea_data)
+    if args.sample:
+        # save_to_database REPLACES the vintage: a sample written would shrink the live baseline to N
+        # LEAs (#1008). A sample is a parse check, never a write.
+        print(f"\n--sample {args.sample}: parse-only — nothing written to the database")
+    else:
+        with session_scope() as session:
+            save_to_database(session, profile, state_data, lea_data)
     print_summary(state_data, lea_data)
 
     print("\n" + "=" * 60)

@@ -417,3 +417,40 @@ def test_987_project_imports_come_after_the_sys_path_shim(rel):
     first_project_import = min(n.lineno for n in tree.body if isinstance(n, ast.ImportFrom)
                                and (n.module or "").startswith("infrastructure"))
     assert shim < first_project_import, f"{rel}: project import at line {first_project_import} precedes the shim at {shim}"
+
+
+# ----------------------------------------------------------------------------- --sample is parse-only (#1008, #1011)
+def test_1008_sample_is_parse_only_and_never_reaches_save_to_database(monkeypatch):
+    from unittest.mock import MagicMock
+    from contextlib import contextmanager
+    import infrastructure.database.migrations.import_sped_baseline as isb
+    monkeypatch.setattr(isb, "verify_source", lambda src: None)
+    monkeypatch.setattr(isb, "import_idea_state_baseline", lambda p: {})
+    monkeypatch.setattr(isb, "import_crdc_enrollment", lambda p, sample_limit=None: {})
+    monkeypatch.setattr(isb, "import_ccd_enrollment", lambda p, d, sample_limit=None: {})
+    monkeypatch.setattr(isb, "reconcile_crdc_with_ccd", lambda p, d: None)
+    monkeypatch.setattr(isb, "attach_lea_environments", lambda p, d: None)
+    monkeypatch.setattr(isb, "print_summary", lambda s, l: None)
+    saved = MagicMock()
+    monkeypatch.setattr(isb, "save_to_database", saved)
+
+    @contextmanager
+    def scope():
+        yield MagicMock()
+    monkeypatch.setattr(isb, "session_scope", scope)
+
+    isb.main(["--sample", "5"])
+    saved.assert_not_called()          # save_to_database REPLACES the vintage: a sample must never reach it
+    isb.main([])
+    saved.assert_called_once()
+
+
+def test_1011_sample_skips_phase_5_rather_than_estimating_from_a_parse_only_baseline(monkeypatch):
+    from unittest.mock import MagicMock
+    import infrastructure.scripts.rebuild_database as rb
+    run = MagicMock(return_value=True)
+    monkeypatch.setattr(rb, "run_script", run)
+    assert rb.phase_5_sped_estimates(False, "2024-25", sample=100) is True
+    run.assert_not_called()
+    assert rb.phase_5_sped_estimates(False, "2024-25") is True
+    run.assert_called_once()
