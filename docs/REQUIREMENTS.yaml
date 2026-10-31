@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-10-31T00:00:00Z"
+last_updated: "2026-10-31T23:00:00Z"
 
 # STATUS VOCABULARY — normalized 2026-07-16, narrowed to FIVE 2026-08-21 (Ian). These are the whole
 # set; do not invent more. The pre-normalization file carried ad-hoc `in-progress` / `not_started` /
@@ -461,7 +461,7 @@ requirements:
       (get_instructional_minutes precedence)."
 
   - id: REQ-018
-    description: SPED segmentation uses 2017-18 baseline ratios
+    description: SPED segmentation uses a versioned IDEA 618 / CRDC baseline (SPED_BASELINE_YEAR; the 2024-25 set since 2026-10-31)
     type: functional
     priority: should
     status: tested
@@ -478,7 +478,18 @@ requirements:
         environment rows are numeric, or an environment sum that is an exact integer multiple of the
         Total row all FAIL (DataGuardError) — never a fallback index or a silent zero (#975/#982,
         amended 2026-10-31)
-      - Uses CRDC 2017-18 for LEA-level SPED enrollment
+      - Uses CRDC for LEA-level SPED enrollment, paired with CCD membership of the CRDC's own year;
+        negative cells are reserve codes, never counts, and a school carrying one is excluded from the
+        LEA's SPED AND total sums (pairwise) with the LEA flagged in crdc_schools_reserved (issue 960)
+      - The baseline tables are multi-vintage, keyed by baseline_year with each component's own year
+        recorded; an import replaces only its own vintage; apply_sped_estimates --baseline-year selects
+        one and stamps it on every estimate it writes (issue 999)
+      - Each vintage is a sha256-pinned profile (files, label vocabulary, year cell) in
+        sped_baseline_profiles.py; a file whose bytes differ from the pin or from its SOURCE.md is refused
+        (issue 1000)
+      - The applied baseline (decided 2026-10-31, issue 1003) is the 2024-25 set — IDEA personnel 2023-24,
+        child count 2024-25, CRDC and CCD 2023-24 — on the 5-21 'School Age' band (kindergarten 5-year-olds
+        included), with every LEA share divided by CRDC's own total of the same schools
       - Calculates 3 SPED scopes - core_sped, teachers_gened, instructional_sped
       - core_sped uses SPED teachers / self-contained SPED students
       - teachers_gened uses GenEd teachers / GenEd enrollment (includes mainstreamed SPED)
@@ -495,9 +506,13 @@ requirements:
       - tests/test_sped_segmentation.py::TestSpedLCTValidation::test_weighted_average_audit_validation
       - tests/test_data_guard_wiring.py::TestChildCountGuardsAreWired
       - tests/test_data_guard_wiring.py::TestPersonnelGuardsAreWired
+      - tests/test_sped_baseline_refresh.py::TestCrdcReserveCodes
+      - tests/test_sped_baseline_refresh.py::TestChildCount2024Profile
+      - tests/test_sped_baseline_refresh.py::TestVerifySource
+      - tests/test_sped_baseline_refresh.py::test_profiles_carry_the_t5_decisions
     created: "2026-01-12T03:30:00Z"
-    updated: "2026-10-31T00:00:00Z"
-    notes: "From SPED_SEGMENTATION_IMPLEMENTATION.md v3 self-contained focus; guards amended 2026-10-31 (#975/#981/#982)"
+    updated: "2026-10-31T23:00:00Z"
+    notes: "From SPED_SEGMENTATION_IMPLEMENTATION.md v3 self-contained focus; guards amended 2026-10-31 (#975/#981/#982); refreshed baseline adopted 2026-10-31 (#999/#1000/#960/#1001/#1003)"
 
   - id: REQ-019
     description: Layer 2 state integration via ST_LEAID crosswalk
@@ -697,7 +712,9 @@ requirements:
       - No flags when year_span <= 1; WARN_YEAR_GAP when year_span == 2 (valid, notable); ERR_SPAN_EXCEEDED when year_span > 2; ERR_COVID_YEAR when any source year is 2019-20..2022-23
       - The write path populates enrollment_source_year / staff_source_year / bell_schedule_source_year so trigger trg_lct_temporal_validation auto-validates on INSERT/UPDATE (was inert — issue #11)
       - calculate_all_variants enforces the window at read time (drops an out-of-window bell year to statutory) so invalid blends are prevented, not just flagged
-      - SPED baseline (2017-18 IDEA 618/CRDC) exempt from the window as a ratio proxy
+      - The SPED ratio baseline is NOT exempt (exemption retired 2026-10-31, issue 1003) — each SPED-scope
+        row carries component_years.sped_ratio (the applied baseline's IDEA and CRDC/CCD years) and the
+        trigger windows those years in year_span, within_3year_window and the COVID check
       - The single source of truth for the window math is infrastructure/utilities/school_year.py
         (within_blend_window) — moved from infrastructure/database/ 2026-07-14 (REQ-136) so the
         acquisition pipeline can import calendar vocabulary without breaching the
@@ -711,11 +728,12 @@ requirements:
       - tests/test_temporal_validation.py::TestYearSpanCalculation::test_3_year_span_is_invalid_v2
       - tests/test_temporal_validation.py::TestTemporalFlags::test_warn_year_gap_added_for_span_2
       - tests/test_temporal_validation.py::TestTemporalFlags::test_no_flags_for_same_year_data
-      - tests/test_temporal_validation.py::TestSpedBaselineException::test_sped_2017_18_exempt_from_3_year_rule
+      - tests/test_temporal_validation.py::TestSpedRatioYearsAreWindowed
+      - tests/test_sped_baseline_refresh.py::test_schema_sql_trigger_is_migration_030s
       - tests/test_temporal_validation.py::TestValidationTrigger::test_trigger_auto_validates_on_insert
       - tests/test_temporal_validation.py::TestValidationTrigger::test_trigger_auto_validates_on_update
     created: "2026-01-16T06:30:00Z"
-    updated: "2026-07-02T00:00:00Z"
+    updated: "2026-10-31T23:00:00Z"
     notes: "v1 (span<=3, admitting four school years) was ambiguous and its DB trigger was inert
       (issue #11: unmapped/unpopulated source-year columns). v2 decided by Ian 2026-07-01 during
       the fable-review lct-core hardening; implemented by migration 018 + school_year.py +

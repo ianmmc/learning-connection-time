@@ -692,32 +692,47 @@ Consolidated 2026-07-02 from the former standalone `SPED_SEGMENTATION_IMPLEMENTA
 `docs/archive/`). Implemented as of the v3 (2026-01-03) self-contained-focus design.
 
 **Key concept.** SPED students split into two groups with very different instructional relationships:
-**self-contained** (**16.1%** of all SPED ages 6-21 nationally, 2017-18 — separate school, or inside regular class
-<40% of the day) are taught primarily by SPED teachers and are the correct denominator for SPED
+**self-contained** (**14.8%** of all school-age SPED nationally, 2024-25 — separate school, or inside regular class
+<40% of the day; 16.1% on the retired 2017-18 baseline) are taught primarily by SPED teachers and are the correct denominator for SPED
 teacher-to-student ratios; **mainstreamed** (**81.6%** — inside regular class 40%+ of the day) are taught
 primarily by GenEd teachers and belong in the GenEd population for LCT purposes. The remaining ~2.3%
 (residential, correctional, home/hospital, parentally placed) sit in neither group.
 
 **Three SPED scopes:**
 
-| Scope | Formula | Purpose | Mean LCT (2023-24) |
+| Scope | Formula | Purpose | Mean LCT (run 2026-10-31) |
 |---|---|---|---|
-| `core_sped` | SPED teachers / self-contained SPED enrollment | Primary SPED attention metric | 185.5 min |
-| `teachers_gened` | GenEd teachers / GenEd enrollment (incl. mainstreamed SPED) | Primary GenEd comparison | 27.2 min |
-| `instructional_sped` | (SPED teachers + SPED paras) / self-contained SPED enrollment | Fuller SPED support picture | 265.8 min |
+| `core_sped` | SPED teachers / self-contained SPED enrollment | Primary SPED attention metric | 161.4 min |
+| `teachers_gened` | GenEd teachers / GenEd enrollment (incl. mainstreamed SPED) | Primary GenEd comparison | 24.3 min |
+| `instructional_sped` | (SPED teachers + SPED paras) / self-contained SPED enrollment | Fuller SPED support picture | 292.4 min |
 
-**Data sources (2017-18 pre-COVID baseline — exempt from the 3-year window rule, see Temporal Data
-Blending below):** IDEA 618 Personnel (`bpersonnel2017-18.csv` — SPED teacher/para FTE by state, ages 6-21),
-IDEA 618 Child Count & Educational Environments (`bchildcountandedenvironments2017-18.csv` — self-contained
-vs. mainstreamed split by state), CRDC 2017-18 Enrollment (`Enrollment.csv` — LEA-level total SPED count,
-no environment breakdown), CCD 2017-18 LEA Membership (LEA-level total enrollment).
+**Data sources — the 2024-25 baseline set (adopted 2026-10-31, #1003; `SPED_BASELINE_YEAR`).** Each
+vintage is a set of components whose own years differ, and each component year is windowed by REQ-026 like
+any other input (see Temporal Data Blending below):
+IDEA 618 Personnel **2023-24** (`bpersonnel2023-24.csv` — SPED teacher/para FTE by state, "School Age"; no
+2024-25 file is published), IDEA 618 Child Count & Educational Environments **2024-25**
+(`bchildcountandedenvironment2024-25.csv` — self-contained vs. mainstreamed split by state), CRDC **2023-24**
+Enrollment (`Enrollment.csv` — LEA-level SPED count, no environment breakdown), CCD **2023-24** LEA
+membership (the CRDC's own year). Files, sha256 pins and label vocabularies per vintage:
+`infrastructure/database/migrations/sped_baseline_profiles.py`.
+- **School-age band = 5-21.** Since the 2020-21 collection IDEA counts kindergarten 5-year-olds as
+  "School Age" (4.6% of school-age SPED in 2024-25). The 2024-25 child count still carries a 6-21 column,
+  but the personnel FTE are School Age (5-21), so every component uses 5-21 (one definition).
+- **LEA SPED share = CRDC SPED (IDEA) ÷ CRDC total of the same schools** (M+F; CCD only when the CRDC total
+  is missing). CRDC 2023-24 suppresses every nonbinary count (`-10`, EO 14168) and M+F runs ~2% under CCD
+  membership, so dividing by CCD would bias the share low. Schools carrying a reserve code (`-9`, 1,835 in
+  2023-24) are excluded pairwise from numerator and denominator and the LEA is flagged
+  (`crdc_schools_reserved`; #960).
+- The 2017-18 set (personnel/child count/CRDC/CCD 2017-18, ages 6-21, CCD denominator) stays in the
+  baseline tables side by side (`baseline_year`), applied only by an explicit
+  `apply_sped_estimates --baseline-year 2017-18`.
 
 > **Correction (2026-10-30, #970).** Figures before this date said "~6.7% self-contained, range 6.6–9.9%". That came from the importer summing the file's `Total, Age 6-21` row in with the environment rows (a 2× denominator) and never matching `Separate School, Age 6-21`. Every `sped_estimates` row and all three SPED scopes computed before the re-import carry that error; see the issue for the before/after.
 
 **Two-step estimation** (per current-year district): estimated all-SPED = total enrollment × LEA SPED
-proportion (CRDC/CCD, LEA-specific for 74% of districts, state-average fallback otherwise) → estimated
-self-contained SPED = all-SPED × state self-contained proportion (IDEA 618, national 16.1%, states range
-6.3% SD – 23.9% NY/DC; territories as low as 2.7%) → GenEd enrollment = total − self-contained → SPED teachers = self-contained × state teacher
+proportion (CRDC, LEA-specific for 94.5% of 2024-25 districts, state-average fallback otherwise) → estimated
+self-contained SPED = all-SPED × state self-contained proportion (IDEA 618, national 14.8%, states range
+4.5% WY – 22.7% DC) → GenEd enrollment = total − self-contained → SPED teachers = self-contained × state teacher
 ratio → SPED instructional = self-contained × state instructional ratio → GenEd teachers = total teachers
 − SPED teachers.
 
@@ -726,16 +741,21 @@ total teachers; and critically, the **weighted average** of `core_sped` and `tea
 overall `teachers_only` LCT (difference ≈ 0.00 — confirms the segmentation correctly partitions both
 enrollment and teachers, not just one side).
 
-**Database tables:** `sped_state_baseline` (56 states/territories, IDEA 618 ratios), `sped_lea_baseline`
-(18,606 LEAs, CRDC/CCD SPED proportion), `sped_estimates` (16,459 districts for 2023-24, the applied
-two-step estimate + `confidence` high/medium/low). Scripts: `infrastructure/database/migrations/
+**Database tables:** `sped_state_baseline` (56 states/territories per `baseline_year`, IDEA 618 ratios),
+`sped_lea_baseline` (18,626 LEAs for 2024-25, 18,606 for 2017-18; CRDC SPED proportion), `sped_estimates`
+(16,926 districts for 2024-25 and 17,222 for 2023-24, the applied two-step estimate + `baseline_year` +
+`confidence` high/medium/low). Scripts: `infrastructure/database/migrations/
 import_sped_baseline.py`, `apply_sped_estimates.py`; consumed by `calculate_lct_variants.py`.
 
 **Known limitations:** the self-contained proportion is a state-level ratio applied to an LEA-level
 estimate (not directly measured per-LEA); it varies widely by state (6.3–23.9%); para allocation may not reflect
 LEA-level variation; a handful of districts show negative GenEd-teacher estimates (flagged low-confidence
-— 7 of 16,926 in the 2024-25 estimates, 10 of 17,222 in 2023-24, per `sped_estimates`); ~760
-districts per vintage fall back to the national-average ratios (`national_average_fallback`). See `WARN_SPED_RATIO_CAP` above for
+— 15 of 16,926 in the 2024-25 estimates, 13 of 17,222 in 2023-24, per `sped_estimates`); ~150
+districts per vintage fall back to the national-average ratios (`national_average_fallback` — New Mexico,
+whose 2023-24 personnel is suppressed `*` for data quality). State-reported SPED FTE is volatile between
+IDEA vintages (CA 20,361 → 41,575, CT 11,236 → 6,133, 2017-18 → 2023-24); the 2023-24 personnel predates
+the ESSER cliff (~Sept 2024), and SPED FTE grew +17.6% against +12.7% self-contained students — the T4
+receipt on #1002 carries the full before/after. See `WARN_SPED_RATIO_CAP` above for
 the related LCT-ceiling cap on high-ratio states (e.g. CT).
 
 ---
@@ -879,7 +899,7 @@ Always provide:
 **Key Changes in v2.1**:
 - Added 3-Year Window Rule for multi-source data blending
 - Added temporal validation flags (WARN_YEAR_GAP, ERR_SPAN_EXCEEDED)
-- Documented SPED baseline exception (2017-18 data exempt)
+- Documented SPED baseline exception (2017-18 data exempt) — **retired 2026-10-31 (#1003)**
 - Added database infrastructure for temporal validation
 - Added master crosswalk table (state_district_crosswalk)
 **Key Changes in v2.0**:
@@ -1074,18 +1094,19 @@ Calculations include temporal quality flags:
 | `WARN_YEAR_GAP` | Year span 2-3 | Valid but sources have 1-2 year gap |
 | `ERR_SPAN_EXCEEDED` | Year span > 3 | Exceeds 3-year window, requires resolution |
 | `INFO_CROSS_YEAR` | Different years used | Documents cross-year blending |
-| `INFO_RATIO_BASELINE` | Uses 2017-18 SPED ratios | Exempt from 3-year rule (stable ratios) |
+| `INFO_RATIO_BASELINE` | (never emitted; retired 2026-10-31) | The SPED ratio vintages are windowed like any input (#1003) |
 
-### SPED Baseline Exception
+### SPED Baseline in the Window (exemption retired 2026-10-31)
 
-The 2017-18 IDEA 618 and CRDC data used for SPED ratio baselines is **exempt** from the 3-year rule because:
-
-1. **Pragmatic necessity**: Most recent pre-COVID data with complete SPED environment breakdowns
-2. **Ratio stability**: SPED teacher-to-student ratios are relatively stable over time
-3. **Methodological approach**: Used as proportional multipliers, not absolute values
-4. **Documentation**: Clearly documented as historical baseline proxy
-
-When newer state-level SPED data becomes available that meets quality requirements, it supersedes the 2017-18 baseline according to data precedence rules.
+Until 2026-10-31 the 2017-18 IDEA 618 / CRDC ratio baseline was **exempt** from the 3-year rule as a
+"ratio proxy" — and nothing checked it: each SPED row carried only the estimate year. With the refreshed
+2024-25 baseline set adopted (#1003), the exemption is retired: every SPED-scope `lct_calculations` row
+carries `component_years = {"sped_ratio": [...]}` (the applied baseline's IDEA personnel / child count and
+CRDC / CCD years), and the temporal trigger (migration 030) folds those years into `year_span`,
+`within_3year_window` and the COVID check exactly like the three `*_source_year` columns.
+`within_blend_window()` exempts nothing. Consequence measured on the 2026-10-31 run: the 44 districts with a
+2026-27 bell schedule carry `ERR_SPAN_EXCEEDED` on their SPED scopes (2023-24 ratio components → span 3);
+their other scopes are unaffected.
 
 ### Database Implementation
 

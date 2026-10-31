@@ -462,7 +462,7 @@ purely behavioural — and therefore only live here — are 6 and 7.
 ## Technical Reference
 
 - **Crosswalk table**: `state_district_crosswalk` - single source of truth for all state mappings
-- **SPED baseline**: 2017-18 IDEA 618/CRDC exempt from temporal rule
+- **SPED baseline**: the 2024-25 set (IDEA personnel 2023-24 + child count 2024-25, CRDC/CCD 2023-24; 5-21 band; CRDC-own LEA denominator) — `SPED_BASELINE_YEAR`; its component years are windowed by REQ-026 (exemption retired 2026-10-31, #1003). 2017-18 rows stay side by side in the baseline tables
 - **Acquisition pipeline**: the stage-based per-school pipeline in `infrastructure/acquisition/` — see `docs/ACQUISITION_PIPELINE.md` (the retired Crawlee+Ollama API/scraper was archived 2026-06-25 to `data/archive/crawlee-ollama-era-superseded-20260625/`)
 
 For detailed reference, load the appropriate appendix above.

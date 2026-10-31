@@ -92,7 +92,7 @@ This document catalogs all data sources for the Instructional Minute Metric proj
 - **Frequency**: Annual
 - **Lag Time**: Typically 2-3 years
 - **Latest Available**: 2021-22 (as of Jan 2026)
-- **Used for SPED Baseline**: 2017-18 (pre-COVID)
+- **Used for SPED Baseline**: personnel 2023-24 + child count 2024-25 (the 2024-25 set, adopted 2026-10-31, #1003; 2017-18 retained side by side)
 
 #### Key Tables
 
@@ -107,9 +107,10 @@ This document catalogs all data sources for the Instructional Minute Metric proj
 
 **Data Files**: CSV, Excel
 - Files organized by year and data type
-- Example files (2017-18):
-  - `bpersonnel2017-18.csv` - Teacher and para FTE
-  - `bchildcountandedenvironments2017-18.csv` - Student counts by environment
+- Files in use (per-vintage profiles: `infrastructure/database/migrations/sped_baseline_profiles.py`):
+  - `bpersonnel2023-24.csv` - Teacher and para FTE ("School Age" since the 2020-21 collection)
+  - `bchildcountandedenvironment2024-25.csv` - Student counts by environment ("School Age" = 5-21; an "Ages 6-21" column is also carried)
+  - 2017-18: `bpersonnel2017-18.csv`, `bchildcountandedenvironments2017-18.csv` (ages 6-21)
 
 #### Educational Environment Categories
 
@@ -136,7 +137,7 @@ This document catalogs all data sources for the Instructional Minute Metric proj
 
 #### Usage in SPED Segmentation
 
-IDEA 618 provides state-level baseline data (2017-18 pre-COVID) for:
+IDEA 618 provides state-level baseline data (personnel 2023-24, child count 2024-25; school-age band 5-21) for:
 1. State SPED teacher-to-self-contained-student ratios
 2. State SPED instructional (teachers + paras) ratios
 3. State self-contained proportion (self-contained / all SPED)
@@ -187,9 +188,10 @@ These ratios are applied to LEA-level estimates in a two-step process. See `docs
 
 #### Usage in SPED Segmentation
 
-CRDC 2017-18 provides LEA-level SPED enrollment totals used to calculate district-specific SPED proportions:
+CRDC 2023-24 (2017-18 retained side by side) provides LEA-level SPED enrollment totals used to calculate district-specific SPED proportions:
 - `SCH_ENR_IDEA_M` + `SCH_ENR_IDEA_F` = Total SPED enrollment
-- Used in two-step ratio: `LEA SPED Proportion = CRDC SPED / CCD Total Enrollment`
+- Used in two-step ratio: `LEA SPED Proportion = CRDC SPED / CRDC Total (TOT_ENR_M + TOT_ENR_F) of the same schools` (2024-25 set; the 2017-18 set divided by CCD membership)
+- Reserve codes (negative values: `-9` not applicable, `-10` suppressed under EO 14168 — every nonbinary `_X` column in 2023-24, …) are never counts; a school carrying one is excluded from numerator and denominator (#960)
 - Note: CRDC does not break down by educational environment (self-contained vs mainstreamed)
 
 ---
