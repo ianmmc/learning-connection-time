@@ -54,7 +54,8 @@ project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from infrastructure.database.connection import session_scope
-from infrastructure.utilities.data_guards import DataGuardError, require_nonempty_selection
+from infrastructure.database.queries import distinct_years
+from infrastructure.utilities.data_guards import DataGuardError, require_nonempty_selection, require_year_carried
 from infrastructure.utilities.school_year import (
     MAX_BLEND_SPAN, NCES_PRIMARY_YEAR, is_covid_year, start_year, year_span,
 )
@@ -249,7 +250,7 @@ def load_sea_staff_data(session, state: str, sea_table: str, declared_year: str)
     # G4 per state (#984): the S2 shape lives HERE — a declared vintage the table does not carry.
     require_nonempty_selection(
         rows, what=f"{sea_table} rows for year={declared_year} ({state})",
-        available=sorted(y for (y,) in session.execute(text(f"SELECT DISTINCT year FROM {sea_table}")) if y),
+        available=lambda: distinct_years(session, sea_table),
     )
     sea_data = {}
     for nces_id, teachers_fte, year in rows:
@@ -405,11 +406,8 @@ def main():
     with session_scope() as session:
         # G4 (#972): the target year must exist in staff_counts_effective, else every state would
         # report 0 districts and the run would look like a clean no-op.
-        carried = sorted(y for (y,) in session.query(StaffCountsEffective.effective_year).distinct() if y)
-        require_nonempty_selection(
-            [y for y in carried if y == args.year],
-            what=f"staff_counts_effective rows for effective_year={args.year}", available=carried,
-        )
+        require_year_carried(args.year, lambda: distinct_years(session, "staff_counts_effective", "effective_year"),
+                             what="staff_counts_effective (effective_year)")
         stats = merge_sea_into_effective(
             session,
             nces_year=args.year,
