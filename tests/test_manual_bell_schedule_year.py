@@ -44,3 +44,33 @@ def test_no_year_in_any_source_file_fails_loud_and_writes_nothing():
     with pytest.raises(ValueError, match="school year"):
         imp.import_bell_schedule(s, "0100001", _sched(), ["bell_schedule.pdf", "notes.txt"])
     s.add.assert_not_called()
+
+
+# ----------------------------------------------------------------------------- per-schedule year (#1010)
+def _own(sched, filename):
+    sched.schools_sampled = [filename]   # the per-file parse path records the document it read
+    return sched
+
+
+@pytest.mark.parametrize("order", [("elem_bell_2024-25.pdf", "high_bell_2025-26.pdf"),
+                                   ("high_bell_2025-26.pdf", "elem_bell_2024-25.pdf")])
+def test_each_schedule_is_stamped_from_its_own_document_whatever_the_directory_order(order):
+    files = list(order)
+    s = _session()
+    imp.import_bell_schedule(s, "0100001", _own(_sched(), "high_bell_2025-26.pdf"), files)
+    assert s.add.call_args.args[0].year == "2025-26"
+    imp.import_bell_schedule(s, "0100001", _own(_sched(), "elem_bell_2024-25.pdf"), files)
+    assert s.add.call_args.args[0].year == "2024-25"
+
+
+def test_combined_parse_over_files_of_two_vintages_refuses_to_guess():
+    s = _session()
+    with pytest.raises(ValueError, match="more than one school year"):
+        imp.import_bell_schedule(s, "0100001", _sched(), ["calendar_2024-25.pdf", "bell_2025-26.pdf"])
+    s.add.assert_not_called()
+
+
+def test_own_document_without_a_year_falls_back_to_the_district_files_when_they_agree():
+    s = _session()
+    imp.import_bell_schedule(s, "0100001", _own(_sched(), "bell.txt"), ["bell.txt", "handbook_2025-26.pdf"])
+    assert s.add.call_args.args[0].year == "2025-26"
