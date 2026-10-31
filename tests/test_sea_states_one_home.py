@@ -46,6 +46,15 @@ def test_no_second_spelling_of_the_registry(path):
     assert years == [], f"{path.name} spells vintages itself: {years}"
 
 
+def test_997_merge_imports_school_year_from_one_source():
+    """The `infrastructure.database.school_year` shim says new code imports from `infrastructure.utilities`;
+    merge_sea_precedence had NCES_PRIMARY_YEAR from utilities and the rest from the shim (#997)."""
+    tree = ast.parse((MIG / "merge_sea_precedence.py").read_text(encoding="utf-8"))
+    sources = {n.module for n in ast.walk(tree) if isinstance(n, ast.ImportFrom)
+               and (n.module or "").endswith("school_year")}
+    assert sources == {"infrastructure.utilities.school_year"}
+
+
 def test_ma_staff_and_enrollment_vintages_are_distinct_and_explicit():
     ma = _registry()["MA"]
     assert ma["year"] == "2024-25"          # DESE teacher export

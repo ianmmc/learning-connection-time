@@ -55,11 +55,10 @@ sys.path.insert(0, str(project_root))
 
 from infrastructure.database.connection import session_scope
 from infrastructure.utilities.data_guards import DataGuardError, require_nonempty_selection
-from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
-from infrastructure.database.models import StaffCountsEffective
-from infrastructure.database.school_year import (
-    MAX_BLEND_SPAN, is_covid_year, start_year, year_span,
+from infrastructure.utilities.school_year import (
+    MAX_BLEND_SPAN, NCES_PRIMARY_YEAR, is_covid_year, start_year, year_span,
 )
+from infrastructure.database.models import StaffCountsEffective
 from sqlalchemy import text
 import logging
 

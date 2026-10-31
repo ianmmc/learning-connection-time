@@ -400,7 +400,7 @@ def import_enrollment_data(df, sped_df=None):
                             updated_at = CURRENT_TIMESTAMP
                     """), {
                         "nces_id": nces_id,
-                    "source_year": SOURCE_YEAR,
+                        "source_year": SOURCE_YEAR,
                         "subgroup": subgroup,
                         "enrollment": enrollment,
                         "grades_json": json.dumps(grade_data)
@@ -465,7 +465,7 @@ def import_enrollment_data(df, sped_df=None):
                             updated_at = CURRENT_TIMESTAMP
                     """), {
                         "nces_id": nces_id,
-                    "source_year": SOURCE_YEAR,
+                        "source_year": SOURCE_YEAR,
                         "subgroup": subgroup,
                         "enrollment": enrollment,
                         "grades_json": json.dumps(grade_data)
