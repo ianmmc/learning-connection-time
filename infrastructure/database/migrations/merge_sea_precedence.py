@@ -70,18 +70,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# SEA State Configurations
-SEA_STATES = {
-    'CA': {'year': '2024-25', 'table': 'ca_staff_data'},
-    'FL': {'year': '2024-25', 'table': 'fl_staff_data'},
-    'IL': {'year': '2023-24', 'table': 'il_staff_data'},
-    'MA': {'year': '2024-25', 'table': 'ma_staff_data'},  # teacher file is 2024-25 (issue #23)
-    'MI': {'year': '2023-24', 'table': 'mi_staff_data'},
-    'NY': {'year': '2023-24', 'table': 'ny_staff_data'},
-    'PA': {'year': '2024-25', 'table': 'pa_staff_data'},
-    'TX': {'year': '2024-25', 'table': 'tx_staff_data'},
-    'VA': {'year': '2025-26', 'table': 'va_staff_data'},
-}
+# SEA State Configurations: the per-state declared vintage has ONE home (#990).
+from infrastructure.database.migrations.sea_import_utils import SEA_STATES  # noqa: E402
 
 
 def get_temporal_flags(span: int) -> List[str]:

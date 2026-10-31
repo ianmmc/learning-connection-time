@@ -393,38 +393,20 @@
       {
         "file": "infrastructure/database/migrations/sea_import_utils.py",
         "literal": "2023-24",
-        "count": 1,
-        "why": "VALID_DATA_YEARS member — the SEA importers' accepted-vintage allowlist."
+        "count": 4,
+        "why": "VALID_DATA_YEARS member (the SEA importers' accepted-vintage allowlist) plus the SEA_STATES registry entries, the ONE home of each state's declared SEA vintage (#990); merge_sea_precedence and compare_sea_vs_federal_lct import it."
       },
       {
         "file": "infrastructure/database/migrations/sea_import_utils.py",
         "literal": "2024-25",
-        "count": 1,
-        "why": "VALID_DATA_YEARS member — the SEA importers' accepted-vintage allowlist."
+        "count": 6,
+        "why": "VALID_DATA_YEARS member (the SEA importers' accepted-vintage allowlist) plus the SEA_STATES registry entries, the ONE home of each state's declared SEA vintage (#990); merge_sea_precedence and compare_sea_vs_federal_lct import it."
       },
       {
         "file": "infrastructure/database/migrations/sea_import_utils.py",
         "literal": "2025-26",
-        "count": 1,
-        "why": "VALID_DATA_YEARS member — the SEA importers' accepted-vintage allowlist."
-      },
-      {
-        "file": "infrastructure/database/migrations/merge_sea_precedence.py",
-        "literal": "2024-25",
-        "count": 5,
-        "why": "SEA_STATES registry: the declared per-state SEA vintage the merge selects on (#984). Spelled in TWO files pending #990's single home."
-      },
-      {
-        "file": "infrastructure/database/migrations/merge_sea_precedence.py",
-        "literal": "2023-24",
         "count": 3,
-        "why": "SEA_STATES registry: the declared per-state SEA vintage the merge selects on (#984). Spelled in TWO files pending #990's single home."
-      },
-      {
-        "file": "infrastructure/database/migrations/merge_sea_precedence.py",
-        "literal": "2025-26",
-        "count": 1,
-        "why": "SEA_STATES registry: the declared per-state SEA vintage the merge selects on (#984). Spelled in TWO files pending #990's single home."
+        "why": "VALID_DATA_YEARS member (the SEA importers' accepted-vintage allowlist) plus the SEA_STATES registry entries, the ONE home of each state's declared SEA vintage (#990); merge_sea_precedence and compare_sea_vs_federal_lct import it."
       },
       {
         "file": "infrastructure/database/migrations/apply_temporal_validation.py",
@@ -449,24 +431,6 @@
         "literal": "2026-27",
         "count": 1,
         "why": "Fixture rows of the script's own self-test (`test_validation`): the 4-year-span rejection case."
-      },
-      {
-        "file": "infrastructure/scripts/analyze/compare_sea_vs_federal_lct.py",
-        "literal": "2024-25",
-        "count": 4,
-        "why": "SEA_STATES registry in the SEA-vs-federal comparison (functional filter in get_sea_data). Second copy pending #990."
-      },
-      {
-        "file": "infrastructure/scripts/analyze/compare_sea_vs_federal_lct.py",
-        "literal": "2023-24",
-        "count": 3,
-        "why": "SEA_STATES registry in the SEA-vs-federal comparison (functional filter in get_sea_data). Second copy pending #990."
-      },
-      {
-        "file": "infrastructure/scripts/analyze/compare_sea_vs_federal_lct.py",
-        "literal": "2025-26",
-        "count": 2,
-        "why": "SEA_STATES registry in the SEA-vs-federal comparison (functional filter in get_sea_data). Second copy pending #990."
       },
       {
         "file": "infrastructure/scripts/analyze/validate_ca_sped_integration.py",

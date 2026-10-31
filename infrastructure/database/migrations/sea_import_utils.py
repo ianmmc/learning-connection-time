@@ -561,6 +561,26 @@ from infrastructure.database.school_year import COVID_EXCLUDED_YEARS  # noqa: E4
 VALID_DATA_YEARS = {'2018-19', '2023-24', '2024-25', '2025-26'}
 
 
+# =============================================================================
+# SEA VINTAGE REGISTRY — the ONE home of each state's declared SEA vintage (#990)
+# =============================================================================
+# `year` is the STAFF vintage the importer stamps and the merge selects on; `enroll_year` is present only
+# where the enrollment export is a different vintage (MA: DESE publishes enrollment a year ahead of staffing).
+# merge_sea_precedence and compare_sea_vs_federal_lct IMPORT this; tests/test_sea_states_one_home.py pins
+# each importer's own vintage constant to it. A re-stamped import moves the importer AND this entry.
+SEA_STATES = {
+    'CA': {'year': '2024-25', 'table': 'ca_staff_data'},
+    'FL': {'year': '2024-25', 'table': 'fl_staff_data'},
+    'IL': {'year': '2023-24', 'table': 'il_staff_data'},
+    'MA': {'year': '2024-25', 'enroll_year': '2025-26', 'table': 'ma_staff_data'},  # teacher file is 2024-25 (issue #23)
+    'MI': {'year': '2023-24', 'table': 'mi_staff_data'},
+    'NY': {'year': '2023-24', 'table': 'ny_staff_data'},
+    'PA': {'year': '2024-25', 'table': 'pa_staff_data'},
+    'TX': {'year': '2024-25', 'table': 'tx_staff_data'},
+    'VA': {'year': '2025-26', 'table': 'va_staff_data'},
+}
+
+
 def is_covid_year(year: str) -> bool:
     """
     Check if a school year falls in the COVID-excluded period.

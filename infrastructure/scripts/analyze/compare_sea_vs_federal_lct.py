@@ -43,18 +43,8 @@ from sqlalchemy import text
 # Default instructional minutes
 DEFAULT_MINUTES = 360
 
-# SEA states with data
-SEA_STATES = {
-    'CA': {'year': '2024-25', 'staff_table': 'ca_staff_data', 'enroll_table': 'ca_enrollment_data'},
-    'FL': {'year': '2024-25', 'staff_table': 'fl_staff_data', 'enroll_table': 'fl_enrollment_data'},
-    'IL': {'year': '2023-24', 'staff_table': 'il_staff_data', 'enroll_table': 'il_enrollment_data'},
-    'MA': {'year': '2025-26', 'staff_table': 'ma_staff_data', 'enroll_table': 'ma_enrollment_data'},
-    'MI': {'year': '2023-24', 'staff_table': 'mi_staff_data', 'enroll_table': 'mi_enrollment_data'},
-    'NY': {'year': '2023-24', 'staff_table': 'ny_staff_data', 'enroll_table': 'ny_enrollment_data'},
-    'PA': {'year': '2024-25', 'staff_table': 'pa_staff_data', 'enroll_table': 'pa_enrollment_data'},
-    'TX': {'year': '2024-25', 'staff_table': 'tx_staff_data', 'enroll_table': 'tx_enrollment_data'},
-    'VA': {'year': '2025-26', 'staff_table': 'va_staff_data', 'enroll_table': 'va_enrollment_data'},
-}
+# SEA states with data: the per-state vintage registry has ONE home (#990).
+from infrastructure.database.migrations.sea_import_utils import SEA_STATES  # noqa: E402
 
 
 def calculate_lct(minutes: float, staff: float, enrollment: float) -> float:
@@ -106,6 +96,8 @@ def get_sea_data(session, state: str, config: dict) -> pd.DataFrame:
     # data, making the comparison meaningless (issue #298). All *_staff_data /
     # *_enrollment_data tables carry a `year` column (verified 2026-07-20).
     yr = config['year']
+    # Staff and enrollment can be different vintages (MA: enrollment is published a year ahead of staffing).
+    enroll_yr = config.get('enroll_year', yr)
     if state == 'CA':
         staff_query = "SELECT nces_id, teachers_fte FROM ca_staff_data WHERE year = :year"
         enroll_query = "SELECT nces_id, total_k12 FROM ca_enrollment_data WHERE year = :year"
@@ -141,7 +133,7 @@ def get_sea_data(session, state: str, config: dict) -> pd.DataFrame:
     staff_data = {row[0]: row[1] for row in staff_result}
 
     # Get enrollment
-    enroll_result = session.execute(text(enroll_query), {"year": yr})
+    enroll_result = session.execute(text(enroll_query), {"year": enroll_yr})
     enroll_data = {row[0]: row[1] for row in enroll_result}
 
     # Merge
