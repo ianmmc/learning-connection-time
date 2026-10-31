@@ -54,6 +54,8 @@ project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from infrastructure.database.connection import session_scope
+from infrastructure.utilities.data_guards import require_nonempty_selection
+from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
 from infrastructure.database.models import StaffCountsEffective
 from infrastructure.database.school_year import (
     MAX_BLEND_SPAN, is_covid_year, start_year, year_span,
@@ -388,8 +390,8 @@ def main():
     )
     parser.add_argument(
         "--year",
-        default="2023-24",
-        help="NCES baseline year (default: 2023-24)"
+        default=NCES_PRIMARY_YEAR,
+        help=f"NCES baseline year (default: NCES_PRIMARY_YEAR = {NCES_PRIMARY_YEAR})"
     )
     parser.add_argument(
         "--dry-run",
@@ -406,6 +408,13 @@ def main():
     logger.info("")
 
     with session_scope() as session:
+        # G4 (#972): the target year must exist in staff_counts_effective, else every state would
+        # report 0 districts and the run would look like a clean no-op.
+        carried = sorted(y for (y,) in session.query(StaffCountsEffective.effective_year).distinct() if y)
+        require_nonempty_selection(
+            [y for y in carried if y == args.year],
+            what=f"staff_counts_effective rows for effective_year={args.year}", available=carried,
+        )
         stats = merge_sea_into_effective(
             session,
             nces_year=args.year,

@@ -30,7 +30,8 @@ sys.path.insert(0, str(project_root))
 
 from sqlalchemy import func
 from infrastructure.database.connection import session_scope
-from infrastructure.utilities.school_year import COVID_EXCLUDED_YEARS, NCES_PRIMARY_YEAR
+from infrastructure.utilities.data_guards import DataGuardError, require_nonempty_selection
+from infrastructure.utilities.school_year import COVID_EXCLUDED_YEARS, NCES_PRIMARY_YEAR, SPED_BASELINE_YEAR
 from infrastructure.database.models import (
     District, SpedStateBaseline, SpedLeaBaseline, SpedEstimate, DataLineage,
     EnrollmentByGrade, StaffCountsEffective,
@@ -55,7 +56,7 @@ def select_year_totals(session, year: str) -> list[YearTotals]:
     for all 17,842 rows (tests/test_sped_segmentation.py::TestSpedYearTotals locks this).
     """
     if year in COVID_EXCLUDED_YEARS:
-        raise SystemExit(f"apply_sped_estimates: {year} is a COVID-excluded year (REQ-007)")
+        raise DataGuardError(f"apply_sped_estimates: {year} is a COVID-excluded year (REQ-007)")
     rows = (
         session.query(
             District.nces_id, District.state,
@@ -186,13 +187,9 @@ def apply_estimates(session, year: str, teacher_ratios: dict, instructional_rati
     districts = select_year_totals(session, year)
 
     print(f"  Found {len(districts):,} districts with valid data")
-    if not districts:
-        # A year neither table carries must fail loud here rather than report "Updated: 0" and
-        # leave the estimates silently stale (the #970 re-run hit that with 2024-25).
-        raise SystemExit(
-            f"apply_sped_estimates: no district has both enrollment and staff for year={year!r}; "
-            f"available: {available_years(session)}"
-        )
+    # G4 (#972): a year neither year-keyed table carries must fail loud, never "Updated: 0", exit 0.
+    require_nonempty_selection(districts, what=f"districts with enrollment+staff for {year}",
+                               available=available_years(session))
 
     created = 0
     updated = 0
@@ -302,7 +299,7 @@ def apply_estimates(session, year: str, teacher_ratios: dict, instructional_rati
             estimate = SpedEstimate(
                 district_id=lea_id,
                 estimate_year=year,
-                baseline_year="2017-18",
+                baseline_year=SPED_BASELINE_YEAR,
                 current_total_enrollment=total_enrollment,
                 current_total_teachers=Decimal(str(total_teachers)),
                 ratio_state_sped_teachers_per_student=Decimal(str(teacher_ratio)),

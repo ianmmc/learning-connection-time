@@ -27,6 +27,8 @@ project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from infrastructure.database.connection import session_scope, get_engine
+from infrastructure.utilities.data_guards import reconcile_total
+from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
 from infrastructure.database.models import (
     District,
     StaffCounts,
@@ -199,6 +201,14 @@ def load_enrollment_data(membership_file: Path, year: str) -> pd.DataFrame:
 
     print(f"  Loaded {len(df):,} rows")
 
+    # The file publishes its own per-LEA total ('Education Unit Total'); keep it aside to reconcile
+    # against our component sum below (#970 generalization — see data_guards.reconcile_total).
+    file_totals = (
+        df[df["TOTAL_INDICATOR"].str.strip() == "Education Unit Total"]
+        .assign(LEAID=lambda d: d["LEAID"].apply(_canonical_leaid))
+        .set_index("LEAID")["STUDENT_COUNT"]
+    )
+
     # Filter to only rows we can map
     df = df[df["GRADE"].isin(GRADE_MAPPING.keys())]
     print(f"  {len(df):,} rows after filtering to mapped grades")
@@ -231,6 +241,21 @@ def load_enrollment_data(membership_file: Path, year: str) -> pd.DataFrame:
     # Calculate totals
     grade_columns = [col for col in pivot_df.columns if col.startswith("enrollment_")]
     pivot_df["enrollment_total"] = pivot_df[grade_columns].sum(axis=1)
+
+    # G1: our component sum vs the file's own total, per LEA then in aggregate. Per-LEA disagreement
+    # is expected to be small and real (suppressed total rows: 34 of 17,739 on 2024-25); the AGGREGATE
+    # must reconcile, and an exact integer multiple is the summed-the-total-row signature.
+    joined = pivot_df.set_index("district_id")["enrollment_total"].to_frame("ours").join(
+        file_totals.rename("theirs"), how="inner"
+    ).dropna()
+    disagree = int((joined["ours"] != joined["theirs"]).sum())
+    receipt = reconcile_total(
+        float(joined["ours"].sum()), float(joined["theirs"].sum()),
+        label=f"CCD membership {year}: Σ enrollment_total vs Σ 'Education Unit Total'",
+        n_compared=len(joined), n_disagree=disagree,
+    )
+    print(f"  Reconciled against the file's own totals: {receipt.n_compared:,} LEAs compared, "
+          f"{receipt.n_disagree:,} differ row-wise, aggregate ratio {receipt.ratio:.5f}")
 
     # Calculate K-12 (total minus Pre-K)
     prek_col = "enrollment_prek"
@@ -476,7 +501,10 @@ def populate_effective_staff_counts(session, year: str) -> int:
 
 def main():
     parser = argparse.ArgumentParser(description="Import NCES CCD staff and enrollment data")
-    parser.add_argument("--year", default="2023-24", help="School year (e.g., 2023-24)")
+    parser.add_argument(
+        "--year", default=NCES_PRIMARY_YEAR,
+        help=f"School year to ingest (default: NCES_PRIMARY_YEAR = {NCES_PRIMARY_YEAR}; bump that constant on a new CCD, never this default)",
+    )
     parser.add_argument("--staff-file", type=Path, help="Path to staff CSV file")
     parser.add_argument("--enrollment-file", type=Path, help="Path to membership CSV file")
     args = parser.parse_args()

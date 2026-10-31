@@ -26,6 +26,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, validates
+from infrastructure.utilities.school_year import SPED_BASELINE_YEAR
 
 
 class CalculationMode(str, Enum):
@@ -1167,7 +1168,7 @@ class SpedStateBaseline(Base):
     state: Mapped[str] = mapped_column(String(2), primary_key=True)
 
     # Source tracking
-    source_year: Mapped[str] = mapped_column(String(10), nullable=False, default="2017-18")
+    source_year: Mapped[str] = mapped_column(String(10), nullable=False, default=SPED_BASELINE_YEAR)
 
     # IDEA 618 Personnel: SPED Teachers (Ages 6-21)
     sped_teachers_certified: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
@@ -1256,7 +1257,7 @@ class SpedLeaBaseline(Base):
     state: Mapped[str] = mapped_column(String(2), nullable=False)
 
     # Source tracking
-    source_year: Mapped[str] = mapped_column(String(10), nullable=False, default="2017-18")
+    source_year: Mapped[str] = mapped_column(String(10), nullable=False, default=SPED_BASELINE_YEAR)
 
     # CRDC: SPED Enrollment (IDEA students)
     crdc_sped_enrollment_m: Mapped[Optional[int]] = mapped_column(Integer)
@@ -1321,7 +1322,7 @@ class SpedEstimate(Base):
 
     # Estimation context
     estimate_year: Mapped[str] = mapped_column(String(10), nullable=False)
-    baseline_year: Mapped[str] = mapped_column(String(10), nullable=False, default="2017-18")
+    baseline_year: Mapped[str] = mapped_column(String(10), nullable=False, default=SPED_BASELINE_YEAR)
 
     # Input values (from current year data)
     current_total_enrollment: Mapped[Optional[int]] = mapped_column(Integer)
