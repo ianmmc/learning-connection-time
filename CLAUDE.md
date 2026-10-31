@@ -169,15 +169,17 @@ fires automatically on gate@8 approval — the CLI is the recovery/backfill path
 watchdogs; each script's docstring carries its own check-map, so run the script rather than trusting
 any summary of it.
 
-**Current status (2026-10-29): the dependency-currency stack is MERGED — main is on SQLAlchemy 2.1 /
-psycopg 3, openai 3 / httpx2, pandas 3, FastAPI 0.143 / Starlette 1.x, Postgres 16.15.** Main `9cfa49f`:
-PRs **#931 → #932 → #939 → #942** (closing #930/#933/#934 and all 16 review issues #943–#958). Durable
-decisions + the lessons: `docs/PROJECT_HISTORY.md` 2026-10-29 entry. The **pipeline itself has not
-moved since 2026-08-26** (latest `state_event` 08-26; `batch_00058` sits at Stage 5, 60 `stage8_approval`
-rows, 57 districts in `bell_schedules`) — the October session was infrastructure only. Baseline GREEN on
-main: `lint-imports` **5 kept / 0 broken**, `pytest -q -m "not integration"` **2560 passed, 1 skipped**,
-govdb 410, Node 106. The one red test is `test_model_windows_integration.py` (network, excluded from the
-default suite): the catalog drift it reports IS **#938**, not a regression.
+**Current status (2026-10-31): the SPED baseline is CORRECTED and GUARDED; the IDEA/CRDC refresh is
+PLANNED.** Main `f3c83ce`: PRs **#971** (#970 — the IDEA child-count parse summed its own Total row and
+missed `Separate School, Age 6-21`: national self-contained share 6.65% → **16.1%**, re-run live) and
+**#973** (#972 year-keyed `apply_sped_estimates` + the `data_guards` G1–G5 suite and the declared-year
+fitness test). A `/code-review max` of both found 15 defects (#975–#989); **their fixes are commit
+`67108d4` on local branch `fix/975-989-review-findings` — built and tested (fast gate 2657/1), NOT pushed,
+NOT merged** (#973 merged before it landed). Decisions + lessons: `docs/PROJECT_HISTORY.md` 2026-10-30/31
+entry (also the Apache-2.0 / CC BY 4.0 relicense, `0155947`). The **pipeline has not moved since
+2026-08-26** (latest `state_event` 08-26; `batch_00058` at Stage 5; 57 districts in `bell_schedules`).
+Baseline GREEN on main: `lint-imports` **5 kept / 0 broken**, `pytest -q -m "not integration"` **2586
+passed, 1 skipped**, govdb 410, Node 106. The one red network test is #938 (catalog drift), not a regression.
 
 **Standing findings that change what to do next:**
 - **#823's remedy is unreachable as designed.** `MAX_TOKENS_CEILING = 32000`
@@ -197,21 +199,28 @@ default suite): the catalog drift it reports IS **#938**, not a regression.
   never written (the CCD ingest's constructor omits it), never read. The in-scope school count is
   `nces_school_counts` in each Stage-1 batch receipt, from `school_sampling.school_index()`.
 
-**Next (RESUME HERE — 2026-10-29).** Two tracks; the deps leftovers are small, the pipeline plan is
-unchanged from 08-26 (`docs/scratch-paper/2026-08-25-fresh-triage-and-validation-batch-plan.md`, untracked).
+**Next (RESUME HERE — 2026-10-31).** The next chunk is **A, the IDEA/CRDC SPED baseline refresh**. The
+pipeline track (B) is unchanged from 08-26 (`docs/scratch-paper/2026-08-25-fresh-triage-and-validation-batch-plan.md`, untracked).
 
-**A. Deps leftovers (all filed, none blocking):**
-1. **#940 — Ian's methodology call:** 545 `lct_calculations` rows carry numeric NaN, not NULL. Its
-   before/after baselines are the four scratch clones, DROPPED 2026-10-29 and kept as `pg_restore`-able
-   archives: `data/backups/scratch-{lct_rb_p2,lct_rb_p2_before,lct_rb_p3,lct_scratch_934}-20261029.dump`
-   (gitignored, ~37 MB total; restore with `pg_restore -U lct_user -C -d postgres <file>` inside the container).
-2. **#941** (`rebuild_database.py` Phase 6 would destroy Stage-9 bell schedules) · **#938** (refresh
-   `MODEL_WINDOWS`; the fetch command is in `model_families.py`) · **#935** lockfile · **#936** Node 24 ·
-   **#937** Postgres 18 runbook (Ian executes on the live DB).
-3. **Local branches to delete** (merged; the auto-mode classifier refused the deletion):
-   `git branch -d chore/deps-currency feat/930-sqlalchemy-21-psycopg3 feat/933-openai3-httpx2
-   feat/934-pandas3 fix/953-dismiss-modals-cold fix/957-stale-docs fix/pin-sqlalchemy-below-2.1` and
-   `git push origin --delete fix/953-dismiss-modals-cold fix/957-stale-docs`.
+**A. IDEA 618 / CRDC SPED baseline refresh (epic #724) — plan:**
+`docs/technical-notes/production-quality-control-research/2026-10-31-idea-crdc-sped-baseline-refresh-plan.md`
+(findings, acceptance properties A1–A6). New files are on disk with sha256 in each `SOURCE.md`:
+`data/raw/federal/idea-618/{2023_24,2024_25}/`, `data/raw/federal/crdc/2023_24/` (gitignored).
+0. **Prerequisite — get `fix/975-989-review-findings` (`67108d4`) merged:** push + PR (Ian's call);
+   closes #975–#989. Consequence to expect: `merge_sea_precedence` now **fails loud on MA** (live
+   `ma_staff_data` is stamped `2025-26`, declared `2024-25`) until MA is re-imported — the guard working (#984).
+1. **#999** multi-vintage `sped_*_baseline` schema + `apply_sped_estimates --baseline-year` ‖ **#1000**
+   IDEA vintage profiles ("Ages 6-21" → "School Age", which now includes kindergarten 5-year-olds; the
+   hardened parsers correctly refuse both new files today).
+2. **#960** CRDC reserve codes (2023-24: `-9` on 1,835 schools, `-10` on every nonbinary column) → **#1001**
+   CRDC 2023-24 paired with CCD 2023-24 membership.
+3. **#1002** read-only before/after script → **stop for Ian's three calls** (adopt? School Age vs 6-21?
+   do ratio vintages enter the REQ-026 window — today they never do) → **#1003** adopt (data write:
+   `pg_dump` first, SPED scripts only, **never `rebuild_database.py`** — #941) → **#1004** per-LEA
+   self-contained share as its own change.
+4. Open methodology calls nearby: **#974** (SPED partition's teacher base ≠ `teachers_only`'s) ·
+   **#940** (545 NaN `lct_calculations` rows). Lower-severity review items: #990–#998.
+   Infra leftovers: #941 · #938 · #935 · #936 · #937.
 
 **B. Pipeline (resumes exactly where 08-26 left it):**
 1. **`batch_00058` gate@5 tagging — Ian, console.** 12 fresh districts, 252 records; the **first
@@ -252,12 +261,13 @@ unchanged from 08-26 (`docs/scratch-paper/2026-08-25-fresh-triage-and-validation
 **Resume essentials:** `source .venv/bin/activate` (the project `.venv` is the ONE env — the git hooks
 prefer it and the pre-push refuses a stale one, #955) · `pip install -r requirements.txt && pip install
 -e .` · `docker-compose up -d` (Docker Postgres 16.15 — never `brew services`) · verify with
-`lint-imports` (expect 5 kept / 0 broken) + `pytest -q -m "not integration"` (2560 passed, 1 skipped);
+`lint-imports` (expect 5 kept / 0 broken) + `pytest -q -m "not integration"` (2586 passed, 1 skipped on main);
 add `pytest -q -m govdb` (410) and `npm test` in `infrastructure/scraper` (106) when touching those
 layers. Console: `python3 -m infrastructure.acquisition.process_governance.server` → :8005 (scratch
 servers on **:8015**). Expected counts live in `GETTING_STARTED.md` §3 — their ONE home; §3a carries the
 verified precious-tables `pg_dump` (it runs **inside** the container and must redirect with `>`, never
-`-f`); last backup `data/backups/precious-20261029T134609Z.sql` (gitignored). Governance DB import is
+`-f`); last precious backup `data/backups/precious-20261029T134609Z.sql`, last SPED/LCT backup
+`data/backups/sped-pre970-20261031T052931Z.sql` (both gitignored). Governance DB import is
 `from infrastructure.acquisition.common import db as gdb` (NOT `gov_db`); every engine URL goes through
 `infrastructure/utilities/db_url.py` (driver pinned to psycopg 3, auto-prepare OFF — never build an
 engine around it); the LCT calc's DB rows come ONLY from `infrastructure/utilities/frames.db_records`.
