@@ -21,7 +21,12 @@ State aggregate table with columns:
 - pct_diff: (diff_mean / federal_mean) * 100
 
 Usage:
-    python compare_sea_vs_federal_lct.py [--year 2023-24]
+    python compare_sea_vs_federal_lct.py [--year 2024-25]
+
+`--year` selects the FEDERAL (NCES CCD) vintage only. Each state's SEA data is always read at the vintage
+declared in `SEA_STATES` (sea_import_utils.py), so a state whose SEA vintage differs from `--year` is a
+cross-vintage pair: the output carries `sea_year`, `federal_year` and `vintage_aligned` per state and the
+console flags every mismatch. A `--year` with no federal rows at all exits non-zero (DataGuardError).
 """
 
 import argparse
@@ -45,6 +50,7 @@ DEFAULT_MINUTES = 360
 
 # SEA states with data: the per-state vintage registry has ONE home (#990).
 from infrastructure.database.migrations.sea_import_utils import SEA_STATES  # noqa: E402
+from infrastructure.utilities.data_guards import require_nonempty_selection  # noqa: E402
 
 
 def calculate_lct(minutes: float, staff: float, enrollment: float) -> float:
@@ -212,6 +218,48 @@ def compare_sources(federal_df: pd.DataFrame, sea_df: pd.DataFrame, state: str) 
     return comparison
 
 
+def _available_federal_years(session) -> list:
+    return [r[0] for r in session.execute(text("SELECT DISTINCT source_year FROM staff_counts ORDER BY 1"))]
+
+
+def compare_all(session, federal_year: str) -> List[Dict]:
+    """Compare every SEA state against the federal data of `federal_year`.
+
+    Each result carries the SEA and federal vintages and whether they match (#992): `--year` moves only the
+    federal side, so a mismatched pair is flagged rather than presented as a single-year comparison. An
+    empty federal selection across ALL states is a wrong `--year`, not an empty workload, and raises."""
+    results = []
+    federal_rows = 0
+    for state, config in SEA_STATES.items():
+        print(f"Processing {state}...")
+
+        federal_df = get_federal_data(session, state, federal_year)
+        federal_rows += len(federal_df)
+        print(f"  Federal: {len(federal_df)} districts")
+
+        sea_df = get_sea_data(session, state, config)
+        print(f"  SEA: {len(sea_df)} districts")
+
+        comparison = compare_sources(federal_df, sea_df, state)
+        if comparison:
+            comparison['sea_year'] = config['year']
+            comparison['federal_year'] = federal_year
+            comparison['vintage_aligned'] = config['year'] == federal_year
+            results.append(comparison)
+            print(f"  Compared: {comparison['districts_compared']} districts")
+            if not comparison['vintage_aligned']:
+                print(f"  WARNING: cross-vintage pair - SEA {config['year']} vs federal {federal_year}")
+        else:
+            print("  No overlapping data")
+
+    if federal_rows == 0:
+        # Only the empty case pays for the extra query.
+        require_nonempty_selection(
+            [], what=f"federal staff/enrollment rows for --year {federal_year}",
+            available=_available_federal_years(session))
+    return results
+
+
 def main():
     parser = argparse.ArgumentParser(description="Compare SEA vs Federal LCT calculations")
     parser.add_argument("--year", default=NCES_PRIMARY_YEAR, help=f"NCES baseline year (default: NCES_PRIMARY_YEAR = {NCES_PRIMARY_YEAR})")
@@ -224,27 +272,8 @@ def main():
     print(f"Scopes: teachers_only, all")
     print()
 
-    results = []
-
     with session_scope() as session:
-        for state, config in SEA_STATES.items():
-            print(f"Processing {state}...")
-
-            # Get federal data
-            federal_df = get_federal_data(session, state, args.year)
-            print(f"  Federal: {len(federal_df)} districts")
-
-            # Get SEA data
-            sea_df = get_sea_data(session, state, config)
-            print(f"  SEA: {len(sea_df)} districts")
-
-            # Compare
-            comparison = compare_sources(federal_df, sea_df, state)
-            if comparison:
-                results.append(comparison)
-                print(f"  Compared: {comparison['districts_compared']} districts")
-            else:
-                print(f"  No overlapping data")
+        results = compare_all(session, args.year)
 
     # Create comparison dataframe
     if not results:
@@ -266,7 +295,9 @@ def main():
     print("=" * 70)
     print("COMPARISON SUMMARY")
     print("=" * 70)
-    print(comparison_df[['state', 'districts_compared', 'teachers_only_fed_mean', 'teachers_only_sea_mean', 'teachers_only_diff', 'teachers_only_pct_diff']].to_string(index=False))
+    if not comparison_df['vintage_aligned'].all():
+        print("NOTE: rows with vintage_aligned=False compare SEA data against a different federal vintage.")
+    print(comparison_df[['state', 'sea_year', 'federal_year', 'vintage_aligned', 'districts_compared', 'teachers_only_fed_mean', 'teachers_only_sea_mean', 'teachers_only_diff', 'teachers_only_pct_diff']].to_string(index=False))
     print()
     print(f"Saved to: {output_file}")
 
