@@ -494,6 +494,9 @@ requirements:
         enrollment_k12), so the enrollment-weighted mean of core_sped and teachers_gened equals
         teachers_only on every single-year, uncapped, non-CA-actual district — evaluated on the live rows,
         never only documented (issue 974)
+      - A district uses its own IDEA LEA self-contained share when its LEA has at least the vintage
+        profile's lea_self_contained_min_sped (200) school-age SPED students and the counts are not
+        suppressed; otherwise its state's (issue 1004)
       - Calculates 3 SPED scopes - core_sped, teachers_gened, instructional_sped
       - core_sped uses SPED teachers / self-contained SPED students
       - teachers_gened uses GenEd teachers / GenEd enrollment (includes mainstreamed SPED)
@@ -516,6 +519,8 @@ requirements:
       - tests/test_sped_baseline_refresh.py::test_profiles_carry_the_t5_decisions
       - tests/test_sped_segmentation.py::TestSpedPartitionIdentity
       - tests/test_data_guard_wiring.py::TestApplyEstimatesReplacesTheYear
+      - tests/test_sped_baseline_refresh.py::TestLeaSelfContainedRule
+      - tests/test_sped_baseline_refresh.py::TestLeaSelfContainedShare
     created: "2026-01-12T03:30:00Z"
     updated: "2026-10-31T23:00:00Z"
     notes: "From SPED_SEGMENTATION_IMPLEMENTATION.md v3 self-contained focus; guards amended 2026-10-31 (#975/#981/#982); refreshed baseline adopted 2026-10-31 (#999/#1000/#960/#1001/#1003)"

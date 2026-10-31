@@ -731,8 +731,10 @@ membership (the CRDC's own year). Files, sha256 pins and label vocabularies per 
 
 **Two-step estimation** (per current-year district): estimated all-SPED = total enrollment × LEA SPED
 proportion (CRDC, LEA-specific for 94.5% of 2024-25 districts, state-average fallback otherwise) → estimated
-self-contained SPED = all-SPED × state self-contained proportion (IDEA 618, national 14.8%, states range
-4.5% WY – 22.7% DC) → GenEd enrollment = total − self-contained → SPED teachers = self-contained × state teacher
+self-contained SPED = all-SPED × self-contained proportion — the district's OWN share from the IDEA 618
+LEA environments file when its LEA has ≥ 200 school-age SPED students and both self-contained cells are
+real counts (4,304 LEAs; #1004, adopted 2026-10-31 — below 200 the published shares are biased toward 0
+by small-cell suppression), else its state's (IDEA 618, national 14.8%, states range 4.5% WY – 22.7% DC) → GenEd enrollment = total − self-contained → SPED teachers = self-contained × state teacher
 ratio → SPED instructional = self-contained × state instructional ratio → GenEd teachers = total teachers
 − SPED teachers.
 
