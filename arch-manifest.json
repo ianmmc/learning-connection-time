@@ -260,5 +260,65 @@
         "schema": "stage7_mode_stability.schema.json"
       }
     ]
+  },
+  "data_year_literals": {
+    "_comment": "G3 (#972 generalization, 2026-10-30). 'Current' is spelled NCES_PRIMARY_YEAR (infrastructure/utilities/school_year.py) — never a hand-typed school-year literal acting as a default or a filter. The ONLY legitimate literals name a FIXED source vintage: the 2017-18 SPED baseline (REQ-018) or the year of a SEA workbook that is on disk. Each must be declared here with a reason; tests/test_no_hand_typed_currency_years.py fails on an undeclared literal AND on a declared one that no longer matches (stale exemption). Found by measuring #972's shape across the tree: six operational scripts carried a currency default, two of them already stale.",
+    "exemptions": [
+      {
+        "file": "infrastructure/utilities/school_year.py",
+        "literal": "2017-18",
+        "why": "SPED_BASELINE_YEAR — the single home of the IDEA 618 / CRDC baseline vintage (REQ-018); models.py, import_sped_baseline.py and apply_sped_estimates.py import it rather than spelling it."
+      },
+      {
+        "file": "infrastructure/utilities/school_year.py",
+        "literal": "2018-19",
+        "why": "PRE_COVID_FALLBACK_YEAR — the named pre-COVID fallback when nothing recent exists (REQ-007); a fixed calendar fact, not 'current'."
+      },
+      {
+        "file": "infrastructure/utilities/school_year.py",
+        "literal": "2024-25",
+        "why": "NCES_PRIMARY_YEAR itself — the single source of truth every other 'current' derives from; bumped on CCD ingest (a data event)."
+      },
+      {
+        "file": "infrastructure/database/migrations/import_texas_tapr_data.py",
+        "literal": "2024-25",
+        "why": "Vintage of the TEA TAPR files on disk; a SEA import's year is its source's year, overridable with --year when a newer file lands."
+      },
+      {
+        "file": "infrastructure/database/migrations/import_california_staff_data.py",
+        "literal": "2024-25",
+        "why": "Vintage of the CDE staff files on disk; same rule as TAPR."
+      },
+      {
+        "file": "infrastructure/database/migrations/import_new_york_data.py",
+        "literal": "2023-24",
+        "why": "SOURCE_YEAR: vintage of the NYSED workbooks on disk (sheet public-district-<year>); parameterized into --year in the #972 follow-up, it stamps every row and selects the sheet."
+      },
+      {
+        "file": "infrastructure/database/migrations/import_ca_lcff.py",
+        "literal": "2023-24",
+        "why": "fiscal_year of the LCFF funding file on disk (a fiscal, not school, vintage)."
+      },
+      {
+        "file": "infrastructure/scripts/analyze/validate_ca_sped_integration.py",
+        "literal": "2023-24",
+        "why": "Read-only validation report pinned to the CA SEA 2023-24 SPED environments vintage it validates."
+      },
+      {
+        "file": "infrastructure/scripts/analyze/ca_validation_report.py",
+        "literal": "2023-24",
+        "why": "Read-only CA validation report pinned to the 2023-24 CA SEA / LCFF / socioeconomic vintages it compares."
+      },
+      {
+        "file": "infrastructure/database/migrations/import_massachusetts_data.py",
+        "literal": "2024-25",
+        "why": "TEACHER_DATA_YEAR: vintage of the DESE teacher file on disk; a SEA import's year is its source's year."
+      },
+      {
+        "file": "infrastructure/database/migrations/import_massachusetts_data.py",
+        "literal": "2025-26",
+        "why": "ENROLLMENT_DATA_YEAR: vintage of the DESE enrollment file on disk (DESE publishes enrollment a year ahead of staffing)."
+      }
+    ]
   }
 }

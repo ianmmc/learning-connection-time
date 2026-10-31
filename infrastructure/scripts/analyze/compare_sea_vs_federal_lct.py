@@ -25,6 +25,7 @@ Usage:
 """
 
 import argparse
+from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -221,7 +222,7 @@ def compare_sources(federal_df: pd.DataFrame, sea_df: pd.DataFrame, state: str) 
 
 def main():
     parser = argparse.ArgumentParser(description="Compare SEA vs Federal LCT calculations")
-    parser.add_argument("--year", default="2023-24", help="NCES baseline year")
+    parser.add_argument("--year", default=NCES_PRIMARY_YEAR, help=f"NCES baseline year (default: NCES_PRIMARY_YEAR = {NCES_PRIMARY_YEAR})")
     args = parser.parse_args()
 
     print("=" * 70)

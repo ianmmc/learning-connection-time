@@ -13,6 +13,7 @@ Usage:
     python import_new_york_data.py
 """
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -48,6 +49,12 @@ NY_DATA_DIR = project_root / "data" / "raw" / "state" / "new-york"
 STAFF_FILE = NY_DATA_DIR / "ny_staffing_2023_24.xlsx"
 ENROLLMENT_FILE = NY_DATA_DIR / "ny_enrollment_district_2023_24.xlsx"
 SPED_ENROLLMENT_FILE = NY_DATA_DIR / "ny_enrollment_sped_2023_24.xlsx"
+
+
+# Vintage of the NYSED workbooks on disk (sheet "public-district-<year>"). This is the SOURCE's year,
+# not the project's current primary year — a SEA file is what it is. Override with --year when a
+# newer workbook is dropped in; the sheet name and every stored row follow it.
+SOURCE_YEAR = "2023-24"
 
 
 def load_ny_crosswalk(session) -> dict:
@@ -96,7 +103,7 @@ def load_enrollment_data():
     try:
         df = pd.read_excel(
             ENROLLMENT_FILE,
-            sheet_name="public-district-2023-24"
+            sheet_name=f"public-district-{SOURCE_YEAR}"
         )
         logger.info(f"Loaded {len(df)} rows from enrollment file")
         return df
@@ -116,7 +123,7 @@ def load_sped_enrollment_data():
     try:
         df = pd.read_excel(
             SPED_ENROLLMENT_FILE,
-            sheet_name="public-district-2023-24"
+            sheet_name=f"public-district-{SOURCE_YEAR}"
         )
         logger.info(f"Loaded {len(df)} rows from SPED enrollment file")
         return df
@@ -205,13 +212,14 @@ def import_district_identifiers():
                 session.execute(text("""
                     INSERT INTO ny_district_identifiers
                     (nces_id, nysed_district_id, district_name_nysed, source_year)
-                    VALUES (:nces_id, :nysed_id, :name, '2023-24')
+                    VALUES (:nces_id, :nysed_id, :name, :source_year)
                     ON CONFLICT (nces_id) DO UPDATE SET
                         nysed_district_id = EXCLUDED.nysed_district_id,
                         district_name_nysed = EXCLUDED.district_name_nysed,
                         updated_at = CURRENT_TIMESTAMP
                 """), {
                     "nces_id": nces_id,
+                    "source_year": SOURCE_YEAR,
                     "nysed_id": nysed_id,
                     "name": district_name
                 })
@@ -275,7 +283,7 @@ def import_staff_data(df):
                 session.execute(text("""
                     INSERT INTO ny_staff_data
                     (nces_id, year, staff_category, fte, enrollment_k12, district_ratio)
-                    VALUES (:nces_id, '2023-24', :category, :fte, :enroll, :ratio)
+                    VALUES (:nces_id, :source_year, :category, :fte, :enroll, :ratio)
                     ON CONFLICT (nces_id, year, staff_category, data_source) DO UPDATE SET
                         fte = EXCLUDED.fte,
                         enrollment_k12 = EXCLUDED.enrollment_k12,
@@ -283,6 +291,7 @@ def import_staff_data(df):
                         updated_at = CURRENT_TIMESTAMP
                 """), {
                     "nces_id": nces_id,
+                    "source_year": SOURCE_YEAR,
                     "category": staff_category,
                     "fte": fte,
                     "enroll": enrollment,
@@ -368,13 +377,14 @@ def import_enrollment_data(df, sped_df=None):
                     session.execute(text("""
                         INSERT INTO ny_enrollment_data
                         (nces_id, year, subgroup, enrollment_prek12, enrollment_by_grade)
-                        VALUES (:nces_id, '2023-24', :subgroup, :enrollment, CAST(:grades_json AS jsonb))
+                        VALUES (:nces_id, :source_year, :subgroup, :enrollment, CAST(:grades_json AS jsonb))
                         ON CONFLICT (nces_id, year, subgroup, data_source) DO UPDATE SET
                             enrollment_prek12 = EXCLUDED.enrollment_prek12,
                             enrollment_by_grade = EXCLUDED.enrollment_by_grade,
                             updated_at = CURRENT_TIMESTAMP
                     """), {
                         "nces_id": nces_id,
+                    "source_year": SOURCE_YEAR,
                         "subgroup": subgroup,
                         "enrollment": enrollment,
                         "grades_json": json.dumps(grade_data)
@@ -432,13 +442,14 @@ def import_enrollment_data(df, sped_df=None):
                     session.execute(text("""
                         INSERT INTO ny_enrollment_data
                         (nces_id, year, subgroup, enrollment_prek12, enrollment_by_grade)
-                        VALUES (:nces_id, '2023-24', :subgroup, :enrollment, CAST(:grades_json AS jsonb))
+                        VALUES (:nces_id, :source_year, :subgroup, :enrollment, CAST(:grades_json AS jsonb))
                         ON CONFLICT (nces_id, year, subgroup, data_source) DO UPDATE SET
                             enrollment_prek12 = EXCLUDED.enrollment_prek12,
                             enrollment_by_grade = EXCLUDED.enrollment_by_grade,
                             updated_at = CURRENT_TIMESTAMP
                     """), {
                         "nces_id": nces_id,
+                    "source_year": SOURCE_YEAR,
                         "subgroup": subgroup,
                         "enrollment": enrollment,
                         "grades_json": json.dumps(grade_data)
@@ -456,6 +467,11 @@ def import_enrollment_data(df, sped_df=None):
 
 def main():
     """Main import process."""
+    global SOURCE_YEAR
+    parser = argparse.ArgumentParser(description="Import NYSED staff + enrollment workbooks")
+    parser.add_argument("--year", default=SOURCE_YEAR,
+                        help=f"Vintage of the NYSED workbooks (default: {SOURCE_YEAR}; selects the sheet and stamps every row)")
+    SOURCE_YEAR = parser.parse_args().year
     logger.info("=" * 80)
     logger.info("STARTING NEW YORK DATA IMPORT")
     logger.info("=" * 80)

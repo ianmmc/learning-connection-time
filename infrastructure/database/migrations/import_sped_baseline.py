@@ -26,7 +26,9 @@ project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from infrastructure.database.connection import session_scope
+from infrastructure.utilities.school_year import SPED_BASELINE_YEAR
 from infrastructure.database.models import SpedStateBaseline, SpedLeaBaseline, DataLineage
+from infrastructure.utilities.data_guards import reconcile_total, require_labels_seen
 
 # File paths
 DATA_DIR = project_root / "data" / "raw" / "federal"
@@ -80,6 +82,7 @@ def import_idea_personnel(session) -> dict:
     print("\n=== Importing IDEA 618 Personnel (State SPED Teachers + Paras) ===")
 
     state_data = {}
+    personnel_types_seen: set[str] = set()
 
     # Personnel types we care about (Ages 6-21 only)
     TEACHER_TYPE = 'Special Education Teachers for Ages 6-21'
@@ -106,6 +109,7 @@ def import_idea_personnel(session) -> dict:
             # Only process 2017 data (SY 2017-18)
             if year != '2017':
                 continue
+            personnel_types_seen.add(personnel_type)
 
             state_abbr = STATE_ABBR.get(state_name)
             if not state_abbr:
@@ -118,7 +122,7 @@ def import_idea_personnel(session) -> dict:
             if state_abbr not in state_data:
                 state_data[state_abbr] = SpedStateBaseline(
                     state=state_abbr,
-                    source_year="2017-18",
+                    source_year=SPED_BASELINE_YEAR,
                     personnel_source_file=str(IDEA_PERSONNEL_FILE.name)
                 )
 
@@ -138,6 +142,10 @@ def import_idea_personnel(session) -> dict:
                 state_data[state_abbr].sped_paras_qualified = qualified
                 state_data[state_abbr].sped_paras_not_qualified = not_qualified
                 state_data[state_abbr].sped_paras_total = total
+
+    # G2 (#970): the labels we filter on must occur in the file — a relabel ('Ages 6-21' → 'School Age'
+    # in the 2024-25 vintage) must be a parse error, never a run that loads zero teachers.
+    require_labels_seen({TEACHER_TYPE, PARA_TYPE}, personnel_types_seen, label="IDEA 618 personnel types")
 
     # Calculate instructional totals (teachers + paras)
     for state_abbr, record in state_data.items():
@@ -182,6 +190,8 @@ def parse_child_count_rows(headers: list[str], rows, year: str) -> dict[str, dic
     idx_ages_6_21 = headers.index('Ages 6-21') if 'Ages 6-21' in headers else 38
 
     state_totals: dict[str, dict[str, int]] = {}
+    env_sum_6_21: dict[str, int] = {}      # Σ environment rows (NOT the total row) per state, for G1
+    environments_seen: set[str] = set()
     for row in rows:
         if len(row) < max(idx_ages_3_5, idx_ages_6_21) + 1:
             continue
@@ -191,6 +201,7 @@ def parse_child_count_rows(headers: list[str], rows, year: str) -> dict[str, dic
         if not state_abbr:
             continue
         environment = row[2].strip()
+        environments_seen.add(environment)
         totals = state_totals.setdefault(
             state_abbr, {'ages_3_5': 0, 'ages_6_21': 0, 'self_contained': 0, 'mainstreamed': 0}
         )
@@ -201,10 +212,24 @@ def parse_child_count_rows(headers: list[str], rows, year: str) -> dict[str, dic
             totals['ages_3_5'] = ages_3_5
         elif environment == TOTAL_ROW_6_21:
             totals['ages_6_21'] = ages_6_21
-        elif environment in SELF_CONTAINED_ENVIRONMENTS:
-            totals['self_contained'] += ages_6_21
-        elif environment in MAINSTREAMED_ENVIRONMENTS:
-            totals['mainstreamed'] += ages_6_21
+        else:
+            env_sum_6_21[state_abbr] = env_sum_6_21.get(state_abbr, 0) + ages_6_21
+            if environment in SELF_CONTAINED_ENVIRONMENTS:
+                totals['self_contained'] += ages_6_21
+            elif environment in MAINSTREAMED_ENVIRONMENTS:
+                totals['mainstreamed'] += ages_6_21
+
+    # G2: every label the parser keys on must occur in the file (#970's 'Separate School' never did)
+    require_labels_seen(
+        SELF_CONTAINED_ENVIRONMENTS | MAINSTREAMED_ENVIRONMENTS | {TOTAL_ROW_6_21, TOTAL_ROW_3_5},
+        environments_seen, label=f"IDEA 618 child count {year} environments",
+    )
+    # G1: the environment rows must add up to the file's own total row (per state; exact 2× = the
+    # total row was summed in). Rows the file publishes for 6-21 partition the total exactly.
+    for state_abbr, totals in state_totals.items():
+        if totals['ages_6_21']:
+            reconcile_total(env_sum_6_21.get(state_abbr, 0), totals['ages_6_21'],
+                            label=f"IDEA 618 child count {year} {state_abbr}: Σ environments vs Total row")
     return state_totals
 
 
@@ -236,7 +261,7 @@ def import_idea_child_count(session, state_data: dict) -> dict:
         if state_abbr not in state_data:
             state_data[state_abbr] = SpedStateBaseline(
                 state=state_abbr,
-                source_year="2017-18"
+                source_year=SPED_BASELINE_YEAR
             )
 
         state_data[state_abbr].sped_students_ages_3_5 = totals['ages_3_5'] or None
@@ -297,7 +322,7 @@ def import_crdc_enrollment(session, sample_limit: int = None) -> dict:
                     lea_id=lea_id,
                     lea_name=lea_name,
                     state=state,
-                    source_year="2017-18",
+                    source_year=SPED_BASELINE_YEAR,
                     crdc_sped_enrollment_m=0,
                     crdc_sped_enrollment_f=0,
                     crdc_sped_enrollment_total=0,
@@ -376,7 +401,7 @@ def import_ccd_enrollment(session, lea_data: dict, sample_limit: int = None) -> 
                     lea_id=lea_id,
                     lea_name=lea_name,
                     state=state,
-                    source_year="2017-18",
+                    source_year=SPED_BASELINE_YEAR,
                     ccd_total_enrollment=enrollment,
                     ccd_source_file=str(CCD_ENROLLMENT_FILE.name)
                 )

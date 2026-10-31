@@ -32,6 +32,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from infrastructure.database.connection import session_scope
 from infrastructure.database.models import BellSchedule, District
+from infrastructure.utilities.school_year import current_school_year
 from infrastructure.scripts.enrich.content_parser import ContentParser, BellScheduleData
 from sqlalchemy import text
 
@@ -436,7 +437,7 @@ def import_bell_schedule(
     Returns:
         True if successful
     """
-    year = "2025-26"  # Default year for manual collection
+    year = current_school_year()  # manual collection targets the current year (July-1 rollover)
 
     # Check for existing schedule
     existing = session.query(BellSchedule).filter(

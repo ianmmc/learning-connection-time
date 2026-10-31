@@ -26,6 +26,8 @@ project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from infrastructure.database.connection import session_scope
+from infrastructure.utilities.data_guards import require_nonempty_selection
+from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
 from sqlalchemy import text
 import logging
 
@@ -78,7 +80,13 @@ def update_fl_sped_estimates(session, year: str, dry_run: bool = False) -> Dict[
           AND fl.ese_teachers IS NOT NULL
     """)
 
-    results = session.execute(query, {"year": year})
+    results = session.execute(query, {"year": year}).fetchall()
+    # G4 (#972): zero joined rows means the year is not in sped_estimates (or FL has no staff rows),
+    # not "nothing to enhance".
+    require_nonempty_selection(
+        results, what=f"sped_estimates ⋈ fl_staff_data for estimate_year={year}",
+        available=sorted(y for (y,) in session.execute(text("SELECT DISTINCT estimate_year FROM sped_estimates")) if y),
+    )
 
     for row in results:
         stats['districts_checked'] += 1
@@ -141,8 +149,8 @@ def main():
     )
     parser.add_argument(
         "--year",
-        default="2023-24",
-        help="School year (default: 2023-24)"
+        default=NCES_PRIMARY_YEAR,
+        help=f"School year (default: NCES_PRIMARY_YEAR = {NCES_PRIMARY_YEAR})"
     )
     parser.add_argument(
         "--dry-run",

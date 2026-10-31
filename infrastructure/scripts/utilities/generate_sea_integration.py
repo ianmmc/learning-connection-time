@@ -26,6 +26,7 @@ Examples:
 """
 
 import argparse
+from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
 import sys
 from pathlib import Path
 from datetime import datetime
@@ -505,7 +506,7 @@ def main():
 
     parser.add_argument('--state', '-s', type=str, help='Two-letter state code (e.g., OH)')
     parser.add_argument('--agency', '-a', type=str, help='Agency abbreviation (e.g., ODE)')
-    parser.add_argument('--year', '-y', type=str, default='2023-24', help='Data year (default: 2023-24)')
+    parser.add_argument('--year', '-y', type=str, default=NCES_PRIMARY_YEAR, help=f'Data year (default: NCES_PRIMARY_YEAR = {NCES_PRIMARY_YEAR})')
     parser.add_argument('--analyze', type=str, help='Path to Excel/CSV file or directory to analyze')
     parser.add_argument('--output', '-o', type=str, help='Output directory (default: current)')
     parser.add_argument('--dry-run', action='store_true', help='Print output without writing files')
