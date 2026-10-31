@@ -14,6 +14,7 @@ This script:
 3. Stores estimates in sped_estimates table
 
 Usage:
+    python apply_sped_estimates.py            # defaults to NCES_PRIMARY_YEAR
     python apply_sped_estimates.py --year 2023-24
 """
 
@@ -28,6 +29,7 @@ sys.path.insert(0, str(project_root))
 
 from sqlalchemy import func
 from infrastructure.database.connection import session_scope
+from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
 from infrastructure.database.models import (
     District, SpedStateBaseline, SpedLeaBaseline, SpedEstimate, DataLineage
 )
@@ -143,6 +145,15 @@ def apply_estimates(session, year: str, teacher_ratios: dict, instructional_rati
     ).all()
 
     print(f"  Found {len(districts):,} districts with valid data")
+    if not districts:
+        # `districts` is a single-vintage snapshot (District.year); a year it does not carry must fail
+        # loud here rather than report "Updated: 0" and leave the estimates silently stale (#970 re-run
+        # found this with NCES_PRIMARY_YEAR=2024-25 against a 2023-24 snapshot).
+        vintages = sorted(v for (v,) in session.query(District.year).distinct() if v)
+        raise SystemExit(
+            f"apply_sped_estimates: no districts carry year={year!r}; the districts table holds "
+            f"{vintages}. Pass --year explicitly, or re-source totals from the year-keyed tables."
+        )
 
     created = 0
     updated = 0
@@ -334,7 +345,10 @@ def print_sample_estimates(session, year: str, n: int = 10):
 
 def main():
     parser = argparse.ArgumentParser(description="Apply SPED ratios to current year data")
-    parser.add_argument("--year", default="2023-24", help="Target school year (default: 2023-24)")
+    parser.add_argument(
+        "--year", default=NCES_PRIMARY_YEAR,
+        help=f"Target school year (default: NCES_PRIMARY_YEAR = {NCES_PRIMARY_YEAR}; REQ-026 windows the blend downstream)",
+    )
     args = parser.parse_args()
 
     print("=" * 60)
