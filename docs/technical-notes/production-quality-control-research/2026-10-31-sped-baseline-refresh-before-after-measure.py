@@ -98,7 +98,7 @@ def load_new_lea_rows():
     for lea_id, (n, _st, _nm) in isb.read_ccd_lea_totals(p.ccd.path).items():
         if lea_id in rows:
             rows[lea_id].ccd_total_enrollment = n
-            rows[lea_id].calculate_ratio()
+            rows[lea_id].calculate_ratio(prefer_crdc=False)    # the CCD-denominator variant, explicitly
     return rows
 
 

@@ -105,10 +105,12 @@ class TestProfiles:
             assert not years & COVID_EXCLUDED_YEARS, p.baseline_year
 
     def test_undecided_band_refuses_to_build(self):
-        """The 2024-25 band is a T5 call (#1003): no default, so nothing can be written on a guess."""
-        assert PROFILE_2024_25.school_age_band is None
+        """A vintage whose band is undecided (None) can be measured with an explicit band, never built
+        on a default — the guard that held 2024-25 until the T5 call (#1003)."""
+        import dataclasses
+        undecided = dataclasses.replace(PROFILE_2024_25, school_age_band=None)
         with pytest.raises(DataGuardError, match="not decided"):
-            build_state_baselines(PROFILE_2024_25)
+            build_state_baselines(undecided)
 
 
 class TestVerifySource:
@@ -295,3 +297,24 @@ def test_real_crdc_passes_its_reconciliation(profile):
             leas[lea_id].ccd_total_enrollment = n
     r = m.reconcile_crdc_with_ccd(profile, leas)
     assert 0.97 < r.ratio < 1.0 and r.n_compared > 15_000
+
+
+def test_schema_sql_trigger_is_migration_030s():
+    """#1003: the temporal trigger is declared twice (schema.sql for a fresh DB, migration 030 for a
+    migrated one). They drifted before (schema.sql still carried the span<=3 body) — pin them equal."""
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[1]
+    mig = (root / "infrastructure/database/migrations/030_temporal_window_sped_ratio_years.sql").read_text()
+    sch = (root / "infrastructure/database/schema.sql").read_text()
+    body = mig[mig.index("DECLARE"):mig.index("$$ LANGUAGE plpgsql;")]
+    fn = sch[sch.index("CREATE FUNCTION public.validate_lct_temporal()"):]
+    assert body in fn[:fn.index("$$;")], "schema.sql's validate_lct_temporal differs from migration 030's"
+    assert "component_years -> 'sped_ratio'" in body
+
+
+def test_profiles_carry_the_t5_decisions():
+    """#1003 (Ian, 2026-10-31): 5-21 band, CRDC-own denominator; the applied vintage is 2024-25."""
+    from infrastructure.utilities.school_year import SPED_BASELINE_YEAR
+    assert SPED_BASELINE_YEAR == "2024-25" and SPED_BASELINE_YEAR in PROFILES
+    assert PROFILE_2024_25.school_age_band == "5-21" and PROFILE_2024_25.lea_denominator == "crdc"
+    assert PROFILE_2017_18.lea_denominator == "ccd"

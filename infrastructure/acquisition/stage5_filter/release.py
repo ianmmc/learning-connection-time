@@ -278,7 +278,7 @@ def alternates(reps: list, exclude: set) -> list:
 # ≤3-year span no matter how good its times look. Semantics = HOLD (suppress-to-review), never reject:
 # reversible, preserves a district whose ONLY evidence is old (Brashear's 2012-13 Timetracker). Applies
 # to the AUTO path only — an explicit human target label is the override.
-_VALIDITY_FLOOR_START = SY.start_year(SY.SPED_BASELINE_YEAR)   # 2017
+_VALIDITY_FLOOR_START = SY.start_year(SY.BELL_VALIDITY_FLOOR_YEAR)   # 2017 — its own constant since #1003 moved the SPED baseline
 
 
 # #674: the human's HOLD override — the converse of #241's send override. The floor gave a reviewer
@@ -360,7 +360,7 @@ def decide(rec: dict) -> dict:
             # target (the branch above), which is what preserves a district whose only evidence is old.
             csy = sig.get("content_school_year")
             if pre_validity_floor(csy):
-                return {"decision": "hold", "reason": f"stale:pre-{SY.SPED_BASELINE_YEAR}-validity-floor:{csy}",
+                return {"decision": "hold", "reason": f"stale:pre-{SY.BELL_VALIDITY_FLOOR_YEAR}-validity-floor:{csy}",
                         "send": [], "alternates": []}
             return {"decision": "send", "reason": "auto:tier-A", "send": send,
                     "alternates": alternates(reps, {s["file"] for s in send})}

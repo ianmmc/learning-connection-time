@@ -2038,7 +2038,7 @@ def handoff_candidates():
     will SEND — labeled targets + unlabeled tier-A, MINUS the #241 pre-2017-18 validity-floor holds),
     `n_verified` (the human-labeled-target subset of n_send — what a `verified_only` dispatch sends), and
     `n_hold` (unlabeled tier-B/C awaiting a gate@5 label, PLUS the floor-held tier-A records). Mirrors
-    decide()'s tier gate + #241 floor (the `:floor` bind is release.SPED_BASELINE_YEAR — the single source
+    decide()'s tier gate + #241 floor (the `:floor` bind is SY.BELL_VALIDITY_FLOOR_YEAR — the single source
     of truth), so the badge reflects what dispatch actually sends, not the whole recall-biased funnel. It is
     a per-record UPPER BOUND: #107 prefer-recent may HOLD a further stale same-school sibling at dispatch
     time (a cross-record decision this per-record count can't show). Reuses release.CANONICAL_RECORD_WHERE.
@@ -2150,7 +2150,7 @@ def handoff_candidates():
                     GROUP BY district_id
                 ) ext ON ext.district_id = d.district_id
                 ORDER BY n_send DESC, n_hold DESC, d.district_id"""),
-            {"targets": targets, "floor": SY.SPED_BASELINE_YEAR,
+            {"targets": targets, "floor": SY.BELL_VALIDITY_FLOOR_YEAR,
              "gt": f"{BM.BENCHMARK_URL_SCHEME}%"}).mappings().all()
         return [dict(r) for r in rows]
 

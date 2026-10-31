@@ -17,14 +17,14 @@ SPED Segmentation Variants (January 2026):
 - LCT-Core-SPED: estimated SPED teachers / estimated SPED enrollment (for audit)
 - LCT-Teachers-GenEd: estimated GenEd teachers / estimated GenEd enrollment
 - LCT-Instructional-SPED: (SPED teachers + paras) / estimated SPED enrollment
-  (Uses 2017-18 baseline ratios from IDEA 618 + CRDC to estimate SPED/GenEd split)
+  (Uses the applied IDEA 618 + CRDC baseline ratios — SPED_BASELINE_YEAR — to estimate the SPED/GenEd split)
 
 State-Specific Data Integration (January 2026):
 - California: Uses actual SPED self-contained enrollment from CA CDE when available
-  - DATA PRECEDENCE: CA actual (2023-24) > Federal estimate (2017-18)
+  - DATA PRECEDENCE: CA actual (2023-24) > Federal estimate (the applied baseline)
   - Applies to 990 CA districts with actual SPED environment data
   - Note: Requires CA staff data in NCES (currently unavailable for 2023-24)
-  - Teacher estimates still use 2017-18 federal ratios
+  - Teacher estimates still use the federal baseline ratios
 
 Key Decisions (December 2025):
 - ALL scopes use K-12 enrollment (exclude Pre-K)
@@ -91,6 +91,8 @@ from infrastructure.database.models import (
     CalculationRun,
     CalculationMode,
     SpedEstimate,
+    SpedLeaBaseline,
+    SpedStateBaseline,
     CASpedDistrictEnvironments,
     LCTCalculation,
 )
@@ -409,6 +411,20 @@ def get_most_recent_sped(session, target_year: Optional[str] = None) -> Dict[str
     return {s.district_id: (s, s.estimate_year) for s in sped_estimates}
 
 
+def get_sped_ratio_years(session) -> Dict[str, List[str]]:
+    """{baseline_year: sorted component data years} — the IDEA personnel / child count and CRDC / CCD
+    years each SPED baseline vintage was built from (#999). They ride on every SPED row
+    (component_years.sped_ratio) and enter the REQ-026 window like any other input (#1003)."""
+    out: Dict[str, set] = {}
+    for b, *years in session.query(SpedStateBaseline.baseline_year, SpedStateBaseline.personnel_year,
+                                   SpedStateBaseline.child_count_year).distinct():
+        out.setdefault(b, set()).update(y for y in years if y)
+    for b, *years in session.query(SpedLeaBaseline.baseline_year, SpedLeaBaseline.crdc_year,
+                                   SpedLeaBaseline.ccd_year).distinct():
+        out.setdefault(b, set()).update(y for y in years if y)
+    return {b: sorted(v) for b, v in out.items()}
+
+
 def get_most_recent_ca_sped(session, target_year: Optional[str] = None) -> Dict[str, Any]:
     """
     Get CA actual SPED data, preferring target_year if specified, else most recent.
@@ -530,6 +546,7 @@ def calculate_all_variants(
     sped_map = {k: v[0] for k, v in sped_with_years.items()}
     sped_years = {k: v[1] for k, v in sped_with_years.items()}
     print(f"  Found {len(sped_map):,} districts with SPED estimates")
+    sped_ratio_years = get_sped_ratio_years(session)
 
     # Get CA actual SPED data (mode-aware - can blend in both modes)
     ca_sped_with_years = get_most_recent_ca_sped(session, target_year)
@@ -760,6 +777,12 @@ def calculate_all_variants(
         enrollment_source = None
         enrollment_confidence = None
 
+        # The baseline vintage the estimate was built from, and that vintage's component years (#1003)
+        sped_baseline = sped_estimate.baseline_year if sped_estimate else None
+        sped_source = f"sped_estimate_{sped_baseline}"
+        ratio_years = sped_ratio_years.get(sped_baseline, []) if sped_baseline else []
+        sped_component_years = {"sped_ratio": ratio_years} if ratio_years else None
+
         if ca_actual and ca_actual.confidence != "low":
             # Use CA actual self-contained SPED enrollment (2023-24 or later)
             sped_enrollment = ca_actual.sped_self_contained
@@ -770,18 +793,18 @@ def calculate_all_variants(
             enrollment_confidence = ca_actual.confidence
             all_years_used.add(ca_sped_year)
         elif sped_estimate and sped_estimate.confidence != "low":
-            # Fallback to Federal estimate (2017-18 baseline)
+            # Fallback to the federal estimate (the applied IDEA 618 / CRDC baseline)
             sped_enrollment = sped_estimate.estimated_self_contained_sped
             gened_enrollment = sped_estimate.estimated_gened_enrollment
-            enrollment_source = "sped_estimate_2017-18"
+            enrollment_source = sped_source
             enrollment_confidence = sped_estimate.confidence
 
-        # Teacher estimates: Always use 2017-18 federal ratios (we don't have CA actual teacher splits)
+        # Teacher estimates: always the federal baseline ratios (we don't have CA actual teacher splits)
         # When CA actual enrollment is paired with federal teacher ratios, the numerator and
         # denominator come from different SPED splits — flag it so the mismatch is visible in
         # QA output instead of silent (issue #419).
         mixed_sources_note = (
-            "; WARN_MIXED_SPED_SOURCES: CA actual enrollment paired with 2017-18 federal teacher ratios"
+            f"; WARN_MIXED_SPED_SOURCES: CA actual enrollment paired with {sped_baseline} federal teacher ratios"
             if enrollment_source and enrollment_source.startswith("ca_actual") else ""
         )
         if sped_estimate and sped_estimate.confidence != "low":
@@ -804,6 +827,7 @@ def calculate_all_variants(
                         core_sped_notes += "; WARN_SPED_RATIO_CAP: LCT capped at 360 (high teacher-to-student ratio)"
                     sped_year = sped_years.get(staff.district_id, SPED_BASELINE_YEAR)
                     all_years_used.add(sped_year)
+                    all_years_used.update(ratio_years)
                     results.append({
                         "district_id": staff.district_id,
                         "district_name": district.name,
@@ -814,7 +838,8 @@ def calculate_all_variants(
                         "instructional_minutes_source": minutes_source,
                         "instructional_minutes_year": minutes_year,
                         "staff_count": sped_teachers,
-                        "staff_source": "sped_estimate_2017-18",
+                        "staff_source": sped_source,
+                        "component_years": sped_component_years,
                         "staff_year": sped_year,
                         "enrollment": sped_enrollment,
                         "enrollment_type": "self_contained_sped",
@@ -835,6 +860,7 @@ def calculate_all_variants(
                 if lct_gened is not None and lct_gened <= 360:
                     gened_sped_year = sped_years.get(staff.district_id, SPED_BASELINE_YEAR)
                     all_years_used.add(gened_sped_year)
+                    all_years_used.update(ratio_years)
                     results.append({
                         "district_id": staff.district_id,
                         "district_name": district.name,
@@ -845,7 +871,8 @@ def calculate_all_variants(
                         "instructional_minutes_source": minutes_source,
                         "instructional_minutes_year": minutes_year,
                         "staff_count": gened_teachers,
-                        "staff_source": "sped_estimate_2017-18",
+                        "staff_source": sped_source,
+                        "component_years": sped_component_years,
                         "staff_year": gened_sped_year,
                         "enrollment": gened_enrollment,
                         "enrollment_type": "gened",
@@ -870,6 +897,7 @@ def calculate_all_variants(
                         instr_sped_notes += "; WARN_SPED_RATIO_CAP: LCT capped at 360 (high instructional-to-student ratio)"
                     instr_sped_year = sped_years.get(staff.district_id, SPED_BASELINE_YEAR)
                     all_years_used.add(instr_sped_year)
+                    all_years_used.update(ratio_years)
                     results.append({
                         "district_id": staff.district_id,
                         "district_name": district.name,
@@ -880,7 +908,8 @@ def calculate_all_variants(
                         "instructional_minutes_source": minutes_source,
                         "instructional_minutes_year": minutes_year,
                         "staff_count": sped_instructional,
-                        "staff_source": "sped_estimate_2017-18",
+                        "staff_source": sped_source,
+                        "component_years": sped_component_years,
                         "staff_year": instr_sped_year,
                         "enrollment": sped_enrollment,
                         "enrollment_type": "self_contained_sped",
@@ -1316,6 +1345,8 @@ def write_calculations_to_db(
                 lct_value=result['lct_value'],
                 data_tier=get_data_tier(result['instructional_minutes_source']),
                 notes=result.get('level_lct_notes', ''),
+                # SPED rows: the baseline's component years, windowed by the trigger (migration 030, #1003)
+                component_years=result.get('component_years'),
                 # Temporal-validation inputs (issue #11): the migration-008 trigger computes
                 # year_span/within_3year_window/temporal_flags from THESE three — they were
                 # never populated before, leaving the trigger inert. Statutory minutes carry

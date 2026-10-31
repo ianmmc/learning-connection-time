@@ -267,14 +267,14 @@
       {
         "file": "infrastructure/utilities/school_year.py",
         "literal": "2024-25",
-        "count": 1,
-        "why": "NCES_PRIMARY_YEAR itself — the single source of truth every other 'current' derives from; bumped on CCD ingest (a data event)."
+        "count": 2,
+        "why": "NCES_PRIMARY_YEAR (the single source of truth every other 'current' derives from; bumped on CCD ingest, a data event) and SPED_BASELINE_YEAR (the applied IDEA 618 / CRDC baseline vintage, flipped to 2024-25 by #1003; models.py, import_sped_baseline.py, apply_sped_estimates.py and calculate_lct_variants.py import it rather than spelling it)."
       },
       {
         "file": "infrastructure/utilities/school_year.py",
         "literal": "2017-18",
         "count": 1,
-        "why": "SPED_BASELINE_YEAR — the single home of the IDEA 618 / CRDC baseline vintage (REQ-018); models.py, import_sped_baseline.py, apply_sped_estimates.py and calculate_lct_variants.py import it rather than spelling it."
+        "why": "BELL_VALIDITY_FLOOR_YEAR — the #241 Stage-5 hold floor for bell documents (release.py, server.py and app.js's mirror). Set at the old CRDC 2017-18 baseline and deliberately not moved when #1003 flipped SPED_BASELINE_YEAR."
       },
       {
         "file": "infrastructure/utilities/school_year.py",

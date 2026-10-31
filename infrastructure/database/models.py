@@ -483,6 +483,9 @@ class LCTCalculation(Base):
     year_span: Mapped[Optional[int]] = mapped_column(Integer)
     within_3year_window: Mapped[Optional[bool]] = mapped_column(Boolean)
     temporal_flags: Mapped[Optional[list]] = mapped_column(ARRAY(Text))
+    # Extra source-year components the trigger windows (migration 030): {"sped_ratio": [years]} on the
+    # SPED scopes — the applied baseline vintage's IDEA / CRDC / CCD component years (#1003)
+    component_years: Mapped[Optional[dict]] = mapped_column(JSONB)
 
     # Timestamp
     calculated_at: Mapped[datetime] = mapped_column(
@@ -1304,12 +1307,13 @@ class SpedLeaBaseline(Base):
     def __repr__(self) -> str:
         return f"<SpedLeaBaseline {self.lea_id}/{self.baseline_year} ({self.state}): {self.crdc_sped_enrollment_total} SPED / {self.ccd_total_enrollment} total>"
 
-    def calculate_ratio(self) -> None:
+    def calculate_ratio(self, prefer_crdc: bool = False) -> None:
         """Calculate Ratio 4b: SPED proportion of total enrollment."""
-        # Prefer CCD total enrollment, fall back to CRDC if not available. When reserve-coded schools
-        # were excluded from the CRDC numerator, the denominator must be the CRDC total of the SAME
-        # schools — CCD counts the excluded ones too, which would bias the share low (#960, pairwise).
-        if self.crdc_schools_reserved:
+        # Prefer CCD total enrollment, fall back to CRDC if not available — unless the vintage divides
+        # by CRDC's own total (prefer_crdc, #1003). When reserve-coded schools were excluded from the
+        # CRDC numerator, the denominator must be the CRDC total of the SAME schools either way — CCD
+        # counts the excluded ones too, which would bias the share low (#960, pairwise).
+        if prefer_crdc or self.crdc_schools_reserved:
             total = self.crdc_total_enrollment
         else:
             total = self.ccd_total_enrollment or self.crdc_total_enrollment

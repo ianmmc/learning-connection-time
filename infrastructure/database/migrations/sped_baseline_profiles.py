@@ -74,6 +74,9 @@ class BaselineProfile:
     # importer refuses to WRITE the vintage (it can still be parsed and measured) — for 2024-25 this
     # is one of the three T5 calls on #1003 (School Age 5-21 vs 6-21).
     school_age_band: Optional[str] = None
+    # The LEA SPED share's denominator: 'ccd' (CCD K-12 membership when present — the 2017-18 method)
+    # or 'crdc' (CRDC's own M+F total of the same schools as the numerator; CCD only as a fallback).
+    lea_denominator: str = 'ccd'
     notes: tuple[str, ...] = field(default=())
 
 
@@ -156,7 +159,10 @@ PROFILE_2024_25 = BaselineProfile(
     # The CRDC denominator is paired with CCD membership of the CRDC's OWN year, never another (#1001).
     ccd=SourceFile("nces-ccd/2023_24/ccd_lea_052_2324_l_1a_073124.csv",
                    "b488e173764ea27a46dda2ff8e407d28058fd2e3c5c3ed56c32e0e4074ea1184", "2023-24"),
-    school_age_band=None,
+    # #1003 (Ian, 2026-10-31): the 5-21 'School Age' band — one definition across every component,
+    # matching the personnel file — and CRDC's own total as every LEA's denominator.
+    school_age_band='5-21',
+    lea_denominator='crdc',
 )
 
 PROFILES: Mapping[str, BaselineProfile] = {p.baseline_year: p for p in (PROFILE_2017_18, PROFILE_2024_25)}

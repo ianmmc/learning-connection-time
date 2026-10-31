@@ -480,7 +480,13 @@ def import_ccd_enrollment(profile: BaselineProfile, lea_data: dict[str, SpedLeaB
             new_leas += 1
         if sample_limit and (matched + new_leas) >= sample_limit:
             break
-    print(f"  Matched {matched:,} LEAs with CRDC data; added {new_leas:,} CCD-only LEAs")
+    if profile.lea_denominator == 'crdc':
+        # #1003: every LEA divides by CRDC's own total (same schools as the numerator), including the
+        # CRDC LEAs CCD does not list; CCD-only rows carry no CRDC total and stay ratio-less.
+        for r in lea_data.values():
+            r.calculate_ratio(prefer_crdc=True)
+    print(f"  Matched {matched:,} LEAs with CRDC data; added {new_leas:,} CCD-only LEAs "
+          f"(denominator: {profile.lea_denominator})")
     return lea_data
 
 

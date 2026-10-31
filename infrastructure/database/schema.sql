@@ -460,7 +460,15 @@ CREATE FUNCTION public.validate_lct_temporal() RETURNS trigger
     AS $$
 DECLARE
     span INTEGER;
+    covid_years TEXT[] := ARRAY['2019-20', '2020-21', '2021-22', '2022-23'];
+    ratio_years TEXT[];
 BEGIN
+    ratio_years := CASE
+        WHEN jsonb_typeof(NEW.component_years -> 'sped_ratio') = 'array'
+        THEN ARRAY(SELECT jsonb_array_elements_text(NEW.component_years -> 'sped_ratio'))
+        ELSE ARRAY[]::TEXT[]
+    END;
+
     span := (
         SELECT MAX(y) - MIN(y)
         FROM (
@@ -472,24 +480,38 @@ BEGIN
             UNION ALL
             SELECT school_year_to_numeric(NEW.bell_schedule_source_year)
             WHERE NEW.bell_schedule_source_year IS NOT NULL
+            UNION ALL
+            SELECT school_year_to_numeric(r) FROM unnest(ratio_years) AS r
         ) AS years
         WHERE y IS NOT NULL
     );
+
     NEW.year_span := span;
-    NEW.within_3year_window := (span IS NULL OR span <= 3);
+    NEW.within_3year_window := (span IS NULL OR span <= 2);
+
     IF NEW.temporal_flags IS NULL THEN
         NEW.temporal_flags := ARRAY[]::TEXT[];
     END IF;
-    IF span BETWEEN 2 AND 3 THEN
-        IF NOT ('WARN_YEAR_GAP' = ANY(NEW.temporal_flags)) THEN
-            NEW.temporal_flags := array_append(NEW.temporal_flags, 'WARN_YEAR_GAP');
+
+    IF span = 2 AND NOT ('WARN_YEAR_GAP' = ANY(NEW.temporal_flags)) THEN
+        NEW.temporal_flags := array_append(NEW.temporal_flags, 'WARN_YEAR_GAP');
+    END IF;
+
+    IF span > 2 AND NOT ('ERR_SPAN_EXCEEDED' = ANY(NEW.temporal_flags)) THEN
+        NEW.temporal_flags := array_append(NEW.temporal_flags, 'ERR_SPAN_EXCEEDED');
+    END IF;
+
+    -- COVID exclusion (Rule #2): a COVID-era source year is invalid outright
+    IF (NEW.enrollment_source_year = ANY(covid_years)
+        OR NEW.staff_source_year = ANY(covid_years)
+        OR NEW.bell_schedule_source_year = ANY(covid_years)
+        OR ratio_years && covid_years) THEN
+        NEW.within_3year_window := FALSE;
+        IF NOT ('ERR_COVID_YEAR' = ANY(NEW.temporal_flags)) THEN
+            NEW.temporal_flags := array_append(NEW.temporal_flags, 'ERR_COVID_YEAR');
         END IF;
     END IF;
-    IF span > 3 THEN
-        IF NOT ('ERR_SPAN_EXCEEDED' = ANY(NEW.temporal_flags)) THEN
-            NEW.temporal_flags := array_append(NEW.temporal_flags, 'ERR_SPAN_EXCEEDED');
-        END IF;
-    END IF;
+
     RETURN NEW;
 END;
 $$;
@@ -1674,7 +1696,7 @@ COMMENT ON COLUMN public.lct_calculations.staff_source IS 'Source of staff data 
 -- Name: COLUMN lct_calculations.component_years; Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.lct_calculations.component_years IS 'JSON tracking source years for each component: {enrollment, staffing, bell_schedule}';
+COMMENT ON COLUMN public.lct_calculations.component_years IS 'Extra source-year components the temporal trigger windows (migration 030, #1003): {"sped_ratio": [years]} on SPED-scope rows — the applied SPED baseline vintage''s IDEA personnel / child count and CRDC / CCD data years.';
 
 
 --
