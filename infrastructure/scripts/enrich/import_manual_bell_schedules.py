@@ -32,7 +32,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from infrastructure.database.connection import session_scope
 from infrastructure.database.models import BellSchedule, District
-from infrastructure.utilities.school_year import current_school_year
+from infrastructure.utilities.school_year import content_school_year
 from infrastructure.scripts.enrich.content_parser import ContentParser, BellScheduleData
 from sqlalchemy import text
 
@@ -437,7 +437,14 @@ def import_bell_schedule(
     Returns:
         True if successful
     """
-    year = current_school_year()  # manual collection targets the current year (July-1 rollover)
+    # The year is the DOCUMENTS' vintage, never the wall clock (REQ-054): a clock-derived year moves the
+    # (district, year, grade_level) dedupe key at every July-1 rollover and breaks the REQ-026 window (#991).
+    year = content_school_year(*source_files)
+    if year is None:
+        raise ValueError(
+            f"no school year readable from the source file names {source_files[:3]} for {nces_id}; "
+            f"name the files with their school year (e.g. 'bell_schedule_2025-26.pdf') - refusing to guess"
+        )
 
     # Check for existing schedule
     existing = session.query(BellSchedule).filter(
