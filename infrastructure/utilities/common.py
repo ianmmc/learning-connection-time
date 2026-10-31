@@ -215,6 +215,21 @@ def validate_required_columns(
     return True
 
 
+def ccd_education_unit_totals(membership: pd.DataFrame) -> pd.DataFrame:
+    """The CCD membership file's per-LEA 'Education Unit Total' rows, as (LEAID, STUDENT_COUNT), one per LEAID.
+
+    The ONE reader of that row, carrying both hard-won guards: the TOTAL_INDICATOR is stripped before the
+    match (stray whitespace in vintage files silently dropped every district, issue #308) and a duplicate
+    LEAID keeps the first row (it would Cartesian-multiply any join on LEAID, issue #427)."""
+    totals = membership[
+        membership['TOTAL_INDICATOR'].str.strip() == 'Education Unit Total'
+    ][['LEAID', 'STUDENT_COUNT']].copy()
+    dupes = int(totals['LEAID'].duplicated().sum())
+    if dupes:
+        logger.warning(f"  Dropping {dupes} duplicate LEAID 'Education Unit Total' rows (keeping first)")
+    return totals.drop_duplicates(subset='LEAID', keep='first')
+
+
 def safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """
     Safely divide two numbers, returning default if division would fail

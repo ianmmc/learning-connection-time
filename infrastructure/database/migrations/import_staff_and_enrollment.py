@@ -27,6 +27,7 @@ project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from infrastructure.database.connection import session_scope, get_engine
+from infrastructure.utilities.common import ccd_education_unit_totals
 from infrastructure.utilities.data_guards import reconcile_total
 from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
 from infrastructure.database.models import (
@@ -208,8 +209,9 @@ def load_enrollment_data(membership_file: Path, year: str) -> pd.DataFrame:
 
     # The file publishes its own per-LEA total ('Education Unit Total'); keep it aside to reconcile
     # against our component sum below (#970 generalization — see data_guards.reconcile_total).
+    # The shared reader carries the strip (#308) and LEAID-dedupe (#427) guards (#996).
     file_totals = (
-        df[df["TOTAL_INDICATOR"].str.strip() == "Education Unit Total"]
+        ccd_education_unit_totals(df)
         .assign(LEAID=lambda d: d["LEAID"].apply(_canonical_leaid))
         .set_index("LEAID")["STUDENT_COUNT"]
     )
