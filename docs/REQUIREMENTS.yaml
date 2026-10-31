@@ -392,7 +392,7 @@ requirements:
     status: tested
     acceptance_criteria:
       - Creates lct_qa_report_*.json with metadata, data_quality, safeguards, hierarchy_validation
-      - Reports overall_status as PASS or WARNING
+      - Reports overall_status as PASS (all hierarchy checks pass AND pass_rate >= 95%) or WARNING
       - Includes pass_rate percentage (valid_calculations / total_calculations * 100)
       - Lists all hierarchy checks with passed boolean
       - Provides outlier detection (very low/high LCT values)
@@ -407,6 +407,7 @@ requirements:
       - tests/test_data_safeguards.py::TestQADashboard::test_qa_report_includes_state_coverage
       - tests/test_data_safeguards.py::TestQADashboard::test_qa_report_saved_to_correct_location
       - tests/test_data_safeguards.py::TestQADashboard::test_qa_dashboard_determines_overall_status
+      - tests/test_qa_overall_status.py::test_warning_when_pass_rate_below_floor_despite_clean_hierarchy
     created: "2026-01-12T03:30:00Z"
     updated: "2026-01-12T03:30:00Z"
     notes: "From QA_DASHBOARD.md"

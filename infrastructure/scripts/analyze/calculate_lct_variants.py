@@ -105,6 +105,9 @@ from infrastructure.scripts.analyze.per_grade_lct import (
 
 
 # LCT scope definitions - base scopes
+# QA dashboard: minimum valid_calculations/total_calculations (%) for overall_status PASS (#918).
+QA_MIN_PASS_RATE = 95.0
+
 BASE_SCOPES = [
     "teachers_only",
     "teachers_core",
@@ -1095,6 +1098,7 @@ def generate_qa_report(
     total_calculations = len(df)
     valid_calculations = len(valid_df)
     invalid_calculations = total_calculations - valid_calculations
+    pass_rate = round(valid_calculations / total_calculations * 100, 2) if total_calculations > 0 else 0
 
     # Districts with QA notes
     qa_notes_df = df[df['level_lct_notes'] != '']
@@ -1171,7 +1175,7 @@ def generate_qa_report(
             "total_calculations": total_calculations,
             "valid_calculations": valid_calculations,
             "invalid_calculations": invalid_calculations,
-            "pass_rate": round(valid_calculations / total_calculations * 100, 2) if total_calculations > 0 else 0,
+            "pass_rate": pass_rate,
             "districts_with_qa_notes": districts_with_notes,
         },
         "safeguards": safeguard_counts or {},
@@ -1200,8 +1204,10 @@ def generate_qa_report(
             "states": sorted(all_states),
         },
         "outliers": outliers[:20],  # Limit to 20 outliers
-        "overall_status": "PASS" if all(
-            check.get("passed", True) for check in hierarchy_checks.values()
+        # #918: PASS needs BOTH a clean hierarchy and pass_rate >= QA_MIN_PASS_RATE (docs/METHODOLOGY.md).
+        "overall_status": "PASS" if (
+            pass_rate >= QA_MIN_PASS_RATE
+            and all(check.get("passed", True) for check in hierarchy_checks.values())
         ) else "WARNING",
     }
 

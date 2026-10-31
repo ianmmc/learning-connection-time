@@ -591,12 +591,11 @@ Outliers Detected: 20
 `hierarchy_validation` (per-check pass/fail with the compared means), `state_coverage`, `outliers[]`
 (district_id/name/scope/issue/severity), and `overall_status`.
 
-**Interpreting status:** `overall_status` is **PASS iff every hierarchy check passes** — pass rate and
-outlier count are reported alongside for context but do NOT feed `overall_status` in the current code
-(`generate_qa_report`). In practice treat a pass rate well below the historical ~99% range, or any
-unexpected/undocumented outliers, as reasons to investigate before publishing even when the hierarchy
-checks are green — the "always investigate a hierarchy failure" half of this rule is enforced by the
-code; the pass-rate/coverage half is an editorial practice, not a code gate.
+**Interpreting status:** `overall_status` is **PASS iff every hierarchy check passes AND the pass rate is
+at least 95%** (`QA_MIN_PASS_RATE`, `generate_qa_report` — #918); otherwise it is WARNING. Outlier count is
+reported alongside for context and does NOT feed `overall_status`. Treat any unexpected/undocumented
+outliers as a reason to investigate before publishing even when the status is PASS; the historical pass
+rate is ~99%, so a PASS that sits just above 95% is itself a signal worth a look.
 
 **Investigating a flagged outlier:**
 ```python
