@@ -1,41 +1,46 @@
 #!/usr/bin/env python3
 """
-Import SPED baseline data from 2017-18 federal sources.
+Import ONE SPED baseline vintage from federal sources (profiles: sped_baseline_profiles.PROFILES).
 
 This script imports:
-1. IDEA 618 Personnel (state-level SPED teachers)
-2. IDEA 618 Child Count (state-level SPED students ages 6-21)
+1. IDEA 618 Personnel (state-level SPED teachers + paraprofessionals, school age)
+2. IDEA 618 Child Count + Educational Environments (state-level school-age SPED students)
 3. CRDC Enrollment (LEA-level SPED students)
-4. CCD Enrollment (LEA-level total enrollment)
+4. CCD LEA Membership of the CRDC's own year (LEA-level total enrollment)
 
 And calculates:
-- Ratio 4a: State SPED Teachers / State SPED Students
-- Ratio 4b: LEA SPED Students / LEA Total Students
+- State: SPED teachers (and teachers + paras) per self-contained SPED student; self-contained share
+- LEA: SPED students / total students
+
+Each vintage is keyed by baseline_year and replaces only its own rows (#999).
 
 Usage:
-    python import_sped_baseline.py [--sample N]
+    python import_sped_baseline.py [--baseline-year 2017-18] [--sample N]
 """
 
 import argparse
 import csv
+import itertools
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
+import pandas as pd
+
 from infrastructure.database.connection import session_scope
+from infrastructure.utilities.common import EDUCATION_UNIT_TOTAL_MINUS_ADULT, ccd_education_unit_totals
 from infrastructure.utilities.school_year import SPED_BASELINE_YEAR
 from infrastructure.database.models import SpedStateBaseline, SpedLeaBaseline, DataLineage
 from infrastructure.utilities.data_guards import DataGuardError, reconcile_total, require_labels_seen
+from infrastructure.database.migrations.sped_baseline_profiles import (
+    BaselineProfile, ChildCountProfile, PersonnelProfile, PROFILES, get_profile, verify_source,
+)
 
-# File paths
-DATA_DIR = project_root / "data" / "raw" / "federal"
-IDEA_PERSONNEL_FILE = DATA_DIR / "idea-618" / "2017_18" / "bpersonnel2017-18.csv"
-IDEA_CHILD_COUNT_FILE = DATA_DIR / "idea-618" / "2017_18" / "bchildcountandedenvironments2017-18.csv"
-CRDC_ENROLLMENT_FILE = DATA_DIR / "crdc" / "2017_18" / "Enrollment.csv"
-CCD_ENROLLMENT_FILE = DATA_DIR / "nces-ccd" / "2017_18" / "ccd_lea_052_1718_l_1a_083118.csv"
+# File paths, sha256 pins and label vocabularies are per vintage: sped_baseline_profiles.PROFILES.
 
 # State name to abbreviation mapping
 STATE_ABBR = {
@@ -57,18 +62,40 @@ STATE_ABBR = {
 }
 
 
+# CRDC reserve codes — negative values that are NOT counts (2017-18 Manual Table 2; 2023-24 Data File
+# User's Manual Table 1, https://civilrightsdata.ed.gov/assets/downloads/2023-24%20User's%20Manual.pdf,
+# sha256 85541dd2…f281330, modified 2026-08-17). Pinned for the record; the parser does not depend on
+# the list being complete, because NO count or FTE in these federal files is ever legitimately
+# negative — every negative is missing (#960). IDEA uses the same convention (-8 small-cell, -9 n/a
+# in the LEA files, #1004).
+CRDC_RESERVE_CODES = {
+    -3: "Skip Logic Failure / Processing Error",
+    -5: "Action Plan",
+    -6: "Force Certified",
+    -7: "Data are Indeterminable (2023-24)",
+    -8: "EDFacts Missing Data (2017-18)",
+    -9: "Not Applicable / Skipped",          # 2023-24: 1,835 schools carry it in all of TOT_ENR_M/F + SCH_ENR_IDEA_M/F
+    -10: "Suppressed in Compliance with Executive Order 14168 (2023-24)",   # every school's nonbinary _X column
+    -11: "Suppressed for Data Quality",
+    -12: "Suppressed for privacy (2021-22)",
+    -13: "Missing DIND Skip Logic (2023-24)",
+}
+
+
 def safe_float(value: str) -> float | None:
-    """Convert string to float, handling dashes and empty values."""
-    if not value or value.strip() in ['-', '', 'N/A', 'na', 'NA']:
+    """Parse a federal SPED count/FTE cell. Dashes, blanks, N/A, suppression marks ('x', '*') and any
+    NEGATIVE value (a reserve code, never a count — #960) are missing: None, never a number."""
+    if value is None or value.strip() in ['-', '', 'N/A', 'na', 'NA']:
         return None
     try:
-        return float(value.strip().replace(',', ''))
+        f = float(value.strip().replace(',', ''))
     except (ValueError, AttributeError):
         return None
+    return f if f >= 0 else None
 
 
 def safe_int(value: str) -> int | None:
-    """Convert string to int, handling dashes and empty values."""
+    """safe_float, as an int."""
     f = safe_float(value)
     return int(f) if f is not None else None
 
@@ -97,29 +124,30 @@ def seek_header_row(reader, *, label: str, first_cell: str = HEADER_FIRST_CELL) 
                          f"{MAX_PREAMBLE_ROWS} rows — the file layout has changed")
 
 
-# Personnel types we care about (Ages 6-21 only)
-TEACHER_TYPE = 'Special Education Teachers for Ages 6-21'
-PARA_TYPE = 'Special Education Paraprofessionals for Ages 6-21'
 # Known names of the aggregate rows outside STATE_ABBR (skipped silently; anything else warns)
 NON_STATE_ROWS = {
     'Bureau of Indian Education', 'Federated States of Micronesia', 'Republic of Palau',
     'Republic of the Marshall Islands', 'US, Outlying Areas, and Freely Associated States',
 }
 
+# Personnel column names — identical in the 2017-18 and 2023-24 files (the wrapped
+# '…Certified/\nParaprofessionals…' header is collapsed by normalize_header). A missing one is a layout
+# change, never index 3/4/5 (#975).
+P_YEAR, P_STATE, P_TYPE = 'Year', 'State', 'Personnel Type'
+P_QUAL = 'Teachers Fully Certified/Paraprofessionals Qualified'
+P_NOT_QUAL = 'Teachers Not Fully Certified/Paraprofessionals Not Qualified'
+P_TOTAL = 'Teachers/Paraprofessionals Total'
 
-def parse_personnel_rows(headers: list[str], rows, year: str) -> dict[str, dict[str, float | None]]:
+
+def parse_personnel_rows(headers: list[str], rows, profile: PersonnelProfile) -> dict[str, dict[str, float | None]]:
     """Pure parse of the personnel rows (after the header row) into per-state teacher/para FTE.
 
     Returns {state_abbr: {'teachers_certified', 'teachers_not_certified', 'teachers_total',
     'paras_qualified', 'paras_not_qualified', 'paras_total'}} (absent keys = type not in file for
-    that state). Only the requested data year is read.
+    that state). Only rows whose Year cell is the profile's are read.
     """
-    # Column names as the 2017-18 file spells them; a missing one is a layout change, never index 3/4/5.
-    c_year, c_state, c_type = 'Year', 'State', 'Personnel Type'
-    c_qual = 'Teachers Fully Certified/Paraprofessionals Qualified'
-    c_not_qual = 'Teachers Not Fully Certified/Paraprofessionals Not Qualified'
-    c_total = 'Teachers/Paraprofessionals Total'
-    required = [c_year, c_state, c_type, c_qual, c_not_qual, c_total]
+    year = profile.year_cell
+    required = [P_YEAR, P_STATE, P_TYPE, P_QUAL, P_NOT_QUAL, P_TOTAL]
     headers = [normalize_header(h) for h in headers]
     require_labels_seen(required, headers, label=f"IDEA 618 personnel {year} header row")
     col = {name: headers.index(name) for name in required}
@@ -130,10 +158,10 @@ def parse_personnel_rows(headers: list[str], rows, year: str) -> dict[str, dict[
     for row in rows:
         if len(row) < width:
             continue
-        if row[col[c_year]].strip() != year:
+        if row[col[P_YEAR]].strip() != year:
             continue
-        state_name = row[col[c_state]].strip()
-        personnel_type = row[col[c_type]].strip()
+        state_name = row[col[P_STATE]].strip()
+        personnel_type = row[col[P_TYPE]].strip()
         personnel_types_seen.add(personnel_type)
 
         state_abbr = STATE_ABBR.get(state_name)
@@ -142,114 +170,63 @@ def parse_personnel_rows(headers: list[str], rows, year: str) -> dict[str, dict[
                 print(f"  Warning: Unknown state '{state_name}'")
             continue
         record = state_data.setdefault(state_abbr, {})
-        qualified = safe_float(row[col[c_qual]])
-        not_qualified = safe_float(row[col[c_not_qual]])
-        total = safe_float(row[col[c_total]])
-        if personnel_type == TEACHER_TYPE:
+        qualified = safe_float(row[col[P_QUAL]])
+        not_qualified = safe_float(row[col[P_NOT_QUAL]])
+        total = safe_float(row[col[P_TOTAL]])
+        if personnel_type == profile.teacher_type:
             record.update(teachers_certified=qualified, teachers_not_certified=not_qualified,
                           teachers_total=total)
-        elif personnel_type == PARA_TYPE:
+        elif personnel_type == profile.para_type:
             record.update(paras_qualified=qualified, paras_not_qualified=not_qualified, paras_total=total)
 
     # G2 (#970): the labels we filter on must occur in the file — a relabel ('Ages 6-21' → 'School Age'
-    # in the 2024-25 vintage) must be a parse error, never a run that loads zero teachers.
-    require_labels_seen({TEACHER_TYPE, PARA_TYPE}, personnel_types_seen,
+    # in the 2023-24 vintage) must be a parse error, never a run that loads zero teachers.
+    require_labels_seen({profile.teacher_type, profile.para_type}, personnel_types_seen,
                         label=f"IDEA 618 personnel {year} types")
     return state_data
 
 
-def read_personnel_file(path: Path, year: str) -> dict[str, dict[str, float | None]]:
+def read_personnel_file(profile: PersonnelProfile, path: Path | None = None) -> dict[str, dict[str, float | None]]:
+    """Open the personnel CSV (the profile's own file unless `path` overrides it, for fixtures)."""
+    path = path or profile.source.path
     with open(path, 'r', encoding='utf-8-sig') as f:
         reader = csv.reader(f)
         headers = seek_header_row(reader, label=f"IDEA 618 personnel {path.name}")
-        return parse_personnel_rows(headers, reader, year)
+        return parse_personnel_rows(headers, reader, profile)
 
 
-def import_idea_personnel(session) -> dict:
-    """
-    Import IDEA 618 Personnel data (state-level SPED teachers and paraprofessionals).
-
-    Returns dict mapping state to SpedStateBaseline record.
-    """
-    print("\n=== Importing IDEA 618 Personnel (State SPED Teachers + Paras) ===")
-
-    state_data = {}
-    for state_abbr, fte in read_personnel_file(IDEA_PERSONNEL_FILE, year='2017').items():
-        state_data[state_abbr] = SpedStateBaseline(
-            state=state_abbr,
-            source_year=SPED_BASELINE_YEAR,
-            personnel_source_file=str(IDEA_PERSONNEL_FILE.name),
-            sped_teachers_certified=fte.get('teachers_certified'),
-            sped_teachers_not_certified=fte.get('teachers_not_certified'),
-            sped_teachers_total=fte.get('teachers_total'),
-            sped_paras_qualified=fte.get('paras_qualified'),
-            sped_paras_not_qualified=fte.get('paras_not_qualified'),
-            sped_paras_total=fte.get('paras_total'),
-        )
-
-    # Calculate instructional totals (teachers + paras)
-    for state_abbr, record in state_data.items():
-        teachers = float(record.sped_teachers_total) if record.sped_teachers_total else 0
-        paras = float(record.sped_paras_total) if record.sped_paras_total else 0
-        if teachers > 0 or paras > 0:
-            record.sped_instructional_total = teachers + paras
-
-    teachers_count = sum(1 for s in state_data.values() if s.sped_teachers_total)
-    paras_count = sum(1 for s in state_data.values() if s.sped_paras_total)
-    print(f"  Loaded SPED teacher data for {teachers_count} states")
-    print(f"  Loaded SPED paraprofessional data for {paras_count} states")
-    return state_data
-
-
-# Educational-environment vocabulary of the IDEA 618 child-count file (2017-18 layout). The file
-# carries its own per-age-band total rows — those ARE the totals; summing the environment rows and
-# the total row together double-counts (#970). Labels must match the file's spelling exactly:
-# the school-age separate-school row is 'Separate School, Age 6-21', not 'Separate School'.
-TOTAL_ROW_6_21 = 'Total, Age 6-21'
-TOTAL_ROW_3_5 = 'Total, Age 3-5'
-SELF_CONTAINED_ENVIRONMENTS = {
-    'Inside regular class less than 40% of the day',
-    'Separate School, Age 6-21',
-}
-MAINSTREAMED_ENVIRONMENTS = {
-    'Inside regular class 80% or more of the day',
-    'Inside regular class 40% through 79% of the day',
-}
-# Excluded from both, by name (not district-managed, or an ages-3-5 setting). The vocabulary is
-# CLOSED: a label outside these three sets is a vintage relabel the parser does not understand, and
-# silently dropping it would under-count a category (#982) — so it is a parse error.
-OTHER_ENVIRONMENTS = {
-    'Correctional Facilities', 'Home', 'Homebound/Hospital', 'Parentally Placed in Private Schools',
-    'Residential Facility, Age 3-5', 'Residential Facility, Age 6-21',
-    'Separate Class', 'Separate School, Age 3-5', 'Service Provider Location',
-    'Services in Other Location than Regular Early Childhood Program (attend at least 10 hours)',
-    'Services in Other Location than Regular Early Childhood Program (attend less than 10 hours)',
-    'Services in Regular Early Childhood Program (attend at least 10 hours)',
-    'Services in Regular Early Childhood Program (attend less than 10 hours)',
-}
-KNOWN_ENVIRONMENTS = (SELF_CONTAINED_ENVIRONMENTS | MAINSTREAMED_ENVIRONMENTS | OTHER_ENVIRONMENTS
-                      | {TOTAL_ROW_6_21, TOTAL_ROW_3_5})
-# Column names, as the 2017-18 file spells them. A missing one is a layout change (the 2024-25 file
-# says 'School Age'); it must fail here, never fall back to a hard-coded index (#975).
+# Child-count column names shared by every vintage; the age-band columns come from the profile.
 COL_YEAR, COL_STATE, COL_ENV, COL_DISABILITY = 'Year', 'State Name', 'SEA Education Environment', 'SEA Disability Category'
-COL_AGES_3_5, COL_AGES_6_21 = 'Age 3 to 5', 'Ages 6-21'
 
 
-def parse_child_count_rows(headers: list[str], rows, year: str) -> dict[str, dict[str, int]]:
+def parse_child_count_rows(headers: list[str], rows, profile: ChildCountProfile) -> dict[str, dict]:
     """Pure parse of the child-count rows (after the header row) into per-state totals.
 
-    Returns {state_abbr: {'ages_3_5', 'ages_6_21', 'self_contained', 'mainstreamed'}}. Only the
-    requested data year and the 'All Disabilities' rows are read; states outside STATE_ABBR
-    (BIE, the US aggregate, freely associated states) are skipped.
+    Returns {state_abbr: {'early_childhood': int, 'school_age': {band: int}, 'self_contained':
+    {band: int}, 'mainstreamed': {band: int}, 'age_5_school_age': int | None}} with one entry per
+    band in profile.school_age_cols. Only the profile's year cell and the 'All Disabilities' rows are
+    read; states outside STATE_ABBR (BIE, the US aggregate, freely associated states) are skipped.
+
+    The file carries its own per-age-band total rows — those ARE the totals; summing the environment
+    rows and the total row together double-counts (#970).
     """
+    year = profile.year_cell
+    bands = dict(profile.school_age_cols)
     headers = [normalize_header(h) for h in headers]
-    required = [COL_YEAR, COL_STATE, COL_ENV, COL_DISABILITY, COL_AGES_3_5, COL_AGES_6_21]
+    required = [COL_YEAR, COL_STATE, COL_ENV, COL_DISABILITY, profile.early_childhood_col, *bands.values()]
+    if profile.age_5_school_age_col:
+        required.append(profile.age_5_school_age_col)
     require_labels_seen(required, headers, label=f"IDEA 618 child count {year} header row")
     col = {name: headers.index(name) for name in required}
     width = max(col.values()) + 1
 
-    state_totals: dict[str, dict[str, int]] = {}
-    env_sum_6_21: dict[str, int] = {}      # Σ environment rows (NOT the total row) per state, for G1
+    def fresh():
+        return {'early_childhood': 0, 'school_age': dict.fromkeys(bands, 0),
+                'self_contained': dict.fromkeys(bands, 0), 'mainstreamed': dict.fromkeys(bands, 0),
+                'age_5_school_age': None}
+
+    state_totals: dict[str, dict] = {}
+    env_sum: dict[str, dict[str, int]] = {}     # Σ environment rows (NOT the total row) per state+band, for G1
     environments_seen: set[str] = set()
     for row in rows:
         if len(row) < width:
@@ -261,268 +238,292 @@ def parse_child_count_rows(headers: list[str], rows, year: str) -> dict[str, dic
             continue
         environment = row[col[COL_ENV]].strip()
         environments_seen.add(environment)
-        totals = state_totals.setdefault(
-            state_abbr, {'ages_3_5': 0, 'ages_6_21': 0, 'self_contained': 0, 'mainstreamed': 0}
-        )
-        ages_3_5 = safe_int(row[col[COL_AGES_3_5]]) or 0
-        ages_6_21 = safe_int(row[col[COL_AGES_6_21]]) or 0
+        totals = state_totals.setdefault(state_abbr, fresh())
+        counts = {band: safe_int(row[col[c]]) or 0 for band, c in bands.items()}
 
-        if environment == TOTAL_ROW_3_5:
-            totals['ages_3_5'] = ages_3_5
-        elif environment == TOTAL_ROW_6_21:
-            totals['ages_6_21'] = ages_6_21
+        if environment == profile.early_childhood_total_row:
+            totals['early_childhood'] = safe_int(row[col[profile.early_childhood_col]]) or 0
+        elif environment == profile.school_age_total_row:
+            totals['school_age'] = counts
+            if profile.age_5_school_age_col:
+                totals['age_5_school_age'] = safe_int(row[col[profile.age_5_school_age_col]])
         else:
-            env_sum_6_21[state_abbr] = env_sum_6_21.get(state_abbr, 0) + ages_6_21
-            if environment in SELF_CONTAINED_ENVIRONMENTS:
-                totals['self_contained'] += ages_6_21
-            elif environment in MAINSTREAMED_ENVIRONMENTS:
-                totals['mainstreamed'] += ages_6_21
+            sums = env_sum.setdefault(state_abbr, dict.fromkeys(bands, 0))
+            for band, n in counts.items():
+                sums[band] += n
+                if environment in profile.self_contained:
+                    totals['self_contained'][band] += n
+                elif environment in profile.mainstreamed:
+                    totals['mainstreamed'][band] += n
 
     # G2 both ways: every label the parser keys on must occur in the file (#970's 'Separate School'
     # never did), and every label the file carries must be one the parser classifies (#982).
     require_labels_seen(
-        SELF_CONTAINED_ENVIRONMENTS | MAINSTREAMED_ENVIRONMENTS | {TOTAL_ROW_6_21, TOTAL_ROW_3_5},
+        profile.self_contained | profile.mainstreamed
+        | {profile.school_age_total_row, profile.early_childhood_total_row},
         environments_seen, label=f"IDEA 618 child count {year} environments",
     )
-    unknown = sorted(environments_seen - KNOWN_ENVIRONMENTS)
+    unknown = sorted(environments_seen - profile.known_environments)
     if unknown:
         raise DataGuardError(
             f"IDEA 618 child count {year}: {len(unknown)} environment label(s) the parser does not "
-            f"classify — {unknown}. Add each to SELF_CONTAINED/MAINSTREAMED/OTHER_ENVIRONMENTS; an "
+            f"classify — {unknown}. Add each to the profile's self_contained/mainstreamed/other; an "
             f"unclassified school-age setting silently leaves a category short."
         )
-    # G1: the environment rows must add up to the file's own total row (per state; exact 2× = the
-    # total row was summed in). Rows the file publishes for 6-21 partition the total exactly. A state
-    # whose Total row is missing/suppressed while its environment rows are numeric reaches
-    # reconcile_total with reference 0 and fails there (#982) — it is never stored as ages_6_21 = 0.
+    # G1, per band: the environment rows must add up to the file's own total row (per state; exact
+    # 2× = the total row was summed in). A state whose Total row is missing/suppressed while its
+    # environment rows are numeric reaches reconcile_total with reference 0 and fails there (#982) —
+    # it is never stored as a school-age count of 0.
     for state_abbr, totals in state_totals.items():
-        if totals['ages_6_21'] or env_sum_6_21.get(state_abbr, 0):
-            reconcile_total(env_sum_6_21.get(state_abbr, 0), totals['ages_6_21'],
-                            label=f"IDEA 618 child count {year} {state_abbr}: Σ environments vs Total row")
+        for band in bands:
+            env_n = env_sum.get(state_abbr, {}).get(band, 0)
+            if totals['school_age'][band] or env_n:
+                reconcile_total(env_n, totals['school_age'][band],
+                                label=f"IDEA 618 child count {year} {state_abbr} ({band}): Σ environments vs Total row")
     return state_totals
 
 
-def read_child_count_file(path: Path, year: str) -> dict[str, dict[str, int]]:
+def read_child_count_file(profile: ChildCountProfile, path: Path | None = None) -> dict[str, dict]:
     """Open the child-count CSV, seek its header row by content, and parse it."""
+    path = path or profile.source.path
     with open(path, 'r', encoding='utf-8-sig') as f:
         reader = csv.reader(f)
         headers = seek_header_row(reader, label=f"IDEA 618 child count {path.name}")
-        return parse_child_count_rows(headers, reader, year)
+        return parse_child_count_rows(headers, reader, profile)
 
 
-def import_idea_child_count(session, state_data: dict) -> dict:
+def build_state_baselines(profile: BaselineProfile, band: str | None = None) -> dict[str, SpedStateBaseline]:
+    """The per-state baseline rows a vintage produces, unsaved — the one construction both the import
+    and the T4 before/after measurement use (#1002 imports this; it never re-derives a ratio).
+
+    `band` overrides the profile's school_age_band (the measurement compares both); with neither set,
+    this refuses — the band is a methodology decision, not a default (#1003).
     """
-    Import IDEA 618 Child Count data (state-level SPED students).
+    band = band or profile.school_age_band
+    if band not in profile.child_count.school_age_cols:
+        raise DataGuardError(f"SPED baseline {profile.baseline_year}: school-age band {band!r} is not "
+                             f"decided or not in the file ({sorted(profile.child_count.school_age_cols)})")
+    personnel = read_personnel_file(profile.personnel)
+    children = read_child_count_file(profile.child_count)
 
-    Ages 6-21 totals come from the file's 'Total, Age 6-21' row. Students are also categorized
-    by educational environment:
-    - Self-contained: Separate School (6-21), <40% in regular class
-    - Mainstreamed: 80%+ in regular class, 40-79% in regular class
-    """
-    print("\n=== Importing IDEA 618 Child Count (State SPED Students) ===")
+    out: dict[str, SpedStateBaseline] = {}
+    for state_abbr in sorted(set(personnel) | set(children)):
+        fte = personnel.get(state_abbr, {})
+        teachers, paras = fte.get('teachers_total'), fte.get('paras_total')
+        rec = SpedStateBaseline(
+            state=state_abbr,
+            baseline_year=profile.baseline_year,
+            personnel_year=profile.personnel.source.data_year,
+            child_count_year=profile.child_count.source.data_year,
+            school_age_band=band,
+            personnel_source_file=profile.personnel.source.path.name,
+            child_count_source_file=profile.child_count.source.path.name,
+            sped_teachers_certified=fte.get('teachers_certified'),
+            sped_teachers_not_certified=fte.get('teachers_not_certified'),
+            sped_teachers_total=teachers,
+            sped_paras_qualified=fte.get('paras_qualified'),
+            sped_paras_not_qualified=fte.get('paras_not_qualified'),
+            sped_paras_total=paras,
+        )
+        if (teachers or 0) > 0 or (paras or 0) > 0:
+            rec.sped_instructional_total = (teachers or 0) + (paras or 0)
+        if state_abbr in children:
+            t = children[state_abbr]
+            rec.sped_students_early_childhood = t['early_childhood'] or None
+            rec.sped_students_school_age = t['school_age'][band] or None
+            rec.sped_students_age_5_school_age = t['age_5_school_age']
+            rec.sped_students_total = (t['early_childhood'] or 0) + (t['school_age'][band] or 0) or None
+            rec.sped_students_self_contained = t['self_contained'][band] or None
+            rec.sped_students_mainstreamed = t['mainstreamed'][band] or None
+            rec.calculate_ratios()
+        out[state_abbr] = rec
+    return out
 
-    state_totals = read_child_count_file(IDEA_CHILD_COUNT_FILE, year='2017')
 
-    # Merge into state_data
-    for state_abbr, totals in state_totals.items():
-        if state_abbr not in state_data:
-            state_data[state_abbr] = SpedStateBaseline(
-                state=state_abbr,
-                source_year=SPED_BASELINE_YEAR
-            )
+def import_idea_state_baseline(profile: BaselineProfile) -> dict[str, SpedStateBaseline]:
+    """IDEA 618 personnel + child count → per-state baseline rows for one vintage."""
+    print(f"\n=== Importing IDEA 618 state baseline {profile.baseline_year} "
+          f"(personnel {profile.personnel.source.data_year}, child count {profile.child_count.source.data_year}) ===")
+    state_data = build_state_baselines(profile)
 
-        state_data[state_abbr].sped_students_ages_3_5 = totals['ages_3_5'] or None
-        state_data[state_abbr].sped_students_ages_6_21 = totals['ages_6_21'] or None
-        state_data[state_abbr].sped_students_total = (totals['ages_3_5'] or 0) + (totals['ages_6_21'] or 0) or None
-        state_data[state_abbr].sped_students_self_contained = totals['self_contained'] or None
-        state_data[state_abbr].sped_students_mainstreamed = totals['mainstreamed'] or None
-        state_data[state_abbr].child_count_source_file = str(IDEA_CHILD_COUNT_FILE.name)
-
-        # Calculate ratios (teachers and instructional per self-contained student)
-        state_data[state_abbr].calculate_ratios()
-
-    # Print summary
-    total_self_contained = sum(t['self_contained'] for t in state_totals.values())
-    total_all = sum(t['ages_6_21'] for t in state_totals.values())
-    pct_self_contained = (total_self_contained / total_all * 100) if total_all > 0 else 0
-
-    print(f"  Loaded SPED student data for {len(state_totals)} states")
-    print(f"  Total Ages 6-21: {total_all:,}")
-    print(f"  Self-contained: {total_self_contained:,} ({pct_self_contained:.1f}%)")
-
+    teachers_count = sum(1 for s in state_data.values() if s.sped_teachers_total)
+    paras_count = sum(1 for s in state_data.values() if s.sped_paras_total)
+    total_sc = sum(s.sped_students_self_contained or 0 for s in state_data.values())
+    total_sa = sum(s.sped_students_school_age or 0 for s in state_data.values())
+    print(f"  SPED teacher data for {teachers_count} states, paraprofessional data for {paras_count}")
+    print(f"  School age ({profile.school_age_band}): {total_sa:,}; self-contained {total_sc:,} "
+          f"({(total_sc / total_sa * 100) if total_sa else 0:.1f}%)")
     return state_data
 
 
-def import_crdc_enrollment(session, sample_limit: int = None) -> dict:
+CRDC_COUNT_COLS = ('SCH_ENR_IDEA_M', 'SCH_ENR_IDEA_F', 'TOT_ENR_M', 'TOT_ENR_F')
+
+
+@dataclass
+class CrdcLea:
+    lea_name: str
+    state: str
+    sped_m: int = 0
+    sped_f: int = 0
+    tot_m: int = 0
+    tot_f: int = 0
+    schools: int = 0
+    schools_reserved: int = 0
+
+
+def aggregate_crdc_rows(rows) -> dict[str, CrdcLea]:
+    """Pure: CRDC school rows → per-LEA SPED (IDEA) and total enrollment, M+F.
+
+    PAIRWISE exclusion (#960, Ian 2026-10-31): a school contributes to an LEA's SPED AND total sums only
+    when all four of its counts are valid (non-negative, present). The baseline is a ratio, so dropping
+    a school from numerator and denominator together keeps it unbiased; CRDC's own convention (reserve
+    = 0 inside a calculated total) would not. Excluded schools are COUNTED, so the LEA can be flagged.
+    Nonbinary `_X` columns are not read: 2023-24 blanks every one to -10 (EO 14168), so M+F is the
+    whole of what the file can say — its undercount vs CCD is measured, not assumed (#1001).
     """
-    Import CRDC 2017-18 Enrollment data (LEA-level SPED students).
+    leas: dict[str, CrdcLea] = {}
+    for row in rows:
+        lea_id = (row.get('LEAID') or '').strip()
+        if len(lea_id) != 7:
+            continue
+        lea = leas.setdefault(lea_id, CrdcLea((row.get('LEA_NAME') or '').strip(),
+                                              (row.get('LEA_STATE') or '').strip()))
+        lea.schools += 1
+        counts = [safe_int(row.get(c) or '') for c in CRDC_COUNT_COLS]
+        if any(n is None for n in counts):
+            lea.schools_reserved += 1
+            continue
+        sped_m, sped_f, tot_m, tot_f = counts
+        lea.sped_m += sped_m
+        lea.sped_f += sped_f
+        lea.tot_m += tot_m
+        lea.tot_f += tot_f
+    return leas
 
-    Returns dict mapping LEA ID to SpedLeaBaseline record.
-    """
-    print("\n=== Importing CRDC Enrollment (LEA SPED Students) ===")
 
-    lea_data = {}
-    row_count = 0
+def build_crdc_lea_baselines(profile: BaselineProfile, leas: dict[str, CrdcLea]) -> dict[str, SpedLeaBaseline]:
+    """Per-LEA baseline rows from the CRDC aggregate. An LEA every one of whose schools was excluded
+    stores NULL CRDC totals (ratio NULL → the estimator's state-average fallback)."""
+    out: dict[str, SpedLeaBaseline] = {}
+    for lea_id, a in leas.items():
+        valid = a.schools - a.schools_reserved
+        notes = None
+        if a.schools_reserved:
+            notes = (f"CRDC {profile.crdc.data_year}: {a.schools_reserved} of {a.schools} schools carry reserve "
+                     f"codes and were excluded pairwise (#960)"
+                     + ("; no valid school — CRDC totals NULL" if not valid else ""))
+        sped = a.sped_m + a.sped_f
+        tot = a.tot_m + a.tot_f
+        out[lea_id] = SpedLeaBaseline(
+            lea_id=lea_id, lea_name=a.lea_name, state=a.state,
+            baseline_year=profile.baseline_year,
+            crdc_year=profile.crdc.data_year, ccd_year=profile.ccd.data_year,
+            crdc_sped_enrollment_m=a.sped_m if valid else None,
+            crdc_sped_enrollment_f=a.sped_f if valid else None,
+            crdc_sped_enrollment_total=(sped or None) if valid else None,
+            crdc_total_enrollment_m=a.tot_m if valid else None,
+            crdc_total_enrollment_f=a.tot_f if valid else None,
+            crdc_total_enrollment=(tot or None) if valid else None,
+            crdc_schools_reserved=a.schools_reserved,
+            crdc_source_file=profile.crdc.path.name,
+            data_quality_notes=notes,
+        )
+    return out
 
-    with open(CRDC_ENROLLMENT_FILE, 'r', encoding='utf-8-sig') as f:
-        reader = csv.DictReader(f)
 
-        for row in reader:
-            lea_id = row.get('LEAID', '').strip()
-            if not lea_id or len(lea_id) != 7:
-                continue
-
-            state = row.get('LEA_STATE', '').strip()
-            lea_name = row.get('LEA_NAME', '').strip()
-
-            # SPED enrollment (IDEA students)
-            sped_m = safe_int(row.get('SCH_ENR_IDEA_M', ''))
-            sped_f = safe_int(row.get('SCH_ENR_IDEA_F', ''))
-
-            # Total enrollment
-            tot_m = safe_int(row.get('TOT_ENR_M', ''))
-            tot_f = safe_int(row.get('TOT_ENR_F', ''))
-
-            # Aggregate by LEA (CRDC is school-level, we need LEA totals)
-            if lea_id not in lea_data:
-                lea_data[lea_id] = SpedLeaBaseline(
-                    lea_id=lea_id,
-                    lea_name=lea_name,
-                    state=state,
-                    source_year=SPED_BASELINE_YEAR,
-                    crdc_sped_enrollment_m=0,
-                    crdc_sped_enrollment_f=0,
-                    crdc_sped_enrollment_total=0,
-                    crdc_total_enrollment_m=0,
-                    crdc_total_enrollment_f=0,
-                    crdc_total_enrollment=0,
-                    crdc_source_file=str(CRDC_ENROLLMENT_FILE.name)
-                )
-
-            # Sum across schools
-            if sped_m:
-                lea_data[lea_id].crdc_sped_enrollment_m += sped_m
-            if sped_f:
-                lea_data[lea_id].crdc_sped_enrollment_f += sped_f
-            if tot_m:
-                lea_data[lea_id].crdc_total_enrollment_m += tot_m
-            if tot_f:
-                lea_data[lea_id].crdc_total_enrollment_f += tot_f
-
-            row_count += 1
-
-            if sample_limit and len(lea_data) >= sample_limit:
-                break
-
-    # Calculate totals
-    for lea in lea_data.values():
-        lea.crdc_sped_enrollment_total = (lea.crdc_sped_enrollment_m or 0) + (lea.crdc_sped_enrollment_f or 0)
-        lea.crdc_total_enrollment = (lea.crdc_total_enrollment_m or 0) + (lea.crdc_total_enrollment_f or 0)
-
-        # Set to None if zero
-        if lea.crdc_sped_enrollment_total == 0:
-            lea.crdc_sped_enrollment_total = None
-        if lea.crdc_total_enrollment == 0:
-            lea.crdc_total_enrollment = None
-
-    print(f"  Loaded CRDC data for {len(lea_data)} LEAs from {row_count:,} school records")
+def import_crdc_enrollment(profile: BaselineProfile, sample_limit: int | None = None) -> dict[str, SpedLeaBaseline]:
+    """CRDC Enrollment (school rows) → per-LEA baseline rows for one vintage."""
+    print(f"\n=== Importing CRDC {profile.crdc.data_year} Enrollment (LEA SPED Students) ===")
+    with open(profile.crdc.path, 'r', encoding='utf-8-sig', newline='') as f:
+        rows = csv.DictReader(f)
+        if sample_limit:
+            rows = itertools.islice(rows, sample_limit)
+        leas = aggregate_crdc_rows(rows)
+    lea_data = build_crdc_lea_baselines(profile, leas)
+    flagged = sum(1 for a in leas.values() if a.schools_reserved)
+    emptied = sum(1 for a in leas.values() if a.schools_reserved == a.schools)
+    print(f"  {len(lea_data):,} LEAs from {sum(a.schools for a in leas.values()):,} school records; "
+          f"{flagged:,} with reserve-coded schools excluded pairwise, {emptied:,} with none valid")
     return lea_data
 
 
-def import_ccd_enrollment(session, lea_data: dict, sample_limit: int = None) -> dict:
-    """
-    Import CCD 2017-18 LEA Membership data (LEA-level total enrollment).
+def read_ccd_lea_totals(path: Path) -> dict[str, tuple[int | None, str, str]]:
+    """CCD LEA membership: {leaid: (student_count, state, lea_name)} from the 'Derived - Education Unit
+    Total minus Adult Education Count' rows — K-12, the population CRDC enrolls — through the one shared
+    reader that carries the #308 strip and #427 dedupe (#996/#1001)."""
+    df = pd.read_csv(path, dtype=str, keep_default_na=False, encoding='utf-8-sig')
+    totals = ccd_education_unit_totals(df, indicator=EDUCATION_UNIT_TOTAL_MINUS_ADULT,
+                                       columns=('LEAID', 'STUDENT_COUNT', 'ST', 'LEA_NAME'))
+    return {r.LEAID.strip(): (safe_int(r.STUDENT_COUNT), r.ST.strip(), r.LEA_NAME.strip())
+            for r in totals.itertuples(index=False) if len(r.LEAID.strip()) == 7}
 
-    Updates existing lea_data with CCD total enrollment.
-    """
-    print("\n=== Importing CCD Enrollment (LEA Total Enrollment) ===")
 
-    matched = 0
-    new_leas = 0
-
-    with open(CCD_ENROLLMENT_FILE, 'r', encoding='utf-8-sig') as f:
-        reader = csv.DictReader(f)
-
-        for row in reader:
-            # Only process total rows
-            total_indicator = row.get('TOTAL_INDICATOR', '')
-            if 'Derived - Education Unit Total' not in total_indicator:
-                continue
-
-            lea_id = row.get('LEAID', '').strip()
-            if not lea_id or len(lea_id) != 7:
-                continue
-
-            enrollment = safe_int(row.get('STUDENT_COUNT', ''))
-            state = row.get('ST', '').strip()
-            lea_name = row.get('LEA_NAME', '').strip()
-
-            if lea_id in lea_data:
-                lea_data[lea_id].ccd_total_enrollment = enrollment
-                lea_data[lea_id].ccd_source_file = str(CCD_ENROLLMENT_FILE.name)
-                lea_data[lea_id].calculate_ratio()
-                matched += 1
-            else:
-                # Create new entry for LEAs not in CRDC
-                lea_data[lea_id] = SpedLeaBaseline(
-                    lea_id=lea_id,
-                    lea_name=lea_name,
-                    state=state,
-                    source_year=SPED_BASELINE_YEAR,
-                    ccd_total_enrollment=enrollment,
-                    ccd_source_file=str(CCD_ENROLLMENT_FILE.name)
-                )
-                new_leas += 1
-
-            if sample_limit and (matched + new_leas) >= sample_limit:
-                break
-
-    print(f"  Matched {matched:,} LEAs with CRDC data")
-    print(f"  Added {new_leas:,} new LEAs from CCD only")
+def import_ccd_enrollment(profile: BaselineProfile, lea_data: dict[str, SpedLeaBaseline],
+                          sample_limit: int | None = None) -> dict[str, SpedLeaBaseline]:
+    """CCD LEA membership of the CRDC's own year → each LEA's denominator (#1001: never another year)."""
+    print(f"\n=== Importing CCD {profile.ccd.data_year} LEA Membership (denominator) ===")
+    matched = new_leas = 0
+    for lea_id, (enrollment, state, lea_name) in read_ccd_lea_totals(profile.ccd.path).items():
+        if lea_id in lea_data:
+            lea_data[lea_id].ccd_total_enrollment = enrollment
+            lea_data[lea_id].ccd_source_file = profile.ccd.path.name
+            lea_data[lea_id].calculate_ratio()
+            matched += 1
+        else:
+            lea_data[lea_id] = SpedLeaBaseline(
+                lea_id=lea_id, lea_name=lea_name, state=state,
+                baseline_year=profile.baseline_year,
+                crdc_year=profile.crdc.data_year, ccd_year=profile.ccd.data_year,
+                ccd_total_enrollment=enrollment, ccd_source_file=profile.ccd.path.name,
+            )
+            new_leas += 1
+        if sample_limit and (matched + new_leas) >= sample_limit:
+            break
+    print(f"  Matched {matched:,} LEAs with CRDC data; added {new_leas:,} CCD-only LEAs")
     return lea_data
 
 
-def save_to_database(session, state_data: dict, lea_data: dict):
-    """Save all data to database."""
-    print("\n=== Saving to Database ===")
+def save_to_database(session, profile: BaselineProfile, state_data: dict, lea_data: dict) -> None:
+    """Replace ONE vintage's baseline rows, atomically. Rows of every other vintage are never touched
+    (#999): the 2017-18 baseline stays side by side with a refresh until T5 retires it."""
+    print(f"\n=== Saving baseline {profile.baseline_year} to Database ===")
+    v = profile.baseline_year
+    gone_states = session.query(SpedStateBaseline).filter(SpedStateBaseline.baseline_year == v).delete()
+    gone_leas = session.query(SpedLeaBaseline).filter(SpedLeaBaseline.baseline_year == v).delete()
+    session.add_all(state_data.values())
+    session.add_all(lea_data.values())
+    print(f"  Replaced {gone_states} → {len(state_data)} state rows, {gone_leas:,} → {len(lea_data):,} LEA rows")
 
-    # Save state data
-    for state_abbr, record in state_data.items():
-        session.merge(record)
-    print(f"  Saved {len(state_data)} state baseline records")
-
-    # Save LEA data
-    for lea_id, record in lea_data.items():
-        session.merge(record)
-    print(f"  Saved {len(lea_data):,} LEA baseline records")
-
-    # Log lineage
     DataLineage.log(
         session,
         entity_type="sped_state_baseline",
-        entity_id="all",
+        entity_id=v,
         operation="import",
         source_file="import_sped_baseline.py",
         details={
+            "baseline_year": v,
             "states_imported": len(state_data),
-            "sources": ["IDEA 618 Personnel 2017-18", "IDEA 618 Child Count 2017-18"]
+            "school_age_band": profile.school_age_band,
+            "sources": {"personnel": [profile.personnel.source.relpath, profile.personnel.source.sha256],
+                        "child_count": [profile.child_count.source.relpath, profile.child_count.source.sha256]},
         },
         created_by="import_sped_baseline"
     )
-
     DataLineage.log(
         session,
         entity_type="sped_lea_baseline",
-        entity_id="all",
+        entity_id=v,
         operation="import",
         source_file="import_sped_baseline.py",
         details={
+            "baseline_year": v,
             "leas_imported": len(lea_data),
-            "sources": ["CRDC 2017-18 Enrollment", "CCD 2017-18 LEA Membership"]
+            "leas_with_reserved_schools": sum(1 for r in lea_data.values() if r.crdc_schools_reserved),
+            "sources": {"crdc": [profile.crdc.relpath, profile.crdc.sha256],
+                        "ccd": [profile.ccd.relpath, profile.ccd.sha256]},
         },
         created_by="import_sped_baseline"
     )
-
     session.commit()
     print("  Committed to database")
 
@@ -530,82 +531,50 @@ def save_to_database(session, state_data: dict, lea_data: dict):
 def print_summary(state_data: dict, lea_data: dict):
     """Print summary statistics."""
     print("\n=== Summary ===")
-
-    # State-level stats
     states_with_teachers = sum(1 for s in state_data.values() if s.sped_teachers_total)
-    states_with_students = sum(1 for s in state_data.values() if s.sped_students_ages_6_21)
+    states_with_students = sum(1 for s in state_data.values() if s.sped_students_school_age)
     states_with_ratio = sum(1 for s in state_data.values() if s.ratio_sped_teachers_per_student)
-
-    print(f"\nState-Level (Ratio 4a: SPED Teachers / SPED Students):")
+    print(f"\nState-Level (SPED Teachers / Self-Contained SPED Students):")
     print(f"  States with teacher data: {states_with_teachers}")
     print(f"  States with student data: {states_with_students}")
     print(f"  States with calculated ratio: {states_with_ratio}")
 
-    # Sample ratios
-    print("\n  Sample state ratios (teachers per student):")
-    for state_abbr in ['CA', 'TX', 'NY', 'FL', 'IL']:
-        if state_abbr in state_data:
-            s = state_data[state_abbr]
-            if s.ratio_sped_teachers_per_student:
-                print(f"    {state_abbr}: {float(s.ratio_sped_teachers_per_student):.4f} ({int(s.sped_teachers_total or 0):,} teachers / {s.sped_students_ages_6_21:,} students)")
-
-    # LEA-level stats
     leas_with_sped = sum(1 for l in lea_data.values() if l.crdc_sped_enrollment_total)
     leas_with_total = sum(1 for l in lea_data.values() if l.ccd_total_enrollment)
-    leas_with_ratio = sum(1 for l in lea_data.values() if l.ratio_sped_proportion)
-
-    print(f"\nLEA-Level (Ratio 4b: SPED Students / Total Students):")
+    proportions = [float(l.ratio_sped_proportion) for l in lea_data.values() if l.ratio_sped_proportion]
+    print(f"\nLEA-Level (SPED Students / Total Students):")
     print(f"  LEAs with SPED enrollment: {leas_with_sped:,}")
     print(f"  LEAs with total enrollment: {leas_with_total:,}")
-    print(f"  LEAs with calculated ratio: {leas_with_ratio:,}")
-
-    # SPED proportion distribution
-    if leas_with_ratio > 0:
-        proportions = [float(l.ratio_sped_proportion) for l in lea_data.values() if l.ratio_sped_proportion]
-        avg_proportion = sum(proportions) / len(proportions)
-        min_proportion = min(proportions)
-        max_proportion = max(proportions)
-
-        print(f"\n  SPED proportion statistics:")
-        print(f"    Average: {avg_proportion:.2%}")
-        print(f"    Min: {min_proportion:.2%}")
-        print(f"    Max: {max_proportion:.2%}")
+    print(f"  LEAs with calculated ratio: {len(proportions):,}")
+    if proportions:
+        print(f"  SPED proportion: mean {sum(proportions) / len(proportions):.2%}, "
+              f"min {min(proportions):.2%}, max {max(proportions):.2%}")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Import SPED baseline data from 2017-18 sources")
-    parser.add_argument("--sample", type=int, help="Limit LEA records for testing")
+    parser = argparse.ArgumentParser(description="Import one SPED baseline vintage (IDEA 618 + CRDC + CCD)")
+    parser.add_argument("--baseline-year", default=SPED_BASELINE_YEAR, choices=sorted(PROFILES),
+                        help=f"Baseline vintage to import (default: SPED_BASELINE_YEAR = {SPED_BASELINE_YEAR})")
+    parser.add_argument("--sample", type=int, help="Limit CRDC school rows / CCD LEAs, for testing")
     args = parser.parse_args()
+    profile = get_profile(args.baseline_year)
 
     print("=" * 60)
-    print("SPED Baseline Data Import (2017-18)")
+    print(f"SPED Baseline Data Import ({profile.baseline_year})")
     print("=" * 60)
+    if profile.school_age_band is None:
+        raise DataGuardError(f"baseline {profile.baseline_year}: school_age_band is undecided (a T5 call, #1003) "
+                             f"— it can be parsed and measured, not written")
+    for src in (profile.personnel.source, profile.child_count.source, profile.crdc, profile.ccd):
+        verify_source(src)
+        print(f"  verified {src.relpath} ({src.data_year})")
 
-    # Check files exist
-    required_files = [IDEA_PERSONNEL_FILE, IDEA_CHILD_COUNT_FILE, CRDC_ENROLLMENT_FILE, CCD_ENROLLMENT_FILE]
-    for f in required_files:
-        if not f.exists():
-            print(f"ERROR: Required file not found: {f}")
-            sys.exit(1)
-
-    print("\nData files found:")
-    for f in required_files:
-        print(f"  {f.name}")
-
+    state_data = import_idea_state_baseline(profile)
+    lea_data = import_crdc_enrollment(profile, sample_limit=args.sample)
+    lea_data = import_ccd_enrollment(profile, lea_data, sample_limit=args.sample)
     with session_scope() as session:
-        # Import state-level data
-        state_data = import_idea_personnel(session)
-        state_data = import_idea_child_count(session, state_data)
-
-        # Import LEA-level data
-        lea_data = import_crdc_enrollment(session, sample_limit=args.sample)
-        lea_data = import_ccd_enrollment(session, lea_data, sample_limit=args.sample)
-
-        # Save to database
-        save_to_database(session, state_data, lea_data)
-
-        # Print summary
-        print_summary(state_data, lea_data)
+        save_to_database(session, profile, state_data, lea_data)
+    print_summary(state_data, lea_data)
 
     print("\n" + "=" * 60)
     print("Import complete!")

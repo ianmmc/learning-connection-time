@@ -1147,35 +1147,40 @@ class EnrollmentByGrade(Base):
 
 
 # =============================================================================
-# SPED SEGMENTATION BASELINE TABLES (2017-18 Pre-COVID Year)
+# SPED SEGMENTATION BASELINE TABLES (multi-vintage, keyed by baseline_year — #999)
 # =============================================================================
 
 
 class SpedStateBaseline(Base):
     """
-    State-level SPED baseline data from IDEA 618 (2017-18).
+    State-level SPED baseline data from IDEA 618, one row per (state, baseline vintage).
 
     Contains state-level SPED teachers and students for calculating
     the state SPED teacher-to-student ratio (Ratio 4a).
 
-    Sources:
-    - IDEA 618 Personnel (State-level SPED teacher FTE)
-    - IDEA 618 Child Count (State-level SPED student count ages 6-21)
+    Sources (per vintage: migrations/sped_baseline_profiles.py):
+    - IDEA 618 Personnel (State-level SPED teacher FTE, school age)
+    - IDEA 618 Child Count + Educational Environments (State-level school-age SPED students)
     """
     __tablename__ = "sped_state_baseline"
 
-    # Primary key
+    # Primary key: a baseline vintage names a SET of components whose own years differ (#999)
     state: Mapped[str] = mapped_column(String(2), primary_key=True)
+    baseline_year: Mapped[str] = mapped_column(String(10), primary_key=True)
 
-    # Source tracking
-    source_year: Mapped[str] = mapped_column(String(10), nullable=False, default=SPED_BASELINE_YEAR)
+    # Each component's own data year (the 2024-25 set pairs 2023-24 personnel with 2024-25 child count)
+    personnel_year: Mapped[str] = mapped_column(String(10), nullable=False)
+    child_count_year: Mapped[str] = mapped_column(String(10), nullable=False)
+    # Which ages the school-age counts below cover: '6-21' (2017-18 definition) or '5-21' (IDEA
+    # 'School Age' since 2020-21, kindergarten 5-year-olds included)
+    school_age_band: Mapped[str] = mapped_column(String(10), nullable=False)
 
-    # IDEA 618 Personnel: SPED Teachers (Ages 6-21)
+    # IDEA 618 Personnel: SPED Teachers (school age)
     sped_teachers_certified: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
     sped_teachers_not_certified: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
     sped_teachers_total: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
 
-    # IDEA 618 Personnel: SPED Paraprofessionals (Ages 6-21)
+    # IDEA 618 Personnel: SPED Paraprofessionals (school age)
     sped_paras_qualified: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
     sped_paras_not_qualified: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
     sped_paras_total: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
@@ -1183,15 +1188,17 @@ class SpedStateBaseline(Base):
     # Combined instructional staff (teachers + paras)
     sped_instructional_total: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
 
-    # IDEA 618 Child Count: SPED Students (Ages 6-21, school-age)
-    sped_students_ages_3_5: Mapped[Optional[int]] = mapped_column(Integer)
-    sped_students_ages_6_21: Mapped[Optional[int]] = mapped_column(Integer)
+    # IDEA 618 Child Count: SPED Students (school age on school_age_band; early childhood)
+    sped_students_early_childhood: Mapped[Optional[int]] = mapped_column(Integer)
+    sped_students_school_age: Mapped[Optional[int]] = mapped_column(Integer)
+    sped_students_age_5_school_age: Mapped[Optional[int]] = mapped_column(Integer)  # 5K; NULL when the file has none
     sped_students_total: Mapped[Optional[int]] = mapped_column(Integer)
 
-    # IDEA 618 Educational Environments: Self-Contained SPED (Ages 6-21)
-    # Self-contained = 'Inside regular class less than 40% of the day' + 'Separate School, Age 6-21'
-    # (the file's exact labels — 'Separate Class' is an ages-3-5 setting; #970). Excludes: Residential
-    # Facility, Correctional Facilities, Home, Homebound/Hospital, Parentally Placed (not district-managed)
+    # IDEA 618 Educational Environments: Self-Contained SPED (school age, on school_age_band)
+    # Self-contained = 'Inside regular class less than 40% of the day' + the school-age separate-school
+    # row ('Separate School, Age 6-21' in 2017-18, 'Separate School, School Age' since; 'Separate Class'
+    # is an early-childhood setting; #970). Excludes: Residential Facility, Correctional Facilities,
+    # Home, Homebound/Hospital, Parentally Placed (not district-managed)
     sped_students_self_contained: Mapped[Optional[int]] = mapped_column(Integer)
     sped_students_mainstreamed: Mapped[Optional[int]] = mapped_column(Integer)  # 80%+ and 40-79% in regular class
 
@@ -1217,14 +1224,14 @@ class SpedStateBaseline(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<SpedStateBaseline {self.state}: {self.sped_teachers_total} teachers, {self.sped_students_ages_6_21} students>"
+        return f"<SpedStateBaseline {self.state}/{self.baseline_year}: {self.sped_teachers_total} teachers, {self.sped_students_school_age} students>"
 
     def calculate_ratios(self) -> None:
         """Calculate SPED staff ratios using self-contained student counts."""
         # Calculate self-contained proportion (for LEA estimation)
-        if self.sped_students_ages_6_21 and self.sped_students_ages_6_21 > 0:
+        if self.sped_students_school_age and self.sped_students_school_age > 0:
             if self.sped_students_self_contained:
-                self.ratio_self_contained_proportion = float(self.sped_students_self_contained) / self.sped_students_ages_6_21
+                self.ratio_self_contained_proportion = float(self.sped_students_self_contained) / self.sped_students_school_age
 
         # Calculate staff ratios per self-contained student
         if self.sped_students_self_contained and self.sped_students_self_contained > 0:
@@ -1239,26 +1246,31 @@ class SpedStateBaseline(Base):
 
 class SpedLeaBaseline(Base):
     """
-    LEA-level SPED baseline data from CRDC and CCD (2017-18).
+    LEA-level SPED baseline data from CRDC and CCD, one row per (LEA, baseline vintage).
 
     Contains LEA-level enrollment for calculating the SPED student proportion
     (Ratio 4b: LEA SPED Students / LEA Total Students).
 
-    Sources:
-    - CRDC 2017-18 Enrollment (LEA-level SPED student counts)
-    - CCD 2017-18 LEA Membership (LEA-level total enrollment)
+    Sources (per vintage: migrations/sped_baseline_profiles.py):
+    - CRDC Enrollment (LEA-level SPED student counts, aggregated from schools)
+    - CCD LEA Membership of the CRDC's own year (LEA-level total enrollment)
     """
     __tablename__ = "sped_lea_baseline"
 
-    # Primary key
+    # Primary key (#999)
     lea_id: Mapped[str] = mapped_column(String(10), primary_key=True)
+    baseline_year: Mapped[str] = mapped_column(String(10), primary_key=True)
 
     # LEA identification
     lea_name: Mapped[Optional[str]] = mapped_column(String(255))
     state: Mapped[str] = mapped_column(String(2), nullable=False)
 
-    # Source tracking
-    source_year: Mapped[str] = mapped_column(String(10), nullable=False, default=SPED_BASELINE_YEAR)
+    # Each component's own data year
+    crdc_year: Mapped[str] = mapped_column(String(10), nullable=False)
+    ccd_year: Mapped[str] = mapped_column(String(10), nullable=False)
+    # Schools excluded from the CRDC sums for carrying a reserve code (#960; pairwise — out of SPED
+    # AND total). NULL = imported before the exclusion existed (the 2017-18 rows as first loaded).
+    crdc_schools_reserved: Mapped[Optional[int]] = mapped_column(Integer)
 
     # CRDC: SPED Enrollment (IDEA students)
     crdc_sped_enrollment_m: Mapped[Optional[int]] = mapped_column(Integer)
@@ -1290,12 +1302,17 @@ class SpedLeaBaseline(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<SpedLeaBaseline {self.lea_id} ({self.state}): {self.crdc_sped_enrollment_total} SPED / {self.ccd_total_enrollment} total>"
+        return f"<SpedLeaBaseline {self.lea_id}/{self.baseline_year} ({self.state}): {self.crdc_sped_enrollment_total} SPED / {self.ccd_total_enrollment} total>"
 
     def calculate_ratio(self) -> None:
         """Calculate Ratio 4b: SPED proportion of total enrollment."""
-        # Prefer CCD total enrollment, fall back to CRDC if not available
-        total = self.ccd_total_enrollment or self.crdc_total_enrollment
+        # Prefer CCD total enrollment, fall back to CRDC if not available. When reserve-coded schools
+        # were excluded from the CRDC numerator, the denominator must be the CRDC total of the SAME
+        # schools — CCD counts the excluded ones too, which would bias the share low (#960, pairwise).
+        if self.crdc_schools_reserved:
+            total = self.crdc_total_enrollment
+        else:
+            total = self.ccd_total_enrollment or self.crdc_total_enrollment
         if self.crdc_sped_enrollment_total and total and total > 0:
             self.ratio_sped_proportion = float(self.crdc_sped_enrollment_total) / total
 

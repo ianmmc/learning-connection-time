@@ -58,3 +58,20 @@ def test_g1_reconciliation_does_not_multiply_on_a_duplicate_total_row(tmp_path, 
     df = load_enrollment_data(p, "2024-25")
     assert len(df) == 2
     assert "2 LEAs compared" in capsys.readouterr().out
+
+
+def test_indicator_selects_a_different_row_not_a_respelling():
+    """#1001: the SPED baseline's K-12 denominator is the 'minus Adult Education' row; it goes through
+    the same strip + dedupe, and never matches the plain Education Unit Total."""
+    from infrastructure.utilities.common import EDUCATION_UNIT_TOTAL_MINUS_ADULT
+    df = pd.DataFrame({
+        "LEAID": ["0100001", "0100001", "0100001", "0100002"],
+        "TOTAL_INDICATOR": ["Education Unit Total", f" {EDUCATION_UNIT_TOTAL_MINUS_ADULT} ",
+                            EDUCATION_UNIT_TOTAL_MINUS_ADULT, EDUCATION_UNIT_TOTAL_MINUS_ADULT],
+        "STUDENT_COUNT": [110, 100, 999, 50],
+        "ST": ["AL", "AL", "AL", "AL"],
+    })
+    out = ccd_education_unit_totals(df, indicator=EDUCATION_UNIT_TOTAL_MINUS_ADULT,
+                                    columns=("LEAID", "STUDENT_COUNT", "ST"))
+    assert out.set_index("LEAID")["STUDENT_COUNT"].to_dict() == {"0100001": 100, "0100002": 50}
+    assert list(out.columns) == ["LEAID", "STUDENT_COUNT", "ST"]

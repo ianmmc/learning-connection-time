@@ -9,7 +9,9 @@ Run: pytest tests/test_sped_segmentation.py -v
 """
 
 import pytest
-from infrastructure.database.migrations.import_sped_baseline import IDEA_CHILD_COUNT_FILE as _IDEA_CHILD_COUNT_FILE
+from infrastructure.database.migrations.sped_baseline_profiles import PROFILE_2017_18 as _P17
+
+_IDEA_CHILD_COUNT_FILE = _P17.child_count.source.path
 
 
 class TestSpedSegmentedLCT:
@@ -204,13 +206,13 @@ class TestSpedBaselineRatios:
             ["2016", "Alabama", "Total, Age 6-21", "All Disabilities", "-", "999"],
         ]
 
-        totals = parse_child_count_rows(headers, rows, year="2017")["AL"]
+        totals = parse_child_count_rows(headers, rows, _P17.child_count)["AL"]
 
-        assert totals["ages_6_21"] == 1000          # the Total row, not 2× it
-        assert totals["ages_3_5"] == 100
-        assert totals["self_contained"] == 150      # <40% + Separate School, Age 6-21
-        assert totals["mainstreamed"] == 800
-        assert totals["self_contained"] / totals["ages_6_21"] == pytest.approx(0.15)
+        assert totals["school_age"]["6-21"] == 1000          # the Total row, not 2× it
+        assert totals["early_childhood"] == 100
+        assert totals["self_contained"]["6-21"] == 150      # <40% + Separate School, Age 6-21
+        assert totals["mainstreamed"]["6-21"] == 800
+        assert totals["self_contained"]["6-21"] / totals["school_age"]["6-21"] == pytest.approx(0.15)
 
     @pytest.mark.skipif(
         not _IDEA_CHILD_COUNT_FILE.exists(),   # the importer's OWN path, never a re-spelled one (#981)
@@ -219,9 +221,9 @@ class TestSpedBaselineRatios:
     def test_real_2017_18_file_self_contained_share(self):
         """#970 regression against the real file: national self-contained share is 16.1%, not 6.65%."""
         from infrastructure.database.migrations.import_sped_baseline import read_child_count_file
-        totals = read_child_count_file(_IDEA_CHILD_COUNT_FILE, year="2017")
-        all_621 = sum(t["ages_6_21"] for t in totals.values())
-        sc = sum(t["self_contained"] for t in totals.values())
+        totals = read_child_count_file(_P17.child_count)
+        all_621 = sum(t["school_age"]["6-21"] for t in totals.values())
+        sc = sum(t["self_contained"]["6-21"] for t in totals.values())
         # ~6.1M IDEA students ages 6-21 across the 56 states/territories the importer keeps (the
         # file's own "US, Outlying Areas..." aggregate row is skipped by STATE_ABBR)
         assert 6_000_000 < all_621 < 6_300_000

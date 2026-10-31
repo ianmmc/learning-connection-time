@@ -5,7 +5,7 @@ LEDGER NOTE (2026-07-02, issue #21): this is a DATA backfill — it computes/UPD
 Apply SPED baseline ratios to current year district data.
 
 This script:
-1. Loads 2017-18 baseline ratios (state and LEA level)
+1. Loads ONE baseline vintage's ratios (state and LEA level; --baseline-year, #999)
 2. For each current-year district, estimates:
    - SPED enrollment (using LEA proportion or state average)
    - GenEd enrollment (total - SPED)
@@ -16,6 +16,7 @@ This script:
 Usage:
     python apply_sped_estimates.py            # defaults to NCES_PRIMARY_YEAR
     python apply_sped_estimates.py --year 2023-24
+    python apply_sped_estimates.py --baseline-year 2017-18 --year 2024-25
 """
 
 import argparse
@@ -28,7 +29,6 @@ from typing import NamedTuple
 project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from sqlalchemy import func
 from infrastructure.database.connection import session_scope
 from infrastructure.database.queries import distinct_years
 from infrastructure.utilities.data_guards import DataGuardError, require_nonempty_selection
@@ -48,6 +48,9 @@ class YearTotals(NamedTuple):
 
 
 NCES_SOURCE = "nces_ccd"
+# #993: healthy runs skip ~1% (176 of 17,102 on 2024-25 — districts in neither LEA baseline nor a
+# state with an LEA average); a share far above that is a baseline/state mismatch, not a workload.
+MAX_SKIPPED_SHARE = 0.05
 
 
 def select_year_totals(session, year: str) -> list[YearTotals]:
@@ -100,105 +103,156 @@ def available_years(session) -> dict[str, list[str]]:
     }
 
 
-def get_state_ratios(session) -> tuple[dict, dict, dict, dict]:
-    """Load state SPED teacher, instructional, and self-contained ratios.
+class BaselineRatios(NamedTuple):
+    """Everything the estimator reads from ONE baseline vintage (#999)."""
+    baseline_year: str
+    teacher: dict[str, float]          # state -> SPED teachers per self-contained student
+    instructional: dict[str, float]    # state -> SPED teachers + paras per self-contained student
+    self_contained: dict[str, float]   # state -> self-contained share of school-age SPED
+    national: dict[str, float]         # unweighted means of the three, for states missing them
+    state_avg_proportion: dict[str, float]   # state -> mean LEA SPED share (the LEA fallback)
+    lea_proportion: dict[str, float]         # lea_id -> LEA SPED share
 
-    Returns:
-        Tuple of (teacher_ratios, instructional_ratios, self_contained_ratios, national_averages)
-    """
-    print("\n=== Loading State SPED Ratios ===")
 
-    teacher_ratios = {}
-    instructional_ratios = {}
-    self_contained_ratios = {}
-    records = session.query(SpedStateBaseline).filter(
-        SpedStateBaseline.ratio_sped_teachers_per_student.isnot(None)
-    ).all()
-
-    for r in records:
-        teacher_ratios[r.state] = float(r.ratio_sped_teachers_per_student)
+def ratios_from_rows(baseline_year: str, state_rows, lea_rows) -> BaselineRatios:
+    """Pure: baseline rows (ORM objects, saved or not) → the ratios the estimator applies. The ONE
+    derivation, used by the DB run and by the T4 before/after measurement alike (#1002)."""
+    teacher, instructional, self_contained = {}, {}, {}
+    for r in state_rows:
+        if r.ratio_sped_teachers_per_student is None:
+            continue
+        teacher[r.state] = float(r.ratio_sped_teachers_per_student)
         if r.ratio_sped_instructional_per_student:
-            instructional_ratios[r.state] = float(r.ratio_sped_instructional_per_student)
+            instructional[r.state] = float(r.ratio_sped_instructional_per_student)
         if r.ratio_self_contained_proportion:
-            self_contained_ratios[r.state] = float(r.ratio_self_contained_proportion)
-
-    print(f"  Loaded teacher ratios for {len(teacher_ratios)} states")
-    print(f"  Loaded instructional ratios for {len(instructional_ratios)} states")
-    print(f"  Loaded self-contained ratios for {len(self_contained_ratios)} states")
-
-    # Calculate national averages as fallback for states missing data
-    # (ME, VT, WI don't have 2017-18 IDEA 618 staffing data)
-    national_averages = {
-        "teacher_ratio": sum(teacher_ratios.values()) / len(teacher_ratios) if teacher_ratios else 0,
-        "instructional_ratio": sum(instructional_ratios.values()) / len(instructional_ratios) if instructional_ratios else 0,
-        "self_contained_ratio": sum(self_contained_ratios.values()) / len(self_contained_ratios) if self_contained_ratios else 0,
+            self_contained[r.state] = float(r.ratio_self_contained_proportion)
+    # A national fallback computed from nothing is 0.0 and would write zero-SPED estimates at
+    # "medium" confidence (#993) — refuse instead.
+    if not teacher or not self_contained:
+        raise DataGuardError(f"SPED baseline {baseline_year}: no state carries a teacher and self-contained "
+                             f"ratio (teacher={len(teacher)}, self_contained={len(self_contained)}) — "
+                             f"the national fallback would be 0.0")
+    national = {
+        "teacher_ratio": sum(teacher.values()) / len(teacher),
+        "instructional_ratio": sum(instructional.values()) / len(instructional) if instructional else 0,
+        "self_contained_ratio": sum(self_contained.values()) / len(self_contained),
     }
-    print(f"  National averages (fallback): teacher={national_averages['teacher_ratio']:.4f}, "
-          f"instructional={national_averages['instructional_ratio']:.4f}, "
-          f"self_contained={national_averages['self_contained_ratio']:.4f}")
-
-    return teacher_ratios, instructional_ratios, self_contained_ratios, national_averages
-
-
-def get_state_avg_sped_proportions(session) -> dict:
-    """Calculate average SPED proportion per state from LEA data."""
-    print("\n=== Calculating State Average SPED Proportions ===")
-
-    # Calculate average for each state (excluding outliers)
-    results = session.query(
-        SpedLeaBaseline.state,
-        func.avg(SpedLeaBaseline.ratio_sped_proportion).label('avg_proportion'),
-        func.count(SpedLeaBaseline.lea_id).label('lea_count')
-    ).filter(
-        SpedLeaBaseline.ratio_sped_proportion.isnot(None),
-        SpedLeaBaseline.ratio_sped_proportion > 0,  # Exclude negative
-        SpedLeaBaseline.ratio_sped_proportion < 0.5  # Exclude > 50% (outliers)
-    ).group_by(SpedLeaBaseline.state).all()
-
-    state_avgs = {}
-    for state, avg, count in results:
-        state_avgs[state] = float(avg)
-
-    print(f"  Calculated averages for {len(state_avgs)} states")
-    return state_avgs
+    # Only valid proportions (0 < p < 0.5; > 50% is an outlier). The state mean is taken in Decimal,
+    # as the SQL avg(numeric) this replaced did, so the 2017-18 estimates reproduce exactly (A1).
+    lea_proportion: dict[str, float] = {}
+    by_state: dict[str, list[Decimal]] = {}
+    for r in lea_rows:
+        p = r.ratio_sped_proportion
+        if p is None or not (0 < p < 0.5):
+            continue
+        p = Decimal(str(p))
+        lea_proportion[r.lea_id] = float(p)
+        by_state.setdefault(r.state, []).append(p)
+    state_avg = {st: float(sum(v) / len(v)) for st, v in by_state.items()}
+    return BaselineRatios(baseline_year, teacher, instructional, self_contained, national, state_avg, lea_proportion)
 
 
-def get_lea_proportions(session) -> dict:
-    """Load LEA-specific SPED proportions."""
-    print("\n=== Loading LEA-Specific SPED Proportions ===")
+def load_baseline_ratios(session, baseline_year: str) -> BaselineRatios:
+    """The ratios of ONE baseline vintage, selected by baseline_year (#999)."""
+    print(f"\n=== Loading SPED baseline {baseline_year} ===")
+    state_rows = session.query(SpedStateBaseline).filter(SpedStateBaseline.baseline_year == baseline_year).all()
+    lea_rows = session.query(SpedLeaBaseline).filter(SpedLeaBaseline.baseline_year == baseline_year).all()
+    require_nonempty_selection(state_rows, what=f"sped_state_baseline rows for baseline_year={baseline_year}",
+                               available=lambda: distinct_years(session, "sped_state_baseline", "baseline_year"))
+    require_nonempty_selection(lea_rows, what=f"sped_lea_baseline rows for baseline_year={baseline_year}",
+                               available=lambda: distinct_years(session, "sped_lea_baseline", "baseline_year"))
+    ratios = ratios_from_rows(baseline_year, state_rows, lea_rows)
+    n = ratios.national
+    print(f"  Ratios for {len(ratios.teacher)} states (teacher), {len(ratios.instructional)} (instructional), "
+          f"{len(ratios.self_contained)} (self-contained); {len(ratios.lea_proportion):,} LEA proportions, "
+          f"{len(ratios.state_avg_proportion)} state averages")
+    print(f"  National averages (fallback): teacher={n['teacher_ratio']:.4f}, "
+          f"instructional={n['instructional_ratio']:.4f}, self_contained={n['self_contained_ratio']:.4f}")
+    return ratios
 
-    # Only include valid proportions (0 < p < 0.5)
-    records = session.query(SpedLeaBaseline).filter(
-        SpedLeaBaseline.ratio_sped_proportion.isnot(None),
-        SpedLeaBaseline.ratio_sped_proportion > 0,
-        SpedLeaBaseline.ratio_sped_proportion < 0.5
-    ).all()
 
-    proportions = {}
-    for r in records:
-        proportions[r.lea_id] = float(r.ratio_sped_proportion)
+class DistrictEstimate(NamedTuple):
+    total_enrollment: int
+    total_teachers: float
+    teacher_ratio: float
+    instructional_ratio: float | None
+    self_contained_ratio: float
+    sped_proportion: float
+    used_state_avg: bool
+    used_national: bool
+    sped_enrollment: int
+    self_contained: int
+    gened_enrollment: int
+    sped_teachers: float
+    sped_instructional: float | None
+    gened_teachers: float
+    method: str
+    confidence: str
+    notes: str | None
 
-    print(f"  Loaded proportions for {len(proportions):,} LEAs")
-    return proportions
 
+def estimate_district(district: YearTotals, ratios: BaselineRatios) -> DistrictEstimate | None:
+    """Pure: one district's SPED/GenEd split under one baseline vintage (None = no proportion).
 
-def apply_estimates(session, year: str, teacher_ratios: dict, instructional_ratios: dict,
-                    self_contained_ratios: dict, national_averages: dict,
-                    state_avgs: dict, lea_proportions: dict):
-    """
-    Apply ratios to current year districts using self-contained SPED approach.
-
-    Method (January 2026):
-    1. All SPED = Total × LEA SPED Proportion
+    Method (January 2026, self-contained focus):
+    1. All SPED = Total × LEA SPED Proportion (state average when the LEA has none)
     2. Self-Contained SPED = All SPED × State Self-Contained Proportion
     3. GenEd Enrollment = Total - Self-Contained (includes mainstreamed SPED)
     4. SPED Teachers = Self-Contained × State Teacher Ratio
-    5. GenEd Teachers = Total Teachers - SPED Teachers
-
-    For states without 2017-18 SPED staffing data (ME, VT, WI), uses national
-    average ratios as fallback.
+    5. SPED Instructional = Self-Contained × State Instructional Ratio (teachers + paras)
+    6. GenEd Teachers = Total Teachers - SPED Teachers
+    States without a teacher or self-contained ratio use the national averages.
     """
-    print(f"\n=== Applying Estimates to {year} Districts ===")
+    state = district.state
+    teacher_ratio = ratios.teacher.get(state)
+    self_contained_ratio = ratios.self_contained.get(state)
+    instructional_ratio = ratios.instructional.get(state)
+    used_national = not teacher_ratio or not self_contained_ratio
+    if used_national:
+        teacher_ratio = ratios.national["teacher_ratio"]
+        self_contained_ratio = ratios.national["self_contained_ratio"]
+        instructional_ratio = ratios.national["instructional_ratio"]
+
+    if district.nces_id in ratios.lea_proportion:
+        sped_proportion, used_state_avg = ratios.lea_proportion[district.nces_id], False
+    elif state in ratios.state_avg_proportion:
+        sped_proportion, used_state_avg = ratios.state_avg_proportion[state], True
+    else:
+        return None
+
+    total_enrollment = int(district.enrollment)
+    total_teachers = float(district.instructional_staff)
+    sped_enrollment = int(round(total_enrollment * sped_proportion))
+    self_contained = int(round(sped_enrollment * self_contained_ratio))
+    sped_teachers = round(self_contained * teacher_ratio, 2)
+    sped_instructional = round(self_contained * instructional_ratio, 2) if instructional_ratio else None
+    gened_teachers = round(total_teachers - sped_teachers, 2)
+
+    notes_parts = []
+    confidence = "medium"
+    if used_national:
+        # national average is calculated from ~53 states and is statistically robust, just less
+        # precise than state-specific ratios — confidence stays "medium"
+        notes_parts.append(f"State {state} missing SPED ratios; used national averages")
+    if gened_teachers < 0:
+        notes_parts.append("WARNING: Negative GenEd teachers (ratio mismatch)")
+        confidence = "low"
+    return DistrictEstimate(
+        total_enrollment, total_teachers, teacher_ratio, instructional_ratio, self_contained_ratio,
+        sped_proportion, used_state_avg, used_national, sped_enrollment, self_contained,
+        total_enrollment - self_contained, sped_teachers, sped_instructional, gened_teachers,
+        "national_average_fallback" if used_national else "self_contained_ratio", confidence,
+        "; ".join(notes_parts) if notes_parts else None,
+    )
+
+
+def _dec(x):
+    return Decimal(str(x)) if x is not None else None
+
+
+def apply_estimates(session, year: str, ratios: BaselineRatios) -> int:
+    """Apply one baseline vintage's ratios to `year`'s districts and upsert sped_estimates."""
+    print(f"\n=== Applying baseline {ratios.baseline_year} to {year} Districts ===")
 
     # Per-district totals for the target year come from the year-keyed tables (#972)
     districts = select_year_totals(session, year)
@@ -208,136 +262,61 @@ def apply_estimates(session, year: str, teacher_ratios: dict, instructional_rati
     require_nonempty_selection(districts, what=f"districts with enrollment+staff for {year}",
                                available=lambda: available_years(session))
 
-    created = 0
-    updated = 0
-    skipped_no_ratio = 0
-    used_lea_ratio = 0
-    used_state_avg = 0
-    used_national_avg = 0
-    negative_gened = 0
+    created = updated = skipped_no_ratio = used_lea_ratio = used_state_avg = used_national_avg = negative_gened = 0
+    existing_by_district = {
+        e.district_id: e for e in session.query(SpedEstimate).filter(SpedEstimate.estimate_year == year)
+    }
 
     for district in districts:
-        state = district.state
-        lea_id = district.nces_id
-
-        # Get state ratios - fall back to national average if not available
-        teacher_ratio = teacher_ratios.get(state)
-        self_contained_ratio = self_contained_ratios.get(state)
-        instructional_ratio = instructional_ratios.get(state)
-        used_national_fallback = False
-
-        if not teacher_ratio or not self_contained_ratio:
-            # Use national averages as fallback (for ME, VT, WI, etc.)
-            teacher_ratio = national_averages["teacher_ratio"]
-            self_contained_ratio = national_averages["self_contained_ratio"]
-            instructional_ratio = national_averages["instructional_ratio"]
-            used_national_fallback = True
-            used_national_avg += 1
-
-        # Get SPED proportion - prefer LEA-specific, fall back to state average
-        if lea_id in lea_proportions:
-            sped_proportion = lea_proportions[lea_id]
-            used_state_avg_flag = False
-            used_lea_ratio += 1
-        elif state in state_avgs:
-            sped_proportion = state_avgs[state]
-            used_state_avg_flag = True
-            used_state_avg += 1
-        else:
+        est = estimate_district(district, ratios)
+        if est is None:
             skipped_no_ratio += 1
             continue
+        used_national_avg += est.used_national
+        used_state_avg += est.used_state_avg
+        used_lea_ratio += not est.used_state_avg
+        negative_gened += est.gened_teachers < 0
 
-        # Calculate estimates using self-contained approach
-        total_enrollment = int(district.enrollment)
-        total_teachers = float(district.instructional_staff)
-
-        # Step 1: All SPED enrollment
-        estimated_sped_enrollment = int(round(total_enrollment * sped_proportion))
-
-        # Step 2: Self-contained SPED (subset)
-        estimated_self_contained = int(round(estimated_sped_enrollment * self_contained_ratio))
-
-        # Step 3: GenEd = Total - Self-Contained (includes mainstreamed SPED)
-        estimated_gened_enrollment = total_enrollment - estimated_self_contained
-
-        # Step 4: SPED teachers (per self-contained student)
-        estimated_sped_teachers = round(estimated_self_contained * teacher_ratio, 2)
-
-        # Step 5: SPED instructional (teachers + paras, per self-contained student)
-        estimated_sped_instructional = round(estimated_self_contained * instructional_ratio, 2) if instructional_ratio else None
-
-        # Step 6: GenEd teachers
-        estimated_gened_teachers = round(total_teachers - estimated_sped_teachers, 2)
-
-        # Determine confidence and notes
-        notes_parts = []
-        confidence = "medium"
-
-        if used_national_fallback:
-            notes_parts.append(f"State {state} missing SPED ratios; used national averages")
-            # Keep confidence at "medium" - national average is calculated from 53 states
-            # and is statistically robust, just less precise than state-specific ratios
-
-        if estimated_gened_teachers < 0:
-            notes_parts.append("WARNING: Negative GenEd teachers (ratio mismatch)")
-            confidence = "low"
-            negative_gened += 1
-
-        notes = "; ".join(notes_parts) if notes_parts else None
-        estimation_method = "national_average_fallback" if used_national_fallback else "self_contained_ratio"
-
-        # Create or update estimate
-        existing = session.query(SpedEstimate).filter(
-            SpedEstimate.district_id == lea_id,
-            SpedEstimate.estimate_year == year
-        ).first()
-
+        values = dict(
+            baseline_year=ratios.baseline_year,
+            current_total_enrollment=est.total_enrollment,
+            current_total_teachers=_dec(est.total_teachers),
+            ratio_state_sped_teachers_per_student=_dec(est.teacher_ratio),
+            ratio_state_sped_instructional_per_student=_dec(est.instructional_ratio) if est.instructional_ratio else None,
+            ratio_state_self_contained_proportion=_dec(est.self_contained_ratio),
+            ratio_lea_sped_proportion=_dec(est.sped_proportion),
+            used_state_average_for_proportion=est.used_state_avg,
+            estimated_sped_enrollment=est.sped_enrollment,
+            estimated_self_contained_sped=est.self_contained,
+            estimated_gened_enrollment=est.gened_enrollment,
+            estimated_sped_teachers=_dec(est.sped_teachers),
+            estimated_sped_instructional=_dec(est.sped_instructional) if est.sped_instructional else None,
+            estimated_gened_teachers=_dec(est.gened_teachers),
+            estimation_method=est.method,
+            confidence=est.confidence,
+            notes=est.notes,
+        )
+        existing = existing_by_district.get(district.nces_id)
         if existing:
-            # Update existing
-            existing.current_total_enrollment = total_enrollment
-            existing.current_total_teachers = Decimal(str(total_teachers))
-            existing.ratio_state_sped_teachers_per_student = Decimal(str(teacher_ratio))
-            existing.ratio_state_sped_instructional_per_student = Decimal(str(instructional_ratio)) if instructional_ratio else None
-            existing.ratio_state_self_contained_proportion = Decimal(str(self_contained_ratio))
-            existing.ratio_lea_sped_proportion = Decimal(str(sped_proportion))
-            existing.used_state_average_for_proportion = used_state_avg_flag
-            existing.estimated_sped_enrollment = estimated_sped_enrollment
-            existing.estimated_self_contained_sped = estimated_self_contained
-            existing.estimated_gened_enrollment = estimated_gened_enrollment
-            existing.estimated_sped_teachers = Decimal(str(estimated_sped_teachers))
-            existing.estimated_sped_instructional = Decimal(str(estimated_sped_instructional)) if estimated_sped_instructional else None
-            existing.estimated_gened_teachers = Decimal(str(estimated_gened_teachers))
-            existing.estimation_method = estimation_method
-            existing.confidence = confidence
-            existing.notes = notes
+            # baseline_year is overwritten too: it records the vintage actually applied (#999)
+            for k, v in values.items():
+                setattr(existing, k, v)
             updated += 1
         else:
-            # Create new
-            estimate = SpedEstimate(
-                district_id=lea_id,
-                estimate_year=year,
-                baseline_year=SPED_BASELINE_YEAR,
-                current_total_enrollment=total_enrollment,
-                current_total_teachers=Decimal(str(total_teachers)),
-                ratio_state_sped_teachers_per_student=Decimal(str(teacher_ratio)),
-                ratio_state_sped_instructional_per_student=Decimal(str(instructional_ratio)) if instructional_ratio else None,
-                ratio_state_self_contained_proportion=Decimal(str(self_contained_ratio)),
-                ratio_lea_sped_proportion=Decimal(str(sped_proportion)),
-                used_state_average_for_proportion=used_state_avg_flag,
-                estimated_sped_enrollment=estimated_sped_enrollment,
-                estimated_self_contained_sped=estimated_self_contained,
-                estimated_gened_enrollment=estimated_gened_enrollment,
-                estimated_sped_teachers=Decimal(str(estimated_sped_teachers)),
-                estimated_sped_instructional=Decimal(str(estimated_sped_instructional)) if estimated_sped_instructional else None,
-                estimated_gened_teachers=Decimal(str(estimated_gened_teachers)),
-                estimation_method=estimation_method,
-                confidence=confidence,
-                notes=notes
-            )
-            session.add(estimate)
+            session.add(SpedEstimate(district_id=district.nces_id, estimate_year=year, **values))
             created += 1
 
-    # Log lineage
+    # #993: a non-empty selection whose every district missed the baselines is the S2 symptom
+    # ("Created: 0 / Updated: 0", exit 0) by another road. Key on WRITES (healthy runs skip ~1%).
+    if created + updated == 0:
+        raise DataGuardError(f"apply_sped_estimates: {len(districts):,} districts selected for {year} but 0 "
+                             f"estimates written under baseline {ratios.baseline_year} — every district "
+                             f"missed the baseline proportions (skipped {skipped_no_ratio:,})")
+    if skipped_no_ratio / len(districts) > MAX_SKIPPED_SHARE:
+        raise DataGuardError(f"apply_sped_estimates: {skipped_no_ratio:,} of {len(districts):,} districts "
+                             f"({skipped_no_ratio / len(districts):.1%}) have no SPED proportion under baseline "
+                             f"{ratios.baseline_year} (cap {MAX_SKIPPED_SHARE:.0%}) — a baseline/state mismatch")
+
     DataLineage.log(
         session,
         entity_type="sped_estimates",
@@ -345,6 +324,7 @@ def apply_estimates(session, year: str, teacher_ratios: dict, instructional_rati
         operation="apply_ratios",
         details={
             "year": year,
+            "baseline_year": ratios.baseline_year,
             "created": created,
             "updated": updated,
             "skipped_no_ratio": skipped_no_ratio,
@@ -402,23 +382,19 @@ def main():
         "--year", default=NCES_PRIMARY_YEAR,
         help=f"Target school year (default: NCES_PRIMARY_YEAR = {NCES_PRIMARY_YEAR}; REQ-026 windows the blend downstream)",
     )
+    parser.add_argument(
+        "--baseline-year", default=SPED_BASELINE_YEAR,
+        help=f"Baseline vintage whose ratios to apply (default: SPED_BASELINE_YEAR = {SPED_BASELINE_YEAR}; #999)",
+    )
     args = parser.parse_args()
 
     print("=" * 60)
-    print(f"SPED Estimate Application ({args.year})")
+    print(f"SPED Estimate Application ({args.year}, baseline {args.baseline_year})")
     print("=" * 60)
 
     with session_scope() as session:
-        # Load baseline ratios
-        teacher_ratios, instructional_ratios, self_contained_ratios, national_averages = get_state_ratios(session)
-        state_avgs = get_state_avg_sped_proportions(session)
-        lea_proportions = get_lea_proportions(session)
-
-        # Apply to current year
-        total = apply_estimates(session, args.year, teacher_ratios, instructional_ratios,
-                                self_contained_ratios, national_averages, state_avgs, lea_proportions)
-
-        # Show samples
+        ratios = load_baseline_ratios(session, args.baseline_year)
+        total = apply_estimates(session, args.year, ratios)
         if total > 0:
             print_sample_estimates(session, args.year)
 

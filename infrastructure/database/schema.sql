@@ -2395,7 +2395,7 @@ CREATE TABLE public.sped_lea_baseline (
     lea_id character varying(10) NOT NULL,
     lea_name character varying(255),
     state character varying(2) NOT NULL,
-    source_year character varying(10) NOT NULL,
+    baseline_year character varying(10) NOT NULL,
     crdc_sped_enrollment_m integer,
     crdc_sped_enrollment_f integer,
     crdc_sped_enrollment_total integer,
@@ -2408,8 +2408,25 @@ CREATE TABLE public.sped_lea_baseline (
     ccd_source_file character varying(255),
     data_quality_notes text,
     created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+    updated_at timestamp with time zone NOT NULL,
+    crdc_year character varying(10) NOT NULL,
+    ccd_year character varying(10) NOT NULL,
+    crdc_schools_reserved integer
 );
+
+
+--
+-- Name: COLUMN sped_lea_baseline.baseline_year; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sped_lea_baseline.baseline_year IS '#999: the baseline vintage this row belongs to; the CRDC and CCD components'' own years are crdc_year / ccd_year.';
+
+
+--
+-- Name: COLUMN sped_lea_baseline.crdc_schools_reserved; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sped_lea_baseline.crdc_schools_reserved IS '#960: schools excluded pairwise (from SPED AND total) for carrying a CRDC reserve code. NULL = imported before the exclusion existed.';
 
 
 --
@@ -2418,13 +2435,13 @@ CREATE TABLE public.sped_lea_baseline (
 
 CREATE TABLE public.sped_state_baseline (
     state character varying(2) NOT NULL,
-    source_year character varying(10) NOT NULL,
+    baseline_year character varying(10) NOT NULL,
     sped_teachers_certified numeric(10,2),
     sped_teachers_not_certified numeric(10,2),
     sped_teachers_total numeric(10,2),
     sped_paraprofessionals_total numeric(10,2),
-    sped_students_ages_3_5 integer,
-    sped_students_ages_6_21 integer,
+    sped_students_early_childhood integer,
+    sped_students_school_age integer,
     sped_students_total integer,
     ratio_sped_teachers_per_student numeric(10,6),
     personnel_source_file character varying(255),
@@ -2439,15 +2456,34 @@ CREATE TABLE public.sped_state_baseline (
     ratio_sped_instructional_per_student numeric(10,6),
     sped_students_self_contained integer,
     sped_students_mainstreamed integer,
-    ratio_self_contained_proportion numeric(10,6)
+    ratio_self_contained_proportion numeric(10,6),
+    personnel_year character varying(10) NOT NULL,
+    child_count_year character varying(10) NOT NULL,
+    school_age_band character varying(10) NOT NULL,
+    sped_students_age_5_school_age integer,
+    CONSTRAINT chk_sped_state_school_age_band CHECK (((school_age_band)::text = ANY ((ARRAY['6-21'::character varying, '5-21'::character varying])::text[])))
 );
+
+
+--
+-- Name: COLUMN sped_state_baseline.baseline_year; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sped_state_baseline.baseline_year IS '#999: the baseline vintage this row belongs to (a SET of components; each component''s own year is personnel_year / child_count_year). apply_sped_estimates --baseline-year selects on it.';
+
+
+--
+-- Name: COLUMN sped_state_baseline.school_age_band; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sped_state_baseline.school_age_band IS '#1000: ages the school-age counts cover — ''6-21'' (the 2017-18 definition) or ''5-21'' (IDEA ''School Age'' since 2020-21, kindergarten 5-year-olds included).';
 
 
 --
 -- Name: COLUMN sped_state_baseline.sped_students_self_contained; Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.sped_state_baseline.sped_students_self_contained IS 'Self-contained SPED students (ages 6-21): ''Inside regular class less than 40% of the day'' + ''Separate School, Age 6-21'' (#970; Separate Class is an ages-3-5 setting)';
+COMMENT ON COLUMN public.sped_state_baseline.sped_students_self_contained IS 'Self-contained SPED students (school age, on school_age_band): the inside-regular-class-less-than-40-percent row + the school-age separate-school row (#970; Separate Class is an early-childhood setting)';
 
 
 --
@@ -3597,7 +3633,7 @@ ALTER TABLE ONLY public.sped_estimates
 --
 
 ALTER TABLE ONLY public.sped_lea_baseline
-    ADD CONSTRAINT sped_lea_baseline_pkey PRIMARY KEY (lea_id);
+    ADD CONSTRAINT sped_lea_baseline_pkey PRIMARY KEY (lea_id, baseline_year);
 
 
 --
@@ -3605,7 +3641,7 @@ ALTER TABLE ONLY public.sped_lea_baseline
 --
 
 ALTER TABLE ONLY public.sped_state_baseline
-    ADD CONSTRAINT sped_state_baseline_pkey PRIMARY KEY (state);
+    ADD CONSTRAINT sped_state_baseline_pkey PRIMARY KEY (state, baseline_year);
 
 
 --

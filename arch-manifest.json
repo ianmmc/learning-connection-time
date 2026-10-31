@@ -455,6 +455,24 @@
         "literal": "2022-23",
         "count": 1,
         "why": "CCD_CATALOG key for the 2022-23 release zip. A catalog ENTRY, not a use: 2022-23 is COVID-excluded for calculations (Critical Rule 2)."
+      },
+      {
+        "file": "infrastructure/database/migrations/sped_baseline_profiles.py",
+        "literal": "2017-18",
+        "count": 5,
+        "why": "The 2017-18 SPED baseline profile (#999/#1000): its own baseline_year key and each component file's data_year — fixed source vintages of files on disk, sha256-pinned. Not SPED_BASELINE_YEAR: that names which vintage is APPLIED by default and flips at T5 (#1003); a profile's key never moves."
+      },
+      {
+        "file": "infrastructure/database/migrations/sped_baseline_profiles.py",
+        "literal": "2023-24",
+        "count": 3,
+        "why": "data_year of the 2024-25 baseline set's 2023-24 components (IDEA personnel, CRDC, and the CCD membership paired with CRDC's own year, #1001) — fixed source vintages, sha256-pinned."
+      },
+      {
+        "file": "infrastructure/database/migrations/sped_baseline_profiles.py",
+        "literal": "2024-25",
+        "count": 2,
+        "why": "The refreshed baseline set's baseline_year key and its IDEA child count's data_year (#1000) — fixed source vintages, sha256-pinned."
       }
     ]
   }
