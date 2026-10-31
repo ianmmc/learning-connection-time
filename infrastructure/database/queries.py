@@ -7,15 +7,32 @@ replacing file-based workflows with efficient database queries.
 """
 
 import json
+import re
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
-from sqlalchemy import and_, desc, func, or_, select
+from sqlalchemy import and_, desc, func, or_, select, text
 from sqlalchemy.orm import Session
 
 from .models import BellSchedule, DataLineage, District, LCTCalculation, StateRequirement
 from .school_year import CURRENT_SCHOOL_YEAR, NCES_PRIMARY_YEAR, is_acceptable_data_year
 from .verification import validate_schedule_plausibility
+
+
+_IDENTIFIER = re.compile(r"^[a-z_][a-z0-9_]*$")
+
+
+def distinct_years(session: Session, table: str, column: str = "year", *,
+                   where: Optional[str] = None, params: Optional[Dict] = None) -> List[str]:
+    """The sorted, non-empty distinct values of `table.column` — "which years does this table carry",
+    the ONE spelling the year guards' failure messages use (#995). `table`/`column` are identifiers
+    checked against a strict pattern (they are interpolated); `where` is a fixed SQL fragment from the
+    caller with its values bound through `params`, never formatted in."""
+    for ident in (table, column):
+        if not _IDENTIFIER.match(ident):
+            raise ValueError(f"distinct_years: {ident!r} is not a plain SQL identifier")
+    sql = f"SELECT DISTINCT {column} FROM {table}" + (f" WHERE {where}" if where else "")
+    return sorted(str(y) for (y,) in session.execute(text(sql), params or {}) if y)
 
 
 # =============================================================================

@@ -30,6 +30,7 @@ sys.path.insert(0, str(project_root))
 
 from sqlalchemy import func
 from infrastructure.database.connection import session_scope
+from infrastructure.database.queries import distinct_years
 from infrastructure.utilities.data_guards import DataGuardError, require_nonempty_selection
 from infrastructure.utilities.school_year import COVID_EXCLUDED_YEARS, NCES_PRIMARY_YEAR, SPED_BASELINE_YEAR
 from infrastructure.database.models import (
@@ -92,11 +93,10 @@ def select_year_totals(session, year: str) -> list[YearTotals]:
 
 def available_years(session) -> dict[str, list[str]]:
     """Which years each year-keyed NCES table carries — for the fail-loud message."""
+    nces = {"where": "data_source = :src", "params": {"src": NCES_SOURCE}}
     return {
-        "enrollment_by_grade": sorted(y for (y,) in session.query(EnrollmentByGrade.source_year)
-                                      .filter(EnrollmentByGrade.data_source == NCES_SOURCE).distinct() if y),
-        "staff_counts": sorted(y for (y,) in session.query(StaffCounts.source_year)
-                               .filter(StaffCounts.data_source == NCES_SOURCE).distinct() if y),
+        "enrollment_by_grade": distinct_years(session, "enrollment_by_grade", "source_year", **nces),
+        "staff_counts": distinct_years(session, "staff_counts", "source_year", **nces),
     }
 
 
@@ -206,7 +206,7 @@ def apply_estimates(session, year: str, teacher_ratios: dict, instructional_rati
     print(f"  Found {len(districts):,} districts with valid data")
     # G4 (#972): a year neither year-keyed table carries must fail loud, never "Updated: 0", exit 0.
     require_nonempty_selection(districts, what=f"districts with enrollment+staff for {year}",
-                               available=available_years(session))
+                               available=lambda: available_years(session))
 
     created = 0
     updated = 0
