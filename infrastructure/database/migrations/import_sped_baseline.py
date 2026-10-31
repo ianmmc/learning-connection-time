@@ -128,6 +128,7 @@ def seek_header_row(reader, *, label: str, first_cell: str = HEADER_FIRST_CELL) 
 NON_STATE_ROWS = {
     'Bureau of Indian Education', 'Federated States of Micronesia', 'Republic of Palau',
     'Republic of the Marshall Islands', 'US, Outlying Areas, and Freely Associated States',
+    'US, Outlying Areas, And Freely Associated States',     # the 2023-24 personnel file's capitalization
 }
 
 # Personnel column names — identical in the 2017-18 and 2023-24 files (the wrapped

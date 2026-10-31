@@ -1,7 +1,7 @@
 # IDEA 618 / CRDC SPED baseline refresh — findings and plan (2026-10-31)
 
-**Status: PLANNED.** Tasks are sub-issues of epic #724: T1 #999 · T2 #1000 · #960 · T3 #1001 · T4 #1002 ·
-T5 #1003 · T6 #1004. Nothing here is implemented. Corrections, when they come, are appended as dated
+**Status: T1–T4 BUILT (branch `feat/724-sped-baseline-refresh`); T5 awaits Ian's calls.** Tasks are
+sub-issues of epic #724: T1 #999 · T2 #1000 · #960 · T3 #1001 · T4 #1002 · T5 #1003 · T6 #1004. Corrections, when they come, are appended as dated
 "Correction" bullets, never rewritten in place.
 
 ## Why
@@ -75,6 +75,22 @@ first**; every task below assumes it. Issues #975–#989 close with it.
    implicit — retiring it means making the ratio vintages visible to the window, or deciding (and
    recording) that they stay outside it.
 
+### Corrections (2026-10-31, measured while building T1–T4)
+
+- **Correction to finding 1.** The 2024-25 child count did NOT drop the 6-21 column: it carries
+  `Ages 6-21` beside `Age 5 (School Age)-21`, and both reconcile per state against `Total, School Age`
+  (0 mismatches, 56 states; 7,233,721 vs 7,582,496). Only the 2023-24 **personnel** file is School-Age
+  (5-21) only. So the T5 band call is a choice for the child count, not a necessity.
+- **Correction to finding 3.** `-9` / `-10` pinned from the 2023-24 Data File User's Manual, Table 1:
+  `-9` Not Applicable/Skipped; `-10` Suppressed in Compliance with Executive Order 14168. The 1,835
+  `-9` schools carry it in all four count columns; 1,455 LEAs are partial, 10 fully reserved.
+- **New: CCD denominator row.** The SPED baseline has always divided by the CCD
+  `Derived - Education Unit Total minus Adult Education Count` row (K-12), not `Education Unit Total`
+  — a different row, deliberately; it now goes through the shared `ccd_education_unit_totals` reader.
+- **New: personnel volatility.** State-reported SPED teacher FTE moves far more than enrollment between
+  vintages (CA 20,361 → 41,575; NY 29,442 → 52,752; CT 11,236 → 6,133; NM suppressed `*` in 2023-24).
+  The faithful parse of ED's files; T4 C1 reports it.
+
 ## Tasks (sub-issues of #724), in dependency order
 
 | # | Task | Depends on | Decision for Ian? |
@@ -113,6 +129,25 @@ first**; every task below assumes it. Issues #975–#989 close with it.
   CLAUDE.md "SPED baseline" line are amended in the same PR; the ledger hygiene suite passes.
 - **A6 (T6).** Not started until T5 lands (so the before/after attributes movement to one change at a
   time — the #970 lesson).
+
+## Decisions (Ian, 2026-10-31)
+
+Taken at the start of the whole-epic #724 push (the public-ed-data-navigator spinoff now depends on
+the refreshed files):
+
+- **#960 → pairwise partial sum + flag.** A school contributes to an LEA's CRDC SPED *and* total sums
+  only when **both** its values are valid (non-negative, non-missing); an LEA with any excluded school
+  is flagged in `data_quality_notes`; an LEA with no valid school stores NULL (state fallback). The
+  baseline is a *ratio*, so dropping a school from numerator and denominator together keeps it
+  unbiased — CRDC's own "reserve = 0" convention would not.
+- **#974 → option 1, re-base the partition on `scope_teachers_only` / `enrollment_k12`.** Ships as its
+  OWN change with its own before/after, never folded into T5 (#1003) — one movement per receipt.
+- **#918 → fold `pass_rate >= 95%` into `overall_status`** (99.62% on the 2026-10-31 run, so today's
+  PASS does not flip).
+- **#919 → symmetric ±15 min** between stated gross minutes and `end − start` (the REQ-056 consensus
+  tolerance), citing REQ-055.
+- The three T5 calls (adopt? School Age vs 6-21? ratio vintage in window?) remain open until T4's
+  numbers are posted.
 
 ## Order of operations
 
