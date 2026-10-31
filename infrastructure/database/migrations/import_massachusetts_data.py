@@ -22,6 +22,7 @@ Usage:
     python import_massachusetts_data.py
 """
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -53,12 +54,14 @@ STATE_CODE = 'MA'
 # Label data with its ACTUAL year (issue #23): the DESE teacher-FTE file is the
 # 2024-25 export, the E2C Hub enrollment export is filtered to SY 2026 (= 2025-26).
 # The old single DATA_YEAR = '2025-26' mislabeled 2024-25 teacher FTE as 2025-26.
+# Both are SOURCE vintages (the files on disk), overridable with --teacher-year / --enrollment-year
+# when newer DESE exports are dropped in — the same shape as the TX/CA/NY imports' --year.
 TEACHER_DATA_YEAR = '2024-25'
 ENROLLMENT_DATA_YEAR = '2025-26'
 
 # Data file paths
 MA_DATA_DIR = project_root / "data" / "raw" / "state" / "massachusetts"
-TEACHER_FILE = MA_DATA_DIR / "MA 2024-25 teacherdata.xlsx"
+TEACHER_FILE = MA_DATA_DIR / f"MA {TEACHER_DATA_YEAR} teacherdata.xlsx"
 ENROLLMENT_FILE = MA_DATA_DIR / "Enrollment__Grade,_Race_Ethnicity,_Gender,_and_Selected_Populations_20260119.xlsx"
 
 
@@ -375,6 +378,16 @@ def import_enrollment_data(session, crosswalk, enrollment_df):
 
 def main():
     """Main import function."""
+    global TEACHER_DATA_YEAR, ENROLLMENT_DATA_YEAR, TEACHER_FILE
+    parser = argparse.ArgumentParser(description="Import DESE teacher FTE + E2C Hub enrollment exports")
+    parser.add_argument("--teacher-year", default=TEACHER_DATA_YEAR,
+                        help=f"Vintage of the DESE teacher file (default: {TEACHER_DATA_YEAR}; selects 'MA <year> teacherdata.xlsx' and stamps the rows)")
+    parser.add_argument("--enrollment-year", default=ENROLLMENT_DATA_YEAR,
+                        help=f"Vintage the E2C Hub enrollment export is filtered to (default: {ENROLLMENT_DATA_YEAR}; stamps the rows)")
+    args = parser.parse_args()
+    TEACHER_DATA_YEAR, ENROLLMENT_DATA_YEAR = args.teacher_year, args.enrollment_year
+    TEACHER_FILE = MA_DATA_DIR / f"MA {TEACHER_DATA_YEAR} teacherdata.xlsx"
+
     logger.info("=" * 60)
     logger.info("Starting Massachusetts Data Import")
     logger.info("=" * 60)

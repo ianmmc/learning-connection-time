@@ -312,12 +312,12 @@
       {
         "file": "infrastructure/database/migrations/import_massachusetts_data.py",
         "literal": "2024-25",
-        "why": "TEACHER_DATA_YEAR: vintage of the DESE teacher file on disk; a SEA import's year is its source's year."
+        "why": "TEACHER_DATA_YEAR: vintage of the DESE teacher file on disk; a SEA import's year is its source's year; overridable with --teacher-year (also selects the file) / --enrollment-year, like the TX/CA/NY --year."
       },
       {
         "file": "infrastructure/database/migrations/import_massachusetts_data.py",
         "literal": "2025-26",
-        "why": "ENROLLMENT_DATA_YEAR: vintage of the DESE enrollment file on disk (DESE publishes enrollment a year ahead of staffing)."
+        "why": "ENROLLMENT_DATA_YEAR: vintage of the DESE enrollment file on disk (DESE publishes enrollment a year ahead of staffing); overridable with --teacher-year (also selects the file) / --enrollment-year, like the TX/CA/NY --year."
       }
     ]
   }
