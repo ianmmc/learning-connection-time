@@ -170,15 +170,14 @@ watchdogs; each script's docstring carries its own check-map, so run the script 
 any summary of it.
 
 **Current status (2026-10-31): the SPED baseline is CORRECTED and GUARDED; the IDEA/CRDC refresh is
-PLANNED.** Main `f3c83ce`: PRs **#971** (#970 — the IDEA child-count parse summed its own Total row and
+PLANNED.** Main `63c2b09`: PRs **#971** (#970 — the IDEA child-count parse summed its own Total row and
 missed `Separate School, Age 6-21`: national self-contained share 6.65% → **16.1%**, re-run live) and
 **#973** (#972 year-keyed `apply_sped_estimates` + the `data_guards` G1–G5 suite and the declared-year
-fitness test). A `/code-review max` of both found 15 defects (#975–#989); **their fixes are PR
-**#1005** (`fix/975-989-review-findings`, fast gate 2657/1) — OPEN, NOT merged** (#973 merged before it
-landed). Decisions + lessons: `docs/PROJECT_HISTORY.md` 2026-10-30/31
+fitness test). A `/code-review max` of both found 15 defects (#975–#989); their fixes landed
+in PR **#1005** (merged 2026-10-31; #975–#989 closed). Decisions + lessons: `docs/PROJECT_HISTORY.md` 2026-10-30/31
 entry (also the Apache-2.0 / CC BY 4.0 relicense, `0155947`). The **pipeline has not moved since
 2026-08-26** (latest `state_event` 08-26; `batch_00058` at Stage 5; 57 districts in `bell_schedules`).
-Baseline GREEN on main: `lint-imports` **5 kept / 0 broken**, `pytest -q -m "not integration"` **2586
+Baseline GREEN on main: `lint-imports` **5 kept / 0 broken**, `pytest -q -m "not integration"` **2657
 passed, 1 skipped**, govdb 410, Node 106. The one red network test is #938 (catalog drift), not a regression.
 
 **Standing findings that change what to do next:**
@@ -206,8 +205,7 @@ pipeline track (B) is unchanged from 08-26 (`docs/scratch-paper/2026-08-25-fresh
 `docs/technical-notes/production-quality-control-research/2026-10-31-idea-crdc-sped-baseline-refresh-plan.md`
 (findings, acceptance properties A1–A6). New files are on disk with sha256 in each `SOURCE.md`:
 `data/raw/federal/idea-618/{2023_24,2024_25}/`, `data/raw/federal/crdc/2023_24/` (gitignored).
-0. **Prerequisite — merge PR #1005** (`fix/975-989-review-findings`; pushed 2026-10-31);
-   closes #975–#989. Consequence to expect: `merge_sea_precedence` now **fails loud on MA** (live
+0. **Prerequisite DONE** — PR #1005 merged 2026-10-31. Consequence to expect: `merge_sea_precedence` now **fails loud on MA** (live
    `ma_staff_data` is stamped `2025-26`, declared `2024-25`) until MA is re-imported — the guard working (#984).
 1. **#999** multi-vintage `sped_*_baseline` schema + `apply_sped_estimates --baseline-year` ‖ **#1000**
    IDEA vintage profiles ("Ages 6-21" → "School Age", which now includes kindergarten 5-year-olds; the
@@ -261,7 +259,7 @@ pipeline track (B) is unchanged from 08-26 (`docs/scratch-paper/2026-08-25-fresh
 **Resume essentials:** `source .venv/bin/activate` (the project `.venv` is the ONE env — the git hooks
 prefer it and the pre-push refuses a stale one, #955) · `pip install -r requirements.txt && pip install
 -e .` · `docker-compose up -d` (Docker Postgres 16.15 — never `brew services`) · verify with
-`lint-imports` (expect 5 kept / 0 broken) + `pytest -q -m "not integration"` (2586 passed, 1 skipped on main);
+`lint-imports` (expect 5 kept / 0 broken) + `pytest -q -m "not integration"` (2657 passed, 1 skipped on main);
 add `pytest -q -m govdb` (410) and `npm test` in `infrastructure/scraper` (106) when touching those
 layers. Console: `python3 -m infrastructure.acquisition.process_governance.server` → :8005 (scratch
 servers on **:8015**). Expected counts live in `GETTING_STARTED.md` §3 — their ONE home; §3a carries the
