@@ -44,3 +44,13 @@ def test_empty_federal_selection_raises_instead_of_exiting_clean(stub):
     stub(federal_rows=False)
     with pytest.raises(DataGuardError, match=r"--year 2099-00.*available.*2024-25"):
         cmp.compare_all(_Session(), "2099-00")
+
+
+def test_alignment_needs_both_sea_vintages_to_match_the_federal_one_1012(stub, capsys):
+    stub(federal_rows=True)
+    results = {r["state"]: r for r in cmp.compare_all(_Session(), "2024-25")}
+    ma = results["MA"]
+    assert ma["sea_year"] == "2024-25" and ma["sea_enroll_year"] == "2025-26"
+    assert ma["vintage_aligned"] is False
+    assert "SEA 2024-25 (enrollment 2025-26) vs federal 2024-25" in capsys.readouterr().out
+    assert results["CA"]["sea_enroll_year"] == "2024-25" and results["CA"]["vintage_aligned"] is True

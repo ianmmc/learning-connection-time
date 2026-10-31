@@ -50,6 +50,7 @@ DEFAULT_MINUTES = 360
 
 # SEA states with data: the per-state vintage registry has ONE home (#990).
 from infrastructure.database.migrations.sea_import_utils import SEA_STATES  # noqa: E402
+from infrastructure.database.queries import distinct_years  # noqa: E402
 from infrastructure.utilities.data_guards import require_nonempty_selection  # noqa: E402
 
 
@@ -218,10 +219,6 @@ def compare_sources(federal_df: pd.DataFrame, sea_df: pd.DataFrame, state: str) 
     return comparison
 
 
-def _available_federal_years(session) -> list:
-    return [r[0] for r in session.execute(text("SELECT DISTINCT source_year FROM staff_counts ORDER BY 1"))]
-
-
 def compare_all(session, federal_year: str) -> List[Dict]:
     """Compare every SEA state against the federal data of `federal_year`.
 
@@ -242,13 +239,19 @@ def compare_all(session, federal_year: str) -> List[Dict]:
 
         comparison = compare_sources(federal_df, sea_df, state)
         if comparison:
+            # Both SEA vintages must match the federal one (#1012): MA reads 2024-25 staff against 2025-26
+            # enrollment, a mixed pair the staff year alone reported as aligned.
+            enroll_year = config.get('enroll_year', config['year'])
             comparison['sea_year'] = config['year']
+            comparison['sea_enroll_year'] = enroll_year
             comparison['federal_year'] = federal_year
-            comparison['vintage_aligned'] = config['year'] == federal_year
+            comparison['vintage_aligned'] = config['year'] == federal_year == enroll_year
             results.append(comparison)
             print(f"  Compared: {comparison['districts_compared']} districts")
             if not comparison['vintage_aligned']:
-                print(f"  WARNING: cross-vintage pair - SEA {config['year']} vs federal {federal_year}")
+                sea_label = config['year'] if enroll_year == config['year'] else \
+                    f"{config['year']} (enrollment {enroll_year})"
+                print(f"  WARNING: cross-vintage pair - SEA {sea_label} vs federal {federal_year}")
         else:
             print("  No overlapping data")
 
@@ -256,7 +259,7 @@ def compare_all(session, federal_year: str) -> List[Dict]:
         # Only the empty case pays for the extra query.
         require_nonempty_selection(
             [], what=f"federal staff/enrollment rows for --year {federal_year}",
-            available=_available_federal_years(session))
+            available=lambda: distinct_years(session, "staff_counts", "source_year"))
     return results
 
 
