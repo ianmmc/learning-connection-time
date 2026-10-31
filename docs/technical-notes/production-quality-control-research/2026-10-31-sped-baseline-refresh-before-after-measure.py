@@ -50,14 +50,20 @@ from sqlalchemy import text  # noqa: E402
 from infrastructure.database.connection import session_scope  # noqa: E402
 from infrastructure.database.migrations import import_sped_baseline as isb  # noqa: E402
 from infrastructure.database.migrations.apply_sped_estimates import (  # noqa: E402
-    estimate_district, ratios_from_rows, select_year_totals,
+    estimate_district, load_baseline_ratios, ratios_from_rows, select_year_totals,
 )
-from infrastructure.database.migrations.sped_baseline_profiles import PROFILE_2024_25  # noqa: E402
+from infrastructure.database.migrations.sped_baseline_profiles import PROFILE_2017_18, PROFILE_2024_25  # noqa: E402
 from infrastructure.database.models import SpedLeaBaseline, SpedStateBaseline  # noqa: E402
 from infrastructure.scripts.analyze.calculate_lct_variants import calculate_lct  # noqa: E402
 from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR, SPED_BASELINE_YEAR  # noqa: E402
 
 CAP = 360.0
+# OLD is the stored 2017-18 rows, pinned (#1014) — SPED_BASELINE_YEAR moved to 2024-25 at adoption (#1003),
+# and a harness that followed it would compare the refreshed baseline with itself. The C0 control is the
+# APPLIED vintage (SPED_BASELINE_YEAR, whatever it is today): its stored rows through the production
+# estimator must reproduce the stored SPED scopes — a verdict that is a function of the state, before
+# or after adoption, not of when the script was written.
+OLD_YEAR = PROFILE_2017_18.baseline_year
 SCOPES = ("core_sped", "teachers_gened", "instructional_sped")
 
 
@@ -120,16 +126,17 @@ def pct(a, b):
 
 def main():
     with session_scope() as s:
-        old_states = need(s.query(SpedStateBaseline).filter(SpedStateBaseline.baseline_year == SPED_BASELINE_YEAR).all(),
-                          f"no sped_state_baseline rows for {SPED_BASELINE_YEAR}")
-        old_leas = need(s.query(SpedLeaBaseline).filter(SpedLeaBaseline.baseline_year == SPED_BASELINE_YEAR).all(),
-                        f"no sped_lea_baseline rows for {SPED_BASELINE_YEAR}")
+        old_states = need(s.query(SpedStateBaseline).filter(SpedStateBaseline.baseline_year == OLD_YEAR).all(),
+                          f"no sped_state_baseline rows for {OLD_YEAR}")
+        old_leas = need(s.query(SpedLeaBaseline).filter(SpedLeaBaseline.baseline_year == OLD_YEAR).all(),
+                        f"no sped_lea_baseline rows for {OLD_YEAR}")
         districts = need(select_year_totals(s, NCES_PRIMARY_YEAR), f"no districts for {NCES_PRIMARY_YEAR}")
         stored = s.execute(text(
             "SELECT district_id, staff_scope, lct_value, instructional_minutes, instructional_staff, enrollment, "
             "notes, year FROM lct_calculations WHERE grade_level IS NULL AND staff_scope IN "
             "('core_sped','teachers_gened','instructional_sped','instructional','teachers_only')")).all()
         need(stored, "no lct_calculations rows")
+        applied_ratios = load_baseline_ratios(s, SPED_BASELINE_YEAR)
         for r in old_states + old_leas:
             s.expunge(r)
 
@@ -153,7 +160,7 @@ def main():
 
     results = {}
     for name, (st_rows, lea_rows) in runs.items():
-        year = SPED_BASELINE_YEAR if name == "OLD" else PROFILE_2024_25.baseline_year
+        year = OLD_YEAR if name == "OLD" else PROFILE_2024_25.baseline_year
         ratios = ratios_from_rows(year, st_rows, lea_rows)
         per = {}
         for d in districts:
@@ -169,22 +176,24 @@ def main():
           f"{sum(1 for d in districts if d.nces_id in minutes):,}\n")
     print("## C0 harness control")
     ctrl_bad = sum(1 for a, b in control if b is None or abs(a - b) > 1e-4)
-    old_per = results["OLD"][1]
+    applied_per = {d.nces_id: scope_values(estimate_district(d, applied_ratios), minutes[d.nces_id][0])
+                   for d in districts if d.nces_id in minutes}
     compared = mism = 0
     for (did, scope), (lct, year) in stored_sped.items():
-        if year != NCES_PRIMARY_YEAR or did not in old_per:
+        if year != NCES_PRIMARY_YEAR or did not in applied_per:
             continue
-        mine = old_per[did][1].get(scope)
+        mine = applied_per[did].get(scope)
         compared += 1
         if mine is None or abs(mine - lct) > 0.005:
             mism += 1
     print(f"- `instructional` control: {len(control):,} rows recomputed, {ctrl_bad} differ")
-    print(f"- OLD in-memory vs stored SPED scopes ({NCES_PRIMARY_YEAR} rows, non-CA-actual): "
-          f"{compared:,} compared, {mism} differ (> 0.005 min)")
+    print(f"- APPLIED baseline {SPED_BASELINE_YEAR} (stored rows, production estimator) vs stored SPED scopes "
+          f"({NCES_PRIMARY_YEAR} rows, non-CA-actual): {compared:,} compared, {mism} differ (> 0.005 min)")
     if not compared:
         raise NothingMeasured("C0 compared 0 stored SPED rows")
     if ctrl_bad or mism:
-        print("\nVERDICT: HARNESS BROKEN — the OLD run does not reproduce production; no AFTER number is reported.")
+        print("\nVERDICT: HARNESS BROKEN — the applied baseline does not reproduce production; "
+              "no OLD/NEW number is reported.")
         sys.exit(2)
 
     # ---------------------------------------------------------------- C1 per-state ratios
