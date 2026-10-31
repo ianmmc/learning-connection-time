@@ -248,3 +248,50 @@ class TestReal2024Files:
         p = PROFILE_2024_25
         for s in (p.personnel.source, p.child_count.source, p.crdc, p.ccd):
             verify_source(s)
+
+
+class TestCrdcCcdReconciliation:
+    """#1001 / A3: CRDC M+F vs CCD membership, on the measured tolerance — not a guess."""
+
+    def _rows(self, pairs, reserved=0):
+        from infrastructure.database.models import SpedLeaBaseline
+        return {f"{i:07d}": SpedLeaBaseline(lea_id=f"{i:07d}", crdc_total_enrollment=c, ccd_total_enrollment=d,
+                                            crdc_schools_reserved=reserved)
+                for i, (c, d) in enumerate(pairs)}
+
+    def test_measured_shape_passes(self):
+        from infrastructure.database.migrations.import_sped_baseline import reconcile_crdc_with_ccd
+        r = reconcile_crdc_with_ccd(PROFILE_2024_25, self._rows([(979, 1000)] * 99 + [(500, 1000)]))
+        assert r.n_compared == 100 and r.n_disagree == 1
+
+    def test_aggregate_drift_beyond_the_measured_tolerance_fails(self):
+        from infrastructure.database.migrations.import_sped_baseline import reconcile_crdc_with_ccd
+        with pytest.raises(DataGuardError, match="exceeds tolerance"):
+            reconcile_crdc_with_ccd(PROFILE_2024_25, self._rows([(950, 1000)] * 100))
+
+    def test_too_many_lea_outliers_fail_even_when_the_aggregate_holds(self):
+        from infrastructure.database.migrations.import_sped_baseline import reconcile_crdc_with_ccd
+        rows = self._rows([(1300, 1000)] * 10 + [(700, 1000)] * 10 + [(1000, 1000)] * 80)
+        with pytest.raises(DataGuardError, match="rows disagree"):
+            reconcile_crdc_with_ccd(PROFILE_2024_25, rows)
+
+    def test_partial_leas_are_not_compared(self):
+        from infrastructure.database.migrations.import_sped_baseline import reconcile_crdc_with_ccd
+        rows = self._rows([(1000, 1000)] * 10)
+        rows.update({k + "p": v for k, v in self._rows([(100, 1000)] * 10, reserved=1).items()})
+        assert reconcile_crdc_with_ccd(PROFILE_2024_25, rows).n_compared == 10
+
+
+@pytest.mark.skipif(not _have(PROFILE_2017_18, PROFILE_2024_25), reason="data/raw is gitignored")
+@pytest.mark.parametrize("profile", [PROFILE_2017_18, PROFILE_2024_25], ids=lambda p: p.baseline_year)
+def test_real_crdc_passes_its_reconciliation(profile):
+    """The guard passes on both real vintages (and the measured numbers it was set from hold)."""
+    import csv
+    from infrastructure.database.migrations import import_sped_baseline as m
+    with open(profile.crdc.path, encoding="utf-8-sig", newline="") as f:
+        leas = m.build_crdc_lea_baselines(profile, m.aggregate_crdc_rows(csv.DictReader(f)))
+    for lea_id, (n, _, _) in m.read_ccd_lea_totals(profile.ccd.path).items():
+        if lea_id in leas:
+            leas[lea_id].ccd_total_enrollment = n
+    r = m.reconcile_crdc_with_ccd(profile, leas)
+    assert 0.97 < r.ratio < 1.0 and r.n_compared > 15_000

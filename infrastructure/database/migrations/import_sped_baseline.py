@@ -483,6 +483,32 @@ def import_ccd_enrollment(profile: BaselineProfile, lea_data: dict[str, SpedLeaB
     return lea_data
 
 
+# CRDC M+F vs CCD K-12 membership, full-coverage LEAs only (partial LEAs are short by construction).
+# Measured 2026-10-31 (#1001): aggregate 0.9923 (2017-18) / 0.9786 (2023-24 — the extra ~1.4 points is
+# consistent with the EO 14168 nonbinary suppression); LEAs off by > 20%: 4.3% / 4.9%. The bounds sit
+# just outside the worst measured vintage, so a file that drifts further fails loud.
+CRDC_CCD_AGGREGATE_TOLERANCE = 0.035
+CRDC_CCD_LEA_BAND = 0.20
+CRDC_CCD_MAX_LEA_SHARE_OUTSIDE_BAND = 0.06
+
+
+def reconcile_crdc_with_ccd(profile: BaselineProfile, lea_data: dict[str, SpedLeaBaseline]):
+    """Guard the CRDC totals against the CCD membership of the same year (#1001): the aggregate within
+    the measured tolerance, and the share of LEAs off by more than CRDC_CCD_LEA_BAND capped."""
+    pairs = [(r.crdc_total_enrollment, r.ccd_total_enrollment) for r in lea_data.values()
+             if r.crdc_schools_reserved == 0 and r.crdc_total_enrollment and r.ccd_total_enrollment]
+    outside = sum(1 for c, d in pairs if abs(c / d - 1) > CRDC_CCD_LEA_BAND)
+    receipt = reconcile_total(
+        sum(c for c, _ in pairs), sum(d for _, d in pairs),
+        label=f"CRDC {profile.crdc.data_year} M+F vs CCD {profile.ccd.data_year} K-12 membership (full-coverage LEAs)",
+        tolerance=CRDC_CCD_AGGREGATE_TOLERANCE, n_compared=len(pairs), n_disagree=outside,
+        max_disagree=int(CRDC_CCD_MAX_LEA_SHARE_OUTSIDE_BAND * len(pairs)),
+    )
+    print(f"  CRDC vs CCD: ratio {receipt.ratio:.4f} over {receipt.n_compared:,} LEAs; "
+          f"{receipt.n_disagree:,} off by > {CRDC_CCD_LEA_BAND:.0%}")
+    return receipt
+
+
 def save_to_database(session, profile: BaselineProfile, state_data: dict, lea_data: dict) -> None:
     """Replace ONE vintage's baseline rows, atomically. Rows of every other vintage are never touched
     (#999): the 2017-18 baseline stays side by side with a refresh until T5 retires it."""
@@ -572,6 +598,8 @@ def main():
     state_data = import_idea_state_baseline(profile)
     lea_data = import_crdc_enrollment(profile, sample_limit=args.sample)
     lea_data = import_ccd_enrollment(profile, lea_data, sample_limit=args.sample)
+    if not args.sample:
+        reconcile_crdc_with_ccd(profile, lea_data)
     with session_scope() as session:
         save_to_database(session, profile, state_data, lea_data)
     print_summary(state_data, lea_data)
