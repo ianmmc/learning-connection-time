@@ -70,6 +70,10 @@ class BaselineProfile:
     child_count: ChildCountProfile
     crdc: SourceFile
     ccd: SourceFile
+    # IDEA 618 LEA educational environments (#1004) and the rule for using an LEA's own self-contained
+    # share: only when the LEA has at least this many school-age SPED students (else the state share).
+    lea_environments: Optional[SourceFile] = None
+    lea_self_contained_min_sped: Optional[int] = None
     # Which school_age_cols band the stored counts and ratios use. None = not yet decided, and the
     # importer refuses to WRITE the vintage (it can still be parsed and measured) — for 2024-25 this
     # is one of the three T5 calls on #1003 (School Age 5-21 vs 6-21).
@@ -163,6 +167,11 @@ PROFILE_2024_25 = BaselineProfile(
     # matching the personnel file — and CRDC's own total as every LEA's denominator.
     school_age_band='5-21',
     lea_denominator='crdc',
+    # #1004 (Ian, 2026-10-31): an LEA's own share at >= 200 school-age SPED students — where it is stable
+    # and not biased by small-cell suppression (1,639 of 1,881 LEAs under 50 publish a real 0).
+    lea_environments=SourceFile("idea-618/2024_25/beducationalenvironmentslea2024-25.csv",
+                                "48afaa1f5ac210f4ab8f588e2c48af76e23219e166693716811e14b9267c1037", "2024-25"),
+    lea_self_contained_min_sped=200,
 )
 
 PROFILES: Mapping[str, BaselineProfile] = {p.baseline_year: p for p in (PROFILE_2017_18, PROFILE_2024_25)}

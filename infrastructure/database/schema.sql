@@ -2433,7 +2433,10 @@ CREATE TABLE public.sped_lea_baseline (
     updated_at timestamp with time zone NOT NULL,
     crdc_year character varying(10) NOT NULL,
     ccd_year character varying(10) NOT NULL,
-    crdc_schools_reserved integer
+    crdc_schools_reserved integer,
+    idea_lea_year character varying(10),
+    idea_school_age_total integer,
+    idea_self_contained integer
 );
 
 

@@ -420,7 +420,7 @@ def get_sped_ratio_years(session) -> Dict[str, List[str]]:
                                    SpedStateBaseline.child_count_year).distinct():
         out.setdefault(b, set()).update(y for y in years if y)
     for b, *years in session.query(SpedLeaBaseline.baseline_year, SpedLeaBaseline.crdc_year,
-                                   SpedLeaBaseline.ccd_year).distinct():
+                                   SpedLeaBaseline.ccd_year, SpedLeaBaseline.idea_lea_year).distinct():
         out.setdefault(b, set()).update(y for y in years if y)
     return {b: sorted(v) for b, v in out.items()}
 

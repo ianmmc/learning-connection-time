@@ -418,6 +418,20 @@ def parse_lea_environment_rows(headers: list[str], rows) -> dict[str, LeaEnviron
     return out
 
 
+def attach_lea_environments(profile: BaselineProfile, lea_data: dict[str, SpedLeaBaseline]) -> None:
+    """Store each baseline LEA's raw IDEA environment counts (#1004). LEAs the environments file lists
+    but the baseline does not carry no CRDC proportion, so they are not added."""
+    envs = read_lea_environments(profile.lea_environments.path)
+    hit = 0
+    for lea_id, r in lea_data.items():
+        e = envs.get(lea_id)
+        r.idea_lea_year = profile.lea_environments.data_year
+        if e:
+            r.idea_school_age_total, r.idea_self_contained = e.total, e.self_contained
+            hit += 1
+    print(f"  IDEA LEA environments {profile.lea_environments.data_year}: {hit:,} of {len(lea_data):,} baseline LEAs matched")
+
+
 def read_lea_environments(path: Path) -> dict[str, LeaEnvironments]:
     with open(path, 'r', encoding='utf-8-sig', newline='') as f:
         reader = csv.reader(f)
@@ -666,7 +680,8 @@ def main():
     if profile.school_age_band is None:
         raise DataGuardError(f"baseline {profile.baseline_year}: school_age_band is undecided (a T5 call, #1003) "
                              f"— it can be parsed and measured, not written")
-    for src in (profile.personnel.source, profile.child_count.source, profile.crdc, profile.ccd):
+    for src in (profile.personnel.source, profile.child_count.source, profile.crdc, profile.ccd,
+                *([profile.lea_environments] if profile.lea_environments else [])):
         verify_source(src)
         print(f"  verified {src.relpath} ({src.data_year})")
 
@@ -675,6 +690,8 @@ def main():
     lea_data = import_ccd_enrollment(profile, lea_data, sample_limit=args.sample)
     if not args.sample:
         reconcile_crdc_with_ccd(profile, lea_data)
+    if profile.lea_environments:
+        attach_lea_environments(profile, lea_data)
     with session_scope() as session:
         save_to_database(session, profile, state_data, lea_data)
     print_summary(state_data, lea_data)

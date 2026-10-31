@@ -31,6 +31,7 @@ sys.path.insert(0, str(project_root))
 
 from infrastructure.database.connection import session_scope
 from infrastructure.database.queries import distinct_years
+from infrastructure.database.migrations.sped_baseline_profiles import get_profile
 from infrastructure.utilities.data_guards import DataGuardError, require_nonempty_selection
 from infrastructure.utilities.school_year import COVID_EXCLUDED_YEARS, NCES_PRIMARY_YEAR, SPED_BASELINE_YEAR
 from infrastructure.database.models import (
@@ -119,9 +120,13 @@ class BaselineRatios(NamedTuple):
     lea_self_contained: dict[str, float] | None = None
 
 
-def ratios_from_rows(baseline_year: str, state_rows, lea_rows) -> BaselineRatios:
+def ratios_from_rows(baseline_year: str, state_rows, lea_rows, lea_self_contained_min_sped: int | None = None) -> BaselineRatios:
     """Pure: baseline rows (ORM objects, saved or not) → the ratios the estimator applies. The ONE
-    derivation, used by the DB run and by the T4 before/after measurement alike (#1002)."""
+    derivation, used by the DB run and by the T4 before/after measurement alike (#1002).
+
+    With `lea_self_contained_min_sped` set (the vintage profile's rule, #1004), an LEA whose IDEA
+    environment counts are real and whose school-age SPED total is at least that many uses its OWN
+    self-contained share; every other district keeps its state's."""
     teacher, instructional, self_contained = {}, {}, {}
     for r in state_rows:
         if r.ratio_sped_teachers_per_student is None:
@@ -154,7 +159,13 @@ def ratios_from_rows(baseline_year: str, state_rows, lea_rows) -> BaselineRatios
         lea_proportion[r.lea_id] = float(p)
         by_state.setdefault(r.state, []).append(p)
     state_avg = {st: float(sum(v) / len(v)) for st, v in by_state.items()}
-    return BaselineRatios(baseline_year, teacher, instructional, self_contained, national, state_avg, lea_proportion)
+    lea_sc = None
+    if lea_self_contained_min_sped is not None:
+        lea_sc = {r.lea_id: r.idea_self_contained / r.idea_school_age_total for r in lea_rows
+                  if r.idea_school_age_total and r.idea_self_contained is not None
+                  and r.idea_school_age_total >= lea_self_contained_min_sped}
+    return BaselineRatios(baseline_year, teacher, instructional, self_contained, national, state_avg,
+                          lea_proportion, lea_sc)
 
 
 def load_baseline_ratios(session, baseline_year: str) -> BaselineRatios:
@@ -166,11 +177,15 @@ def load_baseline_ratios(session, baseline_year: str) -> BaselineRatios:
                                available=lambda: distinct_years(session, "sped_state_baseline", "baseline_year"))
     require_nonempty_selection(lea_rows, what=f"sped_lea_baseline rows for baseline_year={baseline_year}",
                                available=lambda: distinct_years(session, "sped_lea_baseline", "baseline_year"))
-    ratios = ratios_from_rows(baseline_year, state_rows, lea_rows)
+    ratios = ratios_from_rows(baseline_year, state_rows, lea_rows,
+                              lea_self_contained_min_sped=get_profile(baseline_year).lea_self_contained_min_sped)
     n = ratios.national
     print(f"  Ratios for {len(ratios.teacher)} states (teacher), {len(ratios.instructional)} (instructional), "
           f"{len(ratios.self_contained)} (self-contained); {len(ratios.lea_proportion):,} LEA proportions, "
           f"{len(ratios.state_avg_proportion)} state averages")
+    if ratios.lea_self_contained is not None:
+        print(f"  LEA-own self-contained shares (>= {get_profile(baseline_year).lea_self_contained_min_sped} "
+              f"school-age SPED): {len(ratios.lea_self_contained):,} LEAs")
     print(f"  National averages (fallback): teacher={n['teacher_ratio']:.4f}, "
           f"instructional={n['instructional_ratio']:.4f}, self_contained={n['self_contained_ratio']:.4f}")
     return ratios

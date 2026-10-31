@@ -471,8 +471,8 @@
       {
         "file": "infrastructure/database/migrations/sped_baseline_profiles.py",
         "literal": "2024-25",
-        "count": 2,
-        "why": "The refreshed baseline set's baseline_year key and its IDEA child count's data_year (#1000) — fixed source vintages, sha256-pinned."
+        "count": 3,
+        "why": "The refreshed baseline set's baseline_year key, its IDEA child count's data_year (#1000) and its IDEA LEA environments file's data_year (#1004) — fixed source vintages, sha256-pinned."
       }
     ]
   }

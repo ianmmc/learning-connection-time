@@ -363,3 +363,38 @@ class TestLeaSelfContainedShare:
         lea = base._replace(lea_self_contained={"0100001": 0.0})
         e = estimate_district(d, lea)
         assert e.self_contained == 0 and e.method == "lea_self_contained_ratio"   # a real 0 is a value
+
+
+class TestLeaSelfContainedRule:
+    """#1004 (Ian, 2026-10-31): an LEA's own share only at >= 200 school-age SPED; else the state's."""
+
+    def _lea(self, lea_id, total, sc):
+        from infrastructure.database.models import SpedLeaBaseline
+        return SpedLeaBaseline(lea_id=lea_id, state="AL", ratio_sped_proportion=0.15,
+                               idea_school_age_total=total, idea_self_contained=sc)
+
+    def _state(self):
+        from infrastructure.database.models import SpedStateBaseline
+        return SpedStateBaseline(state="AL", ratio_sped_teachers_per_student=0.8,
+                                 ratio_sped_instructional_per_student=1.8, ratio_self_contained_proportion=0.15)
+
+    def test_threshold_selects_who_uses_their_own_share(self):
+        from infrastructure.database.migrations.apply_sped_estimates import ratios_from_rows
+        leas = [self._lea("0100001", 200, 40), self._lea("0100002", 199, 0),
+                self._lea("0100003", 5000, None), self._lea("0100004", None, None)]
+        r = ratios_from_rows("2024-25", [self._state()], leas, lea_self_contained_min_sped=200)
+        assert r.lea_self_contained == {"0100001": pytest.approx(0.2)}
+
+    def test_no_rule_means_no_override(self):
+        from infrastructure.database.migrations.apply_sped_estimates import ratios_from_rows
+        r = ratios_from_rows("2017-18", [self._state()], [self._lea("0100001", 500, 40)])
+        assert r.lea_self_contained is None
+
+    def test_profiles_carry_the_rule(self):
+        assert PROFILE_2024_25.lea_self_contained_min_sped == 200 and PROFILE_2024_25.lea_environments
+        assert PROFILE_2017_18.lea_self_contained_min_sped is None
+
+
+@pytest.mark.skipif(not PROFILE_2024_25.lea_environments.path.exists(), reason="data/raw is gitignored")
+def test_lea_environments_pin_matches_the_bytes():
+    verify_source(PROFILE_2024_25.lea_environments)

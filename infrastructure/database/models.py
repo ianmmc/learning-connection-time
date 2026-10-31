@@ -1274,6 +1274,11 @@ class SpedLeaBaseline(Base):
     # Schools excluded from the CRDC sums for carrying a reserve code (#960; pairwise — out of SPED
     # AND total). NULL = imported before the exclusion existed (the 2017-18 rows as first loaded).
     crdc_schools_reserved: Mapped[Optional[int]] = mapped_column(Integer)
+    # IDEA 618 LEA educational environments (#1004), raw; NULL = suppressed / not reported / not loaded.
+    # Whether a district uses its own share is the vintage profile's rule, applied at ratio time.
+    idea_lea_year: Mapped[Optional[str]] = mapped_column(String(10))
+    idea_school_age_total: Mapped[Optional[int]] = mapped_column(Integer)
+    idea_self_contained: Mapped[Optional[int]] = mapped_column(Integer)
 
     # CRDC: SPED Enrollment (IDEA students)
     crdc_sped_enrollment_m: Mapped[Optional[int]] = mapped_column(Integer)
