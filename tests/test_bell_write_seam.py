@@ -584,3 +584,35 @@ class TestValidateBellDataCLI:
             'source': 'x',
         })
         assert not any('Invalid method' in w for w in v.warnings)
+
+
+# =============================================================================
+# validate_schedule_plausibility — step 7 duration cross-check (#919, REQ-055)
+# =============================================================================
+
+class TestDurationCrossCheckSymmetricBand:
+    """Gross stated minutes must sit within +/-15 min of end-start (REQ-055; 15 = REQ-056 tolerance).
+    8:00 AM-3:00 PM is a 420-minute span."""
+
+    def _check(self, stated):
+        return validate_schedule_plausibility({
+            'grade_level': 'high', 'start_time': '8:00 AM', 'end_time': '3:00 PM',
+            'instructional_minutes': stated,
+        })
+
+    @pytest.mark.parametrize('stated', [405, 420, 435])
+    def test_inside_band_is_clean(self, stated):
+        r = self._check(stated)
+        assert r['valid'] and not r['warnings']
+
+    @pytest.mark.parametrize('stated', [404, 390, 360])
+    def test_below_band_warns(self, stated):
+        """Previously tolerated down to span-90 as 'lunch/passing' - a net-minutes assumption REQ-055 retired."""
+        r = self._check(stated)
+        assert r['valid']
+        assert any('duration' in w for w in r['warnings'])
+
+    def test_above_band_is_an_error(self):
+        r = self._check(436)
+        assert not r['valid']
+        assert any('duration' in e for e in r['errors'])
