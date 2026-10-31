@@ -257,3 +257,62 @@ class TestDryRunTouchesNoWritePath:
         assert e.value.code == 2
         wired.write.assert_not_called()
         wired.clear.assert_not_called()
+
+
+class TestEmptyScopedRunStillClears:
+    """#1013: a scoped run in which no requested district yields rows must still delete their stale rows —
+    a full run would leave them none."""
+
+    def test_scoped_empty_result_clears_the_requested_districts_then_exits(self, monkeypatch, tmp_path):
+        session = MagicMock()
+        @contextmanager
+        def scope():
+            yield session
+        monkeypatch.setattr(clv, "session_scope", scope)
+        monkeypatch.setattr(clv, "calculate_all_variants", lambda *a, **k: (pd.DataFrame(), "2024-25", "2024-25"))
+        monkeypatch.setattr(clv, "find_unknown_districts", lambda s, ids: [])
+        monkeypatch.setattr(clv.CalculationRun, "start_run", MagicMock(return_value=MagicMock(run_id="R")))
+        clear = MagicMock(return_value=5)
+        monkeypatch.setattr(clv, "clear_lct_calculations", clear)
+        with pytest.raises(SystemExit) as e:
+            clv.main(["--districts", "d1", "--output-dir", str(tmp_path)])
+        assert e.value.code == 1
+        assert clear.call_args.kwargs["district_ids"] == ["d1"]
+        session.commit.assert_called()
+
+    @pytest.mark.parametrize("argv", [["--dry-run", "--districts", "d1"], []])
+    def test_dry_run_and_full_run_do_not_clear_on_an_empty_result(self, monkeypatch, tmp_path, argv):
+        session = MagicMock()
+        @contextmanager
+        def scope():
+            yield session
+        monkeypatch.setattr(clv, "session_scope", scope)
+        monkeypatch.setattr(clv, "calculate_all_variants", lambda *a, **k: (pd.DataFrame(), "2024-25", "2024-25"))
+        monkeypatch.setattr(clv, "find_unknown_districts", lambda s, ids: [])
+        monkeypatch.setattr(clv.CalculationRun, "start_run", MagicMock(return_value=MagicMock(run_id="R")))
+        clear = MagicMock(return_value=5)
+        monkeypatch.setattr(clv, "clear_lct_calculations", clear)
+        with pytest.raises(SystemExit):
+            clv.main([*argv, "--output-dir", str(tmp_path)])
+        clear.assert_not_called()
+
+
+class TestSpedScopeMinutes:
+    """#1009: the SPED scopes window the baseline's ratio years at read time, as staff/enrollment are."""
+    RATIO = ["2024-25", "2024-25", "2024-25", "2023-24", "2024-25"]   # staff, enrollment, estimate, ratio years
+
+    def test_bell_year_out_of_window_only_with_the_ratio_years_falls_back_to_statutory(self, monkeypatch):
+        statutory = (360, "state_requirement", None)
+        monkeypatch.setattr(clv, "get_statutory_minutes", lambda s, st, band: statutory)
+        base = (410, "bell_schedule", "2026-27")   # the base scopes keep it: 2024-25..2026-27 is span 2
+        assert clv.sped_scope_minutes(None, "CA", base, self.RATIO) == statutory
+
+    def test_coherent_bell_year_is_kept(self, monkeypatch):
+        monkeypatch.setattr(clv, "get_statutory_minutes", lambda *a: pytest.fail("no fallback expected"))
+        base = (410, "bell_schedule", "2025-26")
+        assert clv.sped_scope_minutes(None, "CA", base, self.RATIO) == base
+
+    def test_statutory_base_has_no_year_and_passes_through(self, monkeypatch):
+        monkeypatch.setattr(clv, "get_statutory_minutes", lambda *a: pytest.fail("no fallback expected"))
+        base = (360, "default", None)
+        assert clv.sped_scope_minutes(None, "CA", base, self.RATIO) == base

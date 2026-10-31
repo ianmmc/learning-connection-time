@@ -426,6 +426,19 @@ def get_most_recent_sped(session, target_year: Optional[str] = None) -> Dict[str
     return {s.district_id: (s, s.estimate_year) for s in sped_estimates}
 
 
+def sped_scope_minutes(session, state: str, base: tuple, blend_years: Sequence[Optional[str]]) -> tuple:
+    """The (minutes, source, year) triple the SPED scopes use (#1009). `base` is the K-12 triple the base
+    scopes use, already windowed against staff/enrollment. The SPED scopes blend more years — the estimate
+    year and the baseline's component years (component_years.sped_ratio, which migration 030 windows) —
+    so a bell year the base scopes may keep can still put a SPED row out of the REQ-026 window. That was
+    written invalid (ERR_SPAN_EXCEEDED) rather than prevented; prevent it here, the same way: fall back to
+    the statutory high-band value, whose year is None and so cannot widen the span."""
+    _minutes, _source, year = base
+    if year and not within_blend_window([year, *blend_years]):
+        return get_statutory_minutes(session, state, "high")
+    return base
+
+
 def get_sped_ratio_years(session) -> Dict[str, List[str]]:
     """{baseline_year: sorted component data years} — the IDEA personnel / child count and CRDC / CCD
     years each SPED baseline vintage was built from (#999). They ride on every SPED row
@@ -839,6 +852,13 @@ def calculate_all_variants(
         sped_source = f"sped_estimate_{sped_baseline}"
         ratio_years = sped_ratio_years.get(sped_baseline, []) if sped_baseline else []
         sped_component_years = {"sped_ratio": ratio_years} if ratio_years else None
+        # #1009: the SPED scopes blend MORE years than the base scopes (the estimate year + ratio_years,
+        # which migration 030 windows), so a bell year the base scopes keep can still put a SPED row out
+        # of the REQ-026 window. Prevent it at read time, as above for staff/enrollment.
+        sped_est_year = sped_years.get(staff.district_id, SPED_BASELINE_YEAR) if sped_estimate else None
+        sped_minutes, sped_minutes_source, sped_minutes_year = sped_scope_minutes(
+            session, district.state, (minutes, minutes_source, minutes_year),
+            [staff.effective_year, _enroll_yr, sped_est_year, *ratio_years])
 
         if ca_actual and ca_actual.confidence != "low":
             # Use CA actual self-contained SPED enrollment (2023-24 or later)
@@ -871,7 +891,7 @@ def calculate_all_variants(
 
             # LCT-Core-SPED: teachers only (for audit/reconciliation with teachers_gened)
             if sped_teachers and sped_teachers > 0 and sped_enrollment and sped_enrollment > 0:
-                lct_core_sped = calculate_lct(minutes, sped_teachers, sped_enrollment)
+                lct_core_sped = calculate_lct(sped_minutes, sped_teachers, sped_enrollment)
                 # Cap at 360 but flag if it would exceed (high SPED teacher ratio)
                 sped_capped = False
                 if lct_core_sped is not None and lct_core_sped > 360:
@@ -891,9 +911,9 @@ def calculate_all_variants(
                         "state": district.state,
                         "staff_scope": "core_sped",
                         "lct_value": lct_core_sped,
-                        "instructional_minutes": minutes,
-                        "instructional_minutes_source": minutes_source,
-                        "instructional_minutes_year": minutes_year,
+                        "instructional_minutes": sped_minutes,
+                        "instructional_minutes_source": sped_minutes_source,
+                        "instructional_minutes_year": sped_minutes_year,
                         "staff_count": sped_teachers,
                         "staff_source": sped_source,
                         "component_years": sped_component_years,
@@ -907,7 +927,7 @@ def calculate_all_variants(
 
             # LCT-Teachers-GenEd
             if gened_teachers and gened_teachers > 0 and gened_enrollment and gened_enrollment > 0:
-                lct_gened = calculate_lct(minutes, gened_teachers, gened_enrollment)
+                lct_gened = calculate_lct(sped_minutes, gened_teachers, gened_enrollment)
                 # Cap-and-flag, symmetric with the SPED scopes (issue #67 — rows > 360 were
                 # silently DROPPED here while SPED rows were capped with a WARN)
                 gened_capped = False
@@ -924,9 +944,9 @@ def calculate_all_variants(
                         "state": district.state,
                         "staff_scope": "teachers_gened",
                         "lct_value": lct_gened,
-                        "instructional_minutes": minutes,
-                        "instructional_minutes_source": minutes_source,
-                        "instructional_minutes_year": minutes_year,
+                        "instructional_minutes": sped_minutes,
+                        "instructional_minutes_source": sped_minutes_source,
+                        "instructional_minutes_year": sped_minutes_year,
                         "staff_count": gened_teachers,
                         "staff_source": sped_source,
                         "component_years": sped_component_years,
@@ -941,7 +961,7 @@ def calculate_all_variants(
 
             # LCT-Instructional-SPED: teachers + paras (fuller picture of SPED support)
             if sped_instructional and sped_instructional > 0 and sped_enrollment and sped_enrollment > 0:
-                lct_instr_sped = calculate_lct(minutes, sped_instructional, sped_enrollment)
+                lct_instr_sped = calculate_lct(sped_minutes, sped_instructional, sped_enrollment)
                 # Cap at 360 but flag if it would exceed (high SPED instructional ratio)
                 instr_sped_capped = False
                 if lct_instr_sped is not None and lct_instr_sped > 360:
@@ -961,9 +981,9 @@ def calculate_all_variants(
                         "state": district.state,
                         "staff_scope": "instructional_sped",
                         "lct_value": lct_instr_sped,
-                        "instructional_minutes": minutes,
-                        "instructional_minutes_source": minutes_source,
-                        "instructional_minutes_year": minutes_year,
+                        "instructional_minutes": sped_minutes,
+                        "instructional_minutes_source": sped_minutes_source,
+                        "instructional_minutes_year": sped_minutes_year,
                         "staff_count": sped_instructional,
                         "staff_source": sped_source,
                         "component_years": sped_component_years,
@@ -1760,6 +1780,14 @@ def main(argv: Optional[Sequence[str]] = None):
 
         if len(df) == 0:
             print("No LCT values calculated. Check data availability.")
+            if scoped and not dry_run:
+                # #1013: a full run would leave these districts no rows; the scoped run must too, or a
+                # district re-flagged as shared-service keeps its stale rows forever.
+                cleared_count = clear_lct_calculations(
+                    session, year=args.target_year if args.target_year else None, district_ids=district_ids)
+                session.commit()
+                print(f"Cleared {cleared_count:,} stale lct_calculations rows for the requested districts "
+                      f"(a full run would leave them none)")
             if run:
                 run.fail("No LCT values calculated")
                 session.commit()

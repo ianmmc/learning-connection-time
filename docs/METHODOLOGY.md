@@ -1114,9 +1114,11 @@ Until 2026-10-31 the 2017-18 IDEA 618 / CRDC ratio baseline was **exempt** from 
 carries `component_years = {"sped_ratio": [...]}` (the applied baseline's IDEA personnel / child count and
 CRDC / CCD years), and the temporal trigger (migration 030) folds those years into `year_span`,
 `within_3year_window` and the COVID check exactly like the three `*_source_year` columns.
-`within_blend_window()` exempts nothing. Consequence measured on the 2026-10-31 run: the 44 districts with a
-2026-27 bell schedule carry `ERR_SPAN_EXCEEDED` on their SPED scopes (2023-24 ratio components → span 3);
-their other scopes are unaffected.
+`within_blend_window()` exempts nothing. The SPED scopes blend more years than the base scopes (the estimate
+year and the ratio components), so `calculate_lct_variants` windows them separately at read time
+(`sped_scope_minutes`, #1009): a bell year the base scopes keep but that puts a SPED row out of the window
+(measured 2026-10-31: 44 districts with a 2026-27 schedule against 2023-24 ratio components, span 3) sends
+the SPED scopes to statutory minutes instead of writing them `ERR_SPAN_EXCEEDED`; the other scopes are unaffected.
 
 ### Database Implementation
 
