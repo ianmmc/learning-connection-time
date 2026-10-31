@@ -357,6 +357,74 @@ def import_idea_state_baseline(profile: BaselineProfile) -> dict[str, SpedStateB
     return state_data
 
 
+# IDEA 618 LEA educational environments (#1004, T6): per-LEA school-age environment counts, wide
+# format, NCES LEA ID carried. `-8` = small-cell suppression, `-9` = questionable data quality, blank =
+# not reported — all missing (safe_int). The school-age environment columns partition the
+# 'All Educational Environments' total, which G1 checks per row where every cell is numeric.
+LEA_ENV_TOTAL = 'School Age All Educational Environments'
+LEA_ENV_SELF_CONTAINED = ('School Age Inside regular class less than 40% of the day', 'School Age Separate School')
+LEA_ENV_PARTS = (
+    'School Age Inside regular class 80% or more of the day',
+    'School Age Inside regular class 40% through 79% of the day',
+    *LEA_ENV_SELF_CONTAINED,
+    'School Age Residential Facility', 'School Age Homebound/Hospital',
+    'School Age Correctional Facilities', 'School Age Parentally placed in private schools',
+)
+
+
+# Measured 2026-10-31 on the 2024-25 file: 6 of 7,021 fully-numeric rows miss their own total, all
+# Wisconsin, each 1-3 students UNDER it (unassigned students, not a dropped category). A relabel or a
+# dropped column moves thousands of rows, so the cap sits just above the measured six.
+LEA_ENV_MAX_ROW_DISAGREE = 10
+
+
+@dataclass
+class LeaEnvironments:
+    total: int | None             # school-age, all environments
+    self_contained: int | None    # <40% + separate school; None when either cell is missing
+
+    @property
+    def share(self) -> float | None:
+        if self.total and self.self_contained is not None:
+            return self.self_contained / self.total
+        return None
+
+
+def parse_lea_environment_rows(headers: list[str], rows) -> dict[str, LeaEnvironments]:
+    """Pure: the IDEA LEA environments file → {nces_leaid: LeaEnvironments}. A share is published only
+    when the total AND both self-contained cells are real counts — a suppressed cell is never read as
+    0 (#1004). G1: where every school-age cell is numeric, the parts must sum to the row's own total."""
+    headers = [normalize_header(h) for h in headers]
+    required = ['NCES LEA ID', LEA_ENV_TOTAL, *LEA_ENV_PARTS]
+    require_labels_seen(required, headers, label="IDEA 618 LEA environments header row")
+    col = {name: headers.index(name) for name in required}
+    out: dict[str, LeaEnvironments] = {}
+    compared = disagree = 0
+    for row in rows:
+        if len(row) <= max(col.values()):
+            continue
+        lea_id = row[col['NCES LEA ID']].strip()
+        if len(lea_id) != 7:
+            continue
+        total = safe_int(row[col[LEA_ENV_TOTAL]])
+        parts = [safe_int(row[col[c]]) for c in LEA_ENV_PARTS]
+        if total is not None and all(v is not None for v in parts):
+            compared += 1
+            disagree += sum(parts) != total
+        lt40, sep = (safe_int(row[col[c]]) for c in LEA_ENV_SELF_CONTAINED)
+        out[lea_id] = LeaEnvironments(total, lt40 + sep if lt40 is not None and sep is not None else None)
+    reconcile_total(compared - disagree, compared, label="IDEA 618 LEA environments: rows whose parts sum to their total",
+                    n_compared=compared, n_disagree=disagree, max_disagree=LEA_ENV_MAX_ROW_DISAGREE)
+    return out
+
+
+def read_lea_environments(path: Path) -> dict[str, LeaEnvironments]:
+    with open(path, 'r', encoding='utf-8-sig', newline='') as f:
+        reader = csv.reader(f)
+        headers = seek_header_row(reader, label=f"IDEA 618 LEA environments {path.name}", first_cell='School Year')
+        return parse_lea_environment_rows(headers, reader)
+
+
 CRDC_COUNT_COLS = ('SCH_ENR_IDEA_M', 'SCH_ENR_IDEA_F', 'TOT_ENR_M', 'TOT_ENR_F')
 
 

@@ -114,6 +114,9 @@ class BaselineRatios(NamedTuple):
     national: dict[str, float]         # unweighted means of the three, for states missing them
     state_avg_proportion: dict[str, float]   # state -> mean LEA SPED share (the LEA fallback)
     lea_proportion: dict[str, float]         # lea_id -> LEA SPED share
+    # lea_id -> the LEA's OWN self-contained share (IDEA LEA environments, #1004); a district absent
+    # here uses its state's. None/empty = the state share for everyone (the method through 2026-10-31).
+    lea_self_contained: dict[str, float] | None = None
 
 
 def ratios_from_rows(baseline_year: str, state_rows, lea_rows) -> BaselineRatios:
@@ -215,6 +218,11 @@ def estimate_district(district: YearTotals, ratios: BaselineRatios) -> DistrictE
         self_contained_ratio = ratios.national["self_contained_ratio"]
         instructional_ratio = ratios.national["instructional_ratio"]
 
+    lea_sc = (ratios.lea_self_contained or {}).get(district.nces_id)
+    used_lea_self_contained = lea_sc is not None
+    if used_lea_self_contained:
+        self_contained_ratio = lea_sc     # a real 0.0 (no self-contained students) is a value, not missing
+
     if district.nces_id in ratios.lea_proportion:
         sped_proportion, used_state_avg = ratios.lea_proportion[district.nces_id], False
     elif state in ratios.state_avg_proportion:
@@ -243,7 +251,8 @@ def estimate_district(district: YearTotals, ratios: BaselineRatios) -> DistrictE
         total_enrollment, total_teachers, teacher_ratio, instructional_ratio, self_contained_ratio,
         sped_proportion, used_state_avg, used_national, sped_enrollment, self_contained,
         total_enrollment - self_contained, sped_teachers, sped_instructional, gened_teachers,
-        "national_average_fallback" if used_national else "self_contained_ratio", confidence,
+        ("national_average_fallback" if used_national
+         else "lea_self_contained_ratio" if used_lea_self_contained else "self_contained_ratio"), confidence,
         "; ".join(notes_parts) if notes_parts else None,
     )
 

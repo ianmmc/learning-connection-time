@@ -318,3 +318,48 @@ def test_profiles_carry_the_t5_decisions():
     assert SPED_BASELINE_YEAR == "2024-25" and SPED_BASELINE_YEAR in PROFILES
     assert PROFILE_2024_25.school_age_band == "5-21" and PROFILE_2024_25.lea_denominator == "crdc"
     assert PROFILE_2017_18.lea_denominator == "ccd"
+
+
+class TestLeaSelfContainedShare:
+    """#1004 (T6): the per-LEA self-contained share — parsed with suppression as missing, applied as an
+    optional override that is EMPTY by default (no behaviour change until adopted)."""
+
+    HEAD = ["School Year", "NCES LEA ID", "School Age All Educational Environments",
+            "School Age Inside regular class 80% or more of the day",
+            "School Age Inside regular class 40% through 79% of the day",
+            "School Age Inside regular class less than 40% of the day", "School Age Separate School",
+            "School Age Residential Facility", "School Age Homebound/Hospital",
+            "School Age Correctional Facilities", "School Age Parentally placed in private schools"]
+
+    def _row(self, lea, total, lt40, sep, rest=("60", "20", "0", "0", "0", "0")):
+        r = ["2024-2025", lea, total, rest[0], rest[1], lt40, sep, *rest[2:]]
+        return r
+
+    def test_share_needs_real_counts(self):
+        from infrastructure.database.migrations.import_sped_baseline import parse_lea_environment_rows
+        out = parse_lea_environment_rows(self.HEAD, [
+            self._row("0100001", "100", "15", "5"),
+            self._row("0100002", "100", "-8", "5", rest=("-8", "-8", "0", "0", "0", "0")),
+            self._row("0100003", "", "", "", rest=("", "", "", "", "", "")),
+        ])
+        assert out["0100001"].share == pytest.approx(0.20)
+        assert out["0100002"].share is None and out["0100003"].share is None
+
+    def test_g1_parts_must_sum_to_the_row_total(self):
+        from infrastructure.database.migrations.import_sped_baseline import parse_lea_environment_rows
+        good = [self._row(f"02{i:05d}", "100", "15", "5") for i in range(4000)]
+        bad = [self._row(f"01{i:05d}", "101", "15", "5") for i in range(11)]   # 1 student unassigned
+        with pytest.raises(DataGuardError, match="rows disagree"):
+            parse_lea_environment_rows(self.HEAD, good + bad)
+        parse_lea_environment_rows(self.HEAD, good + bad[:10])   # the measured noise (6, WI) sits under the cap
+
+    def test_override_is_empty_by_default_and_applied_when_set(self):
+        from infrastructure.database.migrations.apply_sped_estimates import BaselineRatios, YearTotals, estimate_district
+        base = BaselineRatios("2024-25", {"AL": 0.8}, {"AL": 1.8}, {"AL": 0.15},
+                              {"teacher_ratio": 0.8, "instructional_ratio": 1.8, "self_contained_ratio": 0.15},
+                              {}, {"0100001": 0.2})
+        d = YearTotals("0100001", "AL", 1000, 60.0)
+        assert estimate_district(d, base).self_contained == 30            # 1000 × 0.2 × 0.15
+        lea = base._replace(lea_self_contained={"0100001": 0.0})
+        e = estimate_district(d, lea)
+        assert e.self_contained == 0 and e.method == "lea_self_contained_ratio"   # a real 0 is a value
