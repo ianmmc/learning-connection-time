@@ -693,7 +693,7 @@ Consolidated 2026-07-02 from the former standalone `SPED_SEGMENTATION_IMPLEMENTA
 `docs/archive/`). Implemented as of the v3 (2026-01-03) self-contained-focus design.
 
 **Key concept.** SPED students split into two groups with very different instructional relationships:
-**self-contained** (~6.7% of all SPED nationally — separate class, separate school, or inside regular class
+**self-contained** (**16.1%** of all SPED ages 6-21 nationally, 2017-18 — separate school, or inside regular class
 <40% of the day) are taught primarily by SPED teachers and are the correct denominator for SPED
 teacher-to-student ratios; **mainstreamed** (~93.3% — inside regular class 40%+ of the day) are taught
 primarily by GenEd teachers and belong in the GenEd population for LCT purposes.
@@ -712,10 +712,12 @@ IDEA 618 Child Count & Educational Environments (`bchildcountandedenvironments20
 vs. mainstreamed split by state), CRDC 2017-18 Enrollment (`Enrollment.csv` — LEA-level total SPED count,
 no environment breakdown), CCD 2017-18 LEA Membership (LEA-level total enrollment).
 
+> **Correction (2026-10-30, #970).** Figures before this date said "~6.7% self-contained, range 6.6–9.9%". That came from the importer summing the file's `Total, Age 6-21` row in with the environment rows (a 2× denominator) and never matching `Separate School, Age 6-21`. Every `sped_estimates` row and all three SPED scopes computed before the re-import carry that error; see the issue for the before/after.
+
 **Two-step estimation** (per current-year district): estimated all-SPED = total enrollment × LEA SPED
 proportion (CRDC/CCD, LEA-specific for 74% of districts, state-average fallback otherwise) → estimated
-self-contained SPED = all-SPED × state self-contained proportion (IDEA 618, national avg 6.7%, range
-6.6–9.9%) → GenEd enrollment = total − self-contained → SPED teachers = self-contained × state teacher
+self-contained SPED = all-SPED × state self-contained proportion (IDEA 618, national 16.1%, states range
+6.3% SD – 23.9% NY/DC; territories as low as 2.7%) → GenEd enrollment = total − self-contained → SPED teachers = self-contained × state teacher
 ratio → SPED instructional = self-contained × state instructional ratio → GenEd teachers = total teachers
 − SPED teachers.
 
@@ -730,7 +732,7 @@ two-step estimate + `confidence` high/medium/low). Scripts: `infrastructure/data
 import_sped_baseline.py`, `apply_sped_estimates.py`; consumed by `calculate_lct_variants.py`.
 
 **Known limitations:** the self-contained proportion is a state-level ratio applied to an LEA-level
-estimate (not directly measured per-LEA); it varies by state (6.6–9.9%); para allocation may not reflect
+estimate (not directly measured per-LEA); it varies widely by state (6.3–23.9%); para allocation may not reflect
 LEA-level variation; ~6 districts show negative GenEd-teacher estimates (flagged low-confidence); ~940
 districts are skipped for missing state ratios (territories, etc.). See `WARN_SPED_RATIO_CAP` above for
 the related LCT-ceiling cap on high-ratio states (e.g. CT).

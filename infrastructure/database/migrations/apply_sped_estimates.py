@@ -14,6 +14,7 @@ This script:
 3. Stores estimates in sped_estimates table
 
 Usage:
+    python apply_sped_estimates.py            # defaults to NCES_PRIMARY_YEAR
     python apply_sped_estimates.py --year 2023-24
 """
 
@@ -21,6 +22,7 @@ import argparse
 import sys
 from pathlib import Path
 from decimal import Decimal
+from typing import NamedTuple
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent.parent
@@ -28,9 +30,56 @@ sys.path.insert(0, str(project_root))
 
 from sqlalchemy import func
 from infrastructure.database.connection import session_scope
+from infrastructure.utilities.school_year import COVID_EXCLUDED_YEARS, NCES_PRIMARY_YEAR
 from infrastructure.database.models import (
-    District, SpedStateBaseline, SpedLeaBaseline, SpedEstimate, DataLineage
+    District, SpedStateBaseline, SpedLeaBaseline, SpedEstimate, DataLineage,
+    EnrollmentByGrade, StaffCountsEffective,
 )
+
+
+class YearTotals(NamedTuple):
+    """Per-district totals for ONE school year, sourced from the year-keyed tables (#972)."""
+    nces_id: str
+    state: str
+    enrollment: int
+    instructional_staff: float
+
+
+def select_year_totals(session, year: str) -> list[YearTotals]:
+    """The districts to estimate for `year`: enrollment_by_grade.enrollment_total joined to
+    staff_counts_effective.teachers_total for that year, both > 0, with District for state.
+
+    `districts` itself is a single-vintage snapshot and is used only for identity (#972). The two
+    columns are the ones the snapshot was built from — measured 2026-10-30 on the 2023-24 vintage:
+    enrollment_total == districts.enrollment and teachers_total == districts.instructional_staff
+    for all 17,842 rows (tests/test_sped_segmentation.py::TestSpedYearTotals locks this).
+    """
+    if year in COVID_EXCLUDED_YEARS:
+        raise SystemExit(f"apply_sped_estimates: {year} is a COVID-excluded year (REQ-007)")
+    rows = (
+        session.query(
+            District.nces_id, District.state,
+            EnrollmentByGrade.enrollment_total, StaffCountsEffective.teachers_total,
+        )
+        .join(EnrollmentByGrade, EnrollmentByGrade.district_id == District.nces_id)
+        .join(StaffCountsEffective, StaffCountsEffective.district_id == District.nces_id)
+        .filter(
+            EnrollmentByGrade.source_year == year,
+            StaffCountsEffective.effective_year == year,
+            EnrollmentByGrade.enrollment_total > 0,
+            StaffCountsEffective.teachers_total > 0,
+        )
+        .all()
+    )
+    return [YearTotals(n, st, int(e), float(t)) for n, st, e, t in rows]
+
+
+def available_years(session) -> dict[str, list[str]]:
+    """Which years each year-keyed table carries — for the fail-loud message."""
+    return {
+        "enrollment_by_grade": sorted(y for (y,) in session.query(EnrollmentByGrade.source_year).distinct() if y),
+        "staff_counts_effective": sorted(y for (y,) in session.query(StaffCountsEffective.effective_year).distinct() if y),
+    }
 
 
 def get_state_ratios(session) -> tuple[dict, dict, dict, dict]:
@@ -133,16 +182,17 @@ def apply_estimates(session, year: str, teacher_ratios: dict, instructional_rati
     """
     print(f"\n=== Applying Estimates to {year} Districts ===")
 
-    # Get all districts for the target year
-    districts = session.query(District).filter(
-        District.year == year,
-        District.enrollment.isnot(None),
-        District.enrollment > 0,
-        District.instructional_staff.isnot(None),
-        District.instructional_staff > 0
-    ).all()
+    # Per-district totals for the target year come from the year-keyed tables (#972)
+    districts = select_year_totals(session, year)
 
     print(f"  Found {len(districts):,} districts with valid data")
+    if not districts:
+        # A year neither table carries must fail loud here rather than report "Updated: 0" and
+        # leave the estimates silently stale (the #970 re-run hit that with 2024-25).
+        raise SystemExit(
+            f"apply_sped_estimates: no district has both enrollment and staff for year={year!r}; "
+            f"available: {available_years(session)}"
+        )
 
     created = 0
     updated = 0
@@ -334,7 +384,10 @@ def print_sample_estimates(session, year: str, n: int = 10):
 
 def main():
     parser = argparse.ArgumentParser(description="Apply SPED ratios to current year data")
-    parser.add_argument("--year", default="2023-24", help="Target school year (default: 2023-24)")
+    parser.add_argument(
+        "--year", default=NCES_PRIMARY_YEAR,
+        help=f"Target school year (default: NCES_PRIMARY_YEAR = {NCES_PRIMARY_YEAR}; REQ-026 windows the blend downstream)",
+    )
     args = parser.parse_args()
 
     print("=" * 60)

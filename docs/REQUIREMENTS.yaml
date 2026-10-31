@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-10-29T00:00:00Z"
+last_updated: "2026-10-30T00:00:00Z"
 
 # STATUS VOCABULARY — normalized 2026-07-16, narrowed to FIVE 2026-08-21 (Ian). These are the whole
 # set; do not invent more. The pre-normalization file carried ad-hoc `in-progress` / `not_started` /
@@ -466,7 +466,11 @@ requirements:
     status: tested
     acceptance_criteria:
       - Uses IDEA 618 Personnel data for state SPED teacher ratios
-      - Uses IDEA 618 Environments data for self-contained proportion
+      - Uses IDEA 618 Environments data for self-contained proportion — the file's own `Total, Age 6-21`
+        row IS the ages-6-21 total (never summed in with the environment rows), and self-contained =
+        `Inside regular class less than 40% of the day` + `Separate School, Age 6-21` (the file's exact
+        labels). National share 16.1% in 2017-18, NOT the ~6.7% the pre-#970 importer produced by
+        double-counting the denominator and never matching the separate-school row (amended 2026-10-30, #970)
       - Uses CRDC 2017-18 for LEA-level SPED enrollment
       - Calculates 3 SPED scopes - core_sped, teachers_gened, instructional_sped
       - core_sped uses SPED teachers / self-contained SPED students
@@ -476,6 +480,7 @@ requirements:
     tests:
       - tests/test_sped_segmentation.py::TestSpedBaselineRatios::test_uses_idea_618_personnel_for_teacher_ratios
       - tests/test_sped_segmentation.py::TestSpedBaselineRatios::test_uses_idea_618_environments_for_self_contained_proportion
+      - tests/test_sped_segmentation.py::TestSpedBaselineRatios::test_real_2017_18_file_self_contained_share
       - tests/test_sped_segmentation.py::TestSpedBaselineRatios::test_uses_crdc_2017_18_for_lea_level_sped_enrollment
       - tests/test_sped_segmentation.py::TestSpedBaselineRatios::test_calculates_three_sped_scopes_from_baseline
       - tests/test_sped_segmentation.py::TestSpedBaselineRatios::test_california_actual_sped_takes_precedence

@@ -9,6 +9,7 @@ Run: pytest tests/test_sped_segmentation.py -v
 """
 
 import pytest
+from pathlib import Path
 
 
 class TestSpedSegmentedLCT:
@@ -41,7 +42,7 @@ class TestSpedSegmentedLCT:
         """
         # Arrange
         sped_teachers = 50.0
-        self_contained_sped_students = 200  # ~6.7% of all SPED
+        self_contained_sped_students = 200  # illustrative
 
         # Act - Calculate core_sped LCT
         instructional_minutes = 360
@@ -65,7 +66,7 @@ class TestSpedSegmentedLCT:
 
         total_enrollment = 5000
         sped_enrollment = 650  # 13% SPED
-        self_contained = 200   # 6.7% of SPED
+        self_contained = 200   # illustrative
         mainstreamed = sped_enrollment - self_contained  # 450
         gened_enrollment = total_enrollment - self_contained  # 4800 (includes 450 mainstreamed)
 
@@ -172,31 +173,61 @@ class TestSpedBaselineRatios:
 
     def test_uses_idea_618_environments_for_self_contained_proportion(self):
         """
-        REQ-018: Uses IDEA 618 Environments for self-contained proportion.
+        REQ-018 / #970: the child-count parse takes the file's own `Total, Age …` rows as the
+        totals (never sums them in with the environment rows) and matches the environment
+        labels the file actually carries (`Separate School, Age 6-21`, not `Separate School`).
 
-        Environments file breaks down SPED students by placement:
-        - <21% time outside regular class (fully mainstreamed)
-        - 21-60% time outside (resource room)
-        - >60% time outside (self-contained) ← This is what we use
+        Fixture mirrors the 2017-18 file's row vocabulary for one state.
         """
-        # Arrange - Example from IDEA 618 Environments 2017-18
-        idea_environments_data = {
-            "state": "National",
-            "total_sped_students": 6900000,
-            "fully_mainstreamed": 4600000,  # 66.7%
-            "resource_room": 1838000,       # 26.6%
-            "self_contained": 462000,       # 6.7% ← Focus of v3
-        }
+        from infrastructure.database.migrations.import_sped_baseline import parse_child_count_rows
 
-        # Act - Calculate self-contained proportion
-        self_contained_proportion = (
-            idea_environments_data["self_contained"] /
-            idea_environments_data["total_sped_students"]
+        headers = ["Year", "State Name", "SEA Education Environment", "SEA Disability Category",
+                   "Age 3 to 5", "Ages 6-21"]
+        def row(env, a35, a621):
+            return ["2017", "Alabama", env, "All Disabilities", a35, a621]
+        rows = [
+            row("Inside regular class 80% or more of the day", "-", "600"),
+            row("Inside regular class 40% through 79% of the day", "-", "200"),
+            row("Inside regular class less than 40% of the day", "-", "100"),
+            row("Separate School, Age 6-21", "-", "50"),
+            row("Residential Facility, Age 6-21", "-", "10"),
+            row("Homebound/Hospital", "-", "20"),
+            row("Correctional Facilities", "-", "5"),
+            row("Parentally Placed in Private Schools", "-", "15"),
+            row("Total, Age 6-21", "-", "1000"),
+            row("Separate Class", "30", "-"),
+            row("Services in Regular Early Childhood Program (attend at least 10 hours)", "70", "-"),
+            row("Total, Age 3-5", "100", "-"),
+            # A different disability row for the same env must not be counted twice
+            ["2017", "Alabama", "Total, Age 6-21", "Autism", "-", "120"],
+            # A different year must be ignored
+            ["2016", "Alabama", "Total, Age 6-21", "All Disabilities", "-", "999"],
+        ]
+
+        totals = parse_child_count_rows(headers, rows, year="2017")["AL"]
+
+        assert totals["ages_6_21"] == 1000          # the Total row, not 2× it
+        assert totals["ages_3_5"] == 100
+        assert totals["self_contained"] == 150      # <40% + Separate School, Age 6-21
+        assert totals["mainstreamed"] == 800
+        assert totals["self_contained"] / totals["ages_6_21"] == pytest.approx(0.15)
+
+    @pytest.mark.skipif(
+        not (Path(__file__).resolve().parents[1] / "data/raw/federal/idea-618/2017_18/bchildcountandedenvironments2017-18.csv").exists(),
+        reason="data/raw is gitignored; the real-file check runs only where the 2017-18 IDEA file is present",
+    )
+    def test_real_2017_18_file_self_contained_share(self):
+        """#970 regression against the real file: national self-contained share is 16.1%, not 6.65%."""
+        from infrastructure.database.migrations.import_sped_baseline import (
+            IDEA_CHILD_COUNT_FILE, read_child_count_file,
         )
-
-        # Assert
-        assert pytest.approx(self_contained_proportion, 0.001) == 0.067
-        assert self_contained_proportion < 0.10  # Less than 10% are self-contained
+        totals = read_child_count_file(IDEA_CHILD_COUNT_FILE, year="2017")
+        all_621 = sum(t["ages_6_21"] for t in totals.values())
+        sc = sum(t["self_contained"] for t in totals.values())
+        # ~6.1M IDEA students ages 6-21 across the 56 states/territories the importer keeps (the
+        # file's own "US, Outlying Areas..." aggregate row is skipped by STATE_ABBR)
+        assert 6_000_000 < all_621 < 6_300_000
+        assert 0.155 < sc / all_621 < 0.165
 
     def test_uses_crdc_2017_18_for_lea_level_sped_enrollment(self):
         """
@@ -239,12 +270,12 @@ class TestSpedBaselineRatios:
         district["sped_teachers"] = district["total_teachers"] * state_sped_teacher_ratio  # 36.25
 
         # From national baseline (IDEA 618 Environments)
-        self_contained_proportion = 0.067  # 6.7% of SPED
-        district["self_contained_students"] = district["sped_enrollment"] * self_contained_proportion  # 43.55
+        self_contained_proportion = 0.161  # national share, IDEA 618 2017-18 (#970)
+        district["self_contained_students"] = district["sped_enrollment"] * self_contained_proportion  # 104.65
 
         # GenEd calculations
         district["gened_teachers"] = district["total_teachers"] - district["sped_teachers"]  # 213.75
-        district["gened_enrollment"] = district["total_enrollment"] - district["self_contained_students"]  # 4956.45
+        district["gened_enrollment"] = district["total_enrollment"] - district["self_contained_students"]  # 4895.35
 
         # Assert - All components calculated
         assert district["sped_teachers"] > 0
@@ -364,7 +395,7 @@ class TestSpedLCTValidation:
 
         # Weights (based on self-contained enrollment)
         total_enrollment = 5000
-        self_contained_students = 43  # 6.7% of 650 SPED
+        self_contained_students = 43  # illustrative
         gened_enrollment = 4957       # Includes 607 mainstreamed SPED
 
         self_contained_pct = self_contained_students / total_enrollment  # 0.0086
@@ -416,7 +447,7 @@ def sample_sped_baseline_state():
         "sped_teachers": 42775,
         "sped_teacher_ratio": 0.145,
         # From IDEA 618 Environments (national baseline applied to state)
-        "self_contained_proportion": 0.067,  # 6.7% of SPED
+        "self_contained_proportion": 0.161,  # national share, IDEA 618 2017-18 (#970)
     }
 
 
@@ -434,11 +465,11 @@ def sample_sped_estimates_district():
         # Estimated from state ratio
         "sped_teachers": 36.25,
         # Estimated from national baseline
-        "self_contained_students": 43.55,
-        "self_contained_percentage": 0.067,
+        "self_contained_students": 104.65,
+        "self_contained_percentage": 0.161,
         # Derived
         "gened_teachers": 213.75,
-        "gened_enrollment": 4956.45,
+        "gened_enrollment": 4895.35,
     }
 
 
@@ -459,3 +490,50 @@ def sample_ca_actual_sped():
         "enrollment_source": "ca_actual_2023-24",
         "teacher_source": "sped_estimate_2017-18",
     }
+
+
+@pytest.mark.integration
+class TestSpedYearTotals:
+    """#972: apply_sped_estimates sources per-year totals from the year-keyed tables.
+
+    Needs the live LCT DB (Docker up); excluded from the fast gate by the `integration` marker.
+    """
+
+    def test_year_totals_match_the_districts_snapshot_for_its_vintage(self):
+        """The year-keyed sourcing reproduces the single-vintage `districts` snapshot exactly, so
+        switching the source changes the YEAR an estimate can target, not the numbers."""
+        from infrastructure.database.connection import session_scope
+        from infrastructure.database.migrations.apply_sped_estimates import select_year_totals
+        from infrastructure.database.models import District
+
+        with session_scope() as s:
+            vintage = s.query(District.year).filter(District.year.isnot(None)).distinct().all()
+            assert len(vintage) == 1, f"districts is expected to be a single-vintage snapshot, got {vintage}"
+            (year,) = vintage[0]
+            snapshot = {
+                d.nces_id: (int(d.enrollment), float(d.instructional_staff))
+                for d in s.query(District).filter(District.enrollment > 0, District.instructional_staff > 0)
+            }
+            totals = {t.nces_id: (t.enrollment, t.instructional_staff) for t in select_year_totals(s, year)}
+
+        assert totals, "NOTHING MEASURED — select_year_totals returned no rows for the snapshot vintage"
+        mismatched = {k: (snapshot[k], totals[k]) for k in snapshot.keys() & totals.keys() if snapshot[k] != totals[k]}
+        assert not mismatched, f"{len(mismatched)} districts differ, e.g. {list(mismatched.items())[:3]}"
+        assert set(snapshot) == set(totals), (
+            f"coverage differs: only-snapshot={len(set(snapshot)-set(totals))} only-year-keyed={len(set(totals)-set(snapshot))}"
+        )
+
+    def test_primary_year_is_estimable(self):
+        """NCES_PRIMARY_YEAR must be reachable by the default `apply_sped_estimates` run."""
+        from infrastructure.database.connection import session_scope
+        from infrastructure.database.migrations.apply_sped_estimates import select_year_totals
+        from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
+
+        with session_scope() as s:
+            n = len(select_year_totals(s, NCES_PRIMARY_YEAR))
+        assert n > 15_000, f"only {n} districts have both enrollment and staff for {NCES_PRIMARY_YEAR}"
+
+    def test_covid_year_is_refused(self):
+        from infrastructure.database.migrations.apply_sped_estimates import select_year_totals
+        with pytest.raises(SystemExit, match="COVID-excluded"):
+            select_year_totals(None, "2021-22")

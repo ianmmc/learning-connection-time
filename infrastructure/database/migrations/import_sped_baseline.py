@@ -153,92 +153,83 @@ def import_idea_personnel(session) -> dict:
     return state_data
 
 
+# Educational-environment vocabulary of the IDEA 618 child-count file (2017-18 layout). The file
+# carries its own per-age-band total rows — those ARE the totals; summing the environment rows and
+# the total row together double-counts (#970). Labels must match the file's spelling exactly:
+# the school-age separate-school row is 'Separate School, Age 6-21', not 'Separate School'.
+TOTAL_ROW_6_21 = 'Total, Age 6-21'
+TOTAL_ROW_3_5 = 'Total, Age 3-5'
+SELF_CONTAINED_ENVIRONMENTS = {
+    'Inside regular class less than 40% of the day',
+    'Separate School, Age 6-21',
+}
+MAINSTREAMED_ENVIRONMENTS = {
+    'Inside regular class 80% or more of the day',
+    'Inside regular class 40% through 79% of the day',
+}
+# Excluded from both (not district-managed or other): Residential Facility, Correctional
+# Facilities, Home, Homebound/Hospital, Parentally Placed in Private Schools.
+
+
+def parse_child_count_rows(headers: list[str], rows, year: str) -> dict[str, dict[str, int]]:
+    """Pure parse of the child-count rows (after the header row) into per-state totals.
+
+    Returns {state_abbr: {'ages_3_5', 'ages_6_21', 'self_contained', 'mainstreamed'}}. Only the
+    requested data year and the 'All Disabilities' rows are read; states outside STATE_ABBR
+    (BIE, the US aggregate, freely associated states) are skipped.
+    """
+    idx_ages_3_5 = headers.index('Age 3 to 5') if 'Age 3 to 5' in headers else 18
+    idx_ages_6_21 = headers.index('Ages 6-21') if 'Ages 6-21' in headers else 38
+
+    state_totals: dict[str, dict[str, int]] = {}
+    for row in rows:
+        if len(row) < max(idx_ages_3_5, idx_ages_6_21) + 1:
+            continue
+        if row[0].strip() != year or row[3].strip() != 'All Disabilities':
+            continue
+        state_abbr = STATE_ABBR.get(row[1].strip())
+        if not state_abbr:
+            continue
+        environment = row[2].strip()
+        totals = state_totals.setdefault(
+            state_abbr, {'ages_3_5': 0, 'ages_6_21': 0, 'self_contained': 0, 'mainstreamed': 0}
+        )
+        ages_3_5 = safe_int(row[idx_ages_3_5]) or 0
+        ages_6_21 = safe_int(row[idx_ages_6_21]) or 0
+
+        if environment == TOTAL_ROW_3_5:
+            totals['ages_3_5'] = ages_3_5
+        elif environment == TOTAL_ROW_6_21:
+            totals['ages_6_21'] = ages_6_21
+        elif environment in SELF_CONTAINED_ENVIRONMENTS:
+            totals['self_contained'] += ages_6_21
+        elif environment in MAINSTREAMED_ENVIRONMENTS:
+            totals['mainstreamed'] += ages_6_21
+    return state_totals
+
+
+def read_child_count_file(path: Path, year: str) -> dict[str, dict[str, int]]:
+    """Open the child-count CSV (4 metadata rows, then the header) and parse it."""
+    with open(path, 'r', encoding='utf-8-sig') as f:
+        reader = csv.reader(f)
+        for _ in range(4):
+            next(reader)
+        headers = next(reader)
+        return parse_child_count_rows(headers, reader, year)
+
+
 def import_idea_child_count(session, state_data: dict) -> dict:
     """
     Import IDEA 618 Child Count data (state-level SPED students).
 
-    Sums Ages 6-21 across all educational environments for each state.
-    Also categorizes students by educational environment:
-    - Self-contained: Separate Class, Separate School, <40% in regular class
+    Ages 6-21 totals come from the file's 'Total, Age 6-21' row. Students are also categorized
+    by educational environment:
+    - Self-contained: Separate School (6-21), <40% in regular class
     - Mainstreamed: 80%+ in regular class, 40-79% in regular class
     """
     print("\n=== Importing IDEA 618 Child Count (State SPED Students) ===")
 
-    # Educational environment categorization (Ages 6-21)
-    SELF_CONTAINED_ENVIRONMENTS = {
-        'Separate Class',
-        'Separate School',
-        'Inside regular class less than 40% of the day',
-    }
-    MAINSTREAMED_ENVIRONMENTS = {
-        'Inside regular class 80% or more of the day',
-        'Inside regular class 40% through 79% of the day',
-    }
-    # Excluded from both (not district-managed or other):
-    # - Residential Facility
-    # - Correctional Facilities
-    # - Home, Homebound/Hospital
-    # - Parentally Placed in Private Schools
-
-    # Track totals by state
-    state_totals = {}  # state -> {'ages_3_5': sum, 'ages_6_21': sum, 'self_contained': sum, 'mainstreamed': sum}
-
-    with open(IDEA_CHILD_COUNT_FILE, 'r', encoding='utf-8-sig') as f:
-        reader = csv.reader(f)
-
-        # Skip header rows (first 4 rows are metadata)
-        for _ in range(4):
-            next(reader)
-
-        # Get column headers
-        headers = next(reader)
-
-        # Find column indices
-        idx_ages_3_5 = headers.index('Age 3 to 5') if 'Age 3 to 5' in headers else 18
-        idx_ages_6_21 = headers.index('Ages 6-21') if 'Ages 6-21' in headers else 38
-
-        for row in reader:
-            if len(row) < max(idx_ages_3_5, idx_ages_6_21) + 1:
-                continue
-
-            year = row[0].strip()
-            state_name = row[1].strip()
-            environment = row[2].strip()
-            disability = row[3].strip()
-
-            # Only process 2017 data
-            if year != '2017':
-                continue
-
-            # Only process "All Disabilities" rows (to get total across disabilities)
-            if disability != 'All Disabilities':
-                continue
-
-            state_abbr = STATE_ABBR.get(state_name)
-            if not state_abbr:
-                continue
-
-            ages_3_5 = safe_int(row[idx_ages_3_5])
-            ages_6_21 = safe_int(row[idx_ages_6_21])
-
-            if state_abbr not in state_totals:
-                state_totals[state_abbr] = {
-                    'ages_3_5': 0,
-                    'ages_6_21': 0,
-                    'self_contained': 0,
-                    'mainstreamed': 0
-                }
-
-            if ages_3_5:
-                state_totals[state_abbr]['ages_3_5'] += ages_3_5
-            if ages_6_21:
-                state_totals[state_abbr]['ages_6_21'] += ages_6_21
-
-                # Categorize by educational environment (Ages 6-21 only)
-                if environment in SELF_CONTAINED_ENVIRONMENTS:
-                    state_totals[state_abbr]['self_contained'] += ages_6_21
-                elif environment in MAINSTREAMED_ENVIRONMENTS:
-                    state_totals[state_abbr]['mainstreamed'] += ages_6_21
+    state_totals = read_child_count_file(IDEA_CHILD_COUNT_FILE, year='2017')
 
     # Merge into state_data
     for state_abbr, totals in state_totals.items():
