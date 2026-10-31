@@ -113,10 +113,10 @@ This document catalogs all data sources for the Instructional Minute Metric proj
 
 #### Educational Environment Categories
 
-**Self-Contained SPED** (used for LCT SPED calculations):
-- Separate Class
-- Separate School
-- Inside regular class less than 40% of the day
+**Self-Contained SPED** (used for LCT SPED calculations; the file's exact ages-6-21 labels — #970):
+- `Inside regular class less than 40% of the day`
+- `Separate School, Age 6-21` (bare `Separate School` matches nothing in the 6-21 rows; `Separate Class`
+  is an ages-3-5 setting and is NOT part of self-contained)
 
 **Mainstreamed SPED** (counted as GenEd for LCT):
 - Inside regular class 80% or more of the day

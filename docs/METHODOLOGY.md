@@ -695,8 +695,9 @@ Consolidated 2026-07-02 from the former standalone `SPED_SEGMENTATION_IMPLEMENTA
 **Key concept.** SPED students split into two groups with very different instructional relationships:
 **self-contained** (**16.1%** of all SPED ages 6-21 nationally, 2017-18 — separate school, or inside regular class
 <40% of the day) are taught primarily by SPED teachers and are the correct denominator for SPED
-teacher-to-student ratios; **mainstreamed** (~93.3% — inside regular class 40%+ of the day) are taught
-primarily by GenEd teachers and belong in the GenEd population for LCT purposes.
+teacher-to-student ratios; **mainstreamed** (**81.6%** — inside regular class 40%+ of the day) are taught
+primarily by GenEd teachers and belong in the GenEd population for LCT purposes. The remaining ~2.3%
+(residential, correctional, home/hospital, parentally placed) sit in neither group.
 
 **Three SPED scopes:**
 
@@ -733,8 +734,9 @@ import_sped_baseline.py`, `apply_sped_estimates.py`; consumed by `calculate_lct_
 
 **Known limitations:** the self-contained proportion is a state-level ratio applied to an LEA-level
 estimate (not directly measured per-LEA); it varies widely by state (6.3–23.9%); para allocation may not reflect
-LEA-level variation; ~6 districts show negative GenEd-teacher estimates (flagged low-confidence); ~940
-districts are skipped for missing state ratios (territories, etc.). See `WARN_SPED_RATIO_CAP` above for
+LEA-level variation; a handful of districts show negative GenEd-teacher estimates (flagged low-confidence
+— 7 of 16,926 in the 2024-25 estimates, 10 of 17,222 in 2023-24, per `sped_estimates`); ~760
+districts per vintage fall back to the national-average ratios (`national_average_fallback`). See `WARN_SPED_RATIO_CAP` above for
 the related LCT-ceiling cap on high-ratio states (e.g. CT).
 
 ---

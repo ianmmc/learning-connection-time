@@ -32,6 +32,8 @@ Usage:
 """
 
 import re
+
+from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
 from typing import Optional
 
 from sqlalchemy import text
@@ -213,7 +215,7 @@ def nces_to_cds(nces_id: str, session: Session) -> Optional[str]:
     return row[0] if row else None
 
 
-def get_district_by_cds(cds_code: str, session: Session, year: str = "2023-24") -> Optional[District]:
+def get_district_by_cds(cds_code: str, session: Session, year: str = NCES_PRIMARY_YEAR) -> Optional[District]:
     """
     Retrieve full District object by CDS code.
 

@@ -105,6 +105,11 @@ GRADE_MAPPING = {
 # FIPS<10 state after migration 015 canonicalized the districts table to 7-digit IDs).
 MATCH_COVERAGE_FLOOR = 0.95
 
+# G1 row-wise cap: Σ mapped grades reconciles EXACTLY with the file's own 'Education Unit Total' on
+# both on-disk vintages (0 of 18,499 / 18,507 LEAs). A non-zero count is a dropped or relabeled grade
+# category, which the aggregate tolerance cannot see (#976) — so the cap is zero, not "small".
+CCD_MAX_ROWWISE_DISAGREE = 0
+
 
 def _canonical_leaid(x) -> str:
     """NCES LEAID in the canonical 7-digit leading-zero form the `districts` table uses
@@ -242,9 +247,11 @@ def load_enrollment_data(membership_file: Path, year: str) -> pd.DataFrame:
     grade_columns = [col for col in pivot_df.columns if col.startswith("enrollment_")]
     pivot_df["enrollment_total"] = pivot_df[grade_columns].sum(axis=1)
 
-    # G1: our component sum vs the file's own total, per LEA then in aggregate. Per-LEA disagreement
-    # is expected to be small and real (suppressed total rows: 34 of 17,739 on 2024-25); the AGGREGATE
-    # must reconcile, and an exact integer multiple is the summed-the-total-row signature.
+    # G1: our component sum vs the file's own total, per LEA AND in aggregate. Against 'Education Unit
+    # Total' the component sum reconciles exactly (0 of 18,499 LEAs differ on 2024-25, 0 of 18,507 on
+    # 2023-24), so a non-zero row-wise count IS a finding — a dropped or relabeled grade category moves
+    # a few hundred LEAs while the aggregate ratio stays within tolerance (#976). The exact-integer-
+    # multiple check is the summed-the-total-row signature.
     joined = pivot_df.set_index("district_id")["enrollment_total"].to_frame("ours").join(
         file_totals.rename("theirs"), how="inner"
     ).dropna()
@@ -252,7 +259,7 @@ def load_enrollment_data(membership_file: Path, year: str) -> pd.DataFrame:
     receipt = reconcile_total(
         float(joined["ours"].sum()), float(joined["theirs"].sum()),
         label=f"CCD membership {year}: Σ enrollment_total vs Σ 'Education Unit Total'",
-        n_compared=len(joined), n_disagree=disagree,
+        n_compared=len(joined), n_disagree=disagree, max_disagree=CCD_MAX_ROWWISE_DISAGREE,
     )
     print(f"  Reconciled against the file's own totals: {receipt.n_compared:,} LEAs compared, "
           f"{receipt.n_disagree:,} differ row-wise, aggregate ratio {receipt.ratio:.5f}")

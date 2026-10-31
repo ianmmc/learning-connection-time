@@ -77,6 +77,7 @@ from infrastructure.database.connection import session_scope, get_engine
 from infrastructure.utilities.frames import db_records
 from infrastructure.database.school_year import (
     COVID_EXCLUDED_YEARS,
+    SPED_BASELINE_YEAR,
     is_covid_year,
     within_blend_window,
 )
@@ -798,7 +799,7 @@ def calculate_all_variants(
                     core_sped_notes = f"Self-contained SPED enrollment: {enrollment_source}, confidence: {enrollment_confidence}{mixed_sources_note}"
                     if sped_capped:
                         core_sped_notes += "; WARN_SPED_RATIO_CAP: LCT capped at 360 (high teacher-to-student ratio)"
-                    sped_year = sped_years.get(staff.district_id, "2017-18")
+                    sped_year = sped_years.get(staff.district_id, SPED_BASELINE_YEAR)
                     all_years_used.add(sped_year)
                     results.append({
                         "district_id": staff.district_id,
@@ -829,7 +830,7 @@ def calculate_all_variants(
                     gened_capped = True
                     lct_gened = 360.0
                 if lct_gened is not None and lct_gened <= 360:
-                    gened_sped_year = sped_years.get(staff.district_id, "2017-18")
+                    gened_sped_year = sped_years.get(staff.district_id, SPED_BASELINE_YEAR)
                     all_years_used.add(gened_sped_year)
                     results.append({
                         "district_id": staff.district_id,
@@ -864,7 +865,7 @@ def calculate_all_variants(
                     instr_sped_notes = f"Self-contained SPED enrollment: {enrollment_source}, instructional staff confidence: {enrollment_confidence}{mixed_sources_note}"
                     if instr_sped_capped:
                         instr_sped_notes += "; WARN_SPED_RATIO_CAP: LCT capped at 360 (high instructional-to-student ratio)"
-                    instr_sped_year = sped_years.get(staff.district_id, "2017-18")
+                    instr_sped_year = sped_years.get(staff.district_id, SPED_BASELINE_YEAR)
                     all_years_used.add(instr_sped_year)
                     results.append({
                         "district_id": staff.district_id,

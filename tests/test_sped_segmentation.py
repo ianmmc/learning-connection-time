@@ -9,7 +9,7 @@ Run: pytest tests/test_sped_segmentation.py -v
 """
 
 import pytest
-from pathlib import Path
+from infrastructure.database.migrations.import_sped_baseline import IDEA_CHILD_COUNT_FILE as _IDEA_CHILD_COUNT_FILE
 
 
 class TestSpedSegmentedLCT:
@@ -213,15 +213,13 @@ class TestSpedBaselineRatios:
         assert totals["self_contained"] / totals["ages_6_21"] == pytest.approx(0.15)
 
     @pytest.mark.skipif(
-        not (Path(__file__).resolve().parents[1] / "data/raw/federal/idea-618/2017_18/bchildcountandedenvironments2017-18.csv").exists(),
+        not _IDEA_CHILD_COUNT_FILE.exists(),   # the importer's OWN path, never a re-spelled one (#981)
         reason="data/raw is gitignored; the real-file check runs only where the 2017-18 IDEA file is present",
     )
     def test_real_2017_18_file_self_contained_share(self):
         """#970 regression against the real file: national self-contained share is 16.1%, not 6.65%."""
-        from infrastructure.database.migrations.import_sped_baseline import (
-            IDEA_CHILD_COUNT_FILE, read_child_count_file,
-        )
-        totals = read_child_count_file(IDEA_CHILD_COUNT_FILE, year="2017")
+        from infrastructure.database.migrations.import_sped_baseline import read_child_count_file
+        totals = read_child_count_file(_IDEA_CHILD_COUNT_FILE, year="2017")
         all_621 = sum(t["ages_6_21"] for t in totals.values())
         sc = sum(t["self_contained"] for t in totals.values())
         # ~6.1M IDEA students ages 6-21 across the 56 states/territories the importer keeps (the
@@ -533,7 +531,5 @@ class TestSpedYearTotals:
             n = len(select_year_totals(s, NCES_PRIMARY_YEAR))
         assert n > 15_000, f"only {n} districts have both enrollment and staff for {NCES_PRIMARY_YEAR}"
 
-    def test_covid_year_is_refused(self):
-        from infrastructure.database.migrations.apply_sped_estimates import select_year_totals
-        with pytest.raises(SystemExit, match="COVID-excluded"):
-            select_year_totals(None, "2021-22")
+    # The DB-free COVID refusal lives in tests/test_data_guard_wiring.py (#981: inside this
+    # @integration class it was deselected by `-m "not integration"`, which is all CI runs).

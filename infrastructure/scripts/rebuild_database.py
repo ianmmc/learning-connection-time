@@ -240,8 +240,8 @@ def phase_4_sped_baseline(dry_run: bool = False, sample: int = None) -> bool:
     return run_script(SCRIPTS["import_sped_baseline"], args, dry_run=dry_run)
 
 
-def phase_5_sped_estimates(dry_run: bool = False) -> bool:
-    """Phase 5: Apply SPED estimates."""
+def phase_5_sped_estimates(dry_run: bool = False, year: str = NCES_PRIMARY_YEAR) -> bool:
+    """Phase 5: Apply SPED estimates (for the same year phase 3 loaded — #985)."""
     print("\n" + "=" * 60)
     print("PHASE 5: APPLY SPED ESTIMATES")
     print("=" * 60)
@@ -253,7 +253,7 @@ def phase_5_sped_estimates(dry_run: bool = False) -> bool:
         print("Skipping SPED estimates (script may need to be created)")
         return True  # Don't fail the whole rebuild
 
-    return run_script(SCRIPTS["apply_sped_estimates"], dry_run=dry_run)
+    return run_script(SCRIPTS["apply_sped_estimates"], ["--year", year], dry_run=dry_run)
 
 
 def phase_6_bell_schedules(dry_run: bool = False) -> bool:
@@ -413,7 +413,7 @@ def main():
 
     # Phase 5: SPED Estimates
     if success and start_phase <= 5:
-        if not phase_5_sped_estimates(args.dry_run):
+        if not phase_5_sped_estimates(args.dry_run, args.year):
             print("\nERROR: Phase 5 (SPED Estimates) failed")
             success = False
         else:

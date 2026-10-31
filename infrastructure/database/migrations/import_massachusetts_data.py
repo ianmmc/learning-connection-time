@@ -36,6 +36,7 @@ import pandas as pd
 import logging
 
 # Import shared SEA utilities
+from infrastructure.utilities.data_guards import require_nonempty_selection
 from infrastructure.database.migrations.sea_import_utils import (
     safe_float, safe_int,
     load_state_crosswalk, get_district_name,
@@ -128,8 +129,14 @@ def load_teacher_data():
         return None
 
 
+def dese_sy_for(school_year: str) -> int:
+    """DESE's E2C Hub stamps a school year by its END calendar year: '2025-26' → SY 2026."""
+    start = int(school_year[:4])
+    return start + 1
+
+
 def load_enrollment_data():
-    """Load DESE enrollment data from Excel file (Socrata export 2025-26)."""
+    """Load DESE enrollment data from the E2C Hub export, filtered to ENROLLMENT_DATA_YEAR's rows."""
     logger.info(f"Loading enrollment data from: {ENROLLMENT_FILE}")
 
     if not ENROLLMENT_FILE.exists():
@@ -138,18 +145,24 @@ def load_enrollment_data():
 
     try:
         df = pd.read_excel(ENROLLMENT_FILE)
-
-        # Filter to most recent year (2026 = 2025-26 school year) and district-level only
-        df = df[(df['SY'] == 2026) & (df['ORG_TYPE'] == 'District')]
-
-        # Filter out state totals
-        df = df[df['DIST_CODE'] != 0]
-
-        logger.info(f"Loaded {len(df)} district records from enrollment file (SY 2026 = 2025-26)")
-        return df
     except Exception as e:
         logger.error(f"Failed to load enrollment file: {e}")
         return None
+
+    # The SY filter is DERIVED from the vintage being stamped (#977): the old hard-coded `SY == 2026`
+    # meant --enrollment-year only relabelled 2025-26 rows as whatever year was given.
+    sy = dese_sy_for(ENROLLMENT_DATA_YEAR)
+    available = sorted(int(v) for v in df['SY'].dropna().unique())
+    df = df[(df['SY'] == sy) & (df['ORG_TYPE'] == 'District')]
+
+    # Filter out state totals
+    df = df[df['DIST_CODE'] != 0]
+
+    # G4: an export that does not carry the requested vintage is a wrong-year run, never 0 rows imported
+    require_nonempty_selection(df, what=f"DESE enrollment district rows for SY {sy} ({ENROLLMENT_DATA_YEAR})",
+                               available=available)
+    logger.info(f"Loaded {len(df)} district records from enrollment file (SY {sy} = {ENROLLMENT_DATA_YEAR})")
+    return df
 
 
 def create_ma_tables():
@@ -239,12 +252,13 @@ def import_district_identifiers(session, crosswalk, teacher_df, enrollment_df):
                 VALUES (:nces_id, :dist_code, :name, :year)
                 ON CONFLICT (nces_id) DO UPDATE SET
                     district_name_dese = EXCLUDED.district_name_dese,
+                    source_year = EXCLUDED.source_year,
                     updated_at = CURRENT_TIMESTAMP
             """), {
                 "nces_id": nces_id,
                 "dist_code": dist_code_4,
                 "name": district_name,
-                "year": TEACHER_DATA_YEAR  # names come from the 2024-25 teacher file
+                "year": TEACHER_DATA_YEAR  # names come from the teacher file of that vintage
             })
             imported += 1
         except Exception as e:
@@ -399,13 +413,15 @@ def main():
     teacher_df = load_teacher_data()
     enrollment_df = load_enrollment_data()
 
+    # Aborts exit NON-zero (#977): a missing file for the requested vintage used to log 'Aborting.' and
+    # return 0, indistinguishable from a clean import to rebuild_database / a shell caller.
     if teacher_df is None:
         logger.error("Failed to load teacher data file. Aborting.")
-        return
+        sys.exit(1)
 
     if enrollment_df is None:
         logger.error("Failed to load enrollment data file. Aborting.")
-        return
+        sys.exit(1)
 
     # Load crosswalk
     with session_scope() as session:
@@ -415,7 +431,7 @@ def main():
         if len(crosswalk) == 0:
             logger.error("No MA entries in crosswalk table. "
                         "Ensure state_district_crosswalk is populated.")
-            return
+            sys.exit(1)
 
         # Import data
         id_imported, id_skipped = import_district_identifiers(

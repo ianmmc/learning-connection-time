@@ -28,7 +28,7 @@ sys.path.insert(0, str(project_root))
 from infrastructure.database.connection import session_scope
 from infrastructure.utilities.school_year import SPED_BASELINE_YEAR
 from infrastructure.database.models import SpedStateBaseline, SpedLeaBaseline, DataLineage
-from infrastructure.utilities.data_guards import reconcile_total, require_labels_seen
+from infrastructure.utilities.data_guards import DataGuardError, reconcile_total, require_labels_seen
 
 # File paths
 DATA_DIR = project_root / "data" / "raw" / "federal"
@@ -73,6 +73,98 @@ def safe_int(value: str) -> int | None:
     return int(f) if f is not None else None
 
 
+HEADER_FIRST_CELL = 'Year'
+MAX_PREAMBLE_ROWS = 20
+
+
+def normalize_header(cell: str) -> str:
+    """Collapse internal whitespace: the 2017-18 personnel header wraps one name over a newline
+    ('…Certified/\\nParaprofessionals…'), so whitespace around '/' is dropped too."""
+    return ' '.join(cell.split()).replace(' /', '/').replace('/ ', '/')
+
+
+def seek_header_row(reader, *, label: str, first_cell: str = HEADER_FIRST_CELL) -> list[str]:
+    """Advance `reader` to the column-header row and return it, found by CONTENT (first cell is
+    `first_cell`), never by a fixed preamble length: the 2017-18 IDEA files carry 4 metadata rows,
+    the 2024-25 ones 5 (a blank row 4), and `range(4)` would hand the blank row over as headers so
+    every lookup misses and a hard-coded fallback index reads the wrong column (#975)."""
+    for i, row in enumerate(reader):
+        if row and row[0].strip() == first_cell:
+            return [normalize_header(h) for h in row]
+        if i >= MAX_PREAMBLE_ROWS:
+            break
+    raise DataGuardError(f"{label}: no header row (first cell {first_cell!r}) within the first "
+                         f"{MAX_PREAMBLE_ROWS} rows — the file layout has changed")
+
+
+# Personnel types we care about (Ages 6-21 only)
+TEACHER_TYPE = 'Special Education Teachers for Ages 6-21'
+PARA_TYPE = 'Special Education Paraprofessionals for Ages 6-21'
+# Known names of the aggregate rows outside STATE_ABBR (skipped silently; anything else warns)
+NON_STATE_ROWS = {
+    'Bureau of Indian Education', 'Federated States of Micronesia', 'Republic of Palau',
+    'Republic of the Marshall Islands', 'US, Outlying Areas, and Freely Associated States',
+}
+
+
+def parse_personnel_rows(headers: list[str], rows, year: str) -> dict[str, dict[str, float | None]]:
+    """Pure parse of the personnel rows (after the header row) into per-state teacher/para FTE.
+
+    Returns {state_abbr: {'teachers_certified', 'teachers_not_certified', 'teachers_total',
+    'paras_qualified', 'paras_not_qualified', 'paras_total'}} (absent keys = type not in file for
+    that state). Only the requested data year is read.
+    """
+    # Column names as the 2017-18 file spells them; a missing one is a layout change, never index 3/4/5.
+    c_year, c_state, c_type = 'Year', 'State', 'Personnel Type'
+    c_qual = 'Teachers Fully Certified/Paraprofessionals Qualified'
+    c_not_qual = 'Teachers Not Fully Certified/Paraprofessionals Not Qualified'
+    c_total = 'Teachers/Paraprofessionals Total'
+    required = [c_year, c_state, c_type, c_qual, c_not_qual, c_total]
+    headers = [normalize_header(h) for h in headers]
+    require_labels_seen(required, headers, label=f"IDEA 618 personnel {year} header row")
+    col = {name: headers.index(name) for name in required}
+    width = max(col.values()) + 1
+
+    state_data: dict[str, dict[str, float | None]] = {}
+    personnel_types_seen: set[str] = set()
+    for row in rows:
+        if len(row) < width:
+            continue
+        if row[col[c_year]].strip() != year:
+            continue
+        state_name = row[col[c_state]].strip()
+        personnel_type = row[col[c_type]].strip()
+        personnel_types_seen.add(personnel_type)
+
+        state_abbr = STATE_ABBR.get(state_name)
+        if not state_abbr:
+            if state_name not in NON_STATE_ROWS:
+                print(f"  Warning: Unknown state '{state_name}'")
+            continue
+        record = state_data.setdefault(state_abbr, {})
+        qualified = safe_float(row[col[c_qual]])
+        not_qualified = safe_float(row[col[c_not_qual]])
+        total = safe_float(row[col[c_total]])
+        if personnel_type == TEACHER_TYPE:
+            record.update(teachers_certified=qualified, teachers_not_certified=not_qualified,
+                          teachers_total=total)
+        elif personnel_type == PARA_TYPE:
+            record.update(paras_qualified=qualified, paras_not_qualified=not_qualified, paras_total=total)
+
+    # G2 (#970): the labels we filter on must occur in the file — a relabel ('Ages 6-21' → 'School Age'
+    # in the 2024-25 vintage) must be a parse error, never a run that loads zero teachers.
+    require_labels_seen({TEACHER_TYPE, PARA_TYPE}, personnel_types_seen,
+                        label=f"IDEA 618 personnel {year} types")
+    return state_data
+
+
+def read_personnel_file(path: Path, year: str) -> dict[str, dict[str, float | None]]:
+    with open(path, 'r', encoding='utf-8-sig') as f:
+        reader = csv.reader(f)
+        headers = seek_header_row(reader, label=f"IDEA 618 personnel {path.name}")
+        return parse_personnel_rows(headers, reader, year)
+
+
 def import_idea_personnel(session) -> dict:
     """
     Import IDEA 618 Personnel data (state-level SPED teachers and paraprofessionals).
@@ -82,70 +174,18 @@ def import_idea_personnel(session) -> dict:
     print("\n=== Importing IDEA 618 Personnel (State SPED Teachers + Paras) ===")
 
     state_data = {}
-    personnel_types_seen: set[str] = set()
-
-    # Personnel types we care about (Ages 6-21 only)
-    TEACHER_TYPE = 'Special Education Teachers for Ages 6-21'
-    PARA_TYPE = 'Special Education Paraprofessionals for Ages 6-21'
-
-    with open(IDEA_PERSONNEL_FILE, 'r', encoding='utf-8-sig') as f:
-        reader = csv.reader(f)
-
-        # Skip header rows (first 4 rows are metadata)
-        for _ in range(4):
-            next(reader)
-
-        # Get column headers
-        headers = next(reader)
-
-        for row in reader:
-            if len(row) < 6:
-                continue
-
-            year = row[0].strip()
-            state_name = row[1].strip()
-            personnel_type = row[2].strip()
-
-            # Only process 2017 data (SY 2017-18)
-            if year != '2017':
-                continue
-            personnel_types_seen.add(personnel_type)
-
-            state_abbr = STATE_ABBR.get(state_name)
-            if not state_abbr:
-                if state_name not in ['Bureau of Indian Education', 'Federated States of Micronesia',
-                                       'Republic of Palau', 'Republic of the Marshall Islands',
-                                       'US, Outlying Areas, and Freely Associated States']:
-                    print(f"  Warning: Unknown state '{state_name}'")
-                continue
-
-            if state_abbr not in state_data:
-                state_data[state_abbr] = SpedStateBaseline(
-                    state=state_abbr,
-                    source_year=SPED_BASELINE_YEAR,
-                    personnel_source_file=str(IDEA_PERSONNEL_FILE.name)
-                )
-
-            # Parse values
-            qualified = safe_float(row[3])
-            not_qualified = safe_float(row[4])
-            total = safe_float(row[5])
-
-            # Process teachers (Ages 6-21)
-            if personnel_type == TEACHER_TYPE:
-                state_data[state_abbr].sped_teachers_certified = qualified
-                state_data[state_abbr].sped_teachers_not_certified = not_qualified
-                state_data[state_abbr].sped_teachers_total = total
-
-            # Process paraprofessionals (Ages 6-21)
-            elif personnel_type == PARA_TYPE:
-                state_data[state_abbr].sped_paras_qualified = qualified
-                state_data[state_abbr].sped_paras_not_qualified = not_qualified
-                state_data[state_abbr].sped_paras_total = total
-
-    # G2 (#970): the labels we filter on must occur in the file — a relabel ('Ages 6-21' → 'School Age'
-    # in the 2024-25 vintage) must be a parse error, never a run that loads zero teachers.
-    require_labels_seen({TEACHER_TYPE, PARA_TYPE}, personnel_types_seen, label="IDEA 618 personnel types")
+    for state_abbr, fte in read_personnel_file(IDEA_PERSONNEL_FILE, year='2017').items():
+        state_data[state_abbr] = SpedStateBaseline(
+            state=state_abbr,
+            source_year=SPED_BASELINE_YEAR,
+            personnel_source_file=str(IDEA_PERSONNEL_FILE.name),
+            sped_teachers_certified=fte.get('teachers_certified'),
+            sped_teachers_not_certified=fte.get('teachers_not_certified'),
+            sped_teachers_total=fte.get('teachers_total'),
+            sped_paras_qualified=fte.get('paras_qualified'),
+            sped_paras_not_qualified=fte.get('paras_not_qualified'),
+            sped_paras_total=fte.get('paras_total'),
+        )
 
     # Calculate instructional totals (teachers + paras)
     for state_abbr, record in state_data.items():
@@ -175,8 +215,24 @@ MAINSTREAMED_ENVIRONMENTS = {
     'Inside regular class 80% or more of the day',
     'Inside regular class 40% through 79% of the day',
 }
-# Excluded from both (not district-managed or other): Residential Facility, Correctional
-# Facilities, Home, Homebound/Hospital, Parentally Placed in Private Schools.
+# Excluded from both, by name (not district-managed, or an ages-3-5 setting). The vocabulary is
+# CLOSED: a label outside these three sets is a vintage relabel the parser does not understand, and
+# silently dropping it would under-count a category (#982) — so it is a parse error.
+OTHER_ENVIRONMENTS = {
+    'Correctional Facilities', 'Home', 'Homebound/Hospital', 'Parentally Placed in Private Schools',
+    'Residential Facility, Age 3-5', 'Residential Facility, Age 6-21',
+    'Separate Class', 'Separate School, Age 3-5', 'Service Provider Location',
+    'Services in Other Location than Regular Early Childhood Program (attend at least 10 hours)',
+    'Services in Other Location than Regular Early Childhood Program (attend less than 10 hours)',
+    'Services in Regular Early Childhood Program (attend at least 10 hours)',
+    'Services in Regular Early Childhood Program (attend less than 10 hours)',
+}
+KNOWN_ENVIRONMENTS = (SELF_CONTAINED_ENVIRONMENTS | MAINSTREAMED_ENVIRONMENTS | OTHER_ENVIRONMENTS
+                      | {TOTAL_ROW_6_21, TOTAL_ROW_3_5})
+# Column names, as the 2017-18 file spells them. A missing one is a layout change (the 2024-25 file
+# says 'School Age'); it must fail here, never fall back to a hard-coded index (#975).
+COL_YEAR, COL_STATE, COL_ENV, COL_DISABILITY = 'Year', 'State Name', 'SEA Education Environment', 'SEA Disability Category'
+COL_AGES_3_5, COL_AGES_6_21 = 'Age 3 to 5', 'Ages 6-21'
 
 
 def parse_child_count_rows(headers: list[str], rows, year: str) -> dict[str, dict[str, int]]:
@@ -186,27 +242,30 @@ def parse_child_count_rows(headers: list[str], rows, year: str) -> dict[str, dic
     requested data year and the 'All Disabilities' rows are read; states outside STATE_ABBR
     (BIE, the US aggregate, freely associated states) are skipped.
     """
-    idx_ages_3_5 = headers.index('Age 3 to 5') if 'Age 3 to 5' in headers else 18
-    idx_ages_6_21 = headers.index('Ages 6-21') if 'Ages 6-21' in headers else 38
+    headers = [normalize_header(h) for h in headers]
+    required = [COL_YEAR, COL_STATE, COL_ENV, COL_DISABILITY, COL_AGES_3_5, COL_AGES_6_21]
+    require_labels_seen(required, headers, label=f"IDEA 618 child count {year} header row")
+    col = {name: headers.index(name) for name in required}
+    width = max(col.values()) + 1
 
     state_totals: dict[str, dict[str, int]] = {}
     env_sum_6_21: dict[str, int] = {}      # Σ environment rows (NOT the total row) per state, for G1
     environments_seen: set[str] = set()
     for row in rows:
-        if len(row) < max(idx_ages_3_5, idx_ages_6_21) + 1:
+        if len(row) < width:
             continue
-        if row[0].strip() != year or row[3].strip() != 'All Disabilities':
+        if row[col[COL_YEAR]].strip() != year or row[col[COL_DISABILITY]].strip() != 'All Disabilities':
             continue
-        state_abbr = STATE_ABBR.get(row[1].strip())
+        state_abbr = STATE_ABBR.get(row[col[COL_STATE]].strip())
         if not state_abbr:
             continue
-        environment = row[2].strip()
+        environment = row[col[COL_ENV]].strip()
         environments_seen.add(environment)
         totals = state_totals.setdefault(
             state_abbr, {'ages_3_5': 0, 'ages_6_21': 0, 'self_contained': 0, 'mainstreamed': 0}
         )
-        ages_3_5 = safe_int(row[idx_ages_3_5]) or 0
-        ages_6_21 = safe_int(row[idx_ages_6_21]) or 0
+        ages_3_5 = safe_int(row[col[COL_AGES_3_5]]) or 0
+        ages_6_21 = safe_int(row[col[COL_AGES_6_21]]) or 0
 
         if environment == TOTAL_ROW_3_5:
             totals['ages_3_5'] = ages_3_5
@@ -219,27 +278,35 @@ def parse_child_count_rows(headers: list[str], rows, year: str) -> dict[str, dic
             elif environment in MAINSTREAMED_ENVIRONMENTS:
                 totals['mainstreamed'] += ages_6_21
 
-    # G2: every label the parser keys on must occur in the file (#970's 'Separate School' never did)
+    # G2 both ways: every label the parser keys on must occur in the file (#970's 'Separate School'
+    # never did), and every label the file carries must be one the parser classifies (#982).
     require_labels_seen(
         SELF_CONTAINED_ENVIRONMENTS | MAINSTREAMED_ENVIRONMENTS | {TOTAL_ROW_6_21, TOTAL_ROW_3_5},
         environments_seen, label=f"IDEA 618 child count {year} environments",
     )
+    unknown = sorted(environments_seen - KNOWN_ENVIRONMENTS)
+    if unknown:
+        raise DataGuardError(
+            f"IDEA 618 child count {year}: {len(unknown)} environment label(s) the parser does not "
+            f"classify — {unknown}. Add each to SELF_CONTAINED/MAINSTREAMED/OTHER_ENVIRONMENTS; an "
+            f"unclassified school-age setting silently leaves a category short."
+        )
     # G1: the environment rows must add up to the file's own total row (per state; exact 2× = the
-    # total row was summed in). Rows the file publishes for 6-21 partition the total exactly.
+    # total row was summed in). Rows the file publishes for 6-21 partition the total exactly. A state
+    # whose Total row is missing/suppressed while its environment rows are numeric reaches
+    # reconcile_total with reference 0 and fails there (#982) — it is never stored as ages_6_21 = 0.
     for state_abbr, totals in state_totals.items():
-        if totals['ages_6_21']:
+        if totals['ages_6_21'] or env_sum_6_21.get(state_abbr, 0):
             reconcile_total(env_sum_6_21.get(state_abbr, 0), totals['ages_6_21'],
                             label=f"IDEA 618 child count {year} {state_abbr}: Σ environments vs Total row")
     return state_totals
 
 
 def read_child_count_file(path: Path, year: str) -> dict[str, dict[str, int]]:
-    """Open the child-count CSV (4 metadata rows, then the header) and parse it."""
+    """Open the child-count CSV, seek its header row by content, and parse it."""
     with open(path, 'r', encoding='utf-8-sig') as f:
         reader = csv.reader(f)
-        for _ in range(4):
-            next(reader)
-        headers = next(reader)
+        headers = seek_header_row(reader, label=f"IDEA 618 child count {path.name}")
         return parse_child_count_rows(headers, reader, year)
 
 

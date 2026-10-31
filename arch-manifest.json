@@ -262,62 +262,235 @@
     ]
   },
   "data_year_literals": {
-    "_comment": "G3 (#972 generalization, 2026-10-30). 'Current' is spelled NCES_PRIMARY_YEAR (infrastructure/utilities/school_year.py) — never a hand-typed school-year literal acting as a default or a filter. The ONLY legitimate literals name a FIXED source vintage: the 2017-18 SPED baseline (REQ-018) or the year of a SEA workbook that is on disk. Each must be declared here with a reason; tests/test_no_hand_typed_currency_years.py fails on an undeclared literal AND on a declared one that no longer matches (stale exemption). Found by measuring #972's shape across the tree: six operational scripts carried a currency default, two of them already stale.",
+    "_comment": "G3 (#972 generalization, 2026-10-30; AST rewrite 2026-10-31, #980). 'Current' is spelled NCES_PRIMARY_YEAR (infrastructure/utilities/school_year.py) — never a hand-typed school-year literal acting as a default or a filter. The ONLY legitimate literals name a FIXED source vintage (the 2017-18 SPED baseline, a SEA workbook on disk, a download catalog key, a self-test fixture). Each is declared here with a reason AND its occurrence COUNT; tests/test_no_hand_typed_currency_years.py fails on an undeclared (file, literal), on a declared one whose count no longer matches (a new undeclared site, or a stale exemption), and on a duplicate entry. The scan is AST-based: every exact school-year string constant outside docstrings is behaviour.",
     "exemptions": [
       {
         "file": "infrastructure/utilities/school_year.py",
+        "literal": "2024-25",
+        "count": 1,
+        "why": "NCES_PRIMARY_YEAR itself — the single source of truth every other 'current' derives from; bumped on CCD ingest (a data event)."
+      },
+      {
+        "file": "infrastructure/utilities/school_year.py",
         "literal": "2017-18",
-        "why": "SPED_BASELINE_YEAR — the single home of the IDEA 618 / CRDC baseline vintage (REQ-018); models.py, import_sped_baseline.py and apply_sped_estimates.py import it rather than spelling it."
+        "count": 1,
+        "why": "SPED_BASELINE_YEAR — the single home of the IDEA 618 / CRDC baseline vintage (REQ-018); models.py, import_sped_baseline.py, apply_sped_estimates.py and calculate_lct_variants.py import it rather than spelling it."
       },
       {
         "file": "infrastructure/utilities/school_year.py",
         "literal": "2018-19",
+        "count": 1,
         "why": "PRE_COVID_FALLBACK_YEAR — the named pre-COVID fallback when nothing recent exists (REQ-007); a fixed calendar fact, not 'current'."
       },
       {
         "file": "infrastructure/utilities/school_year.py",
-        "literal": "2024-25",
-        "why": "NCES_PRIMARY_YEAR itself — the single source of truth every other 'current' derives from; bumped on CCD ingest (a data event)."
+        "literal": "2019-20",
+        "count": 1,
+        "why": "COVID_EXCLUDED_YEARS member — the exclusion vocabulary's single home (Critical Rule 2)."
+      },
+      {
+        "file": "infrastructure/utilities/school_year.py",
+        "literal": "2020-21",
+        "count": 1,
+        "why": "COVID_EXCLUDED_YEARS member — the exclusion vocabulary's single home (Critical Rule 2)."
+      },
+      {
+        "file": "infrastructure/utilities/school_year.py",
+        "literal": "2021-22",
+        "count": 1,
+        "why": "COVID_EXCLUDED_YEARS member — the exclusion vocabulary's single home (Critical Rule 2)."
+      },
+      {
+        "file": "infrastructure/utilities/school_year.py",
+        "literal": "2022-23",
+        "count": 1,
+        "why": "COVID_EXCLUDED_YEARS member — the exclusion vocabulary's single home (Critical Rule 2)."
       },
       {
         "file": "infrastructure/database/migrations/import_texas_tapr_data.py",
         "literal": "2024-25",
-        "why": "Vintage of the TEA TAPR files on disk; a SEA import's year is its source's year, overridable with --year when a newer file lands."
+        "count": 1,
+        "why": "DATA_YEAR: vintage of the TEA TAPR files on disk (also names the data dir); the --year default derives from it. A SEA import's year is its source's year."
       },
       {
         "file": "infrastructure/database/migrations/import_california_staff_data.py",
         "literal": "2024-25",
-        "why": "Vintage of the CDE staff files on disk; same rule as TAPR."
+        "count": 1,
+        "why": "DATA_YEAR: vintage of the CDE staff files on disk; the --year default derives from it. Same rule as TAPR."
       },
       {
         "file": "infrastructure/database/migrations/import_new_york_data.py",
         "literal": "2023-24",
-        "why": "SOURCE_YEAR: vintage of the NYSED workbooks on disk (sheet public-district-<year>); parameterized into --year in the #972 follow-up, it stamps every row and selects the sheet."
+        "count": 1,
+        "why": "SOURCE_YEAR: vintage of the NYSED workbooks on disk; --year (validated, #978) derives the three workbook paths, the sheet name and every stamped row from it."
+      },
+      {
+        "file": "infrastructure/database/migrations/import_massachusetts_data.py",
+        "literal": "2024-25",
+        "count": 1,
+        "why": "TEACHER_DATA_YEAR: vintage of the DESE teacher file on disk; --teacher-year selects the file and stamps the rows."
+      },
+      {
+        "file": "infrastructure/database/migrations/import_massachusetts_data.py",
+        "literal": "2025-26",
+        "count": 1,
+        "why": "ENROLLMENT_DATA_YEAR: vintage of the E2C Hub enrollment export (DESE publishes enrollment a year ahead of staffing); --enrollment-year derives the SY row filter from it (#977)."
+      },
+      {
+        "file": "infrastructure/database/migrations/import_michigan_data.py",
+        "literal": "2023-24",
+        "count": 1,
+        "why": "SOURCE_YEAR: vintage of the MDE files on disk (one spelling; was four dict literals, #980)."
+      },
+      {
+        "file": "infrastructure/database/migrations/import_pennsylvania_data.py",
+        "literal": "2024-25",
+        "count": 1,
+        "why": "SOURCE_YEAR: vintage of the PDE files on disk (one spelling; was three dict literals, #980)."
+      },
+      {
+        "file": "infrastructure/database/migrations/import_virginia_data.py",
+        "literal": "2025-26",
+        "count": 1,
+        "why": "STAFF_SOURCE_YEAR: vintage of the VDOE staffing/enrollment files on disk (one spelling; was three dict literals, #980)."
+      },
+      {
+        "file": "infrastructure/database/migrations/import_virginia_data.py",
+        "literal": "2024-25",
+        "count": 1,
+        "why": "SPED_SOURCE_YEAR: vintage of the VDOE SPED child-count file on disk (#980)."
+      },
+      {
+        "file": "infrastructure/database/migrations/import_ca_frpm.py",
+        "literal": "2023-24",
+        "count": 2,
+        "why": "Vintage of the CDE FRPM file on disk: the per-record importer's `year` parameter default and its caller. A SEA import's year is its source's year."
       },
       {
         "file": "infrastructure/database/migrations/import_ca_lcff.py",
         "literal": "2023-24",
-        "why": "fiscal_year of the LCFF funding file on disk (a fiscal, not school, vintage)."
+        "count": 3,
+        "why": "fiscal_year of the LCFF funding file on disk (a fiscal, not school, vintage): the importer's `year` default, its caller, and the stamped fiscal_year."
+      },
+      {
+        "file": "infrastructure/database/migrations/import_ca_sped.py",
+        "literal": "2023-24",
+        "count": 2,
+        "why": "Vintage of the CDE SPED environments file on disk: the per-record importer's `year` parameter default and its caller."
+      },
+      {
+        "file": "infrastructure/database/migrations/import_tx_crosswalk.py",
+        "literal": "2018-19",
+        "count": 1,
+        "why": "source_year stamped on the TX crosswalk rows: the vintage of the NCES CCD universe file the crosswalk was built from."
+      },
+      {
+        "file": "infrastructure/database/migrations/sea_import_utils.py",
+        "literal": "2018-19",
+        "count": 1,
+        "why": "VALID_DATA_YEARS member — the SEA importers' accepted-vintage allowlist (pre-COVID fallback)."
+      },
+      {
+        "file": "infrastructure/database/migrations/sea_import_utils.py",
+        "literal": "2023-24",
+        "count": 1,
+        "why": "VALID_DATA_YEARS member — the SEA importers' accepted-vintage allowlist."
+      },
+      {
+        "file": "infrastructure/database/migrations/sea_import_utils.py",
+        "literal": "2024-25",
+        "count": 1,
+        "why": "VALID_DATA_YEARS member — the SEA importers' accepted-vintage allowlist."
+      },
+      {
+        "file": "infrastructure/database/migrations/sea_import_utils.py",
+        "literal": "2025-26",
+        "count": 1,
+        "why": "VALID_DATA_YEARS member — the SEA importers' accepted-vintage allowlist."
+      },
+      {
+        "file": "infrastructure/database/migrations/merge_sea_precedence.py",
+        "literal": "2024-25",
+        "count": 5,
+        "why": "SEA_STATES registry: the declared per-state SEA vintage the merge selects on (#984). Spelled in TWO files pending #990's single home."
+      },
+      {
+        "file": "infrastructure/database/migrations/merge_sea_precedence.py",
+        "literal": "2023-24",
+        "count": 3,
+        "why": "SEA_STATES registry: the declared per-state SEA vintage the merge selects on (#984). Spelled in TWO files pending #990's single home."
+      },
+      {
+        "file": "infrastructure/database/migrations/merge_sea_precedence.py",
+        "literal": "2025-26",
+        "count": 1,
+        "why": "SEA_STATES registry: the declared per-state SEA vintage the merge selects on (#984). Spelled in TWO files pending #990's single home."
+      },
+      {
+        "file": "infrastructure/database/migrations/apply_temporal_validation.py",
+        "literal": "2023-24",
+        "count": 6,
+        "why": "Fixture rows of the script's own self-test (`test_validation`): span cases built from fixed years, not a currency default."
+      },
+      {
+        "file": "infrastructure/database/migrations/apply_temporal_validation.py",
+        "literal": "2024-25",
+        "count": 4,
+        "why": "Fixture rows of the script's own self-test (`test_validation`)."
+      },
+      {
+        "file": "infrastructure/database/migrations/apply_temporal_validation.py",
+        "literal": "2025-26",
+        "count": 1,
+        "why": "Fixture rows of the script's own self-test (`test_validation`)."
+      },
+      {
+        "file": "infrastructure/database/migrations/apply_temporal_validation.py",
+        "literal": "2026-27",
+        "count": 1,
+        "why": "Fixture rows of the script's own self-test (`test_validation`): the 4-year-span rejection case."
+      },
+      {
+        "file": "infrastructure/scripts/analyze/compare_sea_vs_federal_lct.py",
+        "literal": "2024-25",
+        "count": 4,
+        "why": "SEA_STATES registry in the SEA-vs-federal comparison (functional filter in get_sea_data). Second copy pending #990."
+      },
+      {
+        "file": "infrastructure/scripts/analyze/compare_sea_vs_federal_lct.py",
+        "literal": "2023-24",
+        "count": 3,
+        "why": "SEA_STATES registry in the SEA-vs-federal comparison (functional filter in get_sea_data). Second copy pending #990."
+      },
+      {
+        "file": "infrastructure/scripts/analyze/compare_sea_vs_federal_lct.py",
+        "literal": "2025-26",
+        "count": 2,
+        "why": "SEA_STATES registry in the SEA-vs-federal comparison (functional filter in get_sea_data). Second copy pending #990."
       },
       {
         "file": "infrastructure/scripts/analyze/validate_ca_sped_integration.py",
         "literal": "2023-24",
+        "count": 7,
         "why": "Read-only validation report pinned to the CA SEA 2023-24 SPED environments vintage it validates."
       },
       {
         "file": "infrastructure/scripts/analyze/ca_validation_report.py",
         "literal": "2023-24",
+        "count": 11,
         "why": "Read-only CA validation report pinned to the 2023-24 CA SEA / LCFF / socioeconomic vintages it compares."
       },
       {
-        "file": "infrastructure/database/migrations/import_massachusetts_data.py",
-        "literal": "2024-25",
-        "why": "TEACHER_DATA_YEAR: vintage of the DESE teacher file on disk; a SEA import's year is its source's year; overridable with --teacher-year (also selects the file) / --enrollment-year, like the TX/CA/NY --year."
+        "file": "infrastructure/scripts/download/fetch_nces_ccd.py",
+        "literal": "2023-24",
+        "count": 1,
+        "why": "CCD_CATALOG key: the download catalog is keyed by the vintage each NCES release zip carries."
       },
       {
-        "file": "infrastructure/database/migrations/import_massachusetts_data.py",
-        "literal": "2025-26",
-        "why": "ENROLLMENT_DATA_YEAR: vintage of the DESE enrollment file on disk (DESE publishes enrollment a year ahead of staffing); overridable with --teacher-year (also selects the file) / --enrollment-year, like the TX/CA/NY --year."
+        "file": "infrastructure/scripts/download/fetch_nces_ccd.py",
+        "literal": "2022-23",
+        "count": 1,
+        "why": "CCD_CATALOG key for the 2022-23 release zip. A catalog ENTRY, not a use: 2022-23 is COVID-excluded for calculations (Critical Rule 2)."
       }
     ]
   }

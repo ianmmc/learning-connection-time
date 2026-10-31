@@ -14,6 +14,7 @@ Usage:
 """
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -28,6 +29,8 @@ import json
 import logging
 
 # Import shared SEA utilities
+from infrastructure.utilities.data_guards import DataGuardError, require_labels_seen
+from infrastructure.utilities.school_year import COVID_EXCLUDED_YEARS
 from infrastructure.database.migrations.sea_import_utils import (
     safe_float, safe_int,
     load_state_crosswalk, get_district_name,
@@ -44,17 +47,37 @@ logger = logging.getLogger(__name__)
 # State configuration
 STATE_CODE = 'NY'
 
-# Data file paths
-NY_DATA_DIR = project_root / "data" / "raw" / "state" / "new-york"
-STAFF_FILE = NY_DATA_DIR / "ny_staffing_2023_24.xlsx"
-ENROLLMENT_FILE = NY_DATA_DIR / "ny_enrollment_district_2023_24.xlsx"
-SPED_ENROLLMENT_FILE = NY_DATA_DIR / "ny_enrollment_sped_2023_24.xlsx"
-
-
 # Vintage of the NYSED workbooks on disk (sheet "public-district-<year>"). This is the SOURCE's year,
 # not the project's current primary year — a SEA file is what it is. Override with --year when a
-# newer workbook is dropped in; the sheet name and every stored row follow it.
+# newer workbook is dropped in; the three workbook paths, the sheet name, the staffing sheet's own
+# REPORT_SCHOOL_YEAR check and every stored row follow it (#978).
 SOURCE_YEAR = "2023-24"
+
+NY_DATA_DIR = project_root / "data" / "raw" / "state" / "new-york"
+_YEAR_RE = re.compile(r"^(20\d\d)-(\d\d)$")
+
+
+def validate_source_year(year: str) -> str:
+    """A NYSED vintage must be a well-formed, non-COVID school year (#978: 'garbage' and '2021-22'
+    were accepted and stamped onto every row)."""
+    m = _YEAR_RE.match(year or "")
+    if not m or int(m.group(2)) != (int(m.group(1)) + 1) % 100:
+        raise DataGuardError(f"import_new_york_data: --year {year!r} is not a school year (YYYY-YY)")
+    if year in COVID_EXCLUDED_YEARS:
+        raise DataGuardError(f"import_new_york_data: {year} is a COVID-excluded year (REQ-007)")
+    return year
+
+
+def workbook_paths(year: str) -> tuple[Path, Path, Path]:
+    """(staff, enrollment, sped enrollment) workbook paths for a vintage — derived, never fixed, so
+    --year can never pair one vintage's files with another's label."""
+    tag = year.replace("-", "_")
+    return (NY_DATA_DIR / f"ny_staffing_{tag}.xlsx",
+            NY_DATA_DIR / f"ny_enrollment_district_{tag}.xlsx",
+            NY_DATA_DIR / f"ny_enrollment_sped_{tag}.xlsx")
+
+
+STAFF_FILE, ENROLLMENT_FILE, SPED_ENROLLMENT_FILE = workbook_paths(SOURCE_YEAR)
 
 
 def load_ny_crosswalk(session) -> dict:
@@ -77,59 +100,51 @@ def load_staff_data():
     logger.info(f"Loading staff data from: {STAFF_FILE}")
 
     if not STAFF_FILE.exists():
-        logger.error(f"Staff file not found: {STAFF_FILE}")
-        return None
+        raise DataGuardError(f"NYSED staff workbook for {SOURCE_YEAR} not found: {STAFF_FILE}")
 
-    try:
-        df = pd.read_excel(
-            STAFF_FILE,
-            sheet_name="STAFF_RATIOS"
+    df = pd.read_excel(STAFF_FILE, sheet_name="STAFF_RATIOS")
+    # The staffing sheet is year-less by name but carries its own REPORT_SCHOOL_YEAR column: the file's
+    # vintage must be the one we stamp (#978), never 2023-24 rows labelled with whatever --year said.
+    require_labels_seen(["REPORT_SCHOOL_YEAR"], df.columns, label="NYSED STAFF_RATIOS columns")
+    file_years = sorted(str(y) for y in df["REPORT_SCHOOL_YEAR"].dropna().unique())
+    if file_years != [SOURCE_YEAR]:
+        raise DataGuardError(
+            f"NYSED staff workbook {STAFF_FILE.name} reports school year(s) {file_years}, "
+            f"not the vintage being imported ({SOURCE_YEAR})"
         )
-        logger.info(f"Loaded {len(df)} rows from staff file")
-        return df
-    except Exception as e:
-        logger.error(f"Failed to load staff file: {e}")
-        return None
+    logger.info(f"Loaded {len(df)} rows from staff file")
+    return df
 
 
 def load_enrollment_data():
     """Load enrollment data from NYSED file."""
     logger.info(f"Loading enrollment data from: {ENROLLMENT_FILE}")
 
-    if not ENROLLMENT_FILE.exists():
-        logger.error(f"Enrollment file not found: {ENROLLMENT_FILE}")
-        return None
+    df = read_district_sheet(ENROLLMENT_FILE, label="NYSED enrollment workbook")
+    logger.info(f"Loaded {len(df)} rows from enrollment file")
+    return df
 
-    try:
-        df = pd.read_excel(
-            ENROLLMENT_FILE,
-            sheet_name=f"public-district-{SOURCE_YEAR}"
-        )
-        logger.info(f"Loaded {len(df)} rows from enrollment file")
-        return df
-    except Exception as e:
-        logger.error(f"Failed to load enrollment file: {e}")
-        return None
+
+def read_district_sheet(path: Path, *, label: str) -> pd.DataFrame:
+    """Read the `public-district-<SOURCE_YEAR>` sheet. A missing workbook or sheet is a wrong-vintage
+    run and FAILS (#978): the old `except Exception: return None` turned 'Worksheet not found' into
+    'Enrollment records: 0' and exit 0."""
+    if not path.exists():
+        raise DataGuardError(f"{label} for {SOURCE_YEAR} not found: {path}")
+    sheet = f"public-district-{SOURCE_YEAR}"
+    sheets = pd.ExcelFile(path).sheet_names
+    if sheet not in sheets:
+        raise DataGuardError(f"{label} {path.name} has no sheet {sheet!r}; sheets: {sheets}")
+    return pd.read_excel(path, sheet_name=sheet)
 
 
 def load_sped_enrollment_data():
     """Load SPED-disaggregated enrollment data from NYSED file."""
     logger.info(f"Loading SPED enrollment data from: {SPED_ENROLLMENT_FILE}")
 
-    if not SPED_ENROLLMENT_FILE.exists():
-        logger.error(f"SPED enrollment file not found: {SPED_ENROLLMENT_FILE}")
-        return None
-
-    try:
-        df = pd.read_excel(
-            SPED_ENROLLMENT_FILE,
-            sheet_name=f"public-district-{SOURCE_YEAR}"
-        )
-        logger.info(f"Loaded {len(df)} rows from SPED enrollment file")
-        return df
-    except Exception as e:
-        logger.error(f"Failed to load SPED enrollment file: {e}")
-        return None
+    df = read_district_sheet(SPED_ENROLLMENT_FILE, label="NYSED SPED enrollment workbook")
+    logger.info(f"Loaded {len(df)} rows from SPED enrollment file")
+    return df
 
 
 def create_ny_tables():
@@ -216,6 +231,7 @@ def import_district_identifiers():
                     ON CONFLICT (nces_id) DO UPDATE SET
                         nysed_district_id = EXCLUDED.nysed_district_id,
                         district_name_nysed = EXCLUDED.district_name_nysed,
+                        source_year = EXCLUDED.source_year,
                         updated_at = CURRENT_TIMESTAMP
                 """), {
                     "nces_id": nces_id,
@@ -467,11 +483,13 @@ def import_enrollment_data(df, sped_df=None):
 
 def main():
     """Main import process."""
-    global SOURCE_YEAR
+    global SOURCE_YEAR, STAFF_FILE, ENROLLMENT_FILE, SPED_ENROLLMENT_FILE
     parser = argparse.ArgumentParser(description="Import NYSED staff + enrollment workbooks")
     parser.add_argument("--year", default=SOURCE_YEAR,
-                        help=f"Vintage of the NYSED workbooks (default: {SOURCE_YEAR}; selects the sheet and stamps every row)")
-    SOURCE_YEAR = parser.parse_args().year
+                        help=f"Vintage of the NYSED workbooks (default: {SOURCE_YEAR}; selects the three "
+                             f"ny_*_<year>.xlsx workbooks and the sheet, and stamps every row)")
+    SOURCE_YEAR = validate_source_year(parser.parse_args().year)
+    STAFF_FILE, ENROLLMENT_FILE, SPED_ENROLLMENT_FILE = workbook_paths(SOURCE_YEAR)
     logger.info("=" * 80)
     logger.info("STARTING NEW YORK DATA IMPORT")
     logger.info("=" * 80)

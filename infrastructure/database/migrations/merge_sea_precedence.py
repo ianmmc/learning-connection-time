@@ -54,7 +54,7 @@ project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from infrastructure.database.connection import session_scope
-from infrastructure.utilities.data_guards import require_nonempty_selection
+from infrastructure.utilities.data_guards import DataGuardError, require_nonempty_selection
 from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
 from infrastructure.database.models import StaffCountsEffective
 from infrastructure.database.school_year import (
@@ -179,88 +179,98 @@ def apply_sea_supplement(
     )
 
 
-def load_sea_staff_data(session, state: str, sea_table: str) -> Dict[str, Dict]:
+def load_sea_staff_data(session, state: str, sea_table: str, declared_year: str) -> Dict[str, Dict]:
     """
-    Load SEA staff data for a state.
+    Load SEA staff data for a state, for the vintage SEA_STATES declares for it.
 
     Args:
         session: SQLAlchemy session
         state: Two-letter state code
         sea_table: Name of SEA staff table
+        declared_year: SEA_STATES[state]['year'] — the SEA SELECT is keyed on it (#984): a table whose
+            rows carry another label (MA was loaded as '2025-26' before its relabel to '2024-25') must
+            fail loud here, never feed 388 "SEA strictly newer" decisions off a stale stamp.
 
     Returns:
-        Dict mapping NCES ID to staff data
+        Dict mapping NCES ID to staff data. Raises DataGuardError on zero rows for the declared year.
     """
-    logger.info(f"Loading {state} SEA staff data from {sea_table}...")
+    logger.info(f"Loading {state} SEA staff data from {sea_table} ({declared_year})...")
 
     # Each state has different column names, but all have nces_id and teachers_fte
     # We'll query the specific columns we need based on state
 
+    # Every SELECT is keyed on the declared vintage (#984) — a multi-vintage table must never let an
+    # un-ordered dict overwrite pick an arbitrary winner.
     state_queries = {
         'CA': """
             SELECT nces_id, teachers_fte, year
             FROM ca_staff_data
+            WHERE year = :year
         """,
         'FL': """
             SELECT nces_id, classroom_teachers as teachers_fte, year
             FROM fl_staff_data
+            WHERE year = :year
         """,
         'IL': """
             SELECT nces_id, total_teacher_fte as teachers_fte, year
             FROM il_staff_data
+            WHERE year = :year
         """,
         'MA': """
             SELECT nces_id, teachers_fte, year
             FROM ma_staff_data
+            WHERE year = :year
         """,
         'MI': """
             SELECT nces_id, total_teacher_fte as teachers_fte, year
             FROM mi_staff_data
+            WHERE year = :year
         """,
         'NY': """
             SELECT nces_id, fte as teachers_fte, year
             FROM ny_staff_data
             WHERE staff_category = 'Classroom Teacher'
+              AND year = :year
         """,
         'PA': """
             SELECT nces_id, classroom_teachers_fte as teachers_fte, year
             FROM pa_staff_data
+            WHERE year = :year
         """,
         'TX': """
             SELECT nces_id, teachers_total_fte as teachers_fte, year
             FROM tx_staff_data
+            WHERE year = :year
         """,
         'VA': """
             SELECT nces_id, teachers_fte, year
             FROM va_staff_data
+            WHERE year = :year
         """,
     }
 
     query = state_queries.get(state)
     if not query:
-        logger.warning(f"No query defined for state {state}")
-        return {}
+        raise DataGuardError(f"merge_sea_precedence: no SEA query defined for state {state}")
 
-    try:
-        result = session.execute(text(query))
-        sea_data = {}
+    # No `except Exception` here (#984): a failed state query used to return {} AND leave the Postgres
+    # transaction aborted, so every later state loaded 0 rows and the run still printed MERGE COMPLETE.
+    rows = session.execute(text(query), {"year": declared_year}).fetchall()
+    # G4 per state (#984): the S2 shape lives HERE — a declared vintage the table does not carry.
+    require_nonempty_selection(
+        rows, what=f"{sea_table} rows for year={declared_year} ({state})",
+        available=sorted(y for (y,) in session.execute(text(f"SELECT DISTINCT year FROM {sea_table}")) if y),
+    )
+    sea_data = {}
+    for nces_id, teachers_fte, year in rows:
+        sea_data[nces_id] = {
+            'teachers_fte': float(teachers_fte) if teachers_fte is not None else None,
+            'year': year,
+        }
 
-        for row in result:
-            nces_id = row[0]
-            teachers_fte = float(row[1]) if row[1] is not None else None
-            year = row[2]
-
-            sea_data[nces_id] = {
-                'teachers_fte': teachers_fte,
-                'year': year,
-            }
-
-        logger.info(f"  Loaded {len(sea_data)} districts from {state} SEA data")
-        return sea_data
-
-    except Exception as e:
-        logger.error(f"Failed to load {state} SEA data: {e}")
-        return {}
+    logger.info(f"  Loaded {len(sea_data)} districts from {state} SEA data")
+    return sea_data
 
 
 def merge_sea_into_effective(
@@ -297,11 +307,7 @@ def merge_sea_into_effective(
         logger.info(f"Processing {state_code} ({state_config['year']})...")
 
         # Load SEA data for this state
-        sea_data = load_sea_staff_data(session, state_code, state_config['table'])
-
-        if not sea_data:
-            logger.warning(f"No SEA data loaded for {state_code}, skipping...")
-            continue
+        sea_data = load_sea_staff_data(session, state_code, state_config['table'], state_config['year'])
 
         # Get the district ids for this state. Select the column EXPLICITLY —
         # the old SELECT * + row[0] assumed district_id was the table's first

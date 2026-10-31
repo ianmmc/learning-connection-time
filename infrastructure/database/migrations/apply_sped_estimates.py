@@ -34,7 +34,7 @@ from infrastructure.utilities.data_guards import DataGuardError, require_nonempt
 from infrastructure.utilities.school_year import COVID_EXCLUDED_YEARS, NCES_PRIMARY_YEAR, SPED_BASELINE_YEAR
 from infrastructure.database.models import (
     District, SpedStateBaseline, SpedLeaBaseline, SpedEstimate, DataLineage,
-    EnrollmentByGrade, StaffCountsEffective,
+    EnrollmentByGrade, StaffCounts,
 )
 
 
@@ -46,40 +46,57 @@ class YearTotals(NamedTuple):
     instructional_staff: float
 
 
-def select_year_totals(session, year: str) -> list[YearTotals]:
-    """The districts to estimate for `year`: enrollment_by_grade.enrollment_total joined to
-    staff_counts_effective.teachers_total for that year, both > 0, with District for state.
+NCES_SOURCE = "nces_ccd"
 
-    `districts` itself is a single-vintage snapshot and is used only for identity (#972). The two
-    columns are the ones the snapshot was built from — measured 2026-10-30 on the 2023-24 vintage:
-    enrollment_total == districts.enrollment and teachers_total == districts.instructional_staff
-    for all 17,842 rows (tests/test_sped_segmentation.py::TestSpedYearTotals locks this).
+
+def select_year_totals(session, year: str) -> list[YearTotals]:
+    """The districts to estimate for `year`: the NCES CCD enrollment_by_grade.enrollment_total joined to
+    the NCES CCD staff_counts.teachers_total for that year, both > 0, with District for state.
+
+    `districts` itself is a single-vintage snapshot and is used only for identity (#972). Both inputs
+    are pinned to the NCES CCD rows (#979/#986): `staff_counts` rather than `staff_counts_effective`,
+    because merge_sea_precedence overwrites the latter's teachers_total in place, which made the SPED
+    partition depend on whether the SEA merge had run first; and `data_source == 'nces_ccd'` on both,
+    because the unique keys include data_source and a second source row would fan a district out into
+    two YearTotals. Measured 2026-10-30 on the 2023-24 vintage: enrollment_total == districts.enrollment
+    and teachers_total == districts.instructional_staff for all 17,842 rows
+    (tests/test_sped_segmentation.py::TestSpedYearTotals locks this).
     """
     if year in COVID_EXCLUDED_YEARS:
         raise DataGuardError(f"apply_sped_estimates: {year} is a COVID-excluded year (REQ-007)")
     rows = (
         session.query(
             District.nces_id, District.state,
-            EnrollmentByGrade.enrollment_total, StaffCountsEffective.teachers_total,
+            EnrollmentByGrade.enrollment_total, StaffCounts.teachers_total,
         )
         .join(EnrollmentByGrade, EnrollmentByGrade.district_id == District.nces_id)
-        .join(StaffCountsEffective, StaffCountsEffective.district_id == District.nces_id)
+        .join(StaffCounts, StaffCounts.district_id == District.nces_id)
         .filter(
             EnrollmentByGrade.source_year == year,
-            StaffCountsEffective.effective_year == year,
+            EnrollmentByGrade.data_source == NCES_SOURCE,
+            StaffCounts.source_year == year,
+            StaffCounts.data_source == NCES_SOURCE,
             EnrollmentByGrade.enrollment_total > 0,
-            StaffCountsEffective.teachers_total > 0,
+            StaffCounts.teachers_total > 0,
         )
         .all()
     )
-    return [YearTotals(n, st, int(e), float(t)) for n, st, e, t in rows]
+    totals = [YearTotals(n, st, int(e), float(t)) for n, st, e, t in rows]
+    ids = [t.nces_id for t in totals]
+    if len(set(ids)) != len(ids):
+        dupes = sorted({i for i in ids if ids.count(i) > 1})[:5]
+        raise DataGuardError(f"apply_sped_estimates: {len(ids) - len(set(ids))} district(s) selected twice "
+                             f"for {year} (duplicate nces_ccd rows, e.g. {dupes}) — refusing to fan out")
+    return totals
 
 
 def available_years(session) -> dict[str, list[str]]:
-    """Which years each year-keyed table carries — for the fail-loud message."""
+    """Which years each year-keyed NCES table carries — for the fail-loud message."""
     return {
-        "enrollment_by_grade": sorted(y for (y,) in session.query(EnrollmentByGrade.source_year).distinct() if y),
-        "staff_counts_effective": sorted(y for (y,) in session.query(StaffCountsEffective.effective_year).distinct() if y),
+        "enrollment_by_grade": sorted(y for (y,) in session.query(EnrollmentByGrade.source_year)
+                                      .filter(EnrollmentByGrade.data_source == NCES_SOURCE).distinct() if y),
+        "staff_counts": sorted(y for (y,) in session.query(StaffCounts.source_year)
+                               .filter(StaffCounts.data_source == NCES_SOURCE).distinct() if y),
     }
 
 

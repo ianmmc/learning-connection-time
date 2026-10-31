@@ -17,9 +17,10 @@ class TestReconcileTotal:
         assert (r.n_compared, r.n_disagree) == (50, 2)
 
     def test_exact_double_is_reported_as_the_970_signature(self):
-        # The #970 shape: 24,522,548 vs 12,261,274 — exactly 2.000×
+        # The #970 shape on the importer's 56 states: Σ(environment rows + Total row) 12,244,430 vs the
+        # Total row 6,122,215 — exactly 2.000× (the file's own US aggregate row is skipped by STATE_ABBR)
         with pytest.raises(DataGuardError, match="integer multiple.*#970"):
-            reconcile_total(24_522_548, 12_261_274, label="idea child count")
+            reconcile_total(12_244_430, 6_122_215, label="idea child count")
 
     def test_exact_triple_is_also_the_signature(self):
         with pytest.raises(DataGuardError, match="3.000×"):
@@ -45,6 +46,22 @@ class TestReconcileTotal:
         with pytest.raises(SystemExit) as e:
             reconcile_total(2000, 1000, label="x")
         assert e.value.code.startswith("DATA GUARD:")
+
+
+class TestReconcileTotalRowCap:
+    """#976: the aggregate tolerance cannot see a dropped small category; the row cap can."""
+
+    def test_rows_over_the_cap_fail_even_when_the_aggregate_is_within_tolerance(self):
+        # dropping 'Grade 13' from the CCD mapping: ratio 0.99996, 150 LEAs differ
+        with pytest.raises(DataGuardError, match="150 of 18,499 rows disagree.*#976"):
+            reconcile_total(99_996, 100_000, label="x", n_compared=18_499, n_disagree=150, max_disagree=0)
+
+    def test_rows_at_or_under_the_cap_pass(self):
+        assert reconcile_total(1000, 1000, label="x", n_compared=10, n_disagree=0, max_disagree=0).n_disagree == 0
+        assert reconcile_total(1000, 1000, label="x", n_compared=10, n_disagree=2, max_disagree=2).n_disagree == 2
+
+    def test_no_cap_keeps_the_count_as_bookkeeping(self):
+        assert reconcile_total(1000, 1000, label="x", n_compared=10, n_disagree=7).n_disagree == 7
 
 
 class TestRequireLabelsSeen:

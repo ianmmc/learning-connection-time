@@ -50,6 +50,9 @@ logger = logging.getLogger(__name__)
 
 # State configuration
 STATE_CODE = 'VA'
+# Vintages of the VDOE files on disk — a SEA import's year is its source's year (one spelling each, #980)
+STAFF_SOURCE_YEAR = '2025-26'
+SPED_SOURCE_YEAR = '2024-25'
 
 # Data file paths
 VA_DATA_DIR = project_root / "data" / "raw" / "state" / "virginia"
@@ -239,7 +242,7 @@ def import_district_identifiers(session, crosswalk, enrollment_df):
                 "nces_id": nces_id,
                 "div_num": div_num,
                 "name": division_name,
-                "year": "2025-26"
+                "year": STAFF_SOURCE_YEAR
             })
             imported += 1
         except Exception as e:
@@ -287,7 +290,7 @@ def import_staff_data(session, crosswalk, staffing_df):
                     updated_at = CURRENT_TIMESTAMP
             """), {
                 "nces_id": nces_id,
-                "year": "2025-26",
+                "year": STAFF_SOURCE_YEAR,
                 "teachers": clean_fte(row.get('Teachers')),
                 "admin": clean_fte(row.get('Administration')),
                 "aides": clean_fte(row.get('Aides and Paraprofessionals')),
@@ -337,7 +340,7 @@ def import_enrollment_data(session, crosswalk, enrollment_df):
                     updated_at = CURRENT_TIMESTAMP
             """), {
                 "nces_id": nces_id,
-                "year": "2025-26",
+                "year": STAFF_SOURCE_YEAR,
                 "total": clean_count(row.get('Total Count')),
                 "ft": clean_count(row.get('FT Count')),
                 "pt": clean_count(row.get('PT Count'))
@@ -384,7 +387,7 @@ def import_special_ed_data(session, crosswalk, sped_df):
                     updated_at = CURRENT_TIMESTAMP
             """), {
                 "nces_id": nces_id,
-                "year": "2024-25",  # SPED data is from 2024-25
+                "year": SPED_SOURCE_YEAR,
                 "sped_count": clean_count(row.get('Total Count'))
             })
             imported += 1

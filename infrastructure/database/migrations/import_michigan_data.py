@@ -50,6 +50,8 @@ logger = logging.getLogger(__name__)
 
 # State configuration
 STATE_CODE = 'MI'
+# Vintage of the MDE files on disk — a SEA import's year is its source's year (one spelling, #980)
+SOURCE_YEAR = '2023-24'
 
 # Data file paths
 MI_DATA_DIR = project_root / "data" / "raw" / "state" / "michigan"
@@ -258,7 +260,7 @@ def import_district_identifiers(session, crosswalk, staffing_df):
                 "nces_id": nces_id,
                 "code": district_code,
                 "name": district_name,
-                "year": "2023-24"
+                "year": SOURCE_YEAR
             })
             imported += 1
         except Exception as e:
@@ -300,7 +302,7 @@ def import_staff_data(session, crosswalk, staffing_df):
                     updated_at = CURRENT_TIMESTAMP
             """), {
                 "nces_id": nces_id,
-                "year": "2023-24",
+                "year": SOURCE_YEAR,
                 "teachers": safe_float(row.get('TEACHER')),
                 "se_instr": safe_float(row.get('SE_INSTR')),
                 "inst_aide": safe_float(row.get('INST_AID')),
@@ -361,7 +363,7 @@ def import_enrollment_data(session, crosswalk, enrollment_df):
                     updated_at = CURRENT_TIMESTAMP
             """), {
                 "nces_id": nces_id,
-                "year": "2023-24",
+                "year": SOURCE_YEAR,
                 "total": safe_float(row.get('tot_all')),
                 "k": safe_float(row.get('k_totl')),
                 "g1": safe_float(row.get('g1_totl')),
@@ -417,7 +419,7 @@ def import_special_ed_data(session, crosswalk, sped_df):
                     updated_at = CURRENT_TIMESTAMP
             """), {
                 "nces_id": nces_id,
-                "year": "2023-24",
+                "year": SOURCE_YEAR,
                 "iep_count": safe_int(row.get('StudwI E P')),
                 "sped_pct": safe_float(row.get('SpEd%'))
             })
