@@ -2583,3 +2583,55 @@ Everything after followed from "fix the measurement before refreshing it."
 Authority: `0155947` (license); PRs #971 `ab5c6c0`, #973 `f3c83ce`; branch `fix/975-989-review-findings`
 PR #1005; `2026-10-30-total-row-and-year-default-guards-plan.md`;
 `2026-10-31-idea-crdc-sped-baseline-refresh-plan.md`; issues #970, #972, #974, #975–#989, #999–#1004.
+
+### 2026-10-31/11-01 — The SPED baseline refresh is adopted; MA's SEA vintage is honest; and the level scopes are quarantined because no fix to them can be audited
+
+**Why now.** The IDEA/CRDC refresh planned on 10-30/31 was executed through its decision gate. A naive
+"does this LCT make sense?" check afterwards found the elementary scope ~41% high, which an audit traced
+to a definition no outside authority catalogs.
+
+- **The 2024-25 SPED baseline is adopted (Ian's T5 calls, #1003).** The 5-21 "School Age" band; each
+  LEA's SPED share divides by CRDC's own total (the same schools as the numerator); and the REQ-026
+  exemption is **retired** — the ratio vintages are stamped into `component_years.sped_ratio` and the
+  migration-030 trigger windows them like any other component. The 2017-18 rows stay side by side
+  (multi-vintage tables, #999). The #241 Stage-5 hold floor, which had borrowed `SPED_BASELINE_YEAR`,
+  got its own `BELL_VALIDITY_FLOOR_YEAR = 2017-18` so the move changed nothing in Stage 5 (#1006 asks
+  whether that floor should move or be re-grounded).
+- **#974: the SPED partition starts from `teachers_only`**, so `core_sped + teachers_gened` partitions
+  the headline scope exactly. **#1004 step 1:** a district uses its own IDEA LEA self-contained share
+  at ≥ 200 school-age SPED students, else the state share — the rule lives in the vintage profile, as
+  data. Step 2 (the LEA SPED count as numerator) stays open; its trap is that IDEA counts parentally
+  placed private-school students in the private school's LEA.
+- **A window violation must fall back, not be written (#1009).** Once ratio years entered the window,
+  44 districts' 2026-27 bell years were coherent with staff/enrollment but not with the ratio years, and
+  the trigger wrote them `ERR_SPAN_EXCEEDED`; they now fall back to statutory like any incoherent blend.
+  **Process lesson:** that live write happened *before* its rehearsal, because the rehearsal script's
+  DB override named an env var that does not exist and its guard printed instead of aborting. Live
+  matched the later rehearsal row for row, but the order was wrong. Since then every write states the
+  target and checks `get_engine().url.database` before it runs.
+- **MA's SEA teacher file is labelled by the year it says it is (#984, PR #1015).** The rows stamped
+  2025-26 were the 2024-25 DESE export: a logged relabel (`data_lineage`) moved them to 2024-25, the
+  2025-26 file imported under its own title-row-checked vintage, and the merge supplemented
+  `teachers_total` only — every `scope_*` stays NCES, so `lct_calculations` did not move (md5).
+- **`outputs/current-lct-calculations/` was retired (PR #1016).** A hand-copied 2023-24 snapshot read as
+  "current" in an audit. Current LCT lives in `lct_calculations`; run files in `data/enriched/`.
+- **The CCD elementary/secondary teacher split follows state practice, and nobody catalogs it (#1017).**
+  FS059 "elementary" is any span up to grade 8 "by state and local practice"; in ~22 jurisdictions
+  unified K-12 districts report 0.60–0.71 of teachers as elementary (≈ the K-8 enrollment share), and
+  OK/MO classify by school type. FS5018 metadata, NCES state notes, CCSSO/NASBE/NCSL/ECS: no catalog.
+  **Decision (Ian, 11-01): quarantine, then replace with school-file band scopes, then retire.** A
+  per-district inference table to correct the LEA pair was designed and **rejected**: its evidence
+  would be the school files, making the corrected pair a roundabout copy of the planned school-file
+  scopes (two disagreeing band answers), resting on a per-district judgement hard to audit under
+  REQ-165. This reversed Ian's same-day "add alongside, don't replace" call. **Lesson:** when the fix
+  for a flawed measure needs the evidence a planned measure uses directly, build the direct measure.
+- **A quarantine must travel with the data, not the reports (PR #1024 review, #1025).** The first
+  version labelled six presenters and left the stored rows, the exports and the MCP server unmarked.
+  The caveat now has one home (`infrastructure/utilities/lct_scopes.py`) and every level-scope row
+  carries a `QUARANTINED_1017` token in `notes`, written live 11-01 (run `20261101T214220Z`: 163,962
+  rows, every non-`notes` column identical, the token on exactly the 30,097 level rows). The token is
+  stripped before counting QA notes — unstripped it would have nearly doubled `districts_with_qa_notes`.
+
+Authority: PRs #1007, #1015, #1016, #1024; issues #1003, #1004, #1009, #974, #984, #1017, #1022, #1023,
+#1025–#1033; `2026-10-31-idea-crdc-sped-baseline-refresh-plan.md`; `2026-11-01-ccd-level-teacher-split.md`
+(+ `-measure.py`); backups `lct-pre1004-…`, `lct-preMA-…`, `lct-pre1025-20261101T214129Z.dump`.
