@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import ast
 import csv
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -466,35 +467,78 @@ class TestMassachusettsReimport:
         (tmp_path / "2025-26" / "teacherdata.xlsx").write_bytes(b"")
         assert m.teacher_file_for("2025-26") == tmp_path / "2025-26" / "teacherdata.xlsx"
 
-    def _session(self, to_count, moved):
+    def _session(self, moved=0):
         from unittest.mock import MagicMock
         s = MagicMock()
-        s.execute.side_effect = [MagicMock(scalar=lambda: to_count), MagicMock(rowcount=moved)]
+        s.execute.return_value = MagicMock(rowcount=moved)
         return s
 
     def test_relabel_refuses_when_the_target_vintage_already_exists(self, monkeypatch):
         import infrastructure.database.migrations.import_massachusetts_data as m
-        s = self._session(to_count=12, moved=0)
-        with pytest.raises(DataGuardError, match="already carries 12 rows for 2024-25"):
+        monkeypatch.setattr(m, "distinct_years", lambda s, t, col="year": ["2025-26", "2024-25"])
+        s = self._session()
+        with pytest.raises(DataGuardError, match="ma_staff_data already carries rows for 2024-25"):
             m.relabel_staff_year(s, "2025-26", "2024-25")
         s.commit.assert_not_called()
 
     def test_relabel_fails_loud_when_nothing_carries_the_from_year(self, monkeypatch):
         import infrastructure.database.migrations.import_massachusetts_data as m
-        monkeypatch.setattr(m, "distinct_years", lambda s, t: ["2025-26"])
-        s = self._session(to_count=0, moved=0)
-        with pytest.raises(DataGuardError, match=r"no rows stamped 2023-24.*2025-26"):
+        monkeypatch.setattr(m, "distinct_years", lambda s, t, col="year": ["2025-26"])
+        s = self._session()
+        with pytest.raises(DataGuardError, match=r"carries no rows for year=2023-24"):
             m.relabel_staff_year(s, "2023-24", "2024-25")
         s.commit.assert_not_called()
 
-    def test_relabel_moves_the_rows_and_logs_lineage(self, monkeypatch):
+    def test_relabel_moves_both_tables_and_logs_lineage(self, monkeypatch):
         from unittest.mock import MagicMock
         import infrastructure.database.migrations.import_massachusetts_data as m
+        monkeypatch.setattr(m, "distinct_years", lambda s, t, col="year": ["2025-26"])
         logged = MagicMock()
         monkeypatch.setattr(m.DataLineage, "log", logged)
-        s = self._session(to_count=0, moved=396)
-        assert m.relabel_staff_year(s, "2025-26", "2024-25") == 396
+        s = self._session(moved=396)
+        assert m.relabel_staff_year(s, "2025-26", "2024-25") == 792   # 396 rows in each of the two tables
+        tables = {c.args[0].text.split()[1] for c in s.execute.call_args_list if "UPDATE" in str(c.args[0])}
+        assert tables == {"ma_staff_data", "ma_district_identifiers"}
         kw = logged.call_args.kwargs
         assert (kw["entity_type"], kw["entity_id"], kw["operation"]) == ("ma_staff_data", "2024-25", "relabel")
-        assert kw["details"]["rows"] == 396 and kw["details"]["from_year"] == "2025-26"
+        assert kw["details"]["rows"] == 792 and kw["details"]["from_year"] == "2025-26"
         s.commit.assert_called_once()
+
+    @pytest.mark.parametrize("bad_arg", ["2020-21", "not-a-year"])
+    def test_relabel_rejects_a_covid_or_malformed_year_before_any_session_opens(self, monkeypatch, bad_arg):
+        import infrastructure.database.migrations.import_massachusetts_data as m
+        monkeypatch.setattr(sys, "argv", ["import_massachusetts_data.py", "--relabel-staff", "2025-26", bad_arg])
+        monkeypatch.setattr(m, "session_scope", lambda: (_ for _ in ()).throw(
+            AssertionError("session must never open: the CLI validation should reject this first")))
+        with pytest.raises(SystemExit) as e:
+            m.main()
+        assert e.value.code == 2   # argparse's parser.error() exit code
+
+    def test_title_row_mismatch_is_refused(self, monkeypatch, tmp_path):
+        import infrastructure.database.migrations.import_massachusetts_data as m
+        import pandas as pd
+        monkeypatch.setattr(m, "TEACHER_DATA_YEAR", "2025-26")
+        f = tmp_path / "2025-26" / "teacherdata.xlsx"
+        f.parent.mkdir(parents=True)
+        f.write_bytes(b"")   # existence is all teacher_file_for() checks; read_excel is monkeypatched below
+        monkeypatch.setattr(m, "MA_DATA_DIR", tmp_path)
+
+        def fake_read_excel(path, header=None, nrows=None):
+            if nrows == 1:
+                return pd.DataFrame([["2024-25 Teacher Data - All Teachers"]])
+            raise AssertionError("should not reach the full parse when the title row mismatches")
+        monkeypatch.setattr(m.pd, "read_excel", fake_read_excel)
+        with pytest.raises(DataGuardError, match="does not name 2025-26"):
+            m.load_teacher_data()
+
+    def test_teacher_import_writing_zero_rows_fails_loud(self, monkeypatch):
+        import infrastructure.database.migrations.import_massachusetts_data as m
+        monkeypatch.setattr(m, "distinct_years", lambda s, t, col="year": ["2024-25"])
+        s = self._session()
+        with pytest.raises(DataGuardError, match=r"wrote 0 rows for 2025-26 \(3 skipped\)"):
+            m.require_staff_rows_written(s, "2025-26", imported=0, skipped=3)
+
+    def test_teacher_import_writing_at_least_one_row_passes(self, monkeypatch):
+        import infrastructure.database.migrations.import_massachusetts_data as m
+        s = self._session()
+        m.require_staff_rows_written(s, "2025-26", imported=395, skipped=1)   # must not raise

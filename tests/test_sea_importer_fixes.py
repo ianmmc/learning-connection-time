@@ -113,7 +113,10 @@ class TestMassachusettsImporter:
         assert format_ma_district_code('00350000') == '0035'
 
     def test_years_label_actual_data_years(self):
-        # Teacher FTE comes from the 2025-26 DESE export (2025-26/teacherdata.xlsx); enrollment from SY 2026
+        # Teacher FTE comes from the 2025-26 DESE export (2025-26/teacherdata.xlsx); enrollment from SY 2026.
+        # Both constants are '2025-26' today (they coincided after the #1015 re-import) — this only pins the
+        # VALUES; test_sea_states_one_home.py's test_importer_vintage_constants_equal_the_registry pins each
+        # constant to its own registry key by NAME, which is what would actually catch a staff/enroll swap.
         assert TEACHER_DATA_YEAR == '2025-26'
         assert ENROLLMENT_DATA_YEAR == '2025-26'
 

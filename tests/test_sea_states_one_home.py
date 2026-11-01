@@ -55,8 +55,15 @@ def test_997_merge_imports_school_year_from_one_source():
     assert sources == {"infrastructure.utilities.school_year"}
 
 
-def test_ma_staff_and_enrollment_vintages_are_distinct_and_explicit():
+def test_ma_staff_and_enrollment_vintages_are_both_explicit():
+    """MA declares `enroll_year` explicitly rather than falling back to `year` (sea_import_utils.get_sea_data
+    reads `config.get('enroll_year', yr)`) — the two vintages happen to coincide since the 2025-26 teacher
+    import (#1015), but a future staffing lag must not silently default the enrollment side back onto it.
+    (Renamed from ...are_distinct_and_explicit, #1015 review: both values are now literally '2025-26', so an
+    equality assertion on the VALUES can no longer tell a staff/enrollment swap from a correct config —
+    test_importer_vintage_constants_equal_the_registry below still catches a swap, by constant NAME.)"""
     ma = _registry()["MA"]
+    assert "enroll_year" in ma, "MA must declare enroll_year explicitly, not rely on the year= fallback"
     assert ma["year"] == "2025-26"          # DESE teacher export (2025-26/teacherdata.xlsx)
     assert ma["enroll_year"] == "2025-26"   # E2C Hub enrollment export — a separate drop, declared on its own
 
