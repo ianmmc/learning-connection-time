@@ -454,3 +454,47 @@ def test_1011_sample_skips_phase_5_rather_than_estimating_from_a_parse_only_base
     run.assert_not_called()
     assert rb.phase_5_sped_estimates(False, "2024-25") is True
     run.assert_called_once()
+
+
+# ----------------------------------------------------------------------------- Massachusetts 2025-26 re-import (#984)
+class TestMassachusettsReimport:
+    def test_teacher_file_prefers_the_per_year_folder_layout(self, monkeypatch, tmp_path):
+        import infrastructure.database.migrations.import_massachusetts_data as m
+        monkeypatch.setattr(m, "MA_DATA_DIR", tmp_path)
+        assert m.teacher_file_for("2025-26") == tmp_path / "MA 2025-26 teacherdata.xlsx"   # legacy flat name
+        (tmp_path / "2025-26").mkdir()
+        (tmp_path / "2025-26" / "teacherdata.xlsx").write_bytes(b"")
+        assert m.teacher_file_for("2025-26") == tmp_path / "2025-26" / "teacherdata.xlsx"
+
+    def _session(self, to_count, moved):
+        from unittest.mock import MagicMock
+        s = MagicMock()
+        s.execute.side_effect = [MagicMock(scalar=lambda: to_count), MagicMock(rowcount=moved)]
+        return s
+
+    def test_relabel_refuses_when_the_target_vintage_already_exists(self, monkeypatch):
+        import infrastructure.database.migrations.import_massachusetts_data as m
+        s = self._session(to_count=12, moved=0)
+        with pytest.raises(DataGuardError, match="already carries 12 rows for 2024-25"):
+            m.relabel_staff_year(s, "2025-26", "2024-25")
+        s.commit.assert_not_called()
+
+    def test_relabel_fails_loud_when_nothing_carries_the_from_year(self, monkeypatch):
+        import infrastructure.database.migrations.import_massachusetts_data as m
+        monkeypatch.setattr(m, "distinct_years", lambda s, t: ["2025-26"])
+        s = self._session(to_count=0, moved=0)
+        with pytest.raises(DataGuardError, match=r"no rows stamped 2023-24.*2025-26"):
+            m.relabel_staff_year(s, "2023-24", "2024-25")
+        s.commit.assert_not_called()
+
+    def test_relabel_moves_the_rows_and_logs_lineage(self, monkeypatch):
+        from unittest.mock import MagicMock
+        import infrastructure.database.migrations.import_massachusetts_data as m
+        logged = MagicMock()
+        monkeypatch.setattr(m.DataLineage, "log", logged)
+        s = self._session(to_count=0, moved=396)
+        assert m.relabel_staff_year(s, "2025-26", "2024-25") == 396
+        kw = logged.call_args.kwargs
+        assert (kw["entity_type"], kw["entity_id"], kw["operation"]) == ("ma_staff_data", "2024-25", "relabel")
+        assert kw["details"]["rows"] == 396 and kw["details"]["from_year"] == "2025-26"
+        s.commit.assert_called_once()

@@ -326,15 +326,9 @@
       },
       {
         "file": "infrastructure/database/migrations/import_massachusetts_data.py",
-        "literal": "2024-25",
-        "count": 1,
-        "why": "TEACHER_DATA_YEAR: vintage of the DESE teacher file on disk; --teacher-year selects the file and stamps the rows."
-      },
-      {
-        "file": "infrastructure/database/migrations/import_massachusetts_data.py",
         "literal": "2025-26",
-        "count": 1,
-        "why": "ENROLLMENT_DATA_YEAR: vintage of the E2C Hub enrollment export (DESE publishes enrollment a year ahead of staffing); --enrollment-year derives the SY row filter from it (#977)."
+        "count": 2,
+        "why": "TEACHER_DATA_YEAR (vintage of the DESE teacher file on disk, 2025-26/teacherdata.xlsx; --teacher-year selects the file and stamps the rows) and ENROLLMENT_DATA_YEAR (vintage of the E2C Hub enrollment export; --enrollment-year derives the SY row filter from it, #977). The 2024-25 teacher export was relabelled under its true year 2026-11-01 (#984)."
       },
       {
         "file": "infrastructure/database/migrations/import_michigan_data.py",
@@ -399,13 +393,13 @@
       {
         "file": "infrastructure/database/migrations/sea_import_utils.py",
         "literal": "2024-25",
-        "count": 6,
+        "count": 5,
         "why": "VALID_DATA_YEARS member (the SEA importers' accepted-vintage allowlist) plus the SEA_STATES registry entries, the ONE home of each state's declared SEA vintage (#990); merge_sea_precedence and compare_sea_vs_federal_lct import it."
       },
       {
         "file": "infrastructure/database/migrations/sea_import_utils.py",
         "literal": "2025-26",
-        "count": 3,
+        "count": 4,
         "why": "VALID_DATA_YEARS member (the SEA importers' accepted-vintage allowlist) plus the SEA_STATES registry entries, the ONE home of each state's declared SEA vintage (#990); merge_sea_precedence and compare_sea_vs_federal_lct import it."
       },
       {

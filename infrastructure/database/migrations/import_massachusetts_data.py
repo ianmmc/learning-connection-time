@@ -36,7 +36,9 @@ import pandas as pd
 import logging
 
 # Import shared SEA utilities
-from infrastructure.utilities.data_guards import require_nonempty_selection
+from infrastructure.utilities.data_guards import DataGuardError, require_nonempty_selection
+from infrastructure.database.models import DataLineage
+from infrastructure.database.queries import distinct_years
 from infrastructure.database.migrations.sea_import_utils import (
     safe_float, safe_int,
     load_state_crosswalk, get_district_name,
@@ -52,18 +54,28 @@ logger = logging.getLogger(__name__)
 
 # State configuration
 STATE_CODE = 'MA'
-# Label data with its ACTUAL year (issue #23): the DESE teacher-FTE file is the
-# 2024-25 export, the E2C Hub enrollment export is filtered to SY 2026 (= 2025-26).
-# The old single DATA_YEAR = '2025-26' mislabeled 2024-25 teacher FTE as 2025-26.
-# Both are SOURCE vintages (the files on disk), overridable with --teacher-year / --enrollment-year
-# when newer DESE exports are dropped in — the same shape as the TX/CA/NY imports' --year.
-TEACHER_DATA_YEAR = '2024-25'
+# Label data with its ACTUAL year (issue #23): the DESE teacher-FTE file carries its vintage in its
+# title row ("2025-26 Teacher Data - All Teachers"); the E2C Hub enrollment export is filtered to
+# SY 2026 (= 2025-26). The old single DATA_YEAR = '2025-26' mislabeled 2024-25 teacher FTE as 2025-26
+# (relabelled 2026-11-01 via --relabel-staff, #984). Both are SOURCE vintages (the files on disk),
+# overridable with --teacher-year / --enrollment-year when newer DESE exports are dropped in — the
+# same shape as the TX/CA/NY imports' --year.
+TEACHER_DATA_YEAR = '2025-26'
 ENROLLMENT_DATA_YEAR = '2025-26'
 
 # Data file paths
 MA_DATA_DIR = project_root / "data" / "raw" / "state" / "massachusetts"
-TEACHER_FILE = MA_DATA_DIR / f"MA {TEACHER_DATA_YEAR} teacherdata.xlsx"
 ENROLLMENT_FILE = MA_DATA_DIR / "Enrollment__Grade,_Race_Ethnicity,_Gender,_and_Selected_Populations_20260119.xlsx"
+
+
+def teacher_file_for(year: str) -> Path:
+    """The DESE teacher file of one vintage: the per-year folder layout the raw inventory uses
+    (`<year>/teacherdata.xlsx`, MANIFEST.md), else the legacy flat name `MA <year> teacherdata.xlsx`."""
+    layout = MA_DATA_DIR / year / "teacherdata.xlsx"
+    return layout if layout.exists() else MA_DATA_DIR / f"MA {year} teacherdata.xlsx"
+
+
+TEACHER_FILE = teacher_file_for(TEACHER_DATA_YEAR)
 
 
 def format_ma_district_code(dist_code) -> str:
@@ -330,6 +342,33 @@ def import_staff_data(session, crosswalk, teacher_df):
     return imported, skipped
 
 
+def relabel_staff_year(session, from_year: str, to_year: str) -> int:
+    """A LOGGED relabel of the ma_staff_data rows stamped `from_year` to `to_year` (#23 / #984). The rows
+    loaded 2026-01-24 as '2025-26' hold the 2024-25 DESE export (386/388 equal NCES 2024-25), and that file
+    is no longer on disk to re-import under its true year. Refuses when `to_year` rows already exist — a
+    relabel never merges two vintages — and fails loud when `from_year` carries nothing."""
+    existing = session.execute(text("SELECT COUNT(*) FROM ma_staff_data WHERE year = :y"), {"y": to_year}).scalar()
+    if existing:
+        raise DataGuardError(f"ma_staff_data already carries {existing} rows for {to_year}; "
+                             f"refusing to relabel {from_year} onto an existing vintage")
+    moved = session.execute(
+        text("UPDATE ma_staff_data SET year = :to_year, updated_at = CURRENT_TIMESTAMP WHERE year = :from_year"),
+        {"to_year": to_year, "from_year": from_year}).rowcount
+    if not moved:
+        raise DataGuardError(f"ma_staff_data has no rows stamped {from_year} to relabel; "
+                             f"available: {distinct_years(session, 'ma_staff_data')}")
+    DataLineage.log(
+        session, entity_type="ma_staff_data", entity_id=to_year, operation="relabel",
+        source_file="import_massachusetts_data.py",
+        details={"from_year": from_year, "to_year": to_year, "rows": moved,
+                 "why": "rows loaded as 2025-26 hold the 2024-25 DESE teacher export (#23, #984)"},
+        created_by="import_massachusetts_data --relabel-staff",
+    )
+    session.commit()
+    logger.info(f"Relabelled {moved} ma_staff_data rows {from_year} -> {to_year} (logged in data_lineage)")
+    return moved
+
+
 def import_enrollment_data(session, crosswalk, enrollment_df):
     """Import enrollment data to ma_enrollment_data table."""
     logger.info("Importing enrollment data...")
@@ -398,9 +437,17 @@ def main():
                         help=f"Vintage of the DESE teacher file (default: {TEACHER_DATA_YEAR}; selects 'MA <year> teacherdata.xlsx' and stamps the rows)")
     parser.add_argument("--enrollment-year", default=ENROLLMENT_DATA_YEAR,
                         help=f"Vintage the E2C Hub enrollment export is filtered to (default: {ENROLLMENT_DATA_YEAR}; stamps the rows)")
+    parser.add_argument("--skip-enrollment", action="store_true",
+                        help="Import the teacher file only (the E2C Hub enrollment export is a separate drop)")
+    parser.add_argument("--relabel-staff", metavar="FROM=TO",
+                        help="Before importing, relabel ma_staff_data rows stamped FROM as TO, logged in data_lineage "
+                             "(the #23 mislabel: 2025-26=2024-25). Refuses if TO rows exist.")
     args = parser.parse_args()
     TEACHER_DATA_YEAR, ENROLLMENT_DATA_YEAR = args.teacher_year, args.enrollment_year
-    TEACHER_FILE = MA_DATA_DIR / f"MA {TEACHER_DATA_YEAR} teacherdata.xlsx"
+    TEACHER_FILE = teacher_file_for(TEACHER_DATA_YEAR)
+    relabel = tuple(args.relabel_staff.split("=", 1)) if args.relabel_staff else None
+    if relabel and len(relabel) != 2:
+        parser.error("--relabel-staff takes FROM=TO, e.g. 2025-26=2024-25")
 
     logger.info("=" * 60)
     logger.info("Starting Massachusetts Data Import")
@@ -411,7 +458,7 @@ def main():
 
     # Load data files
     teacher_df = load_teacher_data()
-    enrollment_df = load_enrollment_data()
+    enrollment_df = None if args.skip_enrollment else load_enrollment_data()
 
     # Aborts exit NON-zero (#977): a missing file for the requested vintage used to log 'Aborting.' and
     # return 0, indistinguishable from a clean import to rebuild_database / a shell caller.
@@ -419,7 +466,7 @@ def main():
         logger.error("Failed to load teacher data file. Aborting.")
         sys.exit(1)
 
-    if enrollment_df is None:
+    if enrollment_df is None and not args.skip_enrollment:
         logger.error("Failed to load enrollment data file. Aborting.")
         sys.exit(1)
 
@@ -433,6 +480,9 @@ def main():
                         "Ensure state_district_crosswalk is populated.")
             sys.exit(1)
 
+        if relabel:
+            relabel_staff_year(session, *relabel)
+
         # Import data
         id_imported, id_skipped = import_district_identifiers(
             session, crosswalk, teacher_df, enrollment_df
@@ -440,7 +490,7 @@ def main():
         staff_imported, staff_skipped = import_staff_data(
             session, crosswalk, teacher_df
         )
-        enroll_imported, enroll_skipped = import_enrollment_data(
+        enroll_imported, enroll_skipped = (0, 0) if args.skip_enrollment else import_enrollment_data(
             session, crosswalk, enrollment_df
         )
 

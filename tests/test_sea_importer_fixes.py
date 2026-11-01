@@ -113,8 +113,8 @@ class TestMassachusettsImporter:
         assert format_ma_district_code('00350000') == '0035'
 
     def test_years_label_actual_data_years(self):
-        # Teacher FTE comes from the 2024-25 DESE export; enrollment from SY 2026
-        assert TEACHER_DATA_YEAR == '2024-25'
+        # Teacher FTE comes from the 2025-26 DESE export (2025-26/teacherdata.xlsx); enrollment from SY 2026
+        assert TEACHER_DATA_YEAR == '2025-26'
         assert ENROLLMENT_DATA_YEAR == '2025-26'
 
 

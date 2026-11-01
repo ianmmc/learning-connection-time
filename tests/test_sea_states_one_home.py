@@ -57,12 +57,14 @@ def test_997_merge_imports_school_year_from_one_source():
 
 def test_ma_staff_and_enrollment_vintages_are_distinct_and_explicit():
     ma = _registry()["MA"]
-    assert ma["year"] == "2024-25"          # DESE teacher export
-    assert ma["enroll_year"] == "2025-26"   # E2C Hub enrollment export (a year ahead)
+    assert ma["year"] == "2025-26"          # DESE teacher export (2025-26/teacherdata.xlsx)
+    assert ma["enroll_year"] == "2025-26"   # E2C Hub enrollment export — a separate drop, declared on its own
 
 
 def test_ma_enrollment_is_queried_at_its_own_vintage():
-    """compare applied ONE year to both MA tables; the enrollment export is a year ahead of the staff file."""
+    """compare applied ONE year to both MA tables; each table must be queried at its own declared vintage.
+    (The registry's two MA years coincide since the 2025-26 teacher import — a synthetic config keeps the
+    property observable.)"""
     from infrastructure.scripts.analyze import compare_sea_vs_federal_lct as compare
     seen = []
 
@@ -71,7 +73,7 @@ def test_ma_enrollment_is_queried_at_its_own_vintage():
             seen.append((str(q), dict(params or {})))
             return []
 
-    compare.get_sea_data(S(), "MA", _registry()["MA"])
+    compare.get_sea_data(S(), "MA", {"year": "2024-25", "enroll_year": "2025-26", "table": "ma_staff_data"})
     by_table = {("ma_staff_data" if "ma_staff_data" in q else "ma_enrollment_data"): p["year"] for q, p in seen}
     assert by_table == {"ma_staff_data": "2024-25", "ma_enrollment_data": "2025-26"}
 

@@ -43,7 +43,7 @@ from test_sea_integration_base import (
 DESE_DATA_DIR = Path("data/raw/state/massachusetts")
 DESE_FILES_PRESENT = DESE_DATA_DIR.exists() and (
     (DESE_DATA_DIR / "ma_enrollment_all_years.csv").exists() or
-    (DESE_DATA_DIR / "MA 2024-25 teacherdata.xlsx").exists()
+    (DESE_DATA_DIR / "2025-26" / "teacherdata.xlsx").exists()
 )
 
 pytestmark = [
@@ -129,7 +129,7 @@ class MassachusettsSEAConfig(SEAIntegrationTestBase):
         """Return paths to DESE data files."""
         return {
             "enrollment": DESE_DATA_DIR / "ma_enrollment_all_years.csv",
-            "staffing": DESE_DATA_DIR / "MA 2024-25 teacherdata.xlsx",
+            "staffing": DESE_DATA_DIR / "2025-26" / "teacherdata.xlsx",
         }
 
     def load_staff_data(self) -> pd.DataFrame:

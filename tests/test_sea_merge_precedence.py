@@ -176,8 +176,9 @@ class TestApplySeaSupplement:
 class TestSeaStatesConfig:
 
     def test_ma_year_matches_teacher_file(self):
-        # The MA teacher-FTE file is the 2024-25 export (issue #23 year mislabel)
-        assert SEA_STATES['MA']['year'] == '2024-25'
+        # The MA teacher-FTE file carries its vintage in its title row ("2025-26 Teacher Data - All Teachers");
+        # the earlier 2024-25 export was relabelled under its true year (issue #23 mislabel, #984)
+        assert SEA_STATES['MA']['year'] == '2025-26'
 
     def test_no_covid_years_configured(self):
         from infrastructure.database.school_year import is_covid_year
