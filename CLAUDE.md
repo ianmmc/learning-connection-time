@@ -208,15 +208,13 @@ pipeline track (B) is unchanged from 08-26 (`docs/scratch-paper/2026-08-25-fresh
 `docs/technical-notes/production-quality-control-research/2026-11-01-ccd-level-teacher-split.md`
 (findings, research, the REJECTED correction plan and why, acceptance properties); rerun its numbers with
 `…/2026-11-01-ccd-level-teacher-split-measure.py [--school-files]`.
-1. **#1022 phase 2 — design note FIRST, then stop for Ian's six calls** (listed on the issue: scope
-   names · per-district grade ownership vs fixed K-5/6-8/9-12 · Pre-K teachers inside school totals ·
-   4,063 schools with no teacher count · ~1.3% LEA-only teacher FTE · fetching 2023-24 school files).
-   Then `ccd_school_staffing` (verbatim from `ccd_sch_029/052/059`, sha256s, every CCD import), teachers
-   spread over each school's own grades through the ONE grade→band function (#696), pre-commit sha +
-   SQL-recompute drift check, full re-derivation at pre-push. **Reader:** `ccd_sch_052` is Deflate64 —
-   use `inflate64` with size+CRC, as `public-ed-data-navigator/src/ednav/rawread.py` does (verified on
-   the 2.35 GB member), not a `subprocess` unzip. Acceptance: band PTRs ≈ 14.1 / 14.8 / 15.9;
-   `teachers_only` md5-identical; the regime gap (elementary median 31.6 vs 26.2) mostly closes.
+1. **#1022 phase 2 — PLAN WRITTEN, awaiting Ian's calls D1–D7:**
+   `docs/technical-notes/production-quality-control-research/2026-11-01-school-file-band-scopes-plan.md`
+   (verified findings, design, decisions with recommendations, roadmap T1–T10 as #1022's sub-issues,
+   acceptance A1–A7). **T1 (one grade→band map in `utilities/`), T2 (Deflate64 reader, `inflate64`) and
+   T4 (migration 033) are NOT gated** and can start now. Key facts: per-GRADE attribution, not per-school
+   (37% of schools span >1 band); the pre-push hook and DB-free tests forbid DB access, so the drift check
+   is pre-commit-when-Docker-is-up (D7), not pre-push.
 2. **#1023 phase 3** — retire the LEA pair once #1022 validates (rows stay readable; move
    `per_grade_lct_sample.py` to the new secondary scope).
 3. **Open nearby, from the same audit:** #1018 (a level check that can never fire) · #1019
