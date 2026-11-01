@@ -181,6 +181,20 @@ See **Bell Schedule Sampling Policy** (below) for the sampling methodology, and
 
 **Scope Calculation Formulas** (December 2025):
 
+> **QUARANTINED — `teachers_elementary` / `teachers_secondary` (#1017, 2026-11-01).** CCD/EDFacts FS059 counts
+> a teacher as "elementary" by **state and local practice**: any grade span not above grade 8. No federal
+> field, metadata question, or outside catalog records which grades each state uses. The level scopes divide
+> those counts by **fixed** K-5 / 6-12 enrollment. In about 22 jurisdictions (CA, IL, MA, OR, KS, IA, KY, SC,
+> SD, ND, ME, MT, RI, LA, AZ, NC, CT, NH, NE, NJ, BIE, PR), unified K-12 districts report 0.60–0.71 of their
+> teachers as elementary, which matches the K-8 enrollment share (≈0.67), not K-5 (≈0.44). There the
+> elementary numerator holds grade 6-8 teachers whose students sit in the 6-12 denominator: **elementary LCT is
+> inflated and secondary LCT deflated**. In OK and MO the split follows school type (K-8 schools are all
+> elementary). Both scopes are still computed, and are labelled *not comparable across states* wherever they
+> appear. They are to be replaced by band scopes derived from the CCD school files (each school's teachers
+> attributed to its own grades), then retired (REQ-190). `teachers_only` and every K-12 scope are unaffected:
+> the split cancels in a K-12 sum. Findings, research and the rejected correction plan:
+> `docs/technical-notes/production-quality-control-research/2026-11-01-ccd-level-teacher-split.md`.
+
 ```python
 # Teacher-level aggregates (NO Pre-K, NO ungraded)
 teachers_k12 = (teachers_elementary + teachers_secondary + teachers_kindergarten)
@@ -438,8 +452,8 @@ LCT = 104,975 minutes / 8,500 students
 | LCT-Instructional | enrollment_k12 > 0 | scope_instructional > 0 | K-12 only |
 | LCT-Support | enrollment_k12 > 0 | scope_support > 0 | K-12 only |
 | LCT-All | enrollment_k12 > 0 | scope_all > 0 | K-12 only |
-| LCT-Teachers-Elementary | enrollment_elementary > 0 | teachers_elementary_k5 > 0 | K-5 only |
-| LCT-Teachers-Secondary | enrollment_secondary > 0 | teachers_secondary_6_12 > 0 | 6-12 only |
+| LCT-Teachers-Elementary | enrollment_elementary > 0 | teachers_elementary_k5 > 0 | K-5 only; QUARANTINED (#1017) |
+| LCT-Teachers-Secondary | enrollment_secondary > 0 | teachers_secondary_6_12 > 0 | 6-12 only; QUARANTINED (#1017) |
 
 **Level-Based QA Validation**:
 
@@ -503,7 +517,8 @@ Additional safeguards identify potential data quality issues that don't warrant 
 - Example: `lct_all_variants_2023_24_valid_20251228T012536Z.csv`
 - Benefits: Sortable, unambiguous timezone, enables version tracking
 
-**Results** (December 2025):
+**Results** (December 2025 — historical; the two level rows are superseded by the #1017 quarantine above,
+and their gap is largely the CCD level-split artifact, not a real elementary/secondary difference):
 
 | Scope | Valid Districts | Mean LCT | Median LCT |
 |-------|-----------------|----------|------------|
@@ -581,14 +596,15 @@ printed to console):
 ```
 QA DASHBOARD
 Status: PASS · Pass Rate: 99.46%
-Hierarchy Checks: ✓ Secondary < Overall Teachers  ✓ Teachers < Core  ✓ Core < Instructional
-                  ✓ Instructional < Support  ✓ Support < All
+Hierarchy Checks: ✓ Teachers < Core  ✓ Core < Instructional  ✓ Instructional < Support  ✓ Support < All
 Outliers Detected: 20
 ```
 
 **JSON report** (`data/enriched/lct-calculations/lct_qa_report_<year>_<timestamp>.json`) carries
 `metadata`, `data_quality` (total/valid/invalid/pass_rate), `scope_summary` (per-scope mean/median/min/max),
-`hierarchy_validation` (per-check pass/fail with the compared means), `state_coverage`, `outliers[]`
+`hierarchy_validation` (per-check pass/fail with the compared means; CONTAINMENT pairs only — the level scopes
+were removed from it by #1017, since a band is not a superset of K-12), `quarantined_scopes` (scope → caveat),
+`state_coverage`, `outliers[]`
 (district_id/name/scope/issue/severity), and `overall_status`.
 
 **Interpreting status:** `overall_status` is **PASS iff every hierarchy check passes AND the pass rate is

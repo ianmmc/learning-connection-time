@@ -139,6 +139,14 @@ TEACHER_LEVEL_SCOPES = [
     "teachers_secondary",
 ]
 
+# #1017: CCD counts a teacher as "elementary" by state and local practice (any grades up to 8), so in about
+# 22 jurisdictions the elementary numerator holds grade 6-8 teachers whose students sit in the 6-12
+# denominator. The level scopes are QUARANTINED — still computed, labelled wherever presented — until the
+# school-file band scopes replace them (docs/technical-notes/production-quality-control-research/
+# 2026-11-01-ccd-level-teacher-split.md).
+LEVEL_SPLIT_CAVEAT = "not comparable across states: the CCD level split follows state practice (#1017)"
+QUARANTINED_SCOPES = {scope: LEVEL_SPLIT_CAVEAT for scope in TEACHER_LEVEL_SCOPES}
+
 # SPED segmentation variants (January 2026)
 # core_sped: SPED teachers / SPED students (for audit/reconciliation)
 # teachers_gened: GenEd teachers / GenEd students
@@ -1217,9 +1225,10 @@ def generate_qa_report(
         for _, row in summary.iterrows()
     }
 
+    # Containment pairs only: each higher scope's staff is a superset of the lower's over the same K-12
+    # students. The level scopes are not (a band is not a superset of K-12), and the direction the old
+    # "Secondary < Overall" / "Teachers < Elementary" pairs expected was the #1017 artifact itself.
     hierarchy_pairs = [
-        ("teachers_secondary", "teachers_only", "Secondary < Overall Teachers"),
-        ("teachers_only", "teachers_elementary", "Teachers < Elementary"),
         ("teachers_only", "teachers_core", "Teachers < Core"),
         ("teachers_core", "instructional", "Core < Instructional"),
         ("instructional", "instructional_plus_support", "Instructional < Support"),
@@ -1305,6 +1314,7 @@ def generate_qa_report(
             for _, row in summary.iterrows()
         },
         "hierarchy_validation": hierarchy_checks,
+        "quarantined_scopes": dict(QUARANTINED_SCOPES),
         "state_coverage": {
             "states_with_data": states_with_data,
             "states": sorted(all_states),
@@ -1716,7 +1726,7 @@ def main(argv: Optional[Sequence[str]] = None):
     print("  instructional_plus_support: above + counselors + psych + support")
     print("  all:              All staff except Pre-K teachers")
     print()
-    print("TEACHER-LEVEL VARIANTS:")
+    print(f"TEACHER-LEVEL VARIANTS — QUARANTINED, {LEVEL_SPLIT_CAVEAT}:")
     print("  teachers_elementary: elem+kinder teachers / K-5 enrollment")
     print("  teachers_secondary:  secondary teachers / 6-12 enrollment")
     print()
@@ -1881,6 +1891,8 @@ def main(argv: Optional[Sequence[str]] = None):
                 continue
             row = row.iloc[0]
             print(f"{scope.upper()}:")
+            if scope in QUARANTINED_SCOPES:
+                print(f"  QUARANTINED — {QUARANTINED_SCOPES[scope]}")
             print(f"  Districts: {int(row['districts']):,}")
             print(f"  Mean LCT:  {row['mean']:.1f} minutes")
             print(f"  Median:   {row['median']:.1f} minutes")
@@ -1913,8 +1925,8 @@ def main(argv: Optional[Sequence[str]] = None):
             f.write("SCOPE DEFINITIONS:\n")
             f.write("-" * 40 + "\n")
             f.write("teachers_only:           K-12 teachers (elem+sec+kinder, NO ungraded)\n")
-            f.write("teachers_elementary:     Elementary+Kinder teachers / K-5 enrollment\n")
-            f.write("teachers_secondary:      Secondary teachers / 6-12 enrollment\n")
+            f.write("teachers_elementary:     Elementary+Kinder teachers / K-5 enrollment [QUARANTINED]\n")
+            f.write("teachers_secondary:      Secondary teachers / 6-12 enrollment [QUARANTINED]\n")
             f.write("core_sped:               SPED teachers / SPED enrollment (for audit)\n")
             f.write("teachers_gened:          GenEd teachers / GenEd enrollment\n")
             f.write("instructional_sped:      (SPED teachers+paras) / SPED enrollment\n")
@@ -1932,6 +1944,8 @@ def main(argv: Optional[Sequence[str]] = None):
                     continue
                 row = row.iloc[0]
                 f.write(f"\n{scope.upper()}:\n")
+                if scope in QUARANTINED_SCOPES:
+                    f.write(f"  QUARANTINED — {QUARANTINED_SCOPES[scope]}\n")
                 f.write(f"  Districts with valid LCT: {int(row['districts']):,}\n")
                 f.write(f"  Mean LCT:   {row['mean']:.1f} minutes\n")
                 f.write(f"  Median:    {row['median']:.1f} minutes\n")
@@ -1943,7 +1957,8 @@ def main(argv: Optional[Sequence[str]] = None):
             f.write("=" * 60 + "\n\n")
             f.write("- Higher LCT values indicate more theoretical one-on-one time\n")
             f.write("- 'teachers_only' is the most conservative K-12 measure\n")
-            f.write("- 'teachers_elementary' vs 'teachers_secondary' shows level differences\n")
+            f.write("- 'teachers_elementary' / 'teachers_secondary' do NOT show level differences across states:\n")
+            f.write(f"  {LEVEL_SPLIT_CAVEAT}\n")
             f.write("- 'instructional' is recommended for policy discussions\n")
             f.write("- 'all' shows maximum resource investment\n")
             f.write("- Compare across scopes to understand staffing mix impact\n")

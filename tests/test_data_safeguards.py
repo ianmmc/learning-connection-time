@@ -306,7 +306,7 @@ class TestQADashboard:
                 "ERR_VOLATILE": 2945,
             },
             "hierarchy_validation": {
-                "Secondary < Overall Teachers": {"passed": True},
+                "Teachers < Core": {"passed": True},
             },
             "state_coverage": {
                 "states_with_data": 55,
@@ -349,9 +349,7 @@ class TestQADashboard:
         """
         REQ-015: QA report lists all hierarchy checks with passed boolean.
 
-        Expected checks:
-        - Secondary < Overall Teachers
-        - Teachers < Elementary
+        Expected checks (containment pairs only; #1017 removed the level-scope pairs):
         - Teachers < Core
         - Core < Instructional
         - Instructional < Support
@@ -359,11 +357,6 @@ class TestQADashboard:
         """
         # Arrange - Sample hierarchy validation
         hierarchy_checks = {
-            "Secondary < Overall Teachers": {
-                "passed": True,
-                "lower": {"scope": "teachers_secondary", "mean": 22.49},
-                "higher": {"scope": "teachers_only", "mean": 26.88},
-            },
             "Teachers < Core": {
                 "passed": True,
                 "lower": {"scope": "teachers_only", "mean": 26.88},
@@ -548,8 +541,8 @@ def sample_qa_report():
             "WARN_SPED_RATIO_CAP": 8800,
         },
         "hierarchy_validation": {
-            "Secondary < Overall Teachers": {"passed": True},
             "Teachers < Core": {"passed": True},
+            "Core < Instructional": {"passed": True},
         },
         "state_coverage": {
             "states_with_data": 55,

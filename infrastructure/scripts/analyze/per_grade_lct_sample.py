@@ -40,6 +40,7 @@ from sqlalchemy import nullslast
 from infrastructure.database.connection import session_scope
 from infrastructure.database.models import District, DistrictGradeMinutes, LCTCalculation
 from infrastructure.scripts.analyze.calculate_lct_variants import (
+    QUARANTINED_SCOPES,
     calculate_lct,
     get_most_recent_enrollment,
     get_most_recent_staff,
@@ -153,6 +154,8 @@ def main(argv=None) -> int:
               f"{('%.2f' % r['per_grade_sec_lct']) if r['per_grade_sec_lct'] is not None else '—':>7}  "
               f"{str(r['source']):<17} {name}")
     print(f"\n{len(rows)} incorporated district(s). Review before recomputing lct_calculations.")
+    print(f"[!] teachers_secondary is QUARANTINED — {QUARANTINED_SCOPES['teachers_secondary']}. "
+          "Compare a district's legacy vs per-grade minutes, not its LCT against another state's.")
     if any(r.get("denom_refreshed") for r in rows):
         print("[!] denom refreshed = the stored 'legacy' row used older staff/enrollment than today's "
               "picks; part of that row's Δ is a data refresh, not the per-grade change.")

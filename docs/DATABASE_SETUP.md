@@ -269,7 +269,7 @@ Raw per-source staff FTE counts (wide format), tiered classroom → support → 
 | district_id | VARCHAR(10) | Foreign key to `districts(nces_id)` ON DELETE CASCADE |
 | source_year | VARCHAR(10) | School year |
 | data_source | VARCHAR(50) | Source (e.g., `nces_ccd`, `crdc`, a state SEA) |
-| teachers_total / teachers_elementary / teachers_secondary / … | NUMERIC(10,2) | Classroom teacher FTE by level |
+| teachers_total / teachers_elementary / teachers_secondary / … | NUMERIC(10,2) | Classroom teacher FTE by level. The elementary/secondary split follows STATE practice (any span up to grade 8 can be "elementary"), not fixed grades — #1017 |
 | instructional_coordinators / librarians / paraprofessionals / counselors_* / psychologists / … | NUMERIC(10,2) | Support & administrative staff FTE (~40 columns; see `models.py`) |
 
 #### **staff_counts_effective**
