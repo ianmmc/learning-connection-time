@@ -205,8 +205,11 @@ pipeline track (B) is unchanged from 08-26 (`docs/scratch-paper/2026-08-25-fresh
 `docs/technical-notes/production-quality-control-research/2026-10-31-idea-crdc-sped-baseline-refresh-plan.md`
 (findings, acceptance properties A1–A6). New files are on disk with sha256 in each `SOURCE.md`:
 `data/raw/federal/idea-618/{2023_24,2024_25}/`, `data/raw/federal/crdc/2023_24/` (gitignored).
-0. **Prerequisite DONE** — PR #1005 merged 2026-10-31. Consequence to expect: `merge_sea_precedence` now **fails loud on MA** (live
-   `ma_staff_data` is stamped `2025-26`, declared `2024-25`) until MA is re-imported — the guard working (#984).
+0. **Prerequisite DONE** — PR #1005 merged 2026-10-31. Its #984 guard held `merge_sea_precedence` on MA (rows stamped
+   `2025-26`, declared `2024-25`) until the **MA re-import of 2026-11-01**: the mislabelled rows were relabelled `2024-25`
+   (logged in `data_lineage`), the on-disk `2025-26/teacherdata.xlsx` imported as `2025-26`, and the merge run live —
+   `teachers_total` supplemented from the newer SEA year for MA (386) and VA (131); every `scope_*` field stays NCES, so
+   `lct_calculations` was unchanged (md5-verified). Dump: `data/backups/lct-preMA-20261101T011309Z.dump`.
 1. **#999** multi-vintage `sped_*_baseline` schema + `apply_sped_estimates --baseline-year` ‖ **#1000**
    IDEA vintage profiles ("Ages 6-21" → "School Age", which now includes kindergarten 5-year-olds; the
    hardened parsers correctly refuse both new files today).
