@@ -217,12 +217,11 @@ class TestScopeHierarchy:
         assert staff.scope_instructional <= staff.scope_instructional_plus_support
         assert staff.scope_instructional_plus_support <= staff.scope_all
 
-    def test_teachers_secondary_less_than_teachers_only(self):
+    def test_teachers_secondary_is_a_count_subset_of_teachers_k12(self):
         """
-        REQ-011: Secondary LCT typically higher (lower staff per student).
-
-        For districts with both elementary and secondary teachers,
-        teachers_secondary_6_12 < teachers_k12 (secondary is subset).
+        REQ-011: teachers_secondary_6_12 is a strict subset of teachers_k12 — a TEACHER-COUNT
+        containment, for a district with both levels. It says nothing about the direction of the
+        two level LCTs (the old "secondary LCT typically higher" reading was the #1017 artifact).
         """
         # Arrange
         staff = StaffCountsEffective()
@@ -421,7 +420,9 @@ class TestRegressionPrevention:
         assert counts.get("teachers_only", 0) >= 15000
         assert counts.get("teachers_elementary", 0) >= 14000
         assert counts.get("teachers_secondary", 0) >= 13000
-        # Elementary is available for more districts than secondary
+        # A ROW-AVAILABILITY fact, not an LCT ordering: K-8 districts have no secondary row (no 9-12
+        # students; and in the K-8-practice states they report 0 secondary teachers — #1017), so the
+        # elementary scope exists for more districts. The scope regression guard REQ-008 wants.
         assert counts.get("teachers_elementary", 0) >= counts.get("teachers_secondary", 0)
 
 

@@ -33,6 +33,7 @@ sys.path.insert(0, str(project_root))
 from mcp.server import Server
 from mcp.types import Tool, TextContent
 from infrastructure.database.connection import session_scope
+from infrastructure.utilities.lct_scopes import quarantine_caption
 from infrastructure.database.queries import (
     get_state_campaign_progress,
     get_lct_summary_by_scope,
@@ -70,7 +71,7 @@ async def handle_list_tools() -> list[Tool]:
                 "properties": {
                     "scope": {
                         "type": "string",
-                        "description": "LCT scope (teachers_only, teachers_elementary, teachers_secondary, teachers_core, instructional, instructional_plus_support, all)",
+                        "description": "LCT scope served here: teachers_only, teachers_core, instructional, instructional_plus_support, all. teachers_elementary / teachers_secondary are QUARANTINED (#1017: the CCD level split follows state practice) and return the caveat instead of statistics.",
                         "default": "teachers_only"
                     },
                     "year": {
@@ -183,13 +184,20 @@ async def _query_lct_summary(scope: str = "teachers_only", year: str = NCES_PRIM
     Get LCT statistics for a specific scope.
 
     Args:
-        scope: LCT scope (teachers_only, teachers_elementary, teachers_secondary,
-               teachers_core, instructional, instructional_plus_support, all)
+        scope: LCT scope (teachers_only, teachers_core, instructional, instructional_plus_support,
+               all). teachers_elementary / teachers_secondary are quarantined (#1017) and get the
+               caveat back, never statistics — get_lct_summary_by_scope does not serve them either.
         year: School year (e.g., "2023-24")
 
     Returns:
         Summary statistics: mean, median, std, min, max LCT values
     """
+    caveat = quarantine_caption(scope)
+    if caveat:
+        return TextContent(
+            type="text",
+            text=json.dumps({"scope": scope, "year": year, "quarantined": True, "caveat": caveat}, indent=2)
+        )
     try:
         with session_scope() as session:
             summary = get_lct_summary_by_scope(session, scope, year)

@@ -181,6 +181,20 @@ See **Bell Schedule Sampling Policy** (below) for the sampling methodology, and
 
 **Scope Calculation Formulas** (December 2025):
 
+> **QUARANTINED — `teachers_elementary` / `teachers_secondary` (#1017, 2026-11-01).** CCD/EDFacts FS059 counts
+> a teacher as "elementary" by **state and local practice**: any grade span not above grade 8. No federal
+> field, metadata question, or outside catalog records which grades each state uses. The level scopes divide
+> those counts by **fixed** K-5 / 6-12 enrollment. In about 22 jurisdictions (CA, IL, MA, OR, KS, IA, KY, SC,
+> SD, ND, ME, MT, RI, LA, AZ, NC, CT, NH, NE, NJ, BIE, PR), unified K-12 districts report 0.60–0.71 of their
+> teachers as elementary, which matches the K-8 enrollment share (≈0.67), not K-5 (≈0.44). There the
+> elementary numerator holds grade 6-8 teachers whose students sit in the 6-12 denominator: **elementary LCT is
+> inflated and secondary LCT deflated**. In OK and MO the split follows school type (K-8 schools are all
+> elementary). Both scopes are still computed, and are labelled *not comparable across states* wherever they
+> appear. They are to be replaced by band scopes derived from the CCD school files (each school's teachers
+> attributed to its own grades), then retired (REQ-190). `teachers_only` and every K-12 scope are unaffected:
+> the split cancels in a K-12 sum. Findings, research and the rejected correction plan:
+> `docs/technical-notes/production-quality-control-research/2026-11-01-ccd-level-teacher-split.md`.
+
 ```python
 # Teacher-level aggregates (NO Pre-K, NO ungraded)
 teachers_k12 = (teachers_elementary + teachers_secondary + teachers_kindergarten)
@@ -438,10 +452,16 @@ LCT = 104,975 minutes / 8,500 students
 | LCT-Instructional | enrollment_k12 > 0 | scope_instructional > 0 | K-12 only |
 | LCT-Support | enrollment_k12 > 0 | scope_support > 0 | K-12 only |
 | LCT-All | enrollment_k12 > 0 | scope_all > 0 | K-12 only |
-| LCT-Teachers-Elementary | enrollment_elementary > 0 | teachers_elementary_k5 > 0 | K-5 only |
-| LCT-Teachers-Secondary | enrollment_secondary > 0 | teachers_secondary_6_12 > 0 | 6-12 only |
+| LCT-Teachers-Elementary | enrollment_elementary > 0 | teachers_elementary_k5 > 0 | K-5 only; QUARANTINED (#1017) |
+| LCT-Teachers-Secondary | enrollment_secondary > 0 | teachers_secondary_6_12 > 0 | 6-12 only; QUARANTINED (#1017) |
 
 **Level-Based QA Validation**:
+
+These are consistency checks on the CCD split as reported; passing them does NOT make the two level scopes
+comparable across states (#1017, the quarantine block above). Every level-scope row is also calculated
+with `QUARANTINED_1017` at the head of `level_lct_notes` (stored as `lct_calculations.notes`, exported in
+the CSV/parquet `level_lct_notes` column — `infrastructure/utilities/lct_scopes.py`), so the caveat
+travels with the data; that token is not a QA note and is not counted in `districts_with_qa_notes`.
 
 For teacher-level variants (Elementary, Secondary), additional validation checks:
 - `Elementary teachers but no elementary enrollment`: Flag districts with K-5 teachers but zero K-5 students
@@ -503,13 +523,17 @@ Additional safeguards identify potential data quality issues that don't warrant 
 - Example: `lct_all_variants_2023_24_valid_20251228T012536Z.csv`
 - Benefits: Sortable, unambiguous timezone, enables version tracking
 
-**Results** (December 2025):
+**Results** (December 2025 — historical. The two level rows are QUARANTINED (#1017) and their 34.3 vs
+22.9 gap is mostly the CCD level-split artifact, measured 2024-25: the elementary median is **31.6** in the
+states whose practice counts grade 6-8 teachers as elementary and **26.2** where it does not; applying each
+district's K-12 pupil/teacher ratio to its own band minutes gives elementary **22.6** and secondary **24.8**,
+the OPPOSITE order of the table. Do not lift the level rows as a finding.):
 
 | Scope | Valid Districts | Mean LCT | Median LCT |
 |-------|-----------------|----------|------------|
 | teachers_only | 14,286 | 27.9 min | 25.2 min |
-| teachers_elementary | 13,090 | 34.3 min | 30.8 min |
-| teachers_secondary | 12,378 | 22.9 min | 20.1 min |
+| teachers_elementary — QUARANTINED #1017 | 13,090 | 34.3 min | 30.8 min |
+| teachers_secondary — QUARANTINED #1017 | 12,378 | 22.9 min | 20.1 min |
 | teachers_core | 14,305 | 29.5 min | 26.2 min |
 | instructional | 14,314 | 38.4 min | 34.2 min |
 | instructional_plus_support | 14,271 | 42.2 min | 37.9 min |
@@ -581,14 +605,15 @@ printed to console):
 ```
 QA DASHBOARD
 Status: PASS · Pass Rate: 99.46%
-Hierarchy Checks: ✓ Secondary < Overall Teachers  ✓ Teachers < Core  ✓ Core < Instructional
-                  ✓ Instructional < Support  ✓ Support < All
+Hierarchy Checks: ✓ Teachers < Core  ✓ Core < Instructional  ✓ Instructional < Support  ✓ Support < All
 Outliers Detected: 20
 ```
 
 **JSON report** (`data/enriched/lct-calculations/lct_qa_report_<year>_<timestamp>.json`) carries
 `metadata`, `data_quality` (total/valid/invalid/pass_rate), `scope_summary` (per-scope mean/median/min/max),
-`hierarchy_validation` (per-check pass/fail with the compared means), `state_coverage`, `outliers[]`
+`hierarchy_validation` (per-check pass/fail with the compared means; CONTAINMENT pairs only — the level scopes
+were removed from it by #1017, since a band is not a superset of K-12), `quarantined_scopes` (scope → caveat),
+`state_coverage`, `outliers[]`
 (district_id/name/scope/issue/severity), and `overall_status`.
 
 **Interpreting status:** `overall_status` is **PASS iff every hierarchy check passes AND the pass rate is

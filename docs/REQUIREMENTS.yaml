@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-10-31T23:00:00Z"
+last_updated: "2026-11-01T12:00:00Z"
 
 # STATUS VOCABULARY — normalized 2026-07-16, narrowed to FIVE 2026-08-21 (Ian). These are the whole
 # set; do not invent more. The pre-normalization file carried ad-hoc `in-progress` / `not_started` /
@@ -252,7 +252,7 @@ requirements:
       - tests/test_lct_scope_calculations.py::TestRegressionPrevention::test_scope_counts_match_expected_district_availability
     created: "2026-01-12T03:30:00Z"
     updated: "2026-01-12T04:30:00Z"
-    notes: "Regression: teachers_elementary and teachers_secondary disappeared on 2026-01-10 due to staff import not preserving teacher-level breakdowns"
+    notes: "Regression: teachers_elementary and teachers_secondary disappeared on 2026-01-10 due to staff import not preserving teacher-level breakdowns. 2026-11-01 (#1017): both are QUARANTINED — still computed (this REQ still holds), labelled not comparable across states wherever presented; REQ-190 governs their replacement."
 
   - id: REQ-009
     description: Preserve elementary and secondary teacher counts during staff import
@@ -303,14 +303,19 @@ requirements:
       - Mean LCT for teachers_core < instructional (instructional adds coordinators + paras)
       - Mean LCT for instructional < instructional_plus_support (adds counselors + support)
       - Mean LCT for instructional_plus_support < all (adds all other staff)
-      - Mean LCT for teachers_secondary < teachers_only (secondary typically higher SSR)
+      - "Teacher-count containment: teachers_secondary_6_12 < teachers_k12 for a district with both levels (a count subset, not an LCT ordering)"
+      - "The QA hierarchy compares CONTAINMENT pairs only; the level scopes (teachers_elementary / teachers_secondary) are never in it (#1017)"
       - QA report flags hierarchy violations
     tests:
       - tests/test_lct_scope_calculations.py::TestScopeHierarchy::test_scope_hierarchy_relationships
-      - tests/test_lct_scope_calculations.py::TestScopeHierarchy::test_teachers_secondary_less_than_teachers_only
+      - tests/test_lct_scope_calculations.py::TestScopeHierarchy::test_teachers_secondary_is_a_count_subset_of_teachers_k12
+      - tests/test_qa_overall_status.py::test_1017_level_scopes_never_gate_the_hierarchy
     created: "2026-01-12T03:30:00Z"
-    updated: "2026-01-12T03:30:00Z"
-    notes: "From QA_DASHBOARD.md hierarchy validation section"
+    updated: "2026-11-01T00:00:00Z"
+    notes: "From QA_DASHBOARD.md hierarchy validation section. AMENDED 2026-11-01 (#1017): the criterion
+      'Mean LCT for teachers_secondary < teachers_only' and the 'Teachers < Elementary' QA pair were
+      REMOVED. A level band is not a superset of K-12, and the expected direction was the CCD level-split
+      artifact itself (elementary numerator holds grade 6-8 teachers in ~22 jurisdictions). See REQ-190."
 
   - id: REQ-012
     description: Apply data safeguards with 7 validation flags
@@ -5319,3 +5324,41 @@ requirements:
       would precede the outcome-event commit, against REQ-164's commit-before-receipt ordering —
       #623 designs that alongside the captures.json rename it exists for. Design note:
       docs/technical-notes/production-quality-control-research/2026-08-24-issue670-loud-capture-timeout.md"
+
+  - id: REQ-190
+    github_issue: "#1017"
+    description: "A LEVEL SCOPE PAIRS ITS NUMERATOR AND DENOMINATOR BY ONE GRADE DEFINITION. A
+      band-level LCT (elementary / middle / high, or any grade subset of K-12) divides staff attributed to
+      exactly the grades its enrollment denominator counts and its minutes cover. A staff count whose grade
+      span is set by state or local practice (CCD/EDFacts FS059 'elementary' = any span up to grade 8)
+      cannot be a band numerator against a fixed-grade denominator. Until a scope meets this, it is
+      QUARANTINED: computed, but labelled not comparable across states wherever it is presented."
+    type: constraint
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - "Quarantine (phase 1, 2026-11-01): the caveat has ONE home (infrastructure/utilities/lct_scopes.py)
+        and every presenter labels through it — the LCT run report, console summary, QA JSON (per-scope
+        `caveat` + `quarantined_scopes`), the gate@8 sign-off preview (above the table, LCT columns marked)
+        and the postgres MCP server (returns the caveat, never statistics); the quarantined scopes are
+        excluded from the QA hierarchy (REQ-011) and the QA outlier list"
+      - "Durable marker: every level-scope row is calculated with QUARANTINE_TOKEN at the head of
+        level_lct_notes, so lct_calculations.notes and the CSV/parquet exports carry it WITHOUT consulting a
+        report; the token is not a district QA note (districts_with_qa_notes strips it). Rows already stored
+        carry it from the next recompute onward — stamping them is a live write and Ian's call"
+      - "Replacement (phase 2): band teacher scopes derived from the CCD SCHOOL files — each school's
+        teacher FTE attributed to its own grades — loaded verbatim with source sha256s, re-derived on
+        every CCD import, with a fast pre-commit drift check and a full pre-push re-derivation"
+      - "Retirement (phase 3): the LEA-split pair stops being computed once phase 2 validates; stored
+        rows stay readable"
+    tests:
+      - tests/test_level_scope_quarantine.py
+      - tests/test_qa_overall_status.py::test_1017_level_scopes_never_gate_the_hierarchy
+      - tests/test_qa_overall_status.py::test_1017_qa_report_names_the_quarantined_scopes
+    created: "2026-11-01T00:00:00Z"
+    updated: "2026-11-01T12:00:00Z"
+    notes: "Phase 1 is tested; status stays `accepted` until phases 2-3 (#1022, #1023) realize the rest of
+      the spec. PR #1024 review (#1025-#1032) hardened phase 1. Findings, research (no outside catalog of state practice exists: FS5018 metadata asks only
+      about ungraded teachers; NCES state notes log edits; CCSSO/NASBE/NCSL/ECS publish none) and the
+      rejected correction plan: docs/technical-notes/production-quality-control-research/
+      2026-11-01-ccd-level-teacher-split.md. Rerunnable measurement: the -measure.py beside it."

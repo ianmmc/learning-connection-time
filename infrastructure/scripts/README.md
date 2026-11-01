@@ -248,8 +248,6 @@ Status: PASS
 Pass Rate: 99.46%
 
 Hierarchy Checks:
-  ✓ Secondary < Overall Teachers
-  ✓ Teachers < Elementary
   ✓ Teachers < Core
   ✓ Core < Instructional
   ✓ Instructional < Support
