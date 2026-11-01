@@ -46,11 +46,14 @@ def test_empty_federal_selection_raises_instead_of_exiting_clean(stub):
         cmp.compare_all(_Session(), "2099-00")
 
 
-def test_alignment_needs_both_sea_vintages_to_match_the_federal_one_1012(stub, capsys):
+def test_alignment_needs_both_sea_vintages_to_match_the_federal_one_1012(stub, capsys, monkeypatch):
+    # The mixed pair MA carried until 2026-11-01 (2024-25 staff, 2025-26 enrollment), as a synthetic entry
     stub(federal_rows=True)
+    monkeypatch.setattr(cmp, "SEA_STATES", {"CA": {"year": "2024-25", "table": "ca_staff_data"},
+                                            "XX": {"year": "2024-25", "enroll_year": "2025-26", "table": "xx"}})
     results = {r["state"]: r for r in cmp.compare_all(_Session(), "2024-25")}
-    ma = results["MA"]
-    assert ma["sea_year"] == "2024-25" and ma["sea_enroll_year"] == "2025-26"
-    assert ma["vintage_aligned"] is False
+    xx = results["XX"]
+    assert xx["sea_year"] == "2024-25" and xx["sea_enroll_year"] == "2025-26"
+    assert xx["vintage_aligned"] is False
     assert "SEA 2024-25 (enrollment 2025-26) vs federal 2024-25" in capsys.readouterr().out
     assert results["CA"]["sea_enroll_year"] == "2024-25" and results["CA"]["vintage_aligned"] is True

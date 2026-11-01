@@ -41,9 +41,12 @@ from test_sea_integration_base import (
 # =============================================================================
 
 DESE_DATA_DIR = Path("data/raw/state/massachusetts")
+# AND, not OR (#1015 review): this class's fixtures read BOTH files via get_data_files() below — an OR
+# flips the skip gate to "run for real" the moment either one file shows up, even though load_enrollment_data
+# still needs the other. The enrollment CSV is not on disk as of 2026-11-01; the class stays skipped until it is.
 DESE_FILES_PRESENT = DESE_DATA_DIR.exists() and (
-    (DESE_DATA_DIR / "ma_enrollment_all_years.csv").exists() or
-    (DESE_DATA_DIR / "MA 2024-25 teacherdata.xlsx").exists()
+    (DESE_DATA_DIR / "ma_enrollment_all_years.csv").exists() and
+    (DESE_DATA_DIR / "2025-26" / "teacherdata.xlsx").exists()
 )
 
 pytestmark = [
@@ -129,7 +132,7 @@ class MassachusettsSEAConfig(SEAIntegrationTestBase):
         """Return paths to DESE data files."""
         return {
             "enrollment": DESE_DATA_DIR / "ma_enrollment_all_years.csv",
-            "staffing": DESE_DATA_DIR / "MA 2024-25 teacherdata.xlsx",
+            "staffing": DESE_DATA_DIR / "2025-26" / "teacherdata.xlsx",
         }
 
     def load_staff_data(self) -> pd.DataFrame:

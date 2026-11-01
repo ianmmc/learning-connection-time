@@ -572,7 +572,7 @@ SEA_STATES = {
     'CA': {'year': '2024-25', 'table': 'ca_staff_data'},
     'FL': {'year': '2024-25', 'table': 'fl_staff_data'},
     'IL': {'year': '2023-24', 'table': 'il_staff_data'},
-    'MA': {'year': '2024-25', 'enroll_year': '2025-26', 'table': 'ma_staff_data'},  # teacher file is 2024-25 (issue #23)
+    'MA': {'year': '2025-26', 'enroll_year': '2025-26', 'table': 'ma_staff_data'},  # 2025-26/teacherdata.xlsx (title row); the 2024-25 export was relabelled 2026-11-01 (#23, #984)
     'MI': {'year': '2023-24', 'table': 'mi_staff_data'},
     'NY': {'year': '2023-24', 'table': 'ny_staff_data'},
     'PA': {'year': '2024-25', 'table': 'pa_staff_data'},
