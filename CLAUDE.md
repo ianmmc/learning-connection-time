@@ -208,9 +208,9 @@ pipeline track (B) is unchanged from 08-26 (`docs/scratch-paper/2026-08-25-fresh
 `docs/technical-notes/production-quality-control-research/2026-11-01-ccd-level-teacher-split.md`
 (findings, research, the REJECTED correction plan and why, acceptance properties); rerun its numbers with
 `…/2026-11-01-ccd-level-teacher-split-measure.py [--school-files]`.
-1. **#1022 phase 2 — PLAN WRITTEN, awaiting Ian's calls D1–D7:**
+1. **#1022 phase 2 — PLAN WRITTEN, awaiting Ian's calls D1–D8** (D8 = SPED in the band scopes, T11 #1046):
    `docs/technical-notes/production-quality-control-research/2026-11-01-school-file-band-scopes-plan.md`
-   (verified findings, design, decisions with recommendations, roadmap T1–T10 as #1022's sub-issues,
+   (verified findings, design, decisions with recommendations, roadmap T1–T11 as #1022's sub-issues (#1035–#1044, #1046),
    acceptance A1–A7). **T1 (one grade→band map in `utilities/`), T2 (Deflate64 reader, `inflate64`) and
    T4 (migration 033) are NOT gated** and can start now. Key facts: per-GRADE attribution, not per-school
    (37% of schools span >1 band); the pre-push hook and DB-free tests forbid DB access, so the drift check

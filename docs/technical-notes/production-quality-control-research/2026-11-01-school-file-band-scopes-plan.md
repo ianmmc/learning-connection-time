@@ -1,6 +1,6 @@
 # School-file band teacher scopes — plan and roadmap (2026-11-01)
 
-**Status: PLAN — proposals below await Ian's calls (D1–D7); no code yet.** Phase 2 of #1017 (REQ-190),
+**Status: PLAN — proposals below await Ian's calls (D1–D8); no code yet.** Phase 2 of #1017 (REQ-190),
 tracked as #1022 under epic #724. Findings that motivate it: `2026-11-01-ccd-level-teacher-split.md`.
 Corrections, when they come, are appended as dated "Correction" bullets, never rewritten in place.
 
@@ -56,6 +56,44 @@ that produces them is stored in `lct_db`, visible and checkable line by line.
 | D6 | 2023-24 school files | Fetch 029/052/059 for 2023-24 | 356 districts' rows use 2023-24 staffing; without them those districts get no band row. |
 | D7 | Drift-check gating | Pre-commit runs the DB drift test when Docker is up and **blocks** on drift; warns (does not block) when Docker is down; pre-push stays DB-free | Matches both hooks' current policy; Ian asked for a local pre-commit check. |
 
+## Special education (added 2026-11-01, on Ian's question)
+
+The band scopes inherit the SPED skew `teachers_only` has. CCD school teacher FTE counts special
+education teachers, and membership counts students with disabilities. At school grain two effects show:
+
+- **Special Education Schools** (CCD `SCH_TYPE_TEXT`): 962 serve K-12 students. They hold 95,828 students
+  and 22,957 teachers, a PTR of **4.2** against 14.9 in regular schools. That is 0.9% of teachers
+  nationally, but concentrated in some districts. Per-grade attribution would pull those districts' band
+  PTRs down. Alternative and CTE schools hold another 1.1% and 0.8% of teachers.
+- **Self-contained SPED inside regular schools** has the same skew as `teachers_only`. Its share by band is
+  not measured yet, and if it differs by band it moves the band comparison.
+
+**What exists to correct it, at school grain** (CRDC 2023-24, on disk):
+
+- The school-level IDEA enrollment (`Enrollment.csv` `SCH_ENR_IDEA_M/F/X`) MEASURES SPED students per
+  school, rather than estimating them.
+- **There is no usable school-level SPED teacher count.** `School Support.csv` `SCH_FTETEACH_SPEDCERT` sums
+  to 509,135 FTE against the IDEA personnel baseline's 412,993 SPED teachers (2024-25). It counts teachers
+  *certified* in special education, not teachers *assigned* to it. SPED teachers per school would still be
+  estimated with the baseline ratio, the same proportionality assumption `teachers_gened` makes today,
+  applied at school grain.
+  *This reading is inferred from the totals, not from a definition.* No CRDC codebook is on disk
+  (`crdc/2023_24/metadata/` holds data only); Ian can obtain the codebooks, and T11 confirms the field
+  definition against the 2023-24 CRDC codebook before relying on it either way.
+
+**Proposal:**
+
+1. Phase 2 ships the three scopes as the all-teacher analogue of `teachers_only`, SPED included and
+   documented. That adds no new assumption and keeps A3's reconciliation to the LEA total.
+2. T4 stores `sch_type` so the effect can be measured.
+3. T9 reports band PTRs with and without Special Education Schools, plus the IDEA share by band from CRDC.
+4. GenEd band variants are a follow-up task (T11), gated on **D8**: whether to build them, and whether
+   Special Education Schools are excluded or estimated.
+
+| # | Question | Recommendation |
+|---|---|---|
+| D8 | SPED in the band scopes | Ship all-teacher band scopes first (the `teachers_only` analogue). Measure in T9. Decide GenEd band variants (CRDC school IDEA enrollment + the baseline teacher ratio) on T9's numbers. |
+
 ## Roadmap (each a sub-issue of #1022)
 
 | Task | What | Depends on | Gated on Ian |
@@ -70,6 +108,7 @@ that produces them is stored in `lct_db`, visible and checkable line by line.
 | T8 | Drift checks: DB-free sha-vs-manifest test; integration test (stored sha + SQL recompute + full re-derivation); pre-commit wiring | T5, T6 | D7 |
 | T9 | Read-only before/after measurement → **stop for Ian's adoption call** | T7, T8 | — |
 | T10 | Adopt: restore-verified `pg_dump`, scratch rehearsal, live migrations + import + recompute, row diff; METHODOLOGY / DATA_SOURCES / DATABASE_SETUP; REQ-190 | T9 + Ian | adoption |
+| T11 | GenEd band variants: CRDC 2023-24 school IDEA enrollment (measured) + the baseline SPED teacher ratio (estimated), at school grain; Special Education Schools per D8 | T10 | D8 |
 
 Then #1023 retires the LEA pair.
 
