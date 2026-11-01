@@ -90,7 +90,8 @@ outputs/*
 !outputs/analysis-reports/
 !outputs/datasets/
 !outputs/reports/
-!outputs/current-lct-calculations/
+# outputs/current-lct-calculations/ was retired 2026-11-01: a hand-copied 2023-24 snapshot that read as
+# "current" in audits. Current LCT lives in the lct_calculations table; run files in data/enriched/lct-calculations/.
 
 # Generated reports and visualizations (unless in docs)
 *.pdf
