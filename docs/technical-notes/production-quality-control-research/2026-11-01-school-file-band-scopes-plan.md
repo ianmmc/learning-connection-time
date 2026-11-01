@@ -77,9 +77,11 @@ education teachers, and membership counts students with disabilities. At school 
   *certified* in special education, not teachers *assigned* to it. SPED teachers per school would still be
   estimated with the baseline ratio, the same proportionality assumption `teachers_gened` makes today,
   applied at school grain.
-  *This reading is inferred from the totals, not from a definition.* No CRDC codebook is on disk
-  (`crdc/2023_24/metadata/` holds data only); Ian can obtain the codebooks, and T11 confirms the field
-  definition against the 2023-24 CRDC codebook before relying on it either way.
+  **Partly confirmed from the codebook (2026-11-01):** the CRDC 2023-24 Appendix Workbook's Data Dictionary
+  (in `~/Development/public-ed-data-navigator/data/raw/crdc/2023-24/`) files it as item STAF-2 under
+  "Teacher Certification in Specialized Areas" ("Number of FTE teachers—special education"), alongside the
+  math / science / ESL certification counts, so it is a certification count. T11 reads the STAF-2 question
+  wording before ruling it out entirely.
 
 **Proposal:**
 
