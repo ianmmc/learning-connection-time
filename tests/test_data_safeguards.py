@@ -460,25 +460,12 @@ class TestQADashboard:
         """
         REQ-015: Overall status is PASS or WARNING based on validation results.
 
-        PASS: All hierarchy checks pass and pass_rate >= 99%
-        WARNING: Some checks fail or pass_rate < 99%
+        PASS: All hierarchy checks pass and pass_rate >= 95% (#918). The behavioural pin that calls the
+        real generate_qa_report lives in tests/test_qa_overall_status.py.
         """
-        # Arrange - All checks pass
-        pass_rate = 99.34
-        hierarchy_all_pass = True
+        from infrastructure.scripts.analyze.calculate_lct_variants import QA_MIN_PASS_RATE
 
-        # Act
-        overall_status = "PASS" if (pass_rate >= 99 and hierarchy_all_pass) else "WARNING"
-
-        # Assert
-        assert overall_status == "PASS"
-
-        # Arrange - Low pass rate
-        pass_rate_low = 95.5
-        overall_status_warning = "PASS" if (pass_rate_low >= 99) else "WARNING"
-
-        # Assert
-        assert overall_status_warning == "WARNING"
+        assert QA_MIN_PASS_RATE == 95.0
 
 
 class TestSafeguardDefinitions:

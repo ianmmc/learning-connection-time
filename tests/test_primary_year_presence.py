@@ -10,7 +10,6 @@ feeds it the real distinct years — marker `integration`, excluded from the fas
 """
 
 import pytest
-from sqlalchemy import text
 
 from infrastructure.utilities.school_year import COVID_EXCLUDED_YEARS, NCES_PRIMARY_YEAR
 
@@ -62,7 +61,8 @@ class TestTheVerdictCanFail:
 @pytest.mark.parametrize("table,column", YEAR_KEYED, ids=[t for t, _ in YEAR_KEYED])
 def test_primary_year_is_present_and_is_the_newest(table, column):
     from infrastructure.database.connection import session_scope
+    from infrastructure.database.queries import distinct_years
 
     with session_scope() as s:
-        years = {y for (y,) in s.execute(text(f"SELECT DISTINCT {column} FROM {table}")) if y}
+        years = set(distinct_years(s, table, column))
     check_primary_year_presence(table, column, years)

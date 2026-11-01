@@ -92,11 +92,11 @@ def test_section_schema():
 
 
 def test_scanner_sees_the_known_baseline_literal():
-    """A measurement that cannot fail is not a verdict: the scanner must find the one 2017-18 baseline
-    literal that is KNOWN to be in the tree (SPED_BASELINE_YEAR), or it is not scanning."""
+    """A measurement that cannot fail is not a verdict: the scanner must find the one 2017-18 literal
+    that is KNOWN to be in the tree (BELL_VALIDITY_FLOOR_YEAR), or it is not scanning."""
     hits = _hits()
     assert any(f.endswith("utilities/school_year.py") and lit == "2017-18" for f, _, lit in hits), \
-        f"scanner did not find SPED_BASELINE_YEAR = '2017-18' in school_year.py — NOTHING MEASURED (hits={len(hits)})"
+        f"scanner did not find BELL_VALIDITY_FLOOR_YEAR = '2017-18' in school_year.py — NOTHING MEASURED (hits={len(hits)})"
 
 
 def test_scanner_sees_the_forms_the_regex_version_missed():

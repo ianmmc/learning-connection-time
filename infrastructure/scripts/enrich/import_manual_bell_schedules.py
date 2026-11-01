@@ -32,7 +32,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from infrastructure.database.connection import session_scope
 from infrastructure.database.models import BellSchedule, District
-from infrastructure.utilities.school_year import current_school_year
+from infrastructure.utilities.school_year import content_school_year
 from infrastructure.scripts.enrich.content_parser import ContentParser, BellScheduleData
 from sqlalchemy import text
 
@@ -417,6 +417,27 @@ def process_district_files(
     return all_schedules, source_files
 
 
+def schedule_year(schedule: BellScheduleData, source_files: List[str]) -> str:
+    """The school year to stamp on ONE schedule (#991, #1010): read from the document it was parsed from
+    (the per-file path records that file in schools_sampled), else from the district's files when they
+    agree on a year. More than one year across the candidates means the folder holds several vintages —
+    refuse to guess rather than stamp whichever file the directory listed first."""
+    own = [f for f in (schedule.schools_sampled or []) if f in source_files]
+    for candidates in (own, source_files):
+        years = sorted({y for y in (content_school_year(f) for f in candidates) if y})
+        if len(years) == 1:
+            return years[0]
+        if len(years) > 1:
+            raise ValueError(
+                f"the source files carry more than one school year {years} ({candidates[:3]}) - "
+                f"put each vintage in its own folder; refusing to guess"
+            )
+    raise ValueError(
+        f"no school year readable from the source file names {source_files[:3]}; "
+        f"name the files with their school year (e.g. 'bell_schedule_2025-26.pdf') - refusing to guess"
+    )
+
+
 def import_bell_schedule(
     session,
     nces_id: str,
@@ -437,7 +458,13 @@ def import_bell_schedule(
     Returns:
         True if successful
     """
-    year = current_school_year()  # manual collection targets the current year (July-1 rollover)
+    # The year is the DOCUMENTS' vintage, never the wall clock (REQ-054): a clock-derived year moves the
+    # (district, year, grade_level) dedupe key at every July-1 rollover and breaks the REQ-026 window (#991).
+    # Per schedule, from its own document (#1010): the first-listed file's year is directory order, not vintage.
+    try:
+        year = schedule_year(schedule, source_files)
+    except ValueError as e:
+        raise ValueError(f"{e} (district {nces_id})") from None
 
     # Check for existing schedule
     existing = session.query(BellSchedule).filter(

@@ -682,6 +682,10 @@ PLAUSIBLE_END_RANGE = (14 * 60, 17 * 60 + 30)    # 2:00 PM - 5:30 PM in minutes 
 # The ONE gross plausibility band (REQ-055 / issue #72): warn outside 240-510.
 # Hard error bounds stay the DB outer sanity band (100-600, chk_instructional_minutes).
 PLAUSIBLE_INSTRUCTIONAL_RANGE = (GROSS_MINUTES_MIN, GROSS_MINUTES_MAX)
+# Step-7 band between stated gross minutes and end - start: symmetric +/-15 min (Ian, #919). 15 is the
+# REQ-056 council-consensus tolerance (`tolerance_min` in common/config/council_configs.json); this layer
+# cannot import the acquisition config, so the value is restated here.
+DURATION_CROSSCHECK_TOLERANCE_MIN = 15
 
 
 def _time_to_minutes(time_str: str) -> Optional[int]:
@@ -795,17 +799,20 @@ def validate_schedule_plausibility(schedule: Dict) -> Dict:
     if start_minutes is not None and end_minutes is not None and stated_minutes is not None:
         calculated_duration = end_minutes - start_minutes
 
-        # Allow some variance for lunch/passing time (30-90 minutes typically)
-        max_expected = calculated_duration
-        min_expected = calculated_duration - 90  # Subtract max lunch/passing
+        # REQ-055: stated minutes are GROSS bell-to-bell, so they must equal end - start. No lunch/passing
+        # deduction is tolerated (#919); only +/-DURATION_CROSSCHECK_TOLERANCE_MIN of reporting slack.
+        lower_bound = calculated_duration - DURATION_CROSSCHECK_TOLERANCE_MIN
+        upper_bound = calculated_duration + DURATION_CROSSCHECK_TOLERANCE_MIN
 
-        if stated_minutes > max_expected:
+        if stated_minutes > upper_bound:
             errors.append(
-                f"Instructional minutes ({stated_minutes}) exceeds total duration ({calculated_duration} min)"
+                f"Instructional minutes ({stated_minutes}) exceeds total duration ({calculated_duration} min) "
+                f"by more than {DURATION_CROSSCHECK_TOLERANCE_MIN} min"
             )
-        elif stated_minutes < min_expected:
+        elif stated_minutes < lower_bound:
             warnings.append(
-                f"Instructional minutes ({stated_minutes}) unusually low for duration ({calculated_duration} min)"
+                f"Instructional minutes ({stated_minutes}) more than {DURATION_CROSSCHECK_TOLERANCE_MIN} min "
+                f"below gross duration ({calculated_duration} min)"
             )
 
     return {

@@ -26,6 +26,7 @@ project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from infrastructure.database.connection import session_scope
+from infrastructure.database.queries import distinct_years
 from infrastructure.utilities.data_guards import require_nonempty_selection
 from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
 from sqlalchemy import text
@@ -86,9 +87,9 @@ def update_fl_sped_estimates(session, year: str, dry_run: bool = False) -> Dict[
     # not carry would be paired with whatever vintage FL does carry and stamped as that year's actual.
     require_nonempty_selection(
         results, what=f"sped_estimates ⋈ fl_staff_data for year={year}",
-        available={
-            "sped_estimates": sorted(y for (y,) in session.execute(text("SELECT DISTINCT estimate_year FROM sped_estimates")) if y),
-            "fl_staff_data": sorted(y for (y,) in session.execute(text("SELECT DISTINCT year FROM fl_staff_data")) if y),
+        available=lambda: {
+            "sped_estimates": distinct_years(session, "sped_estimates", "estimate_year"),
+            "fl_staff_data": distinct_years(session, "fl_staff_data"),
         },
     )
 

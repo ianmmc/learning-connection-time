@@ -11,7 +11,9 @@ alike. Design + inventory: docs/technical-notes/production-quality-control-resea
 
 from __future__ import annotations
 
-from collections.abc import Collection, Iterable, Sized
+import math
+from collections.abc import Callable, Collection, Iterable, Sized
+from decimal import InvalidOperation
 from typing import NamedTuple
 
 
@@ -22,6 +24,11 @@ class DataGuardError(SystemExit):
     def __init__(self, message: str) -> None:
         super().__init__(f"DATA GUARD: {message}")
         self.message = message
+
+    def __reduce__(self):
+        # BaseException's default replays the already-prefixed args through __init__, which would
+        # prefix again on every pickle/copy round trip (#994).
+        return (type(self), (self.message,))
 
 
 class TotalReconciliation(NamedTuple):
@@ -57,7 +64,11 @@ def reconcile_total(
     (measured: dropping 'Grade 13' from the CCD mapping left the ratio at 0.99996 with 150 LEAs
     differing — #976), so the aggregate tolerance alone cannot see it.
     """
-    if reference_total is None or reference_total <= 0:
+    if reference_total is None:
+        raise DataGuardError(f"{label}: reference total is None; nothing to reconcile against")
+    component_sum = _finite(component_sum, label=label, what="component sum")
+    reference_total = _finite(reference_total, label=label, what="reference total")
+    if reference_total <= 0:
         raise DataGuardError(f"{label}: reference total is {reference_total!r}; nothing to reconcile against")
     if max_disagree is not None and n_disagree > max_disagree:
         raise DataGuardError(
@@ -83,6 +94,19 @@ def reconcile_total(
     return receipt
 
 
+def _finite(value: object, *, label: str, what: str) -> float:
+    """float(value), or a labelled guard failure. NaN fails `<= 0` and would fall through to round()
+    (ValueError) or, without it, PASS the tolerance check; inf overflows; pd.NA raises TypeError —
+    none of them may escape as anything an `except Exception` loader would swallow (#994)."""
+    try:
+        f = float(value)
+    except (TypeError, ValueError, InvalidOperation):
+        f = math.nan
+    if not math.isfinite(f):
+        raise DataGuardError(f"{label}: {what} is {value!r}, not a finite number")
+    return f
+
+
 def require_labels_seen(expected: Collection[str], seen: Iterable[str], *, label: str) -> None:
     """A category vocabulary the parser filters on must actually occur in the file. A member that is
     never seen is a spelling drift ('Separate School' vs 'Separate School, Age 6-21', #970) or a
@@ -96,9 +120,25 @@ def require_labels_seen(expected: Collection[str], seen: Iterable[str], *, label
         )
 
 
-def require_nonempty_selection(rows: Sized, *, what: str, available: object) -> None:
+def _resolve(available: object) -> object:
+    return available() if callable(available) else available
+
+
+def require_nonempty_selection(rows: Sized, *, what: str, available: object | Callable[[], object]) -> None:
     """A year-scoped (or otherwise keyed) selection that returns nothing is a wrong-key bug, not an
-    empty workload. `available` is whatever the caller can cheaply say about the keys the source DOES
-    carry (a list of years, a dict per table) — it goes in the message so the fix is one edit away."""
+    empty workload. `available` says which keys the source DOES carry (a list of years, a dict per
+    table) — it goes in the message so the fix is one edit away. Pass a CALLABLE when computing it
+    costs a query: it is evaluated only on failure (#995)."""
+    if not isinstance(rows, Sized):
+        raise TypeError(f"require_nonempty_selection({what}) needs a sized collection, got "
+                        f"{type(rows).__name__} — materialize it (list(...), .fetchall()) first")
     if len(rows) == 0:
-        raise DataGuardError(f"{what}: selection matched 0 rows; available: {available!r}")
+        raise DataGuardError(f"{what}: selection matched 0 rows; available: {_resolve(available)!r}")
+
+
+def require_year_carried(year: str, carried: Iterable[str] | Callable[[], Iterable[str]], *, what: str) -> None:
+    """The declared `year` must be one the source carries — the membership form of
+    require_nonempty_selection, so callers stop manufacturing a list to take its len() (#995)."""
+    years = sorted(y for y in _resolve(carried) if y)
+    if year not in years:
+        raise DataGuardError(f"{what}: carries no rows for year={year}; available: {years!r}")

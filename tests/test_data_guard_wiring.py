@@ -46,6 +46,9 @@ class FakeSession:
 
 
 # ----------------------------------------------------------------------------- import_sped_baseline
+from infrastructure.database.migrations.sped_baseline_profiles import PROFILE_2017_18, PROFILE_2024_25
+
+CC17, P17 = PROFILE_2017_18.child_count, PROFILE_2017_18.personnel
 HEADERS = ["Year", "State Name", "SEA Education Environment", "SEA Disability Category", "Age 3 to 5", "Ages 6-21"]
 
 
@@ -73,27 +76,27 @@ def _good_rows(state="Alabama"):
 class TestChildCountGuardsAreWired:
     def test_happy_path_parses(self):
         from infrastructure.database.migrations.import_sped_baseline import parse_child_count_rows
-        assert parse_child_count_rows(HEADERS, _good_rows(), "2017")["AL"]["ages_6_21"] == 1000
+        assert parse_child_count_rows(HEADERS, _good_rows(), CC17)["AL"]["school_age"]["6-21"] == 1000
 
     def test_970_shape_total_row_summed_in_fails_as_the_signature(self):
         """Revert #970 in data: a Total row that is the env sum ×2 → G1 reports 2.000× (the signature)."""
         from infrastructure.database.migrations.import_sped_baseline import parse_child_count_rows
         rows = [r for r in _good_rows() if r[2] != "Total, Age 6-21"] + [_row("Total, Age 6-21", "-", "500")]
         with pytest.raises(DataGuardError, match="2.000×.*#970"):
-            parse_child_count_rows(HEADERS, rows, "2017")
+            parse_child_count_rows(HEADERS, rows, CC17)
 
     def test_970_label_drift_fails_g2(self):
         """The file spells 'Separate School' bare (as #970's parser expected) → the parser's label is never seen."""
         from infrastructure.database.migrations.import_sped_baseline import parse_child_count_rows
         rows = [(_row("Separate School", "-", "50") if r[2] == "Separate School, Age 6-21" else r) for r in _good_rows()]
         with pytest.raises(DataGuardError, match=r"\['Separate School, Age 6-21'\]"):
-            parse_child_count_rows(HEADERS, rows, "2017")
+            parse_child_count_rows(HEADERS, rows, CC17)
 
     def test_975_missing_header_fails_instead_of_falling_back_to_an_index(self):
         from infrastructure.database.migrations.import_sped_baseline import parse_child_count_rows
         headers = HEADERS[:-1] + ["School Age"]   # the 2024-25 relabel
         with pytest.raises(DataGuardError, match=r"header row.*\['Ages 6-21'\]"):
-            parse_child_count_rows(headers, _good_rows(), "2017")
+            parse_child_count_rows(headers, _good_rows(), CC17)
 
     def test_975_header_row_is_found_by_content_not_preamble_length(self, tmp_path):
         """A 5-row preamble (the 2024-25 layout) and a 4-row one both parse to the same totals."""
@@ -106,28 +109,28 @@ class TestChildCountGuardsAreWired:
                     w.writerow([f"meta {i}", ""] + [""] * 4)
                 w.writerow(HEADERS)
                 w.writerows(_good_rows())
-            assert read_child_count_file(p, "2017")["AL"]["self_contained"] == 150
+            assert read_child_count_file(CC17, p)["AL"]["self_contained"]["6-21"] == 150
 
     def test_975_no_header_row_fails_loud(self, tmp_path):
         from infrastructure.database.migrations.import_sped_baseline import read_child_count_file
         p = tmp_path / "cc.csv"
         p.write_text("\n".join(["a,b"] * 30))
         with pytest.raises(DataGuardError, match="no header row"):
-            read_child_count_file(p, "2017")
+            read_child_count_file(CC17, p)
 
     def test_982_state_with_suppressed_total_fails_instead_of_parsing_to_zero(self):
         from infrastructure.database.migrations.import_sped_baseline import parse_child_count_rows
         rows = _good_rows() + [(_row("Total, Age 6-21", "-", "*", "California") if r[2] == "Total, Age 6-21" else
                                 _row(r[2], r[4], r[5], "California")) for r in _good_rows()]
         with pytest.raises(DataGuardError, match="CA.*nothing to reconcile"):
-            parse_child_count_rows(HEADERS, rows, "2017")
+            parse_child_count_rows(HEADERS, rows, CC17)
 
     def test_982_unclassified_environment_label_is_a_parse_error(self):
         from infrastructure.database.migrations.import_sped_baseline import parse_child_count_rows
         # an EXTRA school-age setting the parser has never heard of (all known labels still present)
         rows = _good_rows() + [_row("Inside regular class 80% or more of the day (School Age)", "-", "600")]
         with pytest.raises(DataGuardError, match="does not classify.*School Age"):
-            parse_child_count_rows(HEADERS, rows, "2017")
+            parse_child_count_rows(HEADERS, rows, CC17)
 
 
 PERSONNEL_HEADERS = ["Year", "State", "Personnel Type", "Teachers Fully Certified/Paraprofessionals Qualified",
@@ -139,20 +142,30 @@ class TestPersonnelGuardsAreWired:
         from infrastructure.database.migrations.import_sped_baseline import parse_personnel_rows
         rows = [["2017", "Alabama", "Special Education Teachers for Ages 6-21", "100", "10", "110"],
                 ["2017", "Alabama", "Special Education Paraprofessionals for Ages 6-21", "50", "5", "55"]]
-        out = parse_personnel_rows(PERSONNEL_HEADERS, rows, "2017")
+        out = parse_personnel_rows(PERSONNEL_HEADERS, rows, P17)
         assert out["AL"]["teachers_total"] == 110 and out["AL"]["paras_total"] == 55
 
     def test_relabelled_type_fails_g2(self):
-        """The 2023-24 personnel file says 'School Age' — must be a parse error, not zero teachers."""
+        """A 'School Age' file read through the 2017-18 profile must be a parse error, not zero teachers."""
         from infrastructure.database.migrations.import_sped_baseline import parse_personnel_rows
-        rows = [["2023", "Alabama", "Special Education Teachers for School Age", "100", "10", "110"]]
-        with pytest.raises(DataGuardError, match="personnel 2023 types"):
-            parse_personnel_rows(PERSONNEL_HEADERS, rows, "2023")
+        rows = [["2017", "Alabama", "Special Education Teachers for School Age", "100", "10", "110"]]
+        with pytest.raises(DataGuardError, match="personnel 2017 types"):
+            parse_personnel_rows(PERSONNEL_HEADERS, rows, P17)
+
+    def test_2023_24_profile_reads_school_age_types(self):
+        """#1000: the 2023-24 profile keys on 'School Age' and the '2023-2024' year cell."""
+        from infrastructure.database.migrations.import_sped_baseline import parse_personnel_rows
+        p24 = PROFILE_2024_25.personnel
+        rows = [["2023-2024", "Alabama", "Special Education Teachers for School Age", "100", "10", "110"],
+                ["2023-2024", "Alabama", "Special Education Paraprofessionals for School Age", "50", "5", "55"],
+                ["2023-2024", "Alabama", "Special Education Teachers for Early Childhood", "9", "9", "18"]]
+        out = parse_personnel_rows(PERSONNEL_HEADERS, rows, p24)
+        assert out["AL"]["teachers_total"] == 110 and out["AL"]["paras_total"] == 55
 
     def test_missing_header_fails(self):
         from infrastructure.database.migrations.import_sped_baseline import parse_personnel_rows
         with pytest.raises(DataGuardError, match="header row"):
-            parse_personnel_rows(["Year", "State", "Personnel Type", "a", "b", "c"], [], "2017")
+            parse_personnel_rows(["Year", "State", "Personnel Type", "a", "b", "c"], [], P17)
 
 
 # ----------------------------------------------------------------------------- import_staff_and_enrollment
@@ -212,7 +225,70 @@ class TestApplySpedEstimatesGuardsAreWired:
         monkeypatch.setattr(m, "select_year_totals", lambda session, year: [])
         monkeypatch.setattr(m, "available_years", lambda session: {"enrollment_by_grade": ["2024-25"]})
         with pytest.raises(DataGuardError, match="matched 0 rows.*2024-25"):
-            m.apply_estimates(None, "2019-20x", {}, {}, {}, {}, {}, {})
+            m.apply_estimates(None, "2019-20x", _ratios())
+
+    def test_993_zero_writes_fail_before_commit(self, monkeypatch):
+        """Selection non-empty, but every district misses the baseline proportions → refuse, no commit."""
+        import infrastructure.database.migrations.apply_sped_estimates as m
+        monkeypatch.setattr(m, "select_year_totals", lambda session, year: [
+            m.YearTotals(f"010000{i}", "ZZ", 1000, 50.0) for i in range(5)])
+        s = _EstimateSession()
+        with pytest.raises(DataGuardError, match="0 estimates written"):
+            m.apply_estimates(s, "2024-25", _ratios())
+        assert not s.committed and not s.added
+
+    def test_993_skip_share_over_the_cap_fails(self, monkeypatch):
+        import infrastructure.database.migrations.apply_sped_estimates as m
+        rows = [m.YearTotals("0100001", "AL", 1000, 50.0)] + [m.YearTotals(f"990000{i}", "ZZ", 1000, 50.0) for i in range(3)]
+        monkeypatch.setattr(m, "select_year_totals", lambda session, year: rows)
+        s = _EstimateSession()
+        with pytest.raises(DataGuardError, match="no SPED proportion.*cap 5%"):
+            m.apply_estimates(s, "2024-25", _ratios())
+        assert not s.committed
+
+    def test_993_empty_state_baseline_refuses_a_zero_national_average(self):
+        from infrastructure.database.migrations.apply_sped_estimates import ratios_from_rows
+        with pytest.raises(DataGuardError, match="national fallback would be 0.0"):
+            ratios_from_rows("2017-18", [], [])
+
+
+class TestApplyEstimatesReplacesTheYear:
+    def test_an_estimate_the_run_did_not_write_is_removed(self, monkeypatch):
+        """#974: a district that left the selection must not keep an estimate from another base."""
+        import infrastructure.database.migrations.apply_sped_estimates as m
+        monkeypatch.setattr(m, "select_year_totals", lambda session, year: [m.YearTotals("0100001", "AL", 1000, 50.0)])
+        stale = m.SpedEstimate(district_id="0199999", estimate_year="2024-25")
+        kept = m.SpedEstimate(district_id="0100001", estimate_year="2024-25")
+        s = _EstimateSession(existing=[stale, kept])
+        assert m.apply_estimates(s, "2024-25", _ratios()) == 1
+        assert s.deleted == [stale] and s.committed and kept.baseline_year == "2017-18"
+
+
+def _ratios():
+    from infrastructure.database.migrations.apply_sped_estimates import BaselineRatios
+    return BaselineRatios("2017-18", {"AL": 0.1}, {"AL": 0.3}, {"AL": 0.16},
+                          {"teacher_ratio": 0.1, "instructional_ratio": 0.3, "self_contained_ratio": 0.16},
+                          {"AL": 0.14}, {})
+
+
+class _EstimateSession:
+    def __init__(self, existing=()):
+        self.committed, self.added, self.deleted, self.existing = False, [], [], list(existing)
+
+    def query(self, *a):
+        return self
+
+    def filter(self, *a):
+        return self.existing
+
+    def add(self, obj):
+        self.added.append(obj)
+
+    def delete(self, obj):
+        self.deleted.append(obj)
+
+    def commit(self):
+        self.committed = True
 
 
 # ----------------------------------------------------------------------------- merge_sea_precedence
@@ -341,3 +417,40 @@ def test_987_project_imports_come_after_the_sys_path_shim(rel):
     first_project_import = min(n.lineno for n in tree.body if isinstance(n, ast.ImportFrom)
                                and (n.module or "").startswith("infrastructure"))
     assert shim < first_project_import, f"{rel}: project import at line {first_project_import} precedes the shim at {shim}"
+
+
+# ----------------------------------------------------------------------------- --sample is parse-only (#1008, #1011)
+def test_1008_sample_is_parse_only_and_never_reaches_save_to_database(monkeypatch):
+    from unittest.mock import MagicMock
+    from contextlib import contextmanager
+    import infrastructure.database.migrations.import_sped_baseline as isb
+    monkeypatch.setattr(isb, "verify_source", lambda src: None)
+    monkeypatch.setattr(isb, "import_idea_state_baseline", lambda p: {})
+    monkeypatch.setattr(isb, "import_crdc_enrollment", lambda p, sample_limit=None: {})
+    monkeypatch.setattr(isb, "import_ccd_enrollment", lambda p, d, sample_limit=None: {})
+    monkeypatch.setattr(isb, "reconcile_crdc_with_ccd", lambda p, d: None)
+    monkeypatch.setattr(isb, "attach_lea_environments", lambda p, d: None)
+    monkeypatch.setattr(isb, "print_summary", lambda s, l: None)
+    saved = MagicMock()
+    monkeypatch.setattr(isb, "save_to_database", saved)
+
+    @contextmanager
+    def scope():
+        yield MagicMock()
+    monkeypatch.setattr(isb, "session_scope", scope)
+
+    isb.main(["--sample", "5"])
+    saved.assert_not_called()          # save_to_database REPLACES the vintage: a sample must never reach it
+    isb.main([])
+    saved.assert_called_once()
+
+
+def test_1011_sample_skips_phase_5_rather_than_estimating_from_a_parse_only_baseline(monkeypatch):
+    from unittest.mock import MagicMock
+    import infrastructure.scripts.rebuild_database as rb
+    run = MagicMock(return_value=True)
+    monkeypatch.setattr(rb, "run_script", run)
+    assert rb.phase_5_sped_estimates(False, "2024-25", sample=100) is True
+    run.assert_not_called()
+    assert rb.phase_5_sped_estimates(False, "2024-25") is True
+    run.assert_called_once()

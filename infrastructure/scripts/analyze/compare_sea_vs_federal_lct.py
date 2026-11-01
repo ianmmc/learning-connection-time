@@ -21,7 +21,12 @@ State aggregate table with columns:
 - pct_diff: (diff_mean / federal_mean) * 100
 
 Usage:
-    python compare_sea_vs_federal_lct.py [--year 2023-24]
+    python compare_sea_vs_federal_lct.py [--year 2024-25]
+
+`--year` selects the FEDERAL (NCES CCD) vintage only. Each state's SEA data is always read at the vintage
+declared in `SEA_STATES` (sea_import_utils.py), so a state whose SEA vintage differs from `--year` is a
+cross-vintage pair: the output carries `sea_year`, `federal_year` and `vintage_aligned` per state and the
+console flags every mismatch. A `--year` with no federal rows at all exits non-zero (DataGuardError).
 """
 
 import argparse
@@ -43,18 +48,10 @@ from sqlalchemy import text
 # Default instructional minutes
 DEFAULT_MINUTES = 360
 
-# SEA states with data
-SEA_STATES = {
-    'CA': {'year': '2024-25', 'staff_table': 'ca_staff_data', 'enroll_table': 'ca_enrollment_data'},
-    'FL': {'year': '2024-25', 'staff_table': 'fl_staff_data', 'enroll_table': 'fl_enrollment_data'},
-    'IL': {'year': '2023-24', 'staff_table': 'il_staff_data', 'enroll_table': 'il_enrollment_data'},
-    'MA': {'year': '2025-26', 'staff_table': 'ma_staff_data', 'enroll_table': 'ma_enrollment_data'},
-    'MI': {'year': '2023-24', 'staff_table': 'mi_staff_data', 'enroll_table': 'mi_enrollment_data'},
-    'NY': {'year': '2023-24', 'staff_table': 'ny_staff_data', 'enroll_table': 'ny_enrollment_data'},
-    'PA': {'year': '2024-25', 'staff_table': 'pa_staff_data', 'enroll_table': 'pa_enrollment_data'},
-    'TX': {'year': '2024-25', 'staff_table': 'tx_staff_data', 'enroll_table': 'tx_enrollment_data'},
-    'VA': {'year': '2025-26', 'staff_table': 'va_staff_data', 'enroll_table': 'va_enrollment_data'},
-}
+# SEA states with data: the per-state vintage registry has ONE home (#990).
+from infrastructure.database.migrations.sea_import_utils import SEA_STATES  # noqa: E402
+from infrastructure.database.queries import distinct_years  # noqa: E402
+from infrastructure.utilities.data_guards import require_nonempty_selection  # noqa: E402
 
 
 def calculate_lct(minutes: float, staff: float, enrollment: float) -> float:
@@ -106,6 +103,8 @@ def get_sea_data(session, state: str, config: dict) -> pd.DataFrame:
     # data, making the comparison meaningless (issue #298). All *_staff_data /
     # *_enrollment_data tables carry a `year` column (verified 2026-07-20).
     yr = config['year']
+    # Staff and enrollment can be different vintages (MA: enrollment is published a year ahead of staffing).
+    enroll_yr = config.get('enroll_year', yr)
     if state == 'CA':
         staff_query = "SELECT nces_id, teachers_fte FROM ca_staff_data WHERE year = :year"
         enroll_query = "SELECT nces_id, total_k12 FROM ca_enrollment_data WHERE year = :year"
@@ -141,7 +140,7 @@ def get_sea_data(session, state: str, config: dict) -> pd.DataFrame:
     staff_data = {row[0]: row[1] for row in staff_result}
 
     # Get enrollment
-    enroll_result = session.execute(text(enroll_query), {"year": yr})
+    enroll_result = session.execute(text(enroll_query), {"year": enroll_yr})
     enroll_data = {row[0]: row[1] for row in enroll_result}
 
     # Merge
@@ -220,6 +219,50 @@ def compare_sources(federal_df: pd.DataFrame, sea_df: pd.DataFrame, state: str) 
     return comparison
 
 
+def compare_all(session, federal_year: str) -> List[Dict]:
+    """Compare every SEA state against the federal data of `federal_year`.
+
+    Each result carries the SEA and federal vintages and whether they match (#992): `--year` moves only the
+    federal side, so a mismatched pair is flagged rather than presented as a single-year comparison. An
+    empty federal selection across ALL states is a wrong `--year`, not an empty workload, and raises."""
+    results = []
+    federal_rows = 0
+    for state, config in SEA_STATES.items():
+        print(f"Processing {state}...")
+
+        federal_df = get_federal_data(session, state, federal_year)
+        federal_rows += len(federal_df)
+        print(f"  Federal: {len(federal_df)} districts")
+
+        sea_df = get_sea_data(session, state, config)
+        print(f"  SEA: {len(sea_df)} districts")
+
+        comparison = compare_sources(federal_df, sea_df, state)
+        if comparison:
+            # Both SEA vintages must match the federal one (#1012): MA reads 2024-25 staff against 2025-26
+            # enrollment, a mixed pair the staff year alone reported as aligned.
+            enroll_year = config.get('enroll_year', config['year'])
+            comparison['sea_year'] = config['year']
+            comparison['sea_enroll_year'] = enroll_year
+            comparison['federal_year'] = federal_year
+            comparison['vintage_aligned'] = config['year'] == federal_year == enroll_year
+            results.append(comparison)
+            print(f"  Compared: {comparison['districts_compared']} districts")
+            if not comparison['vintage_aligned']:
+                sea_label = config['year'] if enroll_year == config['year'] else \
+                    f"{config['year']} (enrollment {enroll_year})"
+                print(f"  WARNING: cross-vintage pair - SEA {sea_label} vs federal {federal_year}")
+        else:
+            print("  No overlapping data")
+
+    if federal_rows == 0:
+        # Only the empty case pays for the extra query.
+        require_nonempty_selection(
+            [], what=f"federal staff/enrollment rows for --year {federal_year}",
+            available=lambda: distinct_years(session, "staff_counts", "source_year"))
+    return results
+
+
 def main():
     parser = argparse.ArgumentParser(description="Compare SEA vs Federal LCT calculations")
     parser.add_argument("--year", default=NCES_PRIMARY_YEAR, help=f"NCES baseline year (default: NCES_PRIMARY_YEAR = {NCES_PRIMARY_YEAR})")
@@ -232,27 +275,8 @@ def main():
     print(f"Scopes: teachers_only, all")
     print()
 
-    results = []
-
     with session_scope() as session:
-        for state, config in SEA_STATES.items():
-            print(f"Processing {state}...")
-
-            # Get federal data
-            federal_df = get_federal_data(session, state, args.year)
-            print(f"  Federal: {len(federal_df)} districts")
-
-            # Get SEA data
-            sea_df = get_sea_data(session, state, config)
-            print(f"  SEA: {len(sea_df)} districts")
-
-            # Compare
-            comparison = compare_sources(federal_df, sea_df, state)
-            if comparison:
-                results.append(comparison)
-                print(f"  Compared: {comparison['districts_compared']} districts")
-            else:
-                print(f"  No overlapping data")
+        results = compare_all(session, args.year)
 
     # Create comparison dataframe
     if not results:
@@ -274,7 +298,9 @@ def main():
     print("=" * 70)
     print("COMPARISON SUMMARY")
     print("=" * 70)
-    print(comparison_df[['state', 'districts_compared', 'teachers_only_fed_mean', 'teachers_only_sea_mean', 'teachers_only_diff', 'teachers_only_pct_diff']].to_string(index=False))
+    if not comparison_df['vintage_aligned'].all():
+        print("NOTE: rows with vintage_aligned=False compare SEA data against a different federal vintage.")
+    print(comparison_df[['state', 'sea_year', 'federal_year', 'vintage_aligned', 'districts_compared', 'teachers_only_fed_mean', 'teachers_only_sea_mean', 'teachers_only_diff', 'teachers_only_pct_diff']].to_string(index=False))
     print()
     print(f"Saved to: {output_file}")
 

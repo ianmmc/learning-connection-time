@@ -279,8 +279,17 @@ learning-connection-time/
 ### Calculate LCT Metrics
 
 ```bash
-python3 infrastructure/scripts/analyze/calculate_lct_variants.py
+python3 infrastructure/scripts/analyze/calculate_lct_variants.py                       # FULL recompute
+python3 infrastructure/scripts/analyze/calculate_lct_variants.py --districts 0600153 3600049   # scoped
+python3 infrastructure/scripts/analyze/calculate_lct_variants.py --dry-run             # report only, no DB writes
 ```
+
+The full recompute rewrites all ~164k `lct_calculations` rows and takes a few minutes (~2:50 measured) — **run it
+backgrounded**: a foreground command window SIGTERMs at 2 minutes (exit 143, no traceback; that is a timeout, not a
+hang). After incorporating a handful of districts use `--districts <ids…>` instead (seconds; deletes and reinserts only
+those districts' rows, recorded as `run_type='scoped'`, its report covers the scope only). `--dry-run` computes and
+writes the report files but nothing to the database; scoped and dry-run output defaults to
+`data/enriched/lct-calculations/partial/` so it never sits beside the corpus-wide report (#628).
 
 ### Query Database
 

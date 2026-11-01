@@ -156,9 +156,19 @@ class TestBlendWindow:
     def test_covid_year_fails_the_window_outright(self):
         assert not SY.within_blend_window(["2022-23", "2023-24", "2024-25"])
 
-    def test_sped_baseline_exempt(self):
-        # 2017-18 rides along without breaking the window (REQ-026 exemption)
-        assert SY.within_blend_window(["2017-18", "2024-25", "2025-26"])
+    def test_sped_ratio_years_are_no_longer_exempt(self):
+        # #1003 (Ian, 2026-10-31): the SPED baseline's component years are windowed like any input —
+        # the 2017-18 set no longer rides along, the refreshed 2024-25 set fits
+        assert not SY.within_blend_window(["2017-18", "2024-25", "2025-26"])
+        assert SY.within_blend_window(["2023-24", "2024-25", "2025-26"])
+
+    def test_applied_sped_baseline_fits_the_primary_year(self):
+        assert SY.within_blend_window([SY.SPED_BASELINE_YEAR, SY.NCES_PRIMARY_YEAR])
+
+    def test_bell_validity_floor_did_not_move_with_the_sped_baseline(self):
+        # #241's Stage-5 hold floor keeps its 2017-18 value; it has its own constant since #1003
+        from infrastructure.utilities.school_year import BELL_VALIDITY_FLOOR_YEAR
+        assert BELL_VALIDITY_FLOOR_YEAR == "2017-18"
 
     def test_empty_and_none_years_ok(self):
         assert SY.within_blend_window([])

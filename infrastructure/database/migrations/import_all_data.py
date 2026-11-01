@@ -36,6 +36,7 @@ import yaml
 PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR  # noqa: E402 — after the shim (#987)
 from infrastructure.database.connection import get_engine, session_scope, get_table_counts
 from infrastructure.database.models import (
     District,

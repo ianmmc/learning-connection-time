@@ -34,7 +34,11 @@ CURRENT_SCHOOL_YEAR = current_school_year()  # derived at import; call current_s
 NCES_PRIMARY_YEAR = "2024-25"       # primary NCES CCD enrollment/staffing dataset — bump on INGEST
                                     # (a data event, not a calendar event), verified against
                                     # lct_calculations rows on the new year (CLAUDE.md Rule 6)
-SPED_BASELINE_YEAR = "2017-18"      # IDEA 618 / CRDC baseline — EXEMPT from the blend window
+SPED_BASELINE_YEAR = "2024-25"      # the IDEA 618 / CRDC baseline vintage APPLIED by apply_sped_estimates
+                                    # (#1003: the 2024-25 set — personnel 2023-24, child count 2024-25,
+                                    # CRDC + CCD 2023-24; its component years enter the blend window)
+BELL_VALIDITY_FLOOR_YEAR = "2017-18"  # #241 Stage-5 hold floor for bell documents; set at the old CRDC
+                                    # 2017-18 baseline and deliberately NOT moved with it (#1003)
 PRE_COVID_FALLBACK_YEAR = "2018-19" # preferred over any COVID year when nothing recent exists
 
 # Rule #2: never use COVID-era data (abnormal schedules).
@@ -53,8 +57,8 @@ ACCEPTABLE_BELL_YEARS = tuple(
 # Data blended for one calculation may span at most THREE CONSECUTIVE school years:
 # {2023-24, 2024-25, 2025-26} is acceptable; {2022-23, ..., 2025-26} is not. Expressed as the
 # max difference between start years: span <= 2. (COVID exclusion applies FIRST — a COVID year
-# is never admitted for the window to even consider. The SPED baseline year is exempt: it is a
-# ratio proxy, not blended data.)
+# is never admitted for the window to even consider.) The SPED ratio vintages are NOT exempt (#1003,
+# Ian 2026-10-31): the baseline's component years ride on each SPED row and are windowed like any input.
 MAX_BLEND_SPAN = 2
 
 # --- Daily-minutes plausibility (REQ-055) ------------------------------------------------------
@@ -102,7 +106,7 @@ def within_blend_window(years) -> bool:
     """True when the non-exempt years used by one calculation fit the 3-consecutive-year window.
     COVID years are invalid input here, not merely out-of-window — reject them upstream via
     is_acceptable_data_year(); this function treats their presence as a window failure too."""
-    considered = [y for y in years if y and y != SPED_BASELINE_YEAR]
+    considered = [y for y in years if y]
     if not considered:
         return True
     if any(is_covid_year(y) for y in considered):

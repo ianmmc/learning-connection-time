@@ -17,14 +17,14 @@ SPED Segmentation Variants (January 2026):
 - LCT-Core-SPED: estimated SPED teachers / estimated SPED enrollment (for audit)
 - LCT-Teachers-GenEd: estimated GenEd teachers / estimated GenEd enrollment
 - LCT-Instructional-SPED: (SPED teachers + paras) / estimated SPED enrollment
-  (Uses 2017-18 baseline ratios from IDEA 618 + CRDC to estimate SPED/GenEd split)
+  (Uses the applied IDEA 618 + CRDC baseline ratios — SPED_BASELINE_YEAR — to estimate the SPED/GenEd split)
 
 State-Specific Data Integration (January 2026):
 - California: Uses actual SPED self-contained enrollment from CA CDE when available
-  - DATA PRECEDENCE: CA actual (2023-24) > Federal estimate (2017-18)
+  - DATA PRECEDENCE: CA actual (2023-24) > Federal estimate (the applied baseline)
   - Applies to 990 CA districts with actual SPED environment data
   - Note: Requires CA staff data in NCES (currently unavailable for 2023-24)
-  - Teacher estimates still use 2017-18 federal ratios
+  - Teacher estimates still use the federal baseline ratios
 
 Key Decisions (December 2025):
 - ALL scopes use K-12 enrollment (exclude Pre-K)
@@ -39,15 +39,28 @@ Usage:
     # Target year mode: Enrollment anchored to target year, staff/bell blended
     python calculate_lct_variants.py --target-year 2023-24 [--output-dir path]
 
+    # Scoped recompute (#628): recompute + rewrite ONLY these districts' rows (seconds, not minutes)
+    python calculate_lct_variants.py --districts 0600153 3600049
+
+    # Dry run (#628): compute + emit the report/CSVs, write NOTHING to the database
+    python calculate_lct_variants.py --dry-run [--districts ...]
+
+The FULL recompute (no --districts) rewrites the whole lct_calculations table (~17k districts, ~164k
+rows) and takes a few minutes: run it BACKGROUNDED, never in a foreground command window that
+SIGTERMs at 2 minutes (exit 143, no traceback — that is a timeout, not a hang).
+
 Reference: docs/METHODOLOGY.md (scope definitions, minutes-source cascade, SPED segmentation)
 """
 
 import argparse
 import json
+import math
+import re
 import sys
+from decimal import ROUND_HALF_UP, Decimal
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Iterable, Sequence
 
 import pandas as pd
 
@@ -73,6 +86,8 @@ def get_utc_timestamp() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
+from sqlalchemy import text
+
 from infrastructure.database.connection import session_scope, get_engine
 from infrastructure.utilities.frames import db_records
 from infrastructure.database.school_year import (
@@ -91,6 +106,8 @@ from infrastructure.database.models import (
     CalculationRun,
     CalculationMode,
     SpedEstimate,
+    SpedLeaBaseline,
+    SpedStateBaseline,
     CASpedDistrictEnvironments,
     LCTCalculation,
 )
@@ -105,6 +122,9 @@ from infrastructure.scripts.analyze.per_grade_lct import (
 
 
 # LCT scope definitions - base scopes
+# QA dashboard: minimum valid_calculations/total_calculations (%) for overall_status PASS (#918).
+QA_MIN_PASS_RATE = 95.0
+
 BASE_SCOPES = [
     "teachers_only",
     "teachers_core",
@@ -406,6 +426,33 @@ def get_most_recent_sped(session, target_year: Optional[str] = None) -> Dict[str
     return {s.district_id: (s, s.estimate_year) for s in sped_estimates}
 
 
+def sped_scope_minutes(session, state: str, base: tuple, blend_years: Sequence[Optional[str]]) -> tuple:
+    """The (minutes, source, year) triple the SPED scopes use (#1009). `base` is the K-12 triple the base
+    scopes use, already windowed against staff/enrollment. The SPED scopes blend more years — the estimate
+    year and the baseline's component years (component_years.sped_ratio, which migration 030 windows) —
+    so a bell year the base scopes may keep can still put a SPED row out of the REQ-026 window. That was
+    written invalid (ERR_SPAN_EXCEEDED) rather than prevented; prevent it here, the same way: fall back to
+    the statutory high-band value, whose year is None and so cannot widen the span."""
+    _minutes, _source, year = base
+    if year and not within_blend_window([year, *blend_years]):
+        return get_statutory_minutes(session, state, "high")
+    return base
+
+
+def get_sped_ratio_years(session) -> Dict[str, List[str]]:
+    """{baseline_year: sorted component data years} — the IDEA personnel / child count and CRDC / CCD
+    years each SPED baseline vintage was built from (#999). They ride on every SPED row
+    (component_years.sped_ratio) and enter the REQ-026 window like any other input (#1003)."""
+    out: Dict[str, set] = {}
+    for b, *years in session.query(SpedStateBaseline.baseline_year, SpedStateBaseline.personnel_year,
+                                   SpedStateBaseline.child_count_year).distinct():
+        out.setdefault(b, set()).update(y for y in years if y)
+    for b, *years in session.query(SpedLeaBaseline.baseline_year, SpedLeaBaseline.crdc_year,
+                                   SpedLeaBaseline.ccd_year, SpedLeaBaseline.idea_lea_year).distinct():
+        out.setdefault(b, set()).update(y for y in years if y)
+    return {b: sorted(v) for b, v in out.items()}
+
+
 def get_most_recent_ca_sped(session, target_year: Optional[str] = None) -> Dict[str, Any]:
     """
     Get CA actual SPED data, preferring target_year if specified, else most recent.
@@ -466,10 +513,48 @@ def calculate_year_span(years: List[str]) -> int:
     return max(numeric_years) - min(numeric_years)
 
 
+_DISTRICT_ID_RE = re.compile(r"[A-Za-z0-9]{1,10}")  # districts.nces_id is VARCHAR(10); NCES ids are 7 digits
+
+
+def parse_district_ids(raw: Iterable[str]) -> List[str]:
+    """`--districts` values -> a de-duplicated id list (first-seen order). Space- and comma-separated
+    forms are equivalent. An empty list is an error, never a silent fall-through to a FULL run."""
+    ids: List[str] = []
+    for token in raw:
+        for part in token.split(","):
+            part = part.strip()
+            if not part:
+                continue
+            if not _DISTRICT_ID_RE.fullmatch(part):
+                raise ValueError(f"{part!r} is not a valid district id")
+            if part not in ids:
+                ids.append(part)
+    if not ids:
+        raise ValueError("--districts needs at least one district id")
+    return ids
+
+
+def scope_staff_records(
+    staff_with_years: Dict[str, Any],
+    shared_service_ids: set,
+    district_ids: Optional[Sequence[str]] = None,
+) -> List[Any]:
+    """The staff records a run computes: every district except shared-service entities, narrowed to
+    `district_ids` when a scoped run (#628) names some. The scope is applied HERE, to the SAME list a full
+    run iterates, so a scoped district goes through byte-for-byte the same per-district code — it can only
+    ever get the rows a full run gives it (a shared-service id yields none, exactly as in a full run)."""
+    wanted = None if district_ids is None else set(district_ids)
+    return [
+        r for did, (r, _) in staff_with_years.items()
+        if did not in shared_service_ids and (wanted is None or did in wanted)
+    ]
+
+
 def calculate_all_variants(
     session,
     calculation_mode: CalculationMode = CalculationMode.BLENDED,
-    target_year: Optional[str] = None
+    target_year: Optional[str] = None,
+    district_ids: Optional[Sequence[str]] = None,
 ) -> tuple[pd.DataFrame, str, str]:
     """
     Calculate all LCT variants for all districts with staff data.
@@ -478,6 +563,9 @@ def calculate_all_variants(
         session: Database session
         calculation_mode: BLENDED or TARGET_YEAR
         target_year: Required for TARGET_YEAR mode, optional for BLENDED
+        district_ids: Scoped recompute (#628) — compute only these districts (None = all). Every
+            per-district value depends on that district's own rows only, so the scoped result equals
+            the full result restricted to these districts.
 
     Returns:
         Tuple of (DataFrame with LCT calculations, data_year_min, data_year_max)
@@ -507,11 +595,12 @@ def calculate_all_variants(
             District.is_shared_service_entity == True
         ).all()
     }
-    staff_records = [
-        r for district_id, (r, _) in staff_with_years.items()
-        if district_id not in shared_service_ids
-    ]
-    print(f"  Found {len(staff_records):,} districts with staff data (excluding shared service entities)")
+    staff_records = scope_staff_records(staff_with_years, shared_service_ids, district_ids)
+    if district_ids is None:
+        print(f"  Found {len(staff_records):,} districts with staff data (excluding shared service entities)")
+    else:
+        print(f"  Scoped to {len(district_ids):,} requested districts: "
+              f"{len(staff_records):,} have staff data (excluding shared service entities)")
 
     # Get enrollment (mode-aware)
     enrollment_with_years = get_most_recent_enrollment(
@@ -527,6 +616,7 @@ def calculate_all_variants(
     sped_map = {k: v[0] for k, v in sped_with_years.items()}
     sped_years = {k: v[1] for k, v in sped_with_years.items()}
     print(f"  Found {len(sped_map):,} districts with SPED estimates")
+    sped_ratio_years = get_sped_ratio_years(session)
 
     # Get CA actual SPED data (mode-aware - can blend in both modes)
     ca_sped_with_years = get_most_recent_ca_sped(session, target_year)
@@ -757,6 +847,19 @@ def calculate_all_variants(
         enrollment_source = None
         enrollment_confidence = None
 
+        # The baseline vintage the estimate was built from, and that vintage's component years (#1003)
+        sped_baseline = sped_estimate.baseline_year if sped_estimate else None
+        sped_source = f"sped_estimate_{sped_baseline}"
+        ratio_years = sped_ratio_years.get(sped_baseline, []) if sped_baseline else []
+        sped_component_years = {"sped_ratio": ratio_years} if ratio_years else None
+        # #1009: the SPED scopes blend MORE years than the base scopes (the estimate year + ratio_years,
+        # which migration 030 windows), so a bell year the base scopes keep can still put a SPED row out
+        # of the REQ-026 window. Prevent it at read time, as above for staff/enrollment.
+        sped_est_year = sped_years.get(staff.district_id, SPED_BASELINE_YEAR) if sped_estimate else None
+        sped_minutes, sped_minutes_source, sped_minutes_year = sped_scope_minutes(
+            session, district.state, (minutes, minutes_source, minutes_year),
+            [staff.effective_year, _enroll_yr, sped_est_year, *ratio_years])
+
         if ca_actual and ca_actual.confidence != "low":
             # Use CA actual self-contained SPED enrollment (2023-24 or later)
             sped_enrollment = ca_actual.sped_self_contained
@@ -767,18 +870,18 @@ def calculate_all_variants(
             enrollment_confidence = ca_actual.confidence
             all_years_used.add(ca_sped_year)
         elif sped_estimate and sped_estimate.confidence != "low":
-            # Fallback to Federal estimate (2017-18 baseline)
+            # Fallback to the federal estimate (the applied IDEA 618 / CRDC baseline)
             sped_enrollment = sped_estimate.estimated_self_contained_sped
             gened_enrollment = sped_estimate.estimated_gened_enrollment
-            enrollment_source = "sped_estimate_2017-18"
+            enrollment_source = sped_source
             enrollment_confidence = sped_estimate.confidence
 
-        # Teacher estimates: Always use 2017-18 federal ratios (we don't have CA actual teacher splits)
+        # Teacher estimates: always the federal baseline ratios (we don't have CA actual teacher splits)
         # When CA actual enrollment is paired with federal teacher ratios, the numerator and
         # denominator come from different SPED splits — flag it so the mismatch is visible in
         # QA output instead of silent (issue #419).
         mixed_sources_note = (
-            "; WARN_MIXED_SPED_SOURCES: CA actual enrollment paired with 2017-18 federal teacher ratios"
+            f"; WARN_MIXED_SPED_SOURCES: CA actual enrollment paired with {sped_baseline} federal teacher ratios"
             if enrollment_source and enrollment_source.startswith("ca_actual") else ""
         )
         if sped_estimate and sped_estimate.confidence != "low":
@@ -788,7 +891,7 @@ def calculate_all_variants(
 
             # LCT-Core-SPED: teachers only (for audit/reconciliation with teachers_gened)
             if sped_teachers and sped_teachers > 0 and sped_enrollment and sped_enrollment > 0:
-                lct_core_sped = calculate_lct(minutes, sped_teachers, sped_enrollment)
+                lct_core_sped = calculate_lct(sped_minutes, sped_teachers, sped_enrollment)
                 # Cap at 360 but flag if it would exceed (high SPED teacher ratio)
                 sped_capped = False
                 if lct_core_sped is not None and lct_core_sped > 360:
@@ -801,17 +904,19 @@ def calculate_all_variants(
                         core_sped_notes += "; WARN_SPED_RATIO_CAP: LCT capped at 360 (high teacher-to-student ratio)"
                     sped_year = sped_years.get(staff.district_id, SPED_BASELINE_YEAR)
                     all_years_used.add(sped_year)
+                    all_years_used.update(ratio_years)
                     results.append({
                         "district_id": staff.district_id,
                         "district_name": district.name,
                         "state": district.state,
                         "staff_scope": "core_sped",
                         "lct_value": lct_core_sped,
-                        "instructional_minutes": minutes,
-                        "instructional_minutes_source": minutes_source,
-                        "instructional_minutes_year": minutes_year,
+                        "instructional_minutes": sped_minutes,
+                        "instructional_minutes_source": sped_minutes_source,
+                        "instructional_minutes_year": sped_minutes_year,
                         "staff_count": sped_teachers,
-                        "staff_source": "sped_estimate_2017-18",
+                        "staff_source": sped_source,
+                        "component_years": sped_component_years,
                         "staff_year": sped_year,
                         "enrollment": sped_enrollment,
                         "enrollment_type": "self_contained_sped",
@@ -822,7 +927,7 @@ def calculate_all_variants(
 
             # LCT-Teachers-GenEd
             if gened_teachers and gened_teachers > 0 and gened_enrollment and gened_enrollment > 0:
-                lct_gened = calculate_lct(minutes, gened_teachers, gened_enrollment)
+                lct_gened = calculate_lct(sped_minutes, gened_teachers, gened_enrollment)
                 # Cap-and-flag, symmetric with the SPED scopes (issue #67 — rows > 360 were
                 # silently DROPPED here while SPED rows were capped with a WARN)
                 gened_capped = False
@@ -832,17 +937,19 @@ def calculate_all_variants(
                 if lct_gened is not None and lct_gened <= 360:
                     gened_sped_year = sped_years.get(staff.district_id, SPED_BASELINE_YEAR)
                     all_years_used.add(gened_sped_year)
+                    all_years_used.update(ratio_years)
                     results.append({
                         "district_id": staff.district_id,
                         "district_name": district.name,
                         "state": district.state,
                         "staff_scope": "teachers_gened",
                         "lct_value": lct_gened,
-                        "instructional_minutes": minutes,
-                        "instructional_minutes_source": minutes_source,
-                        "instructional_minutes_year": minutes_year,
+                        "instructional_minutes": sped_minutes,
+                        "instructional_minutes_source": sped_minutes_source,
+                        "instructional_minutes_year": sped_minutes_year,
                         "staff_count": gened_teachers,
-                        "staff_source": "sped_estimate_2017-18",
+                        "staff_source": sped_source,
+                        "component_years": sped_component_years,
                         "staff_year": gened_sped_year,
                         "enrollment": gened_enrollment,
                         "enrollment_type": "gened",
@@ -854,7 +961,7 @@ def calculate_all_variants(
 
             # LCT-Instructional-SPED: teachers + paras (fuller picture of SPED support)
             if sped_instructional and sped_instructional > 0 and sped_enrollment and sped_enrollment > 0:
-                lct_instr_sped = calculate_lct(minutes, sped_instructional, sped_enrollment)
+                lct_instr_sped = calculate_lct(sped_minutes, sped_instructional, sped_enrollment)
                 # Cap at 360 but flag if it would exceed (high SPED instructional ratio)
                 instr_sped_capped = False
                 if lct_instr_sped is not None and lct_instr_sped > 360:
@@ -867,17 +974,19 @@ def calculate_all_variants(
                         instr_sped_notes += "; WARN_SPED_RATIO_CAP: LCT capped at 360 (high instructional-to-student ratio)"
                     instr_sped_year = sped_years.get(staff.district_id, SPED_BASELINE_YEAR)
                     all_years_used.add(instr_sped_year)
+                    all_years_used.update(ratio_years)
                     results.append({
                         "district_id": staff.district_id,
                         "district_name": district.name,
                         "state": district.state,
                         "staff_scope": "instructional_sped",
                         "lct_value": lct_instr_sped,
-                        "instructional_minutes": minutes,
-                        "instructional_minutes_source": minutes_source,
-                        "instructional_minutes_year": minutes_year,
+                        "instructional_minutes": sped_minutes,
+                        "instructional_minutes_source": sped_minutes_source,
+                        "instructional_minutes_year": sped_minutes_year,
                         "staff_count": sped_instructional,
-                        "staff_source": "sped_estimate_2017-18",
+                        "staff_source": sped_source,
+                        "component_years": sped_component_years,
                         "staff_year": instr_sped_year,
                         "enrollment": sped_enrollment,
                         "enrollment_type": "self_contained_sped",
@@ -1095,6 +1204,7 @@ def generate_qa_report(
     total_calculations = len(df)
     valid_calculations = len(valid_df)
     invalid_calculations = total_calculations - valid_calculations
+    pass_rate = round(valid_calculations / total_calculations * 100, 2) if total_calculations > 0 else 0
 
     # Districts with QA notes
     qa_notes_df = df[df['level_lct_notes'] != '']
@@ -1171,7 +1281,7 @@ def generate_qa_report(
             "total_calculations": total_calculations,
             "valid_calculations": valid_calculations,
             "invalid_calculations": invalid_calculations,
-            "pass_rate": round(valid_calculations / total_calculations * 100, 2) if total_calculations > 0 else 0,
+            "pass_rate": pass_rate,
             "districts_with_qa_notes": districts_with_notes,
         },
         "safeguards": safeguard_counts or {},
@@ -1200,8 +1310,10 @@ def generate_qa_report(
             "states": sorted(all_states),
         },
         "outliers": outliers[:20],  # Limit to 20 outliers
-        "overall_status": "PASS" if all(
-            check.get("passed", True) for check in hierarchy_checks.values()
+        # #918: PASS needs BOTH a clean hierarchy and pass_rate >= QA_MIN_PASS_RATE (docs/METHODOLOGY.md).
+        "overall_status": "PASS" if (
+            pass_rate >= QA_MIN_PASS_RATE
+            and all(check.get("passed", True) for check in hierarchy_checks.values())
         ) else "WARNING",
     }
 
@@ -1222,8 +1334,32 @@ def save_parquet(df: pd.DataFrame, filepath: Path) -> bool:
         return False
 
 
+def lct_clear_criteria(
+    run_id: Optional[str] = None,
+    year: Optional[str] = None,
+    district_ids: Optional[Sequence[str]] = None,
+) -> list:
+    """The WHERE clauses of a clear. Kept pure so the scoping guarantee — what a scoped run may delete —
+    is testable without a database. `[]` means "the whole table"."""
+    if district_ids is not None and len(district_ids) == 0:
+        # an empty scope must never widen into the whole-table delete that "no criteria" means
+        raise ValueError("district_ids is empty — refusing to widen it to a full clear")
+    if run_id:
+        criteria = [LCTCalculation.run_id == run_id]
+    elif year:
+        criteria = [LCTCalculation.year == year]
+    else:
+        criteria = []
+    if district_ids is not None:
+        criteria.append(LCTCalculation.district_id.in_(list(district_ids)))
+    return criteria
+
+
 def clear_lct_calculations(
-    session, run_id: Optional[str] = None, year: Optional[str] = None
+    session,
+    run_id: Optional[str] = None,
+    year: Optional[str] = None,
+    district_ids: Optional[Sequence[str]] = None,
 ) -> int:
     """
     Clear existing LCT calculations.
@@ -1235,22 +1371,25 @@ def clear_lct_calculations(
               year — a target-year recalculation must not destroy other years'
               rows (issue #297). If both are None, clear ALL calculations
               (blended mode rewrites the whole table).
+        district_ids: Scoped recompute (#628) — restrict the clear to these districts' rows
+              (ANDed with run_id/year). Blended rows carry mixed staff_years, so a scoped blended
+              clear keys on the district, not the year. Every other district's rows are untouched.
 
     Returns:
         Number of records deleted
     """
-    if run_id:
-        deleted = session.query(LCTCalculation).filter(
-            LCTCalculation.run_id == run_id
-        ).delete()
-    elif year:
-        deleted = session.query(LCTCalculation).filter(
-            LCTCalculation.year == year
-        ).delete()
-    else:
-        deleted = session.query(LCTCalculation).delete()
+    query = session.query(LCTCalculation)
+    criteria = lct_clear_criteria(run_id=run_id, year=year, district_ids=district_ids)
+    if criteria:
+        query = query.filter(*criteria)
+    return query.delete(synchronize_session=False)
 
-    return deleted
+
+def find_unknown_districts(session, district_ids: Sequence[str]) -> List[str]:
+    """Requested ids that are not in `districts` — a typo must abort a scoped run, not silently clear and
+    recompute nothing."""
+    found = {r[0] for r in session.query(District.nces_id).filter(District.nces_id.in_(list(district_ids))).all()}
+    return [d for d in district_ids if d not in found]
 
 
 def write_calculations_to_db(
@@ -1310,6 +1449,8 @@ def write_calculations_to_db(
                 lct_value=result['lct_value'],
                 data_tier=get_data_tier(result['instructional_minutes_source']),
                 notes=result.get('level_lct_notes', ''),
+                # SPED rows: the baseline's component years, windowed by the trigger (migration 030, #1003)
+                component_years=result.get('component_years'),
                 # Temporal-validation inputs (issue #11): the migration-008 trigger computes
                 # year_span/within_3year_window/temporal_flags from THESE three — they were
                 # never populated before, leaving the trigger inert. Statutory minutes carry
@@ -1394,7 +1535,56 @@ def export_lct_from_db(
             "level_lct_notes": calc.notes or "",
         })
 
-    df = pd.DataFrame(records)
+    return _write_export_csvs(pd.DataFrame(records), output_dir, timestamp, year_str)
+
+
+EXPORT_COLUMNS = [
+    "district_id", "district_name", "state", "staff_scope", "lct_value", "instructional_minutes",
+    "instructional_minutes_source", "instructional_minutes_year", "staff_count", "staff_source",
+    "staff_year", "enrollment", "enrollment_type", "level_lct_notes",
+]
+
+
+def _stored_numeric(value, scale: int):
+    """`value` as a NUMERIC(.., scale) column would hand it back (Postgres rounds half away from zero).
+    NaN/None pass through (a NaN is storable in NUMERIC and is what the writer sends — #940)."""
+    if value is None:
+        return None
+    value = float(value)
+    if not math.isfinite(value):
+        return value
+    return float(Decimal(repr(value)).quantize(Decimal(1).scaleb(-scale), rounding=ROUND_HALF_UP))
+
+
+def export_frame_from_records(results: List[Dict[str, Any]]) -> pd.DataFrame:
+    """The frame `export_lct_from_db` would read back after `write_calculations_to_db`, built from the
+    in-memory records instead (the --dry-run path: nothing is written, so nothing can be read back). Each
+    value passes through the column type it would be stored in, so the dry-run report is the report a real
+    run produces — not an approximation of it. Equality with a real run is measured on a scratch DB."""
+    records = [{
+        "district_id": r["district_id"],
+        "district_name": r["district_name"],
+        "state": r["state"],
+        "staff_scope": r["staff_scope"],
+        "lct_value": _stored_numeric(r["lct_value"], 4),
+        "instructional_minutes": r["instructional_minutes"],
+        "instructional_minutes_source": r["instructional_minutes_source"],
+        "instructional_minutes_year": r["instructional_minutes_year"],
+        "staff_count": _stored_numeric(r["staff_count"], 2),
+        "staff_source": r["staff_source"],
+        "staff_year": r["staff_year"],
+        "enrollment": r["enrollment"],
+        "enrollment_type": r["enrollment_type"],
+        "level_lct_notes": r.get("level_lct_notes") or "",
+    } for r in results]
+    return pd.DataFrame(records, columns=EXPORT_COLUMNS)
+
+
+def _write_export_csvs(
+    df: pd.DataFrame, output_dir: Path, timestamp: str, year_str: str
+) -> tuple[pd.DataFrame, List[str]]:
+    """Round for display (REQ-001), write the detail + valid CSVs — the ONE tail both the database
+    export and the dry-run frame go through."""
     output_files = []
 
     if len(df) == 0:
@@ -1420,16 +1610,35 @@ def export_lct_from_db(
     return df, output_files
 
 
-def main():
+def resolve_output_dir(requested: Optional[Path], partial: bool) -> Path:
+    """--output-dir, else the corpus directory. A scoped or dry run describes a PARTIAL / hypothetical
+    corpus, so it never defaults into the directory whose lct_qa_report_*.json / lct_all_variants_*.csv
+    ARE the corpus-wide "current" artifacts (README, METHODOLOGY) — it defaults to a `partial/` subdirectory
+    (and its files carry a tag too, #628)."""
+    if requested:
+        return requested
+    corpus_dir = project_root / "data" / "enriched" / "lct-calculations"
+    return corpus_dir / "partial" if partial else corpus_dir
+
+
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Calculate LCT variants",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # Default: Blended mode - uses most recent data within REQ-026 3-year window
+  # (FULL recompute: ~17k districts, a few minutes - run it backgrounded)
   python calculate_lct_variants.py
 
   # Target year mode: Enrollment anchored to target year, staff/bell blended
   python calculate_lct_variants.py --target-year 2023-24
+
+  # Scoped recompute: rewrite ONLY these districts' rows (seconds); everything else is untouched
+  python calculate_lct_variants.py --districts 0600153 3600049
+
+  # Dry run: compute + write the report files, change NOTHING in the database
+  python calculate_lct_variants.py --dry-run
         """
     )
     parser.add_argument(
@@ -1440,7 +1649,34 @@ Examples:
     parser.add_argument("--output-dir", type=Path, default=None, help="Output directory")
     parser.add_argument("--parquet", action="store_true", help="Also save Parquet files")
     parser.add_argument("--no-track", action="store_true", help="Don't track run in database")
-    args = parser.parse_args()
+    parser.add_argument(
+        "--districts", nargs="+", metavar="ID", default=None,
+        help="Scoped recompute (#628): recompute and rewrite ONLY these districts' lct_calculations rows "
+             "(delete + reinsert; every other district's rows are untouched). Space- or comma-separated "
+             "NCES ids. The run is recorded as run_type='scoped' and its report/QA cover only these "
+             "districts - it never replaces the corpus-wide report. Unknown ids abort the run."
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true",
+        help="Compute and emit the report/CSVs to --output-dir, but write NOTHING to the database "
+             "(no lct_calculations rows, no calculation_runs row; the transaction is read-only). "
+             "Combines with --districts and --target-year."
+    )
+    return parser
+
+
+def main(argv: Optional[Sequence[str]] = None):
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    district_ids: Optional[List[str]] = None
+    if args.districts is not None:
+        try:
+            district_ids = parse_district_ids(args.districts)
+        except ValueError as e:
+            parser.error(str(e))
+    scoped = district_ids is not None
+    dry_run = args.dry_run
 
     # Determine calculation mode
     if args.target_year:
@@ -1450,14 +1686,22 @@ Examples:
         calculation_mode = CalculationMode.BLENDED
         mode_display = "BLENDED (most recent data within REQ-026 window)"
 
-    # Default output directory
-    output_dir = args.output_dir or project_root / "data" / "enriched" / "lct-calculations"
+    output_dir = resolve_output_dir(args.output_dir, partial=scoped or dry_run)
     output_dir.mkdir(parents=True, exist_ok=True)
+    file_tag = ("dryrun_" if dry_run else "") + ("scoped_" if scoped else "")
 
     print("=" * 60)
     print("LCT VARIANT CALCULATIONS")
     print("=" * 60)
     print(f"Mode: {mode_display}")
+    if scoped:
+        shown = ", ".join(district_ids[:10]) + (f", ... (+{len(district_ids) - 10})" if len(district_ids) > 10 else "")
+        print(f"Scope: SCOPED to {len(district_ids):,} district(s): {shown}")
+    else:
+        print("Scope: FULL corpus - a multi-minute job; run it backgrounded, not in a foreground window "
+              "that times out at 2 minutes")
+    if dry_run:
+        print("DRY RUN: nothing is written to the database")
     print(f"Output: {output_dir}")
     print()
     print("SCOPE DEFINITIONS (December 2025):")
@@ -1489,19 +1733,34 @@ Examples:
         year_str = args.target_year.replace('-', '_') + "_"
     else:
         year_str = ""  # No year in filename for BLENDED mode
+    year_str = file_tag + year_str
     print(f"Timestamp: {timestamp}")
     print()
 
     with session_scope() as session:
-        # Start calculation run tracking (do this early to get run_id)
+        if dry_run:
+            # Belt and braces: not only does this path issue no write, the transaction itself is
+            # read-only, so a future edit that adds one fails loudly instead of writing.
+            session.execute(text("SET TRANSACTION READ ONLY"))
+
+        if scoped:
+            unknown = find_unknown_districts(session, district_ids)
+            if unknown:
+                print(f"ERROR: unknown district id(s): {', '.join(unknown)} - nothing computed or written.")
+                sys.exit(2)
+
+        # Start calculation run tracking (do this early to get run_id). A scoped run is its own
+        # calculation_runs row (run_type='scoped'): its rows carry ITS run_id, so lineage says which run
+        # produced them, and the corpus-wide 'full' run row is never rewritten with a partial QA summary.
+        # A dry run tracks nothing.
         run = None
-        if not args.no_track:
+        if not args.no_track and not dry_run:
             try:
                 run = CalculationRun.start_run(
                     session,
                     calculation_mode=calculation_mode,
                     target_year=args.target_year,
-                    run_type="full",
+                    run_type="scoped" if scoped else "full",
                 )
                 session.flush()
                 print(f"Started calculation run: {run.run_id}")
@@ -1515,11 +1774,20 @@ Examples:
         df, data_year_min, data_year_max = calculate_all_variants(
             session,
             calculation_mode=calculation_mode,
-            target_year=args.target_year
+            target_year=args.target_year,
+            district_ids=district_ids,
         )
 
         if len(df) == 0:
             print("No LCT values calculated. Check data availability.")
+            if scoped and not dry_run:
+                # #1013: a full run would leave these districts no rows; the scoped run must too, or a
+                # district re-flagged as shared-service keeps its stale rows forever.
+                cleared_count = clear_lct_calculations(
+                    session, year=args.target_year if args.target_year else None, district_ids=district_ids)
+                session.commit()
+                print(f"Cleared {cleared_count:,} stale lct_calculations rows for the requested districts "
+                      f"(a full run would leave them none)")
             if run:
                 run.fail("No LCT values calculated")
                 session.commit()
@@ -1544,20 +1812,36 @@ Examples:
         # clears only that year's rows (issue #297 — a full clear destroyed other
         # years' calculations); blended mode writes rows across mixed staff_years,
         # so it still clears the whole table.
+        #
+        # Scoped (#628): the clear is narrowed to the named districts (delete + reinsert only their rows;
+        # blended rows carry mixed staff_years, so the key is the district, not the year). Delete and insert
+        # share this one transaction: a failure rolls the scope back to its previous rows.
+        # Dry run: neither the clear nor the write happens; the export frame is built from the in-memory
+        # records through the same column quantization the table applies.
         year_for_db = args.target_year if args.target_year else 'blended'
-        cleared_count = clear_lct_calculations(
-            session, year=args.target_year if args.target_year else None
-        )
-        if cleared_count:
-            print(f"Cleared {cleared_count:,} existing calculations before recalculation")
-        inserted_count = write_calculations_to_db(
-            session, results_list, run_id, year_for_db
-        )
+        if dry_run:
+            inserted_count = 0
+            print(f"\nDRY RUN: would clear + rewrite {len(results_list):,} calculations "
+                  f"for {df['district_id'].nunique():,} districts - skipped")
+            df_from_db, output_files = _write_export_csvs(
+                export_frame_from_records(results_list), output_dir, timestamp, year_str
+            )
+        else:
+            cleared_count = clear_lct_calculations(
+                session,
+                year=args.target_year if args.target_year else None,
+                district_ids=district_ids,
+            )
+            if cleared_count:
+                print(f"Cleared {cleared_count:,} existing calculations before recalculation")
+            inserted_count = write_calculations_to_db(
+                session, results_list, run_id, year_for_db
+            )
 
-        # Export CSVs from database
-        df_from_db, output_files = export_lct_from_db(
-            session, run_id, output_dir, timestamp, year_str
-        )
+            # Export CSVs from database
+            df_from_db, output_files = export_lct_from_db(
+                session, run_id, output_dir, timestamp, year_str
+            )
 
         # Use the database export as our source of truth
         df = df_from_db
@@ -1686,6 +1970,12 @@ Examples:
         qa_report['target_year'] = args.target_year
         qa_report['data_year_min'] = data_year_min
         qa_report['data_year_max'] = data_year_max
+        # A scoped / dry-run report describes a PARTIAL or hypothetical corpus: say so IN the artifact
+        # (means, pass rate and hierarchy checks below are over the scope only).
+        if scoped:
+            qa_report['metadata']['scope'] = {"districts": district_ids}
+        if dry_run:
+            qa_report['metadata']['dry_run'] = True
         qa_file = output_dir / f"lct_qa_report_{year_str}{timestamp}.json"
         with open(qa_file, 'w') as f:
             json.dump(qa_report, f, indent=2)
@@ -1751,8 +2041,16 @@ Examples:
             except Exception as e:
                 print(f"\nWarning: Could not complete run tracking: {e}")
 
+        if scoped:
+            missing = sorted(set(district_ids) - set(df['district_id']))
+            if missing:
+                print(f"\nNOTE: no rows computed for {len(missing)} requested district(s): "
+                      f"{', '.join(missing)} (shared-service entity, or no staff/K-12 enrollment data); "
+                      f"{'a real run would leave' if dry_run else 'they now have'} no lct_calculations rows, "
+                      f"exactly as a full run would give them")
+
         print("\n" + "=" * 60)
-        print("CALCULATION COMPLETE")
+        print("DRY RUN COMPLETE - database unchanged" if dry_run else "CALCULATION COMPLETE")
         print("=" * 60)
 
 

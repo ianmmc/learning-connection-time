@@ -215,6 +215,28 @@ def validate_required_columns(
     return True
 
 
+EDUCATION_UNIT_TOTAL = 'Education Unit Total'
+# The same total less the adult-education count — the K-12 membership a CRDC enrollment share is
+# divided by (the SPED baseline denominator since 2017-18). A DIFFERENT row, not a respelling.
+EDUCATION_UNIT_TOTAL_MINUS_ADULT = 'Derived - Education Unit Total minus Adult Education Count'
+
+
+def ccd_education_unit_totals(membership: pd.DataFrame, indicator: str = EDUCATION_UNIT_TOTAL,
+                              columns: tuple = ('LEAID', 'STUDENT_COUNT')) -> pd.DataFrame:
+    """The CCD membership file's per-LEA total rows for `indicator`, as `columns`, one per LEAID.
+
+    The ONE reader of those rows, carrying both hard-won guards: the TOTAL_INDICATOR is stripped before the
+    match (stray whitespace in vintage files silently dropped every district, issue #308) and a duplicate
+    LEAID keeps the first row (it would Cartesian-multiply any join on LEAID, issue #427)."""
+    totals = membership[
+        membership['TOTAL_INDICATOR'].str.strip() == indicator
+    ][list(columns)].copy()
+    dupes = int(totals['LEAID'].duplicated().sum())
+    if dupes:
+        logger.warning(f"  Dropping {dupes} duplicate LEAID {indicator!r} rows (keeping first)")
+    return totals.drop_duplicates(subset='LEAID', keep='first')
+
+
 def safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """
     Safely divide two numbers, returning default if division would fail

@@ -225,52 +225,18 @@ class TestTemporalFlags:
         assert len(flags) == 0
 
 
-class TestSpedBaselineException:
-    """Tests for SPED 2017-18 baseline exemption from 3-year rule."""
+class TestSpedRatioYearsAreWindowed:
+    """#1003 (Ian, 2026-10-31): the SPED baseline is no longer exempt — its component years are
+    windowed like any other input. Tested against the PRODUCTION window function (the previous class
+    here asserted a test-local helper's INFO_RATIO_BASELINE flag, which production never emitted)."""
 
-    def test_sped_2017_18_exempt_from_3_year_rule(self):
-        """SPED baseline (2017-18) is exempt from the 3-year window rule.
+    def test_2017_18_ratio_years_break_the_window(self):
+        from infrastructure.utilities.school_year import within_blend_window
+        assert not within_blend_window(["2023-24", "2023-24", "2025-26", "2017-18"])
 
-        The 2017-18 IDEA 618 and CRDC data are used as ratio proxies
-        for SPED teacher/enrollment splits. These are the most recent
-        complete federal datasets pre-COVID and are exempt from the
-        temporal blending window.
-        """
-        # This would normally exceed the 3-year window (2017-18 to 2025-26 = 9 years)
-        # But SPED baseline is exempt
-        flags = calculate_temporal_flags(
-            enrollment_year='2023-24',
-            staffing_year='2023-24',
-            bell_schedule_year='2025-26',
-            is_sped_baseline=True
-        )
-        assert 'INFO_RATIO_BASELINE' in flags
-
-    def test_info_ratio_baseline_flag_for_sped_exception(self):
-        """INFO_RATIO_BASELINE flag indicates SPED baseline exemption."""
-        flags = calculate_temporal_flags(
-            enrollment_year='2023-24',
-            staffing_year='2017-18',  # SPED baseline year
-            bell_schedule_year='2025-26',
-            is_sped_baseline=True
-        )
-        assert 'INFO_RATIO_BASELINE' in flags
-
-    def test_sped_baseline_still_validates_other_sources(self):
-        """SPED baseline exemption applies to SPED ratios only.
-
-        The exemption doesn't prevent other sources from being validated.
-        The INFO_RATIO_BASELINE flag documents the exception.
-        """
-        flags = calculate_temporal_flags(
-            enrollment_year='2023-24',
-            staffing_year='2023-24',
-            bell_schedule_year='2023-24',
-            is_sped_baseline=True
-        )
-        assert 'INFO_RATIO_BASELINE' in flags
-        assert 'ERR_SPAN_EXCEEDED' not in flags
-
+    def test_refreshed_ratio_years_fit_the_window(self):
+        from infrastructure.utilities.school_year import SPED_BASELINE_YEAR, NCES_PRIMARY_YEAR, within_blend_window
+        assert within_blend_window([NCES_PRIMARY_YEAR, NCES_PRIMARY_YEAR, "2023-24", SPED_BASELINE_YEAR])
 
 class TestValidationTrigger:
     """Tests for automatic validation trigger behavior."""
@@ -439,6 +405,33 @@ class TestDatabaseIntegration:
             WHERE routine_schema = 'public' AND routine_name = :func_name
         """), {"func_name": func_name})
         return result.scalar() > 0
+
+    @pytest.mark.parametrize("ratio_years, span, ok, flag", [
+        (["2017-18"], 7, False, "ERR_SPAN_EXCEEDED"),
+        (["2023-24", "2024-25"], 1, True, None),
+        (["2021-22"], 3, False, "ERR_COVID_YEAR"),
+        (None, 0, True, None),
+    ])
+    def test_trigger_windows_component_years_sped_ratio(self, db_session, ratio_years, span, ok, flag):
+        """Migration 030 (#1003): component_years.sped_ratio enters the span and the COVID check. The
+        row is inserted inside a SAVEPOINT and rolled back — nothing is written."""
+        import json
+        from sqlalchemy import text
+        nested = db_session.begin_nested()
+        try:
+            row = db_session.execute(text("""
+                INSERT INTO lct_calculations (district_id, year, instructional_minutes, enrollment,
+                    instructional_staff, lct_value, data_tier, staff_scope, enrollment_source_year,
+                    staff_source_year, component_years)
+                SELECT nces_id, '2099-00', 360, 100, 5, 18, 3, 'core_sped', '2024-25', '2024-25',
+                       CAST(:cy AS jsonb)
+                FROM districts LIMIT 1
+                RETURNING year_span, within_3year_window, temporal_flags
+            """), {"cy": json.dumps({"sped_ratio": ratio_years}) if ratio_years else None}).one()
+        finally:
+            nested.rollback()
+        assert row.year_span == span and row.within_3year_window is ok
+        assert (flag in row.temporal_flags) if flag else not row.temporal_flags
 
     def test_school_year_to_numeric_matches_sql(self, db_session):
         """Python function matches SQL function output."""

@@ -22,6 +22,7 @@ project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from infrastructure.database.connection import session_scope
+from infrastructure.utilities.school_year import SPED_BASELINE_YEAR
 from infrastructure.database.models import (
     District,
     CASpedDistrictEnvironments,
@@ -38,7 +39,9 @@ def national_self_contained_mean(session) -> float:
     proportions — the same fallback apply_sped_estimates uses — never a hand-typed share (the 0.067
     this replaced was the pre-#970 figure, stale the day the importer was fixed)."""
     from sqlalchemy import func
-    mean = session.query(func.avg(SpedStateBaseline.ratio_self_contained_proportion)).scalar()
+    mean = session.query(func.avg(SpedStateBaseline.ratio_self_contained_proportion)).filter(
+        SpedStateBaseline.baseline_year == SPED_BASELINE_YEAR   # one vintage, never a cross-vintage mean (#999)
+    ).scalar()
     if mean is None:
         raise SystemExit("ca_validation_report: sped_state_baseline carries no self-contained ratios")
     return float(mean)
@@ -53,11 +56,12 @@ def generate_sped_comparison():
     with session_scope() as session:
         # Get California state baseline
         ca_baseline = session.query(SpedStateBaseline).filter(
-            SpedStateBaseline.state == 'CA'
+            SpedStateBaseline.state == 'CA',
+            SpedStateBaseline.baseline_year == SPED_BASELINE_YEAR,
         ).first()
 
         if ca_baseline:
-            print(f"\nState Baseline (2017-18 IDEA 618 + CRDC):")
+            print(f"\nState Baseline ({SPED_BASELINE_YEAR} IDEA 618 + CRDC):")
             print(f"  Self-contained proportion: {ca_baseline.ratio_self_contained_proportion:.2%}")
         else:
             print("\nWARNING: No California state baseline found")

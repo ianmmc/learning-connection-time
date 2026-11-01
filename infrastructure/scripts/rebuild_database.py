@@ -23,7 +23,8 @@ Options:
     --skip-reset    Skip database reset (for incremental runs)
     --skip-lct      Skip LCT calculation
     --dry-run       Preview without making changes
-    --sample N      Limit records for testing
+    --sample N      Parse-only SPED baseline check: phase 4 writes nothing (#1008), phase 5 is
+                    skipped — there is no sampled baseline to estimate from (#1011)
 
 Author: Claude (AI Assistant)
 Date: January 24, 2026
@@ -240,11 +241,17 @@ def phase_4_sped_baseline(dry_run: bool = False, sample: int = None) -> bool:
     return run_script(SCRIPTS["import_sped_baseline"], args, dry_run=dry_run)
 
 
-def phase_5_sped_estimates(dry_run: bool = False, year: str = NCES_PRIMARY_YEAR) -> bool:
+def phase_5_sped_estimates(dry_run: bool = False, year: str = NCES_PRIMARY_YEAR, sample: int = None) -> bool:
     """Phase 5: Apply SPED estimates (for the same year phase 3 loaded — #985)."""
     print("\n" + "=" * 60)
     print("PHASE 5: APPLY SPED ESTIMATES")
     print("=" * 60)
+
+    if sample:
+        # --sample made phase 4 parse-only (#1008): no sampled baseline exists to estimate from, and
+        # estimating every district from a few states' LEAs tripped MAX_SKIPPED_SHARE anyway (#1011).
+        print(f"Skipped: --sample {sample} is a parse-only baseline check; nothing was written in phase 4")
+        return True
 
     # Check if script exists
     script_path = project_root / SCRIPTS["apply_sped_estimates"]
@@ -309,7 +316,7 @@ def main():
     parser.add_argument(
         "--sample",
         type=int,
-        help="Limit records for testing (affects SPED baseline)"
+        help="Parse-only SPED baseline check: phase 4 writes nothing (#1008), phase 5 is skipped (#1011)"
     )
     parser.add_argument(
         "--year",
@@ -413,7 +420,7 @@ def main():
 
     # Phase 5: SPED Estimates
     if success and start_phase <= 5:
-        if not phase_5_sped_estimates(args.dry_run, args.year):
+        if not phase_5_sped_estimates(args.dry_run, args.year, args.sample):
             print("\nERROR: Phase 5 (SPED Estimates) failed")
             success = False
         else:

@@ -16,6 +16,8 @@ import logging
 from pathlib import Path
 import sys
 
+from infrastructure.utilities.common import ccd_education_unit_totals
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -44,12 +46,9 @@ def merge_nces_ccd_files(directory_file, membership_file, staff_file, output_fil
     membership = pd.read_csv(membership_file, encoding='utf-8')
     logger.info(f"  Loaded {len(membership):,} membership records")
 
-    # Filter for total enrollment (Education Unit Total). Strip the indicator
-    # first — stray whitespace in the vintage files made the exact match fail
-    # and silently dropped every district's enrollment (issue #308).
-    total_enrollment = membership[
-        membership['TOTAL_INDICATOR'].str.strip() == 'Education Unit Total'
-    ][['LEAID', 'STUDENT_COUNT']].copy()
+    # Total enrollment (Education Unit Total) via the shared reader, which carries the
+    # #308 strip and #427 LEAID-dedupe guards (#996).
+    total_enrollment = ccd_education_unit_totals(membership)
     total_enrollment.columns = ['LEAID', 'enrollment']
     logger.info(f"  Found {len(total_enrollment):,} districts with enrollment data")
 
@@ -71,12 +70,11 @@ def merge_nces_ccd_files(directory_file, membership_file, staff_file, output_fil
     district_info.columns = ['district_id', 'district_name', 'state']
 
     # Merge all together. Dedup the right-hand keys first: a duplicate LEAID
-    # in membership/staff would Cartesian-multiply districts (issue #427).
-    for name, frame in (('enrollment', total_enrollment), ('teachers', teachers)):
-        dupes = frame['LEAID'].duplicated().sum()
-        if dupes:
-            logger.warning(f"  Dropping {dupes} duplicate LEAID rows from {name} (keeping first)")
-    total_enrollment = total_enrollment.drop_duplicates(subset='LEAID', keep='first')
+    # in staff would Cartesian-multiply districts (issue #427). The enrollment
+    # totals were already deduped by ccd_education_unit_totals.
+    dupes = teachers['LEAID'].duplicated().sum()
+    if dupes:
+        logger.warning(f"  Dropping {dupes} duplicate LEAID rows from teachers (keeping first)")
     teachers = teachers.drop_duplicates(subset='LEAID', keep='first')
 
     logger.info("Merging datasets...")
