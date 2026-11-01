@@ -39,8 +39,8 @@ from sqlalchemy import nullslast
 
 from infrastructure.database.connection import session_scope
 from infrastructure.database.models import District, DistrictGradeMinutes, LCTCalculation
+from infrastructure.utilities.lct_scopes import quarantine_caption
 from infrastructure.scripts.analyze.calculate_lct_variants import (
-    QUARANTINED_SCOPES,
     calculate_lct,
     get_most_recent_enrollment,
     get_most_recent_staff,
@@ -139,8 +139,14 @@ def main(argv=None) -> int:
     if not rows:
         print("No incorporated districts (no district_grade_minutes rows) — nothing to sample yet.")
         return 0
+    # The caveat goes ABOVE the table and the two LCT columns are marked [Q], so a gate@8 reviewer
+    # scanning rows cannot read them as cross-state-comparable numbers (#1030). Both columns are
+    # teachers_secondary values; the preview never shows an elementary LCT.
+    print(f"[Q] legacy_lct / pg_lct are teachers_secondary LCT — QUARANTINED: "
+          f"{quarantine_caption('teachers_secondary')}.")
+    print("    Compare a district's legacy vs per-grade MINUTES (Δmin); never its LCT against another state's.\n")
     print(f"{'district':<9} {'state':<5} {'legacy_min':>10} {'pg_min':>7} {'Δmin':>6}  "
-          f"{'legacy_lct':>10} {'pg_lct':>7}  source            name")
+          f"{'legacy_lct[Q]':>13} {'pg_lct[Q]':>9}  source            name")
     for r in rows:
         # Both operands can be None: legacy_sec_min is None for a never-computed district (this is
         # exactly the "BEFORE the recompute lands" case the tool exists for), pg is None when no
@@ -150,12 +156,10 @@ def main(argv=None) -> int:
         name = f"{r['name']}  [!] denom refreshed" if r.get("denom_refreshed") else r["name"]
         print(f"{r['district_id']:<9} {r['state']:<5} {str(r['legacy_sec_min']):>10} "
               f"{str(r['per_grade_sec_min']):>7} {str(dmin):>6}  "
-              f"{('%.2f' % r['legacy_sec_lct']) if r['legacy_sec_lct'] is not None else '—':>10} "
-              f"{('%.2f' % r['per_grade_sec_lct']) if r['per_grade_sec_lct'] is not None else '—':>7}  "
+              f"{('%.2f' % r['legacy_sec_lct']) if r['legacy_sec_lct'] is not None else '—':>13} "
+              f"{('%.2f' % r['per_grade_sec_lct']) if r['per_grade_sec_lct'] is not None else '—':>9}  "
               f"{str(r['source']):<17} {name}")
     print(f"\n{len(rows)} incorporated district(s). Review before recomputing lct_calculations.")
-    print(f"[!] teachers_secondary is QUARANTINED — {QUARANTINED_SCOPES['teachers_secondary']}. "
-          "Compare a district's legacy vs per-grade minutes, not its LCT against another state's.")
     if any(r.get("denom_refreshed") for r in rows):
         print("[!] denom refreshed = the stored 'legacy' row used older staff/enrollment than today's "
               "picks; part of that row's Δ is a data refresh, not the per-grade change.")

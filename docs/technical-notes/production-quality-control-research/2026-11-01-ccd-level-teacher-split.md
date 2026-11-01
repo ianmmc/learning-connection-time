@@ -147,6 +147,33 @@ defensible correction of the LEA split runs through the school files.
 3. **Phase 3, retire the LEA pair** once phase 2 validates. Stop computing it, keep the stored rows
    readable, and move `per_grade_lct_sample.py` to the school-file secondary scope.
 
+## Review follow-ups (2026-11-01, `/code-review high` on PR #1024 → #1025–#1032, all addressed in the PR)
+
+- **#1025 (major):** the quarantine was a presenter label only. Now the caveat, the scope list and a
+  per-row `QUARANTINED_1017` token have ONE home, `infrastructure/utilities/lct_scopes.py`; the token is
+  calculated into `level_lct_notes` on every level-scope row, so `lct_calculations.notes`, the CSV/parquet
+  exports and any SQL reader carry it. The postgres MCP server stops advertising the two scopes as ordinary
+  and returns the caveat instead of statistics (its `get_lct_summary_by_scope` never served them anyway —
+  `scope_map` holds only the five base scopes, a pre-existing mismatch). **Stored rows carry the token from
+  the next recompute onward**: stamping the ~30k existing rows is a live write, left to Ian (no data writes
+  in this PR; the dry run differs from the pre-change dry run ONLY in that column, on those rows).
+- **#1026:** measured on the 2026-11-01 dry run: 10 of the 20 outliers were `teachers_elementary`, and
+  because `outliers[:20]` is cut AFTER walking `scope_order`, scopes 3–10 never appeared at all. The
+  quarantined scopes are now skipped. The truncation bias itself is pre-existing and logged separately.
+- **#1027:** each quarantined `scope_summary` entry now carries `caveat`; the console QA DASHBOARD prints
+  a `[Q]` line per quarantined scope.
+- **#1028:** `test_teachers_secondary_less_than_teachers_only` renamed to what it checks (a teacher-COUNT
+  subset), REQ-011 citation updated; the `elementary >= secondary` row-count assertion kept as the
+  REQ-008 availability guard it is, with its reason spelled out.
+- **#1029:** `tests/test_level_scope_quarantine.py` (DB-free) pins the one-home rule, the token, the QA
+  report shape, the sign-off preview's stdout and the MCP server by source; REQ-190 cites them.
+- **#1030:** the sign-off preview prints the caveat ABOVE the table and marks `legacy_lct[Q]` / `pg_lct[Q]`.
+  It names only `teachers_secondary` because that is the only LCT the preview shows.
+- **#1031:** `models.py` docstrings and the `_k5` / `_6_12` field comments say the suffix names the
+  enrollment band, not the grades taught.
+- **#1032:** "largely" replaced by the measured regime medians (31.6 vs 26.2) and the PTR counterfactual
+  (22.6 / 24.8); the two table rows are marked; the Level-Based QA Validation section carries the caveat.
+
 ## Acceptance properties
 
 - **Phase 1**

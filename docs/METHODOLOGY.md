@@ -457,6 +457,12 @@ LCT = 104,975 minutes / 8,500 students
 
 **Level-Based QA Validation**:
 
+These are consistency checks on the CCD split as reported; passing them does NOT make the two level scopes
+comparable across states (#1017, the quarantine block above). Every level-scope row is also calculated
+with `QUARANTINED_1017` at the head of `level_lct_notes` (stored as `lct_calculations.notes`, exported in
+the CSV/parquet `level_lct_notes` column — `infrastructure/utilities/lct_scopes.py`), so the caveat
+travels with the data; that token is not a QA note and is not counted in `districts_with_qa_notes`.
+
 For teacher-level variants (Elementary, Secondary), additional validation checks:
 - `Elementary teachers but no elementary enrollment`: Flag districts with K-5 teachers but zero K-5 students
 - `Secondary enrollment but no secondary teachers`: Flag districts with 6-12 students but zero secondary teachers
@@ -517,14 +523,17 @@ Additional safeguards identify potential data quality issues that don't warrant 
 - Example: `lct_all_variants_2023_24_valid_20251228T012536Z.csv`
 - Benefits: Sortable, unambiguous timezone, enables version tracking
 
-**Results** (December 2025 — historical; the two level rows are superseded by the #1017 quarantine above,
-and their gap is largely the CCD level-split artifact, not a real elementary/secondary difference):
+**Results** (December 2025 — historical. The two level rows are QUARANTINED (#1017) and their 34.3 vs
+22.9 gap is mostly the CCD level-split artifact, measured 2024-25: the elementary median is **31.6** in the
+states whose practice counts grade 6-8 teachers as elementary and **26.2** where it does not; applying each
+district's K-12 pupil/teacher ratio to its own band minutes gives elementary **22.6** and secondary **24.8**,
+the OPPOSITE order of the table. Do not lift the level rows as a finding.):
 
 | Scope | Valid Districts | Mean LCT | Median LCT |
 |-------|-----------------|----------|------------|
 | teachers_only | 14,286 | 27.9 min | 25.2 min |
-| teachers_elementary | 13,090 | 34.3 min | 30.8 min |
-| teachers_secondary | 12,378 | 22.9 min | 20.1 min |
+| teachers_elementary — QUARANTINED #1017 | 13,090 | 34.3 min | 30.8 min |
+| teachers_secondary — QUARANTINED #1017 | 12,378 | 22.9 min | 20.1 min |
 | teachers_core | 14,305 | 29.5 min | 26.2 min |
 | instructional | 14,314 | 38.4 min | 34.2 min |
 | instructional_plus_support | 14,271 | 42.2 min | 37.9 min |

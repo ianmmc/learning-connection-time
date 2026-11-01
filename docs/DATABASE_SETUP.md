@@ -300,7 +300,7 @@ Calculated LCT metrics for districts.
 | instructional_minutes_source | VARCHAR | e.g., `per_grade_bell`, `per_grade_statutory` |
 | staff_source / staff_source_year / enrollment_source / … | VARCHAR | Per-input provenance columns |
 | component_years / year_span / within_3year_window / temporal_flags | JSONB / INT / BOOL / ARRAY | REQ-026 temporal-validation fields |
-| notes | TEXT | Data quality notes |
+| notes | TEXT | Data quality notes (`WARN_*`/`ERR_*` flags, level checks). Level-scope rows lead with `QUARANTINED_1017` — a scope caveat, not a QA note (#1017; `infrastructure/utilities/lct_scopes.py`) |
 | run_id | VARCHAR | Foreign key to calculation_runs |
 | calculated_at | TIMESTAMP | Calculation timestamp |
 

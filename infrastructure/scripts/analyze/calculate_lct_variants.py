@@ -90,6 +90,13 @@ from sqlalchemy import text
 
 from infrastructure.database.connection import session_scope, get_engine
 from infrastructure.utilities.frames import db_records
+from infrastructure.utilities.lct_scopes import (  # noqa: F401 — re-exported names (tests, per_grade_lct_sample)
+    LEVEL_SPLIT_CAVEAT,
+    QUARANTINED_SCOPES,
+    TEACHER_LEVEL_SCOPES,
+    data_quality_notes,
+    with_quarantine_token,
+)
 from infrastructure.database.school_year import (
     COVID_EXCLUDED_YEARS,
     SPED_BASELINE_YEAR,
@@ -133,19 +140,12 @@ BASE_SCOPES = [
     "all",
 ]
 
-# Teacher-level variants
-TEACHER_LEVEL_SCOPES = [
-    "teachers_elementary",
-    "teachers_secondary",
-]
-
-# #1017: CCD counts a teacher as "elementary" by state and local practice (any grades up to 8), so in about
-# 22 jurisdictions the elementary numerator holds grade 6-8 teachers whose students sit in the 6-12
-# denominator. The level scopes are QUARANTINED — still computed, labelled wherever presented — until the
-# school-file band scopes replace them (docs/technical-notes/production-quality-control-research/
-# 2026-11-01-ccd-level-teacher-split.md).
-LEVEL_SPLIT_CAVEAT = "not comparable across states: the CCD level split follows state practice (#1017)"
-QUARANTINED_SCOPES = {scope: LEVEL_SPLIT_CAVEAT for scope in TEACHER_LEVEL_SCOPES}
+# Teacher-level variants. #1017: CCD counts a teacher as "elementary" by state and local practice (any
+# grades up to 8), so in about 22 jurisdictions the elementary numerator holds grade 6-8 teachers whose
+# students sit in the 6-12 denominator. Both scopes are QUARANTINED — still computed, labelled wherever
+# presented, token-stamped on every row — until the school-file band scopes replace them (#1022). The
+# caveat, the token and the scope list have ONE home: infrastructure/utilities/lct_scopes.py.
+# (docs/technical-notes/production-quality-control-research/2026-11-01-ccd-level-teacher-split.md)
 
 # SPED segmentation variants (January 2026)
 # core_sped: SPED teachers / SPED students (for audit/reconciliation)
@@ -816,7 +816,7 @@ def calculate_all_variants(
                 "enrollment": elem_enrollment,
                 "enrollment_type": "elementary_k5",
                 "enrollment_year": _enroll_yr,
-                "level_lct_notes": level_lct_notes,
+                "level_lct_notes": with_quarantine_token("teachers_elementary", level_lct_notes),
             })
 
         # LCT-Teachers-Secondary
@@ -836,7 +836,7 @@ def calculate_all_variants(
                 "enrollment": sec_enrollment,
                 "enrollment_type": "secondary_6_12",
                 "enrollment_year": _enroll_yr,
-                "level_lct_notes": level_lct_notes,
+                "level_lct_notes": with_quarantine_token("teachers_secondary", level_lct_notes),
             })
 
         # === SPED/GenEd Segmentation Variants (January 2026) ===
@@ -1157,7 +1157,7 @@ def apply_data_safeguards(df: pd.DataFrame) -> pd.DataFrame:
         if count > 0:
             print(f"    {flag}: {count:,} records")
 
-    total_flagged = df[df['level_lct_notes'].str.len() > 0]['district_id'].nunique()
+    total_flagged = df[df['level_lct_notes'].map(data_quality_notes) != '']['district_id'].nunique()
     print(f"  Total districts with any flag: {total_flagged:,}")
 
     return df, safeguard_counts
@@ -1214,8 +1214,8 @@ def generate_qa_report(
     invalid_calculations = total_calculations - valid_calculations
     pass_rate = round(valid_calculations / total_calculations * 100, 2) if total_calculations > 0 else 0
 
-    # Districts with QA notes
-    qa_notes_df = df[df['level_lct_notes'] != '']
+    # Districts with QA notes (the #1017 quarantine token is a scope-level caveat, not a QA note)
+    qa_notes_df = df[df['level_lct_notes'].map(data_quality_notes) != '']
     districts_with_notes = qa_notes_df['district_id'].nunique() if len(qa_notes_df) > 0 else 0
 
     # Hierarchy validation (each broader scope should have higher LCT)
@@ -1249,9 +1249,12 @@ def generate_qa_report(
     states_with_data = valid_df['state'].nunique()
     all_states = df['state'].unique().tolist()
 
-    # Outlier detection
+    # Outlier detection. The quarantined level scopes are skipped: their extreme values ARE the known
+    # #1017 artifact, and (measured 2026-11-01) they filled half of the 20-entry list.
     outliers = []
     for scope in scope_order:
+        if scope in QUARANTINED_SCOPES:
+            continue
         scope_df = valid_df[valid_df['staff_scope'] == scope]
         if len(scope_df) == 0:
             continue
@@ -1310,6 +1313,9 @@ def generate_qa_report(
                 "median": round(row['median'], 2),
                 "min": round(row['min'], 2),
                 "max": round(row['max'], 2),
+                # the caveat travels WITH the per-scope entry, not only in `quarantined_scopes` (#1027)
+                **({"caveat": QUARANTINED_SCOPES[row['staff_scope']]}
+                   if row['staff_scope'] in QUARANTINED_SCOPES else {}),
             }
             for _, row in summary.iterrows()
         },
@@ -1966,7 +1972,7 @@ def main(argv: Optional[Sequence[str]] = None):
         print(f"Saved report to {report_file}")
 
         # Summary of QA issues
-        qa_df = df[df['level_lct_notes'] != '']
+        qa_df = df[df['level_lct_notes'].map(data_quality_notes) != '']
         if len(qa_df) > 0:
             print(f"\nDistricts with level LCT QA notes: {qa_df['district_id'].nunique()}")
 
@@ -2007,6 +2013,8 @@ def main(argv: Optional[Sequence[str]] = None):
         for check, result in qa_report['hierarchy_validation'].items():
             status = "✓" if result['passed'] else "✗"
             print(f"  {status} {check}")
+        for scope, caveat in qa_report['quarantined_scopes'].items():
+            print(f"  [Q] {scope}: QUARANTINED — {caveat}")
         if qa_report['outliers']:
             print(f"Outliers Detected: {len(qa_report['outliers'])}")
 

@@ -429,8 +429,11 @@ class LCTCalculation(Base):
     Staff Scopes (January 2026):
     - teachers_only: K-12 teachers (elem + sec + kinder, NO ungraded, NO prek)
     - teachers_core: K-12 teachers + ungraded (NO prek)
-    - teachers_elementary: Elementary + kindergarten teachers
-    - teachers_secondary: Secondary teachers
+    - teachers_elementary: Elementary + kindergarten teachers / K-5 enrollment — QUARANTINED (#1017)
+    - teachers_secondary: Secondary teachers / 6-12 enrollment — QUARANTINED (#1017)
+      (CCD counts a teacher as "elementary" by STATE practice, any span up to grade 8, so these two
+      are not comparable across states; their rows carry the QUARANTINE_TOKEN in `notes` —
+      infrastructure/utilities/lct_scopes.py)
     - instructional: core + coordinators + paraprofessionals
     - instructional_plus_support: above + counselors + psychologists + support
     - all: All staff except Pre-K teachers
@@ -924,9 +927,12 @@ class StaffCountsEffective(Base):
     all_other_support_staff: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
 
     # === TEACHER-LEVEL AGGREGATES (for level-based LCT) ===
+    # #1017: `teachers_elementary` / `teachers_secondary` are the CCD FS059 split, which follows STATE
+    # practice (elementary = any span up to grade 8). The `_k5` / `_6_12` suffixes name the ENROLLMENT
+    # band each is divided by, not the grades the teachers teach — do not build a band comparison on them.
     teachers_k12: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))  # elem + sec + kinder (NO prek, NO ungraded)
-    teachers_elementary_k5: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))  # elem + kinder
-    teachers_secondary_6_12: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))  # secondary only
+    teachers_elementary_k5: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))  # elem + kinder (state-practice span)
+    teachers_secondary_6_12: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))  # secondary only (state-practice span)
 
     # === PRE-CALCULATED SCOPE VALUES ===
     scope_teachers_only: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))  # Same as teachers_k12
@@ -983,13 +989,13 @@ class StaffCountsEffective(Base):
             self.teachers_kindergarten
         )
 
-        # LCT-Teachers-Elementary: elem + kinder
+        # LCT-Teachers-Elementary: elem + kinder — a state-practice span, QUARANTINED against K-5 (#1017)
         self.teachers_elementary_k5 = safe_sum(
             self.teachers_elementary,
             self.teachers_kindergarten
         )
 
-        # LCT-Teachers-Secondary: just secondary
+        # LCT-Teachers-Secondary: just secondary — likewise against 6-12 (#1017)
         self.teachers_secondary_6_12 = self.teachers_secondary
 
         # scope_teachers_only: Same as teachers_k12 (NO ungraded, NO prek)
