@@ -190,8 +190,45 @@ IS_BENCHMARK_SQL = """EXISTS (SELECT 1 FROM batch_district bd JOIN batch b ON b.
                                     "after a #620 re-run",
         },
     },
+    {
+        "rule": "the grade -> band map (K-5 / 6-8 / 9-12)",
+        "home": REPO / "infrastructure" / "utilities" / "grade_bands.py",
+        "scope": sorted((REPO / "infrastructure").rglob("*.py")),
+        # Four spellings existed: a GRADE_ORD range table, a grade->band dict, integer grade lists and
+        # token lists. Each alternative catches one of them. A bare band NAME tuple
+        # ("elementary", "middle", "high") is not the map and is deliberately not matched.
+        "forbid": re.compile(
+            r"range\(\s*GRADE_ORD\[\s*[\"'](?:PK|KG|0[1-9]|1[0-3])[\"']\s*\]"
+            r"|[\"']0?6[\"']\s*:\s*[\"']middle[\"']"
+            r"|\[\s*6\s*,\s*7\s*,\s*8\s*\]"
+            r"|\[\s*[\"']KG[\"']\s*,\s*[\"']01[\"']\s*,\s*[\"']02[\"']\s*,\s*[\"']03[\"']\s*,"
+            r"\s*[\"']04[\"']\s*,\s*[\"']05[\"']\s*\]"
+            r"|[\"']enrollment_grade_6[\"']\s*,\s*[\"']enrollment_grade_7[\"']"),
+        "why": "#1035 — spelled five times across acquisition and the LCT layer (the import-linter "
+               "kept the LCT side from importing acquisition's copy), with a test (#638) holding two "
+               "of the copies in agreement. The school-file band scopes (#1022) would have added a "
+               "fifth. Home: utilities/grade_bands.py",
+        "removed": {
+            "school_sampling.BANDS": '''
+BANDS = {"elementary": range(GRADE_ORD["PK"], GRADE_ORD["05"]+1),
+         "middle":     range(GRADE_ORD["06"], GRADE_ORD["08"]+1),
+         "high":       range(GRADE_ORD["09"], GRADE_ORD["13"]+1)}''',
+            "per_grade_lct.ELEM_GRADES": 'ELEM_GRADES = ["KG", "01", "02", "03", "04", "05"]           # K-5',
+            "per_grade_lct._CANON_BAND": '''
+_CANON_BAND = {**{g: "elementary" for g in ELEM_GRADES},
+               "06": "middle", "07": "middle", "08": "middle",
+               "09": "high", "10": "high", "11": "high", "12": "high"}''',
+            "extract_grade_level_enrollment.MIDDLE_GRADES": "MIDDLE_GRADES = [6, 7, 8]  # 6-8",
+            "import_staff_and_enrollment.sec_grades": '''
+            sec_grades = ['enrollment_grade_6', 'enrollment_grade_7', 'enrollment_grade_8',
+                         'enrollment_grade_9', 'enrollment_grade_10', 'enrollment_grade_11', 'enrollment_grade_12']''',
+        },
+        "not_copies": {
+            "band-name tuple": 'BANDS = ("elementary", "middle", "high")',
+            "a band lookup": 'rng = BANDS.get(band)',
+        },
+    },
 ]
-
 
 @pytest.mark.parametrize("spec", RULES, ids=[r["rule"] for r in RULES])
 def test_a_consolidated_rule_has_exactly_one_home(spec):
