@@ -13,6 +13,8 @@ Available tables:
     - district_membership: Student enrollment data
     - district_staff: Staff counts by role
     - school_directory: School-level data
+    - school_membership: School membership by grade
+    - school_staff: School teacher FTE
 """
 
 import argparse
@@ -32,24 +34,63 @@ logger = logging.getLogger(__name__)
 
 
 # NCES CCD Data Catalog
-# Note: URLs need to be updated based on actual NCES data releases
+# 2023-24 and 2024-25 entries are the real release file names, verified 2026-11-01 (HTTP 200 +
+# Content-Length equal to the files on disk; a wrong name 404s). The 2022-23 entries are older
+# placeholders and unverified (2022-23 is COVID-excluded for calculations anyway, Critical Rule 2).
+# File provenance (sha256 per file) is tracked in config/source-manifests/nces-ccd.json (#1037).
+_ZIP = "https://nces.ed.gov/ccd/Data/zip"
+
 CCD_CATALOG = {
-    "2023-24": {
+    "2024-25": {
         "district_directory": {
-            "url": "https://nces.ed.gov/ccd/data/zip/ccd_lea_directory_2024.zip",
+            "url": f"{_ZIP}/ccd_lea_029_2425_w_1a_073025.zip",
             "description": "Local Education Agency (District) Directory"
         },
         "district_membership": {
-            "url": "https://nces.ed.gov/ccd/data/zip/ccd_lea_membership_2024.zip",
+            "url": f"{_ZIP}/ccd_lea_052_2425_l_1a_073025.zip",
             "description": "District Membership (Enrollment)"
         },
         "district_staff": {
-            "url": "https://nces.ed.gov/ccd/data/zip/ccd_lea_staff_2024.zip",
+            "url": f"{_ZIP}/ccd_lea_059_2425_l_1a_073025.zip",
             "description": "District Staff Counts"
         },
         "school_directory": {
-            "url": "https://nces.ed.gov/ccd/data/zip/ccd_sch_directory_2024.zip",
+            "url": f"{_ZIP}/ccd_sch_029_2425_w_1a_073025.zip",
             "description": "School Directory"
+        },
+        "school_membership": {
+            "url": f"{_ZIP}/ccd_sch_052_2425_l_1a_073025.zip",
+            "description": "School Membership by Grade (Deflate64: read with utilities/zip_members)"
+        },
+        "school_staff": {
+            "url": f"{_ZIP}/ccd_sch_059_2425_l_1a_073025.zip",
+            "description": "School Teacher FTE"
+        }
+    },
+    "2023-24": {
+        "district_directory": {
+            "url": f"{_ZIP}/ccd_lea_029_2324_w_1a_073124.zip",
+            "description": "Local Education Agency (District) Directory"
+        },
+        "district_membership": {
+            "url": f"{_ZIP}/ccd_lea_052_2324_l_1a_073124.zip",
+            "description": "District Membership (Enrollment)"
+        },
+        "district_staff": {
+            "url": f"{_ZIP}/ccd_lea_059_2324_l_1a_073124.zip",
+            "description": "District Staff Counts"
+        },
+        "school_directory": {
+            "url": f"{_ZIP}/ccd_sch_029_2324_w_1a_073124.zip",
+            "description": "School Directory"
+        },
+        "school_membership": {
+            "url": f"{_ZIP}/ccd_sch_052_2324_l_1a_073124.zip",
+            "description": "School Membership by Grade (deflate)"
+        },
+        "school_staff": {
+            "url": f"{_ZIP}/ccd_sch_059_2324_l_1a_073124.zip",
+            "description": "School Teacher FTE"
         }
     },
     "2022-23": {
