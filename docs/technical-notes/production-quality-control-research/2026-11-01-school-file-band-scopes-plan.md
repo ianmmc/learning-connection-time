@@ -28,6 +28,31 @@ that produces them is stored in `lct_db`, visible and checkable line by line.
 
 ## Design (proposed)
 
+> **Revised 2026-11-01: D1/D2 and D3 decided (Ian). This block supersedes items 2–3 below where they conflict.**
+> - **Bands are the pipeline's school bands**, not fixed K-5/6-8/9-12. A school goes to its band by
+>   `school_sampling.primary_bands_for` (`LEVEL` with the #498 carve-out). This is the same rule that bands
+>   the bell minutes, so minutes, teachers and students come from the same schools. Single-band schools
+>   (96.1% of teacher FTE, M1) are attributed whole.
+> - **Combined schools** (`primary_bands_for` returns more than one band: K-12-style 3.7%, 6-12 0.1% of
+>   FTE) are split by grade over the fixed-band overlap (`bands_for`), the pipeline's own fallback for
+>   them. `lea_grade_teacher_fte` keeps its per-grade grain, but for single-band schools it is
+>   attribution, not a split.
+> - **Scope names:** `teachers_band_elementary`, `teachers_band_middle`, `teachers_band_high`. They never
+>   reuse `teachers_elementary`, the quarantined LEA pair, whose rows stay readable after #1023.
+> - **Each band row records its grade span** (lowest–highest grade served by the band's schools in
+>   that district, e.g. K-5 or K-8), so a cross-district comparison can see and filter the variation.
+> - **Pre-K (D3):**
+>   - Subtract the district's LEA-reported `Pre-kindergarten Teachers` FTE from its school teachers.
+>     The FTE is allocated across the district's schools in proportion to Pre-K membership.
+>   - Drop the Pre-K students.
+>   - A district with Pre-K students and a reported Pre-K FTE of 0 has nothing subtracted and is flagged
+>     (1,207 LEAs in 2023-24).
+>   - Pro-rata is rejected: it overstates Pre-K teachers by 40% (M2).
+> - **Acceptance properties A4 and A6 below were written for fixed bands.** T6 adds an independent
+>   school-band PTR computation to the decisions measure script, and A4 is restated against it then.
+>   A6 (the K-5 regime gap) no longer applies as written. T9 reports the regime gap per band *and* per
+>   grade span.
+
 1. **`ccd_school_staffing`** (school × year), loaded **verbatim**: `ncessch`, `leaid`, `source_year`, `level`,
    `gslo`/`gshi` (029); `teachers_fte` + `teachers_dms_flag` (059); membership PK, KG, 1–12, 13, UG
    (052, "Subtotal 4 - By Grade"); one sha256 per source file; `loaded_at`. Missing/suppressed stays NULL
@@ -58,9 +83,15 @@ that produces them is stored in `lct_db`, visible and checkable line by line.
 
 **Status (Ian, 2026-11-01):** D4, D5, D7 **approved** as recommended. D6 **done**: Ian placed the 2023-24
 `ccd_sch_029/052/059` zips in `data/raw/federal/nces-ccd/2023_24/` (T3 still owes the catalog entries,
-`SOURCE.md` sha256s and manifest). **D1/D2, D3 and D8 are open for discussion** — Ian leans toward
-the pipeline's own school bands (below). The measurements gathered for that discussion are in the next
-section. The Design section above still describes the fixed-band proposal and is NOT yet revised.
+`SOURCE.md` sha256s and manifest). **D1/D2 and D3 decided** (later the same day): the Design section's revised block records them.
+**D8 is still open.** Two ways to spread the state's IDEA assigned SPED-teacher total across schools, for
+T11 to compute side by side on real rows:
+
+1. Today's key at school grain: self-contained students × the state ratio.
+2. The hybrid: each school's share of the state's CRDC SPEDCERT.
+
+Both keep the student side as it is today (self-contained students removed). Note that a SPEDCERT of 0
+means zero *certified*, not zero assigned.
 
 ## Decision measurements (2026-11-01, 2023-24 vintage)
 
@@ -173,12 +204,12 @@ education teachers, and membership counts students with disabilities. At school 
 |---|---|---|---|
 | T1 | One canonical grade→band map in `utilities/grade_bands.py`; the four spellings import it; call-site identity tests | — | no |
 | T2 | Deflate64 zip-member reader in `utilities/` (`inflate64`, size + CRC-32), dependency added | — | no |
-| T3 | `fetch_nces_ccd.py` catalog for 2023-24 + 2024-25 school 029/052/059; download 2023-24; `SOURCE.md` with sha256s; a tracked source manifest | — | D6 |
+| T3 | `fetch_nces_ccd.py` catalog for 2023-24 + 2024-25 school 029/052/059; download 2023-24; `SOURCE.md` with sha256s; a tracked source manifest | — | D6 — files in place |
 | T4 | Migration 033 + model: `ccd_school_staffing`, `lea_grade_teacher_fte` | — | no |
 | T5 | Importer `import_ccd_school_staffing.py` (verbatim, guards), wired into the CCD import, rebuild phase list and `verify_table_counts` | T2, T4 (T3 for 2023-24) | no |
-| T6 | Derivation into `lea_grade_teacher_fte` (one function, `method_version`) | T1, T5 | D3, D4, D5 |
-| T7 | The three scopes: migration 034 (`chk_staff_scope`), calc, scope registry, reports/QA, REQ-008 amended | T6 | D1, D2 |
-| T8 | Drift checks: DB-free sha-vs-manifest test; integration test (stored sha + SQL recompute + full re-derivation); pre-commit wiring | T5, T6 | D7 |
+| T6 | Derivation into `lea_grade_teacher_fte` (one function, `method_version`) | T1, T5 | D3, D4, D5 — decided |
+| T7 | The three scopes (`teachers_band_*`): migration 034 (`chk_staff_scope`), calc, scope registry, reports/QA, REQ-008 amended | T6 | D1, D2 — decided |
+| T8 | Drift checks: DB-free sha-vs-manifest test; integration test (stored sha + SQL recompute + full re-derivation); pre-commit wiring | T5, T6 | D7 — decided |
 | T9 | Read-only before/after measurement → **stop for Ian's adoption call** | T7, T8 | — |
 | T10 | Adopt: restore-verified `pg_dump`, scratch rehearsal, live migrations + import + recompute, row diff; METHODOLOGY / DATA_SOURCES / DATABASE_SETUP; REQ-190 | T9 + Ian | adoption |
 | T11 | GenEd band variants: CRDC 2023-24 school IDEA enrollment (measured) + the baseline SPED teacher ratio (estimated), at school grain; Special Education Schools per D8 | T10 | D8 |
