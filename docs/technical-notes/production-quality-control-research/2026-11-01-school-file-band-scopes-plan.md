@@ -56,6 +56,75 @@ that produces them is stored in `lct_db`, visible and checkable line by line.
 | D6 | 2023-24 school files | Fetch 029/052/059 for 2023-24 | 356 districts' rows use 2023-24 staffing; without them those districts get no band row. |
 | D7 | Drift-check gating | Pre-commit runs the DB drift test when Docker is up and **blocks** on drift; warns (does not block) when Docker is down; pre-push stays DB-free | Matches both hooks' current policy; Ian asked for a local pre-commit check. |
 
+**Status (Ian, 2026-11-01):** D4, D5, D7 **approved** as recommended. D6 **done**: Ian placed the 2023-24
+`ccd_sch_029/052/059` zips in `data/raw/federal/nces-ccd/2023_24/` (T3 still owes the catalog entries,
+`SOURCE.md` sha256s and manifest). **D1/D2, D3 and D8 are open for discussion** — Ian leans toward
+the pipeline's own school bands (below). The measurements gathered for that discussion are in the next
+section. The Design section above still describes the fixed-band proposal and is NOT yet revised.
+
+## Decision measurements (2026-11-01, 2023-24 vintage)
+
+Rerun: `2026-11-01-band-scope-decisions-measure.py` (imports the live `school_sampling.primary_bands_for`).
+
+**M1 — D1/D2, the pipeline's own school bands.** Ian's position: band a school as the acquisition pipeline
+already does (METHODOLOGY "Grade-band classification": `LEVEL` with the #498 carve-out, and grade-span
+overlap only for combined `LEVEL`s). The bell minutes are already measured per school band that way, so
+minutes, teachers and students would all come from the same schools. Under that rule:
+
+- **96.1% of teacher FTE sits in single-band schools**: elementary 47.8%, high 30.0%, middle 18.2%.
+  Whole-school attribution covers them with no per-grade split.
+- 3.7% sits in K-12-style combined schools and 0.1% in 6-12 combined schools. These need a split, and the
+  pipeline's own fallback for them is the fixed-band overlap (`bands_for`).
+- Compare the fixed-band design: 37% of schools span more than one fixed band.
+- The elementary band is not K-5 everywhere. By the school's top grade, its teachers sit 57.1% in schools
+  ending at grade 5, 14.8% ending at 6, 13.3% ending at 8, and 7.1% ending at 4.
+- **Name collision:** `teachers_elementary` is the quarantined LEA-pair scope. Its rows stay readable after
+  #1023, so reusing the name for a different definition would mix two meanings in `lct_calculations`
+  under one key.
+
+**M2 — D3, Pre-K.** The school file reports one `TEACHERS` total per school, Pre-K included (the LEA file's
+national `Teachers` of 3,283,457 matches the 3,239,020 school sum less the ~1.3% LEA-only FTE). It has no
+Pre-K breakout. The LEA file does have one, `Pre-kindergarten Teachers`:
+
+- Of 9,838 LEAs with Pre-K students, 9,731 report a Pre-K teacher count. 1,207 of those report 0.
+- **The pro-rata assumption overstates Pre-K teachers by 40%**: 95,864 estimated against 68,269 reported in
+  the same LEAs (a Pre-K PTR of 14.2 assumed, 20.0 reported).
+- Per LEA, reported ÷ pro-rata has a median of 0.70 (p25 0.45, p75 0.93).
+
+**M3/M4 — D8, CRDC `SCH_FTETEACH_SPEDCERT`.**
+
+- **It is school-level.** It is a school-form item, STAF-2. The 2023-24 form (School Form Table Layout)
+  reads: "enter the number of FTE teachers in **preschool and grades K-12** … who were employed at this
+  school and are **certified/licensed/endorsed** in the specified areas". Teachers on alternative-route,
+  emergency, temporary or provisional credentials are excluded.
+- **It is a certification count, not an assignment count.**
+  - Nationally it runs 1.11× IDEA 618's assigned SPED teachers for the same year: 505,196 against 454,492.
+    (The 412,993 quoted earlier in this note is IDEA's *certified* subset; the assigned total is 454,925.)
+  - By state it runs from 0.76× (AR) to 2.64× (DE): 1.89 IN, 1.86 MA, 1.77 OK, 1.55 VA, 0.85 CA.
+- **The school-grain holes are large:**
+  - 5,621 schools with ≥ 20 IDEA students report 0 SPEDCERT, covering 399,319 students.
+  - 948 schools report more SPEDCERT than CCD teachers.
+  - CRDC's own teacher total differs from CCD's by a median of 6.7%, and by more than 25% in 14.9% of
+    schools.
+- **Special Education Schools.** SPEDCERT is 77.6% of their teachers, and IDEA students are 90.2% of their
+  enrollment.
+- **Regular single-band schools.** SPEDCERT's share of teachers tracks the IDEA share of students in every
+  band:
+
+  | Band | SPEDCERT share of teachers | IDEA share of students |
+  |---|---|---|
+  | Elementary | 15.6% | 15.5% |
+  | Middle | 15.5% | 15.0% |
+  | High | 13.4% | 13.0% |
+
+  So the PTRs move as follows:
+
+  | PTR | Elementary | Middle | High |
+  |---|---|---|---|
+  | All teachers | 14.3 | 15.0 | 16.1 |
+  | Subtract both SPEDCERT and IDEA students | 14.3 | 15.1 | 16.2 |
+  | Subtract SPEDCERT only | 17.0 | 17.8 | 18.6 |
+
 ## Special education (added 2026-11-01, on Ian's question)
 
 The band scopes inherit the SPED skew `teachers_only` has. CCD school teacher FTE counts special
@@ -73,7 +142,9 @@ education teachers, and membership counts students with disabilities. At school 
 - The school-level IDEA enrollment (`Enrollment.csv` `SCH_ENR_IDEA_M/F/X`) MEASURES SPED students per
   school, rather than estimating them.
 - **There is no usable school-level SPED teacher count.** `School Support.csv` `SCH_FTETEACH_SPEDCERT` sums
-  to 509,135 FTE against the IDEA personnel baseline's 412,993 SPED teachers (2024-25). It counts teachers
+  to 509,135 FTE against the IDEA personnel baseline's 412,993 SPED teachers (2024-25). *(Corrected
+  2026-11-01, see "Decision measurements" M4: 412,993 is IDEA's certified subset; IDEA's assigned total is
+  454,925, personnel year 2023-24.)* It counts teachers
   *certified* in special education, not teachers *assigned* to it. SPED teachers per school would still be
   estimated with the baseline ratio, the same proportionality assumption `teachers_gened` makes today,
   applied at school grain.
