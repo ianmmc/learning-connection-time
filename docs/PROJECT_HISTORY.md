@@ -2635,3 +2635,54 @@ to a definition no outside authority catalogs.
 Authority: PRs #1007, #1015, #1016, #1024; issues #1003, #1004, #1009, #974, #984, #1017, #1022, #1023,
 #1025–#1033; `2026-10-31-idea-crdc-sped-baseline-refresh-plan.md`; `2026-11-01-ccd-level-teacher-split.md`
 (+ `-measure.py`); backups `lct-pre1004-…`, `lct-preMA-…`, `lct-pre1025-20261101T214129Z.dump`.
+
+### 2026-11-01 — The band scopes are built from the school files on the pipeline's own bands; and SPED teachers are spread by a teacher count, not a student one
+
+**Why now.** The level pair was quarantined the same day (#1017, entry above) on the understanding that the
+CCD school files would replace it. Before building, Ian took the eight design calls in #1022's plan
+(`2026-11-01-school-file-band-scopes-plan.md`). Each open call was measured first, on the 2023-24 vintage
+so that CCD and CRDC are the same year (`2026-11-01-band-scope-decisions-measure.py`).
+
+- **The bands are the pipeline's school bands, not fixed K-5/6-8/9-12 (D1/D2).** The plan proposed fixed
+  bands for cross-district comparability. Ian chose the classification the acquisition pipeline already
+  uses for bell minutes (`primary_bands_for`: `LEVEL` + the #498 carve-out). Minutes, teachers and
+  students then come from the same schools, and 96.1% of teacher FTE sits in single-band schools that need
+  no split. Under fixed bands, 37% of schools would have needed one. Combined schools (3.8% of FTE) split
+  by grade over the pipeline's own fallback (`bands_for`). Each band row records its grade span (an
+  elementary band is K-8 for 13% of elementary FTE). Names are `teachers_band_*`: reusing
+  `teachers_elementary` would put two definitions under one key, since the quarantined rows stay readable.
+  **The distinction that made this acceptable:** #1017 was a numerator and a denominator measured over
+  different grades. A band whose grades vary by district, but whose three factors share the same schools,
+  is honest about its students. The variation is recorded rather than normalized away.
+- **Pre-K uses the district's reported Pre-K FTE, not a pro-rata split (D3).** The school file has one
+  teacher total per school, Pre-K included. Pro-rata (Pre-K at the school's own ratio) estimates 95,864
+  Pre-K teachers where districts report 68,269. That is 40% too many, taken out of the elementary band. The
+  reported count is allocated by Pre-K membership. 1,207 districts with Pre-K students that report 0 are
+  flagged and get no subtraction.
+- **Coverage without imputation (D4/D5), the 2023-24 school files fetched (D6), drift checks blocking
+  at pre-commit when Docker is up (D7).** All as recommended.
+- **SPED in the band GenEd variants: the teacher-side hybrid (D8).** CRDC `SCH_FTETEACH_SPEDCERT` is a
+  school-level count, so Ian asked whether to subtract it directly. Its form wording (STAF-2) counts
+  *certification*: preschool included, regardless of assignment, provisional credentials excluded. It
+  runs 0.76×–2.64× IDEA's assigned SPED teachers by state, so a direct subtraction would import a
+  state-practice count, #1017 again.
+  **Decision:** scale each school's SPEDCERT share to the state's IDEA *assigned* total. The teacher side
+  then rests on two reported teacher counts, not on the student-derived estimate (self-contained students
+  × state ratio) that the district-level SPED scopes use. The student side keeps removing estimated
+  self-contained students. Measured caution: SPEDCERT and IDEA shares are nearly equal in every band, so
+  the GenEd result is driven mostly by which students are removed. T11 reports the hybrid next to
+  today's key before adoption.
+- **A number corrected on the way:** the 412,993 "IDEA SPED teachers" used in the first plan draft is
+  IDEA's *certified* subset; the assigned total is 454,925. Found by reading the column next to the one
+  used.
+
+**Lessons.**
+- **A design's own pipeline is a candidate authority for its definitions.** The comparability argument
+  for fixed bands lost to the consistency argument for bands already measured that way, once the split
+  burden was measured (96% vs 63% whole-school).
+- **A field's NAME is not its question.** "Number of FTE teachers — special education" reads as
+  assignment. The form asks about certification. Read the instrument, not the dictionary label.
+
+Authority: #1022 (D1–D8 comments), #1040, #1041, #1046; PR #1034; `2026-11-01-school-file-band-scopes-plan.md`
+(+ `2026-11-01-band-scope-decisions-measure.py`); METHODOLOGY "Band Scopes from the CCD School Files" and
+"GenEd band variants"; CRDC 2023-24 School Form Table Layout (STAF-2).

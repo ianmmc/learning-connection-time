@@ -84,14 +84,16 @@ that produces them is stored in `lct_db`, visible and checkable line by line.
 **Status (Ian, 2026-11-01):** D4, D5, D7 **approved** as recommended. D6 **done**: Ian placed the 2023-24
 `ccd_sch_029/052/059` zips in `data/raw/federal/nces-ccd/2023_24/` (T3 still owes the catalog entries,
 `SOURCE.md` sha256s and manifest). **D1/D2 and D3 decided** (later the same day): the Design section's revised block records them.
-**D8 is still open.** Two ways to spread the state's IDEA assigned SPED-teacher total across schools, for
-T11 to compute side by side on real rows:
+**D8 decided (Ian, later the same day): the hybrid.** Each school's share of the state's CRDC SPEDCERT
+spreads the state's IDEA assigned SPED-teacher total across schools. This replaces today's student-based
+key (self-contained students × state ratio) for the band GenEd variants. The student side stays as it is
+today (self-contained students removed). A SPEDCERT of 0 means zero *certified*, not zero assigned.
 
-1. Today's key at school grain: self-contained students × the state ratio.
-2. The hybrid: each school's share of the state's CRDC SPEDCERT.
+T11 still reports today's key alongside the hybrid on the same rows, as a comparison before adoption; it
+is not a re-opening of the decision. Method of record: METHODOLOGY → SPED Segmentation → "GenEd band
+variants".
 
-Both keep the student side as it is today (self-contained students removed). Note that a SPEDCERT of 0
-means zero *certified*, not zero assigned.
+**All of D1–D8 are now decided.**
 
 ## Decision measurements (2026-11-01, 2023-24 vintage)
 

@@ -30,12 +30,24 @@ As of December 2025, we calculate **seven LCT variants** using different staff d
 | **LCT-Support** | Above + counselors/psychologists | K-12 | Holistic support view |
 | **LCT-All** | All staff (excl. Pre-K teachers) | K-12 | Maximum resource investment |
 
-#### Teacher-Level Variants (2 additional)
+#### Band Scopes (3, from the CCD school files — design adopted 2026-11-01, being built under #1022)
+
+These replace the two level variants below. **No rows exist yet.** Until #1022's T10 adopts them, the only
+level numbers in `lct_calculations` are the quarantined pair. Method: **Band Scopes from the CCD School
+Files**, under Staff Count below.
 
 | Variant | Staff Scope | Enrollment | Use Case |
 |---------|-------------|------------|----------|
-| **LCT-Teachers-Elementary** | Elem + Kinder teachers | K-5 only | Elementary-specific analysis |
-| **LCT-Teachers-Secondary** | Secondary teachers only | 6-12 only | Secondary-specific analysis |
+| **LCT-Band-Elementary** (`teachers_band_elementary`) | Teachers of the district's elementary-band schools, Pre-K removed | The same schools' membership, Pre-K removed | Elementary-level analysis |
+| **LCT-Band-Middle** (`teachers_band_middle`) | Teachers of its middle-band schools | The same schools' membership | Middle-level analysis |
+| **LCT-Band-High** (`teachers_band_high`) | Teachers of its high-band schools | The same schools' membership | High-level analysis |
+
+#### Teacher-Level Variants (2, QUARANTINED #1017 — to be retired by #1023)
+
+| Variant | Staff Scope | Enrollment | Use Case |
+|---------|-------------|------------|----------|
+| **LCT-Teachers-Elementary** | Elem + Kinder teachers (CCD level split — state practice) | K-5 only | None across states: not comparable (#1017) |
+| **LCT-Teachers-Secondary** | Secondary teachers only (CCD level split — state practice) | 6-12 only | None across states: not comparable (#1017) |
 
 #### Key Methodology Decisions (December 2025)
 
@@ -46,8 +58,11 @@ As of December 2025, we calculate **seven LCT variants** using different staff d
    - **INCLUDED** in LCT-Core, LCT-Instructional, LCT-Support, LCT-All
 
 3. **Grade Boundaries**:
-   - Elementary (K-5): Kindergarten through Grade 5
-   - Secondary (6-12): Grades 6 through 12
+   - The quarantined level variants use fixed bands: elementary is K-5 and secondary is 6-12.
+   - The band scopes (2026-11-01) use **the district's own school bands**, the same classification the
+     acquisition pipeline uses to band bell minutes. A district's elementary band can therefore be K-5 in
+     one district and K-8 in another. Each band row records its grade span, so the variation is visible
+     rather than hidden.
 
 4. **QA Validation**: Level-based LCT calculations include `level_lct_notes` for transparency about data quality issues.
 
@@ -64,13 +79,16 @@ As of December 2025, we calculate **seven LCT variants** using different staff d
 | All | 59.8 min | 54.5 min | 14,250 |
 
 **Observed Patterns**:
-- Elementary LCT > Overall > Secondary (lower student-teacher ratios in elementary)
+- ~~Elementary LCT > Overall > Secondary~~ *(withdrawn 2026-11-01, #1017: the order is mostly the CCD
+  level-split artifact. The school files give national pupil/teacher ratios that rise only modestly from
+  elementary to high.)*
 - Broadening from teachers-only to all-staff adds ~27 minutes (median)
 
 **Recommended Usage**:
 - **Policy discussions**: Use LCT-Instructional (balanced, defensible)
 - **Conservative estimates**: Use LCT-Teachers (most restrictive)
-- **Level comparisons**: Use LCT-Teachers-Elementary vs LCT-Teachers-Secondary
+- **Level comparisons**: use the band scopes once adopted (#1022). Never compare the quarantined
+  LCT-Teachers-Elementary / -Secondary across states.
 - **Resource analysis**: Compare across all scopes to understand staffing mix impact
 
 See `docs/STAFFING_DATA_ENHANCEMENT_PLAN.md` for detailed scope definitions and data sources.
@@ -121,7 +139,9 @@ handling floating/merged bands + overlaps) into a `district_grade_minutes` table
 sums per-grade minutes × per-grade enrollment (`enrollment_grade_*`) to any staffing scope — the secondary
 variant now weights mid+high instead of high-only (`source=per_grade_bell|per_grade_mixed|per_grade_statutory`).
 Guarded to incorporated districts; the one-time recompute is gated on sign-off of the `per_grade_lct_sample`
-before/after. See `ACQUISITION_PIPELINE.md` §9 and `STAGE9_INCORPORATE_DESIGN.md` §4.
+before/after. See `ACQUISITION_PIPELINE.md` §9 and `STAGE9_INCORPORATE_DESIGN.md` §4. *(2026-11-01: the two
+bands this paragraph names are the quarantined level pair (#1017). The planned band scopes (#1022) consume
+the pipeline's three bands directly, from the same schools. See Band Scopes from the CCD School Files.)*
 
 **Example Values (Statutory)**:
 ```
@@ -190,8 +210,8 @@ See **Bell Schedule Sampling Policy** (below) for the sampling methodology, and
 > elementary numerator holds grade 6-8 teachers whose students sit in the 6-12 denominator: **elementary LCT is
 > inflated and secondary LCT deflated**. In OK and MO the split follows school type (K-8 schools are all
 > elementary). Both scopes are still computed, and are labelled *not comparable across states* wherever they
-> appear. They are to be replaced by band scopes derived from the CCD school files (each school's teachers
-> attributed to its own grades), then retired (REQ-190). `teachers_only` and every K-12 scope are unaffected:
+> appear. They are to be replaced by the band scopes derived from the CCD school files (**Band Scopes from
+> the CCD School Files**, below), then retired (REQ-190, #1023). `teachers_only` and every K-12 scope are unaffected:
 > the split cancels in a K-12 sum. Findings, research and the rejected correction plan:
 > `docs/technical-notes/production-quality-control-research/2026-11-01-ccd-level-teacher-split.md`.
 
@@ -237,6 +257,88 @@ scope_all = sum(all_staff_categories) - teachers_prek
 - Some staff categories may overlap (e.g., reading specialists counted as teachers)
 - District-level data may mask school-level variation
 
+#### Band Scopes from the CCD School Files (design adopted 2026-11-01; #1022)
+
+**Status.** The design was decided by Ian on 2026-11-01 (#1022 decisions D1–D8) and is being built in
+#1022's tasks T1–T11. Nothing below is computed yet. Where this section and the code disagree, the code
+is the authority, and this section is corrected and marked when the build lands (T10). Findings, decisions,
+roadmap and acceptance properties:
+`docs/technical-notes/production-quality-control-research/2026-11-01-school-file-band-scopes-plan.md`.
+The measurements are rerunnable with `2026-11-01-band-scope-decisions-measure.py` in the same folder.
+
+**Why school files.** The district (LEA) file's elementary/secondary teacher split follows state practice
+(#1017, the quarantine block above). The school files report teachers *per school*, so a school's teachers
+can be paired with that same school's students and bell minutes, whatever the state calls them.
+
+**Sources** (all NCES CCD, school level, one vintage per row):
+
+| File | Gives |
+|---|---|
+| `ccd_sch_029` (directory) | `LEVEL`, `GSLO`/`GSHI` grade span, `SCH_TYPE_TEXT`, open status |
+| `ccd_sch_059` (staff) | One `TEACHERS` FTE per school (Pre-K included; no grade or level breakout) with its `DMS_FLAG` |
+| `ccd_sch_052` (membership) | Students by grade, PK through 13 and ungraded |
+| `ccd_lea_059` | The district's `Pre-kindergarten Teachers` FTE, for the Pre-K rule |
+
+They are loaded verbatim into `ccd_school_staffing`, with one sha256 per source file. Missing or suppressed
+values stay NULL with their flag, never 0 (REQ-165). The derivation is stored per district × grade in
+`lea_grade_teacher_fte`, so an auditor can recompute any row with one SQL query.
+
+**1. Each school goes to the district's band for it.** The classification is the acquisition pipeline's
+own (`school_sampling.primary_bands_for`): NCES `LEVEL` (Elementary / Middle / High), with the #498
+carve-out (a `Middle` school on an intermediate span, starting ≤ grade 4 and topping ≤ grade 6, is
+elementary). See "Grade-band classification" under Bell Schedule Sampling Policy. Using the same rule
+that bands the bell minutes means minutes, teachers and students all come from the same schools.
+- **Single-band schools are attributed whole.** In 2023-24 they hold 96.1% of teacher FTE (elementary
+  47.8%, high 30.0%, middle 18.2%).
+- **Combined schools** are those whose `LEVEL` gives no single band (K-12-style schools, 3.7% of FTE;
+  6-12 schools, 0.1%). They are split by grade over the fixed-band overlap (`bands_for`: PK-5, 6-8, 9-13),
+  the pipeline's own fallback for them. Each grade gets the school's teachers × that grade's membership ÷
+  the school's membership. This assumes equal staffing across the grades of one combined school.
+- **What a band means varies by district, by design.** An elementary band is K-5 in one district and K-8
+  or K-6 in another. In 2023-24 its teachers sit 57% in schools ending at grade 5, 15% at grade 6, 13% at
+  grade 8 and 7% at grade 4. **Each band row records the grade span its schools serve**, so a comparison
+  can see and filter it. This is not the #1017 flaw. #1017 measured teachers and students over different
+  grades; here both come from the same schools.
+
+**2. Pre-K is removed from both sides (all scopes exclude Pre-K).** The school file does not break out
+Pre-K teachers. The district's **reported** `Pre-kindergarten Teachers` FTE is allocated across its
+schools in proportion to their Pre-K membership and subtracted, and Pre-K students are dropped.
+- A district with Pre-K students that reports 0 Pre-K FTE has nothing subtracted, and its row is flagged
+  (1,207 of 9,731 such LEAs in 2023-24). Its Pre-K may be taught by outside providers, or counted by the
+  state as elementary.
+- **Rejected: a pro-rata split**, which gives Pre-K the school's own pupil/teacher ratio. It estimates
+  95,864 Pre-K teachers where the same districts report 68,269 (an assumed Pre-K ratio of 14.2 against a
+  reported 20.0), so it would remove 40% too many teachers from the elementary band.
+
+**3. Coverage, without imputation.**
+- A school with a missing or suppressed teacher count (4,063 schools, 2024-25) is excluded from BOTH
+  numerator and denominator, and the excluded share is recorded. A band row is published only when the
+  reporting schools hold **≥ 90% of the district's band membership**.
+- Teacher FTE reported only at the LEA level (~1.3% nationally) cannot be attributed to a school. It is
+  left unattributed and stored per district. `teachers_only` keeps counting it.
+
+**4. Formula.** For band B in a district, summing over its reporting schools in B (with the B-grades of
+its combined schools):
+
+```
+LCT_B = minutes_B × Σ (teachers − allocated Pre-K teachers) / Σ (membership − Pre-K membership)
+```
+
+`minutes_B` is the band's own gross bell-to-bell minutes from Stage 9, the mode over the same band's
+schools, or the statutory value where no schedule was acquired. Its exact binding to `bell_schedules` /
+`district_grade_minutes` is settled in T7.
+
+**5. Special education (GenEd band variants, T11).** The three band scopes count all teachers and all
+students, special education included: they are the band analogue of `teachers_only`. GenEd band variants
+follow in T11, using the **teacher-side hybrid** decided 2026-11-01 (D8). See SPED Segmentation → "GenEd
+band variants".
+
+**Acceptance (abridged; full list in the plan note):**
+- Every existing scope is md5-identical before and after; only new rows appear.
+- Grades + unattributed + excluded FTE reconcile to each district's LEA teacher total.
+- Each drift check fails on an altered input, an altered source hash, and an empty table.
+- National band ratios reproduce an independent computation in the measure script.
+
 #### 3. Student Enrollment
 
 **Definition**: Student membership count, with scope varying by LCT variant
@@ -257,8 +359,9 @@ Individual grade counts aggregated by level:
 | LCT Variant | Enrollment Used | Rationale |
 |-------------|-----------------|-----------|
 | **All base scopes** | **K-12 enrollment** | Pre-K excluded for consistency |
-| LCT-Teachers-Elementary | K-5 enrollment | Elementary grades only |
-| LCT-Teachers-Secondary | 6-12 enrollment | Secondary grades only |
+| LCT-Teachers-Elementary (QUARANTINED #1017) | K-5 enrollment | Elementary grades only |
+| LCT-Teachers-Secondary (QUARANTINED #1017) | 6-12 enrollment | Secondary grades only |
+| LCT-Band-* (#1022, not yet computed) | Membership of the band's reporting schools, from the school file `ccd_sch_052`, Pre-K removed | Same schools as the teacher count; see Band Scopes from the CCD School Files |
 
 **Enrollment Calculations**:
 ```python
@@ -454,6 +557,7 @@ LCT = 104,975 minutes / 8,500 students
 | LCT-All | enrollment_k12 > 0 | scope_all > 0 | K-12 only |
 | LCT-Teachers-Elementary | enrollment_elementary > 0 | teachers_elementary_k5 > 0 | K-5 only; QUARANTINED (#1017) |
 | LCT-Teachers-Secondary | enrollment_secondary > 0 | teachers_secondary_6_12 > 0 | 6-12 only; QUARANTINED (#1017) |
+| LCT-Band-* (#1022, planned) | band membership > 0 | band teachers > 0 | Published only at ≥ 90% reporting-school coverage of band membership; row carries its grade span |
 
 **Level-Based QA Validation**:
 
@@ -775,6 +879,73 @@ LCT equals `teachers_only` LCT to < 0.005 min. `tests/test_sped_segmentation.py:
 evaluates it on the live rows (2026-10-31: 14,448 of 14,448 districts). Outside it by construction:
 rows the 360 cap clipped, CA actual-enrollment overrides, and the ~210 BLENDED headline rows whose
 enrollment year differs from their staff year (a SPED estimate is year-keyed on one year).
+
+### GenEd band variants — the teacher-side hybrid (decided 2026-11-01, D8; built in #1022 T11 / #1046)
+
+**Status:** decided, not yet computed. It applies to the band scopes (Band Scopes from the CCD School
+Files, under Staff Count). The district-level SPED scopes above are unchanged.
+
+**The change.** Today each district's SPED teachers are estimated *from students*: self-contained students
+× the state's SPED teachers per self-contained student. At school grain the band variants instead spread
+each state's **IDEA 618 assigned SPED-teacher total** across its schools *by a teacher count each school
+reports*:
+
+```
+SPED teachers_s  = IDEA assigned SPED teachers_state × SPEDCERT_s / Σ_{schools in state} SPEDCERT
+GenEd teachers_s = school teachers_s (Pre-K removed) − SPED teachers_s
+GenEd students_s = school K-12 membership_s − self-contained SPED_s
+self-contained_s = CRDC school IDEA enrollment_s × self-contained share (LEA at ≥ 200 school-age SPED, else state)
+```
+
+`SPEDCERT_s` is CRDC `SCH_FTETEACH_SPEDCERT`. The band variant sums the GenEd terms over the band's schools,
+as the band scopes do.
+
+**Why the hybrid, not CRDC's count directly.** `SCH_FTETEACH_SPEDCERT` is reported per school (CRDC
+2023-24 school form, item STAF-2). But it counts teachers "in preschool and grades K-12 … employed at this
+school and **certified/licensed/endorsed**" in special education, regardless of assignment. It also leaves
+out teachers on emergency, provisional or alternative-route credentials. Measured against IDEA's assigned
+SPED teachers for the same year (2023-24), it is 1.11× nationally (505,196 vs 454,492), and **0.76× (AR)
+to 2.64× (DE)** by state: a state-practice count, the #1017 problem again. Scaling to each state's IDEA
+assigned total removes that state-level bias and keeps the school-level pattern. On the teacher side,
+the result rests on two reported teacher counts, not on a student proportion.
+
+**What still rests on an estimate.**
+- **The student side.** Self-contained students per school are still CRDC IDEA enrollment × an
+  environment share (IDEA's environments are published per LEA and state, not per school).
+- **The distribution key.** It assumes that within a state, certified SPED teachers are spread across
+  schools the way assigned ones are.
+
+**Known limitations.**
+- **CRDC zeros.** A school reporting `SPEDCERT = 0` gets 0 SPED teachers, and a CRDC zero means zero
+  *certified*, not zero assigned (5,621 schools with ≥ 20 IDEA students report 0; 399,319 students).
+- **More certified SPED teachers than teachers.** 948 schools report a SPEDCERT above CCD's teacher count,
+  so a GenEd estimate can go negative. It is flagged, never clipped silently.
+- **Pre-K in the key.** The key includes preschool teachers; the IDEA total is school-age (5-21).
+- **CRDC is biennial** (2023-24, then 2025-26). A 2024-25 band row pairs with 2023-24 CRDC within the
+  REQ-026 window. School matching covers 96.7% of CCD teacher FTE.
+- **Special Education Schools** carry SPEDCERT on 77.6% of their teachers and IDEA students on 90.2% of
+  their enrollment, so the key places most of their staff on the SPED side without a separate rule.
+
+**Measured context.** In regular single-band schools, SPEDCERT's share of teachers tracks the IDEA share of
+students in every band:
+
+| Band | SPEDCERT share of teachers | IDEA share of students |
+|---|---|---|
+| Elementary | 15.6% | 15.5% |
+| Middle | 15.5% | 15.0% |
+| High | 13.4% | 13.0% |
+
+Pupil/teacher ratios under the three treatments:
+
+| Treatment | Elementary | Middle | High |
+|---|---|---|---|
+| All teachers, all students | 14.3 | 15.0 | 16.1 |
+| SPEDCERT teachers and all IDEA students removed | 14.3 | 15.1 | 16.2 |
+| SPEDCERT teachers removed, all students kept | 17.0 | 17.8 | 18.6 |
+
+The GenEd result is therefore driven mostly by which students leave the denominator, not by which teacher
+source is used. T11 computes the hybrid alongside today's student-based key on the same rows and reports
+both before adoption.
 
 **Database tables:** `sped_state_baseline` (56 states/territories per `baseline_year`, IDEA 618 ratios),
 `sped_lea_baseline` (18,626 LEAs for 2024-25, 18,606 for 2017-18; CRDC SPED proportion), `sped_estimates`

@@ -208,12 +208,20 @@ pipeline track (B) is unchanged from 08-26 (`docs/scratch-paper/2026-08-25-fresh
 `docs/technical-notes/production-quality-control-research/2026-11-01-ccd-level-teacher-split.md`
 (findings, research, the REJECTED correction plan and why, acceptance properties); rerun its numbers with
 `…/2026-11-01-ccd-level-teacher-split-measure.py [--school-files]`.
-1. **#1022 phase 2 — PLAN WRITTEN, awaiting Ian's calls D1–D8** (D8 = SPED in the band scopes, T11 #1046):
-   `docs/technical-notes/production-quality-control-research/2026-11-01-school-file-band-scopes-plan.md`
-   (verified findings, design, decisions with recommendations, roadmap T1–T11 as #1022's sub-issues (#1035–#1044, #1046),
-   acceptance A1–A7). **T1 (one grade→band map in `utilities/`), T2 (Deflate64 reader, `inflate64`) and
-   T4 (migration 033) are NOT gated** and can start now. Key facts: per-GRADE attribution, not per-school
-   (37% of schools span >1 band); the pre-push hook and DB-free tests forbid DB access, so the drift check
+1. **#1022 phase 2 — PLAN WRITTEN, D1–D8 ALL DECIDED (Ian, 2026-11-01)**:
+   `docs/technical-notes/production-quality-control-research/2026-11-01-school-file-band-scopes-plan.md`.
+   It holds the verified findings, the design (its "Revised" block supersedes the fixed-band items), the
+   decisions and their measurements, roadmap T1–T11 as #1022's sub-issues (#1035–#1044, #1046), and
+   acceptance A1–A7.
+   - **Method of record:** METHODOLOGY "Band Scopes from the CCD School Files" and "GenEd band variants".
+   - **Ready to start:** every task up to T9. 2023-24 school zips are in place.
+   - **Key facts:**
+     - Bands are the pipeline's own SCHOOL bands (`primary_bands_for`), named `teachers_band_*`, with the
+       grade span on each row. Single-band schools (96.1% of FTE) are attributed whole; combined schools
+       are split by grade.
+     - Pre-K uses the LEA-reported Pre-K FTE.
+     - The SPED GenEd variants spread IDEA's assigned state total by school CRDC SPEDCERT share.
+     - The pre-push hook and DB-free tests forbid DB access, so the drift check
    is pre-commit-when-Docker-is-up (D7), not pre-push.
 2. **#1023 phase 3** — retire the LEA pair once #1022 validates (rows stay readable; move
    `per_grade_lct_sample.py` to the new secondary scope).
