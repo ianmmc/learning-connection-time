@@ -2,88 +2,119 @@
 
 The schema invariant from PR #641: a table declared twice (migration DDL for a migrated DB, the
 models for a fresh `create_all()` DB) must be declared identically, or the two kinds of database
-diverge. Each test builds the tables BOTH ways in throwaway databases on the local Postgres server
-and compares information_schema: columns (type, length, precision, nullability, default presence),
-primary keys and CHECK constraint names. The live LCT database is never touched.
+diverge, on CI only. Each test builds the tables BOTH ways and compares the catalog:
+  - columns: type, length, precision/scale, nullability, default presence
+  - every constraint by name AND body (`pg_get_constraintdef`: PK columns, CHECK expressions)
+  - every index by name AND definition (`pg_indexes.indexdef`)
+  - table comments (`obj_description`)
+(#1062: the first version compared CHECK constraints by name only and never looked at indexes.)
+
+Isolation is by SCHEMA, not database (#1063): two throwaway schemas on the governance Postgres,
+`search_path` set per connection, dropped in `finally`. That needs only CREATE on the database,
+which the governance user has locally (owner) and in CI (the service container's superuser), so the
+test runs in the `govdb` CI job rather than only on a developer's machine. The governance DB's own
+tables are never touched; the live LCT DB is never connected to. Skips when Postgres is down.
 """
 import uuid
 from pathlib import Path
 
 import pytest
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.govdb, pytest.mark.integration]
 
 TABLES = ("ccd_school_staffing", "lea_school_staffing", "lea_band_staffing", "lea_grade_teacher_fte")
 MIGRATION = (Path(__file__).resolve().parents[1]
              / "infrastructure/database/migrations/033_ccd_school_staffing.sql")
 
 
-def _shape(engine):
-    with engine.connect() as c:
-        cols = c.execute(text(
-            "SELECT table_name, column_name, data_type, character_maximum_length, numeric_precision, "
-            "numeric_scale, is_nullable, column_default IS NOT NULL "
-            "FROM information_schema.columns WHERE table_name = ANY(:t) ORDER BY 1, 2"),
-            {"t": list(TABLES)}).all()
-        cons = c.execute(text(
-            "SELECT tc.table_name, tc.constraint_type, tc.constraint_name, "
-            "string_agg(k.column_name, ',' ORDER BY k.ordinal_position) "
-            "FROM information_schema.table_constraints tc "
-            "LEFT JOIN information_schema.key_column_usage k ON k.constraint_name = tc.constraint_name "
-            "WHERE tc.table_name = ANY(:t) AND tc.constraint_type IN ('PRIMARY KEY', 'CHECK') "
-            "AND tc.constraint_name NOT LIKE '%_not_null' "
-            "GROUP BY 1, 2, 3 ORDER BY 1, 2, 3"), {"t": list(TABLES)}).all()
-    return [tuple(r) for r in cols], [tuple(r) for r in cons]
+def _shape(conn, schema: str) -> dict:
+    """Everything that decides which rows a table accepts and how it is reached, keyed so the two
+    schemas compare directly. The schema name itself is stripped from index definitions."""
+    cols = conn.execute(text(
+        "SELECT table_name, column_name, data_type, character_maximum_length, numeric_precision, "
+        "numeric_scale, is_nullable, column_default IS NOT NULL "
+        "FROM information_schema.columns WHERE table_schema = :s ORDER BY 1, 2"), {"s": schema}).all()
+    cons = conn.execute(text(
+        "SELECT c.relname, k.conname, k.contype, pg_get_constraintdef(k.oid) "
+        "FROM pg_constraint k JOIN pg_class c ON c.oid = k.conrelid "
+        "JOIN pg_namespace n ON n.oid = k.connamespace WHERE n.nspname = :s ORDER BY 1, 2"), {"s": schema}).all()
+    idx = conn.execute(text(
+        "SELECT tablename, indexname, replace(indexdef, :s || '.', '') "
+        "FROM pg_indexes WHERE schemaname = :s ORDER BY 1, 2"), {"s": schema}).all()
+    comments = conn.execute(text(
+        "SELECT c.relname, obj_description(c.oid, 'pg_class') FROM pg_class c "
+        "JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = :s AND c.relkind = 'r' "
+        "ORDER BY 1"), {"s": schema}).all()
+    return {"columns": [tuple(r) for r in cols], "constraints": [tuple(r) for r in cons],
+            "indexes": [tuple(r) for r in idx], "comments": [tuple(r) for r in comments]}
 
 
 @pytest.fixture
-def scratch_dbs():
-    from infrastructure.database.connection import get_engine
-    from infrastructure.utilities.db_url import engine_connect_args, sqlalchemy_url
-
-    base = get_engine().url
-
-    def engine_for(db, **kw):
-        url = sqlalchemy_url(base.set(database=db).render_as_string(hide_password=False))
-        return create_engine(url, connect_args=engine_connect_args(url), **kw)
-
-    admin = engine_for("postgres", isolation_level="AUTOCOMMIT")
-    names = [f"scratch_1038_{tag}_{uuid.uuid4().hex[:8]}" for tag in ("mig", "orm")]
-    with admin.connect() as c:
-        for n in names:
-            c.execute(text(f'CREATE DATABASE "{n}"'))
-    engines = [engine_for(n) for n in names]
+def scratch_schemas():
+    """Yield a function that makes a fresh throwaway schema and returns a connection whose
+    search_path is that schema. Every schema made is dropped afterwards, whatever happened."""
+    from infrastructure.acquisition.common import db as gdb
     try:
-        yield engines
+        engine = gdb.get_engine()
+        with engine.connect() as c:
+            c.execute(text("SELECT 1"))
+    except OperationalError as e:
+        pytest.skip(f"governance Postgres unavailable: {e}")
+    made, conns = [], []
+
+    def make(tag: str):
+        name = f"scratch_1038_{tag}_{uuid.uuid4().hex[:8]}"
+        conn = engine.connect()
+        conns.append(conn)
+        conn.execute(text(f'CREATE SCHEMA "{name}"'))
+        conn.commit()
+        made.append(name)
+        conn.execute(text(f'SET search_path TO "{name}"'))
+        return name, conn
+    try:
+        yield make
     finally:
-        for e in engines:
-            e.dispose()
-        with admin.connect() as c:
-            for n in names:
-                c.execute(text(f'DROP DATABASE IF EXISTS "{n}" WITH (FORCE)'))
-        admin.dispose()
+        for c in conns:
+            c.rollback()
+        with engine.begin() as c:
+            for name in made:
+                c.execute(text(f'DROP SCHEMA IF EXISTS "{name}" CASCADE'))
+        for c in conns:
+            c.close()
 
 
-def test_migration_033_and_models_declare_the_same_tables(scratch_dbs):
+def _apply_migration(conn):
+    conn.exec_driver_sql(MIGRATION.read_text())
+    conn.commit()
+
+
+def _create_all(conn):
     from infrastructure.database.models import Base
-    mig, orm = scratch_dbs
-    with mig.begin() as c:
-        c.exec_driver_sql(MIGRATION.read_text())
-    Base.metadata.create_all(orm, tables=[Base.metadata.tables[t] for t in TABLES])
-
-    mig_cols, mig_cons = _shape(mig)
-    orm_cols, orm_cons = _shape(orm)
-    assert {r[0] for r in mig_cols} == set(TABLES)
-    assert mig_cols == orm_cols
-    assert mig_cons == orm_cons
+    Base.metadata.create_all(conn, tables=[Base.metadata.tables[t] for t in TABLES])
+    conn.commit()
 
 
-def test_migration_033_is_idempotent(scratch_dbs):
-    mig, _ = scratch_dbs
-    sql = MIGRATION.read_text()
-    with mig.begin() as c:
-        c.exec_driver_sql(sql)
-    with mig.begin() as c:
-        c.exec_driver_sql(sql)          # IF NOT EXISTS throughout: a second apply is a no-op
-    assert {r[0] for r in _shape(mig)[0]} == set(TABLES)
+def test_migration_033_and_models_declare_the_same_tables(scratch_schemas):
+    mig_name, mig = scratch_schemas("mig")
+    orm_name, orm = scratch_schemas("orm")
+    _apply_migration(mig)
+    _create_all(orm)
+    a, b = _shape(mig, mig_name), _shape(orm, orm_name)
+    assert {r[0] for r in a["columns"]} == set(TABLES)
+    for part in ("columns", "constraints", "indexes", "comments"):
+        assert a[part] == b[part], part
+    # the comparison must have seen the things it claims to compare
+    assert any(k[2] == "c" for k in a["constraints"]), "no CHECK constraint compared"
+    assert any(k[2] == "p" for k in a["constraints"]), "no PRIMARY KEY compared"
+    assert any("idx_ccd_school_staffing_lea" == i[1] for i in a["indexes"]), "the leaid index was not compared"
+    assert sum(1 for c in a["comments"] if c[1]) == 2, "the two table comments were not compared"
+
+
+def test_migration_033_is_idempotent(scratch_schemas):
+    name, conn = scratch_schemas("idem")
+    _apply_migration(conn)
+    before = _shape(conn, name)
+    _apply_migration(conn)          # IF NOT EXISTS throughout: a second apply is a no-op
+    assert _shape(conn, name) == before and {r[0] for r in before["columns"]} == set(TABLES)

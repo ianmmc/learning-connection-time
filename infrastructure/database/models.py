@@ -471,6 +471,9 @@ class CCDSchoolStaffing(Base):
         PrimaryKeyConstraint("ncessch", "source_year", name="pk_ccd_school_staffing"),
         CheckConstraint("teachers_fte IS NULL OR teachers_fte >= 0", name="chk_css_teachers_fte"),
         Index("idx_ccd_school_staffing_lea", "leaid", "source_year"),
+        {"comment": "CCD school files (029 directory, 052 membership, 059 staff) loaded verbatim per school x "
+                    "year (#1038). Missing or suppressed values are NULL with their DMS flag, never 0. The "
+                    "source for the school-file band scopes (#1022)."},
     )
 
 
@@ -540,6 +543,10 @@ class LEAGradeTeacherFTE(Base):
         CheckConstraint(_BAND_CHECK, name="chk_lgtf_band"),
         CheckConstraint("grade IN ('KG','01','02','03','04','05','06','07','08','09','10','11','12')", name="chk_lgtf_grade"),
         CheckConstraint("teacher_fte >= 0", name="chk_lgtf_fte"),
+        {"comment": "Teacher FTE attributed to (district, band, grade) from ccd_school_staffing: single-band "
+                    "schools whole, combined schools split by grade membership, the LEA-reported Pre-K FTE "
+                    "removed. Membership is from the same schools. Derived; method_version names the "
+                    "derivation (#1022 T6)."},
     )
 
 
