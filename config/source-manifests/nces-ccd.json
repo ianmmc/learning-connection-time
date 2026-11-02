@@ -1,0 +1,70 @@
+{
+  "source": "nces-ccd",
+  "base": "data/raw/federal/nces-ccd",
+  "years": {
+    "2023-24": [
+      {
+        "file": "ccd_sch_029_2324_w_1a_073124.zip",
+        "bytes": 12624979,
+        "sha256": "3910300771b1db27e0589d014451f95e3190ca71ab4dcabe06227224f58b4ecb",
+        "url": "https://nces.ed.gov/ccd/Data/zip/ccd_sch_029_2324_w_1a_073124.zip",
+        "file_mtime": "2026-11-02"
+      },
+      {
+        "file": "ccd_sch_052_2324_l_1a_073124.zip",
+        "bytes": 207481236,
+        "sha256": "06bd50eede0c036e4c92b6464b69f192ff3b8f9f739b403c2b218a9f6ec3e239",
+        "url": "https://nces.ed.gov/ccd/Data/zip/ccd_sch_052_2324_l_1a_073124.zip",
+        "file_mtime": "2026-11-02"
+      },
+      {
+        "file": "ccd_sch_059_2324_l_1a_073124.zip",
+        "bytes": 5615760,
+        "sha256": "182a8278a4b8af678c648ad3337c2f1b4a96f09ae4477541c9d094cc530b0ca8",
+        "url": "https://nces.ed.gov/ccd/Data/zip/ccd_sch_059_2324_l_1a_073124.zip",
+        "file_mtime": "2026-11-02"
+      },
+      {
+        "file": "ccd_lea_059_2324_l_1a_073124.csv",
+        "bytes": 59622125,
+        "sha256": "caeb7c0aa41191092d82e5aa03ac90e0b38545a873b35f3d6bfaaa5ffbe8b211",
+        "url": "https://nces.ed.gov/ccd/Data/zip/ccd_lea_059_2324_l_1a_073124.zip",
+        "member": "ccd_lea_059_2324_l_1a_073124.csv",
+        "file_mtime": "2024-11-10"
+      }
+    ],
+    "2024-25": [
+      {
+        "file": "ccd_sch_029_2425_w_1a_073025.csv",
+        "bytes": 41009122,
+        "sha256": "6d5d047985542f953550804e59fea08020f9e17bdcf63bab574d8f2718e129fc",
+        "url": "https://nces.ed.gov/ccd/Data/zip/ccd_sch_029_2425_w_1a_073025.zip",
+        "member": "ccd_sch_029_2425_w_1a_073025.csv",
+        "file_mtime": "2025-12-23"
+      },
+      {
+        "file": "ccd_sch_052_2425_l_1a_073025.zip",
+        "bytes": 212696691,
+        "sha256": "4a7f660c5fc5eaae488dd02fd43498f349fc828b227edd0970d5b6995ead4d4d",
+        "url": "https://nces.ed.gov/ccd/Data/zip/ccd_sch_052_2425_l_1a_073025.zip",
+        "file_mtime": "2026-06-22"
+      },
+      {
+        "file": "ccd_sch_059_2425_l_1a_073025.csv",
+        "bytes": 14653668,
+        "sha256": "bc061c9375a1c4d4e21b6a50edb04b6d9ba0a08215530aca5fc5c9504574afb1",
+        "url": "https://nces.ed.gov/ccd/Data/zip/ccd_sch_059_2425_l_1a_073025.zip",
+        "member": "ccd_sch_059_2425_l_1a_073025.csv",
+        "file_mtime": "2025-12-27"
+      },
+      {
+        "file": "ccd_lea_059_2425_l_1a_073025.csv",
+        "bytes": 59685747,
+        "sha256": "b74a2eacc37d1bd8d225b697797b4890f2d3ac36c115bdbdd1c25871f1d9d205",
+        "url": "https://nces.ed.gov/ccd/Data/zip/ccd_lea_059_2425_l_1a_073025.zip",
+        "member": "ccd_lea_059_2425_l_1a_073025.csv",
+        "file_mtime": "2025-12-23"
+      }
+    ]
+  }
+}

@@ -440,6 +440,12 @@
       },
       {
         "file": "infrastructure/scripts/download/fetch_nces_ccd.py",
+        "literal": "2024-25",
+        "count": 1,
+        "why": "CCD_CATALOG key for the 2024-25 release zips (#1037). A catalog ENTRY naming a fixed vintage, not 'current' (which is NCES_PRIMARY_YEAR)."
+      },
+      {
+        "file": "infrastructure/scripts/download/fetch_nces_ccd.py",
         "literal": "2023-24",
         "count": 1,
         "why": "CCD_CATALOG key: the download catalog is keyed by the vintage each NCES release zip carries."
