@@ -2583,3 +2583,105 @@ Everything after followed from "fix the measurement before refreshing it."
 Authority: `0155947` (license); PRs #971 `ab5c6c0`, #973 `f3c83ce`; branch `fix/975-989-review-findings`
 PR #1005; `2026-10-30-total-row-and-year-default-guards-plan.md`;
 `2026-10-31-idea-crdc-sped-baseline-refresh-plan.md`; issues #970, #972, #974, #975–#989, #999–#1004.
+
+### 2026-10-31/11-01 — The SPED baseline refresh is adopted; MA's SEA vintage is honest; and the level scopes are quarantined because no fix to them can be audited
+
+**Why now.** The IDEA/CRDC refresh planned on 10-30/31 was executed through its decision gate. A naive
+"does this LCT make sense?" check afterwards found the elementary scope ~41% high, which an audit traced
+to a definition no outside authority catalogs.
+
+- **The 2024-25 SPED baseline is adopted (Ian's T5 calls, #1003).** The 5-21 "School Age" band; each
+  LEA's SPED share divides by CRDC's own total (the same schools as the numerator); and the REQ-026
+  exemption is **retired** — the ratio vintages are stamped into `component_years.sped_ratio` and the
+  migration-030 trigger windows them like any other component. The 2017-18 rows stay side by side
+  (multi-vintage tables, #999). The #241 Stage-5 hold floor, which had borrowed `SPED_BASELINE_YEAR`,
+  got its own `BELL_VALIDITY_FLOOR_YEAR = 2017-18` so the move changed nothing in Stage 5 (#1006 asks
+  whether that floor should move or be re-grounded).
+- **#974: the SPED partition starts from `teachers_only`**, so `core_sped + teachers_gened` partitions
+  the headline scope exactly. **#1004 step 1:** a district uses its own IDEA LEA self-contained share
+  at ≥ 200 school-age SPED students, else the state share — the rule lives in the vintage profile, as
+  data. Step 2 (the LEA SPED count as numerator) stays open; its trap is that IDEA counts parentally
+  placed private-school students in the private school's LEA.
+- **A window violation must fall back, not be written (#1009).** Once ratio years entered the window,
+  44 districts' 2026-27 bell years were coherent with staff/enrollment but not with the ratio years, and
+  the trigger wrote them `ERR_SPAN_EXCEEDED`; they now fall back to statutory like any incoherent blend.
+  **Process lesson:** that live write happened *before* its rehearsal, because the rehearsal script's
+  DB override named an env var that does not exist and its guard printed instead of aborting. Live
+  matched the later rehearsal row for row, but the order was wrong. Since then every write states the
+  target and checks `get_engine().url.database` before it runs.
+- **MA's SEA teacher file is labelled by the year it says it is (#984, PR #1015).** The rows stamped
+  2025-26 were the 2024-25 DESE export: a logged relabel (`data_lineage`) moved them to 2024-25, the
+  2025-26 file imported under its own title-row-checked vintage, and the merge supplemented
+  `teachers_total` only — every `scope_*` stays NCES, so `lct_calculations` did not move (md5).
+- **`outputs/current-lct-calculations/` was retired (PR #1016).** A hand-copied 2023-24 snapshot read as
+  "current" in an audit. Current LCT lives in `lct_calculations`; run files in `data/enriched/`.
+- **The CCD elementary/secondary teacher split follows state practice, and nobody catalogs it (#1017).**
+  FS059 "elementary" is any span up to grade 8 "by state and local practice"; in ~22 jurisdictions
+  unified K-12 districts report 0.60–0.71 of teachers as elementary (≈ the K-8 enrollment share), and
+  OK/MO classify by school type. FS5018 metadata, NCES state notes, CCSSO/NASBE/NCSL/ECS: no catalog.
+  **Decision (Ian, 11-01): quarantine, then replace with school-file band scopes, then retire.** A
+  per-district inference table to correct the LEA pair was designed and **rejected**: its evidence
+  would be the school files, making the corrected pair a roundabout copy of the planned school-file
+  scopes (two disagreeing band answers), resting on a per-district judgement hard to audit under
+  REQ-165. This reversed Ian's same-day "add alongside, don't replace" call. **Lesson:** when the fix
+  for a flawed measure needs the evidence a planned measure uses directly, build the direct measure.
+- **A quarantine must travel with the data, not the reports (PR #1024 review, #1025).** The first
+  version labelled six presenters and left the stored rows, the exports and the MCP server unmarked.
+  The caveat now has one home (`infrastructure/utilities/lct_scopes.py`) and every level-scope row
+  carries a `QUARANTINED_1017` token in `notes`, written live 11-01 (run `20261101T214220Z`: 163,962
+  rows, every non-`notes` column identical, the token on exactly the 30,097 level rows). The token is
+  stripped before counting QA notes — unstripped it would have nearly doubled `districts_with_qa_notes`.
+
+Authority: PRs #1007, #1015, #1016, #1024; issues #1003, #1004, #1009, #974, #984, #1017, #1022, #1023,
+#1025–#1033; `2026-10-31-idea-crdc-sped-baseline-refresh-plan.md`; `2026-11-01-ccd-level-teacher-split.md`
+(+ `-measure.py`); backups `lct-pre1004-…`, `lct-preMA-…`, `lct-pre1025-20261101T214129Z.dump`.
+
+### 2026-11-01 — The band scopes are built from the school files on the pipeline's own bands; and SPED teachers are spread by a teacher count, not a student one
+
+**Why now.** The level pair was quarantined the same day (#1017, entry above) on the understanding that the
+CCD school files would replace it. Before building, Ian took the eight design calls in #1022's plan
+(`2026-11-01-school-file-band-scopes-plan.md`). Each open call was measured first, on the 2023-24 vintage
+so that CCD and CRDC are the same year (`2026-11-01-band-scope-decisions-measure.py`).
+
+- **The bands are the pipeline's school bands, not fixed K-5/6-8/9-12 (D1/D2).** The plan proposed fixed
+  bands for cross-district comparability. Ian chose the classification the acquisition pipeline already
+  uses for bell minutes (`primary_bands_for`: `LEVEL` + the #498 carve-out). Minutes, teachers and
+  students then come from the same schools, and 96.1% of teacher FTE sits in single-band schools that need
+  no split. Under fixed bands, 37% of schools would have needed one. Combined schools (3.8% of FTE) split
+  by grade over the pipeline's own fallback (`bands_for`). Each band row records its grade span (an
+  elementary band is K-8 for 13% of elementary FTE). Names are `teachers_band_*`: reusing
+  `teachers_elementary` would put two definitions under one key, since the quarantined rows stay readable.
+  **The distinction that made this acceptable:** #1017 was a numerator and a denominator measured over
+  different grades. A band whose grades vary by district, but whose three factors share the same schools,
+  is honest about its students. The variation is recorded rather than normalized away.
+- **Pre-K uses the district's reported Pre-K FTE, not a pro-rata split (D3).** The school file has one
+  teacher total per school, Pre-K included. Pro-rata (Pre-K at the school's own ratio) estimates 95,864
+  Pre-K teachers where districts report 68,269. That is 40% too many, taken out of the elementary band. The
+  reported count is allocated by Pre-K membership. 1,207 districts with Pre-K students that report 0 are
+  flagged and get no subtraction.
+- **Coverage without imputation (D4/D5), the 2023-24 school files fetched (D6), drift checks blocking
+  at pre-commit when Docker is up (D7).** All as recommended.
+- **SPED in the band GenEd variants: the teacher-side hybrid (D8).** CRDC `SCH_FTETEACH_SPEDCERT` is a
+  school-level count, so Ian asked whether to subtract it directly. Its form wording (STAF-2) counts
+  *certification*: preschool included, regardless of assignment, provisional credentials excluded. It
+  runs 0.76×–2.64× IDEA's assigned SPED teachers by state, so a direct subtraction would import a
+  state-practice count, #1017 again.
+  **Decision:** scale each school's SPEDCERT share to the state's IDEA *assigned* total. The teacher side
+  then rests on two reported teacher counts, not on the student-derived estimate (self-contained students
+  × state ratio) that the district-level SPED scopes use. The student side keeps removing estimated
+  self-contained students. Measured caution: SPEDCERT and IDEA shares are nearly equal in every band, so
+  the GenEd result is driven mostly by which students are removed. T11 reports the hybrid next to
+  today's key before adoption.
+- **A number corrected on the way:** the 412,993 "IDEA SPED teachers" used in the first plan draft is
+  IDEA's *certified* subset; the assigned total is 454,925. Found by reading the column next to the one
+  used.
+
+**Lessons.**
+- **A design's own pipeline is a candidate authority for its definitions.** The comparability argument
+  for fixed bands lost to the consistency argument for bands already measured that way, once the split
+  burden was measured (96% vs 63% whole-school).
+- **A field's NAME is not its question.** "Number of FTE teachers — special education" reads as
+  assignment. The form asks about certification. Read the instrument, not the dictionary label.
+
+Authority: #1022 (D1–D8 comments), #1040, #1041, #1046; PR #1034; `2026-11-01-school-file-band-scopes-plan.md`
+(+ `2026-11-01-band-scope-decisions-measure.py`), its Revised Design block and "GenEd band variants"; CRDC 2023-24 School Form Table Layout (STAF-2).

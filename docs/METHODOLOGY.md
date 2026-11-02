@@ -34,8 +34,8 @@ As of December 2025, we calculate **seven LCT variants** using different staff d
 
 | Variant | Staff Scope | Enrollment | Use Case |
 |---------|-------------|------------|----------|
-| **LCT-Teachers-Elementary** | Elem + Kinder teachers | K-5 only | Elementary-specific analysis |
-| **LCT-Teachers-Secondary** | Secondary teachers only | 6-12 only | Secondary-specific analysis |
+| **LCT-Teachers-Elementary** | Elem + Kinder teachers | K-5 only | QUARANTINED — not comparable across states (#1017) |
+| **LCT-Teachers-Secondary** | Secondary teachers only | 6-12 only | QUARANTINED — not comparable across states (#1017) |
 
 #### Key Methodology Decisions (December 2025)
 
@@ -64,13 +64,15 @@ As of December 2025, we calculate **seven LCT variants** using different staff d
 | All | 59.8 min | 54.5 min | 14,250 |
 
 **Observed Patterns**:
-- Elementary LCT > Overall > Secondary (lower student-teacher ratios in elementary)
+- The Elementary > Overall > Secondary order in the level rows is mostly an artifact of the CCD level split
+  and is not a finding (#1017; see the quarantine block under Scope Calculation Formulas)
 - Broadening from teachers-only to all-staff adds ~27 minutes (median)
 
 **Recommended Usage**:
 - **Policy discussions**: Use LCT-Instructional (balanced, defensible)
 - **Conservative estimates**: Use LCT-Teachers (most restrictive)
-- **Level comparisons**: Use LCT-Teachers-Elementary vs LCT-Teachers-Secondary
+- **Level comparisons**: none available yet. LCT-Teachers-Elementary / -Secondary are quarantined: they are
+  not comparable across states (#1017)
 - **Resource analysis**: Compare across all scopes to understand staffing mix impact
 
 See `docs/STAFFING_DATA_ENHANCEMENT_PLAN.md` for detailed scope definitions and data sources.

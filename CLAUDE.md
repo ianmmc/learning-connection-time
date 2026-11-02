@@ -169,16 +169,19 @@ fires automatically on gate@8 approval — the CLI is the recovery/backfill path
 watchdogs; each script's docstring carries its own check-map, so run the script rather than trusting
 any summary of it.
 
-**Current status (2026-10-31): the SPED baseline is CORRECTED and GUARDED; the IDEA/CRDC refresh is
-PLANNED.** Main `63c2b09`: PRs **#971** (#970 — the IDEA child-count parse summed its own Total row and
-missed `Separate School, Age 6-21`: national self-contained share 6.65% → **16.1%**, re-run live) and
-**#973** (#972 year-keyed `apply_sped_estimates` + the `data_guards` G1–G5 suite and the declared-year
-fitness test). A `/code-review max` of both found 15 defects (#975–#989); their fixes landed
-in PR **#1005** (merged 2026-10-31; #975–#989 closed). Decisions + lessons: `docs/PROJECT_HISTORY.md` 2026-10-30/31
-entry (also the Apache-2.0 / CC BY 4.0 relicense, `0155947`). The **pipeline has not moved since
-2026-08-26** (latest `state_event` 08-26; `batch_00058` at Stage 5; 57 districts in `bell_schedules`).
-Baseline GREEN on main: `lint-imports` **5 kept / 0 broken**, `pytest -q -m "not integration"` **2657
-passed, 1 skipped**, govdb 410, Node 106. The one red network test is #938 (catalog drift), not a regression.
+**Current status (2026-11-01): the SPED baseline refresh is ADOPTED; the CCD level scopes are
+QUARANTINED.** Main `cb35e9f`. Epic #724's refresh landed (PR #1007: 2024-25 baseline, 5-21 band,
+REQ-026 exemption retired, #974 partition from `teachers_only`, #1004 step 1 per-LEA share); MA's SEA
+file re-imported under its true vintage (PR #1015); the `outputs/` LCT snapshot retired (PR #1016).
+**#1017:** CCD "elementary" teachers follow STATE practice (≤ grade 8; ~22 jurisdictions report K-8 as
+elementary), so `teachers_elementary` / `teachers_secondary` are not comparable across states. PR #1024
+quarantines them: one caveat home (`infrastructure/utilities/lct_scopes.py`), a `QUARANTINED_1017` token
+on every level row (written live, run `20261101T214220Z` — 163,962 rows, every non-`notes` column
+identical), out of the QA hierarchy and outlier list. Decisions + lessons: `docs/PROJECT_HISTORY.md`
+2026-10-31/11-01 entry. The **pipeline has not moved since 2026-08-26** (latest `state_event` 08-26;
+`batch_00058` at Stage 5; 57 districts in `bell_schedules`). Baseline GREEN on main: `lint-imports`
+**5 kept / 0 broken**, `pytest -q -m "not integration"` **2832 passed, 1 skipped**, govdb 410, Node 106.
+The one red network test is #938 (catalog drift), not a regression.
 
 **Standing findings that change what to do next:**
 - **#823's remedy is unreachable as designed.** `MAX_TOKENS_CEILING = 32000`
@@ -198,30 +201,36 @@ passed, 1 skipped**, govdb 410, Node 106. The one red network test is #938 (cata
   never written (the CCD ingest's constructor omits it), never read. The in-scope school count is
   `nces_school_counts` in each Stage-1 batch receipt, from `school_sampling.school_index()`.
 
-**Next (RESUME HERE — 2026-10-31).** The next chunk is **A, the IDEA/CRDC SPED baseline refresh**. The
+**Next (RESUME HERE — 2026-11-01).** The next chunk is **A, the #1017 school-file band scopes**. The
 pipeline track (B) is unchanged from 08-26 (`docs/scratch-paper/2026-08-25-fresh-triage-and-validation-batch-plan.md`, untracked).
 
-**A. IDEA 618 / CRDC SPED baseline refresh (epic #724) — plan:**
-`docs/technical-notes/production-quality-control-research/2026-10-31-idea-crdc-sped-baseline-refresh-plan.md`
-(findings, acceptance properties A1–A6). New files are on disk with sha256 in each `SOURCE.md`:
-`data/raw/federal/idea-618/{2023_24,2024_25}/`, `data/raw/federal/crdc/2023_24/` (gitignored).
-0. **Prerequisite DONE** — PR #1005 merged 2026-10-31. Its #984 guard held `merge_sea_precedence` on MA (rows stamped
-   `2025-26`, declared `2024-25`) until the **MA re-import of 2026-11-01**: the mislabelled rows were relabelled `2024-25`
-   (logged in `data_lineage`), the on-disk `2025-26/teacherdata.xlsx` imported as `2025-26`, and the merge run live —
-   `teachers_total` supplemented from the newer SEA year for MA (386) and VA (131); every `scope_*` field stays NCES, so
-   `lct_calculations` was unchanged (md5-verified). Dump: `data/backups/lct-preMA-20261101T011309Z.dump`.
-1. **#999** multi-vintage `sped_*_baseline` schema + `apply_sped_estimates --baseline-year` ‖ **#1000**
-   IDEA vintage profiles ("Ages 6-21" → "School Age", which now includes kindergarten 5-year-olds; the
-   hardened parsers correctly refuse both new files today).
-2. **#960** CRDC reserve codes (2023-24: `-9` on 1,835 schools, `-10` on every nonbinary column) → **#1001**
-   CRDC 2023-24 paired with CCD 2023-24 membership.
-3. **#1002** read-only before/after script → **stop for Ian's three calls** (adopt? School Age vs 6-21?
-   do ratio vintages enter the REQ-026 window — today they never do) → **#1003** adopt (data write:
-   `pg_dump` first, SPED scripts only, **never `rebuild_database.py`** — #941) → **#1004** per-LEA
-   self-contained share as its own change.
-4. Open methodology calls nearby: **#974** (SPED partition's teacher base ≠ `teachers_only`'s) ·
-   **#940** (545 NaN `lct_calculations` rows). Lower-severity review items: #990–#998.
-   Infra leftovers: #941 · #938 · #935 · #936 · #937.
+**A. #1017 → school-file band teacher scopes (epic #724).** Note:
+`docs/technical-notes/production-quality-control-research/2026-11-01-ccd-level-teacher-split.md`
+(findings, research, the REJECTED correction plan and why, acceptance properties); rerun its numbers with
+`…/2026-11-01-ccd-level-teacher-split-measure.py [--school-files]`.
+1. **#1022 phase 2 — PLAN WRITTEN, D1–D8 ALL DECIDED (Ian, 2026-11-01)**:
+   `docs/technical-notes/production-quality-control-research/2026-11-01-school-file-band-scopes-plan.md`.
+   It holds the verified findings, the design (its "Revised" block supersedes the fixed-band items), the
+   decisions and their measurements, roadmap T1–T11 as #1022's sub-issues (#1035–#1044, #1046), and
+   acceptance A1–A7.
+   - **Design of record:** the plan note (Revised Design block + "GenEd band variants"). METHODOLOGY stays
+     present-state and gains the scopes only at T10.
+   - **Ready to start:** every task up to T9. 2023-24 school zips are in place.
+   - **Key facts:**
+     - Bands are the pipeline's own SCHOOL bands (`primary_bands_for`), named `teachers_band_*`, with the
+       grade span on each row. Single-band schools (96.1% of FTE) are attributed whole; combined schools
+       are split by grade.
+     - Pre-K uses the LEA-reported Pre-K FTE.
+     - The SPED GenEd variants spread IDEA's assigned state total by school CRDC SPEDCERT share.
+     - The pre-push hook and DB-free tests forbid DB access, so the drift check
+   is pre-commit-when-Docker-is-up (D7), not pre-push.
+2. **#1023 phase 3** — retire the LEA pair once #1022 validates (rows stay readable; move
+   `per_grade_lct_sample.py` to the new secondary scope).
+3. **Open nearby, from the same audit:** #1018 (a level check that can never fire) · #1019
+   (`state_requirements` mixes daily-minute and annual-hour bases: DE/UT/ME) · #1020 (unweighted district
+   medians — add student-weighted) · #1021 (METHODOLOGY framing) · #1033 (QA outliers truncated by
+   scope order) · #940 (545 NaN `lct_calculations` rows) · #1004 step 2 (LEA SPED count as numerator) ·
+   #1006 (#241 floor). Lower-severity: #990–#998. Infra: #941 · #938 · #935 · #936 · #937.
 
 **B. Pipeline (resumes exactly where 08-26 left it):**
 1. **`batch_00058` gate@5 tagging — Ian, console.** 12 fresh districts, 252 records; the **first
@@ -262,13 +271,13 @@ pipeline track (B) is unchanged from 08-26 (`docs/scratch-paper/2026-08-25-fresh
 **Resume essentials:** `source .venv/bin/activate` (the project `.venv` is the ONE env — the git hooks
 prefer it and the pre-push refuses a stale one, #955) · `pip install -r requirements.txt && pip install
 -e .` · `docker-compose up -d` (Docker Postgres 16.15 — never `brew services`) · verify with
-`lint-imports` (expect 5 kept / 0 broken) + `pytest -q -m "not integration"` (2657 passed, 1 skipped on main);
+`lint-imports` (expect 5 kept / 0 broken) + `pytest -q -m "not integration"` (2832 passed, 1 skipped on main);
 add `pytest -q -m govdb` (410) and `npm test` in `infrastructure/scraper` (106) when touching those
 layers. Console: `python3 -m infrastructure.acquisition.process_governance.server` → :8005 (scratch
 servers on **:8015**). Expected counts live in `GETTING_STARTED.md` §3 — their ONE home; §3a carries the
 verified precious-tables `pg_dump` (it runs **inside** the container and must redirect with `>`, never
-`-f`); last precious backup `data/backups/precious-20261029T134609Z.sql`, last SPED/LCT backup
-`data/backups/sped-pre970-20261031T052931Z.sql` (both gitignored). Governance DB import is
+`-f`); last precious backup `data/backups/precious-20261029T134609Z.sql`, last LCT backup
+`data/backups/lct-pre1025-20261101T214129Z.dump` (`pg_dump -Fc`, restore-verified; both gitignored). Governance DB import is
 `from infrastructure.acquisition.common import db as gdb` (NOT `gov_db`); every engine URL goes through
 `infrastructure/utilities/db_url.py` (driver pinned to psycopg 3, auto-prepare OFF — never build an
 engine around it); the LCT calc's DB rows come ONLY from `infrastructure/utilities/frames.db_records`.
