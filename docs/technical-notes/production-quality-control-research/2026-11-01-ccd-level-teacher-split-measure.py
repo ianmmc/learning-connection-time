@@ -27,6 +27,11 @@ import pandas as pd
 from sqlalchemy import text
 
 from infrastructure.database.connection import session_scope
+from infrastructure.utilities.grade_bands import band_grade_tokens, canon_band, grade_int
+
+# the report's band labels ("K-5", "6-8", "9-12"), spelled from the home's own grade spans
+BAND_LABEL = {b: f"{'K' if t[0] == 'KG' else grade_int(t[0])}-{grade_int(t[-1])}"
+              for b, t in ((b, band_grade_tokens(b)) for b in ("elementary", "middle", "high"))}
 
 REPO = Path(__file__).resolve().parents[3]
 GRADES = ["k"] + [f"g{i}" for i in range(1, 13)]
@@ -116,18 +121,18 @@ def m3_school_files(year):
     if proc.wait() != 0:
         raise RuntimeError(f"unzip -p {files['052'].name} exited {proc.returncode}")
     g = pd.concat(parts)
-    gmap = {"Kindergarten": 0, **{f"Grade {i}": i for i in range(1, 13)}}
-    g = g[g.GRADE.isin(gmap)].assign(gr=lambda x: x.GRADE.map(gmap))
-    band = pd.cut(g.gr, [-1, 5, 8, 12], labels=["K-5", "6-8", "9-12"])
-    wide = g.assign(band=band).pivot_table(index="NCESSCH", columns="band", values="STUDENT_COUNT",
-                                           aggfunc="sum", fill_value=0, observed=False)
+    # grade -> band is the production map (utilities/grade_bands, #1035), never a local bin table
+    token = {"Kindergarten": "KG", **{f"Grade {i}": f"{i:02d}" for i in range(1, 13)}}
+    g = g[g.GRADE.isin(token)].assign(band=lambda x: x.GRADE.map(token).map(canon_band).map(BAND_LABEL))
+    wide = g.pivot_table(index="NCESSCH", columns="band", values="STUDENT_COUNT",
+                         aggfunc="sum", fill_value=0, observed=False)
     wide["k12"] = wide.sum(axis=1)
     m = wide[wide.k12 > 0].join(staff.set_index("NCESSCH"), how="inner").join(level.set_index("NCESSCH"))
     m = m[m.TEACHERS > 0]
     if m.empty:
         print("M3: NOTHING MEASURED — no school with both teachers and K-12 students")
         return
-    bands = ["K-5", "6-8", "9-12"]
+    bands = list(BAND_LABEL.values())
     single = m[(m[bands] > 0).sum(axis=1) == 1]
     print(f"\nM3 school files ({year}): {len(m):,} schools, {m.TEACHERS.sum():,.0f} teacher FTE, "
           f"{m.k12.sum():,.0f} K-12 students")

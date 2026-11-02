@@ -194,31 +194,49 @@ IS_BENCHMARK_SQL = """EXISTS (SELECT 1 FROM batch_district bd JOIN batch b ON b.
         "rule": "the grade -> band map (K-5 / 6-8 / 9-12)",
         "home": REPO / "infrastructure" / "utilities" / "grade_bands.py",
         "scope": sorted((REPO / "infrastructure").rglob("*.py")),
-        # Four spellings existed: a GRADE_ORD range table, a grade->band dict, integer grade lists and
-        # token lists. Each alternative catches one of them. A bare band NAME tuple
-        # ("elementary", "middle", "high") is not the map and is deliberately not matched.
+        # The spellings #1035 removed, one alternative each (#1061 widened this from five narrow shapes):
+        #   a GRADE_ORD range table; a grade->band dict; an integer grade list ASSIGNED TO A GRADE-NAMED
+        #   name (so SUMMER_MONTHS = [6, 7, 8] is not a copy); a token list KG,01,... or 06,07,08...;
+        #   the ["KG"] + [f"{n:02d}" ...] builder; an enrollment-column list or dict. A bare band NAME
+        #   tuple ("elementary", "middle", "high") is not the map and is deliberately not matched.
         "forbid": re.compile(
             r"range\(\s*GRADE_ORD\[\s*[\"'](?:PK|KG|0[1-9]|1[0-3])[\"']\s*\]"
             r"|[\"']0?6[\"']\s*:\s*[\"']middle[\"']"
-            r"|\[\s*6\s*,\s*7\s*,\s*8\s*\]"
-            r"|\[\s*[\"']KG[\"']\s*,\s*[\"']01[\"']\s*,\s*[\"']02[\"']\s*,\s*[\"']03[\"']\s*,"
-            r"\s*[\"']04[\"']\s*,\s*[\"']05[\"']\s*\]"
-            r"|[\"']enrollment_grade_6[\"']\s*,\s*[\"']enrollment_grade_7[\"']"),
-        "why": "#1035 — spelled five times across acquisition and the LCT layer (the import-linter "
+            r"|\w*GRADE\w*\s*=\s*\[\s*(?:6\s*,\s*7\s*,\s*8|9\s*,\s*10\s*,\s*11\s*,\s*12"
+            r"|0\s*,\s*1\s*,\s*2\s*,\s*3\s*,\s*4\s*,\s*5)\s*\]"
+            r"|\[\s*[\"']KG[\"']\s*,\s*[\"']01[\"']"
+            r"|\[\s*[\"']06[\"']\s*,\s*[\"']07[\"']\s*,\s*[\"']08[\"']"
+            r"|\[\s*[\"']KG[\"']\s*\]\s*\+\s*\[\s*f[\"']\{n:02d\}"
+            r"|\(\s*[\"']KG[\"']\s*,\s*\)\s*\+\s*tuple\(\s*f[\"']\{n:02d\}"
+            r"|[\"']enrollment_grade_6[\"']\s*,\s*[\"']enrollment_grade_7[\"']"
+            r"|[\"']enrollment_kindergarten[\"']\s*,\s*[\"']enrollment_grade_1[\"']"
+            r"|[\"']KG[\"']\s*:\s*[\"']enrollment_kindergarten[\"']"),
+        "why": "#1035 — spelled six times across acquisition and the LCT layer (the import-linter "
                "kept the LCT side from importing acquisition's copy), with a test (#638) holding two "
-               "of the copies in agreement. The school-file band scopes (#1022) would have added a "
-               "fifth. Home: utilities/grade_bands.py",
+               "of the copies in agreement. The school-file band scopes (#1022) would have added "
+               "another. Home: utilities/grade_bands.py",
         "removed": {
             "school_sampling.BANDS": '''
 BANDS = {"elementary": range(GRADE_ORD["PK"], GRADE_ORD["05"]+1),
          "middle":     range(GRADE_ORD["06"], GRADE_ORD["08"]+1),
          "high":       range(GRADE_ORD["09"], GRADE_ORD["13"]+1)}''',
+            "per_grade_lct.GRADES": 'GRADES = ["KG"] + [f"{n:02d}" for n in range(1, 13)]          # KG, 01..12 (LCT range)',
             "per_grade_lct.ELEM_GRADES": 'ELEM_GRADES = ["KG", "01", "02", "03", "04", "05"]           # K-5',
+            "per_grade_lct.SEC_GRADES": 'SEC_GRADES = ["06", "07", "08", "09", "10", "11", "12"]      # 6-12',
             "per_grade_lct._CANON_BAND": '''
 _CANON_BAND = {**{g: "elementary" for g in ELEM_GRADES},
                "06": "middle", "07": "middle", "08": "middle",
                "09": "high", "10": "high", "11": "high", "12": "high"}''',
+            "per_grade_lct._ENROLL_ATTR": '''
+_ENROLL_ATTR = {"KG": "enrollment_kindergarten",
+                **{f"{n:02d}": f"enrollment_grade_{n}" for n in range(1, 13)}}''',
+            "stage9 per_grade.GRADE_TOKENS": 'GRADE_TOKENS = ["KG"] + [f"{n:02d}" for n in range(1, 13)]',
+            "extract_grade_level_enrollment.ELEMENTARY_GRADES": "ELEMENTARY_GRADES = [0, 1, 2, 3, 4, 5]  # K-5",
             "extract_grade_level_enrollment.MIDDLE_GRADES": "MIDDLE_GRADES = [6, 7, 8]  # 6-8",
+            "extract_grade_level_enrollment.HIGH_GRADES": "HIGH_GRADES = [9, 10, 11, 12]  # 9-12",
+            "import_staff_and_enrollment.elem_grades": '''
+            elem_grades = ['enrollment_kindergarten', 'enrollment_grade_1', 'enrollment_grade_2',
+                          'enrollment_grade_3', 'enrollment_grade_4', 'enrollment_grade_5']''',
             "import_staff_and_enrollment.sec_grades": '''
             sec_grades = ['enrollment_grade_6', 'enrollment_grade_7', 'enrollment_grade_8',
                          'enrollment_grade_9', 'enrollment_grade_10', 'enrollment_grade_11', 'enrollment_grade_12']''',
@@ -226,9 +244,13 @@ _CANON_BAND = {**{g: "elementary" for g in ELEM_GRADES},
         "not_copies": {
             "band-name tuple": 'BANDS = ("elementary", "middle", "high")',
             "a band lookup": 'rng = BANDS.get(band)',
+            "an unrelated 6-8 list": "SUMMER_MONTHS = [6, 7, 8]",
+            "a docstring mentioning the list": '"""the middle grades [6, 7, 8] are weighted here"""',
+            "an unrelated 0-5 list": "WEEKDAYS = [0, 1, 2, 3, 4, 5]",
         },
     },
 ]
+
 
 @pytest.mark.parametrize("spec", RULES, ids=[r["rule"] for r in RULES])
 def test_a_consolidated_rule_has_exactly_one_home(spec):

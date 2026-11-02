@@ -51,7 +51,7 @@ from infrastructure.acquisition.common import paths   # DATA_ROOT-anchored NCES 
 # shared with the LCT layer, which may not import acquisition. Re-exported here for existing callers.
 from infrastructure.utilities.grade_bands import (  # noqa: F401
     BANDS, GRADE_ORD, INTERMEDIATE_MAX_START, INTERMEDIATE_MAX_TOP, LEVEL_BAND, bands_for,
-    effective_level_band, is_intermediate_span, norm, primary_bands_for,
+    effective_level_band, grade_int, is_intermediate_span, norm, primary_bands_for,
     INTERMEDIATE_START_ORD as _IM_START_ORD, INTERMEDIATE_TOP_ORD as _IM_TOP_ORD,
 )
 
@@ -274,10 +274,11 @@ def combined_scope_name(school_name, roster_names=None):
 
 
 def _grade_num(idx):
-    """GRADE_ORD index -> integer grade number; PK/KG both -> 0 (pre-grade-1)."""
+    """GRADE_ORD index -> integer grade number, under the home's one convention (grade_bands.grade_int:
+    PK/KG both -> 0, pre-grade-1)."""
     for g, i in GRADE_ORD.items():
         if i == idx:
-            return 0 if g in ("PK", "KG") else int(g)
+            return grade_int(g)
     return None
 
 def _clean_ascending_partition(spans):

@@ -69,10 +69,7 @@ def get_federal_data(session, state: str, nces_year: str) -> pd.DataFrame:
         SELECT
             sc.district_id,
             sc.teachers_total,
-            eg.enrollment_k12,
-            eg.enrollment_prek + eg.enrollment_kindergarten +
-                eg.enrollment_grade_1 + eg.enrollment_grade_2 + eg.enrollment_grade_3 +
-                eg.enrollment_grade_4 + eg.enrollment_grade_5 as enrollment_k5
+            eg.enrollment_k12
         FROM staff_counts sc
         JOIN enrollment_by_grade eg ON sc.district_id = eg.district_id
         JOIN districts d ON sc.district_id = d.nces_id
@@ -89,7 +86,6 @@ def get_federal_data(session, state: str, nces_year: str) -> pd.DataFrame:
             'district_id': row[0],
             'teachers': row[1],
             'enrollment_k12': row[2],
-            'enrollment_k5': row[3],
         })
 
     return pd.DataFrame(rows)

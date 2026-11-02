@@ -31,7 +31,11 @@ import sys
 from pathlib import Path
 import pandas as pd
 
-from infrastructure.utilities.grade_bands import band_grade_tokens, grade_int
+# Run-by-path support (the documented usage): the repo root on sys.path, as import_staff_and_enrollment
+# does, so the grade-band home imports without `pip install -e .` (#1064).
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from infrastructure.utilities.grade_bands import band_grade_tokens, grade_int  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,

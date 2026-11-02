@@ -19,7 +19,7 @@ def _by_grade(writes):
 
 
 def test_grade_tokens_are_k_through_12():
-    assert PG.GRADE_TOKENS == ["KG", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
+    assert tuple(PG.GRADE_TOKENS) == ("KG", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
 
 
 def test_clean_three_band_partition():

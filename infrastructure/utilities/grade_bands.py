@@ -24,8 +24,9 @@ GRADE_ORD = {g: i for i, g in enumerate(
 # comprehensive high schools all use 09-13; 222 open schools nationally use GSHI=13).
 
 # The LCT grade range: KG + grades 1-12. PK is excluded from LCT; grade 13 rides with high for
-# minutes but carries no LCT enrollment weight.
-K12_GRADE_TOKENS = ["KG"] + [f"{n:02d}" for n in range(1, 13)]
+# minutes but carries no LCT enrollment weight. A tuple: it is shared by every consumer in the
+# process (Stage 9, the per-grade LCT minutes, the enrollment importers), so it must not be mutable.
+K12_GRADE_TOKENS = ("KG",) + tuple(f"{n:02d}" for n in range(1, 13))
 
 
 def norm(g):
@@ -40,7 +41,8 @@ BANDS = {"elementary": range(GRADE_ORD["PK"], GRADE_ORD["05"] + 1),
 
 
 def canon_band(grade: str) -> str | None:
-    """The band that OWNS a grade token under the fixed map; None for an unknown token."""
+    """The band that OWNS a grade token under the fixed map. A lookup, not a validator: None for a
+    token outside GRADE_ORD (callers `norm()` raw CCD values first; "K", "UG", "M" are None)."""
     go = GRADE_ORD.get(grade)
     for band, rng in BANDS.items():
         if go is not None and go in rng:
@@ -48,19 +50,25 @@ def canon_band(grade: str) -> str | None:
     return None
 
 
-def band_grade_tokens(band: str, tokens=K12_GRADE_TOKENS) -> list:
+def band_grade_tokens(band: str, tokens=K12_GRADE_TOKENS) -> tuple:
     """The `tokens` (default the LCT K-12 range, in order) that `band` owns."""
-    return [g for g in tokens if canon_band(g) == band]
+    return tuple(g for g in tokens if canon_band(g) == band)
 
 
 def grade_int(grade: str) -> int | None:
-    """A grade token as an integer: PK -1, KG 0, "01".."13" -> 1..13; None if unknown."""
-    go = GRADE_ORD.get(grade)
-    return None if go is None else go - GRADE_ORD["KG"]
+    """A grade token as an integer under the ONE pre-grade-1 convention this repo uses: PK and KG are
+    both 0 (the pipeline's `school_sampling._grade_num`), "01".."13" -> 1..13; None if unknown."""
+    if grade not in GRADE_ORD:
+        return None
+    return 0 if grade in ("PK", "KG") else int(grade)
 
 
 def enrollment_column(grade: str) -> str:
-    """The LCT DB enrollment column for a K-12 grade token (`enrollment_by_grade`)."""
+    """The LCT DB enrollment column (`enrollment_by_grade`) for a K-12 grade token. Raises ValueError
+    for anything else: PK, 13, UG and unknown tokens have no such column, and a fabricated name read
+    through getattr(..., 0) would be a silent zero (REQ-165)."""
+    if grade not in K12_GRADE_TOKENS:
+        raise ValueError(f"{grade!r} is not an LCT K-12 grade token {K12_GRADE_TOKENS}")
     return "enrollment_kindergarten" if grade == "KG" else f"enrollment_grade_{grade_int(grade)}"
 
 
@@ -80,7 +88,8 @@ def bands_for(gslo, gshi):
 # falls back to grade-range overlap.
 LEVEL_BAND = {"Elementary": "elementary", "Middle": "middle", "High": "high"}
 
-# #498 boundary: the intermediate / upper-elementary span definition. Plain grade numbers (PK/KG = 0).
+# #498 boundary: the intermediate / upper-elementary span definition, in plain grade numbers (the
+# grade_int convention: PK/KG = 0).
 INTERMEDIATE_MAX_START = 4   # a span starting at grade 5+ is middle-family, never elementary
 INTERMEDIATE_MAX_TOP = 6     # a span topping above grade 6 is not an elementary-side span
 INTERMEDIATE_START_ORD = GRADE_ORD[f"{INTERMEDIATE_MAX_START:02d}"]
