@@ -13,7 +13,9 @@ Isolation is by SCHEMA, not database (#1063): two throwaway schemas on the gover
 `search_path` set per connection, dropped in `finally`. That needs only CREATE on the database,
 which the governance user has locally (owner) and in CI (the service container's superuser), so the
 test runs in the `govdb` CI job rather than only on a developer's machine. The governance DB's own
-tables are never touched; the live LCT DB is never connected to. Skips when Postgres is down.
+tables are never touched; the live LCT DB is never connected to. Skips when Postgres is down. The
+connections are DETACHED from the pool: `SET search_path` is session state and leaked into later
+tests on the first CI run.
 """
 import uuid
 from pathlib import Path
@@ -67,6 +69,11 @@ def scratch_schemas():
     def make(tag: str):
         name = f"scratch_1038_{tag}_{uuid.uuid4().hex[:8]}"
         conn = engine.connect()
+        # SET search_path is SESSION state: a pooled connection would carry it (pointing at a dropped
+        # schema) into the next test's gov_session, which then fails with InvalidSchemaName (seen in
+        # CI on the first run: every govdb test after this file errored). Detach, so this DBAPI
+        # connection is closed, never returned to the pool.
+        conn.detach()
         conns.append(conn)
         conn.execute(text(f'CREATE SCHEMA "{name}"'))
         conn.commit()
@@ -78,6 +85,8 @@ def scratch_schemas():
     finally:
         for c in conns:
             c.rollback()
+            c.execute(text("RESET search_path"))
+            c.commit()
         with engine.begin() as c:
             for name in made:
                 c.execute(text(f'DROP SCHEMA IF EXISTS "{name}" CASCADE'))
