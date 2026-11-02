@@ -34,10 +34,16 @@ logger = logging.getLogger(__name__)
 
 
 # NCES CCD Data Catalog
-# 2023-24 and 2024-25 entries are the real release file names, verified 2026-11-01 (HTTP 200 +
-# Content-Length equal to the files on disk; a wrong name 404s). The 2022-23 entries are older
-# placeholders and unverified (2022-23 is COVID-excluded for calculations anyway, Critical Rule 2).
-# File provenance (sha256 per file) is tracked in config/source-manifests/nces-ccd.json (#1037).
+# 2023-24 and 2024-25 entries are the real release file names. What was measured (2026-11-01/02):
+#   - every one of the 12 URLs answers HTTP 200 with Content-Type application/x-zip-compressed, and a
+#     deliberately wrong name answers 404 (NCES does not soft-404);
+#   - the 4 zips held on disk (2023-24 sch_029/052/059, 2024-25 sch_052) match the URL's Content-Length;
+#   - the 4 files held on disk as extracted CSVs (2024-25 sch_029/sch_059, 2023-24 and 2024-25 lea_059)
+#     are byte-identical (sha256) to the CSV member of the zip the URL serves, downloaded and compared;
+#   - the 4 LEA directory/membership URLs for both years were HEAD-checked only (no disk comparison).
+# The 2022-23 entries are older placeholders and unverified (2022-23 is COVID-excluded for
+# calculations anyway, Critical Rule 2). File provenance (sha256 per file) is tracked in
+# config/source-manifests/nces-ccd.json (#1037); the generator refuses to shrink or re-pin it (#1052).
 _ZIP = "https://nces.ed.gov/ccd/Data/zip"
 
 CCD_CATALOG = {

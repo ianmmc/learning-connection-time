@@ -44,24 +44,30 @@ def entry_for(manifest: dict, year: str, file: str) -> dict:
     raise KeyError(f"{file} is not declared for {year} in the {manifest['source']} manifest")
 
 
+class NothingMeasured(Exception):
+    """verify() was given no entries to check: an empty sweep is not a verdict."""
+
+
 def verify(manifest: dict, root: Path = REPO) -> dict:
-    """Compare every declared file on disk with its manifest entry. Returns
-    {"checked": [...], "absent": [...], "mismatched": [(file, field, declared, actual), ...]}.
-    An absent file is reported, never treated as a match."""
+    """Compare every declared file on disk with its manifest entry. Each file lands in exactly ONE of
+    {"checked": [...]            # present, size AND sha256 match: verified clean
+     "absent": [...]             # declared but not on disk (reported, never a match)
+     "mismatched": [(file, field, declared, actual), ...]}   # present, size or sha256 differs
+    Raises NothingMeasured when the manifest declares no file at all (#1053)."""
     base = root / manifest["base"]
     out = {"checked": [], "absent": [], "mismatched": []}
-    for year, entries in sorted(manifest["years"].items()):
-        for e in entries:
-            path = base / year.replace("-", "_") / e["file"]
-            if not path.exists():
-                out["absent"].append(f"{year}/{e['file']}")
-                continue
-            size = path.stat().st_size
-            if size != e["bytes"]:
-                out["mismatched"].append((f"{year}/{e['file']}", "bytes", e["bytes"], size))
-                continue
-            actual = sha256_file(path)
-            if actual != e["sha256"]:
-                out["mismatched"].append((f"{year}/{e['file']}", "sha256", e["sha256"], actual))
-            out["checked"].append(f"{year}/{e['file']}")
+    entries = [(y, e) for y, es in sorted(manifest["years"].items()) for e in es]
+    if not entries:
+        raise NothingMeasured(f"the {manifest.get('source')} manifest declares no file")
+    for year, e in entries:
+        label = f"{year}/{e['file']}"
+        path = base / year.replace("-", "_") / e["file"]
+        if not path.exists():
+            out["absent"].append(label)
+        elif (size := path.stat().st_size) != e["bytes"]:
+            out["mismatched"].append((label, "bytes", e["bytes"], size))
+        elif (actual := sha256_file(path)) != e["sha256"]:
+            out["mismatched"].append((label, "sha256", e["sha256"], actual))
+        else:
+            out["checked"].append(label)
     return out
