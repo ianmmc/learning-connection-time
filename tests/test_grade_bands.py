@@ -90,6 +90,13 @@ class TestCallSitesUseTheHome:
         assert E.MIDDLE_GRADES == [6, 7, 8]
         assert E.HIGH_GRADES == [9, 10, 11, 12]
 
+    def test_lea_enrollment_importer_binds_the_names_it_uses(self):
+        """The importer calls these inside a function, so a missing import is invisible at import time
+        and only raises NameError when it runs (CI's flake8 F821 caught it on #1048). Pin the binding."""
+        from infrastructure.database.migrations import import_staff_and_enrollment as imp
+        assert imp.band_grade_tokens is GB.band_grade_tokens
+        assert imp.enrollment_column is GB.enrollment_column
+
     def test_lea_enrollment_importer_derives_its_lists_from_the_home(self):
         """The importer's lists are locals inside load_enrollment_data, so pin by source that it
         calls the home rather than spelling the columns (the fitness row catches a re-spelling)."""

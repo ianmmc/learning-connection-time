@@ -29,6 +29,7 @@ sys.path.insert(0, str(project_root))
 from infrastructure.database.connection import session_scope, get_engine
 from infrastructure.utilities.common import ccd_education_unit_totals
 from infrastructure.utilities.data_guards import reconcile_total
+from infrastructure.utilities.grade_bands import band_grade_tokens, enrollment_column
 from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
 from infrastructure.database.models import (
     District,
