@@ -20,9 +20,11 @@ from sqlalchemy import (
     Index,
     Integer,
     Numeric,
+    PrimaryKeyConstraint,
     String,
     Text,
     UniqueConstraint,
+    func,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, validates
@@ -415,6 +417,130 @@ class DistrictGradeMinutes(Base):
 
     def __repr__(self) -> str:
         return f"<DistrictGradeMinutes {self.district_id}/{self.grade}: {self.instructional_minutes} ({self.source_band})>"
+
+
+# --- CCD school-file staffing + the band-scope attribution (migration 033, #1038; #1022) ---------------
+# Design of record: docs/technical-notes/production-quality-control-research/
+# 2026-11-01-school-file-band-scopes-plan.md. ccd_school_staffing is the verbatim source; the three
+# lea_* tables are DERIVED from it (+ ccd_lea_059) and regenerable, `method_version` naming the derivation.
+# No FK to districts: the CCD files carry LEAs the districts table does not.
+
+_BAND_CHECK = "band IN ('elementary', 'middle', 'high')"
+
+
+class CCDSchoolStaffing(Base):
+    """CCD school files (029 directory, 052 membership, 059 staff), verbatim, per school x year.
+    Missing or suppressed values are NULL with their DMS flag, never 0 (REQ-165)."""
+    __tablename__ = "ccd_school_staffing"
+
+    ncessch: Mapped[str] = mapped_column(String(12), nullable=False)
+    source_year: Mapped[str] = mapped_column(String(10), nullable=False)
+    leaid: Mapped[str] = mapped_column(String(10), nullable=False)
+    state: Mapped[Optional[str]] = mapped_column(String(2))
+    school_name: Mapped[Optional[str]] = mapped_column(Text)
+    sy_status: Mapped[Optional[str]] = mapped_column(String(40))
+    sch_type: Mapped[Optional[str]] = mapped_column(String(40))
+    level: Mapped[Optional[str]] = mapped_column(String(40))
+    gslo: Mapped[Optional[str]] = mapped_column(String(4))
+    gshi: Mapped[Optional[str]] = mapped_column(String(4))
+    teachers_fte: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    teachers_dms_flag: Mapped[Optional[str]] = mapped_column(String(30))
+    memb_pk: Mapped[Optional[int]] = mapped_column(Integer)
+    memb_kg: Mapped[Optional[int]] = mapped_column(Integer)
+    memb_01: Mapped[Optional[int]] = mapped_column(Integer)
+    memb_02: Mapped[Optional[int]] = mapped_column(Integer)
+    memb_03: Mapped[Optional[int]] = mapped_column(Integer)
+    memb_04: Mapped[Optional[int]] = mapped_column(Integer)
+    memb_05: Mapped[Optional[int]] = mapped_column(Integer)
+    memb_06: Mapped[Optional[int]] = mapped_column(Integer)
+    memb_07: Mapped[Optional[int]] = mapped_column(Integer)
+    memb_08: Mapped[Optional[int]] = mapped_column(Integer)
+    memb_09: Mapped[Optional[int]] = mapped_column(Integer)
+    memb_10: Mapped[Optional[int]] = mapped_column(Integer)
+    memb_11: Mapped[Optional[int]] = mapped_column(Integer)
+    memb_12: Mapped[Optional[int]] = mapped_column(Integer)
+    memb_13: Mapped[Optional[int]] = mapped_column(Integer)
+    memb_ug: Mapped[Optional[int]] = mapped_column(Integer)
+    membership_flags = Column(JSONB)
+    src_029_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    src_052_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    src_059_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    loaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    __table_args__ = (
+        PrimaryKeyConstraint("ncessch", "source_year", name="pk_ccd_school_staffing"),
+        CheckConstraint("teachers_fte IS NULL OR teachers_fte >= 0", name="chk_css_teachers_fte"),
+        Index("idx_ccd_school_staffing_lea", "leaid", "source_year"),
+    )
+
+
+class LEASchoolStaffing(Base):
+    """District x year: the LEA-level reconciliation for the band scopes. The LEA-file teacher total,
+    the school sum, LEA-only FTE left unattributed (D5), and the reported Pre-K FTE (D3)."""
+    __tablename__ = "lea_school_staffing"
+
+    leaid: Mapped[str] = mapped_column(String(10), nullable=False)
+    source_year: Mapped[str] = mapped_column(String(10), nullable=False)
+    lea_teachers_fte: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    school_teachers_fte: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+    unattributed_fte: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    pk_teachers_reported: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    pk_teachers_dms_flag: Mapped[Optional[str]] = mapped_column(String(30))
+    pk_membership: Mapped[int] = mapped_column(Integer, nullable=False)
+    pk_zero_with_students: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    method_version: Mapped[str] = mapped_column(String(20), nullable=False)
+    derived_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    __table_args__ = (PrimaryKeyConstraint("leaid", "source_year", name="pk_lea_school_staffing"),)
+
+
+class LEABandStaffing(Base):
+    """District x year x band: the band's served grade span, coverage, and publication (D1, D4)."""
+    __tablename__ = "lea_band_staffing"
+
+    leaid: Mapped[str] = mapped_column(String(10), nullable=False)
+    source_year: Mapped[str] = mapped_column(String(10), nullable=False)
+    band: Mapped[str] = mapped_column(String(20), nullable=False)
+    grade_lo: Mapped[str] = mapped_column(String(4), nullable=False)
+    grade_hi: Mapped[str] = mapped_column(String(4), nullable=False)
+    school_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    excluded_school_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    membership_reporting: Mapped[int] = mapped_column(Integer, nullable=False)
+    membership_total: Mapped[int] = mapped_column(Integer, nullable=False)
+    coverage: Mapped[float] = mapped_column(Numeric(6, 5), nullable=False)
+    pk_fte_removed: Mapped[float] = mapped_column(Numeric(12, 4), nullable=False)
+    published: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    method_version: Mapped[str] = mapped_column(String(20), nullable=False)
+    derived_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    __table_args__ = (
+        PrimaryKeyConstraint("leaid", "source_year", "band", name="pk_lea_band_staffing"),
+        CheckConstraint(_BAND_CHECK, name="chk_lbs_band"),
+        CheckConstraint("coverage >= 0 AND coverage <= 1", name="chk_lbs_coverage"),
+    )
+
+
+class LEAGradeTeacherFTE(Base):
+    """District x year x band x grade: attributed teacher FTE (Pre-K removed) and the same schools'
+    membership. Band is in the key: under school bands one grade can sit in two bands."""
+    __tablename__ = "lea_grade_teacher_fte"
+
+    leaid: Mapped[str] = mapped_column(String(10), nullable=False)
+    source_year: Mapped[str] = mapped_column(String(10), nullable=False)
+    band: Mapped[str] = mapped_column(String(20), nullable=False)
+    grade: Mapped[str] = mapped_column(String(4), nullable=False)
+    teacher_fte: Mapped[float] = mapped_column(Numeric(12, 4), nullable=False)
+    membership: Mapped[int] = mapped_column(Integer, nullable=False)
+    school_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    method_version: Mapped[str] = mapped_column(String(20), nullable=False)
+    derived_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    __table_args__ = (
+        PrimaryKeyConstraint("leaid", "source_year", "band", "grade", name="pk_lea_grade_teacher_fte"),
+        CheckConstraint(_BAND_CHECK, name="chk_lgtf_band"),
+        CheckConstraint("grade IN ('KG','01','02','03','04','05','06','07','08','09','10','11','12')", name="chk_lgtf_grade"),
+        CheckConstraint("teacher_fte >= 0", name="chk_lgtf_fte"),
+    )
 
 
 class LCTCalculation(Base):
