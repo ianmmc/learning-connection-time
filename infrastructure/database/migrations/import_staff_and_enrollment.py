@@ -29,6 +29,7 @@ sys.path.insert(0, str(project_root))
 from infrastructure.database.connection import session_scope, get_engine
 from infrastructure.utilities.common import ccd_education_unit_totals
 from infrastructure.utilities.data_guards import reconcile_total
+from infrastructure.utilities.grade_bands import band_grade_tokens, enrollment_column
 from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
 from infrastructure.database.models import (
     District,
@@ -412,16 +413,14 @@ def import_enrollment_data(enrollment_df: pd.DataFrame, session) -> int:
             )
 
             # Calculate aggregate columns from individual grades
-            # Elementary = K-5
-            elem_grades = ['enrollment_kindergarten', 'enrollment_grade_1', 'enrollment_grade_2',
-                          'enrollment_grade_3', 'enrollment_grade_4', 'enrollment_grade_5']
+            # Elementary = K-5 (the one grade-band home, #1035)
+            elem_grades = [enrollment_column(g) for g in band_grade_tokens("elementary")]
             enrollment.enrollment_elementary = sum(
                 int(row.get(g, 0)) if pd.notna(row.get(g)) else 0 for g in elem_grades
             )
 
             # Secondary = 6-12
-            sec_grades = ['enrollment_grade_6', 'enrollment_grade_7', 'enrollment_grade_8',
-                         'enrollment_grade_9', 'enrollment_grade_10', 'enrollment_grade_11', 'enrollment_grade_12']
+            sec_grades = [enrollment_column(g) for g in band_grade_tokens("middle") + band_grade_tokens("high")]
             enrollment.enrollment_secondary = sum(
                 int(row.get(g, 0)) if pd.notna(row.get(g)) else 0 for g in sec_grades
             )

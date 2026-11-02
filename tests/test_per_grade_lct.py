@@ -139,23 +139,16 @@ def test_626_vouched_does_not_rescue_a_non_vouched_stale_sibling():
     assert source == "per_grade_statutory"
 
 
-def test_638_grade_band_split_matches_school_sampling_bands():
-    """#638 fitness: per_grade_lct's LCT-side grade→band vocabulary (GRADES/ELEM_GRADES/SEC_GRADES/
-    _CANON_BAND) is a second copy of school_sampling's BANDS/GRADE_ORD, forced apart by the
-    import-linter boundary (LCT-side must not import acquisition code — so THIS TEST is the pin).
-    If the band boundaries ever move in school_sampling.BANDS, Stage 9 would project a grade into
-    one band while weighted_scope_minutes weights it into a different scope — silent LCT drift."""
-    from infrastructure.acquisition.common.school_sampling import BANDS, GRADE_ORD
-    # same grade-token vocabulary (school_sampling additionally knows PK/13, outside LCT range)
-    assert set(PGL.GRADES) <= set(GRADE_ORD)
-    for g in PGL.GRADES:
-        owning = [b for b, rng in BANDS.items() if GRADE_ORD[g] in rng]
-        assert owning == [PGL._CANON_BAND[g]], (
-            f"grade {g}: school_sampling.BANDS says {owning}, per_grade_lct._CANON_BAND says "
-            f"{PGL._CANON_BAND[g]} — the two grade→band definitions diverged (#638)")
-    # the scope split is the same partition
-    assert PGL.ELEM_GRADES == [g for g in PGL.GRADES if PGL._CANON_BAND[g] == "elementary"]
-    assert PGL.SEC_GRADES == [g for g in PGL.GRADES if PGL._CANON_BAND[g] in ("middle", "high")]
+def test_638_grade_band_split_is_the_one_home():
+    """#638 -> #1035: per_grade_lct's grade->band vocabulary used to be a second copy of
+    school_sampling's map, held in agreement by this test. Both now import
+    utilities/grade_bands.py, so the pin is identity with the home, not agreement between copies."""
+    from infrastructure.utilities import grade_bands as GB
+    assert PGL.GRADES is GB.K12_GRADE_TOKENS
+    assert PGL.ELEM_GRADES == GB.band_grade_tokens("elementary")
+    assert PGL.SEC_GRADES == GB.band_grade_tokens("middle") + GB.band_grade_tokens("high")
+    assert PGL._CANON_BAND == {g: GB.canon_band(g) for g in PGL.GRADES}
+    assert PGL._ENROLL_ATTR == {g: GB.enrollment_column(g) for g in PGL.GRADES}
     assert PGL.ELEM_GRADES + PGL.SEC_GRADES == PGL.GRADES
 
 

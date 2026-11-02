@@ -47,37 +47,19 @@ from pathlib import Path
 from collections import defaultdict
 
 from infrastructure.acquisition.common import paths   # DATA_ROOT-anchored NCES reads (CWD-independent)
+# The grade -> band map and the school -> band classifier live in utilities/grade_bands.py (#1035),
+# shared with the LCT layer, which may not import acquisition. Re-exported here for existing callers.
+from infrastructure.utilities.grade_bands import (  # noqa: F401
+    BANDS, GRADE_ORD, INTERMEDIATE_MAX_START, INTERMEDIATE_MAX_TOP, LEVEL_BAND, bands_for,
+    effective_level_band, is_intermediate_span, norm, primary_bands_for,
+    INTERMEDIATE_START_ORD as _IM_START_ORD, INTERMEDIATE_TOP_ORD as _IM_TOP_ORD,
+)
 
 # NCES CCD raw data lives under DATA_ROOT (= <repo>/data by default), NOT the process CWD. Resolving it
 # absolutely means the server/CLI find it regardless of where they're launched from — a CWD-relative
 # version of these paths 500'd build_batch whenever the server ran from a non-repo-root directory.
 _NCES_DIR = paths.DATA_ROOT / "raw" / "federal" / "nces-ccd"
 
-GRADE_ORD = {g:i for i,g in enumerate(
-    ["PK","KG","01","02","03","04","05","06","07","08","09","10","11","12","13"])}
-# "13" is a real, sanctioned NCES grade code (some states use it for a continuation/
-# extra-year high school program) -- without it, bands_for() silently returned an empty
-# set for any school coded e.g. GSLO=09/GSHI=13, dropping real high schools from the
-# high band entirely (found 2026-06-22: Jackson County MS's three comprehensive high
-# schools all use 09-13 and were invisible to band selection; 222 open schools
-# nationally use GSHI=13). Grade 13 is treated as part of the high band, not its own.
-# normalize NCES grade tokens
-def norm(g):
-    g=(g or "").strip().upper()
-    return {"PREKINDERGARTEN":"PK","K":"KG","KINDERGARTEN":"KG"}.get(g, g)
-
-# band coverage by grade number: elementary K-5, middle 6-8, high 9-12/13 (PK counts as
-# elementary; grade 13 counts as high, a continuation of high school, not its own band)
-BANDS = {"elementary": range(GRADE_ORD["PK"], GRADE_ORD["05"]+1),
-         "middle":     range(GRADE_ORD["06"], GRADE_ORD["08"]+1),
-         "high":       range(GRADE_ORD["09"], GRADE_ORD["13"]+1)}
-
-def bands_for(gslo, gshi):
-    """Which bands a school's grade span overlaps. Returns set; {} if ungraded/unknown (M-M, etc.)."""
-    lo, hi = GRADE_ORD.get(norm(gslo)), GRADE_ORD.get(norm(gshi))
-    if lo is None or hi is None or hi < lo: return set()
-    span = set(range(lo, hi+1))
-    return {b for b, rng in BANDS.items() if span & set(rng)}
 
 def bands_for_rescue(gslo, gshi):
     """Like bands_for(), but for the conservative any-overlap RESCUE only (districts whose
@@ -103,13 +85,6 @@ def bands_for_rescue(gslo, gshi):
         bands.add("middle")
     if hi >= GRADE_ORD["09"]: bands.add("high")
     return bands
-
-# NCES LEVEL maps cleanly to exactly one band for these three values -- trust it over
-# grade-range when it applies (fixes dilution: a K-6 "Elementary" school no longer also
-# counts toward middle just because grade 6 clips our band boundary). Everything else
-# (Other, Secondary, Not reported, Not applicable, Ungraded, Adult Education, blank) is
-# genuinely ambiguous/combined and falls back to grade-range overlap.
-LEVEL_BAND = {"Elementary": "elementary", "Middle": "middle", "High": "high"}
 
 # #258: name-token -> implied band(s). ORDER MATTERS: "junior high" must claim its words before the
 # bare "high" pattern sees them. Tokens are whole-word phrases (padded match) so "Highland"/"Middleton"
@@ -166,49 +141,6 @@ def name_level_mismatch(school_name, nces_level, bands, gslo=None, gshi=None):
         return None
     return {"school": school_name, "implied_bands": sorted(implied),
             "nces_level": nces_level, "conflicts": conflicts}
-
-
-# #498 boundary — ONE home for the intermediate/upper-elementary span definition (PR #500 review
-# round: the same 4/6 pair was independently hardcoded in three functions). Expressed as plain
-# grade numbers (PK/KG count as 0); span functions compare GRADE_ORD ordinals via the zero-padded
-# keys below, recursive_band_groups compares _grade_num() integers directly.
-INTERMEDIATE_MAX_START = 4   # a span starting at grade 5+ is middle-family, never elementary
-INTERMEDIATE_MAX_TOP = 6     # a span topping above grade 6 is not an elementary-side span
-_IM_START_ORD = GRADE_ORD[f"{INTERMEDIATE_MAX_START:02d}"]
-_IM_TOP_ORD = GRADE_ORD[f"{INTERMEDIATE_MAX_TOP:02d}"]
-
-
-def is_intermediate_span(gslo, gshi):
-    """#498: the intermediate / upper-elementary span — starts at grade ≤4 AND tops at grade ≤6
-    (Liberati: 04-06). Deliberately NOT 05-06 (5-6 is middle when it feeds a 7-8 — Ian's standard,
-    and NCES's Middle tag agrees there); the 05-05/06-06 orphans were RULED middle (2026-07-15)."""
-    lo, hi = GRADE_ORD.get(norm(gslo)), GRADE_ORD.get(norm(gshi))
-    if lo is None or hi is None or hi < lo:
-        return False
-    return lo <= _IM_START_ORD and hi <= _IM_TOP_ORD
-
-
-def effective_level_band(level, gslo, gshi):
-    """#498 (DECIDED Ian 2026-07-15): the clean-LEVEL band with the ONE corpus-profiled override —
-    LEVEL='Middle' on an intermediate span (starts ≤4, tops ≤6) is an upper-ELEMENTARY school
-    (~330 schools nationally, 0.4%; NCES over-assigns Middle to intermediates — measured against
-    the full 2024-25 corpus, where this is the ONLY hard LEVEL-vs-span disagreement class that
-    exists; the reverse edge is zero). LEVEL stays primary everywhere else (the 2026-06-22
-    anti-dilution decision) — this is a scalpel, not an inversion. Every caller that places or
-    counts schools should use THIS, not LEVEL_BAND directly; overrides are surfaced
-    detect-and-flag at gate@8 (the #257/#258 posture). Returns the band or None (ambiguous)."""
-    b = LEVEL_BAND.get((level or "").strip())
-    if b == "middle" and is_intermediate_span(gslo, gshi):
-        return "elementary"
-    return b
-
-
-def primary_bands_for(level, gslo, gshi):
-    """A school's PRIMARY band(s): LEVEL-mapped (single band) when clean — with the #498
-    intermediate carve-out applied — else grade-range overlap (bands_for(), possibly multiple
-    bands) for combined/ambiguous LEVEL values."""
-    b = effective_level_band(level, gslo, gshi)
-    return {b} if b else bands_for(gslo, gshi)
 
 
 def stage1_pool_ids(schools_by_band) -> dict:
