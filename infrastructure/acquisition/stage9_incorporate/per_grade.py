@@ -7,7 +7,8 @@ lets LCT consume the pipeline's 3-band minutes against 2-band staffing (the cons
 
 Grade → band, per district:
   - a band SERVES a grade when any of its serving schools' spans covers that grade (`GSLO..GSHI`);
-    when a band has no live span (CCD files absent), it falls back to its canonical range (`BANDS`);
+    when a band has no live span (CCD files absent), it falls back to its canonical range
+    (`utilities/grade_bands.BANDS`);
   - exactly one serving band → the grade takes that band's minutes;
   - ≥2 serving bands (overlap: e.g. a 7-9 middle and a 9-12 high both serving grade 9) → a
     deterministic LEA-level tie-rule: the grade's CANONICAL band wins when it is among the serving
@@ -23,11 +24,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
-from infrastructure.acquisition.common.school_sampling import BANDS, GRADE_ORD, norm
+from infrastructure.utilities.grade_bands import GRADE_ORD, K12_GRADE_TOKENS, band_grade_tokens, canon_band, norm
 
-# The LCT-relevant grade range: KG + grades 1-12 (PK is excluded from LCT; grade 13 rides with high
-# for MINUTES but is not a distinct LCT weight — enrollment scopes stop at 12).
-GRADE_TOKENS = ["KG"] + [f"{n:02d}" for n in range(1, 13)]
+# The LCT-relevant grade range (KG-12), from the one grade-band home (#1035).
+GRADE_TOKENS = K12_GRADE_TOKENS
 _BAND_ORDER = {"elementary": 0, "middle": 1, "high": 2}
 
 
@@ -51,10 +51,7 @@ class GradeMinute:
 def _canonical_grades(band: str) -> set:
     """The GRADE_TOKENS whose ordinal falls in a band's canonical range (elementary K-5 / middle 6-8
     / high 9-12) — the fallback coverage when a band carries no live roster span."""
-    rng = BANDS.get(band)
-    if rng is None:
-        return set()
-    return {g for g in GRADE_TOKENS if GRADE_ORD[g] in rng}
+    return set(band_grade_tokens(band, GRADE_TOKENS))
 
 
 def _span_grades(slot_spans: list) -> set:
@@ -68,13 +65,8 @@ def _span_grades(slot_spans: list) -> set:
     return covered
 
 
-def _canon_band(grade: str) -> Optional[str]:
-    """Which canonical band OWNS a grade (elementary K-5 / middle 6-8 / high 9-12) — the tie-rule."""
-    go = GRADE_ORD[grade]
-    for band, rng in BANDS.items():
-        if go in rng:
-            return band
-    return None
+# Which canonical band OWNS a grade (elementary K-5 / middle 6-8 / high 9-12) — the tie-rule.
+_canon_band = canon_band
 
 
 def _band_coverage(writes) -> dict:

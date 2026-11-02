@@ -26,6 +26,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, validates
+from infrastructure.utilities.grade_bands import band_grade_tokens, enrollment_column
 from infrastructure.utilities.school_year import SPED_BASELINE_YEAR
 
 
@@ -1125,30 +1126,15 @@ class EnrollmentByGrade(Base):
             self.enrollment_k12 = self.enrollment_total - prek
 
     def calculate_level_enrollments(self) -> None:
-        """Calculate level-based enrollment aggregates."""
-        def safe_sum(*values):
-            return sum(v or 0 for v in values)
+        """Level-based enrollment aggregates (REQ-010), from the one grade->band home (#1035/#1060):
+        elementary = K-5, secondary = 6-12. The importer calls this; it is the only writer of these
+        two columns."""
+        def band_sum(*bands):
+            return sum(getattr(self, enrollment_column(g)) or 0
+                       for band in bands for g in band_grade_tokens(band))
 
-        # Elementary = K + grades 1-5
-        self.enrollment_elementary = safe_sum(
-            self.enrollment_kindergarten,
-            self.enrollment_grade_1,
-            self.enrollment_grade_2,
-            self.enrollment_grade_3,
-            self.enrollment_grade_4,
-            self.enrollment_grade_5
-        )
-
-        # Secondary = grades 6-12
-        self.enrollment_secondary = safe_sum(
-            self.enrollment_grade_6,
-            self.enrollment_grade_7,
-            self.enrollment_grade_8,
-            self.enrollment_grade_9,
-            self.enrollment_grade_10,
-            self.enrollment_grade_11,
-            self.enrollment_grade_12
-        )
+        self.enrollment_elementary = band_sum("elementary")
+        self.enrollment_secondary = band_sum("middle", "high")
 
         # Also update K-12 if not already set
         if self.enrollment_k12 is None:

@@ -20,17 +20,18 @@ from typing import Callable, Optional
 
 from infrastructure.database.models import DistrictGradeMinutes
 from infrastructure.database.school_year import within_blend_window
+from infrastructure.utilities.grade_bands import (
+    K12_GRADE_TOKENS, band_grade_tokens, canon_band, enrollment_column,
+)
 
-GRADES = ["KG"] + [f"{n:02d}" for n in range(1, 13)]          # KG, 01..12 (LCT range)
-ELEM_GRADES = ["KG", "01", "02", "03", "04", "05"]           # K-5
-SEC_GRADES = ["06", "07", "08", "09", "10", "11", "12"]      # 6-12
+# The LCT grade range and its bands come from the one grade-band home (#1035), never a local copy.
+GRADES = K12_GRADE_TOKENS                                     # KG, 01..12 (LCT range)
+ELEM_GRADES = band_grade_tokens("elementary")                 # K-5
+SEC_GRADES = band_grade_tokens("middle") + band_grade_tokens("high")   # 6-12
 K12_GRADES = GRADES
 
-_ENROLL_ATTR = {"KG": "enrollment_kindergarten",
-                **{f"{n:02d}": f"enrollment_grade_{n}" for n in range(1, 13)}}
-_CANON_BAND = {**{g: "elementary" for g in ELEM_GRADES},
-               "06": "middle", "07": "middle", "08": "middle",
-               "09": "high", "10": "high", "11": "high", "12": "high"}
+_ENROLL_ATTR = {g: enrollment_column(g) for g in GRADES}
+_CANON_BAND = {g: canon_band(g) for g in GRADES}
 
 
 def _row_tuple(r) -> tuple:

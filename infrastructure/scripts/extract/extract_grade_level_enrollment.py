@@ -31,6 +31,12 @@ import sys
 from pathlib import Path
 import pandas as pd
 
+# Run-by-path support (the documented usage): the repo root on sys.path, as import_staff_and_enrollment
+# does, so the grade-band home imports without `pip install -e .` (#1064).
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from infrastructure.utilities.grade_bands import band_grade_tokens, grade_int  # noqa: E402
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
@@ -55,10 +61,10 @@ GRADE_MAPPING = {
     'Grade 12': 12,
 }
 
-# Grade level groupings
-ELEMENTARY_GRADES = [0, 1, 2, 3, 4, 5]  # K-5
-MIDDLE_GRADES = [6, 7, 8]  # 6-8
-HIGH_GRADES = [9, 10, 11, 12]  # 9-12
+# Grade level groupings, from the one grade-band home (#1035)
+ELEMENTARY_GRADES = [grade_int(g) for g in band_grade_tokens("elementary")]  # K-5
+MIDDLE_GRADES = [grade_int(g) for g in band_grade_tokens("middle")]  # 6-8
+HIGH_GRADES = [grade_int(g) for g in band_grade_tokens("high")]  # 9-12
 
 
 def extract_grade_level_enrollment(membership_file: Path, output_file: Path):

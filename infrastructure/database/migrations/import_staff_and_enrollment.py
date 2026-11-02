@@ -411,20 +411,11 @@ def import_enrollment_data(enrollment_df: pd.DataFrame, session) -> int:
                 enrollment_k12=int(row["enrollment_k12"]) if pd.notna(row.get("enrollment_k12")) else None,
             )
 
-            # Calculate aggregate columns from individual grades
-            # Elementary = K-5
-            elem_grades = ['enrollment_kindergarten', 'enrollment_grade_1', 'enrollment_grade_2',
-                          'enrollment_grade_3', 'enrollment_grade_4', 'enrollment_grade_5']
-            enrollment.enrollment_elementary = sum(
-                int(row.get(g, 0)) if pd.notna(row.get(g)) else 0 for g in elem_grades
-            )
-
-            # Secondary = 6-12
-            sec_grades = ['enrollment_grade_6', 'enrollment_grade_7', 'enrollment_grade_8',
-                         'enrollment_grade_9', 'enrollment_grade_10', 'enrollment_grade_11', 'enrollment_grade_12']
-            enrollment.enrollment_secondary = sum(
-                int(row.get(g, 0)) if pd.notna(row.get(g)) else 0 for g in sec_grades
-            )
+            # The level aggregates (elementary K-5, secondary 6-12) have ONE writer: the model method,
+            # which sums the grade->band home's bands (REQ-010, #1060). Its K-12 fallback never fires on
+            # these rows: the extract always supplies enrollment_k12 (measured 2026-11-02: 0 NULLs in
+            # 35,593 live rows, every one equal to total - prek).
+            enrollment.calculate_level_enrollments()
 
             session.merge(enrollment)
             imported += 1
