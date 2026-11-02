@@ -2684,5 +2684,4 @@ so that CCD and CRDC are the same year (`2026-11-01-band-scope-decisions-measure
   assignment. The form asks about certification. Read the instrument, not the dictionary label.
 
 Authority: #1022 (D1–D8 comments), #1040, #1041, #1046; PR #1034; `2026-11-01-school-file-band-scopes-plan.md`
-(+ `2026-11-01-band-scope-decisions-measure.py`); METHODOLOGY "Band Scopes from the CCD School Files" and
-"GenEd band variants"; CRDC 2023-24 School Form Table Layout (STAF-2).
+(+ `2026-11-01-band-scope-decisions-measure.py`), its Revised Design block and "GenEd band variants"; CRDC 2023-24 School Form Table Layout (STAF-2).

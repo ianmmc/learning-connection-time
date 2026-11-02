@@ -48,6 +48,15 @@ that produces them is stored in `lct_db`, visible and checkable line by line.
 >   - A district with Pre-K students and a reported Pre-K FTE of 0 has nothing subtracted and is flagged
 >     (1,207 LEAs in 2023-24).
 >   - Pro-rata is rejected: it overstates Pre-K teachers by 40% (M2).
+> - **Formula:** for band B, over the district's reporting schools in B (plus the B-grades of its
+>   combined schools):
+>   `LCT_B = minutes_B × Σ(teachers − allocated Pre-K FTE) / Σ(membership − Pre-K membership)`.
+>   `minutes_B` is the band's own Stage-9 gross minutes (the mode over the same band's schools), or the
+>   statutory value where no schedule was acquired. Its exact binding to `bell_schedules` /
+>   `district_grade_minutes` is settled in T7.
+> - **METHODOLOGY.md stays present-state.** It gains these scopes (and the GenEd band variants) only in
+>   T10, when they are computed. Until then it carries only the quarantine caveats a reader of current
+>   results needs.
 > - **Acceptance properties A4 and A6 below were written for fixed bands.** T6 adds an independent
 >   school-band PTR computation to the decisions measure script, and A4 is restated against it then.
 >   A6 (the K-5 regime gap) no longer applies as written. T9 reports the regime gap per band *and* per
@@ -90,8 +99,7 @@ key (self-contained students × state ratio) for the band GenEd variants. The st
 today (self-contained students removed). A SPEDCERT of 0 means zero *certified*, not zero assigned.
 
 T11 still reports today's key alongside the hybrid on the same rows, as a comparison before adoption; it
-is not a re-opening of the decision. Method of record: METHODOLOGY → SPED Segmentation → "GenEd band
-variants".
+is not a re-opening of the decision. Method of record: "GenEd band variants" below.
 
 **All of D1–D8 are now decided.**
 
@@ -199,6 +207,73 @@ education teachers, and membership counts students with disabilities. At school 
 | # | Question | Recommendation |
 |---|---|---|
 | D8 | SPED in the band scopes | Ship all-teacher band scopes first (the `teachers_only` analogue). Measure in T9. Decide GenEd band variants (CRDC school IDEA enrollment + the baseline teacher ratio) on T9's numbers. |
+
+## GenEd band variants — the teacher-side hybrid (D8, decided 2026-11-01; T11 / #1046)
+
+The design of record for T11. METHODOLOGY describes it only once it is computed. The district-level SPED
+scopes (METHODOLOGY → SPED Segmentation) are unchanged.
+
+**The change.** Today each district's SPED teachers are estimated *from students*: self-contained students
+× the state's SPED teachers per self-contained student. At school grain the band variants instead spread
+each state's **IDEA 618 assigned SPED-teacher total** across its schools *by a teacher count each school
+reports*:
+
+```
+SPED teachers_s  = IDEA assigned SPED teachers_state × SPEDCERT_s / Σ_{schools in state} SPEDCERT
+GenEd teachers_s = school teachers_s (Pre-K removed) − SPED teachers_s
+GenEd students_s = school K-12 membership_s − self-contained SPED_s
+self-contained_s = CRDC school IDEA enrollment_s × self-contained share (LEA at ≥ 200 school-age SPED, else state)
+```
+
+`SPEDCERT_s` is CRDC `SCH_FTETEACH_SPEDCERT`. The band variant sums the GenEd terms over the band's schools,
+as the band scopes do.
+
+**Why the hybrid, not CRDC's count directly.** `SCH_FTETEACH_SPEDCERT` is reported per school (CRDC
+2023-24 school form, item STAF-2). But it counts teachers "in preschool and grades K-12 … employed at this
+school and **certified/licensed/endorsed**" in special education, regardless of assignment. It also leaves
+out teachers on emergency, provisional or alternative-route credentials. Measured against IDEA's assigned
+SPED teachers for the same year (2023-24), it is 1.11× nationally (505,196 vs 454,492), and **0.76× (AR)
+to 2.64× (DE)** by state: a state-practice count, the #1017 problem again. Scaling to each state's IDEA
+assigned total removes that state-level bias and keeps the school-level pattern. On the teacher side,
+the result rests on two reported teacher counts, not on a student proportion.
+
+**What still rests on an estimate.**
+- **The student side.** Self-contained students per school are still CRDC IDEA enrollment × an
+  environment share (IDEA's environments are published per LEA and state, not per school).
+- **The distribution key.** It assumes that within a state, certified SPED teachers are spread across
+  schools the way assigned ones are.
+
+**Known limitations.**
+- **CRDC zeros.** A school reporting `SPEDCERT = 0` gets 0 SPED teachers, and a CRDC zero means zero
+  *certified*, not zero assigned (5,621 schools with ≥ 20 IDEA students report 0; 399,319 students).
+- **More certified SPED teachers than teachers.** 948 schools report a SPEDCERT above CCD's teacher count,
+  so a GenEd estimate can go negative. It is flagged, never clipped silently.
+- **Pre-K in the key.** The key includes preschool teachers; the IDEA total is school-age (5-21).
+- **CRDC is biennial** (2023-24, then 2025-26). A 2024-25 band row pairs with 2023-24 CRDC within the
+  REQ-026 window. School matching covers 96.7% of CCD teacher FTE.
+- **Special Education Schools** carry SPEDCERT on 77.6% of their teachers and IDEA students on 90.2% of
+  their enrollment, so the key places most of their staff on the SPED side without a separate rule.
+
+**Measured context.** In regular single-band schools, SPEDCERT's share of teachers tracks the IDEA share of
+students in every band:
+
+| Band | SPEDCERT share of teachers | IDEA share of students |
+|---|---|---|
+| Elementary | 15.6% | 15.5% |
+| Middle | 15.5% | 15.0% |
+| High | 13.4% | 13.0% |
+
+Pupil/teacher ratios under the three treatments:
+
+| Treatment | Elementary | Middle | High |
+|---|---|---|---|
+| All teachers, all students | 14.3 | 15.0 | 16.1 |
+| SPEDCERT teachers and all IDEA students removed | 14.3 | 15.1 | 16.2 |
+| SPEDCERT teachers removed, all students kept | 17.0 | 17.8 | 18.6 |
+
+The GenEd result is therefore driven mostly by which students leave the denominator, not by which teacher
+source is used. T11 computes the hybrid alongside today's student-based key on the same rows and reports
+both before adoption.
 
 ## Roadmap (each a sub-issue of #1022)
 

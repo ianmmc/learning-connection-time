@@ -213,7 +213,8 @@ pipeline track (B) is unchanged from 08-26 (`docs/scratch-paper/2026-08-25-fresh
    It holds the verified findings, the design (its "Revised" block supersedes the fixed-band items), the
    decisions and their measurements, roadmap T1–T11 as #1022's sub-issues (#1035–#1044, #1046), and
    acceptance A1–A7.
-   - **Method of record:** METHODOLOGY "Band Scopes from the CCD School Files" and "GenEd band variants".
+   - **Design of record:** the plan note (Revised Design block + "GenEd band variants"). METHODOLOGY stays
+     present-state and gains the scopes only at T10.
    - **Ready to start:** every task up to T9. 2023-24 school zips are in place.
    - **Key facts:**
      - Bands are the pipeline's own SCHOOL bands (`primary_bands_for`), named `teachers_band_*`, with the
