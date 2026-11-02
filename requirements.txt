@@ -8,6 +8,7 @@
 pandas>=3.1,<4            # pandas 3 (CoW + str dtype): the LCT calc's DB rows come ONLY from infrastructure/utilities/frames.db_records (#934/#956)
 numpy>=2.3,<3
 pyarrow>=21,<26           # parquet export in calculate_lct_variants.py (optional import there)
+inflate64>=1.0.4,<2       # Deflate64 zip members (NCES CCD school membership ccd_sch_052); zipfile can't (#1036)
 
 # Stage 5 tuning engine (REQ-096/097): scikit-learn / scikit-optimize were removed 2026-10-08 — never
 # imported (LOGO with global thresholds is a per-district grouping). Re-add triggers: STAGE5_FILTER_DESIGN §5c.
