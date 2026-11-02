@@ -107,7 +107,9 @@ def verify_table_counts(session, expected: dict = None) -> dict:
         "districts", "state_district_crosswalk", "state_requirements",
         "staff_counts", "staff_counts_effective",
         "enrollment_by_grade", "sped_state_baseline", "sped_lea_baseline",
-        "sped_estimates", "bell_schedules", "lct_calculations"
+        "sped_estimates", "bell_schedules", "lct_calculations",
+        # School-file band scopes (#1038, migration 033): the verbatim source + its derivation.
+        "ccd_school_staffing", "lea_school_staffing", "lea_band_staffing", "lea_grade_teacher_fte",
     ]
 
     counts = {}
