@@ -136,6 +136,29 @@ def require_nonempty_selection(rows: Sized, *, what: str, available: object | Ca
         raise DataGuardError(f"{what}: selection matched 0 rows; available: {_resolve(available)!r}")
 
 
+# Minimum fraction of our districts a source-year CCD file must match after LEAID normalization. A
+# vintage's file covers ~all of our districts (they ARE the CCD universe) and legitimate churn is
+# ~0.5%; a match rate below this means a LEAID-format regression silently dropped a whole
+# population (#611: str(int(leaid)) stripped the leading zero and unmatched every FIPS<10 state).
+MATCH_COVERAGE_FLOOR = 0.95
+
+
+def require_match_coverage(n_file_districts: int, n_matched: int, n_existing: int, *, label: str,
+                           floor: float = MATCH_COVERAGE_FLOOR) -> None:
+    """The ONE home of the #611 guard (an LEA-level importer and the school-file importer both
+    need it, #1085): abort before a partial import when the file matched implausibly few of our
+    districts. The denominator is min(file districts, our districts): a year's file should match
+    nearly all of whichever set is smaller."""
+    denom = min(n_file_districts, n_existing)
+    if denom and n_matched < denom * floor:
+        raise DataGuardError(
+            f"{label}: only {n_matched:,} of {denom:,} districts matched "
+            f"({100 * n_matched / denom:.1f}%), below the {floor:.0%} floor. "
+            f"This usually means a LEAID-format regression (e.g. leading zeros stripped, "
+            f"issue #611) silently dropping a whole population. Aborting before a partial import."
+        )
+
+
 def require_year_carried(year: str, carried: Iterable[str] | Callable[[], Iterable[str]], *, what: str) -> None:
     """The declared `year` must be one the source carries — the membership form of
     require_nonempty_selection, so callers stop manufacturing a list to take its len() (#995)."""

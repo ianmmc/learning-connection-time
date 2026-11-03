@@ -206,7 +206,10 @@ def phase_2b_classifications(dry_run: bool = False, year: str = NCES_PRIMARY_YEA
 
 def phase_3_staff_enrollment(dry_run: bool = False, year: str = NCES_PRIMARY_YEAR) -> bool:
     """Phase 3: Load staff counts and enrollment (LEA files), then the school files for the same year
-    (ccd_school_staffing, #1039 — the source of the band scopes, refreshed on every CCD import)."""
+    (ccd_school_staffing, #1039 — the source of the band scopes). This phase is the one place the
+    school import is chained after the LEA import; a standalone `import_staff_and_enrollment.py` run
+    does NOT refresh ccd_school_staffing (#1080 — tests/test_primary_year_presence.py catches a
+    vintage bump that skipped it). A school-import failure fails the phase."""
     print("\n" + "=" * 60)
     print("PHASE 3: LOAD STAFF COUNTS AND ENROLLMENT")
     print("=" * 60)
